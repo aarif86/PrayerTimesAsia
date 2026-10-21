@@ -1,0 +1,24 @@
+name: Validate against official timetables
+
+# Downloads whole-year MUIS (data.gov.sg) and JAKIM (e-Solat) tables and
+# compares every day with tools/reference_engine.py. Linux runner: cheap.
+
+on:
+  push:
+    branches: [main]
+    paths: ['tools/**', '.github/workflows/validate.yml']
+  workflow_dispatch:
+    inputs:
+      zones:
+        description: "JAKIM zones, space separated (blank = default set)"
+        required: false
+        default: ""
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare with official timetables
+        run: python3 tools/validate_official.py ${{ github.event.inputs.zones }}
