@@ -17,13 +17,50 @@ final class AppModel {
     private(set) var isResolvingPlace = false
     var selectedTab: Tab = .today
 
-    enum Tab: Hashable { case today, qibla, journey, settings }
+    enum Tab: String, Hashable { case today, qibla, journey, settings }
 
     @ObservationIgnored private let geocoder = CLGeocoder()
     @ObservationIgnored private var lastGeocoded: CLLocation?
 
     init() {
         prefs = Preferences.load()
+        if let demo = Self.demoPreferences() { prefs = demo }
+    }
+
+    /// `-demo` (home in Singapore) or `-demo-travel` (just landed in Hanoi)
+    /// launch arguments give CI a fixed place for simulator screenshots.
+    /// Not saved: preferencesChanged only runs on later edits.
+    private static func demoPreferences() -> Preferences? {
+        let args = ProcessInfo.processInfo.arguments
+        guard args.contains("-demo") || args.contains("-demo-travel") else { return nil }
+        let home = Place(name: "Pasir Ris", region: nil, countryCode: "SG", countryName: "Singapore",
+                         timeZoneID: "Asia/Singapore", coordinates: Coordinates(latitude: 1.3721, longitude: 103.9474))
+        var p = Preferences()
+        p.hasOnboarded = true
+        p.useGPS = false
+        p.home = home
+        p.manualPlace = home
+        p.lastCountryCode = "SG"
+        if args.contains("-demo-travel") {
+            let hanoi = Place(name: "Hoàn Kiếm", region: "Hanoi", countryCode: "VN", countryName: "Vietnam",
+                              timeZoneID: "Asia/Ho_Chi_Minh", coordinates: Coordinates(latitude: 21.0285, longitude: 105.8542))
+            p.manualPlace = hanoi
+            p.lastCountryCode = "VN"
+            p.arrivedAt = .now
+            p.arrivalBannerDismissed = false
+            p.trip = [TripStop(countryCode: "VN", countryName: "Vietnam", placeName: "Hoàn Kiếm", arrived: .now),
+                      TripStop(countryCode: "SG", countryName: "Singapore", placeName: "Pasir Ris",
+                               arrived: .now.addingTimeInterval(-86_400 * 30))]
+        }
+        return p
+    }
+
+    /// Applies a `-tab <name>` launch argument once the UI is up (screenshots).
+    func applyDemoTab() {
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-tab"), i + 1 < args.count, let tab = Tab(rawValue: args[i + 1]) {
+            selectedTab = tab
+        }
     }
 
     // MARK: Where and which rules

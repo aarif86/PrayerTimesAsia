@@ -42,6 +42,7 @@ struct RootView: View {
                     .tag(AppModel.Tab.settings)
             }
             .tint(.white)
+            .onAppear { model.applyDemoTab() }
         } else {
             OnboardingView()
         }
