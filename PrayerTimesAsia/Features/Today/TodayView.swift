@@ -95,7 +95,16 @@ struct TodayView: View {
                 .opacity(0.8)
         }
         .padding(.top, 6)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(name) at \(model.formatted(next.time)), in \(Self.spoken(next.time.timeIntervalSince(now)))")
+    }
+
+    /// "1 hour 5 minutes" for VoiceOver instead of "1:05:09".
+    static func spoken(_ seconds: TimeInterval) -> String {
+        let f = DateComponentsFormatter()
+        f.unitsStyle = .full
+        f.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
+        return f.string(from: max(60, seconds)) ?? ""
     }
 
     private func musafirChip(_ status: Musafir.Status) -> some View {

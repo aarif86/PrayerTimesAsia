@@ -53,3 +53,18 @@ final class OfficialTimetablesTests: XCTestCase {
         XCTAssertEqual(OfficialTimetables.source(for: sg, method: .muis, zoneOverride: nil), .muis)
     }
 }
+
+@MainActor
+final class NearbySearchTests: XCTestCase {
+    func testKeepsPrayerSpacesAndDropsLookalikes() {
+        for name in ["Al-Istighfar Mosque", "Musollah@Pasir Ris Mall", "Surau Raudhatul Jannah",
+                     "Masjid Kampong Siglap", "Prayer Room", "Tokyo Camii", "Seoul Central Masjid",
+                     "Masjid Jalan Kebun", "Masjid Jamek"] {
+            XCTAssertTrue(NearbySearch.looksLikePrayerSpace(name), name)
+        }
+        for name in ["Darul Ghufran Mosque Stop", "Mosque Street", "Jalan Masjid", "Masjid Jamek LRT Station",
+                     "Mosque Road Car Park", "Bugis Mosque Bus Stop", "Starbucks"] {
+            XCTAssertFalse(NearbySearch.looksLikePrayerSpace(name), name)
+        }
+    }
+}

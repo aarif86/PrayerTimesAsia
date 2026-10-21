@@ -5,6 +5,10 @@ import SwiftUI
 struct QiblaView: View {
     @Environment(AppModel.self) private var model
     @State private var aligned = false
+    /// Heading accumulated without wrapping, so crossing north turns the dial a
+    /// few degrees instead of spinning it the long way round.
+    @State private var dialHeading: Double = 0
+    @State private var lastHeading: Double?
 
     private let tolerance = 4.0
 
@@ -20,6 +24,7 @@ struct QiblaView: View {
                 VStack(spacing: 22) {
                     VStack(spacing: 6) {
                         Text("Qibla").font(Theme.display(34, .bold))
+                            .accessibilityAddTraits(.isHeader)
                         Text(instruction(delta))
                             .font(.title3.weight(.semibold))
                             .contentTransition(.numericText())
@@ -28,7 +33,7 @@ struct QiblaView: View {
                     .padding(.top, 12)
 
                     Spacer(minLength: 0)
-                    Dial(bearing: bearing, heading: heading ?? 0, aligned: aligned)
+                    Dial(bearing: bearing, heading: dialHeading, aligned: aligned)
                         .frame(maxWidth: 340)
                         .padding(.horizontal, 24)
                     Spacer(minLength: 0)
@@ -45,6 +50,11 @@ struct QiblaView: View {
                 .padding(.horizontal, Theme.gutter)
                 .padding(.bottom, 24)
                 .onChange(of: delta.map { abs($0) < tolerance } ?? false) { _, now in aligned = now }
+                .onChange(of: heading) { _, new in
+                    guard let new else { return }
+                    if let last = lastHeading { dialHeading += Geo.angleDelta(new, last) } else { dialHeading = new }
+                    lastHeading = new
+                }
             } else {
                 Text("Choose a place to find the qibla.").font(.headline)
             }

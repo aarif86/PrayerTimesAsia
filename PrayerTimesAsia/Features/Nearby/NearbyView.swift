@@ -79,6 +79,14 @@ final class NearbySearch {
     /// results whose name says what they are.
     static func looksLikePrayerSpace(_ name: String) -> Bool {
         let n = name.lowercased()
+        // Bus stops, stations and roads named after a mosque ("Darul Ghufran Mosque
+        // Stop", "Mosque Street") - but keep "Masjid Jalan Kebun".
+        let transport = [" stop", "bus ", "station", "mrt", "lrt", "car park", "carpark", " exit", "halte"]
+        if transport.contains(where: { n.contains($0) }) { return false }
+        let streetWords: Set<String> = ["street", "st", "road", "rd", "jalan", "jln", "lorong", "avenue", "ave"]
+        let tokens = n.split(whereSeparator: { !$0.isLetter }).map(String.init)
+        if let first = tokens.first, let last = tokens.last,
+           streetWords.contains(first) || streetWords.contains(last) { return false }
         let words = ["masjid", "mosque", "mesjid", "musolla", "musalla", "musholla", "mushola", "surau",
                      "prayer", "jami", "islamic cent", "islamic center", "camii", "cami ", "masjed", "مسجد",
                      "清真寺", "モスク", "모스크", "nhà thờ hồi giáo", "มัสยิด"]
