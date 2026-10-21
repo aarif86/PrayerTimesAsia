@@ -1,0 +1,66 @@
+name: PrayerTimesAsia
+options:
+  bundleIdPrefix: com.prayertimesasia
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+configs:
+  Debug: debug
+  Release: release
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+
+targets:
+  PrayerTimesAsia:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: PrayerTimesAsia
+    info:
+      path: Generated/Info.plist
+      properties:
+        CFBundleDisplayName: "Prayer Times Asia"
+        NSLocationWhenInUseUsageDescription: "Your location is used on your phone to calculate prayer times and the qibla direction where you are. It is never sent anywhere."
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        ITSAppUsesNonExemptEncryption: false
+        # Both reference build settings so release.yml can bump the build
+        # number per run without editing this file.
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.prayertimesasia.app
+        TARGETED_DEVICE_FAMILY: "1,2"
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Automatic signing here; release.yml switches to manual signing on the
+        # command line. The profile is named the way it should be created in the
+        # Apple Developer portal (see README).
+        PROVISIONING_PROFILE_SPECIFIER: "Prayer Times Asia"
+    scheme:
+      testTargets:
+        - PrayerTimesAsiaTests
+      gatherCoverageData: true
+
+  PrayerTimesAsiaTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: PrayerTimesAsiaTests
+    dependencies:
+      - target: PrayerTimesAsia
