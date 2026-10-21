@@ -35,10 +35,21 @@ final class OfficialTimetables {
     @ObservationIgnored private var inFlight: Set<String> = []
     @ObservationIgnored private var failedAt: [String: Date] = [:]
 
-    /// data.gov.sg publishes one MUIS dataset per year.
+    /// data.gov.sg publishes one MUIS dataset per year. Years after release are
+    /// read from config/official-sources.json in the GitHub repo (no personal
+    /// data is sent), so a new year needs a one-line commit, not an app update.
     static let muisDatasets: [Int: String] = [
         2026: "d_d441e7242e78efc566024dd5b0d9829c",
     ]
+    static let remoteConfig = URL(string: "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/main/config/official-sources.json")!
+
+    private static func muisDataset(year: Int) async -> String? {
+        if let id = muisDatasets[year] { return id }
+        struct Config: Decodable { let muisDatasets: [String: String] }
+        guard let data = try? await get(remoteConfig),
+              let config = try? JSONDecoder().decode(Config.self, from: data) else { return nil }
+        return config.muisDatasets[String(year)]
+    }
 
     /// Which official table applies, if any. Only when the method in use is that
     /// authority's own - a user who pinned another method gets that method.
@@ -89,7 +100,7 @@ final class OfficialTimetables {
             let table: [String: [String: String]]
             switch source {
             case .muis:
-                guard let dataset = Self.muisDatasets[year] else { return false }
+                guard let dataset = await Self.muisDataset(year: year) else { throw URLError(.fileDoesNotExist) }
                 table = try await Self.fetchMUIS(dataset: dataset)
             case .jakim(let zone):
                 table = try await Self.fetchJAKIM(zone: zone, year: year)

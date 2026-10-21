@@ -1,0 +1,6 @@
+{
+  "_comment": "Read by the app (OfficialTimetables.remoteConfig) to learn official timetable sources added after release. MUIS publishes a new data.gov.sg dataset each year: add its id here when it appears (search 'Muslim Prayer Timetable <year>' on data.gov.sg).",
+  "muisDatasets": {
+    "2026": "d_d441e7242e78efc566024dd5b0d9829c"
+  }
+}

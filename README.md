@@ -80,6 +80,15 @@ keyboard and widgets):
 7. **Actions → Release to TestFlight → Run workflow.** If anything is missing the
    first step names the missing secrets and stops.
 
+## Yearly maintenance (December)
+
+MUIS publishes each year's timetable as a new data.gov.sg dataset. When
+"Muslim Prayer Timetable <next year>" appears there, add its `d_…` id to
+`config/official-sources.json` and commit: installed apps read that file (repo
+must be public) and switch to the official table, no App Store update needed.
+Until then Singapore uses the calculation, which is never earlier than MUIS.
+JAKIM needs nothing - e-Solat serves any year by zone.
+
 ## Credits
 
 - JAKIM zone reference points (`tools/jakim_reference_points.json`) are derived

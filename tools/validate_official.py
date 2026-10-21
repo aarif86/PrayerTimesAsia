@@ -123,7 +123,9 @@ def jakim():
 
 
 def muis():
-    url = 'https://data.gov.sg/api/action/datastore_search?resource_id=d_d441e7242e78efc566024dd5b0d9829c&limit=400'
+    cfg = json.load(open(os.path.join(os.path.dirname(__file__), '..', 'config', 'official-sources.json')))
+    dataset = cfg['muisDatasets'][str(max(int(y) for y in cfg['muisDatasets']))]
+    url = f'https://data.gov.sg/api/action/datastore_search?resource_id={dataset}&limit=400'
     try:
         data = fetch(url)
     except Exception as e:  # noqa: BLE001
@@ -169,33 +171,6 @@ def muis():
     fit('MUIS', official, 'muis', [(1.3521, 103.8198), (1.2905, 103.8520), (1.3667, 103.8), (1.35, 103.7), (1.4, 103.9)])
 
 
-def muis_discovery():
-    """data.gov.sg publishes a new MUIS dataset id every year. Find the collection
-    that groups them, so the app (or a config file) can learn next year's id."""
-    import re
-    for page in range(1, 40):
-        try:
-            data = fetch(f'https://api-production.data.gov.sg/v2/public/api/collections?page={page}')
-        except Exception as e:  # noqa: BLE001
-            print('DISCOVERY page', page, 'failed:', e)
-            return
-        cols = data.get('data', {}).get('collections', [])
-        if not cols:
-            print('DISCOVERY: no prayer collection found after', page - 1, 'pages')
-            return
-        for c in cols:
-            if re.search(r'prayer|muis', c.get('name', ''), re.I):
-                print('DISCOVERY collection:', c.get('collectionId'), c.get('name'))
-                print('  childDatasets:', c.get('childDatasets'))
-                try:
-                    meta = fetch(f"https://api-production.data.gov.sg/v2/public/api/collections/{c.get('collectionId')}/metadata")
-                    print('  metadata head:', json.dumps(meta)[:1500])
-                except Exception as e:  # noqa: BLE001
-                    print('  metadata failed:', e)
-                return
-
-
 if __name__ == '__main__':
-    muis_discovery()
     muis()
     jakim()
