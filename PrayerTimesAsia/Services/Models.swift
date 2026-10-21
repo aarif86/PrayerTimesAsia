@@ -31,6 +31,32 @@ struct TripStop: Codable, Hashable, Identifiable, Sendable {
     var arrived: Date
 }
 
+/// When the Subuh wake-up alarm rings, relative to Subuh or Syuruk.
+enum WakeUpTiming: String, Codable, CaseIterable, Identifiable, Sendable {
+    case atFajr, fajrPlus15, sunriseMinus30, sunriseMinus15
+
+    var id: String { rawValue }
+
+    func label(_ naming: NamingStyle) -> String {
+        let fajr = Prayer.fajr.name(naming), sunrise = Prayer.sunrise.name(naming)
+        switch self {
+        case .atFajr: return "At \(fajr)"
+        case .fajrPlus15: return "15 min after \(fajr) begins"
+        case .sunriseMinus30: return "30 min before \(sunrise)"
+        case .sunriseMinus15: return "15 min before \(sunrise)"
+        }
+    }
+
+    func date(in day: PrayerDay) -> Date {
+        switch self {
+        case .atFajr: day.time(.fajr)
+        case .fajrPlus15: day.time(.fajr).addingTimeInterval(15 * 60)
+        case .sunriseMinus30: day.time(.sunrise).addingTimeInterval(-30 * 60)
+        case .sunriseMinus15: day.time(.sunrise).addingTimeInterval(-15 * 60)
+        }
+    }
+}
+
 /// Everything the user chooses, persisted as one JSON blob. `nil` overrides
 /// mean "automatic for the country I'm in" - the travel-mode behaviour.
 struct Preferences: Codable, Equatable, Sendable {
@@ -62,6 +88,16 @@ struct Preferences: Codable, Equatable, Sendable {
 
     /// Keep a Live Activity countdown to the next prayer on the Lock Screen.
     var liveActivityEnabled = false
+
+    // Prayer tracker (opt-in)
+    var trackerEnabled = false
+    /// "yyyy-MM-dd" (local date) → prayers marked as prayed.
+    var prayedLog: [String: Set<Prayer>] = [:]
+    /// Days excused (haid, illness, ...): they keep the streak alive.
+    var excusedDays: Set<String> = []
+
+    /// Subuh wake-up alarm; nil = off.
+    var wakeUp: WakeUpTiming?
 
     private static let key = "preferences.v1"
 
@@ -95,6 +131,10 @@ struct Preferences: Codable, Equatable, Sendable {
         arrivalBannerDismissed = v(.arrivalBannerDismissed, d.arrivalBannerDismissed)
         trip = v(.trip, d.trip)
         liveActivityEnabled = v(.liveActivityEnabled, d.liveActivityEnabled)
+        trackerEnabled = v(.trackerEnabled, d.trackerEnabled)
+        prayedLog = v(.prayedLog, d.prayedLog)
+        excusedDays = v(.excusedDays, d.excusedDays)
+        wakeUp = v(.wakeUp, d.wakeUp)
     }
 
     static func load() -> Preferences {

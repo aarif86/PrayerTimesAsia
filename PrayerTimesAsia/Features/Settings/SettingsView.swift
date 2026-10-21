@@ -46,6 +46,32 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Picker("Subuh wake-up", selection: Binding(
+                        get: { model.prefs.wakeUp },
+                        set: { timing in
+                            Task {
+                                if timing != nil { _ = await NotificationScheduler.requestPermission() }
+                                model.prefs.wakeUp = timing
+                            }
+                        })) {
+                        Text("Off").tag(WakeUpTiming?.none)
+                        ForEach(WakeUpTiming.allCases) { Text($0.label(model.naming)).tag(WakeUpTiming?.some($0)) }
+                    }
+                } header: {
+                    Text("Wake-up")
+                } footer: {
+                    Text("A real alarm that rings even in Silent mode (iOS 26 and later; earlier versions get a notification). Moves with Subuh every day and wherever you travel.")
+                }
+
+                Section {
+                    Toggle("Prayer tracker", isOn: $model.prefs.trackerEnabled)
+                } header: {
+                    Text("Tracker")
+                } footer: {
+                    Text("Tick prayers off on the Today screen and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone.")
+                }
+
+                Section {
                     Toggle("Live countdown", isOn: $model.prefs.liveActivityEnabled)
                 } header: {
                     Text("Lock Screen")

@@ -111,6 +111,33 @@ final class PrayerEngineTests: XCTestCase {
         XCTAssertEqual(Hijri.format(date, timeZone: sgt, style: .malay), "10 Jamadilawal 1448")
     }
 
+    func testSunAltitudeAtKeyMoments() {
+        let day = PrayerEngine.compute(year: 2026, month: 10, day: 21, at: singapore, method: .muis, asr: .standard)
+        // Sunrise is when the sun's upper limb clears the horizon (about -0.83°).
+        XCTAssertEqual(Astro.sunAltitude(at: day.time(.sunrise).addingTimeInterval(-60), coordinates: singapore), -0.83, accuracy: 0.6)
+        XCTAssertGreaterThan(Astro.sunAltitude(at: day.time(.dhuhr), coordinates: singapore), 70)
+        // Subuh begins with the sun 20° below the horizon (MUIS).
+        XCTAssertEqual(Astro.sunAltitude(at: day.time(.fajr), coordinates: singapore), -20, accuracy: 0.5)
+    }
+
+    func testWakeUpTimings() {
+        let day = PrayerEngine.compute(year: 2026, month: 10, day: 21, at: singapore, method: .muis, asr: .standard)
+        XCTAssertEqual(WakeUpTiming.atFajr.date(in: day), day.time(.fajr))
+        XCTAssertEqual(WakeUpTiming.sunriseMinus30.date(in: day), day.time(.sunrise).addingTimeInterval(-1800))
+        XCTAssertEqual(WakeUpTiming.sunriseMinus15.label(.malay), "15 min before Syuruk")
+    }
+
+    func testOldPreferencesStillDecode() throws {
+        // A blob saved before the tracker/wake-up fields existed must keep its values.
+        let old = #"{"hasOnboarded":true,"use24Hour":true,"musafirThresholdKm":89}"#
+        let prefs = try JSONDecoder().decode(Preferences.self, from: Data(old.utf8))
+        XCTAssertTrue(prefs.hasOnboarded)
+        XCTAssertTrue(prefs.use24Hour)
+        XCTAssertEqual(prefs.musafirThresholdKm, 89)
+        XCTAssertFalse(prefs.trackerEnabled)
+        XCTAssertNil(prefs.wakeUp)
+    }
+
     private func minutesOfDay(_ date: Date) -> Int {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = sgt

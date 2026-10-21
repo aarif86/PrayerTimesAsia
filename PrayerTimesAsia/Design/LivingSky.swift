@@ -70,12 +70,45 @@ struct SkyColors: Equatable {
     }
 }
 
+extension SkyColors {
+    /// 0 in daylight → 1 in full night, from how dark the top of the sky is.
+    var darkness: Double {
+        let luminance = 0.2126 * top.r + 0.7152 * top.g + 0.0722 * top.b
+        return min(1, max(0, (0.22 - luminance) / 0.16))
+    }
+}
+
+/// A fixed field of stars that fades in as the sky darkens. Deliberately still:
+/// the countdown is the only thing that moves on the Today screen.
+struct StarField: View {
+    var body: some View {
+        Canvas { context, size in
+            var seed: UInt64 = 0x9E3779B97F4A7C15
+            func next() -> Double {
+                seed = seed &* 6364136223846793005 &+ 1442695040888963407
+                return Double(seed >> 33) / Double(1 << 31)
+            }
+            for _ in 0..<90 {
+                let x = next() * size.width
+                let y = pow(next(), 1.6) * size.height * 0.7   // denser near the top
+                let r = 0.4 + next() * 1.1
+                let alpha = 0.25 + next() * 0.6
+                context.fill(Path(ellipseIn: CGRect(x: x, y: y, width: r * 2, height: r * 2)),
+                             with: .color(.white.opacity(alpha)))
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
 struct LivingSkyBackground: View {
     let colors: SkyColors
 
     var body: some View {
         ZStack {
             LinearGradient(colors: [colors.top.color, colors.bottom.color], startPoint: .top, endPoint: .bottom)
+            StarField().opacity(colors.darkness)
             // Soft horizon glow - the one atmospheric touch; no particles, no noise.
             RadialGradient(colors: [colors.glow.color.opacity(0.35), .clear],
                            center: UnitPoint(x: 0.5, y: 1.05), startRadius: 10, endRadius: 420)

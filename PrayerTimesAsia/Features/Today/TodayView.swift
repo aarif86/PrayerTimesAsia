@@ -3,6 +3,8 @@ import SwiftUI
 struct TodayView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
+    /// Days away from today shown in the list (‹ › and swipe); 0 = today.
+    @State private var dayOffset = 0
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -21,7 +23,7 @@ struct TodayView: View {
         let sky = SkyColors.at(now, day: day)
         let next = model.next(after: now)
         let current = model.current(at: now)
-        let tomorrow = model.day(containing: now.addingTimeInterval(86_400))
+        let shown = dayOffset == 0 ? day : (model.day(containing: now.addingTimeInterval(Double(dayOffset) * 86_400)) ?? day)
 
         ZStack {
             LivingSkyBackground(colors: sky)
@@ -30,12 +32,23 @@ struct TodayView: View {
                     header(now: now)
                     if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
                     if let next { hero(next: next, now: now, sky: sky) }
-                    SunArc(now: now, day: day, nextFajr: tomorrow?.time(.fajr), glow: sky.glow.color)
-                        .frame(height: 96)
-                        .padding(.horizontal, 4)
+                    if let place = model.activePlace {
+                        SunPath(now: now, day: day, coordinates: place.coordinates, timeZone: place.timeZone,
+                                glow: sky.glow.color)
+                            .frame(height: 110)
+                    }
                     if let status = model.musafirStatus, status.isTraveller { musafirChip(status) }
-                    PrayerList(day: day, now: now, current: current?.prayer, next: next?.prayer)
-                    methodFooter(day)
+                    VStack(spacing: 10) {
+                        dayNavigator(shown, now: now)
+                        PrayerList(day: shown, now: now,
+                                   current: dayOffset == 0 ? current?.prayer : nil,
+                                   next: dayOffset == 0 ? next?.prayer : nil)
+                            .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { v in
+                                guard abs(v.translation.width) > abs(v.translation.height) * 2 else { return }
+                                withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
+                            })
+                    }
+                    methodFooter(shown)
                 }
                 .padding(.horizontal, Theme.gutter)
                 .padding(.bottom, 32)
@@ -47,19 +60,23 @@ struct TodayView: View {
 
     private func header(now: Date) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Button { showPlaces = true } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin.circle.fill")
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
-                    if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
-                    Image(systemName: "chevron.down").font(.caption.weight(.bold)).opacity(0.7)
+            HStack {
+                Button { showPlaces = true } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin.circle.fill")
+                        Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
+                        if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
+                        Image(systemName: "chevron.down").font(.caption.weight(.bold)).opacity(0.7)
+                    }
+                    .font(.headline)
+                    .padding(.horizontal, 14).padding(.vertical, 9)
+                    .background(.white.opacity(0.14), in: Capsule())
                 }
-                .font(.headline)
-                .padding(.horizontal, 14).padding(.vertical, 9)
-                .background(.white.opacity(0.14), in: Capsule())
+                .buttonStyle(.plain)
+                .accessibilityHint("Change location")
+
+                if model.prefs.trackerEnabled { streakChip(now) }
             }
-            .buttonStyle(.plain)
-            .accessibilityHint("Change location")
 
             Text(dateLine(now))
                 .font(.subheadline.weight(.medium))
@@ -105,6 +122,66 @@ struct TodayView: View {
         f.unitsStyle = .full
         f.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
         return f.string(from: max(60, seconds)) ?? ""
+    }
+
+    private func streakChip(_ now: Date) -> some View {
+        let excused = model.isExcused(now)
+        return Menu {
+            Button {
+                model.toggleExcused(now)
+            } label: {
+                Label(excused ? "Not excused today" : "Excused today", systemImage: excused ? "xmark.circle" : "drop.fill")
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: excused ? "drop.fill" : "flame.fill")
+                Text("\(model.streak)").monospacedDigit()
+            }
+            .font(.headline)
+            .padding(.horizontal, 12).padding(.vertical, 9)
+            .background(.white.opacity(0.14), in: Capsule())
+        }
+        .accessibilityLabel("Streak \(model.streak) days\(excused ? ", excused today" : "")")
+        .accessibilityHint("Mark today as excused - for example during haid or illness - so your streak continues.")
+    }
+
+    private func dayNavigator(_ shown: PrayerDay, now: Date) -> some View {
+        let label: String = switch dayOffset {
+        case 0: "Today"
+        case 1: "Tomorrow"
+        case -1: "Yesterday"
+        default: {
+            let f = DateFormatter()
+            f.timeZone = model.timeZone
+            f.dateFormat = "EEE, d MMM"
+            return f.string(from: shown.time(.dhuhr))
+        }()
+        }
+        return HStack {
+            Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
+                Image(systemName: "chevron.left").frame(width: 36, height: 36)
+            }
+            .accessibilityLabel("Previous day")
+            Spacer()
+            VStack(spacing: 2) {
+                Text(label).font(.headline)
+                if dayOffset != 0 {
+                    Text(Hijri.format(shown.time(.dhuhr), timeZone: model.timeZone, style: model.naming,
+                                      adjustment: model.prefs.hijriAdjustment))
+                        .font(.caption).opacity(0.8)
+                }
+            }
+            .onTapGesture { withAnimation(.snappy) { dayOffset = 0 } }
+            .accessibilityAddTraits(dayOffset != 0 ? .isButton : [])
+            .accessibilityHint(dayOffset != 0 ? "Back to today" : "")
+            Spacer()
+            Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
+                Image(systemName: "chevron.right").frame(width: 36, height: 36)
+            }
+            .accessibilityLabel("Next day")
+        }
+        .font(.headline)
+        .buttonStyle(.plain)
     }
 
     private func musafirChip(_ status: Musafir.Status) -> some View {
@@ -163,10 +240,24 @@ private struct PrayerList: View {
         let isCurrent = prayer == current && time <= now
         let passed = time <= now && !isCurrent
         let notifying = model.prefs.notificationsEnabled && model.prefs.notifyPrayers.contains(prayer)
+        let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
+        let prayed = trackable && model.isPrayed(prayer, on: time)
         return HStack(spacing: 14) {
-            Image(systemName: prayer.symbol)
-                .font(.body.weight(.semibold))
-                .frame(width: 26)
+            if trackable {
+                Button { model.togglePrayed(prayer, on: time) } label: {
+                    Image(systemName: prayed ? "checkmark.circle.fill" : "circle")
+                        .font(.title3)
+                        .symbolEffect(.bounce, value: prayed)
+                        .frame(width: 26)
+                }
+                .buttonStyle(.plain)
+                .sensoryFeedback(.success, trigger: prayed) { _, new in new }
+                .accessibilityLabel(prayed ? "Prayed - tap to undo" : "Mark as prayed")
+            } else {
+                Image(systemName: prayer.symbol)
+                    .font(.body.weight(.semibold))
+                    .frame(width: 26)
+            }
             Text(prayer.name(model.naming, isFriday: model.isFriday(time)))
                 .font(.title3.weight(isCurrent ? .bold : .semibold))
             if isCurrent {
@@ -196,8 +287,8 @@ private struct PrayerList: View {
         .frame(minHeight: 54)
         .background(isCurrent ? Color.white.opacity(0.18) : .clear,
                     in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .opacity(passed ? 0.6 : 1)
-        .accessibilityElement(children: .combine)
+        .opacity(passed && !trackable ? 0.6 : 1)
+        .accessibilityElement(children: .contain)
     }
 
     private func toggleNotify(_ prayer: Prayer) {
@@ -223,24 +314,53 @@ private struct ArrivalCard: View {
     var body: some View {
         let profile = model.profile
         GlassCard {
-            HStack(alignment: .top, spacing: 12) {
-                Text(profile.flag.isEmpty ? "🌏" : profile.flag).font(.system(size: 34))
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(profile.code.isEmpty ? "Outside Asia" : "Welcome to \(profile.name)")
-                        .font(.headline)
-                    Text(model.isMethodAutomatic
-                         ? "Switched to \(model.method.name) (\(model.method.parameterSummary)), local time. Works offline."
-                         : "Local time applied. You've pinned \(model.method.shortName) in Settings.")
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .top, spacing: 12) {
+                    Text(profile.flag.isEmpty ? "🌏" : profile.flag).font(.system(size: 34))
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(profile.code.isEmpty ? "Outside Asia" : "Welcome to \(profile.name)")
+                            .font(.headline)
+                        Text(model.isMethodAutomatic
+                             ? "Switched to \(model.method.name) (\(model.method.parameterSummary)), local time. Works offline."
+                             : "Local time applied. You've pinned \(model.method.shortName) in Settings.")
+                            .font(.subheadline)
+                            .opacity(0.85)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                    Button { model.prefs.arrivalBannerDismissed = true } label: {
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).padding(6)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss")
+                }
+                Divider().overlay(.white.opacity(0.25)).padding(.vertical, 8)
+                Toggle(isOn: Binding(
+                    get: { model.isMethodAutomatic },
+                    set: { auto in model.prefs.methodOverrideID = auto ? nil : model.method.id })) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Switch automatically").font(.subheadline.weight(.semibold))
+                        Text("Follow each country's method as you travel").font(.caption).opacity(0.75)
+                    }
+                }
+                .tint(Color(red: 1, green: 0.62, blue: 0.4))
+                HStack {
+                    Text("Asr").font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Menu {
+                        Button("Automatic (\(profile.asr.label))") { model.prefs.asrOverride = nil }
+                        ForEach(AsrSchool.allCases) { school in
+                            Button(school.label) { model.prefs.asrOverride = school }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(model.asrSchool == .hanafi ? "Later Asr (Hanafi)" : "Earlier Asr (Shafi'i)")
+                            Image(systemName: "chevron.up.chevron.down").font(.caption2)
+                        }
                         .font(.subheadline)
-                        .opacity(0.85)
-                        .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
-                Spacer(minLength: 0)
-                Button { model.prefs.arrivalBannerDismissed = true } label: {
-                    Image(systemName: "xmark").font(.footnote.weight(.bold)).padding(6)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Dismiss")
+                .padding(.top, 6)
             }
         }
     }

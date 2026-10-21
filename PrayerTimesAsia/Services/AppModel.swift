@@ -42,6 +42,14 @@ final class AppModel {
         p.home = home
         p.manualPlace = home
         p.lastCountryCode = "SG"
+        // Show the tracker with a three-day streak.
+        p.trackerEnabled = true
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "Asia/Singapore")!
+        for back in 1...3 {
+            let c = cal.dateComponents([.year, .month, .day], from: Date.now.addingTimeInterval(Double(-back) * 86_400))
+            p.prayedLog[String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)] = Set(Prayer.obligatory)
+        }
         if args.contains("-demo-travel") {
             let hanoi = Place(name: "Hoàn Kiếm", region: "Hanoi", countryCode: "VN", countryName: "Vietnam",
                               timeZoneID: "Asia/Ho_Chi_Minh", coordinates: Coordinates(latitude: 21.0285, longitude: 105.8542))
@@ -169,12 +177,61 @@ final class AppModel {
         return cal.component(.weekday, from: date) == 6
     }
 
+    // MARK: Prayer tracker
+
+    /// Local calendar key ("yyyy-MM-dd") for a date at the active place.
+    func dayKey(_ date: Date) -> String {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        let c = cal.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
+    }
+
+    func isPrayed(_ prayer: Prayer, on date: Date) -> Bool {
+        prefs.prayedLog[dayKey(date)]?.contains(prayer) ?? false
+    }
+
+    func togglePrayed(_ prayer: Prayer, on date: Date) {
+        let key = dayKey(date)
+        var set = prefs.prayedLog[key] ?? []
+        if set.contains(prayer) { set.remove(prayer) } else { set.insert(prayer) }
+        prefs.prayedLog[key] = set.isEmpty ? nil : set
+        // Keep about a year of history.
+        if prefs.prayedLog.count > 400, let oldest = prefs.prayedLog.keys.min() { prefs.prayedLog[oldest] = nil }
+    }
+
+    func isExcused(_ date: Date) -> Bool { prefs.excusedDays.contains(dayKey(date)) }
+
+    func toggleExcused(_ date: Date) {
+        let key = dayKey(date)
+        if prefs.excusedDays.contains(key) { prefs.excusedDays.remove(key) } else { prefs.excusedDays.insert(key) }
+    }
+
+    /// Consecutive days with all five prayers marked (or excused). Today counts
+    /// once complete; an unfinished today doesn't break the streak.
+    var streak: Int {
+        var count = 0
+        var date = Date.now
+        for i in 0..<400 {
+            let key = dayKey(date)
+            let complete = prefs.excusedDays.contains(key) || (prefs.prayedLog[key]?.count ?? 0) >= Prayer.obligatory.count
+            if complete { count += 1 } else if i > 0 { break }
+            date = date.addingTimeInterval(-86_400)
+        }
+        return count
+    }
+
     // MARK: Lifecycle
 
     func preferencesChanged(from old: Preferences) {
         prefs.save()
+        // Ticking a prayer in the tracker shouldn't reschedule every alarm.
+        var a = prefs, b = old
+        a.prayedLog = [:]; b.prayedLog = [:]
+        a.excusedDays = []; b.excusedDays = []
+        guard a != b else { return }
         refreshOfficialTimetable()
-        if prefs.notificationsEnabled || old.notificationsEnabled { scheduleNotifications() }
+        scheduleNotifications()
     }
 
     func appBecameActive() {
@@ -283,7 +340,29 @@ final class AppModel {
                     fireDate: time.addingTimeInterval(-lead)))
             }
         }
-        NotificationScheduler.reschedule(enabled: prefs.notificationsEnabled, alerts: alerts)
+        // Subuh wake-up: a real alarm (AlarmKit, iOS 26+) where possible,
+        // otherwise a notification.
+        var wakeUps: [(Date, String)] = []
+        if let timing = prefs.wakeUp {
+            for offset in 0..<7 {
+                guard let pd = day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
+                let fajr = Prayer.fajr.name(naming)
+                wakeUps.append((timing.date(in: pd), "Wake up for \(fajr) · ends \(formatted(pd.time(.sunrise)))"))
+            }
+        }
+        let notificationAlerts = alerts
+        let notificationsOn = prefs.notificationsEnabled
+        Task {
+            let alarmsHandled = await WakeUpAlarm.schedule(wakeUps)
+            var all = notificationsOn ? notificationAlerts : []
+            if !alarmsHandled {
+                all += wakeUps.map {
+                    NotificationScheduler.Alert(id: "wake-\(Int($0.0.timeIntervalSince1970))", title: $0.1,
+                                                body: place.name, fireDate: $0.0)
+                }
+            }
+            NotificationScheduler.reschedule(enabled: !all.isEmpty, alerts: all)
+        }
         WidgetBridge.publish(self)
     }
 }

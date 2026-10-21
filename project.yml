@@ -31,6 +31,7 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         # The next-prayer countdown Live Activity (drawn by PrayerTimesAsiaWidgets).
         NSSupportsLiveActivities: true
+        NSAlarmKitUsageDescription: "Prayer Times Asia sets your Subuh wake-up alarm so it rings even in Silent mode."
         # Both reference build settings so release.yml can bump the build
         # number per run without editing this file.
         CFBundleShortVersionString: "$(MARKETING_VERSION)"

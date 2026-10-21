@@ -144,6 +144,16 @@ enum Astro {
         return (decl, eqt)
     }
 
+    /// The sun's altitude above the horizon in degrees at an instant and place
+    /// (negative below the horizon). Drives the Today screen's sun path.
+    static func sunAltitude(at date: Date, coordinates c: Coordinates) -> Double {
+        let jd = date.timeIntervalSince1970 / 86_400 + 2_440_587.5
+        let (decl, eqt) = sun(jd: jd)
+        let utcHours = fix(date.timeIntervalSince1970 / 3600, 24)
+        let hourAngle = 15 * (utcHours + c.longitude / 15 + eqt - 12)
+        return darcsin(dsin(c.latitude) * dsin(decl) + dcos(c.latitude) * dcos(decl) * dcos(hourAngle))
+    }
+
     static func utcMidnight(year: Int, month: Int, day: Int) -> Date {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
