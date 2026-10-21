@@ -15,7 +15,7 @@ import urllib.request
 from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(__file__))
-from reference_engine import final_minutes  # noqa: E402
+from reference_engine import METHODS, compute, final_minutes  # noqa: E402
 
 KEYS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']
 UA = {'User-Agent': 'PrayerTimesAsia-validation/1.0 (+https://github.com/aarif86/PrayerTimesAsia)'}
@@ -25,6 +25,15 @@ def fetch(url):
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.loads(r.read().decode('utf-8'))
+
+
+MALAY_MONTHS = {'Jan': 1, 'Feb': 2, 'Mac': 3, 'Mar': 3, 'Apr': 4, 'Mei': 5, 'May': 5, 'Jun': 6, 'Jul': 7,
+                'Ogos': 8, 'Ogo': 8, 'Aug': 8, 'Sep': 9, 'Okt': 10, 'Oct': 10, 'Nov': 11, 'Dis': 12, 'Dec': 12}
+
+
+def jakim_date(s):
+    d, m, y = s.split('-')
+    return dt.date(int(y), MALAY_MONTHS[m], int(d))
 
 
 def hm(s):
@@ -43,6 +52,33 @@ def stats(label, diffs):
     print(f"  {label}")
     for line in out:
         print('    ' + line)
+
+
+def fit(label, official, method, points):
+    """Search the precautionary offset per prayer (ceil rounding) at candidate points.
+    Reports the best offset with no early times, and the best overall."""
+    p = METHODS[method]
+    print(f"  {label} offset fit (offsets in minutes, ceil rounding):")
+    for lat, lng in points:
+        raw = [(compute(day, lat, lng, 8, p['fajr'], p['isha']), o) for day, o in official]
+        line = []
+        for k in KEYS:
+            best_any, best_safe = None, None
+            for step in range(-12, 41):
+                off = step / 8
+                d = [math.ceil(round(r[k] * 60 + off, 9)) - o[k] for r, o in raw]
+                exact = sum(1 for x in d if x == 0)
+                safe = all(x <= 0 for x in d) if k == 'sunrise' else all(x >= 0 for x in d)
+                if best_any is None or exact > best_any[1]:
+                    best_any = (off, exact, min(d), max(d))
+                if safe and (best_safe is None or exact > best_safe[1]):
+                    best_safe = (off, exact, min(d), max(d))
+            n = len(raw)
+            line.append(f"{k} any:{best_any[0]:+.3f}({best_any[1]*100//n}% [{best_any[2]},{best_any[3]}])"
+                        + (f" safe:{best_safe[0]:+.3f}({best_safe[1]*100//n}% [{best_safe[2]},{best_safe[3]}])" if best_safe else ' safe:none'))
+        print(f"    @({lat}, {lng})")
+        for l in line:
+            print('      ' + l)
 
 
 def jakim():
@@ -67,7 +103,7 @@ def jakim():
         for name, lat, lng in by_zone[zone]:
             diffs = defaultdict(list)
             for r in rows:
-                day = dt.datetime.strptime(r['date'], '%d-%b-%Y').date()
+                day = jakim_date(r['date'])
                 got = final_minutes(day, lat, lng, 8, 'jakim')
                 official = dict(fajr=r['fajr'], sunrise=r['syuruk'], dhuhr=r['dhuhr'], asr=r['asr'],
                                 maghrib=r['maghrib'], isha=r['isha'])
@@ -78,6 +114,12 @@ def jakim():
                 best = (score, name, lat, lng, diffs)
         if best:
             stats(f"best reference point: {best[1]} ({best[2]}, {best[3]})", best[4])
+            official = []
+            for r in rows:
+                official.append((jakim_date(r['date']), dict(
+                    fajr=hm(r['fajr']), sunrise=hm(r['syuruk']), dhuhr=hm(r['dhuhr']), asr=hm(r['asr']),
+                    maghrib=hm(r['maghrib']), isha=hm(r['isha']))))
+            fit(f'JAKIM {zone}', official, 'jakim', [(best[2], best[3])])
 
 
 def muis():
@@ -114,6 +156,17 @@ def muis():
                 m += 12 * 60
             diffs[k].append(got[k] - m)
     stats(f"MUIS {len(rows)} days at Singapore centre", diffs)
+    official = []
+    for r in rows:
+        day = dt.date.fromisoformat(r[c['date']][:10])
+        o = {}
+        for k in KEYS:
+            m = hm(r[c[k]])
+            if k in ('dhuhr', 'asr', 'maghrib', 'isha') and m < 11 * 60:
+                m += 12 * 60
+            o[k] = m
+        official.append((day, o))
+    fit('MUIS', official, 'muis', [(1.3521, 103.8198), (1.2905, 103.8520), (1.3667, 103.8), (1.35, 103.7), (1.4, 103.9)])
 
 
 if __name__ == '__main__':
