@@ -1,0 +1,51 @@
+name: Mosque timetable
+description: Send a photo or PDF of a mosque's printed timetable (makes it Grade B - masjid-confirmed).
+title: "[timetable] "
+labels: ["submission", "timetable"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. One photographed month is enough: we fit the mosque's method and safety minutes so the
+        whole year can be generated. Photos are kept as evidence and are not republished without the mosque's permission.
+  - type: input
+    id: place
+    attributes:
+      label: Where (city, area, country)
+    validations:
+      required: true
+  - type: input
+    id: mosque
+    attributes:
+      label: Mosque or musolla name
+      placeholder: e.g. Jamiul Islamiyah Mosque
+    validations:
+      required: true
+  - type: input
+    id: maps_link
+    attributes:
+      label: Map link or address of the mosque
+      description: A Google/Apple Maps link to the mosque itself (not your location).
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Timetable photo or PDF
+      description: Drag the image or PDF in here.
+    validations:
+      required: true
+  - type: textarea
+    id: jamaah
+    attributes:
+      label: Jamaah / iqamah and Jumu'ah times, if shown
+      placeholder: e.g. Subuh jamaah 20 min after adhan; Jumu'ah 13:00
+  - type: input
+    id: app_method
+    attributes:
+      label: What the app currently shows (filled in by the app)
+  - type: checkboxes
+    id: licence
+    attributes:
+      label: Licence
+      options:
+        - label: I agree my submission (not the photo) is shared under CC-BY 4.0.
+          required: true

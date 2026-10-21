@@ -1,0 +1,49 @@
+name: Which method do mosques here use?
+description: Confirm the calculation method local mosques follow (two independent confirmations make a city Grade C).
+title: "[method] "
+labels: ["submission", "method"]
+body:
+  - type: input
+    id: place
+    attributes:
+      label: Where (city, area, country)
+    validations:
+      required: true
+  - type: dropdown
+    id: method
+    attributes:
+      label: Mosques here follow
+      options:
+        - MUIS (Singapore)
+        - JAKIM (Malaysia)
+        - Kemenag (Indonesia)
+        - Muslim World League (18° / 17°)
+        - Karachi (18° / 18°)
+        - Umm al-Qura
+        - Diyanet (Türkiye)
+        - Other / not sure (explain below)
+    validations:
+      required: true
+  - type: dropdown
+    id: asr
+    attributes:
+      label: Asr
+      options: ["Earlier (Shafi'i)", "Later (Hanafi)", "Not sure"]
+  - type: textarea
+    id: how
+    attributes:
+      label: How do you know?
+      placeholder: e.g. I pray at the local masjid; their board says ...
+    validations:
+      required: true
+  - type: input
+    id: app_method
+    attributes:
+      label: What the app currently shows (filled in by the app)
+  - type: checkboxes
+    id: licence
+    attributes:
+      label: Licence
+      options:
+        - label: I agree my submission is shared under CC-BY 4.0.
+          required: true

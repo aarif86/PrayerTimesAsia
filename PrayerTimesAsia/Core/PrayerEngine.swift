@@ -13,6 +13,10 @@ struct PrayerDay: Sendable, Equatable {
     /// Set when these times come from an authority's published table rather
     /// than the on-device calculation.
     var officialSource: String? = nil
+    var grade: SourceGrade = .calculated
+    /// Congregation times from a nearby mosque's profile, when known.
+    var jamaah: [Prayer: Date] = [:]
+    var mosqueName: String? = nil
 
     func time(_ prayer: Prayer) -> Date { times[prayer]! }
 

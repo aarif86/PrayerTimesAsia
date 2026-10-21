@@ -1,6 +1,7 @@
 # Prayer Times Asia
 
 Prayer times and qibla for Muslims living and travelling across Asia.
+**Every time has a source. We show it.** Free forever, open source (MIT).
 Native SwiftUI, iOS 17+. No ads, no accounts, no tracking. Location never leaves the phone.
 
 ## Why it exists
@@ -21,10 +22,18 @@ and matches the official tables at home.
 - **Journey** - home vs current distance, musafir status with jamak & qasar
   guidance (Shafi'i 81/89 km, 3 days; Hanafi 78 km, 15 days), trip log.
 - **Qibla** - compass dial with haptic "aligned" moment, bearing and distance.
-- **Official timetables** - in Singapore and Malaysia, the year's official MUIS
-  (data.gov.sg) or JAKIM e-Solat table is downloaded once (only the year or the
-  zone code is sent) and kept for offline use; the nearest JAKIM zone is found on
-  the phone and can be pinned in Settings.
+- **Source grade on every day** - A official · B masjid-confirmed · C
+  community-verified · D calculated, with the method shown (tap the badge).
+- **Official timetables (Grade A)** - Singapore (MUIS, data.gov.sg), Malaysia
+  (JAKIM e-Solat by zone, found on the phone) and Indonesia (Kemenag via
+  myquran.com, matched by regency name). Downloaded once a year - only the year,
+  zone code or regency name is sent - and kept for offline use. Saudi Arabia's
+  Umm al-Qura is the authority's exact published method, so it is Grade A too.
+- **Masjid-confirmed (Grade B)** - `data/mosques.json`: a mosque's own timetable,
+  reverse-engineered with `tools/fingerprint.py`, plus its jamaah and Jumu'ah times.
+  Starts empty; filled from real submissions only (see `data/README.md`).
+- **Help verify** - from the source sheet, prefilled GitHub forms for a mosque
+  timetable, the local method, or an adhan time heard (see `CONTRIBUTING.md`).
 - **Masjid** - masjids and musollahs within 15 km via Apple Maps search, with
   walking/driving directions.
 - **Widgets** - Home Screen (small/medium, Living Sky background) and Lock Screen
@@ -91,13 +100,22 @@ JAKIM needs nothing - e-Solat serves any year by zone.
 
 ## Credits
 
+Shown in the app under Settings → Sources & credits.
+
+- MUIS: contains information from the Muslim Prayer Timetable accessed from
+  data.gov.sg, made available under the Singapore Open Data Licence v1.0.
+- Kemenag (Indonesia) schedules via api.myquran.com.
 - JAKIM zone reference points (`tools/jakim_reference_points.json`) are derived
   from the district-to-zone mapping in
   [mptwaktusolat/malaysia.geojson](https://github.com/mptwaktusolat/malaysia.geojson).
   Only one coordinate per district is kept; the polygons are not shipped.
-- Official timetables: MUIS via data.gov.sg, JAKIM via e-solat.gov.my.
+- JAKIM official times via e-solat.gov.my.
 
 ## Roadmap
 
-Official Kemenag (Indonesia) tables; Apple Watch; home-screen widget
+Brief v02 phase 1 still open: Maldives (check SalatMV licences), Diyanet
+(registration), yearly ingest for Brunei, Sri Lanka, Bangladesh, UAE; a real
+submission backend (Firebase vs Supabase - open question) with photo upload and
+automatic fingerprinting; show-both when two sources disagree by over 2 minutes.
+Also: Apple Watch; home-screen widget
 configuration (pick a place other than the current one).

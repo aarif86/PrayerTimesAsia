@@ -41,7 +41,16 @@ def hm(s):
     return int(p[0]) * 60 + int(p[1])
 
 
+REPORT = []
+
+
 def stats(label, diffs):
+    row = [label]
+    for k in KEYS:
+        c = Counter(diffs[k])
+        if c:
+            row.append(f"{c[0] * 100 // sum(c.values())}% · {min(c):+d}…{max(c):+d}")
+    REPORT.append(row)
     out = []
     for k in KEYS:
         c = Counter(diffs[k])
@@ -206,7 +215,22 @@ def kemenag():
         fit(f'KEMENAG {name}', official, 'kemenag', [(lat, lng)], tz=tz)
 
 
+def write_report():
+    """Markdown accuracy report on the workflow run page (brief §6.4)."""
+    path = os.environ.get('GITHUB_STEP_SUMMARY')
+    if not path or not REPORT:
+        return
+    lines = ['# Offline calculation vs official timetables (2026)', '',
+             'Each cell: share of days exactly equal to the official minute · range of differences in minutes '
+             '(positive = app later). Online, the app shows the official table itself.', '',
+             '| Source / place | ' + ' | '.join(KEYS) + ' |', '|' + '---|' * (len(KEYS) + 1)]
+    lines += ['| ' + ' | '.join(r) + ' |' for r in REPORT]
+    with open(path, 'a') as f:
+        f.write('\n'.join(lines) + '\n')
+
+
 if __name__ == '__main__':
     muis()
     jakim()
     kemenag()
+    write_report()

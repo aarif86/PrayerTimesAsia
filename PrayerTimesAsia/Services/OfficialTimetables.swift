@@ -11,11 +11,23 @@ final class OfficialTimetables {
     enum Source: Hashable, Sendable {
         case muis
         case jakim(zone: String)
+        /// Kemenag regency/city, by the name Apple gives for where you are.
+        case kemenag(regency: String)
 
         var label: String {
             switch self {
             case .muis: "MUIS official timetable"
             case .jakim(let zone): "JAKIM e-Solat · zone \(zone)"
+            case .kemenag(let regency): "Kemenag · \(regency)"
+            }
+        }
+
+        /// Authority name for the source badge.
+        var authority: String {
+            switch self {
+            case .muis: "MUIS"
+            case .jakim: "JAKIM"
+            case .kemenag: "Kemenag"
             }
         }
 
@@ -23,6 +35,7 @@ final class OfficialTimetables {
             switch self {
             case .muis: "muis-\(year)"
             case .jakim(let zone): "jakim-\(zone)-\(year)"
+            case .kemenag(let regency): "kemenag-\(OfficialTimetables.kemenagCore(regency).core)-\(year)"
             }
         }
     }
@@ -57,6 +70,10 @@ final class OfficialTimetables {
         switch (place.countryCode?.uppercased(), method.id) {
         case ("SG", "muis"): return .muis
         case ("MY", "jakim"): return .jakim(zone: zoneOverride ?? nearestJakimZone(to: place.coordinates))
+        case ("ID", "kemenag"):
+            guard let name = place.district ?? place.region ?? (place.name == "Current location" ? nil : place.name)
+            else { return nil }
+            return .kemenag(regency: name)
         default: return nil
         }
     }
@@ -104,8 +121,12 @@ final class OfficialTimetables {
                 table = try await Self.fetchMUIS(dataset: dataset)
             case .jakim(let zone):
                 table = try await Self.fetchJAKIM(zone: zone, year: year)
+            case .kemenag(let regency):
+                table = try await fetchKemenag(regency: regency, year: year)
             }
-            guard table.count > 300 else { throw URLError(.cannotParseResponse) }
+            // A year is ~365 rows; Kemenag comes month by month, so accept a
+            // partial year (missing days fall back to the calculation).
+            guard table.count > 25 else { throw URLError(.cannotParseResponse) }
             tables[key] = table
             Self.saveToDisk(key, table)
             revision += 1
@@ -209,6 +230,102 @@ final class OfficialTimetables {
         let p = s.trimmingCharacters(in: .whitespaces).split(separator: ":")
         guard p.count >= 2, let h = Int(p[0]), let m = Int(p[1]), (0..<24).contains(h), (0..<60).contains(m) else { return nil }
         return String(format: "%02d:%02d", h, m)
+    }
+
+    // MARK: Kemenag (Indonesia) via api.myquran.com v2
+
+    /// (id, "KOTA BANDUNG" / "KAB. BOGOR"), downloaded once and cached.
+    @ObservationIgnored private var kemenagCities: [(id: String, name: String)]?
+
+    private func fetchKemenag(regency: String, year: Int) async throws -> [String: [String: String]] {
+        let cities = try await kemenagCityList()
+        guard let id = Self.matchKemenagCity([regency], in: cities) else { throw URLError(.fileDoesNotExist) }
+        var out: [String: [String: String]] = [:]
+        for month in 1...12 {
+            let url = URL(string: "https://api.myquran.com/v2/sholat/jadwal/\(id)/\(year)/\(String(format: "%02d", month))")!
+            guard let data = try? await Self.get(url), let rows = try? Self.parseKemenag(data) else { continue }
+            out.merge(rows) { a, _ in a }
+        }
+        return out
+    }
+
+    private func kemenagCityList() async throws -> [(id: String, name: String)] {
+        if let kemenagCities { return kemenagCities }
+        struct Response: Decodable { struct City: Decodable { let id: String; let lokasi: String }; let data: [City] }
+        let data: Data
+        if let disk = try? Data(contentsOf: Self.directory.appendingPathComponent("kemenag-cities.json")) {
+            data = disk
+        } else {
+            data = try await Self.get(URL(string: "https://api.myquran.com/v2/sholat/kota/semua")!)
+            try? FileManager.default.createDirectory(at: Self.directory, withIntermediateDirectories: true)
+            try? data.write(to: Self.directory.appendingPathComponent("kemenag-cities.json"), options: .atomic)
+        }
+        let list = try JSONDecoder().decode(Response.self, from: data).data.map { (id: $0.id, name: $0.lokasi) }
+        kemenagCities = list
+        return list
+    }
+
+    /// {"data":{"jadwal":[{"date":"2026-10-01","subuh":"04:23","terbit":"05:35","dzuhur":"11:46",
+    /// "ashar":"14:51","maghrib":"17:50","isya":"18:59",...}]}}
+    static func parseKemenag(_ data: Data) throws -> [String: [String: String]] {
+        struct Response: Decodable {
+            struct Body: Decodable { let jadwal: [Row] }
+            struct Row: Decodable {
+                let date: String
+                let subuh: String, terbit: String, dzuhur: String, ashar: String, maghrib: String, isya: String
+            }
+            let data: Body
+        }
+        var out: [String: [String: String]] = [:]
+        for r in try JSONDecoder().decode(Response.self, from: data).data.jadwal {
+            let values = [Prayer.fajr: r.subuh, .sunrise: r.terbit, .dhuhr: r.dzuhur, .asr: r.ashar,
+                          .maghrib: r.maghrib, .isha: r.isya]
+            var row: [String: String] = [:]
+            for (p, v) in values { if let t = hhmm(v) { row[p.rawValue] = t } }
+            if row.count == 6 { out[String(r.date.prefix(10))] = row }
+        }
+        return out
+    }
+
+    enum RegencyKind { case city, regency, unknown }
+
+    /// "Kota Bandung" / "Bandung City" / "KOTA BANDUNG" → ("BANDUNG", .city);
+    /// "Kabupaten Bogor" / "Bogor Regency" / "KAB. BOGOR" → ("BOGOR", .regency).
+    nonisolated static func kemenagCore(_ name: String) -> (core: String, kind: RegencyKind) {
+        let upper = name.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: nil).uppercased()
+            .replacingOccurrences(of: ".", with: " ")
+        var tokens = upper.split(whereSeparator: { !$0.isLetter && !$0.isNumber }).map(String.init)
+        var kind = RegencyKind.unknown
+        if tokens.first == "KOTA" || tokens.last == "CITY" { kind = .city }
+        if ["KAB", "KABUPATEN"].contains(tokens.first ?? "") || tokens.last == "REGENCY" { kind = .regency }
+        let filler: Set<String> = ["KOTA", "KAB", "KABUPATEN", "ADMINISTRASI", "ADM", "REGENCY", "CITY", "OF"]
+        tokens.removeAll { filler.contains($0) }
+        return (tokens.joined(separator: " "), kind)
+    }
+
+    /// Best Kemenag id for the given place names (most specific first).
+    nonisolated static func matchKemenagCity(_ names: [String], in list: [(id: String, name: String)]) -> String? {
+        let entries = list.map { (id: $0.id, key: kemenagCore($0.name)) }
+        for name in names {
+            let want = kemenagCore(name)
+            guard !want.core.isEmpty else { continue }
+            let exact = entries.filter { $0.key.core == want.core }
+            if let hit = exact.first(where: { $0.key.kind == want.kind }) ?? exact.first(where: { $0.key.kind == .city }) ?? exact.first {
+                return hit.id
+            }
+            // "Jakarta Selatan" / "South Jakarta" → KOTA JAKARTA: whole-word containment, longest wins.
+            let words = Set(want.core.split(separator: " ").map(String.init))
+            let partial = entries.filter { e in
+                let w = e.key.core.split(separator: " ").map(String.init)
+                return !w.isEmpty && Set(w).isSubset(of: words)
+            }
+            if let best = partial.max(by: { a, b in
+                (a.key.core.count, a.key.kind == .city ? 1 : 0) < (b.key.core.count, b.key.kind == .city ? 1 : 0)
+            }) {
+                return best.id
+            }
+        }
+        return nil
     }
 
     // MARK: Disk cache

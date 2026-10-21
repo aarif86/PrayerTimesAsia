@@ -8,6 +8,9 @@ struct Place: Codable, Hashable, Identifiable, Sendable {
     var countryName: String?
     var timeZoneID: String
     var coordinates: Coordinates
+    /// Regency / city level (Apple's subAdministrativeArea), e.g. "Kota Bandung".
+    /// Used to find the Kemenag timetable in Indonesia.
+    var district: String? = nil
 
     var timeZone: TimeZone { TimeZone(identifier: timeZoneID) ?? .current }
     var profile: CountryProfile { AsiaRegions.profile(for: countryCode) ?? AsiaRegions.fallback }

@@ -119,7 +119,7 @@ struct SettingsView: View {
                 }
 
                 Section("Accuracy") {
-                    Text("In Singapore and Malaysia the app downloads the official MUIS or JAKIM timetable for the year (only the year or zone code is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation was checked against every day of the 2026 MUIS and JAKIM timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia it is within about 2 minutes.")
+                    Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.")
                         .font(.footnote)
                 }
 
@@ -131,6 +131,8 @@ struct SettingsView: View {
                 .font(.footnote)
 
                 Section {
+                    NavigationLink("Sources & credits") { CreditsView() }
+                    Link("Help verify times where you are", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md")!)
                     LabeledContent("Version", value: Bundle.main.appVersion)
                 } footer: {
                     Text("Prayer Times Asia - made for Muslims living and travelling across Asia.")

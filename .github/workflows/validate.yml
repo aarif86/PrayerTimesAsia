@@ -1,12 +1,14 @@
 name: Validate against official timetables
 
-# Downloads whole-year MUIS (data.gov.sg) and JAKIM (e-Solat) tables and
-# compares every day with tools/reference_engine.py. Linux runner: cheap.
+# Downloads whole-year MUIS (data.gov.sg), JAKIM (e-Solat) and Kemenag (myquran)
+# tables, compares every day with tools/reference_engine.py and publishes the
+# accuracy report on the run page. Also validates data/mosques.json. Linux: cheap.
+# (tools/probe_sources.py prints raw API shapes when adding a new source.)
 
 on:
   push:
     branches: [main]
-    paths: ['tools/**', '.github/workflows/validate.yml']
+    paths: ['tools/**', 'data/**', '.github/workflows/validate.yml']
   workflow_dispatch:
     inputs:
       zones:
@@ -20,8 +22,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Check data/mosques.json
+        run: python3 tools/check_mosques.py
       - name: Compare with official timetables
         run: python3 tools/validate_official.py ${{ github.event.inputs.zones }}
-      - name: Probe candidate APIs (response shapes)
-        if: always()
-        run: python3 tools/probe_sources.py

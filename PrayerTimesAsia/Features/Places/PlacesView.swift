@@ -43,7 +43,8 @@ final class PlaceSearch: NSObject, MKLocalSearchCompleterDelegate {
             countryCode: code,
             countryName: AsiaRegions.profile(for: code)?.name ?? mark.country,
             timeZoneID: tz.identifier,
-            coordinates: Coordinates(latitude: mark.coordinate.latitude, longitude: mark.coordinate.longitude))
+            coordinates: Coordinates(latitude: mark.coordinate.latitude, longitude: mark.coordinate.longitude),
+            district: mark.subAdministrativeArea)
     }
 }
 

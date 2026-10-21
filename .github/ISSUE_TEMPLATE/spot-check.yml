@@ -1,0 +1,42 @@
+name: Adhan time I heard
+description: A quick spot check - the time the adhan was actually called at a mosque.
+title: "[spot-check] "
+labels: ["submission", "spot-check"]
+body:
+  - type: input
+    id: place
+    attributes:
+      label: Where (city, area, country)
+    validations:
+      required: true
+  - type: input
+    id: mosque
+    attributes:
+      label: Mosque name
+    validations:
+      required: true
+  - type: dropdown
+    id: prayer
+    attributes:
+      label: Prayer
+      options: [Subuh / Fajr, Zuhur / Dhuhr, Asar / Asr, Maghrib, Isyak / Isha]
+    validations:
+      required: true
+  - type: input
+    id: heard
+    attributes:
+      label: Date and time the adhan was called
+      placeholder: e.g. 22 Oct 2026, 04:32
+    validations:
+      required: true
+  - type: input
+    id: app_method
+    attributes:
+      label: What the app currently shows (filled in by the app)
+  - type: checkboxes
+    id: licence
+    attributes:
+      label: Licence
+      options:
+        - label: I agree my submission is shared under CC-BY 4.0.
+          required: true

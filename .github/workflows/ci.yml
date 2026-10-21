@@ -6,7 +6,7 @@ name: CI
 on:
   push:
     branches: [main]
-    paths-ignore: ['**.md', 'tools/validate_official.py', '.github/workflows/validate.yml', '.github/workflows/release.yml', 'docs/**', 'config/**']
+    paths-ignore: ['**.md', 'tools/validate_official.py', '.github/workflows/validate.yml', '.github/workflows/release.yml', 'docs/**', 'config/**', 'data/**', '.github/ISSUE_TEMPLATE/**', 'LICENSE', 'tools/fingerprint.py', 'tools/check_mosques.py', 'tools/probe_sources.py']
   pull_request:
   workflow_dispatch:
 

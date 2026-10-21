@@ -60,9 +60,9 @@ extension CalculationMethod {
     static let kemenag = CalculationMethod(
         id: "kemenag", name: "Kemenag · Indonesia", shortName: "Kemenag",
         fajrAngle: 20, ishaAngle: 18, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
-        offsets: [.fajr: 2, .sunrise: -2, .dhuhr: 2, .asr: 2, .maghrib: 2, .isha: 2],
-        matchesOfficialTable: false,
-        note: "Kementerian Agama angles (20°/18°) with a 2-minute ihtiyat.")
+        offsets: [.fajr: 2.25, .sunrise: -4.5, .dhuhr: 3.25, .asr: 2.5, .maghrib: 3.25, .isha: 2.5],
+        matchesOfficialTable: true,
+        note: "Kementerian Agama. Online, the app shows Kemenag's official timetable for your city or regency; offline it calculates with offsets fitted on the full 2026 Jakarta, Surabaya and Makassar tables.")
 
     static let southeastAsia = CalculationMethod(
         id: "sea", name: "Southeast Asia standard", shortName: "SEA 20°/18°",

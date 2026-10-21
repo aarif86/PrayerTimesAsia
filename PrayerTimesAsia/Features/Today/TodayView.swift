@@ -40,6 +40,7 @@ struct TodayView: View {
                     if let status = model.musafirStatus, status.isTraveller { musafirChip(status) }
                     VStack(spacing: 10) {
                         dayNavigator(shown, now: now)
+                        SourceBadge(day: shown)
                         PrayerList(day: shown, now: now,
                                    current: dayOffset == 0 ? current?.prayer : nil,
                                    next: dayOffset == 0 ? next?.prayer : nil)
@@ -48,7 +49,6 @@ struct TodayView: View {
                                 withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
                             })
                     }
-                    methodFooter(shown)
                 }
                 .padding(.horizontal, Theme.gutter)
                 .padding(.bottom, 32)
@@ -198,23 +198,6 @@ struct TodayView: View {
         }
         .buttonStyle(.plain)
     }
-
-    private func methodFooter(_ day: PrayerDay) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            if let official = day.officialSource {
-                Label(official, systemImage: "checkmark.seal.fill")
-                Text("Downloaded once a year · works offline")
-            } else {
-                Text("\(model.method.name) · \(model.method.parameterSummary) · \(model.asrSchool == .hanafi ? "Hanafi Asr" : "Shafi'i Asr")")
-                Text(model.method.matchesOfficialTable
-                     ? "Calculated on your phone · official timetable when online"
-                     : "Calculated on your phone · works offline")
-            }
-        }
-        .font(.caption)
-        .opacity(0.7)
-        .padding(.horizontal, 4)
-    }
 }
 
 private struct PrayerList: View {
@@ -258,8 +241,15 @@ private struct PrayerList: View {
                     .font(.body.weight(.semibold))
                     .frame(width: 26)
             }
-            Text(prayer.name(model.naming, isFriday: model.isFriday(time)))
-                .font(.title3.weight(isCurrent ? .bold : .semibold))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(prayer.name(model.naming, isFriday: model.isFriday(time)))
+                    .font(.title3.weight(isCurrent ? .bold : .semibold))
+                if let jamaah = day.jamaah[prayer] {
+                    Text("Jamaah \(model.formatted(jamaah))")
+                        .font(.caption.weight(.medium))
+                        .opacity(0.75)
+                }
+            }
             if isCurrent {
                 Text("NOW").font(.caption2.weight(.heavy)).padding(.horizontal, 7).padding(.vertical, 3)
                     .background(.white.opacity(0.25), in: Capsule())

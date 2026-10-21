@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: How submissions are checked
+    url: https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md
+    about: The verification ladder, what gets published, and the CC-BY 4.0 data licence.

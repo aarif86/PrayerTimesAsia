@@ -13,6 +13,7 @@ final class AppModel {
 
     let location = LocationService()
     let official = OfficialTimetables()
+    let mosques = MosqueDirectory()
     /// The place resolved from the latest GPS fix.
     private(set) var gpsPlace: Place?
     private(set) var isResolvingPlace = false
@@ -110,27 +111,56 @@ final class AppModel {
         return OfficialTimetables.source(for: place, method: method, zoneOverride: prefs.jakimZoneOverride)
     }
 
+    /// The mosque profile (Grade B) covering where you are, if any.
+    var nearbyMosque: MosqueProfile? {
+        activePlace.flatMap { mosques.profile(near: $0.coordinates) }
+    }
+
+    /// Resolver (brief §6.3): official table (A) → nearby mosque's own timetable
+    /// (B) → calculation with the country's method (D; A when the method itself
+    /// is the authority's exact published rule, as with Umm al-Qura).
     func day(containing date: Date) -> PrayerDay? {
         guard let place = activePlace else { return nil }
-        let computed = PrayerEngine.compute(for: date, in: place.timeZone, at: place.coordinates,
-                                            method: method, asr: asrSchool)
-        guard let source = officialSource,
-              let table = official.times(source, year: computed.year, month: computed.month, day: computed.day)
-        else { return computed }
+        let mosque = mosques.profile(near: place.coordinates)
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = place.timeZone
+
+        var result: PrayerDay
+        let computed = PrayerEngine.compute(for: date, in: place.timeZone, at: place.coordinates,
+                                            method: method, asr: asrSchool)
+        if let source = officialSource,
+           let table = official.times(source, year: computed.year, month: computed.month, day: computed.day),
+           let times = Self.times(from: table, on: computed, calendar: cal, keepAsrFrom: asrSchool == .hanafi ? computed : nil) {
+            result = PrayerDay(year: computed.year, month: computed.month, day: computed.day, times: times,
+                               officialSource: source.label, grade: .official)
+        } else if isMethodAutomatic, let mosque, let mosqueMethod = mosque.method {
+            result = PrayerEngine.compute(for: date, in: place.timeZone, at: place.coordinates, method: mosqueMethod,
+                                          asr: prefs.asrOverride ?? mosque.asrSchool ?? asrSchool)
+            result.grade = mosque.grade
+            result.officialSource = "\(mosque.name) timetable"
+        } else {
+            result = computed
+            result.grade = method.id == "ummalqura" ? .official : .calculated
+        }
+        if let mosque {
+            result.mosqueName = mosque.name
+            result.jamaah = mosque.jamaahTimes(for: result, timeZone: place.timeZone, isFriday: isFriday(result.time(.dhuhr)))
+        }
+        return result
+    }
+
+    private static func times(from table: [Prayer: String], on day: PrayerDay, calendar: Calendar,
+                              keepAsrFrom computed: PrayerDay?) -> [Prayer: Date]? {
         var times: [Prayer: Date] = [:]
         for prayer in Prayer.allCases {
             // Official tables are Shafi'i; a Hanafi user keeps the calculated Asr.
-            if prayer == .asr, asrSchool == .hanafi { times[prayer] = computed.time(.asr); continue }
+            if prayer == .asr, let computed { times[prayer] = computed.time(.asr); continue }
             let parts = table[prayer]!.split(separator: ":").compactMap { Int($0) }
-            guard parts.count == 2, let d = cal.date(from: DateComponents(
-                year: computed.year, month: computed.month, day: computed.day, hour: parts[0], minute: parts[1]))
-            else { return computed }
+            guard parts.count == 2, let d = calendar.date(from: DateComponents(
+                year: day.year, month: day.month, day: day.day, hour: parts[0], minute: parts[1])) else { return nil }
             times[prayer] = d
         }
-        return PrayerDay(year: computed.year, month: computed.month, day: computed.day, times: times,
-                         officialSource: source.label)
+        return times
     }
 
     /// Downloads this year's official table for where you are (and next year's in December).
@@ -237,6 +267,7 @@ final class AppModel {
     func appBecameActive() {
         location.refresh()
         refreshOfficialTimetable()
+        Task { await mosques.refreshIfStale() }
         scheduleNotifications()
     }
 
@@ -269,7 +300,8 @@ final class AppModel {
                     countryCode: code,
                     countryName: AsiaRegions.profile(for: code)?.name ?? mark.country,
                     timeZoneID: (mark.timeZone ?? tz).identifier,
-                    coordinates: coords)
+                    coordinates: coords,
+                    district: mark.subAdministrativeArea)
                 self.adopt(gps: place)
             }
         }

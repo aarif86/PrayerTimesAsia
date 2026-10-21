@@ -68,3 +68,35 @@ final class NearbySearchTests: XCTestCase {
         }
     }
 }
+
+@MainActor
+final class KemenagTests: XCTestCase {
+    private let cities: [(id: String, name: String)] = [
+        ("1201", "KAB. BANDUNG"), ("1202", "KAB. BANDUNG BARAT"), ("1219", "KOTA BANDUNG"),
+        ("1204", "KAB. BOGOR"), ("1222", "KOTA BOGOR"), ("1301", "KOTA JAKARTA"),
+        ("1638", "KOTA SURABAYA"), ("2622", "KOTA MAKASSAR"),
+    ]
+
+    func testMatchesApplePlaceNames() {
+        XCTAssertEqual(OfficialTimetables.matchKemenagCity(["Kota Bandung"], in: cities), "1219")
+        XCTAssertEqual(OfficialTimetables.matchKemenagCity(["Bandung City"], in: cities), "1219")
+        XCTAssertEqual(OfficialTimetables.matchKemenagCity(["Kabupaten Bandung Barat"], in: cities), "1202")
+        XCTAssertEqual(OfficialTimetables.matchKemenagCity(["Bogor Regency"], in: cities), "1204")
+        XCTAssertEqual(OfficialTimetables.matchKemenagCity(["Bogor"], in: cities), "1222") // city preferred when unsaid
+        XCTAssertEqual(OfficialTimetables.matchKemenagCity(["Jakarta Selatan"], in: cities), "1301")
+        XCTAssertEqual(OfficialTimetables.matchKemenagCity(["South Jakarta"], in: cities), "1301")
+        XCTAssertEqual(OfficialTimetables.matchKemenagCity(["Nowhere", "Surabaya"], in: cities), "1638")
+        XCTAssertNil(OfficialTimetables.matchKemenagCity(["Tokyo"], in: cities))
+    }
+
+    func testParsesKemenag() throws {
+        let json = """
+        {"status":true,"data":{"id":1301,"lokasi":"KOTA JAKARTA","daerah":"DKI JAKARTA","jadwal":[
+          {"tanggal":"Kamis, 01/10/2026","imsak":"04:13","subuh":"04:23","terbit":"05:35","dhuha":"06:02",
+           "dzuhur":"11:46","ashar":"14:51","maghrib":"17:50","isya":"18:59","date":"2026-10-01"}]}}
+        """
+        let table = try OfficialTimetables.parseKemenag(Data(json.utf8))
+        XCTAssertEqual(table["2026-10-01"], ["fajr": "04:23", "sunrise": "05:35", "dhuhr": "11:46",
+                                            "asr": "14:51", "maghrib": "17:50", "isha": "18:59"])
+    }
+}
