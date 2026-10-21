@@ -93,7 +93,7 @@ struct SettingsView: View {
                 }
 
                 Section("Accuracy") {
-                    Text("In Singapore and Malaysia the app downloads the official MUIS or JAKIM timetable for the year (only the year or zone code is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. For MUIS and JAKIM that calculation was checked against every day of the 2026 timetables and is never earlier than the official time, at most 2 minutes later.")
+                    Text("In Singapore and Malaysia the app downloads the official MUIS or JAKIM timetable for the year (only the year or zone code is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation was checked against every day of the 2026 MUIS and JAKIM timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia it is within about 2 minutes.")
                         .font(.footnote)
                 }
 

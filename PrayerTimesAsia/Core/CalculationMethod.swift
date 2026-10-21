@@ -5,8 +5,10 @@ import Foundation
 /// Every time the engine produces is `ceil(astronomical time + offset)` to the
 /// minute. The offsets are each authority's precautionary minutes (ihtiyat). For
 /// MUIS and JAKIM they were fitted against the full 2026 official timetables
-/// (tools/validate_official.py) so that the offline calculation is never earlier
-/// than the official time: prayers up to 2 minutes later, sunrise up to 1 earlier.
+/// (tools/validate_official.py): for MUIS the offline calculation is never earlier
+/// than the official time (prayers up to 2 minutes later, sunrise up to 1 earlier);
+/// for JAKIM, whose zones each use their own reference point, it is within about
+/// 2 minutes and errs late.
 /// When online, OfficialTimetables replaces the calculation with the exact table.
 struct CalculationMethod: Identifiable, Hashable, Sendable {
     let id: String
@@ -51,9 +53,9 @@ extension CalculationMethod {
     static let jakim = CalculationMethod(
         id: "jakim", name: "JAKIM · Malaysia", shortName: "JAKIM",
         fajrAngle: 18, ishaAngle: 18, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
-        offsets: [.fajr: 2.375, .sunrise: -1.375, .dhuhr: 2.5, .asr: 2.25, .maghrib: 2.25, .isha: 2.375],
+        offsets: [.fajr: 2.375, .sunrise: -1.375, .dhuhr: 3, .asr: 2.25, .maghrib: 2.25, .isha: 2.375],
         matchesOfficialTable: true,
-        note: "Malaysia's 18° Subuh criterion (since 2019). Online, the app shows JAKIM's official e-Solat timetable for your zone; offline it calculates, never earlier than the official time.")
+        note: "Malaysia's 18° Subuh criterion (since 2019). Online, the app shows JAKIM's official e-Solat timetable for your zone; offline it calculates to within about 2 minutes.")
 
     static let kemenag = CalculationMethod(
         id: "kemenag", name: "Kemenag · Indonesia", shortName: "Kemenag",

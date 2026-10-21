@@ -170,21 +170,29 @@ def muis():
 
 
 def muis_discovery():
-    """How can the app find next year's MUIS dataset id? Print what search returns."""
-    for url in [
-        'https://data.gov.sg/api/action/package_search?q=muslim%20prayer%20timetable&rows=10',
-        'https://api-production.data.gov.sg/v2/public/api/datasets?query=muslim%20prayer%20timetable',
-        'https://api-production.data.gov.sg/v2/public/api/collections?query=prayer',
-    ]:
+    """data.gov.sg publishes a new MUIS dataset id every year. Find the collection
+    that groups them, so the app (or a config file) can learn next year's id."""
+    import re
+    for page in range(1, 40):
         try:
-            data = fetch(url)
-            text = json.dumps(data)
-            import re
-            ids = sorted(set(re.findall(r'd_[0-9a-f]{32}', text)))
-            names = re.findall(r'"(?:title|name)": "([^"]*[Pp]rayer[^"]*)"', text)
-            print('DISCOVERY', url, '\n  ids:', ids[:20], '\n  names:', names[:20], '\n  head:', text[:300])
+            data = fetch(f'https://api-production.data.gov.sg/v2/public/api/collections?page={page}')
         except Exception as e:  # noqa: BLE001
-            print('DISCOVERY', url, 'failed:', e)
+            print('DISCOVERY page', page, 'failed:', e)
+            return
+        cols = data.get('data', {}).get('collections', [])
+        if not cols:
+            print('DISCOVERY: no prayer collection found after', page - 1, 'pages')
+            return
+        for c in cols:
+            if re.search(r'prayer|muis', c.get('name', ''), re.I):
+                print('DISCOVERY collection:', c.get('collectionId'), c.get('name'))
+                print('  childDatasets:', c.get('childDatasets'))
+                try:
+                    meta = fetch(f"https://api-production.data.gov.sg/v2/public/api/collections/{c.get('collectionId')}/metadata")
+                    print('  metadata head:', json.dumps(meta)[:1500])
+                except Exception as e:  # noqa: BLE001
+                    print('  metadata failed:', e)
+                return
 
 
 if __name__ == '__main__':

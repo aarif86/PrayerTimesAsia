@@ -121,7 +121,7 @@ struct TodayView: View {
             } else {
                 Text("\(model.method.name) · \(model.method.parameterSummary) · \(model.asrSchool == .hanafi ? "Hanafi Asr" : "Shafi'i Asr")")
                 Text(model.method.matchesOfficialTable
-                     ? "Calculated on your phone · never earlier than the official timetable"
+                     ? "Calculated on your phone · official timetable when online"
                      : "Calculated on your phone · works offline")
             }
         }

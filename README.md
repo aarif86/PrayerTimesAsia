@@ -40,9 +40,10 @@ everywhere else) it calculates: `PrayerTimesAsia/Core/PrayerEngine.swift` is a
 pure-Foundation solar calculation and `tools/reference_engine.py` a line-by-line
 Python port. The **Validate against official timetables** workflow
 (`tools/validate_official.py`) downloads the full 2026 MUIS and JAKIM tables and
-compares every day; MUIS/JAKIM precautionary offsets were fitted on that data so
+compares every day; the precautionary offsets were fitted on that data. For MUIS
 the calculation is **never earlier than the official time** (prayers at most 2
-minutes later, sunrise at most 1 minute earlier).
+minutes later, sunrise at most 1 minute earlier) on all 365 days; for JAKIM, whose
+54 zones each use their own reference point, it is within about 2 minutes.
 
 Country defaults live in `Core/AsiaRegions.swift` - one line per country.
 

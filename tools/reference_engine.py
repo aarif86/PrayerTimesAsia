@@ -58,7 +58,7 @@ def compute(date, lat, lng, tz, fajr, isha, isha_minutes=None, asr_factor=1, mag
 
 METHODS = {
     'muis': dict(fajr=20, isha=18, offsets=dict(fajr=0.625, sunrise=-0.375, dhuhr=1.5, asr=0.5, maghrib=0.875, isha=0.5)),
-    'jakim': dict(fajr=18, isha=18, offsets=dict(fajr=2.375, sunrise=-1.375, dhuhr=2.5, asr=2.25, maghrib=2.25, isha=2.375)),
+    'jakim': dict(fajr=18, isha=18, offsets=dict(fajr=2.375, sunrise=-1.375, dhuhr=3, asr=2.25, maghrib=2.25, isha=2.375)),
 }
 
 def final_minutes(date, lat, lng, tz, method):
