@@ -34,6 +34,9 @@ struct RootView: View {
                 QiblaView()
                     .tabItem { Label("Qibla", systemImage: "location.north.line.fill") }
                     .tag(AppModel.Tab.qibla)
+                NearbyView()
+                    .tabItem { Label("Masjid", systemImage: "moon.stars.fill") }
+                    .tag(AppModel.Tab.nearby)
                 JourneyView()
                     .tabItem { Label("Journey", systemImage: "airplane") }
                     .tag(AppModel.Tab.journey)

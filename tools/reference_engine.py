@@ -57,8 +57,8 @@ def compute(date, lat, lng, tz, fajr, isha, isha_minutes=None, asr_factor=1, mag
     return out
 
 METHODS = {
-    'muis': dict(fajr=20, isha=18, offsets=dict(fajr=0.25, sunrise=-0.5, dhuhr=1, asr=0, maghrib=0.5, isha=0)),
-    'jakim': dict(fajr=18, isha=18, offsets=dict(fajr=2, sunrise=-0.5, dhuhr=2, asr=1, maghrib=1, isha=1)),
+    'muis': dict(fajr=20, isha=18, offsets=dict(fajr=0.625, sunrise=-0.375, dhuhr=1.5, asr=0.5, maghrib=0.875, isha=0.5)),
+    'jakim': dict(fajr=18, isha=18, offsets=dict(fajr=2.375, sunrise=-1.375, dhuhr=2.5, asr=2.25, maghrib=2.25, isha=2.375)),
 }
 
 def final_minutes(date, lat, lng, tz, method):
@@ -78,16 +78,19 @@ if __name__ == '__main__':
         ('muis', dt.date(2026, 1, 1), 1.3521, 103.8198, ['05:44', '07:08', '13:10', '16:34', '19:11', '20:25']),
         ('muis', dt.date(2026, 8, 1), 1.3521, 103.8198, ['05:46', '07:06', '13:13', '16:34', '19:17', '20:29']),
         ('muis', dt.date(2026, 10, 21), 1.3521, 103.8198, ['05:29', '06:47', '12:51', '16:07', '18:52', '20:02']),
-        ('jakim', dt.date(2026, 1, 1), 3.1390, 101.6869, ['06:06', '07:18', '13:19', '16:42', '19:17', '20:31']),
+        ('jakim', dt.date(2026, 1, 1), 3.1472, 101.6894, ['06:06', '07:18', '13:19', '16:42', '19:17', '20:31']),
     ]
     keys = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']
     worst = 0
+    early = 0
     for method, d, la, lo, ref in cases:
         got = final_minutes(d, la, lo, 8, method)
         diffs = []
         for k, r in zip(keys, ref):
             h, m = map(int, r.split(':')); diff = got[k] - (h * 60 + m); worst = max(worst, abs(diff))
+            if (k == 'sunrise' and diff > 0) or (k != 'sunrise' and diff < 0):
+                early += 1
             diffs.append(f"{k}:{got[k]//60:02d}:{got[k]%60:02d}({diff:+d})")
         print(method, d, ' '.join(diffs))
-    print('worst difference vs official (min):', worst)
-    raise SystemExit(1 if worst > 1 else 0)
+    print('worst difference vs official (min):', worst, '| on the unsafe side:', early)
+    raise SystemExit(1 if worst > 3 or early else 0)

@@ -35,7 +35,7 @@ struct TodayView: View {
                         .padding(.horizontal, 4)
                     if let status = model.musafirStatus, status.isTraveller { musafirChip(status) }
                     PrayerList(day: day, now: now, current: current?.prayer, next: next?.prayer)
-                    methodFooter
+                    methodFooter(day)
                 }
                 .padding(.horizontal, Theme.gutter)
                 .padding(.bottom, 32)
@@ -113,12 +113,17 @@ struct TodayView: View {
         .buttonStyle(.plain)
     }
 
-    private var methodFooter: some View {
+    private func methodFooter(_ day: PrayerDay) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("\(model.method.name) · \(model.method.parameterSummary) · \(model.asrSchool == .hanafi ? "Hanafi Asr" : "Shafi'i Asr")")
-            Text(model.method.matchesOfficialTable
-                 ? "Calculated on your phone · matches the official timetable"
-                 : "Calculated on your phone · works offline")
+            if let official = day.officialSource {
+                Label(official, systemImage: "checkmark.seal.fill")
+                Text("Downloaded once a year · works offline")
+            } else {
+                Text("\(model.method.name) · \(model.method.parameterSummary) · \(model.asrSchool == .hanafi ? "Hanafi Asr" : "Shafi'i Asr")")
+                Text(model.method.matchesOfficialTable
+                     ? "Calculated on your phone · never earlier than the official timetable"
+                     : "Calculated on your phone · works offline")
+            }
         }
         .font(.caption)
         .opacity(0.7)

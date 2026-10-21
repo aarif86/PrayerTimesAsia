@@ -30,6 +30,15 @@ struct SettingsView: View {
                         Text("Automatic").tag(NamingStyle?.none)
                         ForEach(NamingStyle.allCases) { Text($0.label).tag(NamingStyle?.some($0)) }
                     }
+                    if model.method.id == "jakim", let place = model.activePlace {
+                        Picker("JAKIM zone", selection: $model.prefs.jakimZoneOverride) {
+                            Text("Automatic · \(OfficialTimetables.nearestJakimZone(to: place.coordinates))").tag(String?.none)
+                            ForEach(JakimZones.zones) { zone in
+                                Text("\(zone.id) · \(zone.areas)").tag(String?.some(zone.id))
+                            }
+                        }
+                    }
+                    LabeledContent("Timetable", value: timetableStatus)
                 } header: {
                     Text("Calculation")
                 } footer: {
@@ -76,13 +85,14 @@ struct SettingsView: View {
                 }
 
                 Section("Accuracy") {
-                    Text("Times are calculated on your phone from the sun's position, using each country's method. For Singapore (MUIS) and Malaysia (JAKIM) they were checked against the official timetables: within one minute, always on the safe side.")
+                    Text("In Singapore and Malaysia the app downloads the official MUIS or JAKIM timetable for the year (only the year or zone code is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. For MUIS and JAKIM that calculation was checked against every day of the 2026 timetables and is never earlier than the official time, at most 2 minutes later.")
                         .font(.footnote)
                 }
 
                 Section("Privacy") {
                     Label("No ads, no accounts, no tracking.", systemImage: "hand.raised.fill")
                     Label("Your location never leaves your phone.", systemImage: "location.slash.fill")
+                    Label("Nearby masjid search goes through Apple Maps.", systemImage: "map.fill")
                 }
                 .font(.footnote)
 
@@ -95,6 +105,14 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
         }
+    }
+}
+
+extension SettingsView {
+    private var timetableStatus: String {
+        guard let source = model.officialSource else { return "Calculated on device" }
+        let year = Calendar(identifier: .gregorian).component(.year, from: .now)
+        return model.official.hasTable(source, year: year) ? "Official · downloaded" : "Official · will download when online"
     }
 }
 

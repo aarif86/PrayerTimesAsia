@@ -1,0 +1,222 @@
+import Foundation
+import Observation
+
+/// Exact official timetables when online: MUIS for Singapore and JAKIM e-Solat
+/// for Malaysia. Requests carry only a year or a zone code, never coordinates.
+/// A downloaded year is kept on disk, so it keeps working offline; without a
+/// table the app falls back to its own calculation (never earlier than official).
+@MainActor
+@Observable
+final class OfficialTimetables {
+    enum Source: Hashable, Sendable {
+        case muis
+        case jakim(zone: String)
+
+        var label: String {
+            switch self {
+            case .muis: "MUIS official timetable"
+            case .jakim(let zone): "JAKIM e-Solat · zone \(zone)"
+            }
+        }
+
+        func cacheKey(year: Int) -> String {
+            switch self {
+            case .muis: "muis-\(year)"
+            case .jakim(let zone): "jakim-\(zone)-\(year)"
+            }
+        }
+    }
+
+    /// cacheKey → "yyyy-MM-dd" → prayer rawValue → "HH:mm". Not observed directly
+    /// (it fills lazily from disk during view updates); `revision` is.
+    @ObservationIgnored private var tables: [String: [String: [String: String]]] = [:]
+    /// Bumped whenever a new table is downloaded, so views re-read.
+    private(set) var revision = 0
+    @ObservationIgnored private var inFlight: Set<String> = []
+    @ObservationIgnored private var failedAt: [String: Date] = [:]
+
+    /// data.gov.sg publishes one MUIS dataset per year.
+    static let muisDatasets: [Int: String] = [
+        2026: "d_d441e7242e78efc566024dd5b0d9829c",
+    ]
+
+    /// Which official table applies, if any. Only when the method in use is that
+    /// authority's own - a user who pinned another method gets that method.
+    static func source(for place: Place, method: CalculationMethod, zoneOverride: String?) -> Source? {
+        switch (place.countryCode?.uppercased(), method.id) {
+        case ("SG", "muis"): return .muis
+        case ("MY", "jakim"): return .jakim(zone: zoneOverride ?? nearestJakimZone(to: place.coordinates))
+        default: return nil
+        }
+    }
+
+    static func nearestJakimZone(to c: Coordinates) -> String {
+        var best = ("WLY01", Double.greatestFiniteMagnitude)
+        for (zone, lat, lng) in JakimZones.points {
+            let d = Geo.distanceKm(c, Coordinates(latitude: lat, longitude: lng))
+            if d < best.1 { best = (zone, d) }
+        }
+        return best.0
+    }
+
+    func times(_ source: Source, year: Int, month: Int, day: Int) -> [Prayer: String]? {
+        _ = revision
+        let key = source.cacheKey(year: year)
+        if tables[key] == nil, let disk = Self.loadFromDisk(key) { tables[key] = disk }
+        guard let row = tables[key]?[String(format: "%04d-%02d-%02d", year, month, day)] else { return nil }
+        var out: [Prayer: String] = [:]
+        for prayer in Prayer.allCases {
+            guard let t = row[prayer.rawValue] else { return nil }
+            out[prayer] = t
+        }
+        return out
+    }
+
+    func hasTable(_ source: Source, year: Int) -> Bool {
+        let key = source.cacheKey(year: year)
+        return tables[key] != nil || Self.loadFromDisk(key) != nil
+    }
+
+    /// Downloads the year's table if it isn't cached. Returns true if new data arrived.
+    @discardableResult
+    func ensure(_ source: Source, year: Int) async -> Bool {
+        let key = source.cacheKey(year: year)
+        if hasTable(source, year: year) || inFlight.contains(key) { return false }
+        if let failed = failedAt[key], Date.now.timeIntervalSince(failed) < 30 * 60 { return false }
+        inFlight.insert(key)
+        defer { inFlight.remove(key) }
+        do {
+            let table: [String: [String: String]]
+            switch source {
+            case .muis:
+                guard let dataset = Self.muisDatasets[year] else { return false }
+                table = try await Self.fetchMUIS(dataset: dataset)
+            case .jakim(let zone):
+                table = try await Self.fetchJAKIM(zone: zone, year: year)
+            }
+            guard table.count > 300 else { throw URLError(.cannotParseResponse) }
+            tables[key] = table
+            Self.saveToDisk(key, table)
+            revision += 1
+            return true
+        } catch {
+            failedAt[key] = .now
+            return false
+        }
+    }
+
+    // MARK: Fetching
+
+    private static func get(_ url: URL) async throws -> Data {
+        var request = URLRequest(url: url, timeoutInterval: 30)
+        request.setValue("PrayerTimesAsia/1.0 (iOS)", forHTTPHeaderField: "User-Agent")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw URLError(.badServerResponse) }
+        return data
+    }
+
+    /// e-Solat: {"prayerTime":[{"date":"01-Jan-2026","fajr":"06:06:00","syuruk":"07:18:00",
+    /// "dhuhr":"13:19:00","asr":"16:42:00","maghrib":"19:17:00","isha":"20:31:00",...}],...}
+    /// Month abbreviations are Malay ("Mac", "Ogos", "Dis").
+    static func fetchJAKIM(zone: String, year: Int) async throws -> [String: [String: String]] {
+        var c = URLComponents(string: "https://www.e-solat.gov.my/index.php")!
+        c.queryItems = [.init(name: "r", value: "esolatApi/takwimsolat"),
+                        .init(name: "period", value: "year"),
+                        .init(name: "zone", value: zone)]
+        let data = try await get(c.url!)
+        return try parseJAKIM(data, year: year)
+    }
+
+    static func parseJAKIM(_ data: Data, year: Int) throws -> [String: [String: String]] {
+        struct Response: Decodable { let prayerTime: [Row]? }
+        struct Row: Decodable {
+            let date: String
+            let fajr: String, syuruk: String, dhuhr: String, asr: String, maghrib: String, isha: String
+        }
+        let rows = try JSONDecoder().decode(Response.self, from: data).prayerTime ?? []
+        var out: [String: [String: String]] = [:]
+        for r in rows {
+            guard let date = jakimDate(r.date), date.hasPrefix("\(year)-") else { continue }
+            let values = [Prayer.fajr: r.fajr, .sunrise: r.syuruk, .dhuhr: r.dhuhr, .asr: r.asr,
+                          .maghrib: r.maghrib, .isha: r.isha]
+            var row: [String: String] = [:]
+            for (p, v) in values { if let t = hhmm(v) { row[p.rawValue] = t } }
+            if row.count == 6 { out[date] = row }
+        }
+        return out
+    }
+
+    private static let malayMonths: [String: Int] = [
+        "jan": 1, "feb": 2, "mac": 3, "mar": 3, "apr": 4, "mei": 5, "may": 5, "jun": 6, "jul": 7,
+        "ogos": 8, "ogo": 8, "aug": 8, "sep": 9, "okt": 10, "oct": 10, "nov": 11, "dis": 12, "dec": 12,
+    ]
+
+    static func jakimDate(_ s: String) -> String? {
+        let parts = s.split(separator: "-")
+        guard parts.count == 3, let d = Int(parts[0]), let y = Int(parts[2]),
+              let m = malayMonths[parts[1].lowercased()] else { return nil }
+        return String(format: "%04d-%02d-%02d", y, m, d)
+    }
+
+    /// data.gov.sg: {"result":{"records":[{"Date":"2026-01-01","Subuh":"05:44","Syuruk":"07:08",
+    /// "Zohor":"13:10","Asar":"16:34","Maghrib":"19:11","Isyak":"20:25"},...]}}
+    static func fetchMUIS(dataset: String) async throws -> [String: [String: String]] {
+        var c = URLComponents(string: "https://data.gov.sg/api/action/datastore_search")!
+        c.queryItems = [.init(name: "resource_id", value: dataset), .init(name: "limit", value: "400")]
+        return try parseMUIS(try await get(c.url!))
+    }
+
+    static func parseMUIS(_ data: Data) throws -> [String: [String: String]] {
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let result = json["result"] as? [String: Any],
+              let records = result["records"] as? [[String: Any]] else { throw URLError(.cannotParseResponse) }
+        let columns: [(Prayer, [String])] = [
+            (.fajr, ["subuh"]), (.sunrise, ["syuruk"]), (.dhuhr, ["zohor", "zuhur"]),
+            (.asr, ["asar"]), (.maghrib, ["maghrib"]), (.isha, ["isyak"]),
+        ]
+        var out: [String: [String: String]] = [:]
+        for record in records {
+            let lower = Dictionary(record.map { ($0.key.lowercased(), $0.value) }, uniquingKeysWith: { a, _ in a })
+            guard let date = (lower["date"] as? String)?.prefix(10) else { continue }
+            var row: [String: String] = [:]
+            for (prayer, names) in columns {
+                guard let raw = names.lazy.compactMap({ lower[$0] as? String }).first,
+                      var t = hhmm(raw) else { continue }
+                // Guard against a 12-hour afternoon value ("1:10" for 13:10).
+                if prayer != .fajr, prayer != .sunrise, let h = Int(t.prefix(2)), h < 11 {
+                    t = String(format: "%02d", h + 12) + t.dropFirst(2)
+                }
+                row[prayer.rawValue] = t
+            }
+            if row.count == 6 { out[String(date)] = row }
+        }
+        return out
+    }
+
+    /// "06:06:00" / "6:06" → "06:06"
+    static func hhmm(_ s: String) -> String? {
+        let p = s.trimmingCharacters(in: .whitespaces).split(separator: ":")
+        guard p.count >= 2, let h = Int(p[0]), let m = Int(p[1]), (0..<24).contains(h), (0..<60).contains(m) else { return nil }
+        return String(format: "%02d:%02d", h, m)
+    }
+
+    // MARK: Disk cache
+
+    private static var directory: URL {
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return base.appendingPathComponent("OfficialTimetables", isDirectory: true)
+    }
+
+    private static func loadFromDisk(_ key: String) -> [String: [String: String]]? {
+        let url = directory.appendingPathComponent("\(key).json")
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        return try? JSONDecoder().decode([String: [String: String]].self, from: data)
+    }
+
+    private static func saveToDisk(_ key: String, _ table: [String: [String: String]]) {
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        if let data = try? JSONEncoder().encode(table) {
+            try? data.write(to: directory.appendingPathComponent("\(key).json"), options: .atomic)
+        }
+    }
+}

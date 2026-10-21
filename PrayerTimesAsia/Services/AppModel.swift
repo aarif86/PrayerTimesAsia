@@ -12,12 +12,13 @@ final class AppModel {
     var prefs: Preferences
 
     let location = LocationService()
+    let official = OfficialTimetables()
     /// The place resolved from the latest GPS fix.
     private(set) var gpsPlace: Place?
     private(set) var isResolvingPlace = false
     var selectedTab: Tab = .today
 
-    enum Tab: String, Hashable { case today, qibla, journey, settings }
+    enum Tab: String, Hashable { case today, qibla, nearby, journey, settings }
 
     @ObservationIgnored private let geocoder = CLGeocoder()
     @ObservationIgnored private var lastGeocoded: CLLocation?
@@ -95,10 +96,47 @@ final class AppModel {
 
     // MARK: Times
 
+    /// The official table that applies here (MUIS / JAKIM), if any.
+    var officialSource: OfficialTimetables.Source? {
+        guard let place = activePlace else { return nil }
+        return OfficialTimetables.source(for: place, method: method, zoneOverride: prefs.jakimZoneOverride)
+    }
+
     func day(containing date: Date) -> PrayerDay? {
         guard let place = activePlace else { return nil }
-        return PrayerEngine.compute(for: date, in: place.timeZone, at: place.coordinates,
-                                    method: method, asr: asrSchool)
+        let computed = PrayerEngine.compute(for: date, in: place.timeZone, at: place.coordinates,
+                                            method: method, asr: asrSchool)
+        guard let source = officialSource,
+              let table = official.times(source, year: computed.year, month: computed.month, day: computed.day)
+        else { return computed }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = place.timeZone
+        var times: [Prayer: Date] = [:]
+        for prayer in Prayer.allCases {
+            // Official tables are Shafi'i; a Hanafi user keeps the calculated Asr.
+            if prayer == .asr, asrSchool == .hanafi { times[prayer] = computed.time(.asr); continue }
+            let parts = table[prayer]!.split(separator: ":").compactMap { Int($0) }
+            guard parts.count == 2, let d = cal.date(from: DateComponents(
+                year: computed.year, month: computed.month, day: computed.day, hour: parts[0], minute: parts[1]))
+            else { return computed }
+            times[prayer] = d
+        }
+        return PrayerDay(year: computed.year, month: computed.month, day: computed.day, times: times,
+                         officialSource: source.label)
+    }
+
+    /// Downloads this year's official table for where you are (and next year's in December).
+    func refreshOfficialTimetable() {
+        guard let source = officialSource else { return }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        let now = cal.dateComponents([.year, .month], from: .now)
+        let years = now.month == 12 ? [now.year!, now.year! + 1] : [now.year!]
+        Task {
+            var changed = false
+            for year in years { changed = await official.ensure(source, year: year) || changed }
+            if changed { scheduleNotifications() }
+        }
     }
 
     /// The next obligatory prayer (or sunrise, which ends Subuh) after `now`.
@@ -135,11 +173,13 @@ final class AppModel {
 
     func preferencesChanged(from old: Preferences) {
         prefs.save()
+        refreshOfficialTimetable()
         if prefs.notificationsEnabled || old.notificationsEnabled { scheduleNotifications() }
     }
 
     func appBecameActive() {
         location.refresh()
+        refreshOfficialTimetable()
         scheduleNotifications()
     }
 
@@ -181,6 +221,7 @@ final class AppModel {
     private func adopt(gps place: Place) {
         gpsPlace = place
         if prefs.useGPS { arrived(at: place) }
+        refreshOfficialTimetable()
     }
 
     func choose(manual place: Place) {
@@ -217,6 +258,7 @@ final class AppModel {
             if p.trip.count > 30 { p.trip.removeLast(p.trip.count - 30) }
         }
         prefs = p
+        refreshOfficialTimetable()
         scheduleNotifications()
     }
 

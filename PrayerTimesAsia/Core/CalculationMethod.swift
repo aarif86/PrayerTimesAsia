@@ -3,10 +3,11 @@ import Foundation
 /// The parameters one authority uses to turn the sun's position into prayer times.
 ///
 /// Every time the engine produces is `ceil(astronomical time + offset)` to the
-/// minute, so a time is never shown earlier than the sky allows. The offsets are
-/// each authority's precautionary minutes (ihtiyat). For MUIS and JAKIM they were
-/// fitted against official published timetables - see PrayerEngineTests and
-/// tools/reference_engine.py, which hold the reference days.
+/// minute. The offsets are each authority's precautionary minutes (ihtiyat). For
+/// MUIS and JAKIM they were fitted against the full 2026 official timetables
+/// (tools/validate_official.py) so that the offline calculation is never earlier
+/// than the official time: prayers up to 2 minutes later, sunrise up to 1 earlier.
+/// When online, OfficialTimetables replaces the calculation with the exact table.
 struct CalculationMethod: Identifiable, Hashable, Sendable {
     let id: String
     /// Long name, e.g. "MUIS · Singapore".
@@ -43,16 +44,16 @@ extension CalculationMethod {
     static let muis = CalculationMethod(
         id: "muis", name: "MUIS · Singapore", shortName: "MUIS",
         fajrAngle: 20, ishaAngle: 18, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
-        offsets: [.fajr: 0.25, .sunrise: -0.5, .dhuhr: 1, .asr: 0, .maghrib: 0.5, .isha: 0],
+        offsets: [.fajr: 0.625, .sunrise: -0.375, .dhuhr: 1.5, .asr: 0.5, .maghrib: 0.875, .isha: 0.5],
         matchesOfficialTable: true,
-        note: "Majlis Ugama Islam Singapura parameters, checked against the official 2026 timetable.")
+        note: "Majlis Ugama Islam Singapura. Online, the app shows MUIS's official timetable; offline it calculates, never earlier than the official time.")
 
     static let jakim = CalculationMethod(
         id: "jakim", name: "JAKIM · Malaysia", shortName: "JAKIM",
         fajrAngle: 18, ishaAngle: 18, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
-        offsets: [.fajr: 2, .sunrise: -0.5, .dhuhr: 2, .asr: 1, .maghrib: 1, .isha: 1],
+        offsets: [.fajr: 2.375, .sunrise: -1.375, .dhuhr: 2.5, .asr: 2.25, .maghrib: 2.25, .isha: 2.375],
         matchesOfficialTable: true,
-        note: "Uses Malaysia's 18° Subuh criterion (in force since 2019) with JAKIM's precautionary minutes. Official e-Solat tables are per zone and can differ by a minute.")
+        note: "Malaysia's 18° Subuh criterion (since 2019). Online, the app shows JAKIM's official e-Solat timetable for your zone; offline it calculates, never earlier than the official time.")
 
     static let kemenag = CalculationMethod(
         id: "kemenag", name: "Kemenag · Indonesia", shortName: "Kemenag",

@@ -51,6 +51,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var reminderMinutesBefore = 0
 
     var musafirThresholdKm: Double = 81
+    /// Pinned JAKIM zone; nil = nearest to where you are.
+    var jakimZoneOverride: String?
 
     // Travel-mode memory
     var lastCountryCode: String?

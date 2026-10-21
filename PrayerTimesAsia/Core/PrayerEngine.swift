@@ -10,6 +10,9 @@ struct PrayerDay: Sendable, Equatable {
     /// The local calendar date these times belong to.
     let year: Int, month: Int, day: Int
     let times: [Prayer: Date]
+    /// Set when these times come from an authority's published table rather
+    /// than the on-device calculation.
+    var officialSource: String? = nil
 
     func time(_ prayer: Prayer) -> Date { times[prayer]! }
 
