@@ -22,3 +22,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Compare with official timetables
         run: python3 tools/validate_official.py ${{ github.event.inputs.zones }}
+      - name: Probe candidate APIs (response shapes)
+        if: always()
+        run: python3 tools/probe_sources.py
