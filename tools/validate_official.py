@@ -54,13 +54,13 @@ def stats(label, diffs):
         print('    ' + line)
 
 
-def fit(label, official, method, points):
+def fit(label, official, method, points, tz=8):
     """Search the precautionary offset per prayer (ceil rounding) at candidate points.
     Reports the best offset with no early times, and the best overall."""
     p = METHODS[method]
     print(f"  {label} offset fit (offsets in minutes, ceil rounding):")
     for lat, lng in points:
-        raw = [(compute(day, lat, lng, 8, p['fajr'], p['isha']), o) for day, o in official]
+        raw = [(compute(day, lat, lng, tz, p['fajr'], p['isha']), o) for day, o in official]
         line = []
         for k in KEYS:
             best_any, best_safe = None, None
@@ -171,6 +171,42 @@ def muis():
     fit('MUIS', official, 'muis', [(1.3521, 103.8198), (1.2905, 103.8520), (1.3667, 103.8), (1.35, 103.7), (1.4, 103.9)])
 
 
+def kemenag():
+    """Kemenag (Indonesia) via api.myquran.com v2: Jakarta, Surabaya, Makassar, full year."""
+    cities = [('Jakarta', -6.1754, 106.8272, 7), ('Surabaya', -7.2575, 112.7521, 7),
+              ('Makassar', -5.1477, 119.4327, 8)]
+    for name, lat, lng, tz in cities:
+        try:
+            found = fetch(f'https://api.myquran.com/v2/sholat/kota/cari/{name.lower()}')['data']
+            cid = next(c['id'] for c in found if c['lokasi'].upper() == f'KOTA {name.upper()}')
+        except Exception as e:  # noqa: BLE001
+            print(f'KEMENAG {name}: lookup failed: {e}')
+            continue
+        official = []
+        for month in range(1, 13):
+            try:
+                data = fetch(f'https://api.myquran.com/v2/sholat/jadwal/{cid}/2026/{month:02d}')
+            except Exception as e:  # noqa: BLE001
+                print(f'KEMENAG {name} {month}: fetch failed: {e}')
+                continue
+            if month == 1:
+                print(f"KEMENAG {cid} = {data['data'].get('lokasi')}, {data['data'].get('daerah')}")
+            for r in data['data']['jadwal']:
+                official.append((dt.date.fromisoformat(r['date']), dict(
+                    fajr=hm(r['subuh']), sunrise=hm(r['terbit']), dhuhr=hm(r['dzuhur']), asr=hm(r['ashar']),
+                    maghrib=hm(r['maghrib']), isha=hm(r['isya']))))
+        if not official:
+            continue
+        diffs = defaultdict(list)
+        for day, o in official:
+            got = final_minutes(day, lat, lng, tz, 'kemenag')
+            for k in KEYS:
+                diffs[k].append(got[k] - o[k])
+        stats(f'KEMENAG {name}: {len(official)} days', diffs)
+        fit(f'KEMENAG {name}', official, 'kemenag', [(lat, lng)], tz=tz)
+
+
 if __name__ == '__main__':
     muis()
     jakim()
+    kemenag()
