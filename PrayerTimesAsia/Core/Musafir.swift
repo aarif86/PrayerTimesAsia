@@ -44,16 +44,16 @@ enum Musafir {
         switch status {
         case .home:
             return ("You're home", "Pray in full. Travel concessions apply once you journey at least \(Int(rules.thresholdKm)) km.")
-        case .nearby(let km):
+        case .nearby:
             return ("Within \(Int(rules.thresholdKm)) km of home",
-                    "You're \(Int(km.rounded())) km away - short of the travel distance, so pray in full.")
-        case .traveller(let km):
+                    "That's short of the travel distance, so pray in full.")
+        case .traveller:
             if rules.allowsJamak {
                 return ("You are a musafir",
-                        "\(Int(km.rounded())) km from home. You may shorten (qasar) \(four) to 2 rakaat, and combine (jamak) \(n[.dhuhr]!) with \(n[.asr]!), and \(n[.maghrib]!) with \(n[.isha]!).")
+                        "You may shorten (qasar) \(four) to 2 rakaat, and combine (jamak) \(n[.dhuhr]!) with \(n[.asr]!), and \(n[.maghrib]!) with \(n[.isha]!).")
             }
             return ("You are a musafir",
-                    "\(Int(km.rounded())) km from home. Shorten (qasr) \(four) to 2 rakaat. In the Hanafi school prayers are not combined outside Hajj.")
+                    "Shorten (qasr) \(four) to 2 rakaat. In the Hanafi school prayers are not combined outside Hajj.")
         case .settled(_, let days):
             return ("Settled here",
                     "You've been here \(days) days. Staying longer than \(rules.maxStayDays) days ends the travel concession - pray in full.")
