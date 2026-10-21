@@ -45,6 +45,14 @@ struct SettingsView: View {
                     Text("Automatic follows the country you're in, so landing in a new country switches it for you. \(model.method.note)")
                 }
 
+                Section {
+                    Toggle("Live countdown", isOn: $model.prefs.liveActivityEnabled)
+                } header: {
+                    Text("Lock Screen")
+                } footer: {
+                    Text("Shows a countdown to the next prayer on the Lock Screen and in the Dynamic Island. Add widgets from your Home Screen: touch and hold, then tap Edit.")
+                }
+
                 Section("Display") {
                     Toggle("24-hour time", isOn: $model.prefs.use24Hour)
                     Stepper(value: $model.prefs.hijriAdjustment, in: -2...2) {

@@ -12,6 +12,8 @@
 	<dict>
 		<key>com.prayertimesasia.app</key>
 		<string>Prayer Times Asia</string>
+		<key>com.prayertimesasia.app.widgets</key>
+		<string>Prayer Times Asia Widgets</string>
 	</dict>
 	<key>uploadSymbols</key>
 	<true/>

@@ -169,6 +169,25 @@ def muis():
     fit('MUIS', official, 'muis', [(1.3521, 103.8198), (1.2905, 103.8520), (1.3667, 103.8), (1.35, 103.7), (1.4, 103.9)])
 
 
+def muis_discovery():
+    """How can the app find next year's MUIS dataset id? Print what search returns."""
+    for url in [
+        'https://data.gov.sg/api/action/package_search?q=muslim%20prayer%20timetable&rows=10',
+        'https://api-production.data.gov.sg/v2/public/api/datasets?query=muslim%20prayer%20timetable',
+        'https://api-production.data.gov.sg/v2/public/api/collections?query=prayer',
+    ]:
+        try:
+            data = fetch(url)
+            text = json.dumps(data)
+            import re
+            ids = sorted(set(re.findall(r'd_[0-9a-f]{32}', text)))
+            names = re.findall(r'"(?:title|name)": "([^"]*[Pp]rayer[^"]*)"', text)
+            print('DISCOVERY', url, '\n  ids:', ids[:20], '\n  names:', names[:20], '\n  head:', text[:300])
+        except Exception as e:  # noqa: BLE001
+            print('DISCOVERY', url, 'failed:', e)
+
+
 if __name__ == '__main__':
+    muis_discovery()
     muis()
     jakim()

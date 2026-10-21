@@ -284,5 +284,6 @@ final class AppModel {
             }
         }
         NotificationScheduler.reschedule(enabled: prefs.notificationsEnabled, alerts: alerts)
+        WidgetBridge.publish(self)
     }
 }

@@ -3,7 +3,8 @@ name: Release to TestFlight
 # Manual-only. Needs these repo secrets (same set as Nasar Flow, but with a
 # profile for this app's own bundle ID - see README "TestFlight releases"):
 #   APPLE_DISTRIBUTION_CERTIFICATE_BASE64, APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD,
-#   APPLE_PROVISIONING_PROFILE_BASE64, CI_KEYCHAIN_PASSWORD, APPLE_TEAM_ID,
+#   APPLE_PROVISIONING_PROFILE_BASE64, APPLE_WIDGETS_PROVISIONING_PROFILE_BASE64,
+#   CI_KEYCHAIN_PASSWORD, APPLE_TEAM_ID,
 #   APPLE_API_KEY_ID, APPLE_API_ISSUER_ID, APPLE_API_KEY_BASE64
 
 on:
@@ -37,16 +38,21 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      - name: Import signing certificate and provisioning profile
+      - name: Import signing certificate and both provisioning profiles
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
           APP_PROVISION_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+          WIDGETS_PROVISION_PROFILE_BASE64: ${{ secrets.APPLE_WIDGETS_PROVISIONING_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD }}
         run: |
           set -euo pipefail
-          if [ -z "$APP_PROVISION_PROFILE_BASE64" ]; then
-            echo "::error::APPLE_PROVISIONING_PROFILE_BASE64 is not set - create the 'Prayer Times Asia' App Store profile, see README."
+          missing=""
+          for v in BUILD_CERTIFICATE_BASE64 P12_PASSWORD APP_PROVISION_PROFILE_BASE64 WIDGETS_PROVISION_PROFILE_BASE64 KEYCHAIN_PASSWORD; do
+            if [ -z "${!v}" ]; then missing="$missing $v"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing signing secrets:$missing - see README 'TestFlight releases'."
             exit 1
           fi
           CERTIFICATE_PATH="$RUNNER_TEMP/distribution.p12"
@@ -60,6 +66,7 @@ jobs:
           security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/"//g')
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo -n "$APP_PROVISION_PROFILE_BASE64" | base64 -D -o ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision
+          echo -n "$WIDGETS_PROVISION_PROFILE_BASE64" | base64 -D -o ~/Library/MobileDevice/Provisioning\ Profiles/widgets.mobileprovision
 
       - name: Fill in exportOptions.plist
         env:

@@ -60,7 +60,42 @@ struct Preferences: Codable, Equatable, Sendable {
     var arrivalBannerDismissed = true
     var trip: [TripStop] = []
 
+    /// Keep a Live Activity countdown to the next prayer on the Lock Screen.
+    var liveActivityEnabled = false
+
     private static let key = "preferences.v1"
+
+    init() {}
+
+    /// Field-by-field with defaults, so adding a preference in an update never
+    /// throws away the ones a user already set.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = Preferences()
+        func v<T: Decodable>(_ key: CodingKeys, _ fallback: T) -> T {
+            (try? c.decodeIfPresent(T.self, forKey: key)) ?? fallback
+        }
+        hasOnboarded = v(.hasOnboarded, d.hasOnboarded)
+        useGPS = v(.useGPS, d.useGPS)
+        manualPlace = v(.manualPlace, d.manualPlace)
+        savedPlaces = v(.savedPlaces, d.savedPlaces)
+        home = v(.home, d.home)
+        methodOverrideID = v(.methodOverrideID, d.methodOverrideID)
+        asrOverride = v(.asrOverride, d.asrOverride)
+        namingOverride = v(.namingOverride, d.namingOverride)
+        use24Hour = v(.use24Hour, d.use24Hour)
+        hijriAdjustment = v(.hijriAdjustment, d.hijriAdjustment)
+        notificationsEnabled = v(.notificationsEnabled, d.notificationsEnabled)
+        notifyPrayers = v(.notifyPrayers, d.notifyPrayers)
+        reminderMinutesBefore = v(.reminderMinutesBefore, d.reminderMinutesBefore)
+        musafirThresholdKm = v(.musafirThresholdKm, d.musafirThresholdKm)
+        jakimZoneOverride = v(.jakimZoneOverride, d.jakimZoneOverride)
+        lastCountryCode = v(.lastCountryCode, d.lastCountryCode)
+        arrivedAt = v(.arrivedAt, d.arrivedAt)
+        arrivalBannerDismissed = v(.arrivalBannerDismissed, d.arrivalBannerDismissed)
+        trip = v(.trip, d.trip)
+        liveActivityEnabled = v(.liveActivityEnabled, d.liveActivityEnabled)
+    }
 
     static func load() -> Preferences {
         guard let data = UserDefaults.standard.data(forKey: key),

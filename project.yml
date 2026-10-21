@@ -29,6 +29,8 @@ targets:
         UILaunchScreen:
           UIColorName: LaunchBackground
         ITSAppUsesNonExemptEncryption: false
+        # The next-prayer countdown Live Activity (drawn by PrayerTimesAsiaWidgets).
+        NSSupportsLiveActivities: true
         # Both reference build settings so release.yml can bump the build
         # number per run without editing this file.
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
@@ -40,6 +42,17 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+    # App Group shared with the widget extension (WidgetSnapshot). Both App IDs
+    # need the App Groups capability and both profiles must include it - a signed
+    # archive fails if only one side has it.
+    entitlements:
+      path: Generated/PrayerTimesAsia.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.prayertimesasia.app
+    dependencies:
+      - target: PrayerTimesAsiaWidgets
+        embed: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.prayertimesasia.app
@@ -55,6 +68,39 @@ targets:
       testTargets:
         - PrayerTimesAsiaTests
       gatherCoverageData: true
+
+  PrayerTimesAsiaWidgets:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: PrayerTimesAsiaWidgets
+      - path: PrayerTimesAsia/Shared
+      - path: PrayerTimesAsia/Core/Prayer.swift
+      - path: PrayerTimesAsia/Core/CalculationMethod.swift
+      - path: PrayerTimesAsia/Core/PrayerEngine.swift
+      - path: PrayerTimesAsia/Core/Hijri.swift
+      - path: PrayerTimesAsia/Design/LivingSky.swift
+    info:
+      path: Generated/PrayerTimesAsiaWidgets.Info.plist
+      properties:
+        CFBundleDisplayName: "Prayer Times Asia"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Generated/PrayerTimesAsiaWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.prayertimesasia.app
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.prayertimesasia.app.widgets
+        TARGETED_DEVICE_FAMILY: "1,2"
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        PROVISIONING_PROFILE_SPECIFIER: "Prayer Times Asia Widgets"
 
   PrayerTimesAsiaTests:
     type: bundle.unit-test
