@@ -38,7 +38,8 @@ final class AppModel {
     /// Not saved: preferencesChanged only runs on later edits.
     private static func demoPreferences() -> Preferences? {
         let args = ProcessInfo.processInfo.arguments
-        guard args.contains("-demo") || args.contains("-demo-travel") || args.contains("-demo-makkah") else { return nil }
+        guard args.contains("-demo") || args.contains("-demo-travel") || args.contains("-demo-makkah")
+                || args.contains("-demo-visitor") else { return nil }
         let home = Place(name: "Pasir Ris", region: nil, countryCode: "SG", countryName: "Singapore",
                          timeZoneID: "Asia/Singapore", coordinates: Coordinates(latitude: 1.3721, longitude: 103.9474))
         var p = Preferences()
@@ -56,6 +57,15 @@ final class AppModel {
             p.prayedLog[String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)] = Set(Prayer.obligatory)
         }
         p.appearance = args.contains("-light") ? .light : .dark
+        if args.contains("-demo-visitor") {
+            // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
+            p.home = Place(name: "Sydney", region: nil, countryCode: "AU", countryName: "Australia",
+                           timeZoneID: "Australia/Sydney", coordinates: Coordinates(latitude: -33.8688, longitude: 151.2093))
+            p.manualPlace = Place(name: "Kuala Lumpur", region: nil, countryCode: "MY", countryName: "Malaysia",
+                                  timeZoneID: "Asia/Kuala_Lumpur", coordinates: Coordinates(latitude: 3.139, longitude: 101.6869))
+            p.lastCountryCode = "MY"
+            p.trackerEnabled = false
+        }
         if args.contains("-demo-makkah") {
             // A place where it is daytime while CI runs (European/Asian evening).
             p.manualPlace = Place(name: "Makkah", region: nil, countryCode: "SA", countryName: "Saudi Arabia",
@@ -96,7 +106,19 @@ final class AppModel {
 
     var isMethodAutomatic: Bool { prefs.methodOverrideID == nil }
     var asrSchool: AsrSchool { prefs.asrOverride ?? profile.asr }
-    var naming: NamingStyle { prefs.namingOverride ?? profile.naming }
+    /// Your prayer names - from your home or your phone, not from where you
+    /// are, so they stay the same as you travel.
+    var naming: NamingStyle { prefs.namingOverride ?? personalNaming }
+    var personalNaming: NamingStyle { NamingStyle.personal(homeCountry: prefs.home?.countryCode) }
+    /// The words used where you are (the masjid's signs, the azan app locals use).
+    var localNaming: NamingStyle { profile.naming }
+
+    /// The local word for a prayer, when it differs from yours.
+    func localName(_ prayer: Prayer, at time: Date) -> String? {
+        guard prefs.showLocalNames, localNaming != naming else { return nil }
+        let local = prayer.name(localNaming, isFriday: isFriday(time))
+        return local == prayer.name(naming, isFriday: isFriday(time)) ? nil : local
+    }
     /// Whose Ramadan and Eid dates you follow (calendar sanad).
     var communityAuthority: String? {
         prefs.communityAuthority ?? CalendarSanad.defaultAuthority(country: (prefs.home ?? activePlace)?.profile.code ?? profile.code)

@@ -128,7 +128,7 @@ struct TodayView: View {
                 Circle().fill(current.prayer.tint).frame(width: 9, height: 9)
                 Text(currentName).font(Theme.display(30, .bold))
             }
-            Text(next.prayer == .sunrise ? "\(Self.short(remaining)) until \(nextName) - Subuh ends" : "\(Self.short(remaining)) until \(nextName)")
+            Text(next.prayer == .sunrise ? "\(Self.short(remaining)) until \(nextName) - \(Prayer.fajr.name(model.naming)) ends" : "\(Self.short(remaining)) until \(nextName)")
                 .font(.subheadline.weight(.semibold))
                 .monospacedDigit()
                 .contentTransition(.numericText(countsDown: true))
@@ -318,6 +318,10 @@ private struct PrayerList: View {
                             .foregroundStyle(.green)
                             .transition(.scale.combined(with: .opacity))
                     }
+                }
+                if let local = model.localName(prayer, at: time) {
+                    Text("\(local) here").font(.caption.weight(.medium)).opacity(0.6)
+                        .accessibilityLabel("Called \(local) here")
                 }
                 if isCurrent {
                     Text("NOW").font(.caption2.weight(.heavy)).foregroundStyle(prayer.tint)

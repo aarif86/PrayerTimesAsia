@@ -119,6 +119,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var communityAuthority: String?
 
     var appearance: Appearance = .system
+    /// Under each prayer, the word used where you are, when it differs from yours.
+    var showLocalNames = true
 
     private static let key = "preferences.v1"
 
@@ -158,6 +160,7 @@ struct Preferences: Codable, Equatable, Sendable {
         wakeUp = v(.wakeUp, d.wakeUp)
         communityAuthority = v(.communityAuthority, d.communityAuthority)
         appearance = v(.appearance, d.appearance)
+        showLocalNames = v(.showLocalNames, d.showLocalNames)
     }
 
     static func load() -> Preferences {

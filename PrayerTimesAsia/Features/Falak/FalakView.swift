@@ -345,10 +345,10 @@ private struct ShadowStickCard: View {
                     if let t = plan.asrHanafi {
                         row("Asr, Hanafi (+2× stick)", model.formatted(t), cm(plan.asrShadow(height: height, school: .hanafi)))
                     }
-                    Text("Zuhur begins once the shadow stops shrinking and starts to grow. Asr begins when the shadow is the noon shadow plus the stick's height (twice it, for Hanafi).")
+                    Text("\(Prayer.dhuhr.name(model.naming)) begins once the shadow stops shrinking and starts to grow. Asr begins when the shadow is the noon shadow plus the stick's height (twice it, for Hanafi).")
                         .font(.caption).opacity(0.75)
                     if let official {
-                        Text("Your timetable: Zuhur \(model.formatted(official.time(.dhuhr))), Asr \(model.formatted(official.time(.asr))). Timetables add a few minutes of ihtiyat (precaution) on top of the sun's geometry.")
+                        Text("Your timetable: \(Prayer.dhuhr.name(model.naming)) \(model.formatted(official.time(.dhuhr))), Asr \(model.formatted(official.time(.asr))). Timetables add a few minutes of ihtiyat (precaution) on top of the sun's geometry.")
                             .font(.caption).opacity(0.75)
                     }
                 }
@@ -401,7 +401,7 @@ private struct ShadowStickCard: View {
                      : "Asr (\(school == .hanafi ? "Hanafi" : "Shafi'i")) hasn't begun by your shadow: it needs to reach \(cm(target)).")
                     .font(.footnote.weight(.semibold))
             } else {
-                Text("Morning reading - before zawal. Zuhur has not begun.").font(.footnote.weight(.semibold))
+                Text("Morning reading - before zawal. \(Prayer.dhuhr.name(model.naming)) has not begun.").font(.footnote.weight(.semibold))
             }
         }
         .padding(12)

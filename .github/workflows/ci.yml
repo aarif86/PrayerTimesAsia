@@ -92,6 +92,7 @@ jobs:
           shot -demo-makkah -tab today -light; xcrun simctl io "$UDID" screenshot screenshots/1d-today-light-daytime.png
           shot -demo -tab today -more;    xcrun simctl io "$UDID" screenshot screenshots/1c-today-show-more.png
           shot -demo-travel -tab today;   xcrun simctl io "$UDID" screenshot screenshots/2-today-hanoi.png
+          shot -demo-visitor -tab today;  xcrun simctl io "$UDID" screenshot screenshots/2b-today-visitor-kl.png
           shot -demo-travel -tab journey; xcrun simctl io "$UDID" screenshot screenshots/3-journey.png
           shot -demo -tab qibla;          xcrun simctl io "$UDID" screenshot screenshots/4-qibla.png
           shot -demo -tab qibla -aligned; xcrun simctl io "$UDID" screenshot screenshots/4b-qibla-aligned.png

@@ -22,7 +22,7 @@ struct CountryProfile: Sendable, Hashable {
 
 enum AsiaRegions {
     private static func p(_ code: String, _ name: String, _ method: String, _ asr: AsrSchool = .standard,
-                          _ naming: NamingStyle = .arabic) -> CountryProfile {
+                          _ naming: NamingStyle = .international) -> CountryProfile {
         CountryProfile(code: code, name: name, methodID: method, asr: asr, naming: naming)
     }
 
@@ -78,11 +78,11 @@ enum AsiaRegions {
         p("SY", "Syria", "egyptian"),
         p("IQ", "Iraq", "mwl"),
         p("IR", "Iran", "tehran"),
-        p("TR", "Türkiye", "diyanet", .hanafi),
+        p("TR", "Türkiye", "diyanet", .hanafi, .turkish),
         p("AZ", "Azerbaijan", "mwl"),
         p("GE", "Georgia", "mwl"),
         p("AM", "Armenia", "mwl"),
-        p("CY", "Cyprus", "diyanet", .hanafi),
+        p("CY", "Cyprus", "diyanet", .hanafi, .turkish),
     ]
 
     private static let byCode: [String: CountryProfile] =
@@ -95,7 +95,7 @@ enum AsiaRegions {
 
     /// Used outside Asia: still works, with the international default.
     static let fallback = CountryProfile(code: "", name: "Outside Asia", methodID: "mwl",
-                                         asr: .standard, naming: .arabic)
+                                         asr: .standard, naming: .international)
 
     /// Offline country guess from the phone's time zone, for when the phone has
     /// GPS but no data to reverse-geocode (fresh off the plane, no roaming).
@@ -128,4 +128,20 @@ enum AsiaRegions {
         "Asia/Tehran": "IR", "Europe/Istanbul": "TR", "Asia/Baku": "AZ", "Asia/Tbilisi": "GE",
         "Asia/Yerevan": "AM", "Asia/Nicosia": "CY",
     ]
+}
+
+extension NamingStyle {
+    /// Your names, when you haven't picked any: your home country's, else your
+    /// phone's language or region, else International.
+    static func personal(homeCountry: String?, locale: Locale = .current) -> NamingStyle {
+        if let home = AsiaRegions.profile(for: homeCountry) { return home.naming }
+        switch locale.language.languageCode?.identifier {
+        case "ms": return .malay
+        case "id": return .indonesian
+        case "tr": return .turkish
+        case "ur", "bn": return .southAsian
+        default: break
+        }
+        return AsiaRegions.profile(for: locale.region?.identifier)?.naming ?? .international
+    }
 }

@@ -27,10 +27,6 @@ struct SettingsView: View {
                         Text("Automatic · \(model.profile.asr == .hanafi ? "Hanafi" : "Shafi'i")").tag(AsrSchool?.none)
                         ForEach(AsrSchool.allCases) { Text($0.label).tag(AsrSchool?.some($0)) }
                     }
-                    Picker("Prayer names", selection: $model.prefs.namingOverride) {
-                        Text("Automatic").tag(NamingStyle?.none)
-                        ForEach(NamingStyle.allCases) { Text($0.label).tag(NamingStyle?.some($0)) }
-                    }
                     if model.method.id == "jakim", let place = model.activePlace {
                         Picker("JAKIM zone", selection: $model.prefs.jakimZoneOverride) {
                             Text("Automatic · \(OfficialTimetables.nearestJakimZone(to: place.coordinates))").tag(String?.none)
@@ -52,7 +48,19 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Picker("Subuh wake-up", selection: Binding(
+                    Picker("Prayer names", selection: $model.prefs.namingOverride) {
+                        Text("Automatic · \(model.personalNaming.language)").tag(NamingStyle?.none)
+                        ForEach(NamingStyle.allCases) { Text($0.label).tag(NamingStyle?.some($0)) }
+                    }
+                    Toggle("Show local names when travelling", isOn: $model.prefs.showLocalNames)
+                } header: {
+                    Text("Prayer names")
+                } footer: {
+                    Text("Your names stay the same wherever you are: Automatic uses your home country's words, or your phone's language. When you travel somewhere that uses different words, the local name appears small underneath - \"Fajr\" with \"Subuh here\" in Kuala Lumpur - so the masjid's signs make sense. Spellings follow each authority's own timetable.")
+                }
+
+                Section {
+                    Picker("\(Prayer.fajr.name(model.naming)) wake-up", selection: Binding(
                         get: { model.prefs.wakeUp },
                         set: { timing in
                             Task {
@@ -66,7 +74,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Wake-up")
                 } footer: {
-                    Text("A real alarm that rings even in Silent mode (iOS 26 and later; earlier versions get a notification). Moves with Subuh every day and wherever you travel.")
+                    Text("A real alarm that rings even in Silent mode (iOS 26 and later; earlier versions get a notification). Moves with \(Prayer.fajr.name(model.naming)) every day and wherever you travel.")
                 }
 
                 Section {

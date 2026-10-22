@@ -75,7 +75,7 @@ struct JourneyView: View {
                     }
                     window(.dhuhr, .asr, from: today.time(.dhuhr), to: today.time(.maghrib))
                     window(.maghrib, .isha, from: today.time(.maghrib), to: tomorrow.time(.fajr))
-                    Text("Jamak taqdim prays both in the first prayer's time; jamak ta'khir prays both in the second's. Subuh is never combined.")
+                    Text("Jamak taqdim prays both in the first prayer's time; jamak ta'khir prays both in the second's. \(Prayer.fajr.name(model.naming)) is never combined.")
                         .font(.footnote).opacity(0.85)
                 }
             }
