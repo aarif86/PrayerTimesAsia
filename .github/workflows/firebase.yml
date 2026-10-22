@@ -1,0 +1,50 @@
+name: Deploy Firebase (submissions)
+
+# Deploys the `submit` Cloud Function and the Firestore/Storage security rules
+# to project prayertimes-asia. Needs the FIREBASE_SERVICE_ACCOUNT secret (JSON
+# key of the github-deploy service account). Linux runner: cheap.
+
+on:
+  push:
+    branches: [main]
+    paths: ['functions/**', 'firebase.json', '.firebaserc', 'firestore.rules', 'storage.rules', '.github/workflows/firebase.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: firebase-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install and test
+        working-directory: functions
+        run: |
+          npm ci
+          npm test
+
+      - name: Write service account credentials
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ]; then echo "::error::FIREBASE_SERVICE_ACCOUNT secret is not set"; exit 1; fi
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+
+      - name: Deploy functions and rules
+        run: |
+          npx -y firebase-tools@14 deploy \
+            --only functions,firestore:rules,storage \
+            --project prayertimes-asia --non-interactive --force
+
+      - name: Remove credentials
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"

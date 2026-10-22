@@ -57,8 +57,8 @@ struct SourceBadge: View {
 struct SanadSheet: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.openURL) private var openURL
     let day: PrayerDay
+    @State private var submitting: SubmitView.Kind?
 
     var body: some View {
         NavigationStack {
@@ -108,27 +108,22 @@ struct SanadSheet: View {
                 }
 
                 Section {
-                    Button {
-                        openURL(Contribute.url(.timetable, model: model))
-                    } label: {
+                    Button { submitting = .timetable } label: {
                         Label("Send a mosque timetable from here", systemImage: "camera.fill")
                     }
-                    Button {
-                        openURL(Contribute.url(.method, model: model))
-                    } label: {
+                    Button { submitting = .method } label: {
                         Label("Tell us which method mosques here use", systemImage: "checklist")
                     }
-                    Button {
-                        openURL(Contribute.url(.spotCheck, model: model))
-                    } label: {
+                    Button { submitting = .spotcheck } label: {
                         Label("Report an adhan time you heard", systemImage: "ear.fill")
                     }
                 } header: {
                     Text("Help verify times here")
                 } footer: {
-                    Text("Opens a short form on GitHub. Submissions are checked by a person before they change anyone's times, and shared openly under CC-BY 4.0.")
+                    Text("Submissions are checked by a person before they change anyone's times, and shared openly under CC-BY 4.0.")
                 }
             }
+            .sheet(item: $submitting) { SubmitView(kind: $0) }
             .navigationTitle("Source")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
@@ -146,29 +141,5 @@ struct SanadSheet: View {
         case .calculated:
             return "\(model.method.parameterSummary) · \(model.asrSchool == .hanafi ? "Hanafi" : "Shafi'i") Asr. \(model.method.note)"
         }
-    }
-}
-
-/// Community submissions v0: prefilled GitHub issue forms (.github/ISSUE_TEMPLATE).
-/// Only what the user can see on screen is prefilled - never coordinates.
-enum Contribute {
-    enum Kind: String { case timetable, method, spotCheck = "spot-check" }
-
-    static let repo = "https://github.com/aarif86/PrayerTimesAsia"
-
-    @MainActor
-    static func url(_ kind: Kind, model: AppModel) -> URL {
-        var c = URLComponents(string: "\(repo)/issues/new")!
-        let place = model.activePlace
-        let where_ = [place?.name, place?.district ?? place?.region, place?.countryName]
-            .compactMap { $0 }.reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
-            .joined(separator: ", ")
-        c.queryItems = [
-            .init(name: "template", value: "\(kind.rawValue).yml"),
-            .init(name: "title", value: "[\(kind.rawValue)] \(where_)"),
-            .init(name: "place", value: where_),
-            .init(name: "app_method", value: "\(model.method.name) (\(model.method.parameterSummary))"),
-        ]
-        return c.url!
     }
 }

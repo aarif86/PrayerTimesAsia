@@ -3,7 +3,10 @@
 **Every time has a source. We show it.** Submissions are how a place moves from
 *D - Calculated* to *B - Masjid-confirmed* or *C - Community-verified*.
 
-## What you can send (from the app: tap the source badge → "Help verify times here")
+## What you can send
+
+From the app: tap the source badge → **Help verify times here** (no account needed;
+goes to the review queue in Firebase). Or use the GitHub issue forms in this repo.
 
 | Form | Effort | What it unlocks |
 |---|---|---|
@@ -13,7 +16,8 @@
 
 ## How a submission is checked
 
-1. **Submitted** - the issue is the record: source, evidence, timestamp.
+1. **Submitted** - stored privately for review (Firestore `submissions`, photos in Storage),
+   or as a GitHub issue. Nothing a contributor types is published before a person checks it.
 2. **Auto-check** - the timetable is fingerprinted (`tools/fingerprint.py`); anything more
    than 10 minutes from every known method is flagged.
 3. **Corroborated** - a second independent submission or a spot check agrees within ±2 minutes.

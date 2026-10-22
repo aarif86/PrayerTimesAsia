@@ -64,9 +64,12 @@ Musafir guidance is general information, not a fatwa - when unsure, follow your 
 
 ## App Privacy (nutrition label)
 
-**Data Not Collected.** Location is used on-device only. Network requests: the
-official timetable (year or JAKIM zone code only), Apple Maps search, and nothing
-else. No analytics or crash SDKs.
+**Data Not Linked to You** - only if someone submits: *User Content → Photos* and
+*Other User Content* (a mosque timetable photo and what they type), purpose App
+Functionality, not linked to identity, no tracking. Everyone else: nothing collected.
+Location is used on-device only. Network requests: official timetables (year, JAKIM
+zone code or Kemenag regency name), data/mosques.json, Apple Maps search, and
+voluntary submissions. No analytics or crash SDKs.
 
 ## Screenshots
 

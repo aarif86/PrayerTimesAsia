@@ -1,0 +1,12 @@
+{
+  "name": "prayertimesasia-functions",
+  "private": true,
+  "description": "Community submissions endpoint for Prayer Times Asia",
+  "main": "index.js",
+  "engines": { "node": "22" },
+  "scripts": { "test": "node --test" },
+  "dependencies": {
+    "firebase-admin": "^13.4.0",
+    "firebase-functions": "^6.4.0"
+  }
+}

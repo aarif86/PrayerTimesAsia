@@ -1,0 +1,12 @@
+rules_version = '2';
+// Nobody reads or writes Firestore directly. Submissions are written only by
+// the `submit` Cloud Function (Admin SDK bypasses these rules) and reviewed by
+// the owner in the Firebase console. Approved data is published to the public
+// repo's data/mosques.json, never served from here.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

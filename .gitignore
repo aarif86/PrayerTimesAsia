@@ -18,3 +18,6 @@ build/
 *.keychain-db
 .DS_Store
 __pycache__/
+functions/node_modules/
+.firebase/
+firebase-debug.log

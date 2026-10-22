@@ -1,0 +1,10 @@
+rules_version = '2';
+// Timetable photos are evidence for review only: written by the `submit`
+// function, never readable or writable by clients.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
