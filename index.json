@@ -1,0 +1,391 @@
+{
+ "generated": "2026-10-22T03:46:36.521030+00:00",
+ "licence": "CC-BY-4.0",
+ "feeds": [
+  {
+   "feed": "sg-muis",
+   "title": "Prayer times \u00b7 Singapore (MUIS)",
+   "source": "MUIS via data.gov.sg",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-jhr01",
+   "title": "Prayer times \u00b7 Malaysia JHR01 (JAKIM)",
+   "source": "JAKIM e-Solat zone JHR01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-jhr02",
+   "title": "Prayer times \u00b7 Malaysia JHR02 (JAKIM)",
+   "source": "JAKIM e-Solat zone JHR02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-jhr03",
+   "title": "Prayer times \u00b7 Malaysia JHR03 (JAKIM)",
+   "source": "JAKIM e-Solat zone JHR03",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-jhr04",
+   "title": "Prayer times \u00b7 Malaysia JHR04 (JAKIM)",
+   "source": "JAKIM e-Solat zone JHR04",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-kdh01",
+   "title": "Prayer times \u00b7 Malaysia KDH01 (JAKIM)",
+   "source": "JAKIM e-Solat zone KDH01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-kdh02",
+   "title": "Prayer times \u00b7 Malaysia KDH02 (JAKIM)",
+   "source": "JAKIM e-Solat zone KDH02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-kdh03",
+   "title": "Prayer times \u00b7 Malaysia KDH03 (JAKIM)",
+   "source": "JAKIM e-Solat zone KDH03",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-kdh04",
+   "title": "Prayer times \u00b7 Malaysia KDH04 (JAKIM)",
+   "source": "JAKIM e-Solat zone KDH04",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-kdh05",
+   "title": "Prayer times \u00b7 Malaysia KDH05 (JAKIM)",
+   "source": "JAKIM e-Solat zone KDH05",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-kdh06",
+   "title": "Prayer times \u00b7 Malaysia KDH06 (JAKIM)",
+   "source": "JAKIM e-Solat zone KDH06",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-ktn01",
+   "title": "Prayer times \u00b7 Malaysia KTN01 (JAKIM)",
+   "source": "JAKIM e-Solat zone KTN01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-ktn02",
+   "title": "Prayer times \u00b7 Malaysia KTN02 (JAKIM)",
+   "source": "JAKIM e-Solat zone KTN02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-mlk01",
+   "title": "Prayer times \u00b7 Malaysia MLK01 (JAKIM)",
+   "source": "JAKIM e-Solat zone MLK01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-ngs01",
+   "title": "Prayer times \u00b7 Malaysia NGS01 (JAKIM)",
+   "source": "JAKIM e-Solat zone NGS01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-ngs02",
+   "title": "Prayer times \u00b7 Malaysia NGS02 (JAKIM)",
+   "source": "JAKIM e-Solat zone NGS02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-ngs03",
+   "title": "Prayer times \u00b7 Malaysia NGS03 (JAKIM)",
+   "source": "JAKIM e-Solat zone NGS03",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-phg01",
+   "title": "Prayer times \u00b7 Malaysia PHG01 (JAKIM)",
+   "source": "JAKIM e-Solat zone PHG01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-phg02",
+   "title": "Prayer times \u00b7 Malaysia PHG02 (JAKIM)",
+   "source": "JAKIM e-Solat zone PHG02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-phg03",
+   "title": "Prayer times \u00b7 Malaysia PHG03 (JAKIM)",
+   "source": "JAKIM e-Solat zone PHG03",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-phg04",
+   "title": "Prayer times \u00b7 Malaysia PHG04 (JAKIM)",
+   "source": "JAKIM e-Solat zone PHG04",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-phg06",
+   "title": "Prayer times \u00b7 Malaysia PHG06 (JAKIM)",
+   "source": "JAKIM e-Solat zone PHG06",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-pls01",
+   "title": "Prayer times \u00b7 Malaysia PLS01 (JAKIM)",
+   "source": "JAKIM e-Solat zone PLS01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-png01",
+   "title": "Prayer times \u00b7 Malaysia PNG01 (JAKIM)",
+   "source": "JAKIM e-Solat zone PNG01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-prk01",
+   "title": "Prayer times \u00b7 Malaysia PRK01 (JAKIM)",
+   "source": "JAKIM e-Solat zone PRK01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-prk02",
+   "title": "Prayer times \u00b7 Malaysia PRK02 (JAKIM)",
+   "source": "JAKIM e-Solat zone PRK02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-prk03",
+   "title": "Prayer times \u00b7 Malaysia PRK03 (JAKIM)",
+   "source": "JAKIM e-Solat zone PRK03",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-prk04",
+   "title": "Prayer times \u00b7 Malaysia PRK04 (JAKIM)",
+   "source": "JAKIM e-Solat zone PRK04",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-prk05",
+   "title": "Prayer times \u00b7 Malaysia PRK05 (JAKIM)",
+   "source": "JAKIM e-Solat zone PRK05",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-prk06",
+   "title": "Prayer times \u00b7 Malaysia PRK06 (JAKIM)",
+   "source": "JAKIM e-Solat zone PRK06",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sbh01",
+   "title": "Prayer times \u00b7 Malaysia SBH01 (JAKIM)",
+   "source": "JAKIM e-Solat zone SBH01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sbh02",
+   "title": "Prayer times \u00b7 Malaysia SBH02 (JAKIM)",
+   "source": "JAKIM e-Solat zone SBH02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sbh03",
+   "title": "Prayer times \u00b7 Malaysia SBH03 (JAKIM)",
+   "source": "JAKIM e-Solat zone SBH03",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sbh04",
+   "title": "Prayer times \u00b7 Malaysia SBH04 (JAKIM)",
+   "source": "JAKIM e-Solat zone SBH04",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sbh05",
+   "title": "Prayer times \u00b7 Malaysia SBH05 (JAKIM)",
+   "source": "JAKIM e-Solat zone SBH05",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sbh07",
+   "title": "Prayer times \u00b7 Malaysia SBH07 (JAKIM)",
+   "source": "JAKIM e-Solat zone SBH07",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sbh08",
+   "title": "Prayer times \u00b7 Malaysia SBH08 (JAKIM)",
+   "source": "JAKIM e-Solat zone SBH08",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sbh09",
+   "title": "Prayer times \u00b7 Malaysia SBH09 (JAKIM)",
+   "source": "JAKIM e-Solat zone SBH09",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sgr01",
+   "title": "Prayer times \u00b7 Malaysia SGR01 (JAKIM)",
+   "source": "JAKIM e-Solat zone SGR01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sgr02",
+   "title": "Prayer times \u00b7 Malaysia SGR02 (JAKIM)",
+   "source": "JAKIM e-Solat zone SGR02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-sgr03",
+   "title": "Prayer times \u00b7 Malaysia SGR03 (JAKIM)",
+   "source": "JAKIM e-Solat zone SGR03",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-swk01",
+   "title": "Prayer times \u00b7 Malaysia SWK01 (JAKIM)",
+   "source": "JAKIM e-Solat zone SWK01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-swk02",
+   "title": "Prayer times \u00b7 Malaysia SWK02 (JAKIM)",
+   "source": "JAKIM e-Solat zone SWK02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-swk03",
+   "title": "Prayer times \u00b7 Malaysia SWK03 (JAKIM)",
+   "source": "JAKIM e-Solat zone SWK03",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-swk04",
+   "title": "Prayer times \u00b7 Malaysia SWK04 (JAKIM)",
+   "source": "JAKIM e-Solat zone SWK04",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-swk05",
+   "title": "Prayer times \u00b7 Malaysia SWK05 (JAKIM)",
+   "source": "JAKIM e-Solat zone SWK05",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-swk06",
+   "title": "Prayer times \u00b7 Malaysia SWK06 (JAKIM)",
+   "source": "JAKIM e-Solat zone SWK06",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-swk07",
+   "title": "Prayer times \u00b7 Malaysia SWK07 (JAKIM)",
+   "source": "JAKIM e-Solat zone SWK07",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-swk08",
+   "title": "Prayer times \u00b7 Malaysia SWK08 (JAKIM)",
+   "source": "JAKIM e-Solat zone SWK08",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-trg01",
+   "title": "Prayer times \u00b7 Malaysia TRG01 (JAKIM)",
+   "source": "JAKIM e-Solat zone TRG01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-trg02",
+   "title": "Prayer times \u00b7 Malaysia TRG02 (JAKIM)",
+   "source": "JAKIM e-Solat zone TRG02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-trg03",
+   "title": "Prayer times \u00b7 Malaysia TRG03 (JAKIM)",
+   "source": "JAKIM e-Solat zone TRG03",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-trg04",
+   "title": "Prayer times \u00b7 Malaysia TRG04 (JAKIM)",
+   "source": "JAKIM e-Solat zone TRG04",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-wly01",
+   "title": "Prayer times \u00b7 Malaysia WLY01 (JAKIM)",
+   "source": "JAKIM e-Solat zone WLY01",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  },
+  {
+   "feed": "my-wly02",
+   "title": "Prayer times \u00b7 Malaysia WLY02 (JAKIM)",
+   "source": "JAKIM e-Solat zone WLY02",
+   "first": "2026-01-01",
+   "last": "2026-12-31"
+  }
+ ]
+}
