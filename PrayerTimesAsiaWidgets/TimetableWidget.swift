@@ -1,15 +1,14 @@
 import SwiftUI
 import WidgetKit
 
-/// The whole day as colour bands - prayertime.sg's idea, in the app's calmer
-/// palette. Large, so the times can be read from across the room.
+/// The whole day at a glance: a mini version of the Prayer screen's list.
 struct TimetableWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "Timetable", provider: PrayerProvider()) { entry in
             TimetableView(entry: entry)
         }
         .configurationDisplayName("Today's timetable")
-        .description("All of today's prayer times, one colour each.")
+        .description("All of today's prayer times, like the Prayer screen.")
         .supportedFamilies([.systemLarge])
         .contentMarginsDisabled()
     }
@@ -20,6 +19,6 @@ struct TimetableView: View {
 
     var body: some View {
         TimetableCard(snapshot: entry.snapshot, date: entry.date)
-            .containerBackground(for: .widget) { Color(white: 0.13) }
+            .containerBackground(for: .widget) { TimetableCard.sky(entry.snapshot, at: entry.date) }
     }
 }

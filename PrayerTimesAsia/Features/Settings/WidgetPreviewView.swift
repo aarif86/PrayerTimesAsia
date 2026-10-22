@@ -10,9 +10,10 @@ struct WidgetPreviewView: View {
                            startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
             VStack(spacing: 20) {
-                TimetableCard(snapshot: WidgetBridge.snapshot(model), date: .now)
+                let snapshot = WidgetBridge.snapshot(model)
+                TimetableCard(snapshot: snapshot, date: .now)
                     .frame(width: 338, height: 354)
-                    .background(Color(white: 0.13))
+                    .background(TimetableCard.sky(snapshot, at: .now))
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                     .shadow(color: .black.opacity(0.25), radius: 16, y: 8)
                 Text("Touch and hold your Home Screen, tap Edit, then Add Widget and search for Prayer Times Asia. Choose \"Today's timetable\".")
