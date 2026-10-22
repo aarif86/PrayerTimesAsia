@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect x="0" y="0" width="1024" height="205" fill="#3D9E94"/><rect x="0" y="205" width="1024" height="205" fill="#8FAE6B"/><rect x="0" y="410" width="1024" height="205" fill="#DBAD47"/><rect x="0" y="615" width="1024" height="205" fill="#E09157"/><rect x="0" y="820" width="1024" height="204" fill="#D97366"/>
+<circle cx="512" cy="512" r="360" fill="#FFFFFF"/>
+<line x1="512.0" y1="230.0" x2="512.0" y2="182.0" stroke="#151A45" stroke-width="20" stroke-linecap="round"/>
+<line x1="660.0" y1="255.7" x2="677.0" y2="226.2" stroke="#151A45" stroke-width="12" stroke-linecap="round"/>
+<line x1="768.3" y1="364.0" x2="797.8" y2="347.0" stroke="#151A45" stroke-width="12" stroke-linecap="round"/>
+<line x1="794.0" y1="512.0" x2="842.0" y2="512.0" stroke="#151A45" stroke-width="20" stroke-linecap="round"/>
+<line x1="768.3" y1="660.0" x2="797.8" y2="677.0" stroke="#151A45" stroke-width="12" stroke-linecap="round"/>
+<line x1="660.0" y1="768.3" x2="677.0" y2="797.8" stroke="#151A45" stroke-width="12" stroke-linecap="round"/>
+<line x1="512.0" y1="794.0" x2="512.0" y2="842.0" stroke="#151A45" stroke-width="20" stroke-linecap="round"/>
+<line x1="364.0" y1="768.3" x2="347.0" y2="797.8" stroke="#151A45" stroke-width="12" stroke-linecap="round"/>
+<line x1="255.7" y1="660.0" x2="226.2" y2="677.0" stroke="#151A45" stroke-width="12" stroke-linecap="round"/>
+<line x1="230.0" y1="512.0" x2="182.0" y2="512.0" stroke="#151A45" stroke-width="20" stroke-linecap="round"/>
+<line x1="255.7" y1="364.0" x2="226.2" y2="347.0" stroke="#151A45" stroke-width="12" stroke-linecap="round"/>
+<line x1="364.0" y1="255.7" x2="347.0" y2="226.2" stroke="#151A45" stroke-width="12" stroke-linecap="round"/>
+<path d="M352 720 C352 580 432 520 512 438 C592 520 672 580 672 720 Z" fill="#151A45"/>
+<rect x="352" y="716" width="320" height="64" rx="8" fill="#151A45"/>
+<rect x="505" y="382" width="14" height="64" rx="7" fill="#151A45"/>
+<circle cx="512" cy="356" r="24" fill="#151A45"/><circle cx="522.1" cy="350.7" r="20.6" fill="#FFFFFF"/>
+<line x1="512" y1="640" x2="512.0" y2="520.0" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round"/>
+<line x1="512" y1="640" x2="581.3" y2="680.0" stroke="#F7BD8F" stroke-width="30" stroke-linecap="round"/>
+<circle cx="512" cy="640" r="15" fill="#FFFFFF"/>
+</svg>

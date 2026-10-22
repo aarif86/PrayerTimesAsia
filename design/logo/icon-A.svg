@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs><linearGradient id="n" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#151A45"/><stop offset="1" stop-color="#3A3480"/></linearGradient>
+<radialGradient id="g" cx="0.5" cy="1.05" r="0.7"><stop offset="0" stop-color="#F7BD8F" stop-opacity="0.45"/><stop offset="1" stop-color="#F7BD8F" stop-opacity="0"/></radialGradient>
+<clipPath id="face"><circle cx="512" cy="512" r="340"/></clipPath></defs>
+<rect width="1024" height="1024" fill="url(#n)"/><rect width="1024" height="1024" fill="url(#g)"/>
+<circle cx="512" cy="512" r="360" fill="none" stroke="#FFFFFF" stroke-width="40"/>
+<line x1="512.0" y1="234.0" x2="512.0" y2="184.0" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round"/>
+<line x1="658.0" y1="259.1" x2="676.0" y2="227.9" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+<line x1="764.9" y1="366.0" x2="796.1" y2="348.0" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+<line x1="790.0" y1="512.0" x2="840.0" y2="512.0" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round"/>
+<line x1="764.9" y1="658.0" x2="796.1" y2="676.0" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+<line x1="658.0" y1="764.9" x2="676.0" y2="796.1" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+<line x1="512.0" y1="790.0" x2="512.0" y2="840.0" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round"/>
+<line x1="366.0" y1="764.9" x2="348.0" y2="796.1" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+<line x1="259.1" y1="658.0" x2="227.9" y2="676.0" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+<line x1="234.0" y1="512.0" x2="184.0" y2="512.0" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round"/>
+<line x1="259.1" y1="366.0" x2="227.9" y2="348.0" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+<line x1="366.0" y1="259.1" x2="348.0" y2="227.9" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+<line x1="512" y1="512" x2="512.0" y2="312.0" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round"/>
+<line x1="512" y1="512" x2="633.2" y2="582.0" stroke="#F7BD8F" stroke-width="40" stroke-linecap="round"/>
+<circle cx="512" cy="512" r="22" fill="#F7BD8F"/>
+<g fill="#FFFFFF" clip-path="url(#face)">
+  <rect x="478" y="690" width="68" height="200" rx="8"/>
+  <rect x="456" y="670" width="112" height="28" rx="14"/>
+  <rect x="488" y="610" width="48" height="66" rx="6"/>
+  <path d="M488 614 L512 566 L536 614 Z"/>
+</g>
+</svg>
