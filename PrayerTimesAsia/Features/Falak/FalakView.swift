@@ -169,10 +169,10 @@ private struct ShadowDial: View {
             ctx.fill(Path(ellipseIn: CGRect(origin: point(qibla, r - 6), size: .zero).insetBy(dx: -5, dy: -5)), with: .color(Color(red: 1, green: 0.84, blue: 0.5)))
             // The shadow: longer when the sun is low.
             if altitude > 0 {
-                let len = min(r - 10, (r - 10) * 0.25 * Falak.shadowLength(height: 1, altitude: altitude))
+                let len = min(r - 10, max(r * 0.3, (r - 10) * 0.25 * Falak.shadowLength(height: 1, altitude: altitude)))
                 var s = Path()
                 s.move(to: c); s.addLine(to: point(shadowBearing, len))
-                ctx.stroke(s, with: .color(.black.opacity(0.55)), style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                ctx.stroke(s, with: .color(.black.opacity(0.75)), style: StrokeStyle(lineWidth: 8, lineCap: .round))
             }
             ctx.fill(Path(ellipseIn: CGRect(x: c.x - 5, y: c.y - 5, width: 10, height: 10)), with: .color(.white))
         }

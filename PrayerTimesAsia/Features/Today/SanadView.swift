@@ -82,6 +82,19 @@ struct SanadSheet: View {
                     Text("Where today's times come from")
                 }
 
+                if let other = day.alternateSource, !day.alternate.isEmpty {
+                    Section {
+                        ForEach(Prayer.obligatory.filter { day.alternate[$0] != nil }) { p in
+                            LabeledContent(p.name(model.naming, isFriday: model.isFriday(day.time(.dhuhr))),
+                                           value: "\(model.formatted(day.time(p))) · \(model.formatted(day.alternate[p]!))")
+                        }
+                    } header: {
+                        Text("\(day.officialSource ?? "Official") · \(other)")
+                    } footer: {
+                        Text("These two sources differ by more than 2 minutes. We show both rather than silently pick one; follow your local masjid's practice.")
+                    }
+                }
+
                 if let mosque = day.mosqueName, !day.jamaah.isEmpty {
                     Section("Jamaah at \(mosque)") {
                         ForEach(Prayer.obligatory.filter { day.jamaah[$0] != nil }) { p in

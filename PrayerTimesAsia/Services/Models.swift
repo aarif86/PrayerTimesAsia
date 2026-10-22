@@ -102,6 +102,9 @@ struct Preferences: Codable, Equatable, Sendable {
     /// Subuh wake-up alarm; nil = off.
     var wakeUp: WakeUpTiming?
 
+    /// Whose Ramadan/Eid dates you follow; nil = the authority of your home country.
+    var communityAuthority: String?
+
     private static let key = "preferences.v1"
 
     init() {}
@@ -138,6 +141,7 @@ struct Preferences: Codable, Equatable, Sendable {
         prayedLog = v(.prayedLog, d.prayedLog)
         excusedDays = v(.excusedDays, d.excusedDays)
         wakeUp = v(.wakeUp, d.wakeUp)
+        communityAuthority = v(.communityAuthority, d.communityAuthority)
     }
 
     static func load() -> Preferences {

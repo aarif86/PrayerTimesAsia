@@ -17,6 +17,11 @@ struct PrayerDay: Sendable, Equatable {
     /// Congregation times from a nearby mosque's profile, when known.
     var jamaah: [Prayer: Date] = [:]
     var mosqueName: String? = nil
+    /// A second credible source's times, kept only for prayers where it differs
+    /// from `times` by more than 2 minutes - shown side by side, never silently
+    /// picked (brief v03 §2).
+    var alternate: [Prayer: Date] = [:]
+    var alternateSource: String? = nil
 
     func time(_ prayer: Prayer) -> Date { times[prayer]! }
 

@@ -40,6 +40,11 @@ struct SettingsView: View {
                         }
                     }
                     LabeledContent("Timetable", value: timetableStatus)
+                    if let feed = model.officialSource?.calendarFeed {
+                        Link(destination: feed) {
+                            Label("Subscribe in Calendar", systemImage: "calendar.badge.plus")
+                        }
+                    }
                 } header: {
                     Text("Calculation")
                 } footer: {

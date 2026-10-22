@@ -22,6 +22,15 @@ and matches the official tables at home.
 - **Journey** - home vs current distance, musafir status with jamak & qasar
   guidance (Shafi'i 81/89 km, 3 days; Hanafi 78 km, 15 days), trip log.
 - **Qibla** - compass dial with haptic "aligned" moment, bearing and distance.
+- **Calendar sanad** - tap the date on Today: Ramadan, Eid and Awal Muharram with
+  the Umm al-Qura estimate and each authority's announcement and its source
+  (`data/calendar.json`), plus "My community follows".
+- **Calendar feeds** - subscribe to your MUIS or JAKIM zone's official times in
+  Apple, Google or Outlook Calendar (Settings → Subscribe in Calendar). Built
+  weekly by `feeds.yml`, e.g.
+  `webcal://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/sg-muis.ics`.
+- **Show both** - where the official table and a nearby masjid's own timetable
+  differ by more than 2 minutes, both times are shown.
 - **Falak Mode (Grade F)** - the classical, offline sun-and-shadow layer: a live
   shadow dial, Qibla Day countdown (sun over the Ka'bah), today's rashdul qiblat,
   a tongkat istiwa' calculator for Zuhur and Asr with honest ± minutes, and guided

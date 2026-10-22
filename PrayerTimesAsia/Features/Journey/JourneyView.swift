@@ -13,6 +13,7 @@ struct JourneyView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Journey").font(Theme.display(34, .bold)).padding(.top, 8)
                         statusCard
+                        if model.musafirStatus?.isTraveller == true, model.asrSchool != .hanafi { combinedCard }
                         homeCard
                         rulesCard
                         if !model.prefs.trip.isEmpty { tripCard }
@@ -58,6 +59,34 @@ struct JourneyView: View {
                         .opacity(0.85)
                 }
             }
+        }
+    }
+
+    /// Today's combined (jamak) windows from the times on the Today screen.
+    @ViewBuilder
+    private var combinedCard: some View {
+        if let today = model.day(containing: .now), let tomorrow = model.day(containing: .now.addingTimeInterval(86_400)) {
+            GlassCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("COMBINED WINDOWS TODAY").font(.caption.weight(.heavy)).opacity(0.7)
+                        Spacer()
+                        Text("Pending shariah review").font(.caption2.weight(.semibold)).opacity(0.6)
+                    }
+                    window(.dhuhr, .asr, from: today.time(.dhuhr), to: today.time(.maghrib))
+                    window(.maghrib, .isha, from: today.time(.maghrib), to: tomorrow.time(.fajr))
+                    Text("Jamak taqdim prays both in the first prayer's time; jamak ta'khir prays both in the second's. Subuh is never combined.")
+                        .font(.footnote).opacity(0.85)
+                }
+            }
+        }
+    }
+
+    private func window(_ a: Prayer, _ b: Prayer, from start: Date, to end: Date) -> some View {
+        HStack {
+            Text("\(a.name(model.naming)) + \(b.name(model.naming))").font(.headline)
+            Spacer()
+            Text("\(model.formatted(start)) – \(model.formatted(end))").font(.headline).monospacedDigit()
         }
     }
 

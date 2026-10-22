@@ -14,6 +14,7 @@ final class AppModel {
     let location = LocationService()
     let official = OfficialTimetables()
     let mosques = MosqueDirectory()
+    let hijriCalendar = CalendarDirectory()
     /// The place resolved from the latest GPS fix.
     private(set) var gpsPlace: Place?
     private(set) var isResolvingPlace = false
@@ -86,6 +87,10 @@ final class AppModel {
     var isMethodAutomatic: Bool { prefs.methodOverrideID == nil }
     var asrSchool: AsrSchool { prefs.asrOverride ?? profile.asr }
     var naming: NamingStyle { prefs.namingOverride ?? profile.naming }
+    /// Whose Ramadan and Eid dates you follow (calendar sanad).
+    var communityAuthority: String? {
+        prefs.communityAuthority ?? CalendarSanad.defaultAuthority(country: (prefs.home ?? activePlace)?.profile.code ?? profile.code)
+    }
     var timeZone: TimeZone { activePlace?.timeZone ?? .current }
 
     var musafirRules: Musafir.Rules {
@@ -133,6 +138,12 @@ final class AppModel {
            let times = Self.times(from: table, on: computed, calendar: cal, keepAsrFrom: asrSchool == .hanafi ? computed : nil) {
             result = PrayerDay(year: computed.year, month: computed.month, day: computed.day, times: times,
                                officialSource: source.label, grade: .official)
+            if let mosque, let mosqueMethod = mosque.method {
+                let theirs = PrayerEngine.compute(for: date, in: place.timeZone, at: place.coordinates, method: mosqueMethod,
+                                                  asr: prefs.asrOverride ?? mosque.asrSchool ?? asrSchool)
+                result.alternate = Self.disagreements(result, theirs)
+                result.alternateSource = result.alternate.isEmpty ? nil : mosque.name
+            }
         } else if isMethodAutomatic, let mosque, let mosqueMethod = mosque.method {
             result = PrayerEngine.compute(for: date, in: place.timeZone, at: place.coordinates, method: mosqueMethod,
                                           asr: prefs.asrOverride ?? mosque.asrSchool ?? asrSchool)
@@ -147,6 +158,15 @@ final class AppModel {
             result.jamaah = mosque.jamaahTimes(for: result, timeZone: place.timeZone, isFriday: isFriday(result.time(.dhuhr)))
         }
         return result
+    }
+
+    /// Prayers where `other` differs from `day` by more than 2 minutes.
+    nonisolated static func disagreements(_ day: PrayerDay, _ other: PrayerDay) -> [Prayer: Date] {
+        var out: [Prayer: Date] = [:]
+        for prayer in Prayer.obligatory where abs(other.time(prayer).timeIntervalSince(day.time(prayer))) > 120 {
+            out[prayer] = other.time(prayer)
+        }
+        return out
     }
 
     private static func times(from table: [Prayer: String], on day: PrayerDay, calendar: Calendar,
@@ -268,6 +288,7 @@ final class AppModel {
         location.refresh()
         refreshOfficialTimetable()
         Task { await mosques.refreshIfStale() }
+        Task { await hijriCalendar.refreshIfStale() }
         scheduleNotifications()
     }
 

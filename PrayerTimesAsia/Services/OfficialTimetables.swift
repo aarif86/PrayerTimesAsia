@@ -31,6 +31,18 @@ final class OfficialTimetables {
             }
         }
 
+        /// Subscribable calendar feed built by .github/workflows/feeds.yml
+        /// from the same official table (brief v03 §7.3).
+        var calendarFeed: URL? {
+            let name: String
+            switch self {
+            case .muis: name = "sg-muis"
+            case .jakim(let zone): name = "my-\(zone.lowercased())"
+            case .kemenag: return nil
+            }
+            return URL(string: "webcal://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/\(name).ics")
+        }
+
         func cacheKey(year: Int) -> String {
             switch self {
             case .muis: "muis-\(year)"

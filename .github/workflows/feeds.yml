@@ -1,0 +1,45 @@
+name: Calendar feeds
+
+# Builds one .ics per official zone (MUIS, every JAKIM zone) from the
+# authority's own table and publishes them on the orphan `feeds` branch:
+#   webcal://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/sg-muis.ics
+# Weekly, so a corrected or newly published table reaches calendars quickly.
+
+on:
+  schedule:
+    - cron: "17 2 * * 1"
+  push:
+    branches: [main]
+    paths: ['tools/gen_ics.py', 'config/official-sources.json', '.github/workflows/feeds.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write   # only to publish the `feeds` branch
+
+concurrency:
+  group: feeds
+  cancel-in-progress: true
+
+jobs:
+  feeds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate feeds
+        run: python3 tools/gen_ics.py feeds
+      - name: Publish feeds branch
+        run: |
+          set -euo pipefail
+          cd feeds
+          git init -q -b feeds
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Calendar feeds for ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" feeds
+          {
+            echo "### Calendar feeds"
+            echo
+            python3 -c "import json; d=json.load(open('index.json')); [print(f\"- \`{f['feed']}.ics\` {f['first']} to {f['last']}\") for f in d['feeds']]"
+          } >> "$GITHUB_STEP_SUMMARY"

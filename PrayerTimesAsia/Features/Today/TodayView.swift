@@ -3,6 +3,7 @@ import SwiftUI
 struct TodayView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
+    @State private var showCalendar = false
     /// Days away from today shown in the list (‹ › and swipe); 0 = today.
     @State private var dayOffset = 0
 
@@ -78,9 +79,17 @@ struct TodayView: View {
                 if model.prefs.trackerEnabled { streakChip(now) }
             }
 
-            Text(dateLine(now))
+            Button { showCalendar = true } label: {
+                HStack(spacing: 6) {
+                    Text(dateLine(now))
+                    Image(systemName: "calendar").font(.caption)
+                }
                 .font(.subheadline.weight(.medium))
                 .opacity(0.85)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Ramadan and Eid dates with their sources")
+            .sheet(isPresented: $showCalendar) { CalendarSanadView() }
         }
         .padding(.top, 8)
     }
@@ -248,6 +257,12 @@ private struct PrayerList: View {
                     Text("Jamaah \(model.formatted(jamaah))")
                         .font(.caption.weight(.medium))
                         .opacity(0.75)
+                }
+                if let other = day.alternate[prayer], let name = day.alternateSource {
+                    Text("\(name) \(model.formatted(other))")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(SourceGrade.masjid.tint)
+                        .accessibilityLabel("\(name) gives \(model.formatted(other))")
                 }
             }
             if isCurrent {

@@ -30,6 +30,10 @@ struct QiblaView: View {
                             .font(.title3.weight(.semibold))
                             .contentTransition(.numericText())
                             .opacity(0.9)
+                        Button { showFalak = true } label: { Chip(text: "Sun & shadow", systemImage: "sun.max.fill") }
+                            .buttonStyle(.plain)
+                            .padding(.top, 6)
+                            .accessibilityHint("Falak Mode: find the qibla and prayer times from the sun")
                     }
                     .padding(.top, 12)
 
@@ -61,15 +65,6 @@ struct QiblaView: View {
             }
         }
         .foregroundStyle(.white)
-        .overlay(alignment: .topTrailing) {
-            if model.activePlace != nil {
-                Button { showFalak = true } label: { Chip(text: "Sun & shadow", systemImage: "sun.max.fill") }
-                    .buttonStyle(.plain)
-                    .padding(.trailing, Theme.gutter)
-                    .padding(.top, 8)
-                    .accessibilityHint("Falak Mode: find the qibla and prayer times from the sun")
-            }
-        }
         .sheet(isPresented: $showFalak) { FalakView() }
         .sensoryFeedback(.success, trigger: aligned) { _, now in now }
         .onAppear { location.beginHeading() }
