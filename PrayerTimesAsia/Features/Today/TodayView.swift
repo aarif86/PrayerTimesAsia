@@ -306,29 +306,19 @@ private struct PrayerList: View {
         let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
         let prayed = trackable && model.isPrayed(prayer, on: time)
         return HStack(spacing: 12) {
-            if trackable {
-                Button { model.togglePrayed(prayer, on: time) } label: {
-                    Image(systemName: prayed ? "checkmark.circle.fill" : "circle")
-                        .font(.title2)
-                        .symbolEffect(.bounce, value: prayed)
-                        .foregroundStyle(prayer.tint)
-                        .frame(width: 34, height: 34)
-                }
-                .buttonStyle(.plain)
-                .sensoryFeedback(.success, trigger: prayed) { _, new in new }
-                .accessibilityLabel(prayed ? "Prayed - tap to undo" : "Mark as prayed")
-            } else {
-                Image(systemName: prayer.symbol)
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(prayer.tint)
-                    .frame(width: 34, height: 34)
-                    .background(prayer.tint.opacity(0.14), in: Circle())
-            }
             VStack(alignment: .leading, spacing: 2) {
-                Text(prayer.name(model.naming, isFriday: model.isFriday(time)))
-                    .font(.title3.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                HStack(spacing: 6) {
+                    Text(prayer.name(model.naming, isFriday: model.isFriday(time)))
+                        .font(.title3.weight(.semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    if prayed {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.subheadline)
+                            .foregroundStyle(.green)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                }
                 if isCurrent {
                     Text("NOW").font(.caption2.weight(.heavy)).foregroundStyle(prayer.tint)
                 } else if isNext, let next {
@@ -362,7 +352,17 @@ private struct PrayerList: View {
                 Color.clear.frame(width: 30, height: 34)
             }
         }
-        .padding(.leading, 10).padding(.trailing, 6).padding(.vertical, 10)
+        .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, 12)
+        .contentShape(Rectangle())
+        // Tracker (opt-in): tap a prayer that has passed to tick it off.
+        .onTapGesture {
+            guard trackable else { return }
+            withAnimation(.snappy) { model.togglePrayed(prayer, on: time) }
+        }
+        .sensoryFeedback(.success, trigger: prayed) { _, new in new }
+        .accessibilityAction(named: prayed ? "Mark as not prayed" : "Mark as prayed") {
+            if trackable { model.togglePrayed(prayer, on: time) }
+        }
         .background {
             if isCurrent {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -374,16 +374,12 @@ private struct PrayerList: View {
         .overlay(alignment: .leading) {
             Capsule().fill(prayer.tint.opacity(isCurrent ? 1 : 0.55)).frame(width: 3).padding(.vertical, 14).offset(x: -5)
         }
-        .opacity(passed && !trackable ? 0.55 : 1)
+        .opacity(passed && !prayed ? 0.55 : 1)
         .accessibilityElement(children: .contain)
     }
 
     private func blessedRow(_ blessed: BlessedTime, _ time: Date) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: blessed.symbol)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(blessed.tint)
-                .frame(width: 34, height: 34)
             VStack(alignment: .leading, spacing: 2) {
                 Text(blessed.name(model.naming)).font(.body.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
                 Text(blessed.note).font(.caption).opacity(0.7).lineLimit(2)
@@ -393,7 +389,10 @@ private struct PrayerList: View {
             TimeText(parts: model.timeParts(time), size: 22, weight: .medium)
             Color.clear.frame(width: 30, height: 34)
         }
-        .padding(.leading, 10).padding(.trailing, 6).padding(.vertical, 6)
+        .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, 6)
+        .overlay(alignment: .leading) {
+            Capsule().fill(blessed.tint.opacity(0.35)).frame(width: 2).padding(.vertical, 12).offset(x: -5)
+        }
         .opacity(time <= now ? 0.55 : 0.9)
         .transition(.opacity.combined(with: .move(edge: .top)))
     }

@@ -74,7 +74,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Tracker")
                 } footer: {
-                    Text("Tick prayers off on the Today screen and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone.")
+                    Text("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone.")
                 }
 
                 Section {

@@ -69,7 +69,6 @@ struct TimetableCard: View {
         let parts = timeParts(s, time)
         let passed = time <= date && !isCurrent
         return HStack(spacing: 10) {
-            Circle().strokeBorder(prayer.tint, lineWidth: 1.8).frame(width: 16, height: 16)
             VStack(alignment: .leading, spacing: 0) {
                 Text(s.name(prayer, at: time)).font(.system(size: 16, weight: .semibold))
                 if isCurrent {
@@ -85,7 +84,7 @@ struct TimetableCard: View {
             }
             .fixedSize()
         }
-        .padding(.leading, 12).padding(.trailing, 10)
+        .padding(.leading, 16).padding(.trailing, 10)
         .frame(maxHeight: .infinity)
         .background {
             if isCurrent {
