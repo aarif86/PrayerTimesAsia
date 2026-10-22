@@ -143,7 +143,7 @@ struct BrightSkyLayer: View {
             GeometryReader { geo in
                 let w = geo.size.width
                 ZStack {
-                    orb(t: t).position(x: w * 0.8, y: 120)
+                    orb(t: t).position(x: w * 0.86, y: 40)
                     cloud(width: 220, t: t, speed: 7, y: 170, phase: 0, in: w)
                     cloud(width: 150, t: t, speed: 4.5, y: 300, phase: 0.45, in: w)
                     cloud(width: 260, t: t, speed: 5.5, y: 520, phase: 0.8, in: w)
