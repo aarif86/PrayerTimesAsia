@@ -3,6 +3,10 @@ import SwiftUI
 enum Theme {
     static let corner: CGFloat = 22
     static let gutter: CGFloat = 20
+    /// The day arc on Today and the place chip outline: a soft peach.
+    static let sunArc = Color(UIColor { $0.userInterfaceStyle == .dark
+        ? UIColor(red: 0.97, green: 0.74, blue: 0.56, alpha: 1)
+        : UIColor(red: 0.91, green: 0.55, blue: 0.34, alpha: 1) })
     /// Qibla gold: bright on dark skies, deeper on light ones so it stays readable.
     static let gold = Color(UIColor { $0.userInterfaceStyle == .dark
         ? UIColor(red: 1, green: 0.84, blue: 0.5, alpha: 1)
@@ -71,21 +75,6 @@ struct TimeText: View {
         .lineLimit(1)
         .fixedSize()
         .accessibilityElement(children: .combine)
-    }
-}
-
-/// prayertime.sg gave each prayer its own colour band so you could find the
-/// time at a glance. The same idea, in a calmer palette.
-extension Prayer {
-    var tint: Color {
-        switch self {
-        case .fajr: Color(red: 0.24, green: 0.62, blue: 0.58)
-        case .sunrise: Color(red: 0.56, green: 0.68, blue: 0.42)
-        case .dhuhr: Color(red: 0.86, green: 0.68, blue: 0.28)
-        case .asr: Color(red: 0.88, green: 0.57, blue: 0.34)
-        case .maghrib: Color(red: 0.85, green: 0.45, blue: 0.40)
-        case .isha: Color(red: 0.78, green: 0.40, blue: 0.54)
-        }
     }
 }
 

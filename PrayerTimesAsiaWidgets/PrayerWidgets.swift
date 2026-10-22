@@ -5,6 +5,7 @@ import WidgetKit
 struct PrayerTimesAsiaWidgets: WidgetBundle {
     var body: some Widget {
         NextPrayerWidget()
+        TimetableWidget()
         LockScreenWidget()
         PrayerLiveActivity()
     }

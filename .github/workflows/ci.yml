@@ -96,6 +96,7 @@ jobs:
           shot -demo -tab qibla;          xcrun simctl io "$UDID" screenshot screenshots/4-qibla.png
           shot -demo -tab falak;          xcrun simctl io "$UDID" screenshot screenshots/7-falak.png
           shot -demo -tab falak -light;   xcrun simctl io "$UDID" screenshot screenshots/7b-falak-light.png
+          shot -demo -widget-preview;     xcrun simctl io "$UDID" screenshot screenshots/8-widget-large.png
           shot -demo -tab nearby; sleep 8; xcrun simctl io "$UDID" screenshot screenshots/6-masjid.png
           shot -demo -tab settings;       xcrun simctl io "$UDID" screenshot screenshots/5-settings.png
 

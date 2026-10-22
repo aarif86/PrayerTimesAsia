@@ -79,6 +79,7 @@ struct SettingsView: View {
 
                 Section {
                     Toggle("Live countdown", isOn: $model.prefs.liveActivityEnabled)
+                    NavigationLink("See the big timetable widget") { WidgetPreviewView() }
                 } header: {
                     Text("Lock Screen")
                 } footer: {

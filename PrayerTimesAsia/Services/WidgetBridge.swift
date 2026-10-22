@@ -7,7 +7,15 @@ import WidgetKit
 enum WidgetBridge {
     /// Writes the next 7 days for the widgets and asks WidgetKit to reload.
     static func publish(_ model: AppModel) {
-        guard let place = model.activePlace else { return }
+        guard let snapshot = snapshot(model) else { return }
+        snapshot.save()
+        WidgetCenter.shared.reloadAllTimelines()
+        LiveCountdown.refresh(model)
+    }
+
+    /// What the widgets show, built from the app's resolver.
+    static func snapshot(_ model: AppModel) -> WidgetSnapshot? {
+        guard let place = model.activePlace else { return nil }
         var days: [WidgetSnapshot.Day] = []
         for offset in 0..<7 {
             guard let d = model.day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
@@ -24,10 +32,9 @@ enum WidgetBridge {
             use24Hour: model.prefs.use24Hour,
             sourceLabel: today?.officialSource ?? model.method.shortName,
             days: days,
-            updated: .now)
-        snapshot.save()
-        WidgetCenter.shared.reloadAllTimelines()
-        LiveCountdown.refresh(model)
+            updated: .now,
+            hijriAdjustment: model.prefs.hijriAdjustment)
+        return snapshot
     }
 }
 

@@ -27,6 +27,8 @@ struct WidgetSnapshot: Codable, Sendable {
     var sourceLabel: String
     var days: [Day]
     var updated: Date
+    /// The user's Hijri ±days, so the big widget's date matches the app.
+    var hijriAdjustment: Int? = nil
 
     static let appGroup = "group.com.prayertimesasia.app"
     private static let key = "widget.snapshot.v1"

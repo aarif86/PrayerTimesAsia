@@ -31,22 +31,22 @@ struct TodayView: View {
         let next = model.next(after: now)
         let current = model.current(at: now)
         let shown = dayOffset == 0 ? day : (model.day(containing: now.addingTimeInterval(Double(dayOffset) * 86_400)) ?? day)
-        let accent = (current?.prayer ?? .isha).tint
 
         ZStack {
             LivingSkyBackground(colors: sky)
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    topBar(now: now)
-                    if let current, let next { status(current: current, next: next, now: now) }
+                    topBar(now: now, current: current, next: next)
                     if let place = model.activePlace {
                         SunPath(now: now, day: day, coordinates: place.coordinates, timeZone: place.timeZone,
-                                glow: sky.glow.color)
-                            .frame(height: 78)
+                                glow: Theme.sunArc)
+                            .frame(height: 96)
+                            .padding(.horizontal, -Theme.gutter)
                     }
+                    placeChip()
                     if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
                     if let status = model.musafirStatus, status.isTraveller { musafirChip(status) }
-                    dayNavigator(shown, accent: accent)
+                    dayNavigator(shown)
                     PrayerList(day: shown, now: now,
                                current: dayOffset == 0 ? current?.prayer : nil,
                                next: dayOffset == 0 ? next : nil,
@@ -68,24 +68,14 @@ struct TodayView: View {
 
     // MARK: Top
 
-    private func topBar(now: Date) -> some View {
-        HStack(spacing: 8) {
-            Button { showPlaces = true } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.footnote)
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
-                    if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
-                    Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
-                }
-                .font(.subheadline.weight(.semibold))
-                .padding(.horizontal, 12).padding(.vertical, 8)
-                .background(Color.primary.opacity(0.1), in: Capsule())
+    /// Left: where we are in the day. Right: streak and settings. One row.
+    private func topBar(now: Date, current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            if let current, let next {
+                status(current: current, next: next, now: now)
             }
-            .buttonStyle(.plain)
-            .accessibilityHint("Change location")
-
-            if model.prefs.trackerEnabled { streakChip(now) }
             Spacer(minLength: 0)
+            if model.prefs.trackerEnabled { streakChip(now) }
             Button { model.showSettings = true } label: {
                 Image(systemName: "gearshape.fill")
                     .font(.body)
@@ -98,15 +88,45 @@ struct TodayView: View {
         .padding(.top, 6)
     }
 
+    /// "TODAY | ➤ Pasir Ris 🇸🇬" - which day and where, in one centred chip.
+    private func placeChip() -> some View {
+        let label: String = switch dayOffset {
+        case 0: "TODAY"
+        case 1: "TOMORROW"
+        case -1: "YESTERDAY"
+        default: dayOffset > 0 ? "IN \(dayOffset) DAYS" : "\(-dayOffset) DAYS AGO"
+        }
+        return Button { showPlaces = true } label: {
+            HStack(spacing: 8) {
+                Text(label).font(.caption.weight(.heavy)).tracking(0.5)
+                Rectangle().fill(Color.primary.opacity(0.3)).frame(width: 1, height: 12)
+                HStack(spacing: 5) {
+                    Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
+                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
+                    if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
+                    Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
+                }
+                .font(.subheadline.weight(.semibold))
+            }
+            .padding(.horizontal, 14).padding(.vertical, 7)
+            .background(Color.primary.opacity(0.06), in: Capsule())
+            .overlay(Capsule().strokeBorder(Theme.sunArc.opacity(0.7), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
+        .padding(.top, -6)
+        .accessibilityHint("Change location")
+    }
+
     /// "Isyak · 9h 22m until Subuh" - small, top left (the Pillars idea).
     private func status(current: (prayer: Prayer, time: Date), next: (prayer: Prayer, time: Date), now: Date) -> some View {
         let currentName = current.prayer.name(model.naming, isFriday: model.isFriday(current.time))
         let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
         let remaining = next.time.timeIntervalSince(now)
-        return VStack(alignment: .leading, spacing: 6) {
+        return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Circle().fill(current.prayer.tint).frame(width: 9, height: 9)
-                Text(currentName).font(Theme.display(28, .bold))
+                Text(currentName).font(Theme.display(30, .bold))
             }
             Text(next.prayer == .sunrise ? "\(Self.short(remaining)) until \(nextName) - Subuh ends" : "\(Self.short(remaining)) until \(nextName)")
                 .font(.subheadline.weight(.semibold))
@@ -115,7 +135,6 @@ struct TodayView: View {
                 .padding(.horizontal, 12).padding(.vertical, 6)
                 .background(Color.primary.opacity(0.1), in: Capsule())
         }
-        .padding(.top, 2)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Now \(currentName). \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))")
     }
@@ -160,7 +179,7 @@ struct TodayView: View {
 
     // MARK: Day
 
-    private func dayNavigator(_ shown: PrayerDay, accent: Color) -> some View {
+    private func dayNavigator(_ shown: PrayerDay) -> some View {
         let date = shown.time(.dhuhr)
         let f = DateFormatter()
         f.timeZone = model.timeZone
@@ -174,15 +193,7 @@ struct TodayView: View {
             Spacer()
             Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
                 VStack(spacing: 2) {
-                    HStack(spacing: 6) {
-                        if dayOffset == 0 {
-                            Text("TODAY").font(.caption2.weight(.heavy))
-                                .foregroundStyle(accent)
-                                .padding(.horizontal, 6).padding(.vertical, 2)
-                                .overlay(Capsule().strokeBorder(accent.opacity(0.6), lineWidth: 1))
-                        }
-                        Text(f.string(from: date)).font(.headline)
-                    }
+                    Text(f.string(from: date)).font(.title3.weight(.semibold))
                     HStack(spacing: 4) {
                         Text(hijri)
                         Image(systemName: "calendar").font(.caption2)

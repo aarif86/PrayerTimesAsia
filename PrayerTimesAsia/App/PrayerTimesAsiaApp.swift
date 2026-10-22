@@ -47,6 +47,9 @@ struct RootView: View {
             .tint(.primary)
             .onAppear { model.applyDemoTab() }
             .sheet(isPresented: $model.showSettings) { SettingsView() }
+            .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-widget-preview"))) {
+                NavigationStack { WidgetPreviewView() }
+            }
         } else {
             OnboardingView()
                 .environment(\.colorScheme, .dark)
