@@ -25,7 +25,7 @@ struct JourneyView: View {
                 }
                 .scrollIndicators(.hidden)
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(.primary)
             .toolbar(.hidden, for: .navigationBar)
         }
     }
@@ -106,7 +106,7 @@ struct JourneyView: View {
                     Button("Set to here") { model.setHome(place) }
                         .font(.subheadline.weight(.semibold))
                         .buttonStyle(.bordered)
-                        .tint(.white)
+                        .tint(.primary)
                 }
             }
         }

@@ -6,7 +6,7 @@ extension SourceGrade {
         case .official: Color(red: 0.45, green: 0.86, blue: 0.62)
         case .masjid: Color(red: 0.55, green: 0.78, blue: 1)
         case .community: Color(red: 1, green: 0.82, blue: 0.45)
-        case .calculated: .white.opacity(0.75)
+        case .calculated: Color.primary.opacity(0.75)
         case .falak: Color(red: 0.98, green: 0.66, blue: 0.85)
         }
     }
@@ -43,7 +43,7 @@ struct SourceBadge: View {
                 Image(systemName: "info.circle").font(.footnote)
             }
             .padding(.horizontal, 12).padding(.vertical, 9)
-            .background(.white.opacity(0.12), in: Capsule())
+            .background(Color.primary.opacity(0.12), in: Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Source: grade \(day.grade.rawValue), \(day.grade.title), \(sourceName)")

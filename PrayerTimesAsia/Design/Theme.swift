@@ -20,7 +20,7 @@ struct GlassCard<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
-                .strokeBorder(.white.opacity(0.12), lineWidth: 1))
+                .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1))
     }
 }
 
@@ -36,8 +36,8 @@ struct Chip: View {
         .font(.footnote.weight(.semibold))
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
-        .background(.white.opacity(0.14), in: Capsule())
-        .overlay(Capsule().strokeBorder(.white.opacity(0.18), lineWidth: 1))
+        .background(Color.primary.opacity(0.14), in: Capsule())
+        .overlay(Capsule().strokeBorder(Color.primary.opacity(0.18), lineWidth: 1))
     }
 }
 
@@ -49,4 +49,42 @@ enum Countdown {
         if h > 0 { return String(format: "%d:%02d:%02d", h, m, sec) }
         return String(format: "%d:%02d", m, sec)
     }
+}
+
+/// A time with its AM/PM set smaller on the same baseline. Never wraps.
+struct TimeText: View {
+    let parts: (time: String, suffix: String?)
+    var size: CGFloat = 28
+    var weight: Font.Weight = .semibold
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Text(parts.time).font(Theme.display(size, weight)).monospacedDigit()
+            if let suffix = parts.suffix {
+                Text(suffix).font(Theme.display(size * 0.5, .bold)).opacity(0.7)
+            }
+        }
+        .lineLimit(1)
+        .fixedSize()
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// prayertime.sg gave each prayer its own colour band so you could find the
+/// time at a glance. The same idea, in a calmer palette.
+extension Prayer {
+    var tint: Color {
+        switch self {
+        case .fajr: Color(red: 0.12, green: 0.62, blue: 0.52)
+        case .sunrise: Color(red: 0.55, green: 0.71, blue: 0.27)
+        case .dhuhr: Color(red: 0.91, green: 0.70, blue: 0.09)
+        case .asr: Color(red: 0.94, green: 0.56, blue: 0.24)
+        case .maghrib: Color(red: 0.91, green: 0.39, blue: 0.33)
+        case .isha: Color(red: 0.84, green: 0.27, blue: 0.40)
+        }
+    }
+}
+
+extension BlessedTime {
+    var tint: Color { Color(red: 0.55, green: 0.5, blue: 0.95) }
 }

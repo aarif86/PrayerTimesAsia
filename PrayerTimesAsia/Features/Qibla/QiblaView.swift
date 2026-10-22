@@ -9,7 +9,6 @@ struct QiblaView: View {
     /// few degrees instead of spinning it the long way round.
     @State private var dialHeading: Double = 0
     @State private var lastHeading: Double?
-    @State private var showFalak = ProcessInfo.processInfo.arguments.contains("-falak")
 
     private let tolerance = 4.0
 
@@ -30,7 +29,7 @@ struct QiblaView: View {
                             .font(.title3.weight(.semibold))
                             .contentTransition(.numericText())
                             .opacity(0.9)
-                        Button { showFalak = true } label: { Chip(text: "Sun & shadow", systemImage: "sun.max.fill") }
+                        Button { model.selectedTab = .falak } label: { Chip(text: "Check with the sun", systemImage: "sun.max.fill") }
                             .buttonStyle(.plain)
                             .padding(.top, 6)
                             .accessibilityHint("Falak Mode: find the qibla and prayer times from the sun")
@@ -46,7 +45,7 @@ struct QiblaView: View {
                     GlassCard {
                         HStack {
                             stat("\(Int(bearing.rounded()))° \(Geo.compassPoint(bearing))", "from true north")
-                            Divider().frame(height: 34).overlay(.white.opacity(0.3))
+                            Divider().frame(height: 34).overlay(Color.primary.opacity(0.3))
                             stat("\(Int(Geo.distanceKm(place.coordinates, Geo.kaaba).rounded()).formatted()) km", "to Makkah")
                         }
                     }
@@ -64,8 +63,7 @@ struct QiblaView: View {
                 Text("Choose a place to find the qibla.").font(.headline)
             }
         }
-        .foregroundStyle(.white)
-        .sheet(isPresented: $showFalak) { FalakView() }
+        .foregroundStyle(.primary)
         .sensoryFeedback(.success, trigger: aligned) { _, now in now }
         .onAppear { location.beginHeading() }
         .onDisappear { location.endHeading() }
@@ -108,14 +106,14 @@ private struct Dial: View {
             let size = min(geo.size.width, geo.size.height)
             ZStack {
                 // Fixed "you are pointing here" marker at the top.
-                Capsule().fill(.white).frame(width: 4, height: 22).offset(y: -size / 2 - 6)
+                Capsule().fill(Color.primary).frame(width: 4, height: 22).offset(y: -size / 2 - 6)
 
                 ZStack {
-                    Circle().fill(.white.opacity(aligned ? 0.16 : 0.07))
-                    Circle().strokeBorder(.white.opacity(0.25), lineWidth: 1)
+                    Circle().fill(Color.primary.opacity(aligned ? 0.16 : 0.07))
+                    Circle().strokeBorder(Color.primary.opacity(0.25), lineWidth: 1)
                     ForEach(0..<72, id: \.self) { i in
                         Capsule()
-                            .fill(.white.opacity(i % 18 == 0 ? 0.9 : (i % 6 == 0 ? 0.55 : 0.25)))
+                            .fill(Color.primary.opacity(i % 18 == 0 ? 0.9 : (i % 6 == 0 ? 0.55 : 0.25)))
                             .frame(width: i % 6 == 0 ? 2 : 1, height: i % 6 == 0 ? 12 : 6)
                             .offset(y: -size / 2 + 14)
                             .rotationEffect(.degrees(Double(i) * 5))
@@ -123,7 +121,7 @@ private struct Dial: View {
                     ForEach(Array(["N", "E", "S", "W"].enumerated()), id: \.offset) { i, letter in
                         Text(letter)
                             .font(.headline.weight(i == 0 ? .heavy : .semibold))
-                            .foregroundStyle(i == 0 ? Color(red: 1, green: 0.55, blue: 0.45) : .white.opacity(0.8))
+                            .foregroundStyle(i == 0 ? Color(red: 1, green: 0.55, blue: 0.45) : Color.primary.opacity(0.8))
                             .rotationEffect(.degrees(-Double(i) * 90 + heading))
                             .offset(y: -size / 2 + 38)
                             .rotationEffect(.degrees(Double(i) * 90))
@@ -131,7 +129,7 @@ private struct Dial: View {
                     // Qibla pointer
                     ZStack {
                         Capsule()
-                            .fill(LinearGradient(colors: [Color(red: 1, green: 0.84, blue: 0.5), .white.opacity(0.1)],
+                            .fill(LinearGradient(colors: [Color(red: 1, green: 0.84, blue: 0.5), Color.primary.opacity(0.1)],
                                                  startPoint: .top, endPoint: .bottom))
                             .frame(width: 6, height: size * 0.36)
                             .offset(y: -size * 0.18)
@@ -140,7 +138,7 @@ private struct Dial: View {
                             .offset(y: -size * 0.36 - 4)
                     }
                     .rotationEffect(.degrees(bearing))
-                    Circle().fill(.white).frame(width: 10, height: 10)
+                    Circle().fill(Color.primary).frame(width: 10, height: 10)
                 }
                 .rotationEffect(.degrees(-heading))
                 .animation(.interpolatingSpring(stiffness: 60, damping: 14), value: heading)
@@ -163,7 +161,7 @@ struct KaabaGlyph: View {
             ZStack {
                 RoundedRectangle(cornerRadius: w * 0.12).fill(Color(red: 0.08, green: 0.08, blue: 0.1))
                 Rectangle().fill(Color(red: 0.95, green: 0.78, blue: 0.4)).frame(height: w * 0.12).offset(y: -w * 0.18)
-                RoundedRectangle(cornerRadius: w * 0.12).strokeBorder(.white.opacity(0.85), lineWidth: 1.5)
+                RoundedRectangle(cornerRadius: w * 0.12).strokeBorder(Color.primary.opacity(0.85), lineWidth: 1.5)
             }
         }
     }

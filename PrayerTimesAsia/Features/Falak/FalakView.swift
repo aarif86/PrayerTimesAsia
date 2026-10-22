@@ -6,6 +6,10 @@ import SwiftUI
 struct FalakView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    /// A main tab (no Done button) or a sheet.
+    var isTab = false
+    @State private var showAR = false
+    @State private var showLevel = false
 
     var body: some View {
         NavigationStack {
@@ -16,6 +20,7 @@ struct FalakView: View {
                         ScrollView {
                             VStack(spacing: 16) {
                                 header
+                                tools
                                 SunSafetyCard()
                                 ShadowCompassCard(place: place, now: context.date)
                                 QiblaDayCard(place: place, now: context.date)
@@ -34,15 +39,47 @@ struct FalakView: View {
                     Text("Choose a place first.").font(.headline)
                 }
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(.primary)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar {
+                if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            }
+            .toolbar(isTab ? .hidden : .automatic, for: .navigationBar)
+            .fullScreenCover(isPresented: $showAR) { FalakARScreen() }
+            .sheet(isPresented: $showLevel) { LevelView() }
         }
+    }
+
+    private var tools: some View {
+        HStack(spacing: 12) {
+            tile("Camera", "AR qibla & shadow", "arkit") { showAR = true }
+            tile("Level", "Ground & stick", "level.fill") { showLevel = true }
+        }
+    }
+
+    private func tile(_ title: String, _ subtitle: String, _ symbol: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 8) {
+                Image(systemName: symbol).font(.title2.weight(.semibold))
+                    .foregroundStyle(SourceGrade.falak.tint)
+                Text(title).font(.headline)
+                Text(subtitle).font(.caption).opacity(0.75)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Falak").font(Theme.display(34, .bold)).accessibilityAddTraits(.isHeader)
+            HStack(spacing: 12) {
+                Image("FalakGlyph").resizable().frame(width: 40, height: 40)
+                    .foregroundStyle(SourceGrade.falak.tint)
+                    .accessibilityHidden(true)
+                Text("Falak").font(Theme.display(34, .bold)).accessibilityAddTraits(.isHeader)
+            }
             Text("Read the time and the qibla from the sun and its shadow, the way the muwaqqit did - no signal needed.")
                 .font(.subheadline).opacity(0.9)
             HStack(spacing: 8) {
@@ -154,12 +191,12 @@ private struct ShadowDial: View {
                 let a = (bearing - 90) * .pi / 180
                 return CGPoint(x: c.x + cos(a) * length, y: c.y + sin(a) * length)
             }
-            ctx.fill(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)), with: .color(.white.opacity(0.08)))
-            ctx.stroke(Path(ellipseIn: CGRect(x: c.x - r + 0.5, y: c.y - r + 0.5, width: 2 * r - 1, height: 2 * r - 1)), with: .color(.white.opacity(0.3)))
+            ctx.fill(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)), with: .color(Color.primary.opacity(0.08)))
+            ctx.stroke(Path(ellipseIn: CGRect(x: c.x - r + 0.5, y: c.y - r + 0.5, width: 2 * r - 1, height: 2 * r - 1)), with: .color(Color.primary.opacity(0.3)))
             for i in 0..<4 {
                 var tick = Path()
                 tick.move(to: point(Double(i) * 90, r - 8)); tick.addLine(to: point(Double(i) * 90, r - 1))
-                ctx.stroke(tick, with: .color(.white.opacity(0.6)), lineWidth: 1.5)
+                ctx.stroke(tick, with: .color(Color.primary.opacity(0.6)), lineWidth: 1.5)
             }
             ctx.draw(Text("N").font(.caption2.weight(.heavy)).foregroundStyle(Color(red: 1, green: 0.55, blue: 0.45)), at: point(0, r - 16))
             // Qibla line, dashed, through the stick.
@@ -174,7 +211,7 @@ private struct ShadowDial: View {
                 s.move(to: c); s.addLine(to: point(shadowBearing, len))
                 ctx.stroke(s, with: .color(.black.opacity(0.75)), style: StrokeStyle(lineWidth: 8, lineCap: .round))
             }
-            ctx.fill(Path(ellipseIn: CGRect(x: c.x - 5, y: c.y - 5, width: 10, height: 10)), with: .color(.white))
+            ctx.fill(Path(ellipseIn: CGRect(x: c.x - 5, y: c.y - 5, width: 10, height: 10)), with: .color(Color.primary))
         }
         .accessibilityLabel("Shadow points \(Int(shadowBearing.rounded())) degrees; qibla is \(Int(qibla.rounded())) degrees")
     }
@@ -315,7 +352,7 @@ private struct ShadowStickCard: View {
                     }
                 }
 
-                Divider().overlay(.white.opacity(0.3))
+                Divider().overlay(Color.primary.opacity(0.3))
 
                 Text("Check a reading").font(.subheadline.weight(.semibold))
                 LabeledContent("Shadow length") {

@@ -60,6 +60,19 @@ enum WakeUpTiming: String, Codable, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// Light, dark, or follow the phone.
+enum Appearance: String, Codable, CaseIterable, Identifiable, Sendable {
+    case system, light, dark
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .system: "Automatic"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+}
+
 /// Everything the user chooses, persisted as one JSON blob. `nil` overrides
 /// mean "automatic for the country I'm in" - the travel-mode behaviour.
 struct Preferences: Codable, Equatable, Sendable {
@@ -105,6 +118,8 @@ struct Preferences: Codable, Equatable, Sendable {
     /// Whose Ramadan/Eid dates you follow; nil = the authority of your home country.
     var communityAuthority: String?
 
+    var appearance: Appearance = .system
+
     private static let key = "preferences.v1"
 
     init() {}
@@ -142,6 +157,7 @@ struct Preferences: Codable, Equatable, Sendable {
         excusedDays = v(.excusedDays, d.excusedDays)
         wakeUp = v(.wakeUp, d.wakeUp)
         communityAuthority = v(.communityAuthority, d.communityAuthority)
+        appearance = v(.appearance, d.appearance)
     }
 
     static func load() -> Preferences {

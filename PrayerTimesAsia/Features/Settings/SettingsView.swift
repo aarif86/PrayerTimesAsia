@@ -3,7 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
-    @State private var showFalak = false
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         @Bindable var model = model
@@ -86,6 +86,9 @@ struct SettingsView: View {
                 }
 
                 Section("Display") {
+                    Picker("Appearance", selection: $model.prefs.appearance) {
+                        ForEach(Appearance.allCases) { Text($0.label).tag($0) }
+                    }
                     Toggle("24-hour time", isOn: $model.prefs.use24Hour)
                     Stepper(value: $model.prefs.hijriAdjustment, in: -2...2) {
                         LabeledContent("Hijri date adjustment",
@@ -138,7 +141,6 @@ struct SettingsView: View {
 
                 Section {
                     NavigationLink("Sources & credits") { CreditsView() }
-                    Button("Falak Mode: sun & shadow") { showFalak = true }
                     Link("Help verify times where you are", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md")!)
                     LabeledContent("Version", value: Bundle.main.appVersion)
                 } footer: {
@@ -147,7 +149,7 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
-            .sheet(isPresented: $showFalak) { FalakView() }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
         }
     }
 }

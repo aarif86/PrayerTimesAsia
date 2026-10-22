@@ -27,6 +27,12 @@ struct SkyColors: Equatable {
     /// Accent used for the "now" highlight and the sun.
     var glow: RGB
 
+    /// Light appearance: the same sky, washed bright so dark text reads on it.
+    var daylight: SkyColors {
+        let white = RGB(0xFFFFFF)
+        return SkyColors(top: top.mix(white, 0.8), bottom: bottom.mix(white, 0.88), glow: glow)
+    }
+
     static func mix(_ a: SkyColors, _ b: SkyColors, _ t: Double) -> SkyColors {
         SkyColors(top: a.top.mix(b.top, t), bottom: a.bottom.mix(b.bottom, t), glow: a.glow.mix(b.glow, t))
     }
@@ -104,11 +110,13 @@ struct StarField: View {
 
 struct LivingSkyBackground: View {
     let colors: SkyColors
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
+        let colors = scheme == .light ? self.colors.daylight : self.colors
         ZStack {
             LinearGradient(colors: [colors.top.color, colors.bottom.color], startPoint: .top, endPoint: .bottom)
-            StarField().opacity(colors.darkness)
+            if scheme == .dark { StarField().opacity(colors.darkness) }
             // Soft horizon glow - the one atmospheric touch; no particles, no noise.
             RadialGradient(colors: [colors.glow.color.opacity(0.35), .clear],
                            center: UnitPoint(x: 0.5, y: 1.05), startRadius: 10, endRadius: 420)

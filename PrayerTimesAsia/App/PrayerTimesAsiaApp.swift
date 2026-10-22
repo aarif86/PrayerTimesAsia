@@ -9,7 +9,7 @@ struct PrayerTimesAsiaApp: App {
         WindowGroup {
             RootView()
                 .environment(model)
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(model.prefs.appearance.colorScheme)
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { model.appBecameActive() }
                 }
@@ -34,20 +34,32 @@ struct RootView: View {
                 QiblaView()
                     .tabItem { Label("Qibla", systemImage: "location.north.line.fill") }
                     .tag(AppModel.Tab.qibla)
+                FalakView(isTab: true)
+                    .tabItem { Label { Text("Falak") } icon: { Image("FalakTab") } }
+                    .tag(AppModel.Tab.falak)
                 NearbyView()
                     .tabItem { Label("Masjid", systemImage: "moon.stars.fill") }
                     .tag(AppModel.Tab.nearby)
                 JourneyView()
                     .tabItem { Label("Journey", systemImage: "airplane") }
                     .tag(AppModel.Tab.journey)
-                SettingsView()
-                    .tabItem { Label("Settings", systemImage: "gearshape.fill") }
-                    .tag(AppModel.Tab.settings)
             }
-            .tint(.white)
+            .tint(.primary)
             .onAppear { model.applyDemoTab() }
+            .sheet(isPresented: $model.showSettings) { SettingsView() }
         } else {
             OnboardingView()
+                .environment(\.colorScheme, .dark)
+        }
+    }
+}
+
+extension Appearance {
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
         }
     }
 }

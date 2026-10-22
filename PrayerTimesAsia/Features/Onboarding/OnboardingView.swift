@@ -45,7 +45,7 @@ struct OnboardingView: View {
             }
             .padding(.horizontal, 28)
             .padding(.bottom, 20)
-            .foregroundStyle(.white)
+            .foregroundStyle(.primary)
             .opacity(appeared ? 1 : 0)
             .offset(y: appeared ? 0 : 16)
         }

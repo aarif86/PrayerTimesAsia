@@ -46,10 +46,10 @@ struct SunPath: View {
             }
 
             ZStack {
-                Rectangle().fill(.white.opacity(0.22)).frame(height: 1).position(x: w / 2, y: horizon)
-                curve.stroke(.white.opacity(0.22), style: StrokeStyle(lineWidth: 1.5, dash: [3, 5]))
+                Rectangle().fill(Color.primary.opacity(0.22)).frame(height: 1).position(x: w / 2, y: horizon)
+                curve.stroke(Color.primary.opacity(0.22), style: StrokeStyle(lineWidth: 1.5, dash: [3, 5]))
                 travelled
-                    .stroke(LinearGradient(colors: [.white.opacity(0.2), glow.opacity(0.95)],
+                    .stroke(LinearGradient(colors: [Color.primary.opacity(0.2), glow.opacity(0.95)],
                                            startPoint: .leading, endPoint: .trailing),
                             style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
 
@@ -57,8 +57,8 @@ struct SunPath: View {
                     let time = day.time(prayer)
                     let passed = time <= now
                     Circle()
-                        .strokeBorder(.white.opacity(passed ? 0 : 0.7), lineWidth: 1.5)
-                        .background(Circle().fill(.white.opacity(passed ? 0.85 : 0)))
+                        .strokeBorder(Color.primary.opacity(passed ? 0 : 0.7), lineWidth: 1.5)
+                        .background(Circle().fill(Color.primary.opacity(passed ? 0.85 : 0)))
                         .frame(width: 8, height: 8)
                         .position(at(time))
                 }

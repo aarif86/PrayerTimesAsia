@@ -19,8 +19,11 @@ final class AppModel {
     private(set) var gpsPlace: Place?
     private(set) var isResolvingPlace = false
     var selectedTab: Tab = .today
+    /// Settings opens as a sheet from the gear on Today.
+    var showSettings = false
 
-    enum Tab: String, Hashable { case today, qibla, nearby, journey, settings }
+    /// `settings` is not a tab; `-tab settings` opens the Settings sheet.
+    enum Tab: String, Hashable { case today, qibla, falak, nearby, journey, settings }
 
     @ObservationIgnored private let geocoder = CLGeocoder()
     @ObservationIgnored private var lastGeocoded: CLLocation?
@@ -52,6 +55,7 @@ final class AppModel {
             let c = cal.dateComponents([.year, .month, .day], from: Date.now.addingTimeInterval(Double(-back) * 86_400))
             p.prayedLog[String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)] = Set(Prayer.obligatory)
         }
+        p.appearance = args.contains("-light") ? .light : .dark
         if args.contains("-demo-travel") {
             let hanoi = Place(name: "Hoàn Kiếm", region: "Hanoi", countryCode: "VN", countryName: "Vietnam",
                               timeZoneID: "Asia/Ho_Chi_Minh", coordinates: Coordinates(latitude: 21.0285, longitude: 105.8542))
@@ -70,7 +74,7 @@ final class AppModel {
     func applyDemoTab() {
         let args = ProcessInfo.processInfo.arguments
         if let i = args.firstIndex(of: "-tab"), i + 1 < args.count, let tab = Tab(rawValue: args[i + 1]) {
-            selectedTab = tab
+            if tab == .settings { showSettings = true } else { selectedTab = tab }
         }
     }
 
@@ -219,6 +223,19 @@ final class AppModel {
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = prefs.use24Hour ? "HH:mm" : "h:mm a"
         return f.string(from: date)
+    }
+
+    /// "5:29" and "AM" separately, so the suffix can be set smaller on the same
+    /// line and never wraps on its own. No suffix in 24-hour mode.
+    func timeParts(_ date: Date) -> (time: String, suffix: String?) {
+        let f = DateFormatter()
+        f.timeZone = timeZone
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = prefs.use24Hour ? "HH:mm" : "h:mm"
+        let time = f.string(from: date)
+        guard !prefs.use24Hour else { return (time, nil) }
+        f.dateFormat = "a"
+        return (time, f.string(from: date))
     }
 
     func isFriday(_ date: Date) -> Bool {

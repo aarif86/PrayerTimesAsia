@@ -84,4 +84,18 @@ final class FalakTests: XCTestCase {
         XCTAssertEqual(SourceGrade.falak.rawValue, "F")
         XCTAssertEqual(try JSONDecoder().decode(SourceGrade.self, from: Data("\"F\"".utf8)), .falak)
     }
+
+    func testBlessedTimes() {
+        let today = PrayerEngine.compute(year: 2026, month: 10, day: 22, at: singapore, method: .muis, asr: .standard)
+        let tomorrow = PrayerEngine.compute(year: 2026, month: 10, day: 23, at: singapore, method: .muis, asr: .standard)
+        let times = BlessedTime.compute(day: today, nextDay: tomorrow, coordinates: singapore, isRamadan: false)
+        XCTAssertEqual(times.map { $0.0 }, [.dhuha, .midnight, .lastThird])
+        let afterSunrise = times[0].1.timeIntervalSince(today.time(.sunrise)) / 60
+        XCTAssertTrue((15...30).contains(afterSunrise), "Dhuha \(afterSunrise) min after sunrise")
+        let night = tomorrow.time(.fajr).timeIntervalSince(today.time(.maghrib))
+        XCTAssertEqual(times[1].1.timeIntervalSince(today.time(.maghrib)), night / 2, accuracy: 60)
+        XCTAssertEqual(times[2].1.timeIntervalSince(today.time(.maghrib)), night * 2 / 3, accuracy: 60)
+        let ramadan = BlessedTime.compute(day: today, nextDay: tomorrow, coordinates: singapore, isRamadan: true)
+        XCTAssertEqual(ramadan.first?.1, today.time(.fajr).addingTimeInterval(-600))
+    }
 }
