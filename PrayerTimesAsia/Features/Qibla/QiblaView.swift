@@ -109,7 +109,7 @@ struct QiblaView: View {
         GlassCard {
             VStack(alignment: .leading, spacing: 12) {
                 Text("How to find the qibla").font(.headline)
-                if !location.headingAvailable {
+                if !location.headingAvailable && !demoAligned {
                     step("map", "This phone has no compass. Use the qibla bearing above with a map, or the sun in Falak.")
                 } else {
                     step("1.circle.fill", "Hold your phone flat in front of you, screen facing up.")
