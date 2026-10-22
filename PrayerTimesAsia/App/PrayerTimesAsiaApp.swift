@@ -29,19 +29,19 @@ struct RootView: View {
         if model.prefs.hasOnboarded {
             TabView(selection: $model.selectedTab) {
                 TodayView()
-                    .tabItem { Label("Today", systemImage: "sun.horizon.fill") }
+                    .tabItem { Label { Text("Prayer") } icon: { Image("Tab-prayer") } }
                     .tag(AppModel.Tab.today)
                 QiblaView()
-                    .tabItem { Label("Qibla", systemImage: "location.north.line.fill") }
+                    .tabItem { Label { Text("Qibla") } icon: { Image("Tab-qibla") } }
                     .tag(AppModel.Tab.qibla)
                 FalakView(isTab: true)
-                    .tabItem { Label { Text("Falak") } icon: { Image("FalakTab") } }
+                    .tabItem { Label { Text("Falak") } icon: { Image("Tab-falak") } }
                     .tag(AppModel.Tab.falak)
                 NearbyView()
-                    .tabItem { Label("Masjid", systemImage: "moon.stars.fill") }
+                    .tabItem { Label { Text("Masjid") } icon: { Image("Tab-masjid") } }
                     .tag(AppModel.Tab.nearby)
                 JourneyView()
-                    .tabItem { Label("Journey", systemImage: "airplane") }
+                    .tabItem { Label { Text("Journey") } icon: { Image("Tab-journey") } }
                     .tag(AppModel.Tab.journey)
             }
             .tint(.primary)

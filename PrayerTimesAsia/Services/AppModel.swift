@@ -38,7 +38,7 @@ final class AppModel {
     /// Not saved: preferencesChanged only runs on later edits.
     private static func demoPreferences() -> Preferences? {
         let args = ProcessInfo.processInfo.arguments
-        guard args.contains("-demo") || args.contains("-demo-travel") else { return nil }
+        guard args.contains("-demo") || args.contains("-demo-travel") || args.contains("-demo-makkah") else { return nil }
         let home = Place(name: "Pasir Ris", region: nil, countryCode: "SG", countryName: "Singapore",
                          timeZoneID: "Asia/Singapore", coordinates: Coordinates(latitude: 1.3721, longitude: 103.9474))
         var p = Preferences()
@@ -56,6 +56,12 @@ final class AppModel {
             p.prayedLog[String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)] = Set(Prayer.obligatory)
         }
         p.appearance = args.contains("-light") ? .light : .dark
+        if args.contains("-demo-makkah") {
+            // A place where it is daytime while CI runs (European/Asian evening).
+            p.manualPlace = Place(name: "Makkah", region: nil, countryCode: "SA", countryName: "Saudi Arabia",
+                                  timeZoneID: "Asia/Riyadh", coordinates: Geo.kaaba)
+            p.lastCountryCode = "SA"
+        }
         if args.contains("-demo-travel") {
             let hanoi = Place(name: "Hoàn Kiếm", region: "Hanoi", countryCode: "VN", countryName: "Vietnam",
                               timeZoneID: "Asia/Ho_Chi_Minh", coordinates: Coordinates(latitude: 21.0285, longitude: 105.8542))

@@ -52,8 +52,8 @@ struct FalakView: View {
 
     private var tools: some View {
         HStack(spacing: 12) {
-            tile("Camera", "AR qibla & shadow", "arkit") { showAR = true }
-            tile("Level", "Ground & stick", "level.fill") { showLevel = true }
+            tile("Camera", "AR qibla & shadow", "camera.viewfinder") { showAR = true }
+            tile("Level", "Ground & stick", "level") { showLevel = true }
         }
     }
 
@@ -76,7 +76,7 @@ struct FalakView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
-                Image("FalakGlyph").resizable().frame(width: 40, height: 40)
+                Image("Tab-falak").resizable().frame(width: 38, height: 38)
                     .foregroundStyle(SourceGrade.falak.tint)
                     .accessibilityHidden(true)
                 Text("Falak").font(Theme.display(34, .bold)).accessibilityAddTraits(.isHeader)

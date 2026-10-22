@@ -30,7 +30,7 @@ struct SkyColors: Equatable {
     /// Light appearance: the same sky, washed bright so dark text reads on it.
     var daylight: SkyColors {
         let white = RGB(0xFFFFFF)
-        return SkyColors(top: top.mix(white, 0.8), bottom: bottom.mix(white, 0.88), glow: glow)
+        return SkyColors(top: top.mix(white, 0.62), bottom: bottom.mix(white, 0.8), glow: glow)
     }
 
     static func mix(_ a: SkyColors, _ b: SkyColors, _ t: Double) -> SkyColors {
@@ -116,12 +116,79 @@ struct LivingSkyBackground: View {
         let colors = scheme == .light ? self.colors.daylight : self.colors
         ZStack {
             LinearGradient(colors: [colors.top.color, colors.bottom.color], startPoint: .top, endPoint: .bottom)
-            if scheme == .dark { StarField().opacity(colors.darkness) }
+            if scheme == .dark {
+                StarField().opacity(colors.darkness)
+            } else {
+                BrightSkyLayer(isDay: self.colors.darkness < 0.5, glow: colors.glow.color)
+            }
             // Soft horizon glow - the one atmospheric touch; no particles, no noise.
             RadialGradient(colors: [colors.glow.color.opacity(0.35), .clear],
                            center: UnitPoint(x: 0.5, y: 1.05), startRadius: 10, endRadius: 420)
         }
         .ignoresSafeArea()
         .animation(.easeInOut(duration: 1.2), value: colors)
+    }
+}
+
+/// Light appearance only: a softly breathing sun (or moon after dark) and a few
+/// clouds drifting very slowly. Still when Reduce Motion is on.
+struct BrightSkyLayer: View {
+    let isDay: Bool
+    let glow: Color
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { context in
+            let t = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate
+            GeometryReader { geo in
+                let w = geo.size.width
+                ZStack {
+                    orb(t: t).position(x: w * 0.8, y: 120)
+                    cloud(width: 220, t: t, speed: 7, y: 170, phase: 0, in: w)
+                    cloud(width: 150, t: t, speed: 4.5, y: 300, phase: 0.45, in: w)
+                    cloud(width: 260, t: t, speed: 5.5, y: 520, phase: 0.8, in: w)
+                }
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func orb(t: Double) -> some View {
+        let breathe = 1 + 0.05 * sin(t / 2.6)
+        let core = isDay ? Color(red: 1, green: 0.86, blue: 0.55) : Color(red: 0.86, green: 0.88, blue: 1)
+        return ZStack {
+            Circle()
+                .fill(RadialGradient(colors: [core.opacity(isDay ? 0.55 : 0.4), glow.opacity(0.18), .clear],
+                                     center: .center, startRadius: 10, endRadius: 190))
+                .frame(width: 380, height: 380)
+                .scaleEffect(breathe)
+            if isDay {
+                // Faint rays, turning about one degree a second.
+                Circle()
+                    .fill(AngularGradient(colors: Array(repeating: [core.opacity(0.16), .clear], count: 8).flatMap { $0 },
+                                          center: .center))
+                    .frame(width: 300, height: 300)
+                    .rotationEffect(.degrees(t.truncatingRemainder(dividingBy: 360)))
+                    .mask(RadialGradient(colors: [.white, .clear], center: .center, startRadius: 30, endRadius: 150))
+            }
+            Circle()
+                .fill(RadialGradient(colors: [.white, core], center: .center, startRadius: 2, endRadius: 34))
+                .frame(width: 64, height: 64)
+                .shadow(color: core.opacity(0.8), radius: 24)
+        }
+    }
+
+    private func cloud(width: CGFloat, t: Double, speed: Double, y: CGFloat, phase: Double, in w: CGFloat) -> some View {
+        let span = Double(w + width * 2)
+        let x = (t * speed + phase * span).truncatingRemainder(dividingBy: span) - Double(width)
+        return ZStack {
+            Ellipse().frame(width: width, height: width * 0.32)
+            Ellipse().frame(width: width * 0.55, height: width * 0.36).offset(x: -width * 0.12, y: -width * 0.12)
+            Ellipse().frame(width: width * 0.45, height: width * 0.3).offset(x: width * 0.18, y: -width * 0.08)
+        }
+        .foregroundStyle(.white.opacity(isDay ? 0.55 : 0.25))
+        .blur(radius: 14)
+        .position(x: x, y: y)
     }
 }

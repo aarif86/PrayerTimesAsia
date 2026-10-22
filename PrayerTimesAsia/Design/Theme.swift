@@ -79,12 +79,12 @@ struct TimeText: View {
 extension Prayer {
     var tint: Color {
         switch self {
-        case .fajr: Color(red: 0.12, green: 0.62, blue: 0.52)
-        case .sunrise: Color(red: 0.55, green: 0.71, blue: 0.27)
-        case .dhuhr: Color(red: 0.91, green: 0.70, blue: 0.09)
-        case .asr: Color(red: 0.94, green: 0.56, blue: 0.24)
-        case .maghrib: Color(red: 0.91, green: 0.39, blue: 0.33)
-        case .isha: Color(red: 0.84, green: 0.27, blue: 0.40)
+        case .fajr: Color(red: 0.24, green: 0.62, blue: 0.58)
+        case .sunrise: Color(red: 0.56, green: 0.68, blue: 0.42)
+        case .dhuhr: Color(red: 0.86, green: 0.68, blue: 0.28)
+        case .asr: Color(red: 0.88, green: 0.57, blue: 0.34)
+        case .maghrib: Color(red: 0.85, green: 0.45, blue: 0.40)
+        case .isha: Color(red: 0.78, green: 0.40, blue: 0.54)
         }
     }
 }

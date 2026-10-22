@@ -104,9 +104,10 @@ struct TodayView: View {
         let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
         let remaining = next.time.timeIntervalSince(now)
         return VStack(alignment: .leading, spacing: 6) {
-            Text(currentName)
-                .font(Theme.display(30, .bold))
-                .foregroundStyle(current.prayer.tint)
+            HStack(spacing: 8) {
+                Circle().fill(current.prayer.tint).frame(width: 9, height: 9)
+                Text(currentName).font(Theme.display(28, .bold))
+            }
             Text(next.prayer == .sunrise ? "\(Self.short(remaining)) until \(nextName) - Subuh ends" : "\(Self.short(remaining)) until \(nextName)")
                 .font(.subheadline.weight(.semibold))
                 .monospacedDigit()
@@ -167,7 +168,7 @@ struct TodayView: View {
         let hijri = Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment)
         return HStack {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
-                Image(systemName: "chevron.left").frame(width: 40, height: 40)
+                Image(systemName: "chevron.left").frame(width: 40, height: 40).opacity(0.6)
             }
             .accessibilityLabel("Previous day")
             Spacer()
@@ -176,8 +177,9 @@ struct TodayView: View {
                     HStack(spacing: 6) {
                         if dayOffset == 0 {
                             Text("TODAY").font(.caption2.weight(.heavy))
+                                .foregroundStyle(accent)
                                 .padding(.horizontal, 6).padding(.vertical, 2)
-                                .overlay(Capsule().strokeBorder(accent, lineWidth: 1))
+                                .overlay(Capsule().strokeBorder(accent.opacity(0.6), lineWidth: 1))
                         }
                         Text(f.string(from: date)).font(.headline)
                     }
@@ -186,22 +188,19 @@ struct TodayView: View {
                         Image(systemName: "calendar").font(.caption2)
                     }
                     .font(.subheadline)
-                    .opacity(0.8)
+                    .foregroundStyle(.secondary)
                 }
-                .foregroundStyle(accent)
-                .brightness(-0.08)
             }
             .buttonStyle(.plain)
             .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
             Spacer()
             Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
-                Image(systemName: "chevron.right").frame(width: 40, height: 40)
+                Image(systemName: "chevron.right").frame(width: 40, height: 40).opacity(0.6)
             }
             .accessibilityLabel("Next day")
         }
-        .font(.headline.weight(.bold))
+        .font(.headline.weight(.semibold))
         .buttonStyle(.plain)
-        .foregroundStyle(accent)
     }
 
     private var showMoreButton: some View {
@@ -301,7 +300,7 @@ private struct PrayerList: View {
                     Image(systemName: prayed ? "checkmark.circle.fill" : "circle")
                         .font(.title2)
                         .symbolEffect(.bounce, value: prayed)
-                        .foregroundStyle(isCurrent ? Color.white : prayer.tint)
+                        .foregroundStyle(prayer.tint)
                         .frame(width: 34, height: 34)
                 }
                 .buttonStyle(.plain)
@@ -310,9 +309,9 @@ private struct PrayerList: View {
             } else {
                 Image(systemName: prayer.symbol)
                     .font(.body.weight(.semibold))
-                    .foregroundStyle(isCurrent ? Color.white : prayer.tint)
+                    .foregroundStyle(prayer.tint)
                     .frame(width: 34, height: 34)
-                    .background((isCurrent ? Color.white : prayer.tint).opacity(0.18), in: Circle())
+                    .background(prayer.tint.opacity(0.14), in: Circle())
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(prayer.name(model.naming, isFriday: model.isFriday(time)))
@@ -320,7 +319,7 @@ private struct PrayerList: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 if isCurrent {
-                    Text("NOW").font(.caption2.weight(.heavy)).opacity(0.9)
+                    Text("NOW").font(.caption2.weight(.heavy)).foregroundStyle(prayer.tint)
                 } else if isNext, let next {
                     Text("in \(TodayView.short(next.time.timeIntervalSince(now)))")
                         .font(.caption.weight(.semibold)).monospacedDigit()
@@ -332,7 +331,7 @@ private struct PrayerList: View {
                 if let other = day.alternate[prayer], let name = day.alternateSource {
                     Text("\(name) \(model.formatted(other))")
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(isCurrent ? Color.white : SourceGrade.masjid.tint)
+                        .foregroundStyle(SourceGrade.masjid.tint)
                         .accessibilityLabel("\(name) gives \(model.formatted(other))")
                 }
             }
@@ -353,15 +352,16 @@ private struct PrayerList: View {
             }
         }
         .padding(.leading, 10).padding(.trailing, 6).padding(.vertical, 10)
-        .foregroundStyle(isCurrent ? Color.white : Color.primary)
         .background {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(isCurrent ? AnyShapeStyle(prayer.tint.gradient) : AnyShapeStyle(Color.clear))
+            if isCurrent {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(prayer.tint.opacity(0.16))
+                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(prayer.tint.opacity(0.45), lineWidth: 1))
+            }
         }
         .overlay(alignment: .leading) {
-            if !isCurrent {
-                Capsule().fill(prayer.tint).frame(width: 4).padding(.vertical, 12).offset(x: -6)
-            }
+            Capsule().fill(prayer.tint.opacity(isCurrent ? 1 : 0.55)).frame(width: 3).padding(.vertical, 14).offset(x: -5)
         }
         .opacity(passed && !trackable ? 0.55 : 1)
         .accessibilityElement(children: .contain)
