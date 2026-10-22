@@ -6,7 +6,7 @@ name: CI
 on:
   push:
     branches: [main]
-    paths-ignore: ['**.md', 'tools/validate_official.py', '.github/workflows/validate.yml', '.github/workflows/release.yml', 'docs/**', 'config/**', 'data/**', '.github/ISSUE_TEMPLATE/**', 'LICENSE', 'tools/fingerprint.py', 'tools/check_mosques.py', 'tools/probe_sources.py', 'functions/**', 'firebase.json', '.firebaserc', 'firestore.rules', 'storage.rules', '.github/workflows/firebase.yml']
+    paths-ignore: ['**.md', 'tools/validate_official.py', '.github/workflows/validate.yml', '.github/workflows/release.yml', 'docs/**', 'config/**', 'data/**', '.github/ISSUE_TEMPLATE/**', 'LICENSE', 'tools/fingerprint.py', 'tools/check_mosques.py', 'tools/probe_sources.py', 'functions/**', 'firebase.json', '.firebaserc', 'firestore.rules', 'storage.rules', '.github/workflows/firebase.yml', '.github/workflows/asc-status.yml', 'tools/asc_status.py']
   pull_request:
   workflow_dispatch:
 
