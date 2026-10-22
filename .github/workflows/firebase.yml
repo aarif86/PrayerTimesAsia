@@ -45,6 +45,16 @@ jobs:
             --only functions,firestore:rules,storage \
             --project prayertimes-asia --non-interactive --force
 
+      - name: Smoke test the live endpoint (no data written)
+        run: |
+          set -euo pipefail
+          U=https://asia-southeast1-prayertimes-asia.cloudfunctions.net/submit
+          get=$(curl -s -o /dev/null -w '%{http_code}' "$U")
+          bad=$(curl -s -o /tmp/bad.json -w '%{http_code}' -X POST -H 'Content-Type: application/json' \
+                -d '{"type":"method","place":"smoke test"}' "$U")
+          echo "GET -> $get (want 405); invalid POST -> $bad (want 400): $(cat /tmp/bad.json)"
+          [ "$get" = 405 ] && [ "$bad" = 400 ]
+
       - name: Remove credentials
         if: always()
         run: rm -f "$RUNNER_TEMP/sa.json"
