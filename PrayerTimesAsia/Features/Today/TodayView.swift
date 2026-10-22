@@ -72,7 +72,7 @@ struct TodayView: View {
         HStack(spacing: 8) {
             Button { showPlaces = true } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin.circle.fill").font(.footnote)
+                    Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.footnote)
                     Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)

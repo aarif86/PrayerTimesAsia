@@ -24,7 +24,7 @@ enum BlessedTime: String, CaseIterable, Identifiable, Sendable {
     var note: String {
         switch self {
         case .imsak: "10 minutes before Subuh - stop eating for the fast"
-        case .dhuha: "Sun about 4½° up, a spear's length above the horizon"
+        case .dhuha: "Sun a spear's length up (about 4½°)"
         case .midnight: "Halfway from Maghrib to Subuh"
         case .lastThird: "Best time for tahajjud and dua"
         }

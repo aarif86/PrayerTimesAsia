@@ -3,6 +3,10 @@ import SwiftUI
 enum Theme {
     static let corner: CGFloat = 22
     static let gutter: CGFloat = 20
+    /// Qibla gold: bright on dark skies, deeper on light ones so it stays readable.
+    static let gold = Color(UIColor { $0.userInterfaceStyle == .dark
+        ? UIColor(red: 1, green: 0.84, blue: 0.5, alpha: 1)
+        : UIColor(red: 0.72, green: 0.5, blue: 0.04, alpha: 1) })
 
     static func display(_ size: CGFloat, _ weight: Font.Weight = .semibold) -> Font {
         .system(size: size, weight: weight, design: .rounded)

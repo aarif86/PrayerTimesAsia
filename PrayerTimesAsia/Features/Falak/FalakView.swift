@@ -62,6 +62,7 @@ struct FalakView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Image(systemName: symbol).font(.title2.weight(.semibold))
                     .foregroundStyle(SourceGrade.falak.tint)
+                    .frame(height: 32)
                 Text(title).font(.headline)
                 Text(subtitle).font(.caption).opacity(0.75)
             }
@@ -170,7 +171,7 @@ private struct ShadowCompassCard: View {
                         }
                         Label("Qibla \(Int(qibla.rounded()))° \(Geo.compassPoint(qibla))", systemImage: "location.north.line.fill")
                             .font(.footnote.weight(.semibold))
-                            .foregroundStyle(Color(red: 1, green: 0.84, blue: 0.5))
+                            .foregroundStyle(Theme.gold)
                     }
                 }
             }
@@ -202,8 +203,8 @@ private struct ShadowDial: View {
             // Qibla line, dashed, through the stick.
             var q = Path()
             q.move(to: point(qibla + 180, r - 6)); q.addLine(to: point(qibla, r - 6))
-            ctx.stroke(q, with: .color(Color(red: 1, green: 0.84, blue: 0.5).opacity(0.9)), style: StrokeStyle(lineWidth: 2, dash: [4, 4]))
-            ctx.fill(Path(ellipseIn: CGRect(origin: point(qibla, r - 6), size: .zero).insetBy(dx: -5, dy: -5)), with: .color(Color(red: 1, green: 0.84, blue: 0.5)))
+            ctx.stroke(q, with: .color(Theme.gold.opacity(0.9)), style: StrokeStyle(lineWidth: 2, dash: [4, 4]))
+            ctx.fill(Path(ellipseIn: CGRect(origin: point(qibla, r - 6), size: .zero).insetBy(dx: -5, dy: -5)), with: .color(Theme.gold))
             // The shadow: longer when the sun is low.
             if altitude > 0 {
                 let len = min(r - 10, max(r * 0.3, (r - 10) * 0.25 * Falak.shadowLength(height: 1, altitude: altitude)))

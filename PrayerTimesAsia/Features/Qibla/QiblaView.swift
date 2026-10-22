@@ -129,7 +129,7 @@ private struct Dial: View {
                     // Qibla pointer
                     ZStack {
                         Capsule()
-                            .fill(LinearGradient(colors: [Color(red: 1, green: 0.84, blue: 0.5), Color.primary.opacity(0.1)],
+                            .fill(LinearGradient(colors: [Theme.gold, Color.primary.opacity(0.1)],
                                                  startPoint: .top, endPoint: .bottom))
                             .frame(width: 6, height: size * 0.36)
                             .offset(y: -size * 0.18)
@@ -145,7 +145,7 @@ private struct Dial: View {
             }
             .frame(width: size, height: size)
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
-            .shadow(color: aligned ? Color(red: 1, green: 0.84, blue: 0.5).opacity(0.6) : .clear, radius: 30)
+            .shadow(color: aligned ? Theme.gold.opacity(0.6) : .clear, radius: 30)
             .animation(.easeInOut(duration: 0.3), value: aligned)
         }
         .aspectRatio(1, contentMode: .fit)
