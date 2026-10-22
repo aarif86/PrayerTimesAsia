@@ -20,7 +20,7 @@ enum NotificationScheduler {
         center.removeAllPendingNotificationRequests()
         guard enabled else { return }
         let now = Date.now
-        for alert in alerts.filter({ $0.fireDate > now }).prefix(60) {
+        for alert in alerts.filter({ $0.fireDate > now }).sorted(by: { $0.fireDate < $1.fireDate }).prefix(60) {
             let content = UNMutableNotificationContent()
             content.title = alert.title
             content.body = alert.body

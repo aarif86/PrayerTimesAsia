@@ -106,7 +106,7 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Toggle("Prayer reminders", isOn: Binding(
+                    Toggle("Prayer time alerts", isOn: Binding(
                         get: { model.prefs.notificationsEnabled },
                         set: { on in
                             Task {
@@ -115,25 +115,27 @@ struct SettingsView: View {
                             }
                         }))
                     if model.prefs.notificationsEnabled {
-                        ForEach(Prayer.obligatory) { prayer in
-                            Toggle(prayer.name(model.naming), isOn: Binding(
+                        ForEach(Prayer.allCases) { prayer in
+                            Toggle(prayer == .sunrise
+                                   ? "\(prayer.name(model.naming)) (\(Prayer.fajr.name(model.naming)) ends)"
+                                   : prayer.name(model.naming), isOn: Binding(
                                 get: { model.prefs.notifyPrayers.contains(prayer) },
                                 set: { on in
                                     if on { model.prefs.notifyPrayers.insert(prayer) }
                                     else { model.prefs.notifyPrayers.remove(prayer) }
                                 }))
                         }
-                        Picker("Remind me", selection: $model.prefs.reminderMinutesBefore) {
-                            Text("At prayer time").tag(0)
+                        Picker("Early reminder", selection: $model.prefs.reminderMinutesBefore) {
+                            Text("Off").tag(0)
                             Text("5 min before").tag(5)
                             Text("10 min before").tag(10)
                             Text("15 min before").tag(15)
                         }
                     }
                 } header: {
-                    Text("Reminders")
+                    Text("Alerts")
                 } footer: {
-                    Text("Reminders are scheduled on your phone for the next 12 days and refresh each time you open the app.")
+                    Text("An alert at the exact time of each prayer you choose, plus an early reminder if you like. Worked out on your phone and topped up every time you open the app - nothing comes from a server.")
                 }
 
                 Section("Accuracy") {

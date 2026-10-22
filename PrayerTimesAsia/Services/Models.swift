@@ -121,6 +121,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var appearance: Appearance = .system
     /// Under each prayer, the word used where you are, when it differs from yours.
     var showLocalNames = true
+    /// The "Turn on prayer alerts" bar on the Prayer screen was closed.
+    var alertsPromptDismissed = false
 
     private static let key = "preferences.v1"
 
@@ -161,6 +163,7 @@ struct Preferences: Codable, Equatable, Sendable {
         communityAuthority = v(.communityAuthority, d.communityAuthority)
         appearance = v(.appearance, d.appearance)
         showLocalNames = v(.showLocalNames, d.showLocalNames)
+        alertsPromptDismissed = v(.alertsPromptDismissed, d.alertsPromptDismissed)
     }
 
     static func load() -> Preferences {

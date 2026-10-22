@@ -44,6 +44,7 @@ struct TodayView: View {
                             .padding(.horizontal, -Theme.gutter)
                     }
                     placeChip()
+                    if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                     if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
                     if let status = model.musafirStatus, status.isTraveller { musafirChip(status) }
                     dayNavigator(shown)
@@ -214,6 +215,35 @@ struct TodayView: View {
         .buttonStyle(.plain)
     }
 
+    /// One tap to be told when each prayer begins (all five, at the exact time).
+    private var alertsPrompt: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "bell.badge.fill").foregroundStyle(Theme.sunArc)
+            Text("Get an alert when each prayer begins").font(.subheadline.weight(.semibold))
+                .lineLimit(2).minimumScaleFactor(0.85)
+            Spacer(minLength: 4)
+            Button("Turn on") {
+                Task {
+                    guard await NotificationScheduler.requestPermission() else { return }
+                    model.prefs.notifyPrayers = Set(Prayer.obligatory)
+                    model.prefs.notificationsEnabled = true
+                }
+            }
+            .font(.subheadline.weight(.bold))
+            .buttonStyle(.borderedProminent)
+            .tint(Theme.sunArc)
+            .foregroundStyle(.black.opacity(0.8))
+            Button { withAnimation { model.prefs.alertsPromptDismissed = true } } label: {
+                Image(systemName: "xmark").font(.caption.weight(.bold)).opacity(0.6).frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Not now")
+        }
+        .padding(.leading, 14).padding(.trailing, 8).padding(.vertical, 8)
+        .background(Color.primary.opacity(0.08), in: Capsule())
+        .overlay(Capsule().strokeBorder(Color.primary.opacity(0.1), lineWidth: 1))
+    }
+
     private var showMoreButton: some View {
         Button { withAnimation(.snappy) { showMore.toggle() } } label: {
             HStack(spacing: 6) {
@@ -343,7 +373,7 @@ private struct PrayerList: View {
             .layoutPriority(-1)
             Spacer(minLength: 6)
             TimeText(parts: model.timeParts(time), size: 28)
-            if prayer.isObligatory {
+            Group {
                 Button { toggleNotify(prayer) } label: {
                     Image(systemName: notifying ? "bell.fill" : "bell.slash")
                         .font(.subheadline)
@@ -351,9 +381,7 @@ private struct PrayerList: View {
                         .frame(width: 30, height: 34)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(notifying ? "Turn off reminder" : "Turn on reminder")
-            } else {
-                Color.clear.frame(width: 30, height: 34)
+                .accessibilityLabel(notifying ? "Turn off alert" : "Turn on alert")
             }
         }
         .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, 12)

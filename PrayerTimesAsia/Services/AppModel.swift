@@ -422,20 +422,27 @@ final class AppModel {
     func scheduleNotifications() {
         guard let place = activePlace else { return }
         var alerts: [NotificationScheduler.Alert] = []
-        let lead = Double(prefs.reminderMinutesBefore) * 60
-        for offset in 0..<12 {
+        let early = prefs.reminderMinutesBefore
+        let here = place.isInAsia ? "\(place.name) \(place.profile.flag)" : place.name
+        // iOS keeps at most 64 pending; early reminders double the count.
+        for offset in 0..<(early > 0 ? 6 : 12) {
             guard let pd = day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
-            for prayer in Prayer.obligatory where prefs.notifyPrayers.contains(prayer) {
+            for prayer in Prayer.allCases where prefs.notifyPrayers.contains(prayer) {
                 let time = pd.time(prayer)
                 let name = prayer.name(naming, isFriday: isFriday(time))
-                let title = prefs.reminderMinutesBefore > 0
-                    ? "\(name) in \(prefs.reminderMinutesBefore) min"
-                    : "It's time for \(name)"
-                alerts.append(.init(
-                    id: "\(pd.year)-\(pd.month)-\(pd.day)-\(prayer.rawValue)",
-                    title: title,
-                    body: "\(name) · \(formatted(time)) · \(place.name)",
-                    fireDate: time.addingTimeInterval(-lead)))
+                let id = "\(pd.year)-\(pd.month)-\(pd.day)-\(prayer.rawValue)"
+                if prayer == .sunrise {
+                    alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
+                                        body: "\(Prayer.fajr.name(naming)) has ended. \(here)", fireDate: time))
+                    continue
+                }
+                alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
+                                    body: "It's time for \(name) in \(here)", fireDate: time))
+                if early > 0 {
+                    alerts.append(.init(id: id + "-early", title: "\(name) in \(early) min",
+                                        body: "\(name) at \(formatted(time)) · \(here)",
+                                        fireDate: time.addingTimeInterval(Double(-early) * 60)))
+                }
             }
         }
         // Subuh wake-up: a real alarm (AlarmKit, iOS 26+) where possible,
