@@ -6,6 +6,9 @@ enum SourceGrade: String, Codable, Sendable {
     case masjid = "B"
     case community = "C"
     case calculated = "D"
+    /// The user's own observation of the sun or sky (Falak Mode). The last
+    /// rung: never replaces A-D data, only checks it.
+    case falak = "F"
 
     var title: String {
         switch self {
@@ -13,6 +16,7 @@ enum SourceGrade: String, Codable, Sendable {
         case .masjid: "Masjid-confirmed"
         case .community: "Community-verified"
         case .calculated: "Calculated"
+        case .falak: "Falak (observed)"
         }
     }
 
@@ -22,6 +26,7 @@ enum SourceGrade: String, Codable, Sendable {
         case .masjid: "From a named mosque's own timetable, checked against our calculation."
         case .community: "Method confirmed by two or more independent local contributors."
         case .calculated: "Astronomical calculation on your phone. The method is shown; local mosques may differ by a few minutes."
+        case .falak: "Worked out from your own observation of the sun's shadow or the sky, with honest ± minutes. Used to learn and to check, never in place of the grades above."
         }
     }
 }

@@ -22,8 +22,13 @@ and matches the official tables at home.
 - **Journey** - home vs current distance, musafir status with jamak & qasar
   guidance (Shafi'i 81/89 km, 3 days; Hanafi 78 km, 15 days), trip log.
 - **Qibla** - compass dial with haptic "aligned" moment, bearing and distance.
+- **Falak Mode (Grade F)** - the classical, offline sun-and-shadow layer: a live
+  shadow dial, Qibla Day countdown (sun over the Ka'bah), today's rashdul qiblat,
+  a tongkat istiwa' calculator for Zuhur and Asr with honest ± minutes, and guided
+  sky signs. Pending shariah review; see [docs/falak-review.md](docs/falak-review.md).
 - **Source grade on every day** - A official · B masjid-confirmed · C
-  community-verified · D calculated, with the method shown (tap the badge).
+  community-verified · D calculated · F falak (your own observation), with the
+  method shown (tap the badge).
 - **Official timetables (Grade A)** - Singapore (MUIS, data.gov.sg), Malaysia
   (JAKIM e-Solat by zone, found on the phone) and Indonesia (Kemenag via
   myquran.com, matched by regency name). Downloaded once a year - only the year,

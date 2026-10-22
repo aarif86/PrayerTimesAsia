@@ -7,6 +7,7 @@ extension SourceGrade {
         case .masjid: Color(red: 0.55, green: 0.78, blue: 1)
         case .community: Color(red: 1, green: 0.82, blue: 0.45)
         case .calculated: .white.opacity(0.75)
+        case .falak: Color(red: 0.98, green: 0.66, blue: 0.85)
         }
     }
 
@@ -16,6 +17,7 @@ extension SourceGrade {
         case .masjid: "building.columns.fill"
         case .community: "person.3.fill"
         case .calculated: "function"
+        case .falak: "sun.dust.fill"
         }
     }
 }
@@ -92,7 +94,7 @@ struct SanadSheet: View {
                 }
 
                 Section("The grades") {
-                    ForEach([SourceGrade.official, .masjid, .community, .calculated], id: \.self) { g in
+                    ForEach([SourceGrade.official, .masjid, .community, .calculated, .falak], id: \.self) { g in
                         HStack(alignment: .top, spacing: 12) {
                             Text(g.rawValue)
                                 .font(.caption.weight(.heavy))
@@ -138,7 +140,7 @@ struct SanadSheet: View {
             return "\(model.method.parameterSummary). This is the authority's own published method."
         case .masjid, .community:
             return model.nearbyMosque.flatMap { $0.method?.note } ?? day.grade.explanation
-        case .calculated:
+        case .calculated, .falak:
             return "\(model.method.parameterSummary) · \(model.asrSchool == .hanafi ? "Hanafi" : "Shafi'i") Asr. \(model.method.note)"
         }
     }

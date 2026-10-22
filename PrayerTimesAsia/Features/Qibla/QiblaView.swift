@@ -9,6 +9,7 @@ struct QiblaView: View {
     /// few degrees instead of spinning it the long way round.
     @State private var dialHeading: Double = 0
     @State private var lastHeading: Double?
+    @State private var showFalak = ProcessInfo.processInfo.arguments.contains("-falak")
 
     private let tolerance = 4.0
 
@@ -60,6 +61,16 @@ struct QiblaView: View {
             }
         }
         .foregroundStyle(.white)
+        .overlay(alignment: .topTrailing) {
+            if model.activePlace != nil {
+                Button { showFalak = true } label: { Chip(text: "Sun & shadow", systemImage: "sun.max.fill") }
+                    .buttonStyle(.plain)
+                    .padding(.trailing, Theme.gutter)
+                    .padding(.top, 8)
+                    .accessibilityHint("Falak Mode: find the qibla and prayer times from the sun")
+            }
+        }
+        .sheet(isPresented: $showFalak) { FalakView() }
         .sensoryFeedback(.success, trigger: aligned) { _, now in now }
         .onAppear { location.beginHeading() }
         .onDisappear { location.endHeading() }
