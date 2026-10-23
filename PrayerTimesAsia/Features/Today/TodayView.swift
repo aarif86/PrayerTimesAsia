@@ -40,6 +40,9 @@ struct TodayView: View {
             LivingSkyBackground(colors: sky)
             // Fill the screen when it all fits: the list stretches into the free
             // height so it breathes. Otherwise (small phones, Show more open) scroll.
+            if model.prefs.todayStyle == .sunPath {
+                sunPathPage(now: now, day: day, shown: shown, current: current, next: next)
+            } else {
             ViewThatFits(in: .vertical) {
                 if model.prefs.todayStyle == .dial {
                     dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true)
@@ -54,6 +57,7 @@ struct TodayView: View {
                     }
                 }
                 .scrollIndicators(.hidden)
+            }
             }
         }
         .foregroundStyle(.primary)
@@ -358,6 +362,166 @@ struct TodayView: View {
         .buttonStyle(.plain)
     }
 
+    // MARK: Sun Path style
+
+    /// The sun's arc across the sky up top, where we are in the day small at
+    /// the top left, then the list.
+    private func sunPathPage(now: Date, day: PrayerDay, shown: PrayerDay,
+                             current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                sunTopBar(now: now, current: current, next: next)
+                if let place = model.activePlace {
+                    SunPath(now: now, day: day, coordinates: place.coordinates, timeZone: place.timeZone,
+                            glow: Theme.sunArc)
+                        .frame(height: 96)
+                        .padding(.horizontal, -Theme.gutter)
+                }
+                sunPlaceChip()
+                if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+                if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+                if let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
+                sunDayNavigator(shown)
+                PrayerList(day: shown, now: now,
+                           current: dayOffset == 0 ? current?.prayer : nil,
+                           next: dayOffset == 0 ? next : nil,
+                           showMore: showMore)
+                    .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { v in
+                        guard abs(v.translation.width) > abs(v.translation.height) * 2 else { return }
+                        withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
+                    })
+                showMoreButton
+                SourceBadge(day: shown)
+                if model.prefs.showOffers {
+                    MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                }
+            }
+            .padding(.horizontal, Theme.gutter)
+            .padding(.bottom, 32)
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    /// Left: where we are in the day. Right: streak and settings. One row.
+    private func sunTopBar(now: Date, current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            if let current, let next {
+                sunStatus(current: current, next: next, now: now)
+            }
+            Spacer(minLength: 0)
+            if model.prefs.trackerEnabled { streakChip(now) }
+            Button { model.showSettings = true } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.body)
+                    .frame(width: 38, height: 38)
+                    .background(Color.primary.opacity(0.1), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Settings")
+        }
+        .padding(.top, 6)
+    }
+
+    /// "TODAY | ➤ Pasir Ris 🇸🇬" - which day and where, in one centred chip.
+    private func sunPlaceChip() -> some View {
+        let label: String = switch dayOffset {
+        case 0: "TODAY"
+        case 1: "TOMORROW"
+        case -1: "YESTERDAY"
+        default: dayOffset > 0 ? "IN \(dayOffset) DAYS" : "\(-dayOffset) DAYS AGO"
+        }
+        return Button { showPlaces = true } label: {
+            HStack(spacing: 8) {
+                Text(label).font(.caption.weight(.heavy)).tracking(0.5)
+                Rectangle().fill(Color.primary.opacity(0.3)).frame(width: 1, height: 12)
+                HStack(spacing: 5) {
+                    Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
+                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
+                    if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
+                    Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
+                }
+                .font(.subheadline.weight(.semibold))
+            }
+            .padding(.horizontal, 14).padding(.vertical, 7)
+            .background(Color.primary.opacity(0.06), in: Capsule())
+            .overlay(Capsule().strokeBorder(Theme.sunArc.opacity(0.7), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
+        .padding(.top, -6)
+        .accessibilityHint("Change location")
+    }
+
+    /// "Isyak · 9h 22m until Subuh" - small, top left.
+    private func sunStatus(current: (prayer: Prayer, time: Date), next: (prayer: Prayer, time: Date), now: Date) -> some View {
+        let currentName = current.prayer.name(model.naming, isFriday: model.isFriday(current.time))
+        let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
+        let remaining = next.time.timeIntervalSince(now)
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Circle().fill(current.prayer.tint).frame(width: 9, height: 9)
+                Text(currentName).font(Theme.display(30, .bold))
+            }
+            Text(next.prayer == .sunrise ? "\(Self.short(remaining)) until \(nextName) - \(Prayer.fajr.name(model.naming)) ends" : "\(Self.short(remaining)) until \(nextName)")
+                .font(.subheadline.weight(.semibold))
+                .monospacedDigit()
+                .contentTransition(.numericText(countsDown: true))
+                .padding(.horizontal, 12).padding(.vertical, 6)
+                .background(Color.primary.opacity(0.1), in: Capsule())
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Now \(currentName). \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))")
+    }
+
+    private func sunDayNavigator(_ shown: PrayerDay) -> some View {
+        let date = shown.time(.dhuhr)
+        let f = DateFormatter()
+        f.timeZone = model.timeZone
+        f.dateFormat = "EEEE d MMMM"
+        let hijri = Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment)
+        return HStack {
+            Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
+                Image(systemName: "chevron.left").frame(width: 40, height: 40).opacity(0.6)
+            }
+            .accessibilityLabel("Previous day")
+            Spacer()
+            Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
+                VStack(spacing: 2) {
+                    Text(f.string(from: date)).font(.title3.weight(.semibold))
+                    HStack(spacing: 4) {
+                        Text(hijri)
+                        Image(systemName: "calendar").font(.caption2)
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+            Spacer()
+            Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
+                Image(systemName: "chevron.right").frame(width: 40, height: 40).opacity(0.6)
+            }
+            .accessibilityLabel("Next day")
+        }
+        .font(.headline.weight(.semibold))
+        .buttonStyle(.plain)
+    }
+
+    private func sunMusafirChip(_ status: Musafir.Status) -> some View {
+        Button { model.selectedTab = .journey } label: {
+            HStack {
+                Image(systemName: "airplane")
+                Text("Musafir · you may shorten & combine").lineLimit(1)
+                Spacer(minLength: 4)
+                Image(systemName: "chevron.right").font(.caption.weight(.bold))
+            }
+            .font(.subheadline.weight(.semibold))
+            .padding(.horizontal, 16).padding(.vertical, 12)
+            .background(Color.primary.opacity(0.12), in: Capsule())
+        }
+        .buttonStyle(.plain)
+    }
     /// "9h 22m", "22m", "45s".
     static func short(_ seconds: TimeInterval) -> String {
         let s = max(0, Int(seconds.rounded(.up)))
@@ -555,7 +719,7 @@ private struct PrayerList: View {
                 .accessibilityLabel(notifying ? "Turn off alert" : "Turn on alert")
             }
         }
-        .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, 8)
+        .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, fill ? 8 : 12)
         .frame(maxHeight: fill ? 92 : nil)
         .contentShape(Rectangle())
         // Tracker (opt-in): tap a prayer that has passed to tick it off.

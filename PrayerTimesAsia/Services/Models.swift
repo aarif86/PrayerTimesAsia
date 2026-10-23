@@ -67,11 +67,14 @@ enum TodayStyle: String, Codable, CaseIterable, Identifiable, Sendable {
     case list
     /// The Day Dial fills the screen, every time inside it at its hour.
     case dial
+    /// The sun's arc across the top, the current prayer small at the top left, then the list.
+    case sunPath
     var id: String { rawValue }
     var label: String {
         switch self {
         case .list: "Classic list"
         case .dial: "Day Dial"
+        case .sunPath: "Sun Path"
         }
     }
 }
