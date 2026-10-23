@@ -1,19 +1,32 @@
 import SwiftUI
 
-/// The day as a 24-hour dial - the app's signature, echoing the watch icon.
-/// Noon at the top, midnight at the bottom; each prayer's period is a coloured
-/// segment (prayertime.sg's colours, calmer), a glowing dot marks now, and the
+/// The day as a 24-hour dial - the app's signature, echoing the watch icon, and
+/// the hero of the Prayer screen. Noon at the top, midnight at the bottom; the
+/// ring runs through the colours of the sky, each prayer's time sits just inside
+/// the ring at its hour like a watch's indices, a glowing dot marks now, and the
 /// centre says where we are in the day.
-struct DayDial: View {
+/// A time shown on the Day Dial.
+struct DialMark: Identifiable {
+    let id: String
+    let date: Date
+    /// Blessed times are smaller and quieter than the five prayers.
+    var minor = false
+    /// An extra line under the time (jamaah, a second source).
+    var extraLine = false
+    var tint: Color = .primary
+}
+
+struct DayDial<MarkLabel: View, Centre: View>: View {
     let now: Date
     let day: PrayerDay
     /// Tomorrow's Subuh, so Isyak's segment runs through the night.
     let nextFajr: Date
     let timeZone: TimeZone
-    let currentName: String
-    let currentPrayer: Prayer
-    let countdown: String
-    let nextName: String
+    /// Highlighted segment and the now-dot; nil when showing another day.
+    let currentPrayer: Prayer?
+    let marks: [DialMark]
+    @ViewBuilder let label: (DialMark, CGFloat) -> MarkLabel
+    @ViewBuilder let centre: (CGFloat) -> Centre
 
     private var midnight: Date {
         var cal = Calendar(identifier: .gregorian)
@@ -27,21 +40,33 @@ struct DayDial: View {
         return hours / 24 * 360 + 180
     }
 
+    /// A label's footprint, as a fraction of the dial.
+    static func labelSize(_ mark: DialMark, _ size: CGFloat) -> CGSize {
+        if mark.minor { return CGSize(width: size * 0.25, height: size * 0.085) }
+        return CGSize(width: size * 0.25, height: size * (mark.extraLine ? 0.15 : 0.115))
+    }
+
     var body: some View {
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
-            let ring: CGFloat = size * 0.085
+            let ring = size * 0.05
+            let r = size / 2 - ring * 0.65 - 1
+            let inner = r - ring * 0.65 - size * 0.025
+            let spots = layout(size: size, inner: inner)
             ZStack {
+                Circle().fill(Color.primary.opacity(0.04)).padding(ring * 1.3)
                 Canvas { ctx, sz in
                     let c = CGPoint(x: sz.width / 2, y: sz.height / 2)
-                    let r = min(sz.width, sz.height) / 2 - ring / 2 - 2
                     func arc(_ a0: Double, _ a1: Double) -> Path {
                         var p = Path()
                         p.addArc(center: c, radius: r, startAngle: .degrees(a0 - 90), endAngle: .degrees(a1 - 90), clockwise: false)
                         return p
                     }
-                    // Track
-                    ctx.stroke(arc(0, 360), with: .color(Color.primary.opacity(0.1)), style: StrokeStyle(lineWidth: ring))
+                    func point(_ a: Double, _ radius: CGFloat) -> CGPoint {
+                        let rad = a * .pi / 180
+                        return CGPoint(x: c.x + sin(rad) * radius, y: c.y - cos(rad) * radius)
+                    }
+                    ctx.stroke(arc(0, 360), with: .color(Color.primary.opacity(0.08)), style: StrokeStyle(lineWidth: ring))
                     // The sky through the day, as one gradient round the ring:
                     // night, dawn, morning, the hot noon, afternoon, sunset, night.
                     func f(_ d: Date) -> Double { min(1, max(0, d.timeIntervalSince(midnight) / 86_400)) }
@@ -64,54 +89,74 @@ struct DayDial: View {
                         // Isyak ends at tomorrow's Subuh: past 540° the conic gradient wraps by itself.
                         let start = angle(day.time(prayer))
                         let end = i + 1 < order.count ? angle(day.time(order[i + 1])) : angle(nextFajr)
-                        let gap = 1.0
-                        ctx.stroke(arc(start + gap, end - gap), with: sky,
+                        ctx.stroke(arc(start + 0.8, end - 0.8), with: sky,
                                    style: StrokeStyle(lineWidth: prayer == currentPrayer ? ring * 1.3 : ring))
                     }
-                    // Quarter ticks: midnight, 6, noon, 18
-                    for q in 0..<4 {
-                        let a = (Double(q) * 90 - 90) * .pi / 180
-                        let r1 = r - ring / 2 - 6, r2 = r - ring / 2 - 13
+                    // An index inside the ring at each mark's true time (its label may be nudged aside).
+                    for mark in marks {
+                        let a = angle(mark.date)
                         var t = Path()
-                        t.move(to: CGPoint(x: c.x + cos(a) * r1, y: c.y + sin(a) * r1))
-                        t.addLine(to: CGPoint(x: c.x + cos(a) * r2, y: c.y + sin(a) * r2))
-                        ctx.stroke(t, with: .color(Color.primary.opacity(0.35)), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                        t.move(to: point(a, r - ring * 0.65 - 2))
+                        t.addLine(to: point(a, r - ring * 0.65 - (mark.minor ? 5 : 8)))
+                        ctx.stroke(t, with: .color(mark.minor ? Color.primary.opacity(0.35) : mark.tint),
+                                   style: StrokeStyle(lineWidth: mark.minor ? 1.5 : 2.5, lineCap: .round))
                     }
                     // Now
-                    let a = (angle(now) - 90) * .pi / 180
-                    let dot = CGPoint(x: c.x + cos(a) * r, y: c.y + sin(a) * r)
-                    ctx.fill(Path(ellipseIn: CGRect(x: dot.x - ring, y: dot.y - ring, width: ring * 2, height: ring * 2)),
-                             with: .color(Theme.sunArc.opacity(0.35)))
-                    ctx.fill(Path(ellipseIn: CGRect(x: dot.x - ring * 0.62, y: dot.y - ring * 0.62, width: ring * 1.24, height: ring * 1.24)),
-                             with: .color(.white))
-                    ctx.stroke(Path(ellipseIn: CGRect(x: dot.x - ring * 0.62, y: dot.y - ring * 0.62, width: ring * 1.24, height: ring * 1.24)),
-                               with: .color(Theme.accent), lineWidth: 3)
+                    if currentPrayer != nil {
+                        let dot = point(angle(now), r)
+                        func disc(_ k: CGFloat) -> Path {
+                            Path(ellipseIn: CGRect(x: dot.x - ring * k, y: dot.y - ring * k, width: ring * 2 * k, height: ring * 2 * k))
+                        }
+                        ctx.fill(disc(1.05), with: .color(Theme.sunArc.opacity(0.35)))
+                        ctx.fill(disc(0.62), with: .color(.white))
+                        ctx.stroke(disc(0.62), with: .color(Theme.accent), lineWidth: 3)
+                    }
                 }
-                // Sun at noon, moon at midnight, as quiet markers inside the ring
-                Image(systemName: "sun.max.fill").font(.system(size: size * 0.07))
-                    .foregroundStyle(Theme.sunArc).offset(y: -size * 0.3)
-                Image(systemName: "moon.fill").font(.system(size: size * 0.06))
-                    .foregroundStyle(Color.primary.opacity(0.35)).offset(y: size * 0.3)
-                VStack(spacing: 1) {
-                    Text(currentName)
-                        .font(Theme.display(size * 0.14, .bold))
-                        .lineLimit(1).minimumScaleFactor(0.6)
-                    Text(countdown)
-                        .font(Theme.display(size * 0.1, .semibold)).monospacedDigit()
-                        .foregroundStyle(Theme.accent)
-                        .contentTransition(.numericText(countsDown: true))
-                    Text("until \(nextName)")
-                        .font(.system(size: size * 0.065, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1).minimumScaleFactor(0.7)
+                ForEach(marks) { mark in
+                    if let spot = spots[mark.id] {
+                        let box = Self.labelSize(mark, size)
+                        label(mark, size)
+                            .frame(width: box.width, height: box.height)
+                            .position(spot)
+                    }
                 }
-                .padding(.horizontal, size * 0.18)
+                centre(size)
+                    .frame(width: size * 0.4)
             }
             .frame(width: size, height: size)
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
         }
         .aspectRatio(1, contentMode: .fit)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Now \(currentName). \(countdown) until \(nextName).")
+    }
+
+    /// Where each label goes: just inside the ring at its time, its outer edge
+    /// touching the inner circle, then nudged apart along the circle when two
+    /// would overlap (Maghrib and Isyak are only ~20° apart).
+    private func layout(size: CGFloat, inner: CGFloat) -> [String: CGPoint] {
+        let sorted = marks.sorted { fmod(angle($0.date), 360) < fmod(angle($1.date), 360) }
+        guard !sorted.isEmpty else { return [:] }
+        var angles = sorted.map { fmod(angle($0.date), 360) }
+        func spot(_ i: Int) -> CGPoint {
+            let box = Self.labelSize(sorted[i], size)
+            let rad = angles[i] * .pi / 180
+            let inset = abs(sin(rad)) * box.width / 2 + abs(cos(rad)) * box.height / 2
+            return CGPoint(x: size / 2 + sin(rad) * (inner - inset), y: size / 2 - cos(rad) * (inner - inset))
+        }
+        let n = sorted.count
+        for _ in 0..<120 where n > 1 {
+            var moved = false
+            for i in 0..<n {
+                let j = (i + 1) % n
+                let p = spot(i), q = spot(j)
+                let a = Self.labelSize(sorted[i], size), b = Self.labelSize(sorted[j], size)
+                if abs(p.x - q.x) < (a.width + b.width) / 2 + 2, abs(p.y - q.y) < (a.height + b.height) / 2 + 2 {
+                    angles[i] -= 0.5
+                    angles[j] += 0.5
+                    moved = true
+                }
+            }
+            if !moved { break }
+        }
+        return Dictionary(uniqueKeysWithValues: sorted.indices.map { (sorted[$0].id, spot($0)) })
     }
 }
