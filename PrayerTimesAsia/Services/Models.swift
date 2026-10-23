@@ -61,6 +61,21 @@ enum WakeUpTiming: String, Codable, CaseIterable, Identifiable, Sendable {
 }
 
 /// Light, dark, or follow the phone.
+/// How the Prayer screen shows the day.
+enum TodayStyle: String, Codable, CaseIterable, Identifiable, Sendable {
+    /// The Day Dial beside a list of the times.
+    case list
+    /// The Day Dial fills the screen, every time inside it at its hour.
+    case dial
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .list: "Classic list"
+        case .dial: "Day Dial"
+        }
+    }
+}
+
 enum Appearance: String, Codable, CaseIterable, Identifiable, Sendable {
     case system, light, dark
     var id: String { rawValue }
@@ -119,6 +134,7 @@ struct Preferences: Codable, Equatable, Sendable {
     var communityAuthority: String?
 
     var appearance: Appearance = .system
+    var todayStyle: TodayStyle = .list
     /// Under each prayer, the word used where you are, when it differs from yours.
     var showLocalNames = true
     /// The "Turn on prayer alerts" bar on the Prayer screen was closed.
@@ -162,6 +178,7 @@ struct Preferences: Codable, Equatable, Sendable {
         wakeUp = v(.wakeUp, d.wakeUp)
         communityAuthority = v(.communityAuthority, d.communityAuthority)
         appearance = v(.appearance, d.appearance)
+        todayStyle = v(.todayStyle, d.todayStyle)
         showLocalNames = v(.showLocalNames, d.showLocalNames)
         alertsPromptDismissed = v(.alertsPromptDismissed, d.alertsPromptDismissed)
     }

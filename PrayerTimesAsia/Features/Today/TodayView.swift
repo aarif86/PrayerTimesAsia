@@ -41,9 +41,17 @@ struct TodayView: View {
             // Fill the screen when it all fits: the list stretches into the free
             // height so it breathes. Otherwise (small phones, Show more open) scroll.
             ViewThatFits(in: .vertical) {
-                page(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                if model.prefs.todayStyle == .dial {
+                    dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                } else {
+                    page(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                }
                 ScrollView {
-                    page(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                    if model.prefs.todayStyle == .dial {
+                        dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                    } else {
+                        page(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                    }
                 }
                 .scrollIndicators(.hidden)
             }
@@ -161,6 +169,183 @@ struct TodayView: View {
             .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
             Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
                 Image(systemName: "chevron.right").font(.subheadline.weight(.semibold)).frame(width: 22, height: 40).opacity(0.6)
+            }
+            .accessibilityLabel("Next day")
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func dialPage(now: Date, day: PrayerDay, shown: PrayerDay,
+                      current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
+        VStack(spacing: fill ? 14 : 12) {
+            topBar(now)
+            if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+            if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            dateHeader(shown)
+            dial(now: now, shown: shown, current: current, next: next)
+                .padding(.horizontal, 8 - Theme.gutter)
+                .frame(maxWidth: .infinity, minHeight: fill ? 300 : nil, maxHeight: fill ? .infinity : nil)
+                .contentShape(Rectangle())
+                .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { v in
+                    guard abs(v.translation.width) > abs(v.translation.height) * 2 else { return }
+                    withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
+                })
+            dayRow(shown)
+            showMoreButton
+        }
+        .padding(.horizontal, Theme.gutter)
+        .padding(.top, 4)
+        .padding(.bottom, fill ? 8 : 24)
+    }
+
+    // MARK: Day Dial style
+
+    /// Where we are on the left; musafir, streak and settings on the right.
+    private func topBar(_ now: Date) -> some View {
+        HStack(spacing: 8) {
+            Button { showPlaces = true } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
+                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
+                    if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
+                    Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
+                }
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.7), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Change location")
+            Spacer(minLength: 0)
+            if let status = model.musafirStatus, status.isTraveller {
+                Button { model.selectedTab = .journey } label: {
+                    Image(systemName: "airplane").font(.subheadline.weight(.semibold))
+                        .frame(width: 34, height: 34)
+                        .background(Theme.accent.opacity(0.25), in: Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Musafir: you may shorten and combine prayers")
+            }
+            if model.prefs.trackerEnabled { streakChip(now) }
+            Button { model.showSettings = true } label: {
+                Image(systemName: "gearshape.fill").font(.subheadline)
+                    .frame(width: 34, height: 34)
+                    .background(Color.primary.opacity(0.1), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Settings")
+        }
+    }
+
+    // MARK: The dial
+
+    /// The Day Dial with every time of the day inside it, and the day in its centre.
+    @ViewBuilder
+    private func dial(now: Date, shown: PrayerDay,
+                      current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
+        let isToday = dayOffset == 0
+        let nextFajr = model.day(containing: shown.time(.dhuhr).addingTimeInterval(86_400))?.time(.fajr)
+            ?? shown.time(.fajr).addingTimeInterval(86_400)
+        let blessed = blessedTimes(shown)
+        let marks = Prayer.allCases.map { p in
+            DialMark(id: p.rawValue, date: shown.time(p),
+                     extraLine: shown.jamaah[p] != nil || shown.alternate[p] != nil, tint: p.tint)
+        } + blessed.map { DialMark(id: $0.0.rawValue, date: $0.1, minor: true) }
+        HeroDial(now: now, day: shown, nextFajr: nextFajr, timeZone: model.timeZone,
+                currentPrayer: isToday ? current?.prayer : nil, marks: marks,
+                label: { mark, size in
+                    if let prayer = Prayer(rawValue: mark.id) {
+                        PrayerMark(prayer: prayer, time: mark.date, now: now, size: size, day: shown,
+                                   isCurrent: isToday && prayer == current?.prayer)
+                    } else if let b = blessed.first(where: { $0.0.rawValue == mark.id }) {
+                        BlessedMark(blessed: b.0, time: b.1, now: now, size: size)
+                    }
+                },
+                centre: { size in dialCentre(now: now, shown: shown, current: isToday ? current : nil, next: next, size: size) })
+            .animation(.snappy, value: showMore)
+    }
+
+    private func blessedTimes(_ shown: PrayerDay) -> [(BlessedTime, Date)] {
+        guard showMore, let place = model.activePlace,
+              let nextDay = model.day(containing: shown.time(.dhuhr).addingTimeInterval(86_400)) else { return [] }
+        let ramadan = Hijri.isRamadan(shown.time(.dhuhr), timeZone: model.timeZone, adjustment: model.prefs.hijriAdjustment)
+        return BlessedTime.compute(day: shown, nextDay: nextDay, coordinates: place.coordinates, isRamadan: ramadan)
+    }
+
+    /// "TODAY", the date and the Hijri date above the dial; tap for the calendar,
+    /// or to come back to today.
+    private func dateHeader(_ shown: PrayerDay) -> some View {
+        let date = shown.time(.dhuhr)
+        let f = DateFormatter()
+        f.timeZone = model.timeZone
+        f.dateFormat = "EEEE d MMMM"
+        let label: String = switch dayOffset {
+        case 0: "TODAY"
+        case 1: "TOMORROW"
+        case -1: "YESTERDAY"
+        default: dayOffset > 0 ? "IN \(dayOffset) DAYS" : "\(-dayOffset) DAYS AGO"
+        }
+        return Button {
+            if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } }
+        } label: {
+            VStack(spacing: 3) {
+                Text(label).font(.caption.weight(.heavy)).tracking(0.8).foregroundStyle(Theme.accent)
+                Text(f.string(from: date)).font(Theme.display(26, .bold))
+                HStack(spacing: 4) {
+                    Text(Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment))
+                    Image(systemName: dayOffset == 0 ? "calendar" : "arrow.uturn.backward")
+                }
+                .font(.subheadline).foregroundStyle(.secondary)
+            }
+            .lineLimit(1).minimumScaleFactor(0.7)
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+    }
+
+    /// The dial's centre: the prayer we are in and the time left until the next.
+    @ViewBuilder
+    private func dialCentre(now: Date, shown: PrayerDay, current: (prayer: Prayer, time: Date)?,
+                        next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
+        if let current, let next {
+            VStack(spacing: size * 0.006) {
+                Text("NOW").font(.system(size: size * 0.028, weight: .heavy)).tracking(0.6)
+                    .foregroundStyle(current.prayer.tint)
+                Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
+                    .font(Theme.display(size * 0.085, .bold))
+                Text(Self.short(next.time.timeIntervalSince(now)))
+                    .font(Theme.display(size * 0.066, .semibold)).monospacedDigit()
+                    .foregroundStyle(Theme.accent)
+                    .contentTransition(.numericText(countsDown: true))
+                Text("until \(next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))")
+                    .font(.system(size: size * 0.034, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
+            .accessibilityElement(children: .combine)
+        } else {
+            Image(systemName: "moon.stars").font(.system(size: size * 0.08, weight: .light)).opacity(0.5)
+        }
+    }
+
+    /// ‹ the source of these times ›
+    private func dayRow(_ shown: PrayerDay) -> some View {
+        HStack(spacing: 4) {
+            Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
+                Image(systemName: "chevron.left").font(.subheadline.weight(.semibold))
+                    .frame(width: 36, height: 36).background(Color.primary.opacity(0.08), in: Circle())
+            }
+            .accessibilityLabel("Previous day")
+            Spacer(minLength: 4)
+            SourceBadge(day: shown, compact: true)
+            Spacer(minLength: 4)
+            Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
+                Image(systemName: "chevron.right").font(.subheadline.weight(.semibold))
+                    .frame(width: 36, height: 36).background(Color.primary.opacity(0.08), in: Circle())
             }
             .accessibilityLabel("Next day")
         }
@@ -423,6 +608,137 @@ private struct PrayerList: View {
             } else {
                 model.prefs.notifyPrayers.insert(prayer)
             }
+        }
+    }
+}
+
+// MARK: - Times on the dial
+
+/// One prayer inside the dial: its name and time, tinted when it is now.
+/// Tap for its alert and, with the tracker on, to tick it off.
+private struct PrayerMark: View {
+    @Environment(AppModel.self) private var model
+    let prayer: Prayer
+    let time: Date
+    let now: Date
+    let size: CGFloat
+    let day: PrayerDay
+    let isCurrent: Bool
+
+    var body: some View {
+        let passed = time <= now && !isCurrent
+        let notifying = model.prefs.notificationsEnabled && model.prefs.notifyPrayers.contains(prayer)
+        let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
+        let prayed = trackable && model.isPrayed(prayer, on: time)
+        Menu {
+            Button { toggleNotify() } label: {
+                Label(notifying ? "Turn off alert" : "Alert me at \(prayer.name(model.naming))",
+                      systemImage: notifying ? "bell.slash" : "bell")
+            }
+            if trackable {
+                Button { withAnimation(.snappy) { model.togglePrayed(prayer, on: time) } } label: {
+                    Label(prayed ? "Mark as not prayed" : "Mark as prayed",
+                          systemImage: prayed ? "xmark.circle" : "checkmark.circle")
+                }
+            }
+        } label: {
+            VStack(spacing: 0) {
+                HStack(spacing: 3) {
+                    Text(name)
+                        .font(.system(size: size * 0.034, weight: isCurrent ? .bold : .semibold))
+                        .foregroundStyle(isCurrent ? prayer.tint : Color.primary.opacity(0.75))
+                    if prayed {
+                        Image(systemName: "checkmark.circle.fill").font(.system(size: size * 0.03)).foregroundStyle(.green)
+                    } else if model.prefs.notificationsEnabled && !notifying && prayer.isObligatory {
+                        Image(systemName: "bell.slash").font(.system(size: size * 0.026)).opacity(0.5)
+                    }
+                }
+                .lineLimit(1).minimumScaleFactor(0.7)
+                TimeText(parts: model.timeParts(time), size: size * 0.05, weight: isCurrent ? .bold : .semibold)
+                if let jamaah = day.jamaah[prayer] {
+                    Text("Jamaah \(model.formatted(jamaah))").font(.system(size: size * 0.027, weight: .medium)).opacity(0.75)
+                } else if let other = day.alternate[prayer], let source = day.alternateSource {
+                    Text("\(source) \(model.formatted(other))")
+                        .font(.system(size: size * 0.027, weight: .medium))
+                        .foregroundStyle(SourceGrade.masjid.tint)
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                }
+            }
+            .padding(.horizontal, 4)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background {
+                if isCurrent {
+                    RoundedRectangle(cornerRadius: size * 0.035, style: .continuous)
+                        .fill(prayer.tint.opacity(0.16))
+                        .overlay(RoundedRectangle(cornerRadius: size * 0.035, style: .continuous)
+                            .strokeBorder(prayer.tint.opacity(0.5), lineWidth: 1))
+                }
+            }
+            .opacity(passed && !prayed ? 0.55 : 1)
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.success, trigger: prayed) { _, new in new }
+        .accessibilityLabel("\(name), \(model.formatted(time))\(isCurrent ? ", now" : "")\(prayed ? ", prayed" : "")")
+    }
+
+    /// "Fajr · Subuh" for a visitor, so they know what it is called here.
+    private var name: String {
+        let own = prayer.name(model.naming, isFriday: model.isFriday(time))
+        guard let local = model.localName(prayer, at: time) else { return own }
+        return "\(own) · \(local)"
+    }
+
+    private func toggleNotify() {
+        Task {
+            if !model.prefs.notificationsEnabled {
+                guard await NotificationScheduler.requestPermission() else { return }
+                model.prefs.notificationsEnabled = true
+                model.prefs.notifyPrayers = [prayer]
+                return
+            }
+            if model.prefs.notifyPrayers.contains(prayer) {
+                model.prefs.notifyPrayers.remove(prayer)
+            } else {
+                model.prefs.notifyPrayers.insert(prayer)
+            }
+        }
+    }
+}
+
+/// A blessed time inside the dial, smaller and quieter than the prayers.
+private struct BlessedMark: View {
+    @Environment(AppModel.self) private var model
+    let blessed: BlessedTime
+    let time: Date
+    let now: Date
+    let size: CGFloat
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 2) {
+                Image(systemName: blessed.symbol)
+                Text(shortName)
+            }
+            .font(.system(size: size * 0.028, weight: .semibold))
+            .foregroundStyle(.secondary)
+            .lineLimit(1).minimumScaleFactor(0.7)
+            TimeText(parts: model.timeParts(time), size: size * 0.04, weight: .medium)
+                .opacity(0.85)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .opacity(time <= now ? 0.55 : 1)
+        .transition(.opacity.combined(with: .scale(scale: 0.8)))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(blessed.name(model.naming)), \(model.formatted(time)). \(blessed.note)")
+    }
+
+    /// The dial has room for a word or two.
+    private var shortName: String {
+        let malay = model.naming == .malay || model.naming == .indonesian
+        return switch blessed {
+        case .midnight: malay ? "Tengah malam" : "Midnight"
+        case .lastThird: malay ? "Sepertiga" : "Last third"
+        default: blessed.name(model.naming)
         }
     }
 }

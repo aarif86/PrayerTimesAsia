@@ -98,6 +98,9 @@ struct SettingsView: View {
                     Picker("Appearance", selection: $model.prefs.appearance) {
                         ForEach(Appearance.allCases) { Text($0.label).tag($0) }
                     }
+                    Picker("Prayer screen", selection: $model.prefs.todayStyle) {
+                        ForEach(TodayStyle.allCases) { Text($0.label).tag($0) }
+                    }
                     Toggle("24-hour time", isOn: $model.prefs.use24Hour)
                     Stepper(value: $model.prefs.hijriAdjustment, in: -2...2) {
                         LabeledContent("Hijri date adjustment",
