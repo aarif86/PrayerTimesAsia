@@ -58,7 +58,9 @@ struct TodayView: View {
             topBar(now)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            dateHeader(shown)
             dial(now: now, shown: shown, current: current, next: next)
+                .padding(.horizontal, 8 - Theme.gutter)
                 .frame(maxWidth: .infinity, minHeight: fill ? 300 : nil, maxHeight: fill ? .infinity : nil)
                 .contentShape(Rectangle())
                 .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { v in
@@ -147,14 +149,13 @@ struct TodayView: View {
         return BlessedTime.compute(day: shown, nextDay: nextDay, coordinates: place.coordinates, isRamadan: ramadan)
     }
 
-    /// The day, then where we are in it: "TODAY · FRI 23 OCT", the Hijri date,
-    /// the current prayer and the time left until the next.
-    private func centre(now: Date, shown: PrayerDay, current: (prayer: Prayer, time: Date)?,
-                        next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
+    /// "TODAY", the date and the Hijri date above the dial; tap for the calendar,
+    /// or to come back to today.
+    private func dateHeader(_ shown: PrayerDay) -> some View {
         let date = shown.time(.dhuhr)
         let f = DateFormatter()
         f.timeZone = model.timeZone
-        f.dateFormat = "EEE d MMM"
+        f.dateFormat = "EEEE d MMMM"
         let label: String = switch dayOffset {
         case 0: "TODAY"
         case 1: "TOMORROW"
@@ -164,38 +165,47 @@ struct TodayView: View {
         return Button {
             if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } }
         } label: {
-            VStack(spacing: size * 0.008) {
-                Text(dayOffset == 0 ? "\(label) · \(f.string(from: date).uppercased())" : label)
-                    .font(.system(size: size * 0.03, weight: .heavy)).tracking(0.5)
-                    .foregroundStyle(Theme.accent)
-                if let current, let next {
-                    Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
-                        .font(Theme.display(size * 0.1, .bold))
-                    Text(Self.short(next.time.timeIntervalSince(now)))
-                        .font(Theme.display(size * 0.075, .semibold)).monospacedDigit()
-                        .foregroundStyle(Theme.accent)
-                        .contentTransition(.numericText(countsDown: true))
-                    Text("until \(next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))")
-                        .font(.system(size: size * 0.036, weight: .medium))
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text(f.string(from: date)).font(Theme.display(size * 0.075, .bold))
-                }
-                HStack(spacing: 3) {
+            VStack(spacing: 3) {
+                Text(label).font(.caption.weight(.heavy)).tracking(0.8).foregroundStyle(Theme.accent)
+                Text(f.string(from: date)).font(Theme.display(26, .bold))
+                HStack(spacing: 4) {
                     Text(Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment))
                     Image(systemName: dayOffset == 0 ? "calendar" : "arrow.uturn.backward")
                 }
-                .font(.system(size: size * 0.03, weight: .medium))
-                .foregroundStyle(.secondary)
-                .padding(.top, size * 0.01)
+                .font(.subheadline).foregroundStyle(.secondary)
             }
-            .lineLimit(1)
-            .minimumScaleFactor(0.6)
-            .multilineTextAlignment(.center)
+            .lineLimit(1).minimumScaleFactor(0.7)
+            .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+    }
+
+    /// The dial's centre: the prayer we are in and the time left until the next.
+    @ViewBuilder
+    private func centre(now: Date, shown: PrayerDay, current: (prayer: Prayer, time: Date)?,
+                        next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
+        if let current, let next {
+            VStack(spacing: size * 0.006) {
+                Text("NOW").font(.system(size: size * 0.028, weight: .heavy)).tracking(0.6)
+                    .foregroundStyle(current.prayer.tint)
+                Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
+                    .font(Theme.display(size * 0.085, .bold))
+                Text(Self.short(next.time.timeIntervalSince(now)))
+                    .font(Theme.display(size * 0.066, .semibold)).monospacedDigit()
+                    .foregroundStyle(Theme.accent)
+                    .contentTransition(.numericText(countsDown: true))
+                Text("until \(next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))")
+                    .font(.system(size: size * 0.034, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
+            .accessibilityElement(children: .combine)
+        } else {
+            Image(systemName: "moon.stars").font(.system(size: size * 0.08, weight: .light)).opacity(0.5)
+        }
     }
 
     /// ‹ the source of these times ›
@@ -337,7 +347,7 @@ private struct PrayerMark: View {
             VStack(spacing: 0) {
                 HStack(spacing: 3) {
                     Text(name)
-                        .font(.system(size: size * 0.036, weight: isCurrent ? .bold : .semibold))
+                        .font(.system(size: size * 0.034, weight: isCurrent ? .bold : .semibold))
                         .foregroundStyle(isCurrent ? prayer.tint : Color.primary.opacity(0.75))
                     if prayed {
                         Image(systemName: "checkmark.circle.fill").font(.system(size: size * 0.03)).foregroundStyle(.green)
@@ -346,7 +356,7 @@ private struct PrayerMark: View {
                     }
                 }
                 .lineLimit(1).minimumScaleFactor(0.7)
-                TimeText(parts: model.timeParts(time), size: size * 0.056, weight: isCurrent ? .bold : .semibold)
+                TimeText(parts: model.timeParts(time), size: size * 0.05, weight: isCurrent ? .bold : .semibold)
                 if let jamaah = day.jamaah[prayer] {
                     Text("Jamaah \(model.formatted(jamaah))").font(.system(size: size * 0.027, weight: .medium)).opacity(0.75)
                 } else if let other = day.alternate[prayer], let source = day.alternateSource {
@@ -411,10 +421,10 @@ private struct BlessedMark: View {
                 Image(systemName: blessed.symbol)
                 Text(shortName)
             }
-            .font(.system(size: size * 0.03, weight: .semibold))
+            .font(.system(size: size * 0.028, weight: .semibold))
             .foregroundStyle(.secondary)
             .lineLimit(1).minimumScaleFactor(0.7)
-            TimeText(parts: model.timeParts(time), size: size * 0.042, weight: .medium)
+            TimeText(parts: model.timeParts(time), size: size * 0.04, weight: .medium)
                 .opacity(0.85)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

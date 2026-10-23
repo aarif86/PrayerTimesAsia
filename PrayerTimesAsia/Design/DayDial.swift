@@ -42,16 +42,16 @@ struct DayDial<MarkLabel: View, Centre: View>: View {
 
     /// A label's footprint, as a fraction of the dial.
     static func labelSize(_ mark: DialMark, _ size: CGFloat) -> CGSize {
-        if mark.minor { return CGSize(width: size * 0.25, height: size * 0.085) }
-        return CGSize(width: size * 0.25, height: size * (mark.extraLine ? 0.15 : 0.115))
+        if mark.minor { return CGSize(width: size * 0.22, height: size * 0.08) }
+        return CGSize(width: size * 0.22, height: size * (mark.extraLine ? 0.14 : 0.105))
     }
 
     var body: some View {
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
-            let ring = size * 0.05
+            let ring = size * 0.042
             let r = size / 2 - ring * 0.65 - 1
-            let inner = r - ring * 0.65 - size * 0.025
+            let inner = r - ring * 0.65 - size * 0.015
             let spots = layout(size: size, inner: inner)
             ZStack {
                 Circle().fill(Color.primary.opacity(0.04)).padding(ring * 1.3)
@@ -121,7 +121,7 @@ struct DayDial<MarkLabel: View, Centre: View>: View {
                     }
                 }
                 centre(size)
-                    .frame(width: size * 0.4)
+                    .frame(width: size * 0.34)
             }
             .frame(width: size, height: size)
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
