@@ -8,6 +8,7 @@ struct SettingsView: View {
     var body: some View {
         @Bindable var model = model
         NavigationStack {
+            ScrollViewReader { proxy in
             Form {
                 Section("Location") {
                     Button { showPlaces = true } label: {
@@ -160,7 +161,7 @@ struct SettingsView: View {
                     }
                     Toggle("Show offers on Prayer and Masjid", isOn: $model.prefs.showOffers)
                 } header: {
-                    Text("From the makers")
+                    Text("From the makers").id("makers")
                 } footer: {
                     Text("Prayer Times Asia is free and built fisabilillah by Nasar Pte Ltd. The only offers you will see are our own - no ad networks, nothing tracked.")
                 }
@@ -173,8 +174,13 @@ struct SettingsView: View {
                     Text("Prayer Times Asia - made for Muslims living and travelling across Asia.")
                 }
             }
-            // `-settings-end` (CI screenshots): open at the bottom, where "From the makers" is.
-            .defaultScrollAnchor(ProcessInfo.processInfo.arguments.contains("-settings-end") ? .bottom : .top)
+            .onAppear {
+                // `-settings-end` (CI screenshots): open at "From the makers".
+                if ProcessInfo.processInfo.arguments.contains("-settings-end") {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { proxy.scrollTo("makers", anchor: .top) }
+                }
+            }
+            }
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }

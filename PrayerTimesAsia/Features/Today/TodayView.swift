@@ -62,7 +62,7 @@ struct TodayView: View {
     @ViewBuilder
     private func page(now: Date, day: PrayerDay, shown: PrayerDay,
                       current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
-        VStack(alignment: .leading, spacing: fill ? 16 : 12) {
+        VStack(alignment: .leading, spacing: fill ? 12 : 12) {
             header(now: now, day: day, shown: shown, current: current, next: next)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
@@ -77,7 +77,7 @@ struct TodayView: View {
                 })
             showMoreButton
             if model.prefs.showOffers {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer")
+                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
         }
         .padding(.horizontal, Theme.gutter)
@@ -197,7 +197,7 @@ struct TodayView: View {
             dayRow(shown)
             showMoreButton
             if model.prefs.showOffers {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer")
+                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
         }
         .padding(.horizontal, Theme.gutter)

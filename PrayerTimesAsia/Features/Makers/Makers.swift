@@ -61,6 +61,8 @@ extension AppModel {
 struct MakersCard: View {
     let offer: MakersOffer
     let placement: String
+    /// One line, for the Prayer screen where every point of height counts.
+    var compact = false
 
     var body: some View {
         Link(destination: offer.url(from: placement)) {
@@ -68,19 +70,21 @@ struct MakersCard: View {
                 Image(systemName: offer.symbol)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Theme.accent)
-                    .frame(width: 34, height: 34)
+                    .frame(width: compact ? 28 : 34, height: compact ? 28 : 34)
                     .background(Theme.accent.opacity(0.18), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 VStack(alignment: .leading, spacing: 1) {
                     Text(offer.title).font(.subheadline.weight(.semibold))
-                    Text(offer.subtitle).font(.caption).foregroundStyle(.secondary)
-                        .lineLimit(2).multilineTextAlignment(.leading)
+                    if !compact {
+                        Text(offer.subtitle).font(.caption).foregroundStyle(.secondary)
+                            .lineLimit(2).multilineTextAlignment(.leading)
+                    }
                 }
                 Spacer(minLength: 4)
                 Text(offer.site).font(.caption.weight(.semibold)).foregroundStyle(Theme.accent)
                 Image(systemName: "arrow.up.right").font(.caption2.weight(.bold)).foregroundStyle(Theme.accent)
             }
-            .padding(.horizontal, 12).padding(.vertical, 9)
-            .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .padding(.horizontal, 12).padding(.vertical, compact ? 6 : 9)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
         }
