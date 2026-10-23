@@ -35,19 +35,11 @@ struct TodayView: View {
         ZStack {
             LivingSkyBackground(colors: sky)
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    topBar(now: now, current: current, next: next)
-                    if let place = model.activePlace {
-                        SunPath(now: now, day: day, coordinates: place.coordinates, timeZone: place.timeZone,
-                                glow: Theme.sunArc)
-                            .frame(height: 96)
-                            .padding(.horizontal, -Theme.gutter)
-                    }
-                    placeChip()
+                VStack(alignment: .leading, spacing: 12) {
+                    header(now: now, day: day, shown: shown, current: current, next: next)
                     if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                     if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
                     if let status = model.musafirStatus, status.isTraveller { musafirChip(status) }
-                    dayNavigator(shown)
                     PrayerList(day: shown, now: now,
                                current: dayOffset == 0 ? current?.prayer : nil,
                                next: dayOffset == 0 ? next : nil,
@@ -57,10 +49,10 @@ struct TodayView: View {
                             withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
                         })
                     showMoreButton
-                    SourceBadge(day: shown)
                 }
                 .padding(.horizontal, Theme.gutter)
-                .padding(.bottom, 32)
+                .padding(.top, 4)
+                .padding(.bottom, 24)
             }
             .scrollIndicators(.hidden)
         }
@@ -69,75 +61,86 @@ struct TodayView: View {
 
     // MARK: Top
 
-    /// Left: where we are in the day. Right: streak and settings. One row.
-    private func topBar(now: Date, current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            if let current, let next {
-                status(current: current, next: next, now: now)
+    /// The Day Dial on the left; where, when and the source on the right.
+    private func header(now: Date, day: PrayerDay, shown: PrayerDay,
+                        current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
+        HStack(alignment: .center, spacing: 14) {
+            if let current, let next, let tomorrow = model.day(containing: now.addingTimeInterval(86_400)) {
+                DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
+                        currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
+                        currentPrayer: current.prayer,
+                        countdown: Self.short(next.time.timeIntervalSince(now)),
+                        nextName: next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))
+                    .frame(width: 172, height: 172)
             }
-            Spacer(minLength: 0)
-            if model.prefs.trackerEnabled { streakChip(now) }
-            Button { model.showSettings = true } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.body)
-                    .frame(width: 38, height: 38)
-                    .background(Color.primary.opacity(0.1), in: Circle())
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Spacer(minLength: 0)
+                    if model.prefs.trackerEnabled { streakChip(now) }
+                    Button { model.showSettings = true } label: {
+                        Image(systemName: "gearshape.fill").font(.subheadline)
+                            .frame(width: 34, height: 34)
+                            .background(Color.primary.opacity(0.1), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Settings")
+                }
+                Button { showPlaces = true } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
+                        Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
+                        if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
+                        Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.horizontal, 10).padding(.vertical, 6)
+                    .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.7), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Change location")
+                dateBlock(shown)
+                SourceBadge(day: shown, compact: true)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Settings")
         }
-        .padding(.top, 6)
     }
 
-    /// "TODAY | ➤ Pasir Ris 🇸🇬" - which day and where, in one centred chip.
-    private func placeChip() -> some View {
+    /// "TODAY / Fri 23 Oct / 12 Jamadilawal 1448" with ‹ › to move between days.
+    private func dateBlock(_ shown: PrayerDay) -> some View {
+        let date = shown.time(.dhuhr)
+        let f = DateFormatter()
+        f.timeZone = model.timeZone
+        f.dateFormat = "EEE d MMM"
         let label: String = switch dayOffset {
         case 0: "TODAY"
         case 1: "TOMORROW"
         case -1: "YESTERDAY"
         default: dayOffset > 0 ? "IN \(dayOffset) DAYS" : "\(-dayOffset) DAYS AGO"
         }
-        return Button { showPlaces = true } label: {
-            HStack(spacing: 8) {
-                Text(label).font(.caption.weight(.heavy)).tracking(0.5)
-                Rectangle().fill(Color.primary.opacity(0.3)).frame(width: 1, height: 12)
-                HStack(spacing: 5) {
-                    Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
-                    if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
-                    Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
-                }
-                .font(.subheadline.weight(.semibold))
+        return HStack(spacing: 2) {
+            Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
+                Image(systemName: "chevron.left").font(.subheadline.weight(.semibold)).frame(width: 22, height: 40).opacity(0.6)
             }
-            .padding(.horizontal, 14).padding(.vertical, 7)
-            .background(Color.primary.opacity(0.06), in: Capsule())
-            .overlay(Capsule().strokeBorder(Theme.sunArc.opacity(0.7), lineWidth: 1))
+            .accessibilityLabel("Previous day")
+            Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(label).font(.caption2.weight(.heavy)).tracking(0.5).foregroundStyle(Theme.accent)
+                    Text(f.string(from: date)).font(.headline)
+                    HStack(spacing: 3) {
+                        Text(Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment))
+                            .lineLimit(1).minimumScaleFactor(0.75)
+                        Image(systemName: "calendar")
+                    }
+                    .font(.caption).foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+            Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
+                Image(systemName: "chevron.right").font(.subheadline.weight(.semibold)).frame(width: 22, height: 40).opacity(0.6)
+            }
+            .accessibilityLabel("Next day")
         }
         .buttonStyle(.plain)
-        .frame(maxWidth: .infinity)
-        .padding(.top, -6)
-        .accessibilityHint("Change location")
-    }
-
-    /// "Isyak · 9h 22m until Subuh" - small, top left (the Pillars idea).
-    private func status(current: (prayer: Prayer, time: Date), next: (prayer: Prayer, time: Date), now: Date) -> some View {
-        let currentName = current.prayer.name(model.naming, isFriday: model.isFriday(current.time))
-        let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
-        let remaining = next.time.timeIntervalSince(now)
-        return VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Circle().fill(current.prayer.tint).frame(width: 9, height: 9)
-                Text(currentName).font(Theme.display(30, .bold))
-            }
-            Text(next.prayer == .sunrise ? "\(Self.short(remaining)) until \(nextName) - \(Prayer.fajr.name(model.naming)) ends" : "\(Self.short(remaining)) until \(nextName)")
-                .font(.subheadline.weight(.semibold))
-                .monospacedDigit()
-                .contentTransition(.numericText(countsDown: true))
-                .padding(.horizontal, 12).padding(.vertical, 6)
-                .background(Color.primary.opacity(0.1), in: Capsule())
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Now \(currentName). \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))")
     }
 
     /// "9h 22m", "22m", "45s".
@@ -179,41 +182,6 @@ struct TodayView: View {
     }
 
     // MARK: Day
-
-    private func dayNavigator(_ shown: PrayerDay) -> some View {
-        let date = shown.time(.dhuhr)
-        let f = DateFormatter()
-        f.timeZone = model.timeZone
-        f.dateFormat = "EEEE d MMMM"
-        let hijri = Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment)
-        return HStack {
-            Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
-                Image(systemName: "chevron.left").frame(width: 40, height: 40).opacity(0.6)
-            }
-            .accessibilityLabel("Previous day")
-            Spacer()
-            Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
-                VStack(spacing: 2) {
-                    Text(f.string(from: date)).font(.title3.weight(.semibold))
-                    HStack(spacing: 4) {
-                        Text(hijri)
-                        Image(systemName: "calendar").font(.caption2)
-                    }
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                }
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
-            Spacer()
-            Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
-                Image(systemName: "chevron.right").frame(width: 40, height: 40).opacity(0.6)
-            }
-            .accessibilityLabel("Next day")
-        }
-        .font(.headline.weight(.semibold))
-        .buttonStyle(.plain)
-    }
 
     /// One tap to be told when each prayer begins (all five, at the exact time).
     private var alertsPrompt: some View {
@@ -372,7 +340,7 @@ private struct PrayerList: View {
             }
             .layoutPriority(-1)
             Spacer(minLength: 6)
-            TimeText(parts: model.timeParts(time), size: 28)
+            TimeText(parts: model.timeParts(time), size: 27)
             Group {
                 Button { toggleNotify(prayer) } label: {
                     Image(systemName: notifying ? "bell.fill" : "bell.slash")
@@ -384,7 +352,7 @@ private struct PrayerList: View {
                 .accessibilityLabel(notifying ? "Turn off alert" : "Turn on alert")
             }
         }
-        .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, 12)
+        .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, 8)
         .contentShape(Rectangle())
         // Tracker (opt-in): tap a prayer that has passed to tick it off.
         .onTapGesture {

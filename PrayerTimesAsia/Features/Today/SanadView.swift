@@ -26,10 +26,43 @@ extension SourceGrade {
 struct SourceBadge: View {
     @Environment(AppModel.self) private var model
     let day: PrayerDay
+    /// "A · MUIS ⓘ" for the Prayer screen header.
+    var compact = false
     @State private var showSanad = false
 
     var body: some View {
         Button { showSanad = true } label: {
+            if compact { compactLabel } else { fullLabel }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Source: grade \(day.grade.rawValue), \(day.grade.title), \(sourceName)")
+        .accessibilityHint("Shows where these times come from")
+        .sheet(isPresented: $showSanad) { SanadSheet(day: day) }
+    }
+
+    private var compactLabel: some View {
+        HStack(spacing: 6) {
+            Text(day.grade.rawValue)
+                .font(.caption2.weight(.heavy))
+                .frame(width: 18, height: 18)
+                .background(day.grade.tint.opacity(0.9), in: Circle())
+                .foregroundStyle(.black.opacity(0.8))
+            Text(shortSource).font(.caption.weight(.semibold)).lineLimit(1)
+            Image(systemName: "info.circle").font(.caption2).opacity(0.7)
+        }
+        .padding(.horizontal, 9).padding(.vertical, 5)
+        .background(Color.primary.opacity(0.1), in: Capsule())
+    }
+
+    private var shortSource: String {
+        switch day.grade {
+        case .official: "\(day.grade.title) · \(model.officialSource?.authority ?? model.method.shortName)"
+        case .masjid, .community: day.mosqueName ?? day.grade.title
+        default: "\(day.grade.title) · \(model.method.shortName)"
+        }
+    }
+
+    private var fullLabel: some View {
             HStack(spacing: 8) {
                 Text(day.grade.rawValue)
                     .font(.caption.weight(.heavy))
@@ -44,11 +77,6 @@ struct SourceBadge: View {
             }
             .padding(.horizontal, 12).padding(.vertical, 9)
             .background(Color.primary.opacity(0.12), in: Capsule())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Source: grade \(day.grade.rawValue), \(day.grade.title), \(sourceName)")
-        .accessibilityHint("Shows where these times come from")
-        .sheet(isPresented: $showSanad) { SanadSheet(day: day) }
     }
 
     private var sourceName: String {
