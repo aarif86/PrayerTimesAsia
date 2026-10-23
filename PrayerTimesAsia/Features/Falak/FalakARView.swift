@@ -47,7 +47,7 @@ struct FalakARScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Point the camera at the floor until the stick appears.")
                 .font(.subheadline.weight(.semibold))
-            Label("Gold line: the qibla", systemImage: "line.diagonal").foregroundStyle(Color(red: 1, green: 0.84, blue: 0.5))
+            Label("Gold line: the qibla", systemImage: "line.diagonal").foregroundStyle(Theme.gold)
             Label("Dark bar: where a stick's shadow falls right now", systemImage: "line.diagonal")
             Text("Outdoors in sunshine, real shadows should lie along the dark bar. If they don't, move away from metal and wave the phone in a figure-8 to recalibrate the compass. Never look at the sun.")
                 .font(.caption).opacity(0.85)

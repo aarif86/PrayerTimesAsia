@@ -3,6 +3,17 @@ import SwiftUI
 enum Theme {
     static let corner: CGFloat = 22
     static let gutter: CGFloat = 20
+    // MARK: Palette - one set of colours for the whole app.
+    // accent: the brand peach (buttons, Falak tools, highlights)
+    // gold: anything qibla
+    // north: the compass N
+    // success: aligned / done; warning: safety notes
+    // Prayer colours (Prayer.tint) are only for prayer rows and markers.
+    static var accent: Color { sunArc }
+    static let north = Color(red: 0.88, green: 0.39, blue: 0.31)
+    static let success = Color.green
+    static let warning = Color(red: 0.93, green: 0.66, blue: 0.24)
+
     /// The day arc on Today and the place chip outline: a soft peach.
     static let sunArc = Color(UIColor { $0.userInterfaceStyle == .dark
         ? UIColor(red: 0.97, green: 0.74, blue: 0.56, alpha: 1)
@@ -79,5 +90,5 @@ struct TimeText: View {
 }
 
 extension BlessedTime {
-    var tint: Color { Color(red: 0.55, green: 0.5, blue: 0.95) }
+    var tint: Color { Color.primary.opacity(0.45) }
 }

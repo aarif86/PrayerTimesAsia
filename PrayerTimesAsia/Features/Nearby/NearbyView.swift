@@ -123,7 +123,7 @@ struct NearbyView: View {
                     ForEach(visible) { space in
                         Marker(space.name, systemImage: space.isMusollah ? "house.fill" : "moon.stars.fill",
                                coordinate: space.coordinate)
-                            .tint(space.isMusollah ? .teal : Color(red: 0.86, green: 0.36, blue: 0.3))
+                            .tint(space.isMusollah ? Prayer.fajr.tint : Theme.accent)
                             .tag(space)
                     }
                 }
@@ -169,7 +169,7 @@ struct NearbyView: View {
                 Button { selected = space } label: {
                     HStack(spacing: 12) {
                         Image(systemName: space.isMusollah ? "house.fill" : "moon.stars.fill")
-                            .foregroundStyle(space.isMusollah ? .teal : Color(red: 0.86, green: 0.36, blue: 0.3))
+                            .foregroundStyle(space.isMusollah ? Prayer.fajr.tint : Theme.accent)
                             .frame(width: 24)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(space.name).font(.body.weight(.semibold)).foregroundStyle(.primary)

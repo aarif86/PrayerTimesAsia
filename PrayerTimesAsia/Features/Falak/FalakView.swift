@@ -61,7 +61,7 @@ struct FalakView: View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 8) {
                 Image(systemName: symbol).font(.title2.weight(.semibold))
-                    .foregroundStyle(SourceGrade.falak.tint)
+                    .foregroundStyle(Theme.accent)
                     .frame(height: 32)
                 Text(title).font(.headline)
                 Text(subtitle).font(.caption).opacity(0.75)
@@ -77,7 +77,7 @@ struct FalakView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
                 Image("Tab-falak").resizable().frame(width: 38, height: 38)
-                    .foregroundStyle(SourceGrade.falak.tint)
+                    .foregroundStyle(Theme.accent)
                     .accessibilityHidden(true)
                 Text("Falak").font(Theme.display(34, .bold)).accessibilityAddTraits(.isHeader)
             }
@@ -131,13 +131,13 @@ struct SunSafetyCard: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "eye.trianglebadge.exclamationmark.fill")
-                .font(.title2).foregroundStyle(Color(red: 1, green: 0.78, blue: 0.35))
+                .font(.title2).foregroundStyle(Theme.warning)
             Text("Never look at the sun - not briefly, not through sunglasses, binoculars or your phone's camera. Look only at the shadow on the ground.")
                 .font(.footnote.weight(.semibold))
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(red: 0.55, green: 0.25, blue: 0.05).opacity(0.55), in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+        .background(Theme.warning.opacity(0.22), in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
     }
 }
 
@@ -199,7 +199,7 @@ private struct ShadowDial: View {
                 tick.move(to: point(Double(i) * 90, r - 8)); tick.addLine(to: point(Double(i) * 90, r - 1))
                 ctx.stroke(tick, with: .color(Color.primary.opacity(0.6)), lineWidth: 1.5)
             }
-            ctx.draw(Text("N").font(.caption2.weight(.heavy)).foregroundStyle(Color(red: 1, green: 0.55, blue: 0.45)), at: point(0, r - 16))
+            ctx.draw(Text("N").font(.caption2.weight(.heavy)).foregroundStyle(Theme.north), at: point(0, r - 16))
             // Qibla line, dashed, through the stick.
             var q = Path()
             q.move(to: point(qibla + 180, r - 6)); q.addLine(to: point(qibla, r - 6))
@@ -406,7 +406,7 @@ private struct ShadowStickCard: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(SourceGrade.falak.tint.opacity(0.18), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(Theme.accent.opacity(0.18), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     private func cm(_ v: Double) -> String {

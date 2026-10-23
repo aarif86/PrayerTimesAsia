@@ -173,7 +173,7 @@ private struct Dial: View {
                     ForEach(Array(["N", "E", "S", "W"].enumerated()), id: \.offset) { i, letter in
                         Text(letter)
                             .font(.headline.weight(i == 0 ? .heavy : .semibold))
-                            .foregroundStyle(i == 0 ? Color(red: 1, green: 0.55, blue: 0.45) : Color.primary.opacity(0.8))
+                            .foregroundStyle(i == 0 ? Theme.north : Color.primary.opacity(0.8))
                             .rotationEffect(.degrees(-Double(i) * 90 + heading))
                             .offset(y: -size / 2 + 38)
                             .rotationEffect(.degrees(Double(i) * 90))
@@ -201,7 +201,7 @@ private struct Dial: View {
                 .rotationEffect(.degrees(-heading))
                 .animation(.interpolatingSpring(stiffness: 60, damping: 14), value: heading)
 
-                // Centre: a tick when aligned, otherwise which way to turn.
+                // Centre: a tick when aligned, otherwise an arrow pointing at the qibla.
                 Circle()
                     .fill(.ultraThinMaterial)
                     .overlay(Circle().strokeBorder(aligned ? green.opacity(0.5) : Color.primary.opacity(0.15), lineWidth: 1))
@@ -217,12 +217,14 @@ private struct Dial: View {
                         }
                         .transition(.scale(scale: 0.6).combined(with: .opacity))
                     } else if let delta {
-                        VStack(spacing: 4) {
-                            Image(systemName: delta > 0 ? "arrow.clockwise" : "arrow.counterclockwise")
-                                .font(.system(size: size * 0.08, weight: .semibold))
-                            Text("\(Int(abs(delta).rounded()))°").font(Theme.display(22, .bold)).monospacedDigit()
-                        }
-                        .transition(.opacity)
+                        // A compass arrow that always points at the qibla - no numbers here.
+                        Image(systemName: "location.north.fill")
+                            .font(.system(size: size * 0.16, weight: .bold))
+                            .foregroundStyle(Theme.gold)
+                            .shadow(color: Theme.gold.opacity(0.4), radius: 8)
+                            .rotationEffect(.degrees(delta))
+                            .animation(.interpolatingSpring(stiffness: 60, damping: 14), value: delta)
+                            .transition(.opacity)
                     } else {
                         Image(systemName: "location.north.line").font(.system(size: size * 0.08)).opacity(0.6)
                     }

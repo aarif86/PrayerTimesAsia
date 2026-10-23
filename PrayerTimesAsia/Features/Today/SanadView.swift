@@ -7,7 +7,7 @@ extension SourceGrade {
         case .masjid: Color(red: 0.55, green: 0.78, blue: 1)
         case .community: Color(red: 1, green: 0.82, blue: 0.45)
         case .calculated: Color.primary.opacity(0.75)
-        case .falak: Color(red: 0.98, green: 0.66, blue: 0.85)
+        case .falak: Theme.accent
         }
     }
 

@@ -481,7 +481,7 @@ private struct ArrivalCard: View {
                         Text("Follow each country's method as you travel").font(.caption).opacity(0.75)
                     }
                 }
-                .tint(Color(red: 1, green: 0.62, blue: 0.4))
+                .tint(Theme.accent)
                 HStack {
                     Text("Asr").font(.subheadline.weight(.semibold))
                     Spacer()
