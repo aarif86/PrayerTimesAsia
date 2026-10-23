@@ -58,7 +58,7 @@ ALSO
 • Prayer reminders, Jumaat on Fridays, Hijri date with ±2 day adjustment, 24-hour time
 
 PRIVATE BY DESIGN
-No ads. No account. No tracking. Your location never leaves your phone.
+No third-party ads. No account. No tracking. Your location never leaves your phone.
 
 Musafir guidance is general information, not a fatwa - when unsure, follow your local religious authority.
 

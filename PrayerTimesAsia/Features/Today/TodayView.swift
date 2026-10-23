@@ -76,6 +76,9 @@ struct TodayView: View {
                     withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
                 })
             showMoreButton
+            if model.prefs.showOffers {
+                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer")
+            }
         }
         .padding(.horizontal, Theme.gutter)
         .padding(.top, 4)
@@ -193,6 +196,9 @@ struct TodayView: View {
                 })
             dayRow(shown)
             showMoreButton
+            if model.prefs.showOffers {
+                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer")
+            }
         }
         .padding(.horizontal, Theme.gutter)
         .padding(.top, 4)

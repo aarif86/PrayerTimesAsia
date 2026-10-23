@@ -165,37 +165,44 @@ struct NearbyView: View {
                                                      ? "Searching needs an internet connection."
                                                      : "Apple Maps has no \(kind == .musollah ? "musollah" : "masjid") listed within 15 km. Use the Qibla tab to pray where you are."))
         } else {
-            List(visible) { space in
-                Button { selected = space } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: space.isMusollah ? "house.fill" : "moon.stars.fill")
-                            .foregroundStyle(space.isMusollah ? Prayer.fajr.tint : Theme.accent)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(space.name).font(.body.weight(.semibold)).foregroundStyle(.primary)
-                            if !space.address.isEmpty {
-                                Text(space.address).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            List {
+                ForEach(visible) { space in
+                    Button { selected = space } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: space.isMusollah ? "house.fill" : "moon.stars.fill")
+                                .foregroundStyle(space.isMusollah ? Prayer.fajr.tint : Theme.accent)
+                                .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(space.name).font(.body.weight(.semibold)).foregroundStyle(.primary)
+                                if !space.address.isEmpty {
+                                    Text(space.address).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                                }
                             }
+                            Spacer()
+                            Text(space.distanceKm < 1 ? "\(Int(space.distanceKm * 1000)) m"
+                                 : String(format: "%.1f km", space.distanceKm))
+                                .font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
                         }
-                        Spacer()
-                        Text(space.distanceKm < 1 ? "\(Int(space.distanceKm * 1000)) m"
-                             : String(format: "%.1f km", space.distanceKm))
-                            .font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
+                    }
+                    .swipeActions {
+                        Button("Directions") {
+                            space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeWalking])
+                        }
+                        .tint(.blue)
+                    }
+                    .contextMenu {
+                        Button("Walking directions", systemImage: "figure.walk") {
+                            space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeWalking])
+                        }
+                        Button("Driving directions", systemImage: "car.fill") {
+                            space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
+                        }
                     }
                 }
-                .swipeActions {
-                    Button("Directions") {
-                        space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeWalking])
-                    }
-                    .tint(.blue)
-                }
-                .contextMenu {
-                    Button("Walking directions", systemImage: "figure.walk") {
-                        space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeWalking])
-                    }
-                    Button("Driving directions", systemImage: "car.fill") {
-                        space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
-                    }
+                if model.prefs.showOffers {
+                    MakersCard(offer: .digital, placement: "masjid")
+                        .listRowSeparator(.hidden)
+                        .padding(.vertical, 6)
                 }
             }
             .listStyle(.plain)

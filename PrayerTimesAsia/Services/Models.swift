@@ -135,6 +135,8 @@ struct Preferences: Codable, Equatable, Sendable {
 
     var appearance: Appearance = .system
     var todayStyle: TodayStyle = .list
+    /// The makers' own offers (Badal, NasarDigital) on the Prayer and Masjid screens.
+    var showOffers = true
     /// Under each prayer, the word used where you are, when it differs from yours.
     var showLocalNames = true
     /// The "Turn on prayer alerts" bar on the Prayer screen was closed.
@@ -179,6 +181,7 @@ struct Preferences: Codable, Equatable, Sendable {
         communityAuthority = v(.communityAuthority, d.communityAuthority)
         appearance = v(.appearance, d.appearance)
         todayStyle = v(.todayStyle, d.todayStyle)
+        showOffers = v(.showOffers, d.showOffers)
         showLocalNames = v(.showLocalNames, d.showLocalNames)
         alertsPromptDismissed = v(.alertsPromptDismissed, d.alertsPromptDismissed)
     }

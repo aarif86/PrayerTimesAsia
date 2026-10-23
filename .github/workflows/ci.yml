@@ -104,6 +104,7 @@ jobs:
           shot -demo -widget-preview; sleep 8; xcrun simctl io "$UDID" screenshot screenshots/8-widget-large.png
           shot -demo -tab nearby; sleep 8; xcrun simctl io "$UDID" screenshot screenshots/6-masjid.png
           shot -demo -tab settings;       xcrun simctl io "$UDID" screenshot screenshots/5-settings.png
+          shot -demo -tab settings -settings-end; xcrun simctl io "$UDID" screenshot screenshots/5b-settings-makers.png
 
       - name: Upload screenshots
         if: always()

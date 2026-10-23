@@ -147,11 +147,23 @@ struct SettingsView: View {
                 }
 
                 Section("Privacy") {
-                    Label("No ads, no accounts, no tracking.", systemImage: "hand.raised.fill")
+                    Label("No third-party ads, no accounts, no tracking.", systemImage: "hand.raised.fill")
                     Label("Your location never leaves your phone.", systemImage: "location.slash.fill")
                     Label("Nearby masjid search goes through Apple Maps.", systemImage: "map.fill")
                 }
                 .font(.footnote)
+
+                Section {
+                    ForEach(MakersOffer.allCases) { offer in
+                        MakersCard(offer: offer, placement: "settings")
+                            .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
+                    }
+                    Toggle("Show offers on Prayer and Masjid", isOn: $model.prefs.showOffers)
+                } header: {
+                    Text("From the makers")
+                } footer: {
+                    Text("Prayer Times Asia is free and built fisabilillah by Nasar Pte Ltd. The only offers you will see are our own - no ad networks, nothing tracked.")
+                }
 
                 Section {
                     NavigationLink("Sources & credits") { CreditsView() }
@@ -161,6 +173,8 @@ struct SettingsView: View {
                     Text("Prayer Times Asia - made for Muslims living and travelling across Asia.")
                 }
             }
+            // `-settings-end` (CI screenshots): open at the bottom, where "From the makers" is.
+            .defaultScrollAnchor(ProcessInfo.processInfo.arguments.contains("-settings-end") ? .bottom : .top)
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }

@@ -38,7 +38,7 @@ struct OnboardingView: View {
                     }
                     Button("Choose a city instead") { showPlaces = true }
                         .font(.subheadline.weight(.semibold))
-                    Text("No ads. No account. Your location stays on your phone.")
+                    Text("No third-party ads. No account. Your location stays on your phone.")
                         .font(.caption).opacity(0.75)
                 }
                 .frame(maxWidth: .infinity)
