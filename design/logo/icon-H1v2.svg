@@ -135,5 +135,5 @@
 <polygon points="365,432 512,462 512,484 365,452" fill="#D8AE52"/>
 <polygon points="512,462 660,430 660,450 512,484" fill="#B48E3E"/>
 </g>
-<line x1="392.7" y1="581.4" x2="714.6" y2="357.1" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round"/><circle cx="512" cy="512" r="32" fill="#FFFFFF"/><line x1="392.7" y1="581.4" x2="714.6" y2="357.1" stroke="#151A45" stroke-width="16" stroke-linecap="round"/><circle cx="512" cy="512" r="20" fill="#FFFFFF" stroke="#151A45" stroke-width="10"/>
+<line x1="392.7" y1="581.4" x2="714.6" y2="357.1" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round"/><circle cx="512" cy="512" r="36" fill="#FFFFFF"/><line x1="392.7" y1="581.4" x2="714.6" y2="357.1" stroke="#151A45" stroke-width="16" stroke-linecap="round"/><circle cx="512" cy="512" r="21" fill="#FFFFFF" stroke="#151A45" stroke-width="16"/>
 </svg>
