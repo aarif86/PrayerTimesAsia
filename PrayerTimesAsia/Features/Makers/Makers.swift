@@ -21,12 +21,6 @@ enum MakersOffer: String, CaseIterable, Identifiable {
         }
     }
 
-    var symbol: String {
-        switch self {
-        case .badal: "building.columns.fill"
-        case .digital: "megaphone.fill"
-        }
-    }
 
     var site: String {
         switch self {
@@ -67,11 +61,14 @@ struct MakersCard: View {
     var body: some View {
         Link(destination: offer.url(from: placement)) {
             HStack(spacing: 12) {
-                Image(systemName: offer.symbol)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.accent)
-                    .frame(width: compact ? 28 : 34, height: compact ? 28 : 34)
-                    .background(Theme.accent.opacity(0.18), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                Group {
+                    switch offer {
+                    case .badal: KaabaGlyph().frame(width: compact ? 15 : 18, height: compact ? 15 : 18)
+                    case .digital: Image(systemName: "globe").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.accent)
+                    }
+                }
+                .frame(width: compact ? 28 : 34, height: compact ? 28 : 34)
+                .background(Theme.accent.opacity(0.18), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 VStack(alignment: .leading, spacing: 1) {
                     Text(offer.title).font(.subheadline.weight(.semibold))
                     if !compact {

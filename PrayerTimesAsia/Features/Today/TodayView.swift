@@ -80,7 +80,7 @@ struct TodayView: View {
                     withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
                 })
             showMoreButton
-            if model.prefs.showOffers {
+            if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
         }
@@ -200,7 +200,7 @@ struct TodayView: View {
                 })
             dayRow(shown)
             showMoreButton
-            if model.prefs.showOffers {
+            if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
         }
@@ -392,7 +392,7 @@ struct TodayView: View {
                     })
                 showMoreButton
                 SourceBadge(day: shown)
-                if model.prefs.showOffers {
+                if model.prefs.showOffers && showMore {
                     MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
                 }
             }
