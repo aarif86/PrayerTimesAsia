@@ -22,7 +22,11 @@ struct TodayView: View {
         }
         .sheet(isPresented: $showPlaces) { PlacesView() }
         .sheet(isPresented: $showCalendar) { CalendarSanadView() }
-        .onAppear { if ProcessInfo.processInfo.arguments.contains("-more") { showMore = true } }
+        .onAppear {
+            // Demo screenshots: Show more only when asked, never carried over from a previous run.
+            let args = ProcessInfo.processInfo.arguments
+            if args.contains(where: { $0.hasPrefix("-demo") }) { showMore = args.contains("-more") }
+        }
     }
 
     @ViewBuilder
