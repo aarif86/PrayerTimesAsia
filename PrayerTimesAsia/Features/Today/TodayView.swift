@@ -34,28 +34,40 @@ struct TodayView: View {
 
         ZStack {
             LivingSkyBackground(colors: sky)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    header(now: now, day: day, shown: shown, current: current, next: next)
-                    if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
-                    if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-                    PrayerList(day: shown, now: now,
-                               current: dayOffset == 0 ? current?.prayer : nil,
-                               next: dayOffset == 0 ? next : nil,
-                               showMore: showMore)
-                        .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { v in
-                            guard abs(v.translation.width) > abs(v.translation.height) * 2 else { return }
-                            withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
-                        })
-                    showMoreButton
+            // Fill the screen when it all fits: the list stretches into the free
+            // height so it breathes. Otherwise (small phones, Show more open) scroll.
+            ViewThatFits(in: .vertical) {
+                page(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                ScrollView {
+                    page(now: now, day: day, shown: shown, current: current, next: next, fill: false)
                 }
-                .padding(.horizontal, Theme.gutter)
-                .padding(.top, 4)
-                .padding(.bottom, 24)
+                .scrollIndicators(.hidden)
             }
-            .scrollIndicators(.hidden)
         }
         .foregroundStyle(.primary)
+    }
+
+    @ViewBuilder
+    private func page(now: Date, day: PrayerDay, shown: PrayerDay,
+                      current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
+        VStack(alignment: .leading, spacing: fill ? 16 : 12) {
+            header(now: now, day: day, shown: shown, current: current, next: next)
+            if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+            if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            PrayerList(day: shown, now: now,
+                       current: dayOffset == 0 ? current?.prayer : nil,
+                       next: dayOffset == 0 ? next : nil,
+                       showMore: showMore, fill: fill)
+                .frame(maxHeight: fill ? .infinity : nil, alignment: .top)
+                .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { v in
+                    guard abs(v.translation.width) > abs(v.translation.height) * 2 else { return }
+                    withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
+                })
+            showMoreButton
+        }
+        .padding(.horizontal, Theme.gutter)
+        .padding(.top, 4)
+        .padding(.bottom, fill ? 8 : 24)
     }
 
     // MARK: Top
@@ -246,6 +258,8 @@ private struct PrayerList: View {
     let current: Prayer?
     let next: (prayer: Prayer, time: Date)?
     let showMore: Bool
+    /// Stretch the rows to fill the height they are given.
+    var fill = false
 
     private enum Entry: Identifiable {
         case prayer(Prayer, Date)
@@ -347,6 +361,7 @@ private struct PrayerList: View {
             }
         }
         .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, 8)
+        .frame(maxHeight: fill ? 92 : nil)
         .contentShape(Rectangle())
         // Tracker (opt-in): tap a prayer that has passed to tick it off.
         .onTapGesture {
