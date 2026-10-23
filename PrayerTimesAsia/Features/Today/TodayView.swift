@@ -39,7 +39,6 @@ struct TodayView: View {
                     header(now: now, day: day, shown: shown, current: current, next: next)
                     if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                     if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-                    if let status = model.musafirStatus, status.isTraveller { musafirChip(status) }
                     PrayerList(day: shown, now: now,
                                current: dayOffset == 0 ? current?.prayer : nil,
                                next: dayOffset == 0 ? next : nil,
@@ -76,6 +75,15 @@ struct TodayView: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Spacer(minLength: 0)
+                    if let status = model.musafirStatus, status.isTraveller {
+                        Button { model.selectedTab = .journey } label: {
+                            Image(systemName: "airplane").font(.subheadline.weight(.semibold))
+                                .frame(width: 34, height: 34)
+                                .background(Theme.accent.opacity(0.25), in: Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Musafir: you may shorten and combine prayers")
+                    }
                     if model.prefs.trackerEnabled { streakChip(now) }
                     Button { model.showSettings = true } label: {
                         Image(systemName: "gearshape.fill").font(.subheadline)
@@ -227,21 +235,6 @@ struct TodayView: View {
         .frame(maxWidth: .infinity)
         .accessibilityHint("Dhuha and the blessed times of the night")
     }
-
-    private func musafirChip(_ status: Musafir.Status) -> some View {
-        Button { model.selectedTab = .journey } label: {
-            HStack {
-                Image(systemName: "airplane")
-                Text("Musafir · you may shorten & combine").lineLimit(1)
-                Spacer(minLength: 4)
-                Image(systemName: "chevron.right").font(.caption.weight(.bold))
-            }
-            .font(.subheadline.weight(.semibold))
-            .padding(.horizontal, 16).padding(.vertical, 12)
-            .background(Color.primary.opacity(0.12), in: Capsule())
-        }
-        .buttonStyle(.plain)
-    }
 }
 
 // MARK: - The list
@@ -305,21 +298,22 @@ private struct PrayerList: View {
         let prayed = trackable && model.isPrayed(prayer, on: time)
         return HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(prayer.name(model.naming, isFriday: model.isFriday(time)))
                         .font(.title3.weight(.semibold))
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
+                    if let local = model.localName(prayer, at: time) {
+                        Text(local).font(.caption.weight(.medium)).foregroundStyle(.secondary)
+                            .lineLimit(1).layoutPriority(-1)
+                            .accessibilityLabel("called \(local) here")
+                    }
                     if prayed {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.subheadline)
                             .foregroundStyle(.green)
                             .transition(.scale.combined(with: .opacity))
                     }
-                }
-                if let local = model.localName(prayer, at: time) {
-                    Text("\(local) here").font(.caption.weight(.medium)).opacity(0.6)
-                        .accessibilityLabel("Called \(local) here")
                 }
                 if isCurrent {
                     Text("NOW").font(.caption2.weight(.heavy)).foregroundStyle(prayer.tint)

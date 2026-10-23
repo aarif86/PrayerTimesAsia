@@ -42,17 +42,31 @@ struct DayDial: View {
                     }
                     // Track
                     ctx.stroke(arc(0, 360), with: .color(Color.primary.opacity(0.1)), style: StrokeStyle(lineWidth: ring))
-                    // Prayer periods
+                    // The sky through the day, as one gradient round the ring:
+                    // night, dawn, morning, the hot noon, afternoon, sunset, night.
+                    func f(_ d: Date) -> Double { min(1, max(0, d.timeIntervalSince(midnight) / 86_400)) }
+                    let night = Color(red: 0.13, green: 0.15, blue: 0.36)
+                    let stops: [Gradient.Stop] = [
+                        .init(color: night, location: 0),
+                        .init(color: Prayer.isha.tint, location: max(0, f(day.time(.fajr)) - 0.06)),
+                        .init(color: Prayer.fajr.tint, location: f(day.time(.fajr))),
+                        .init(color: Color(red: 0.96, green: 0.70, blue: 0.58), location: f(day.time(.sunrise))),
+                        .init(color: Prayer.sunrise.tint, location: (f(day.time(.sunrise)) + f(day.time(.dhuhr))) / 2),
+                        .init(color: Prayer.dhuhr.tint, location: f(day.time(.dhuhr))),
+                        .init(color: Prayer.asr.tint, location: f(day.time(.asr))),
+                        .init(color: Prayer.maghrib.tint, location: f(day.time(.maghrib))),
+                        .init(color: Prayer.isha.tint, location: f(day.time(.isha))),
+                        .init(color: night, location: 1),
+                    ]
+                    let sky = GraphicsContext.Shading.conicGradient(Gradient(stops: stops), center: c, angle: .degrees(90))
                     let order = Prayer.allCases
                     for (i, prayer) in order.enumerated() {
+                        // Isyak ends at tomorrow's Subuh: past 540° the conic gradient wraps by itself.
                         let start = angle(day.time(prayer))
-                        var end = i + 1 < order.count ? angle(day.time(order[i + 1])) : angle(nextFajr)
-                        if end < start { end += 360 }
-                        let colour = prayer == .sunrise ? Color.primary.opacity(0.18) : prayer.tint
-                        let gap = 1.2
-                        ctx.stroke(arc(start + gap, end - gap),
-                                   with: .color(prayer == currentPrayer ? colour : colour.opacity(0.55)),
-                                   style: StrokeStyle(lineWidth: prayer == currentPrayer ? ring * 1.25 : ring, lineCap: .butt))
+                        let end = i + 1 < order.count ? angle(day.time(order[i + 1])) : angle(nextFajr)
+                        let gap = 1.0
+                        ctx.stroke(arc(start + gap, end - gap), with: sky,
+                                   style: StrokeStyle(lineWidth: prayer == currentPrayer ? ring * 1.3 : ring))
                     }
                     // Quarter ticks: midnight, 6, noon, 18
                     for q in 0..<4 {
@@ -71,7 +85,7 @@ struct DayDial: View {
                     ctx.fill(Path(ellipseIn: CGRect(x: dot.x - ring * 0.62, y: dot.y - ring * 0.62, width: ring * 1.24, height: ring * 1.24)),
                              with: .color(.white))
                     ctx.stroke(Path(ellipseIn: CGRect(x: dot.x - ring * 0.62, y: dot.y - ring * 0.62, width: ring * 1.24, height: ring * 1.24)),
-                               with: .color(currentPrayer.tint), lineWidth: 3)
+                               with: .color(Theme.accent), lineWidth: 3)
                 }
                 // Sun at noon, moon at midnight, as quiet markers inside the ring
                 Image(systemName: "sun.max.fill").font(.system(size: size * 0.07))
@@ -84,7 +98,7 @@ struct DayDial: View {
                         .lineLimit(1).minimumScaleFactor(0.6)
                     Text(countdown)
                         .font(Theme.display(size * 0.1, .semibold)).monospacedDigit()
-                        .foregroundStyle(currentPrayer.tint)
+                        .foregroundStyle(Theme.accent)
                         .contentTransition(.numericText(countsDown: true))
                     Text("until \(nextName)")
                         .font(.system(size: size * 0.065, weight: .medium))
