@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.dp
 
-/** The iOS app's own line icons (design/icons/*.svg): prayer mat, compass, telescope, masjid, plane. */
+/** The iOS app's own line icons (design/icons in the iOS repo): prayer mat, compass, telescope, masjid, plane. */
 object AppIcons {
     private fun rect(x: Float, y: Float, w: Float, h: Float, r: Float): String =
         "M${x + r},$y H${x + w - r} A$r,$r 0 0 1 ${x + w},${y + r} V${y + h - r} A$r,$r 0 0 1 ${x + w - r},${y + h} " +

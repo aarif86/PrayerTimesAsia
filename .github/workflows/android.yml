@@ -36,15 +36,6 @@ jobs:
       - name: App unit tests and JVM screenshots (Robolectric + Roborazzi)
         run: ./gradlew :app:recordRoborazziDebug 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
 
-      - name: Error summary
-        if: failure()
-        run: |
-          grep -E "^e: |What went wrong|FAILED|Exception|error:|Error:" -A3 build.log | grep -v "^\s*at " | head -150 || true
-          for f in $(find . -path '*test-results*' -name '*.xml' 2>/dev/null); do
-            grep -l "<failure" "$f" >/dev/null 2>&1 && grep -A8 "<failure" "$f" | head -40
-          done
-          true
-
       - name: Upload the debug APK
         if: always()
         uses: actions/upload-artifact@v4
@@ -91,3 +82,12 @@ jobs:
           Claude-Session: https://claude.ai/code/session_01NdiKGwEktW7nQx1d8AJQww
           MSG
           git push -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" screenshots-android
+
+      - name: Error summary
+        if: failure()
+        run: |
+          grep -E "^e: |What went wrong|FAILED|Exception|error:|Error:" -A3 build.log | grep -v "^\s*at " | head -150 || true
+          for f in $(find . -path '*test-results*' -name '*.xml' 2>/dev/null); do
+            grep -l "<failure" "$f" >/dev/null 2>&1 && grep -A8 "<failure" "$f" | head -40
+          done
+          true
