@@ -33,7 +33,8 @@ enum WidgetBridge {
             sourceLabel: today?.officialSource ?? model.method.shortName,
             days: days,
             updated: .now,
-            hijriAdjustment: model.prefs.hijriAdjustment)
+            hijriAdjustment: model.prefs.hijriAdjustment,
+            style: model.prefs.todayStyle)
         return snapshot
     }
 }

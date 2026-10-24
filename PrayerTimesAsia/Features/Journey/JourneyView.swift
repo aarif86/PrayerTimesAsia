@@ -9,7 +9,7 @@ struct JourneyView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LivingSkyBackground(colors: .dusk)
+                SkyNow()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Journey").font(Theme.display(34, .bold)).padding(.top, 8)

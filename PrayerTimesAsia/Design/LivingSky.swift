@@ -33,6 +33,12 @@ struct SkyColors: Equatable {
         return SkyColors(top: top.mix(white, 0.62), bottom: bottom.mix(white, 0.8), glow: glow)
     }
 
+    /// Automatic appearance after dark: the night sky lifted halfway towards
+    /// twilight - dim and restful, lighter than full Dark.
+    var softNight: SkyColors {
+        SkyColors(top: top.mix(RGB(0x5C6190), 0.42), bottom: bottom.mix(RGB(0x8483B0), 0.4), glow: glow)
+    }
+
     static func mix(_ a: SkyColors, _ b: SkyColors, _ t: Double) -> SkyColors {
         SkyColors(top: a.top.mix(b.top, t), bottom: a.bottom.mix(b.bottom, t), glow: a.glow.mix(b.glow, t))
     }
@@ -108,16 +114,22 @@ struct StarField: View {
     }
 }
 
+extension EnvironmentValues {
+    /// Automatic appearance: night is the soft, dim sky rather than full Dark.
+    @Entry var softNight = false
+}
+
 struct LivingSkyBackground: View {
     let colors: SkyColors
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.softNight) private var softNight
 
     var body: some View {
-        let colors = scheme == .light ? self.colors.daylight : self.colors
+        let colors = scheme == .light ? self.colors.daylight : (softNight ? self.colors.softNight : self.colors)
         ZStack {
             LinearGradient(colors: [colors.top.color, colors.bottom.color], startPoint: .top, endPoint: .bottom)
             if scheme == .dark {
-                StarField().opacity(colors.darkness)
+                StarField().opacity(self.colors.darkness * (softNight ? 0.6 : 1))
             } else {
                 BrightSkyLayer(isDay: self.colors.darkness < 0.5, glow: colors.glow.color)
             }

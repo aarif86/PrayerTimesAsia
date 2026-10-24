@@ -7,16 +7,19 @@ struct PrayerTimesAsiaApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(model)
-                .preferredColorScheme(model.prefs.appearance.colorScheme)
-                .onChange(of: scenePhase) { _, phase in
-                    if phase == .active { model.appBecameActive() }
-                }
-                .onChange(of: model.location.location) { _, location in
-                    if let location { model.handle(location: location) }
-                }
-                .onChange(of: model.prefs) { old, _ in model.preferencesChanged(from: old) }
+            TimelineView(.everyMinute) { context in
+                RootView()
+                    .environment(model)
+                    .preferredColorScheme(model.colorScheme(at: context.date))
+                    .environment(\.softNight, model.prefs.appearance == .system)
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { model.appBecameActive() }
+            }
+            .onChange(of: model.location.location) { _, location in
+                if let location { model.handle(location: location) }
+            }
+            .onChange(of: model.prefs) { old, _ in model.preferencesChanged(from: old) }
         }
     }
 }
@@ -53,16 +56,6 @@ struct RootView: View {
         } else {
             OnboardingView()
                 .environment(\.colorScheme, .dark)
-        }
-    }
-}
-
-extension Appearance {
-    var colorScheme: ColorScheme? {
-        switch self {
-        case .system: nil
-        case .light: .light
-        case .dark: .dark
         }
     }
 }

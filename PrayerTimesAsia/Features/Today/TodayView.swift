@@ -84,6 +84,14 @@ struct TodayView: View {
                     .allowsHitTesting(false)
             }
         }
+        .onChange(of: model.prefs.appearance) { _, appearance in
+            let label = appearance == .system ? "Automatic: follows the sky" : appearance.label
+            withAnimation(.snappy) { styleToast = label }
+            Task {
+                try? await Task.sleep(for: .seconds(1.4))
+                withAnimation(.easeOut) { if styleToast == label { styleToast = nil } }
+            }
+        }
         .onChange(of: model.prefs.todayStyle) { _, style in
             withAnimation(.snappy) { styleToast = style.label }
             Task {
@@ -146,6 +154,7 @@ struct TodayView: View {
                         .accessibilityLabel("Musafir: you may shorten and combine prayers")
                     }
                     if model.prefs.trackerEnabled { streakChip(now) }
+                    appearanceButton
                     styleButton
                 }
                 Button { showPlaces = true } label: {
@@ -262,6 +271,7 @@ struct TodayView: View {
                 .accessibilityLabel("Musafir: you may shorten and combine prayers")
             }
             if model.prefs.trackerEnabled { streakChip(now) }
+            appearanceButton
             styleButton
         }
     }
@@ -410,6 +420,7 @@ struct TodayView: View {
                         .accessibilityLabel("Musafir: you may shorten and combine prayers")
                     }
                     if model.prefs.trackerEnabled { streakChip(now) }
+                    appearanceButton
                     styleButton
                 }
                 if let current, let next, dayOffset == 0 {
@@ -540,6 +551,7 @@ struct TodayView: View {
             }
             Spacer(minLength: 0)
             if model.prefs.trackerEnabled { streakChip(now) }
+            appearanceButton
             styleButton
         }
         .padding(.top, 6)
@@ -645,6 +657,29 @@ struct TodayView: View {
         }
         .buttonStyle(.plain)
     }
+    /// Automatic (follows the sky) → Light → Dark, one tap each.
+    private var appearanceButton: some View {
+        let symbol = switch model.prefs.appearance {
+        case .system: "circle.lefthalf.filled"
+        case .light: "sun.max.fill"
+        case .dark: "moon.fill"
+        }
+        return Button {
+            let all = Appearance.allCases
+            let i = all.firstIndex(of: model.prefs.appearance) ?? 0
+            withAnimation(.easeInOut) { model.prefs.appearance = all[(i + 1) % all.count] }
+        } label: {
+            Image(systemName: symbol).font(.subheadline.weight(.semibold))
+                .contentTransition(.symbolEffect(.replace))
+                .frame(width: 34, height: 34)
+                .background(Color.primary.opacity(0.1), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: model.prefs.appearance)
+        .accessibilityLabel("Appearance: \(model.prefs.appearance.label)")
+        .accessibilityHint("Switches between Automatic, Light and Dark.")
+    }
+
     /// Tap to try the next Prayer screen style; touch and hold to pick one.
     /// The choice is kept (Settings > Display shows the same).
     private var styleButton: some View {
@@ -1061,22 +1096,6 @@ private struct BlessedMark: View {
 }
 
 // MARK: - Colour bands
-
-/// The colours of the classic Singapore timetable, a shade calmer.
-enum BandsPalette {
-    static let header = Color(white: 0.17)
-    static let dateBar = Color(white: 0.24)
-    static func color(_ prayer: Prayer) -> Color {
-        switch prayer {
-        case .fajr: Color(red: 0.13, green: 0.43, blue: 0.36)
-        case .sunrise: Color(red: 0.56, green: 0.66, blue: 0.32)
-        case .dhuhr: Color(red: 0.85, green: 0.67, blue: 0.13)
-        case .asr: Color(red: 0.89, green: 0.58, blue: 0.32)
-        case .maghrib: Color(red: 0.88, green: 0.43, blue: 0.33)
-        case .isha: Color(red: 0.86, green: 0.31, blue: 0.35)
-        }
-    }
-}
 
 /// One prayer as a full-width band. Tap for its alert and, with the tracker
 /// on, to tick it off.

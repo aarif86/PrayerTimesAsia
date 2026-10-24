@@ -105,6 +105,8 @@ jobs:
           shot -demo -tab falak;          xcrun simctl io "$UDID" screenshot screenshots/7-falak.png
           shot -demo -tab falak -light;   xcrun simctl io "$UDID" screenshot screenshots/7b-falak-light.png
           shot -demo -widget-preview; sleep 8; xcrun simctl io "$UDID" screenshot screenshots/8-widget-large.png
+          for st in dial sunPath bands; do shot -demo -widget-preview -widget-style $st; sleep 8; xcrun simctl io "$UDID" screenshot screenshots/8-widget-$st.png; done
+          for t in today qibla falak nearby settings; do shot -demo -auto -tab $t; sleep 3; xcrun simctl io "$UDID" screenshot screenshots/9-auto-$t.png; done
           shot -demo -tab nearby; sleep 8; xcrun simctl io "$UDID" screenshot screenshots/6-masjid.png
           shot -demo -tab settings;       xcrun simctl io "$UDID" screenshot screenshots/5-settings.png
           shot -demo -tab settings -settings-end; xcrun simctl io "$UDID" screenshot screenshots/5b-settings-makers.png

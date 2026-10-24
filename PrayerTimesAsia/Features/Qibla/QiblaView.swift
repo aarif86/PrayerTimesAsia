@@ -20,7 +20,7 @@ struct QiblaView: View {
         let location = model.location
         let place = model.activePlace
         ZStack {
-            LivingSkyBackground(colors: .evening)
+            SkyNow()
             if let place {
                 let bearing = Geo.qiblaBearing(from: place.coordinates)
                 let heading = demoAligned ? bearing : location.heading

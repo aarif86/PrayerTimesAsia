@@ -1,6 +1,7 @@
 import CoreLocation
 import Foundation
 import Observation
+import SwiftUI
 
 /// The app's single source of truth: where you are, which rules apply there,
 /// and today's times. Views read from it; only it writes Preferences.
@@ -57,7 +58,7 @@ final class AppModel {
             let c = cal.dateComponents([.year, .month, .day], from: Date.now.addingTimeInterval(Double(-back) * 86_400))
             p.prayedLog[String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)] = Set(Prayer.obligatory)
         }
-        p.appearance = args.contains("-light") ? .light : .dark
+        p.appearance = args.contains("-light") ? .light : args.contains("-auto") ? .system : .dark
         p.todayStyle = args.contains("-dial") ? .dial : args.contains("-sunpath") ? .sunPath : args.contains("-bands") ? .bands : .list
         if args.contains("-demo-visitor") {
             // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
@@ -88,6 +89,18 @@ final class AppModel {
                                arrived: .now.addingTimeInterval(-86_400 * 30))]
         }
         return p
+    }
+
+    /// Light or Dark as chosen; Automatic follows the sky - light from sunrise
+    /// to Maghrib, the soft night after (nil: follow the phone, before we know the times).
+    func colorScheme(at date: Date) -> ColorScheme? {
+        switch prefs.appearance {
+        case .light: return .light
+        case .dark: return .dark
+        case .system:
+            guard let day = day(containing: date) else { return nil }
+            return date >= day.time(.sunrise) && date < day.time(.maghrib) ? .light : .dark
+        }
     }
 
     /// Applies a `-tab <name>` launch argument once the UI is up (screenshots).

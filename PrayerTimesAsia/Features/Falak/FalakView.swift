@@ -14,7 +14,7 @@ struct FalakView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LivingSkyBackground(colors: .afternoon).ignoresSafeArea()
+                SkyNow()
                 if let place = model.activePlace {
                     TimelineView(.periodic(from: .now, by: 30)) { context in
                         ScrollView {

@@ -196,6 +196,8 @@ struct SettingsView: View {
                 }
             }
             }
+            .scrollContentBackground(.hidden)
+            .background(SkyNow())
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
             .toolbar {

@@ -29,6 +29,9 @@ struct WidgetSnapshot: Codable, Sendable {
     var updated: Date
     /// The user's Hijri ±days, so the big widget's date matches the app.
     var hijriAdjustment: Int? = nil
+    /// The Prayer screen style chosen in the app; the big widget follows it
+    /// unless the widget is set to a style of its own.
+    var style: TodayStyle? = nil
 
     static let appGroup = "group.com.prayertimesasia.app"
     private static let key = "widget.snapshot.v1"

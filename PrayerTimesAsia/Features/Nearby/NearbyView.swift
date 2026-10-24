@@ -138,6 +138,7 @@ struct NearbyView: View {
 
                 list
             }
+            .background(SkyNow())
             .navigationTitle("Masjid & Musollah")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -192,7 +193,8 @@ struct NearbyView: View {
                                 .font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
                         }
                     }
-                    .swipeActions {
+                    .listRowBackground(Color.clear)
+                .swipeActions {
                         Button("Directions") {
                             space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeWalking])
                         }
@@ -209,6 +211,7 @@ struct NearbyView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
     }
 }

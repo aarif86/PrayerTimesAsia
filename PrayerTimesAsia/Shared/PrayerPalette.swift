@@ -15,3 +15,19 @@ extension Prayer {
         }
     }
 }
+
+/// The colours of the classic Singapore timetable, a shade calmer.
+enum BandsPalette {
+    static let header = Color(white: 0.17)
+    static let dateBar = Color(white: 0.24)
+    static func color(_ prayer: Prayer) -> Color {
+        switch prayer {
+        case .fajr: Color(red: 0.13, green: 0.43, blue: 0.36)
+        case .sunrise: Color(red: 0.56, green: 0.66, blue: 0.32)
+        case .dhuhr: Color(red: 0.85, green: 0.67, blue: 0.13)
+        case .asr: Color(red: 0.89, green: 0.58, blue: 0.32)
+        case .maghrib: Color(red: 0.88, green: 0.43, blue: 0.33)
+        case .isha: Color(red: 0.86, green: 0.31, blue: 0.35)
+        }
+    }
+}
