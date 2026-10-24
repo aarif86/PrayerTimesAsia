@@ -88,3 +88,26 @@ struct MakersCard: View {
         .accessibilityHint("Opens \(offer.site) in Safari")
     }
 }
+
+/// "About" behind the (i) on the Masjid tab: who built the app, and their services.
+struct MakersSheet: View {
+    let placement: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Built fisabilillah").font(Theme.display(26, .bold))
+                Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by the team at Nasar Pte Ltd.")
+                    .foregroundStyle(.secondary)
+                ForEach(MakersOffer.allCases) { offer in
+                    MakersCard(offer: offer, placement: placement)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(Theme.gutter)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+        .presentationDetents([.medium])
+    }
+}

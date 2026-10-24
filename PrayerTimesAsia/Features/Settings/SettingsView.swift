@@ -4,6 +4,8 @@ struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
     @Environment(\.dismiss) private var dismiss
+    /// A main tab (no Done button) rather than a sheet.
+    var isTab = false
 
     var body: some View {
         @Bindable var model = model
@@ -15,6 +17,19 @@ struct SettingsView: View {
                         LabeledContent("Place", value: model.activePlace?.name ?? "Not set")
                     }
                     LabeledContent("Country rules", value: model.profile.code.isEmpty ? "Outside Asia" : "\(model.profile.flag) \(model.profile.name)")
+                }
+
+                Section {
+                    Toggle("Musafir features", isOn: $model.prefs.musafirEnabled)
+                    if model.prefs.musafirEnabled {
+                        Button { model.showJourney = true } label: {
+                            Label("Journey", image: "Tab-journey")
+                        }
+                    }
+                } header: {
+                    Text("Travel")
+                } footer: {
+                    Text("Jamak and qasar guidance, combined prayer windows and a log of where you've prayed. We'll ask when you land in another country.")
                 }
 
                 Section {
@@ -183,7 +198,9 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar {
+                if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            }
         }
     }
 }

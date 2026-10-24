@@ -143,6 +143,9 @@ struct Preferences: Codable, Equatable, Sendable {
     var todayStyle: TodayStyle = .list
     /// The makers' own offers (Badal, NasarDigital) on the Prayer and Masjid screens.
     var showOffers = true
+    /// Travel concessions (jamak, qasar) and the Journey screen. Off until the
+    /// user turns it on - offered when they land in another country.
+    var musafirEnabled = false
     /// Under each prayer, the word used where you are, when it differs from yours.
     var showLocalNames = true
     /// The "Turn on prayer alerts" bar on the Prayer screen was closed.
@@ -188,6 +191,7 @@ struct Preferences: Codable, Equatable, Sendable {
         appearance = v(.appearance, d.appearance)
         todayStyle = v(.todayStyle, d.todayStyle)
         showOffers = v(.showOffers, d.showOffers)
+        musafirEnabled = v(.musafirEnabled, d.musafirEnabled)
         showLocalNames = v(.showLocalNames, d.showLocalNames)
         alertsPromptDismissed = v(.alertsPromptDismissed, d.alertsPromptDismissed)
     }

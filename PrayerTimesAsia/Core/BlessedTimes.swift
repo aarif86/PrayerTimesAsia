@@ -6,17 +6,14 @@ enum BlessedTime: String, CaseIterable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
+    /// In English for everyone: Singapore's Malay, Chinese and Indian Muslims
+    /// all read these the same way. (The style is kept for a future translation.)
     func name(_ style: NamingStyle) -> String {
-        switch (self, style) {
-        case (.imsak, _): "Imsak"
-        case (.dhuha, .malay), (.dhuha, .indonesian): "Dhuha"
-        case (.dhuha, _): "Duha"
-        case (.midnight, .malay): "Tengah malam"
-        case (.midnight, .indonesian): "Tengah malam"
-        case (.midnight, _): "Middle of the night"
-        case (.lastThird, .malay): "Sepertiga malam terakhir"
-        case (.lastThird, .indonesian): "Sepertiga malam terakhir"
-        case (.lastThird, _): "Last third of the night"
+        switch self {
+        case .imsak: "Imsak"
+        case .dhuha: "Dhuha"
+        case .midnight: "Middle of the night"
+        case .lastThird: "Last third of the night"
         }
     }
 

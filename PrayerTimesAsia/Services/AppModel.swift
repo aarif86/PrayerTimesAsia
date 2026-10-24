@@ -20,7 +20,8 @@ final class AppModel {
     private(set) var isResolvingPlace = false
     var selectedTab: Tab = .today
     /// Settings opens as a sheet from the gear on Today.
-    var showSettings = false
+    /// Journey opens as a sheet (from Settings or the musafir chip).
+    var showJourney = false
 
     /// `settings` is not a tab; `-tab settings` opens the Settings sheet.
     enum Tab: String, Hashable { case today, qibla, falak, nearby, journey, settings }
@@ -72,12 +73,14 @@ final class AppModel {
             p.manualPlace = Place(name: "Makkah", region: nil, countryCode: "SA", countryName: "Saudi Arabia",
                                   timeZoneID: "Asia/Riyadh", coordinates: Geo.kaaba)
             p.lastCountryCode = "SA"
+            p.musafirEnabled = true
         }
         if args.contains("-demo-travel") {
             let hanoi = Place(name: "Hoàn Kiếm", region: "Hanoi", countryCode: "VN", countryName: "Vietnam",
                               timeZoneID: "Asia/Ho_Chi_Minh", coordinates: Coordinates(latitude: 21.0285, longitude: 105.8542))
             p.manualPlace = hanoi
             p.lastCountryCode = "VN"
+            p.musafirEnabled = true
             p.arrivedAt = .now
             p.arrivalBannerDismissed = false
             p.trip = [TripStop(countryCode: "VN", countryName: "Vietnam", placeName: "Hoàn Kiếm", arrived: .now),
@@ -91,7 +94,7 @@ final class AppModel {
     func applyDemoTab() {
         let args = ProcessInfo.processInfo.arguments
         if let i = args.firstIndex(of: "-tab"), i + 1 < args.count, let tab = Tab(rawValue: args[i + 1]) {
-            if tab == .settings { showSettings = true } else { selectedTab = tab }
+            if tab == .journey { showJourney = true } else { selectedTab = tab }
         }
     }
 

@@ -10,6 +10,8 @@ struct TodayView: View {
     @State private var dayOffset = 0
     /// Show the blessed times (Dhuha, middle and last third of the night).
     @AppStorage("today.showMore") private var showMore = false
+    /// The new style's name, shown for a moment after switching.
+    @State private var styleToast: String?
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -71,6 +73,24 @@ struct TodayView: View {
             }
         }
         .foregroundStyle(.primary)
+        .overlay(alignment: .top) {
+            if let styleToast {
+                Text(styleToast)
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.horizontal, 16).padding(.vertical, 8)
+                    .background(.regularMaterial, in: Capsule())
+                    .padding(.top, 52)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .allowsHitTesting(false)
+            }
+        }
+        .onChange(of: model.prefs.todayStyle) { _, style in
+            withAnimation(.snappy) { styleToast = style.label }
+            Task {
+                try? await Task.sleep(for: .seconds(1.4))
+                withAnimation(.easeOut) { if styleToast == style.label { styleToast = nil } }
+            }
+        }
     }
 
     @ViewBuilder
@@ -116,8 +136,8 @@ struct TodayView: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Spacer(minLength: 0)
-                    if let status = model.musafirStatus, status.isTraveller {
-                        Button { model.selectedTab = .journey } label: {
+                    if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
+                        Button { model.showJourney = true } label: {
                             Image(systemName: "airplane").font(.subheadline.weight(.semibold))
                                 .frame(width: 34, height: 34)
                                 .background(Theme.accent.opacity(0.25), in: Circle())
@@ -126,13 +146,7 @@ struct TodayView: View {
                         .accessibilityLabel("Musafir: you may shorten and combine prayers")
                     }
                     if model.prefs.trackerEnabled { streakChip(now) }
-                    Button { model.showSettings = true } label: {
-                        Image(systemName: "gearshape.fill").font(.subheadline)
-                            .frame(width: 34, height: 34)
-                            .background(Color.primary.opacity(0.1), in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Settings")
+                    styleButton
                 }
                 Button { showPlaces = true } label: {
                     HStack(spacing: 5) {
@@ -238,8 +252,8 @@ struct TodayView: View {
             .buttonStyle(.plain)
             .accessibilityHint("Change location")
             Spacer(minLength: 0)
-            if let status = model.musafirStatus, status.isTraveller {
-                Button { model.selectedTab = .journey } label: {
+            if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
+                Button { model.showJourney = true } label: {
                     Image(systemName: "airplane").font(.subheadline.weight(.semibold))
                         .frame(width: 34, height: 34)
                         .background(Theme.accent.opacity(0.25), in: Circle())
@@ -248,13 +262,7 @@ struct TodayView: View {
                 .accessibilityLabel("Musafir: you may shorten and combine prayers")
             }
             if model.prefs.trackerEnabled { streakChip(now) }
-            Button { model.showSettings = true } label: {
-                Image(systemName: "gearshape.fill").font(.subheadline)
-                    .frame(width: 34, height: 34)
-                    .background(Color.primary.opacity(0.1), in: Circle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Settings")
+            styleButton
         }
     }
 
@@ -393,8 +401,8 @@ struct TodayView: View {
                     .buttonStyle(.plain)
                     .accessibilityHint("Change location")
                     Spacer(minLength: 0)
-                    if let status = model.musafirStatus, status.isTraveller {
-                        Button { model.selectedTab = .journey } label: {
+                    if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
+                        Button { model.showJourney = true } label: {
                             Image(systemName: "airplane").font(.subheadline.weight(.semibold))
                                 .frame(width: 34, height: 34).background(Color.white.opacity(0.12), in: Circle())
                         }
@@ -402,12 +410,7 @@ struct TodayView: View {
                         .accessibilityLabel("Musafir: you may shorten and combine prayers")
                     }
                     if model.prefs.trackerEnabled { streakChip(now) }
-                    Button { model.showSettings = true } label: {
-                        Image(systemName: "gearshape.fill").font(.subheadline)
-                            .frame(width: 34, height: 34).background(Color.white.opacity(0.12), in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Settings")
+                    styleButton
                 }
                 if let current, let next, dayOffset == 0 {
                     let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
@@ -507,7 +510,7 @@ struct TodayView: View {
                 sunPlaceChip()
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-                if let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
+                if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
                 sunDayNavigator(shown)
                 PrayerList(day: shown, now: now,
                            current: dayOffset == 0 ? current?.prayer : nil,
@@ -537,14 +540,7 @@ struct TodayView: View {
             }
             Spacer(minLength: 0)
             if model.prefs.trackerEnabled { streakChip(now) }
-            Button { model.showSettings = true } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.body)
-                    .frame(width: 38, height: 38)
-                    .background(Color.primary.opacity(0.1), in: Circle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Settings")
+            styleButton
         }
         .padding(.top, 6)
     }
@@ -636,7 +632,7 @@ struct TodayView: View {
     }
 
     private func sunMusafirChip(_ status: Musafir.Status) -> some View {
-        Button { model.selectedTab = .journey } label: {
+        Button { model.showJourney = true } label: {
             HStack {
                 Image(systemName: "airplane")
                 Text("Musafir · you may shorten & combine").lineLimit(1)
@@ -649,6 +645,31 @@ struct TodayView: View {
         }
         .buttonStyle(.plain)
     }
+    /// Tap to try the next Prayer screen style; touch and hold to pick one.
+    /// The choice is kept (Settings > Display shows the same).
+    private var styleButton: some View {
+        Button {
+            let all = TodayStyle.allCases
+            let i = all.firstIndex(of: model.prefs.todayStyle) ?? 0
+            withAnimation(.snappy) { model.prefs.todayStyle = all[(i + 1) % all.count] }
+        } label: {
+            Image(systemName: "paintpalette.fill").font(.subheadline)
+                .frame(width: 34, height: 34)
+                .background(Color.primary.opacity(0.1), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            ForEach(TodayStyle.allCases) { style in
+                Button { withAnimation(.snappy) { model.prefs.todayStyle = style } } label: {
+                    if style == model.prefs.todayStyle { Label(style.label, systemImage: "checkmark") } else { Text(style.label) }
+                }
+            }
+        }
+        .sensoryFeedback(.selection, trigger: model.prefs.todayStyle)
+        .accessibilityLabel("Prayer screen style: \(model.prefs.todayStyle.label)")
+        .accessibilityHint("Switches to the next style. Touch and hold to choose one.")
+    }
+
     /// "9h 22m", "22m", "45s".
     static func short(_ seconds: TimeInterval) -> String {
         let s = max(0, Int(seconds.rounded(.up)))
@@ -1031,10 +1052,9 @@ private struct BlessedMark: View {
 
     /// The dial has room for a word or two.
     private var shortName: String {
-        let malay = model.naming == .malay || model.naming == .indonesian
-        return switch blessed {
-        case .midnight: malay ? "Tengah malam" : "Midnight"
-        case .lastThird: malay ? "Sepertiga" : "Last third"
+        switch blessed {
+        case .midnight: "Midnight"
+        case .lastThird: "Last third"
         default: blessed.name(model.naming)
         }
     }
@@ -1217,6 +1237,17 @@ private struct ArrivalCard: View {
                     }
                 }
                 .tint(Theme.accent)
+                if let home = model.prefs.home?.countryCode, home != profile.code {
+                    Toggle(isOn: Binding(get: { model.prefs.musafirEnabled },
+                                         set: { model.prefs.musafirEnabled = $0 })) {
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Musafir features").font(.subheadline.weight(.semibold))
+                            Text("Jamak and qasar guidance while you're away").font(.caption).opacity(0.75)
+                        }
+                    }
+                    .tint(Theme.accent)
+                    .padding(.top, 6)
+                }
                 HStack {
                     Text("Asr").font(.subheadline.weight(.semibold))
                     Spacer()

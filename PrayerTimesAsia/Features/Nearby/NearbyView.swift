@@ -100,6 +100,7 @@ struct NearbyView: View {
     @State private var kind: PrayerSpace.Kind = .all
     @State private var camera: MapCameraPosition = .automatic
     @State private var selected: PrayerSpace?
+    @State private var showAbout = false
 
     private var visible: [PrayerSpace] {
         switch kind {
@@ -139,6 +140,13 @@ struct NearbyView: View {
             }
             .navigationTitle("Masjid & Musollah")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showAbout = true } label: { Image(systemName: "info.circle") }
+                        .accessibilityLabel("About this app")
+                }
+            }
+            .sheet(isPresented: $showAbout) { MakersSheet(placement: "masjid") }
             .task(id: model.activePlace?.coordinates) {
                 guard let c = model.activePlace?.coordinates else { return }
                 await search.search(around: c)
@@ -198,11 +206,6 @@ struct NearbyView: View {
                             space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
                         }
                     }
-                }
-                if model.prefs.showOffers {
-                    MakersCard(offer: .digital, placement: "masjid")
-                        .listRowSeparator(.hidden)
-                        .padding(.vertical, 6)
                 }
             }
             .listStyle(.plain)

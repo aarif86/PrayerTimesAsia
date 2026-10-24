@@ -4,6 +4,7 @@ import SwiftUI
 /// concessions (jamak & qasar) apply, and the trail of countries you've prayed in.
 struct JourneyView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
@@ -26,7 +27,7 @@ struct JourneyView: View {
                 .scrollIndicators(.hidden)
             }
             .foregroundStyle(.primary)
-            .toolbar(.hidden, for: .navigationBar)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
         }
     }
 

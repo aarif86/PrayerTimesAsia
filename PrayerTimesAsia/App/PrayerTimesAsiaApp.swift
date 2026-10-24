@@ -40,13 +40,13 @@ struct RootView: View {
                 NearbyView()
                     .tabItem { Label { Text("Masjid") } icon: { Image("Tab-masjid") } }
                     .tag(AppModel.Tab.nearby)
-                JourneyView()
-                    .tabItem { Label { Text("Journey") } icon: { Image("Tab-journey") } }
-                    .tag(AppModel.Tab.journey)
+                SettingsView(isTab: true)
+                    .tabItem { Label("Settings", systemImage: "gearshape") }
+                    .tag(AppModel.Tab.settings)
             }
             .tint(.primary)
             .onAppear { model.applyDemoTab() }
-            .sheet(isPresented: $model.showSettings) { SettingsView() }
+            .sheet(isPresented: $model.showJourney) { JourneyView() }
             .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-widget-preview"))) {
                 NavigationStack { WidgetPreviewView() }
             }
