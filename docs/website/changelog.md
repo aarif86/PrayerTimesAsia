@@ -2,6 +2,23 @@
 
 What's new in Prayer Times Asia, newest first.
 
+## Day and night, everywhere
+
+*1.0.0 (build 9) · 25 October 2026*
+
+Automatic now follows the sky, a light/dark switch on the Prayer screen, a fifth style, and the big widget in every style.
+
+**New**
+
+- Centre Dial: the Day Dial in the middle, with the day and the list below.
+- Light/dark switch beside the style button: Automatic, Light or Dark.
+- The big widget comes in every style: Classic list, Day Dial, Sun Path or Colour Bands, or the same as the app.
+
+**Improved**
+
+- Automatic follows the sky: bright from sunrise to Maghrib, a soft dim night after.
+- Every tab shares the same live sky (no more sun on Falak at night).
+
 ## Your look, one tap away
 
 *1.0.0 (build 8) · 24 October 2026*

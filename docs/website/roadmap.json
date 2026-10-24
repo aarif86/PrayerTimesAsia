@@ -129,6 +129,24 @@
       "build": 8,
       "title": "Blessed times in English for all Muslims in Singapore",
       "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 9,
+      "title": "Light and dark toggle on the Prayer screen",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 9,
+      "title": "Big widget in every style",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 9,
+      "title": "Night feel on every tab when Automatic",
+      "source": "user"
     }
   ]
 }

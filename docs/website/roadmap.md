@@ -36,3 +36,6 @@ Where Prayer Times Asia is heading.
 | Switch the Prayer screen style from the Prayer screen | Done in build 8 |
 | Make travel (Journey) features optional | Done in build 8 |
 | Blessed times in English for all Muslims in Singapore | Done in build 8 |
+| Light and dark toggle on the Prayer screen | Done in build 9 |
+| Big widget in every style | Done in build 9 |
+| Night feel on every tab when Automatic | Done in build 9 |
