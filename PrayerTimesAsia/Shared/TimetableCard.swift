@@ -122,7 +122,7 @@ struct TimetableCard: View {
                 Spacer()
                 if let next {
                     Text("\(s.name(next.prayer, at: next.time)) in ")
-                        .font(.system(size: 12, weight: .semibold)).opacity(0.8)
+                        .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
                     + Text(next.time, style: .relative).font(.system(size: 12, weight: .semibold))
                 }
             }
