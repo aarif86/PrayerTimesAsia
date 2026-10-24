@@ -107,7 +107,8 @@
 .date-header .caps-day { font-size: 12px; letter-spacing: 0.8px; }
 .date-big { font-size: 26px; font-weight: 700; }
 .date-header .hijri-line { font-size: 15px; }
-.hero-wrap { flex: 1; display: flex; align-items: center; justify-content: center; margin: 0 -12px; min-height: 300px; touch-action: pan-y; }
+.hero-wrap { position: relative; flex: 1 1 0; margin: 0 -12px; min-height: 290px; touch-action: pan-y; }
+.hero-centre-box { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .herodial { position: relative; flex: none; }
 .herodial svg { position: absolute; inset: 0; }
 .dial-label { position: absolute; display: flex; }
@@ -259,8 +260,8 @@
 .spin { animation: spin 1s linear infinite; }
 .empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 12px; text-align: center; }
 
-.leaflet-container { font: inherit; background: #1b1f3a; }
-:root[data-theme="light"] .leaflet-container { background: #e8eaf2; }
+.leaflet-container.masjid-map, .leaflet-container.map-box { font: inherit; background: #1b1f3a; }
+:root[data-theme="light"] .leaflet-container.masjid-map, :root[data-theme="light"] .leaflet-container.map-box { background: #e8eaf2; }
 .you-pin span { display: block; width: 18px; height: 18px; border-radius: 50%; background: #2f7cf6; border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4); }
 .space-pin span { display: flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; color: #fff;
   border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }

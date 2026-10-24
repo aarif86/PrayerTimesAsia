@@ -9,12 +9,12 @@ import { fetchOK, readJSON, writeJSON } from './storage'
 /**
  * Official timetables when online, kept in this browser for offline use.
  *
- * Browsers can only read another site's API when it allows it (CORS). So for
- * MUIS and JAKIM the web app reads the app's own calendar feeds, which a
- * GitHub workflow builds every week from the authority's published table
- * (raw.githubusercontent.com allows any origin). The authorities' own APIs are
- * tried as well, in case they allow it. Without any table the app falls back to
- * its calculation, which is calibrated never to be earlier than the official time.
+ * The authorities' APIs (data.gov.sg for MUIS, e-Solat for JAKIM, myquran for
+ * Kemenag) allow browser access (CORS), so they are asked first, exactly as the
+ * iOS app does. If one is down or blocked, MUIS and JAKIM fall back to the app's
+ * own calendar feeds (the `feeds` branch, rebuilt weekly from the same official
+ * tables). Without any table the app falls back to its calculation, which is
+ * calibrated never to be earlier than the official time.
  */
 
 /** data.gov.sg publishes one MUIS dataset per year; later years come from config/official-sources.json. */
@@ -120,6 +120,15 @@ export async function ensureTable(source: OfficialSource, year: number, tz: stri
         }
       }
     }
+    if (source.kind === 'jakim') {
+      const r = await fetchOK(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=year&zone=${source.zone}`, 15000)
+      if (r) {
+        try {
+          const table = parseJAKIM(await r.json(), year)
+          if (Object.keys(table).length > 25) { store(source, year, table, 'authority'); return true }
+        } catch { /* fall through to the feed */ }
+      }
+    }
     if (source.kind === 'muis' || source.kind === 'jakim') {
       const years = await fromFeed(source, tz)
       let got = false
@@ -127,15 +136,6 @@ export async function ensureTable(source: OfficialSource, year: number, tz: stri
         if (Object.keys(table).length > 25 && !tableFor(source, y)) { store(source, y, table, 'feed'); if (y === year) got = true }
       }
       if (got) return true
-      if (source.kind === 'jakim') {
-        const r = await fetchOK(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=year&zone=${source.zone}`, 12000)
-        if (r) {
-          try {
-            const table = parseJAKIM(await r.json(), year)
-            if (Object.keys(table).length > 25) { store(source, year, table, 'authority'); return true }
-          } catch { /* ignore */ }
-        }
-      }
     }
     if (source.kind === 'kemenag') {
       const cities = await kemenagCityList()

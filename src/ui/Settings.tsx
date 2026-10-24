@@ -150,7 +150,7 @@ export function SettingsScreen() {
       <Group title="Accuracy">
         <p class="item footnote" style={{ display: 'block', lineHeight: 1.4 }}>
           Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times.
-          In Singapore and Malaysia the app loads the official MUIS or JAKIM timetable for the year through the app's own calendar feeds (built weekly from data.gov.sg and e-Solat) and keeps it in this browser for offline use; in Indonesia it asks Kemenag's schedule (via myquran) by regency name.
+          In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it in this browser for offline use; if an authority is down, the app's own calendar feeds (built weekly from the same tables) stand in.
           Everywhere else, and before that download, times are calculated in your browser with the country's own method - the same engine as the iOS app, checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.
         </p>
       </Group>

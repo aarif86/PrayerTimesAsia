@@ -46,7 +46,7 @@ function Stars({ opacity }: { opacity: number }) {
 }
 
 function Cloud({ width, speed, y, phase, color }: { width: number; speed: number; y: number; phase: number; color: string }) {
-  const vw = typeof window !== 'undefined' ? Math.min(window.innerWidth, 560) : 400
+  const vw = typeof window !== 'undefined' ? window.innerWidth : 400
   const span = vw + width * 2
   const duration = span / speed
   return (

@@ -4,8 +4,17 @@ The web version of **Prayer Times Asia**, the iOS app for Muslims living and tra
 times with their source, qibla, falak (sun-and-shadow) tools and nearby masjids. An installable, offline-capable
 PWA (Preact + TypeScript + Vite), no accounts, no ads, no analytics.
 
-- Live (GitHub Pages): **https://aarif86.github.io/PrayerTimesAsia/**
+- Live (GitHub Pages): **https://aarif86.github.io/PrayerTimesAsia/** - once Pages is switched on (one click, below).
+- Screenshots: [`docs/screenshots/`](docs/screenshots/) ([contact sheet](docs/screenshots/contact-sheet.png)).
 - This branch (`web`) is an orphan branch of `aarif86/PrayerTimesAsia`: it shares no history or files with the iOS app on `main`.
+
+## Turning on GitHub Pages (one time)
+
+The workflow builds and tests on every push to `web`, and deploys only when Pages is on:
+
+1. Repository **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+2. If the deploy then says the branch is not allowed: **Settings → Environments → github-pages → Deployment branches**, add `web`.
+3. **Actions → Web → Run workflow** (or push to `web`).
 
 ## Run it
 
@@ -41,12 +50,13 @@ the iOS tests and against the iOS reference engine for every day of 2026, so the
 offline, Singapore times are never earlier than MUIS (at most 2 minutes later); Malaysia and Indonesia are within about
 2 minutes.
 
-Browsers can only read another site's API when it allows it (CORS). So the web app reads **the app's own calendar
-feeds** on the `feeds` branch (`raw.githubusercontent.com`, which allows any origin), which `feeds.yml` rebuilds
-every week from MUIS (data.gov.sg) and every JAKIM e-Solat zone. They carry the five prayers; Syuruk then comes from
-the calculation (at most a minute early, never late). The authorities' own APIs (data.gov.sg, e-Solat, myquran for
-Kemenag) are tried as well in case they allow browser access; the CI job prints which ones do. Without any table the
-calculation is used and the source badge says "Calculated". Tables are kept in the browser for offline use.
+The official APIs allow browser access (CORS; the CI build prints a probe of each), so the web app does what the iOS
+app does: it downloads the year's table from **data.gov.sg (MUIS)**, **e-Solat (JAKIM, by zone code)** or **myquran
+(Kemenag, by regency name)** - only the year, zone code or regency name is sent, never coordinates - and keeps it in the
+browser for offline use. If an authority is down, MUIS and JAKIM fall back to **the app's own calendar feeds** on the
+`feeds` branch (rebuilt weekly from the same tables by `feeds.yml`); those carry the five prayers, so Syuruk then comes
+from the calculation (at most a minute early, never late). Without any table the calculation is used and the source
+badge says "Calculated".
 
 ## What is at parity with iOS
 
@@ -106,6 +116,13 @@ git push new web:main
 
 Then in the new repo: Settings → Pages → Source: **GitHub Actions**, change the workflow trigger from `web` to `main`,
 and set `BASE_PATH` in `web.yml` (e.g. `/<new-repo>/`, or `/` for a custom domain).
+
+## Screenshots
+
+`npm run build && npm run screenshots` writes `docs/screenshots/` at 393×852 @3x, Pasir Ris, 25 Oct 2026 at 00:49 (night)
+and 13:35 (day), the same moment as the iOS CI screenshots. Notes: the MUIS times come from the feed (so Syuruk is the
+calculated 6:46 rather than the official 6:47); the Masjid list uses `scripts/fixtures/overpass-pasir-ris.json` so it
+is repeatable; map tiles could not be reached from the machine that took them, so the map shows only its markers.
 
 ## Licence
 

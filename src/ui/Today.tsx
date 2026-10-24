@@ -499,23 +499,24 @@ function CentrePage({ c }: { c: Ctx }) {
 
 // ---------- Day Dial (full) ----------
 
-function useWidth(ref: { current: HTMLElement | null }, fallback: number) {
-  const [w, setW] = useState(fallback)
+function useSize(ref: { current: HTMLElement | null }, fallback: number) {
+  const [size, setSize] = useState({ w: fallback, h: fallback })
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    const update = () => setW(el.clientWidth)
+    const update = () => setSize({ w: el.clientWidth, h: el.clientHeight })
     update()
     const ro = new ResizeObserver(update)
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
-  return w
+  return size
 }
+const useWidth = (ref: { current: HTMLElement | null }, fallback: number) => useSize(ref, fallback).w
 
 function DialPage({ c }: { c: Ctx }) {
   const wrap = useRef<HTMLDivElement>(null)
-  const width = useWidth(wrap, 377)
+  const box = useSize(wrap, 377)
   const shown = c.shown
   const isToday = c.offset === 0
   const nextDay = store.nextDay(shown)
@@ -526,7 +527,8 @@ function DialPage({ c }: { c: Ctx }) {
     ...blessed.map(([b, t]) => ({ id: b, date: t, minor: true })),
   ]
   const swipe = useSwipe(c)
-  const size = Math.min(width, 520)
+  // A square that fits the free space (the dial scrolls only when it can't).
+  const size = Math.max(280, Math.min(box.w, box.h, 560))
   return (
     <div class="today-page page dial-page">
       <div class="top-bar"><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
@@ -538,6 +540,7 @@ function DialPage({ c }: { c: Ctx }) {
         <span class="hijri-line subhead">{hijri(shown.times.dhuhr)} {c.offset === 0 ? <Calendar size={13} /> : <Undo2 size={13} />}</span>
       </button>
       <div class="hero-wrap" ref={wrap} {...swipe}>
+        <div class="hero-centre-box">
         <HeroDial size={size} now={c.now} day={shown} nextFajr={nextFajr} tz={store.timeZone}
           currentPrayer={isToday ? c.current?.prayer ?? null : null} marks={marks}
           label={(m, sz) => {
@@ -558,6 +561,7 @@ function DialPage({ c }: { c: Ctx }) {
               </div>
             )
           }} />
+        </div>
       </div>
       <div class="row day-row">
         <button class="round-btn big" aria-label="Previous day" onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={18} strokeWidth={2.4} /></button>

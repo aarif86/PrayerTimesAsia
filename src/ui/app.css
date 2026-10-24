@@ -84,8 +84,8 @@ input, select, textarea { font: inherit; color: inherit; }
 .sky { position: fixed; inset: 0; z-index: 0; overflow: hidden; transition: background 1.2s ease; pointer-events: none; }
 .sky canvas.stars { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 1.2s ease; }
 .sky .horizon { position: absolute; left: 50%; bottom: -5vh; width: 900px; height: 900px; transform: translate(-50%, 50%); border-radius: 50%; }
-.sky .bright { position: absolute; inset: 0; margin: 0 auto; max-width: 560px; }
-.sky .orb { position: absolute; right: calc(16% - 190px); top: calc(96px - 190px + var(--safe-top)); width: 380px; height: 380px; }
+.sky .bright { position: absolute; inset: 0; }
+.sky .orb { position: absolute; left: calc(50% + 0.34 * min(100vw, 480px) - 190px); top: calc(96px - 190px + var(--safe-top)); width: 380px; height: 380px; }
 .sky .orb .halo { position: absolute; inset: 0; border-radius: 50%; animation: breathe 16s ease-in-out infinite; }
 .sky .orb .rays { position: absolute; left: 40px; top: 40px; width: 300px; height: 300px; border-radius: 50%; animation: spin 360s linear infinite;
   -webkit-mask: radial-gradient(circle, #000 20%, transparent 100%); mask: radial-gradient(circle, #000 20%, transparent 100%); }
