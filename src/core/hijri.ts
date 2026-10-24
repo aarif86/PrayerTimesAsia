@@ -25,9 +25,9 @@ export function hijriDate(ms: number, tz: string, adjustment = 0): HijriDate {
   for (const p of formatter(tz).formatToParts(new Date(shifted))) {
     if (p.type === 'day') out.day = parseInt(p.value, 10)
     else if (p.type === 'month') out.month = parseInt(p.value, 10)
-    else if (p.type === 'year' || p.type === 'relatedYear') {
+    else if (p.type === 'year') {
       const v = parseInt(p.value, 10)
-      if (!Number.isNaN(v) && p.type === 'year') out.year = v
+      if (!Number.isNaN(v)) out.year = v
     }
   }
   return out

@@ -127,7 +127,7 @@ export function timeZoneForCountry(code: string | null | undefined): string | un
  */
 export function timeZoneForPlace(code: string | null | undefined, longitude: number): string | undefined {
   const c = code?.toUpperCase()
-  if (c === 'ID') return longitude < 114.6 ? 'Asia/Jakarta' : longitude < 127.0 ? 'Asia/Makassar' : 'Asia/Jayapura'
+  if (c === 'ID') return longitude < 114.5 ? 'Asia/Jakarta' : longitude < 127.0 ? 'Asia/Makassar' : 'Asia/Jayapura'
   if (c === 'MY') return longitude < 109 ? 'Asia/Kuala_Lumpur' : 'Asia/Kuching'
   if (c === 'KZ') return 'Asia/Almaty'
   if (c === 'CN') return 'Asia/Shanghai'

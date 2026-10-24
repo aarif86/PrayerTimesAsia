@@ -1,0 +1,15 @@
+{
+  "version": 0.6,
+  "generator": "Fixture for repeatable screenshots (shape of an Overpass API response)",
+  "elements": [
+    { "type": "way", "id": 1001, "center": { "lat": 1.3794, "lon": 103.9563 }, "tags": { "amenity": "place_of_worship", "religion": "muslim", "name": "Masjid Al-Istighfar", "addr:street": "Pasir Ris Walk", "addr:housenumber": "2" } },
+    { "type": "way", "id": 1002, "center": { "lat": 1.3557, "lon": 103.9465 }, "tags": { "amenity": "place_of_worship", "religion": "muslim", "name": "Masjid Darul Ghufran", "addr:street": "Tampines Avenue 5", "addr:housenumber": "503" } },
+    { "type": "way", "id": 1003, "center": { "lat": 1.3283, "lon": 103.9337 }, "tags": { "amenity": "place_of_worship", "religion": "muslim", "name": "Masjid Al-Ansar", "addr:street": "Bedok North Avenue 1", "addr:housenumber": "155" } },
+    { "type": "way", "id": 1004, "center": { "lat": 1.3194, "lon": 103.9132 }, "tags": { "amenity": "place_of_worship", "religion": "muslim", "name": "Masjid Darul Aman", "addr:street": "Changi Road", "addr:housenumber": "1" } },
+    { "type": "way", "id": 1005, "center": { "lat": 1.3191, "lon": 103.9073 }, "tags": { "amenity": "place_of_worship", "religion": "muslim", "name": "Masjid Kassim", "addr:street": "Changi Road", "addr:housenumber": "450" } },
+    { "type": "way", "id": 1006, "center": { "lat": 1.4011, "lon": 103.9050 }, "tags": { "amenity": "place_of_worship", "religion": "muslim", "name": "Masjid Al-Islah", "addr:street": "Punggol Field", "addr:housenumber": "30" } },
+    { "type": "way", "id": 1007, "center": { "lat": 1.3127, "lon": 103.9256 }, "tags": { "amenity": "place_of_worship", "religion": "muslim", "name": "Masjid Kampong Siglap", "addr:street": "Mata Ikan Road", "addr:housenumber": "451" } },
+    { "type": "node", "id": 1008, "lat": 1.3555, "lon": 103.9864, "tags": { "amenity": "place_of_worship", "religion": "muslim", "name": "Prayer Room (Changi Airport T3)", "place_of_worship:type": "prayer_room" } },
+    { "type": "way", "id": 1009, "center": { "lat": 1.3608, "lon": 103.8775 }, "tags": { "amenity": "place_of_worship", "religion": "muslim", "name": "Masjid Haji Yusoff", "addr:street": "Hillside Drive", "addr:housenumber": "2" } }
+  ]
+}

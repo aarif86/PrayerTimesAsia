@@ -1,0 +1,77 @@
+name: Web
+
+# Type-checks, tests and builds the web app, then deploys it to GitHub Pages at
+# https://aarif86.github.io/PrayerTimesAsia/ (base path /PrayerTimesAsia/).
+on:
+  push:
+    branches: [web]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: web-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Type-check
+        run: npm run typecheck
+      - name: Unit tests (prayer engine, falak, official parsers)
+        run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          BASE_PATH: /PrayerTimesAsia/
+      - name: Check the build
+        run: |
+          test -f dist/index.html
+          test -f dist/sw.js
+          test -f dist/manifest.webmanifest
+          grep -q '/PrayerTimesAsia/assets/' dist/index.html
+          du -sh dist
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Which official APIs a browser may read (CORS, informational)
+        continue-on-error: true
+        run: |
+          probe() {
+            echo "== $1"
+            curl -s -m 20 -o /dev/null -D - -H 'Origin: https://aarif86.github.io' "$1" | grep -iE '^HTTP|access-control-allow-origin' || echo "(no response)"
+          }
+          {
+            echo '### CORS probe'
+            echo '```'
+            probe 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/sg-muis.ics'
+            probe 'https://data.gov.sg/api/action/datastore_search?resource_id=d_d441e7242e78efc566024dd5b0d9829c&limit=1'
+            probe 'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=WLY01'
+            probe 'https://api.myquran.com/v2/sholat/kota/semua'
+            probe 'https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%3Bnode(1)%3Bout%3B'
+            probe 'https://nominatim.openstreetmap.org/search?q=Pasir%20Ris&format=jsonv2&limit=1'
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,307 @@
+/* ---------- Prayer screen ---------- */
+.screen.tab-today { display: flex; flex-direction: column; }
+.today { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.today-page { flex: 1; display: flex; flex-direction: column; gap: 12px; padding-top: 4px; min-height: 100%; }
+.center-row { display: flex; justify-content: center; }
+
+.classic-header { display: flex; align-items: center; gap: 14px; }
+.classic-side { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.controls-row { display: flex; align-self: stretch; justify-content: flex-end; gap: 8px; }
+.controls-col { position: absolute; right: 0; top: 4px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+.place-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; font-size: 15px; font-weight: 600; padding: 6px 10px;
+  border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent); }
+.place-chip .place-name, .sun-place-chip .place-name, .bands-place .place-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.flag { font-size: 15px; line-height: 1; }
+.streak-chip { display: inline-flex; align-items: center; gap: 4px; padding: 8px 10px; border-radius: 999px; background: var(--fill);
+  font-size: 15px; font-weight: 600; height: 34px; }
+
+.date-block { display: flex; align-items: center; gap: 2px; align-self: stretch; }
+.date-block .chev { width: 22px; height: 40px; display: flex; align-items: center; justify-content: center; opacity: 0.6; flex: none; }
+.date-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 1px; }
+.caps-day { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; }
+.date-line { font-size: 17px; font-weight: 600; }
+.hijri-line { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--fg2); white-space: nowrap; }
+
+.source-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; background: var(--fill); max-width: 100%; }
+.source-badge.compact { padding: 5px 9px 5px 6px; }
+.source-badge.full { display: flex; width: 100%; padding: 9px 12px; gap: 8px; background: color-mix(in srgb, var(--fg) 12%, transparent); }
+.source-badge .grade { width: 18px; height: 18px; border-radius: 50%; font-size: 11px; font-weight: 800; color: rgba(0, 0, 0, 0.8);
+  display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.source-badge.full .grade { width: 20px; height: 20px; font-size: 12px; }
+.source-badge .src { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.source-badge.full .src { font-size: 13px; }
+
+.daydial { position: relative; flex: none; }
+.daydial svg { position: absolute; inset: 0; }
+.dial-sun, .dial-moon { position: absolute; left: 50%; transform: translate(-50%, -50%); display: flex; }
+.daydial-centre { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; white-space: nowrap; }
+
+.alerts-prompt { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 999px; background: color-mix(in srgb, var(--fg) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent); }
+.alerts-prompt .text { flex: 1; font-size: 15px; font-weight: 600; line-height: 1.25; }
+.alerts-prompt .primary-btn { padding: 8px 14px; }
+.alerts-prompt .x { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; opacity: 0.6; flex: none; }
+
+.list-wrap { display: flex; flex-direction: column; touch-action: pan-y; }
+.list-wrap.fill { flex: 1 1 auto; min-height: 0; }
+.prayer-list { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
+.list-wrap.fill .prayer-list { flex: 1 1 auto; }
+.prayer-row { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 6px 12px 14px; border-radius: 16px; cursor: default; }
+.list-wrap.fill .prayer-row { flex: 1 1 auto; padding-top: 8px; padding-bottom: 8px; max-height: 92px; }
+.prayer-row.current { background: var(--tint-soft); box-shadow: inset 0 0 0 1px var(--tint-line); }
+.prayer-row .bar, .blessed-row .bar { position: absolute; left: -5px; top: 14px; bottom: 14px; width: 3px; border-radius: 2px; background: var(--tint); }
+.blessed-row .bar { width: 2px; top: 12px; bottom: 12px; background: color-mix(in srgb, var(--fg) 16%, transparent); }
+.prayer-row .names, .blessed-row .names { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.name-line { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.pname { font-size: 20px; font-weight: 600; white-space: nowrap; }
+.local { font-size: 12px; font-weight: 500; color: var(--fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.check { align-self: center; flex: none; }
+.now-tag { font-size: 11px; font-weight: 800; color: var(--tint); }
+.in-tag { font-size: 12px; font-weight: 600; color: var(--tint); }
+.extra { font-size: 12px; font-weight: 500; opacity: 0.75; }
+.extra.alt { color: var(--grade-b); opacity: 1; }
+.prayer-row .bell { width: 30px; height: 34px; display: flex; align-items: center; justify-content: center; flex: none; }
+.blessed-row { position: relative; display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 14px; flex: none; }
+.bname { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bnote { font-size: 12px; opacity: 0.7; line-height: 1.25; }
+.prayer-row .time .sfx { opacity: 0.7; }
+
+.foot-row { gap: 8px; }
+.makers-card { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 16px; text-decoration: none; color: var(--fg); }
+.makers-card.compact { padding: 6px 12px; }
+.makers-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex: none;
+  background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.makers-card.compact .makers-icon { width: 28px; height: 28px; }
+.makers-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.makers-title { font-size: 15px; font-weight: 600; }
+.makers-sub { font-size: 12px; color: var(--fg2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.makers-site { font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+
+.arrival hr, .falak hr { border: 0; border-top: 1px solid color-mix(in srgb, var(--fg) 25%, transparent); margin: 8px 0; }
+.arrival-row { gap: 10px; padding-top: 6px; }
+.inline-select { appearance: none; -webkit-appearance: none; background: transparent; border: 0; font-size: 15px; text-align: right; color: var(--fg); }
+.inline-select option { color: #000; }
+
+/* Centre Dial */
+.centre-page { gap: 8px; }
+.centre-top { position: relative; padding-bottom: 10px; }
+.centre-dial { display: flex; justify-content: center; }
+.sun-place-chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; font-size: 15px; font-weight: 600;
+  background: color-mix(in srgb, var(--fg) 6%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent); max-width: 100%; }
+.sun-place-chip .caps-day { font-size: 12px; letter-spacing: 0.5px; }
+.sun-place-chip .divider { width: 1px; height: 12px; background: color-mix(in srgb, var(--fg) 30%, transparent); }
+.day-nav { display: flex; align-items: center; }
+.day-nav .chev { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; opacity: 0.6; flex: none; }
+.day-nav-main { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.day-nav-date { font-size: 20px; font-weight: 600; }
+.day-nav-hijri { display: inline-flex; align-items: center; gap: 4px; font-size: 15px; color: var(--fg2); }
+.musafir-chip { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 999px; background: color-mix(in srgb, var(--fg) 12%, transparent);
+  font-size: 15px; font-weight: 600; }
+
+/* Day Dial */
+.dial-page { gap: 14px; }
+.top-bar { display: flex; align-items: center; gap: 8px; }
+.top-bar .place-chip { padding: 8px 12px; }
+.date-header { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.date-header .caps-day { font-size: 12px; letter-spacing: 0.8px; }
+.date-big { font-size: 26px; font-weight: 700; }
+.date-header .hijri-line { font-size: 15px; }
+.hero-wrap { flex: 1; display: flex; align-items: center; justify-content: center; margin: 0 -12px; min-height: 300px; touch-action: pan-y; }
+.herodial { position: relative; flex: none; }
+.herodial svg { position: absolute; inset: 0; }
+.dial-label { position: absolute; display: flex; }
+.dial-mark { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 4px; line-height: 1.15; }
+.dial-mark.current { background: var(--tint-soft); box-shadow: inset 0 0 0 1px var(--tint-line); }
+.dial-mark .dm-name { display: inline-flex; align-items: center; gap: 3px; color: color-mix(in srgb, var(--fg) 75%, transparent); white-space: nowrap; }
+.dial-mark.current .dm-name { color: var(--tint); }
+.dial-blessed { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; white-space: nowrap; }
+.herodial-centre { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; }
+.hero-centre { display: flex; flex-direction: column; align-items: center; text-align: center; white-space: nowrap; gap: 0; }
+.day-row { gap: 4px; }
+.round-btn.big { width: 36px; height: 36px; background: color-mix(in srgb, var(--fg) 8%, transparent); }
+
+/* Sun Path */
+.sunpath-page { gap: 14px; }
+.sun-status { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.sun-status .dot { width: 9px; height: 9px; border-radius: 50%; }
+.status-pill { padding: 6px 12px; border-radius: 999px; background: var(--fill); font-size: 15px; font-weight: 600; }
+.sunpath-wrap { margin: 0 calc(-1 * var(--gutter)); height: 96px; }
+.sunpath-page .sun-place-chip { margin-top: -6px; }
+
+/* Colour Bands - always on a dark timetable, like the classic Singapore one */
+.bands-backdrop { position: fixed; inset: 0; z-index: 0; background: rgb(43, 43, 43); }
+.bands-page { color: #fff; gap: 0; --fg: #fff; --fg2: rgba(235, 235, 245, 0.62); --fill: rgba(255, 255, 255, 0.12); --accent: rgb(247, 189, 143);
+  --glass: rgba(60, 60, 60, 0.6); --stroke: rgba(255, 255, 255, 0.1); --grade-d: rgba(255, 255, 255, 0.75); }
+.bands-top { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; padding-bottom: 12px; }
+.bands-place { display: inline-flex; align-items: center; gap: 5px; font-size: 20px; font-weight: 700; min-width: 0; }
+.bands-status { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.75); }
+.bands-date { display: flex; align-items: center; gap: 4px; padding: 0 8px; background: rgb(61, 61, 61); font-size: 17px; font-weight: 600; }
+.bands-date > button:first-child, .bands-date > button:last-child { width: 36px; height: 40px; display: flex; align-items: center; justify-content: center; }
+.bands-date-main { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; }
+.bands { flex: 1; display: flex; flex-direction: column; touch-action: pan-y; }
+.band { position: relative; display: flex; align-items: center; gap: 8px; padding: 0 var(--gutter); min-height: 64px; flex: 1 1 64px; color: #fff; text-align: left; width: 100%; }
+.band.current::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: #fff; }
+.band-names { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.band-name { font-size: 26px; font-weight: 700; white-space: nowrap; }
+.now-pill { font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.25); align-self: center; }
+.band-time { display: inline-flex; align-items: baseline; gap: 4px; font-size: 34px; font-weight: 300; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.band-time .sfx { font-size: 22px; }
+.band-time.small { font-size: 24px; }
+.band-time.small .sfx { font-size: 15px; }
+.blessed-band { display: flex; align-items: center; gap: 8px; padding: 6px var(--gutter); min-height: 52px; background: rgb(77, 77, 77); color: #fff; }
+.bands-foot { padding-top: 12px; display: flex; flex-direction: column; gap: 12px; }
+
+.no-place { min-height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
+.no-place h2 { margin: 0; font-size: 24px; }
+.no-place p { margin: 0; opacity: 0.85; }
+
+/* ---------- Qibla ---------- */
+.qibla { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.qibla-head { display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 12px; text-align: center; }
+.qibla-instruction { font-size: 20px; font-weight: 600; color: color-mix(in srgb, var(--fg) 90%, transparent); }
+.qibla-instruction.ok { color: var(--green); }
+.qibla-dial { position: relative; margin: 8px 0; flex: none; }
+.qibla-dial .top-marker { position: absolute; left: 50%; top: -19px; width: 4px; height: 22px; border-radius: 2px; transform: translateX(-50%); background: var(--fg); z-index: 3; }
+.qibla-dial.aligned .top-marker { background: var(--green); }
+.qibla-dial .face { position: absolute; inset: 0; border-radius: 50%; background: color-mix(in srgb, var(--fg) 7%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fg) 25%, transparent); transition: background .5s; }
+.qibla-dial.aligned .face { background: radial-gradient(circle, color-mix(in srgb, var(--green) 28%, transparent), color-mix(in srgb, var(--green) 8%, transparent)); box-shadow: none; }
+.qibla-dial .ring { position: absolute; inset: 0; }
+.qibla-dial .trim { transition: stroke-dashoffset .6s ease; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--green) 70%, transparent)); }
+.qibla-dial .ripple { position: absolute; inset: 0; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--green) 60%, transparent); animation: ripple 1.6s ease-out infinite; }
+@keyframes ripple { to { transform: scale(1.18); opacity: 0; } }
+.qibla-dial .rotor { position: absolute; inset: 0; transition: transform .35s cubic-bezier(.2, .8, .3, 1.05); }
+.qibla-dial .rotor > svg { position: absolute; inset: 0; }
+.cardinal { position: absolute; left: 50%; top: 50%; width: 24px; height: 24px; margin: -12px 0 0 -12px; display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 600; color: color-mix(in srgb, var(--fg) 80%, transparent); }
+.cardinal.north { color: var(--north); font-weight: 800; }
+.pointer { position: absolute; inset: 0; }
+.pointer .beam { position: absolute; left: 50%; top: 50%; width: 4px; border-radius: 2px; background: linear-gradient(var(--gold), color-mix(in srgb, var(--fg) 10%, transparent)); }
+.qibla-dial.aligned .pointer .beam { background: color-mix(in srgb, var(--green) 80%, transparent); }
+.kaaba-marker { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.qibla-dial.aligned .kaaba-marker { background: color-mix(in srgb, var(--green) 25%, transparent); box-shadow: inset 0 0 0 2.5px var(--green); }
+.qibla-dial .centre { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--glass); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fg) 15%, transparent); }
+.qibla-dial.aligned .centre { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 50%, transparent); }
+.qibla-dial .arrow { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--gold) 40%, transparent)); transition: transform .35s ease; }
+.aligned-mark { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--green); }
+.aligned-mark span { color: var(--fg); font-size: 15px; font-weight: 600; }
+.stats { display: flex; align-items: center; width: 100%; }
+.stat { flex: 1; text-align: center; min-width: 0; }
+.stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; opacity: 0.6; }
+.stat-value { font-size: 18px; font-weight: 600; white-space: nowrap; margin-top: 3px; }
+.vline { width: 1px; height: 34px; background: color-mix(in srgb, var(--fg) 30%, transparent); }
+.steps { width: 100%; }
+.step { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
+.step-icon { width: 22px; flex: none; display: flex; justify-content: center; padding-top: 1px; }
+.num-badge { width: 19px; height: 19px; border-radius: 50%; background: var(--gold); color: rgba(0, 0, 0, 0.82); font-size: 12px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center; }
+.map-box { border-radius: 18px; overflow: hidden; background: var(--fill); }
+
+/* ---------- Falak ---------- */
+.falak { display: flex; flex-direction: column; gap: 16px; }
+.falak .card + .card { margin-top: 0; }
+.falak-head { padding-top: 4px; }
+.tools { display: flex; gap: 12px; }
+.tool { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px; text-align: left; }
+.tool svg { height: 32px; }
+.safety { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: var(--corner); background: color-mix(in srgb, var(--warning) 22%, transparent); }
+.card-title { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; }
+.falak p { margin: 8px 0; }
+.icon-line { display: flex; gap: 8px; align-items: flex-start; }
+.icon-line svg { flex: none; margin-top: 1px; }
+.field-row { display: flex; align-items: center; gap: 8px; font-size: 15px; margin: 8px 0; }
+.field-row > span:first-child { flex: 1; }
+.field-row input { width: 96px; padding: 7px 10px; border-radius: 10px; border: 1px solid var(--stroke); background: var(--fill); text-align: right; font-size: 16px; }
+.field-row input[type="time"] { width: auto; }
+.field-row .unit { opacity: 0.7; font-size: 14px; }
+.plan-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 6px 0; }
+.reading { margin-top: 10px; padding: 12px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 18%, transparent); display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.sign { display: flex; gap: 12px; margin-top: 14px; }
+.sign-icon { width: 28px; flex: none; display: flex; justify-content: center; }
+
+.ar-screen { position: fixed; inset: 0; z-index: 60; background: #000; color: #fff; --fg: #fff; --fg2: rgba(235, 235, 245, 0.62); --glass: rgba(30, 30, 40, 0.55); }
+.ar-video, .ar-canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ar-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 32px; }
+.ar-close { position: absolute; top: calc(var(--safe-top) + 16px); right: 16px; width: 40px; height: 40px; background: rgba(40, 40, 50, 0.6); z-index: 2; }
+.ar-legend { position: absolute; left: 12px; right: 12px; bottom: calc(var(--safe-bottom) + 12px); padding: 16px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+  max-width: 480px; margin: 0 auto; }
+
+.level { display: flex; flex-direction: column; align-items: center; gap: 24px; padding-top: 12px; }
+.level .segmented { width: 100%; }
+.bubble-box { position: relative; width: 260px; height: 260px; border-radius: 50%; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--fg) 25%, transparent); display: flex; align-items: center; justify-content: center; }
+.bubble-box .ring-inner { position: absolute; width: 60px; height: 60px; border-radius: 50%; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fg) 40%, transparent); }
+.bubble { width: 44px; height: 44px; border-radius: 50%; background: var(--warning); transition: transform .12s ease-out, background .2s; }
+.bubble.ok { background: var(--green); }
+
+/* ---------- Masjid ---------- */
+.screen.tab-masjid { padding-top: 0; }
+.masjid-map-wrap { position: relative; height: calc(300px + var(--safe-top)); }
+.masjid-map { position: absolute; inset: 0; background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.masjid-title { position: absolute; left: 0; right: 0; top: 0; z-index: 500; display: flex; align-items: center; padding: calc(var(--safe-top) + 10px) 16px 30px;
+  background: linear-gradient(rgba(0, 0, 0, 0.45), transparent); color: #fff; pointer-events: none; }
+:root[data-theme="light"] .masjid-title { background: linear-gradient(rgba(255, 255, 255, 0.85), transparent); color: #111; }
+.masjid-title h1 { font-size: 17px; font-weight: 600; margin: 0; }
+.masjid-title .spacer:first-child { flex: 1; }
+.masjid-title .info { position: absolute; right: 16px; pointer-events: auto; background: rgba(0, 0, 0, 0.25); color: inherit; width: 38px; height: 38px; }
+:root[data-theme="light"] .masjid-title .info { background: rgba(255, 255, 255, 0.7); }
+.space-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.space-list li { display: flex; align-items: center; border-bottom: 0.5px solid var(--stroke); }
+.space-row { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 0; text-align: left; }
+.space-row > svg { flex: none; width: 24px; }
+.space-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.space-name { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.space-addr { font-size: 12px; color: var(--fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.space-dist { font-size: 15px; color: var(--fg2); white-space: nowrap; }
+.walk { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--fg2); flex: none; }
+.masjid-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px 0; color: var(--fg2); }
+.spin { animation: spin 1s linear infinite; }
+.empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 12px; text-align: center; }
+
+.leaflet-container { font: inherit; background: #1b1f3a; }
+:root[data-theme="light"] .leaflet-container { background: #e8eaf2; }
+.you-pin span { display: block; width: 18px; height: 18px; border-radius: 50%; background: #2f7cf6; border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4); }
+.space-pin span { display: flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
+.space-pin.masjid span { background: rgb(232, 140, 87); }
+.space-pin.musollah span { background: rgb(108, 132, 204); }
+.kaaba-pin span { display: block; width: 20px; height: 20px; background: #141419; border: 2px solid #F2C766; border-radius: 4px; }
+.leaflet-control-attribution { font-size: 10px; }
+
+/* ---------- Settings & sheets ---------- */
+.settings { padding-bottom: 12px; }
+.settings .item .value { max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.settings a.item { text-decoration: none; color: var(--fg); }
+.settings .item svg { flex: none; }
+.makers-list { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; }
+.stepper { display: inline-flex; border-radius: 9px; background: var(--fill); overflow: hidden; flex: none; }
+.stepper button { width: 44px; height: 32px; font-size: 20px; }
+.stepper button + button { border-left: 1px solid var(--stroke); }
+.stepper button:disabled { opacity: 0.3; }
+.search-box { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 12px; background: var(--fill); margin-top: 6px; }
+.search-box input { flex: 1; border: 0; background: transparent; outline: none; font-size: 17px; }
+.place-item { gap: 6px; }
+.grade-dot { width: 22px; height: 22px; border-radius: 50%; color: rgba(0, 0, 0, 0.8); font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.help { display: flex; flex-direction: column; gap: 12px; padding: 8px 0 4px; }
+.help p { margin: 0; }
+.help ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.help ol svg { vertical-align: -2px; }
+.help .primary-btn { align-self: flex-start; }
+
+/* ---------- Onboarding ---------- */
+.onboarding { min-height: 100%; display: flex; flex-direction: column; gap: 28px; padding: calc(var(--safe-top) + 20px) 28px calc(var(--safe-bottom) + 20px);
+  color: #fff; animation: rise .7s ease; }
+.onb-title { font-size: 52px; font-weight: 700; line-height: 1.02; margin: 0 0 10px; }
+.onb-lead { font-size: 20px; font-weight: 500; opacity: 0.9; margin: 0; }
+.onb-features { display: flex; flex-direction: column; gap: 16px; }
+.onb-feature { display: flex; gap: 14px; align-items: flex-start; }
+.onb-icon { width: 30px; flex: none; display: flex; justify-content: center; }
+.onb-actions { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.onb-primary { width: 100%; padding: 16px; border-radius: 999px; background: #fff; color: rgb(31, 51, 102); font-size: 17px; font-weight: 600; }
+.onb-secondary { font-size: 15px; font-weight: 600; color: #fff; padding: 6px; }
+
+/* ---------- Wider screens: the phone column, centred ---------- */
+@media (min-width: 700px) {
+  .tabbar { bottom: 18px; }
+}
