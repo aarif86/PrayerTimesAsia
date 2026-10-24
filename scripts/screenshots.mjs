@@ -57,6 +57,12 @@ const shots = [
   ['20-settings-makers', { tab: 'settings', appearance: 'dark', now: NIGHT, settings: 'makers' }],
   ['21-visitor-kl', { demo: 'visitor', style: 'list', appearance: 'dark', now: NIGHT }],
   ['22-travel-hanoi', { demo: 'travel', style: 'list', appearance: 'dark', now: NIGHT }],
+  ['23-masjid-about', { tab: 'masjid', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label="About this app"]')],
+  ['24-source-sheet', { style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('.source-badge')],
+  ['25-calendar-sheet', { style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('.date-main')],
+  ['26-places-sheet', { style: 'list', appearance: 'dark', now: NIGHT }, async (p) => { await p.click('.place-chip'); await p.fill('input[type=search]', 'ku') }],
+  ['27-style-menu', { style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Prayer screen style"]', { button: 'right' })],
+  ['28-journey', { demo: 'travel', style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Musafir"]')],
 ]
 
 const feed = process.env.FEED_FILE && existsSync(process.env.FEED_FILE) ? readFileSync(process.env.FEED_FILE, 'utf8') : null
@@ -74,13 +80,16 @@ await context.route(/raw\.githubusercontent\.com\/aarif86\/PrayerTimesAsia\/feed
 await context.route(/overpass/, (r) => r.fulfill({ status: 200, contentType: 'application/json', body: overpass, headers: { 'access-control-allow-origin': '*' } }))
 if (process.env.OFFLINE_TILES) await context.route(/basemaps\.cartocdn\.com/, (r) => r.abort())
 
-for (const [name, params] of shots) {
+const only = process.env.ONLY ? new RegExp(process.env.ONLY) : null
+for (const [name, params, action] of shots) {
+  if (only && !only.test(name)) continue
   const q = new URLSearchParams({ demo: params.demo ?? '1', ...params })
   q.delete('demo'); q.set('demo', params.demo ?? '1')
   const page = await context.newPage()
   await page.goto(`${origin}?${q}`, { waitUntil: 'networkidle' })
   await page.evaluate(() => document.fonts.ready)
   await page.waitForTimeout(name.includes('masjid') ? 2500 : name.includes('qibla-day') ? 3200 : 900)
+  if (action) { await action(page); await page.waitForTimeout(700) }
   await page.screenshot({ path: join(out, `${name}.png`) })
   await page.close()
   console.log('saved', name)

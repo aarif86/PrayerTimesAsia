@@ -20,9 +20,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      pages: ${{ steps.pages.outputs.enabled }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -43,9 +45,21 @@ jobs:
           test -f dist/manifest.webmanifest
           grep -q '/PrayerTimesAsia/assets/' dist/index.html
           du -sh dist
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
+      - name: Is GitHub Pages enabled?
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/${GITHUB_REPOSITORY}/pages" --jq .build_type > /dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=GitHub Pages is off::Turn it on once: Settings > Pages > Build and deployment > Source: GitHub Actions. The next push to 'web' (or Run workflow) deploys."
+            echo "GitHub Pages is not enabled yet: Settings > Pages > Source: **GitHub Actions**, then re-run." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Which official APIs a browser may read (CORS, informational)
         continue-on-error: true
         run: |
@@ -67,6 +81,7 @@ jobs:
 
   deploy:
     needs: build
+    if: needs.build.outputs.pages == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:

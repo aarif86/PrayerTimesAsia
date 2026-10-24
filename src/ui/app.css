@@ -180,10 +180,12 @@ input, select, textarea { font: inherit; color: inherit; }
 .item .value { color: var(--fg2); text-align: right; font-size: 17px; }
 .item .sub { display: block; font-size: 13px; color: var(--fg2); margin-top: 2px; }
 .item select { appearance: none; -webkit-appearance: none; background: transparent; border: 0; color: var(--fg2); text-align: right; text-align-last: right;
-  max-width: 62%; font-size: 17px; padding-right: 18px; cursor: pointer;
+  max-width: 58%; font-size: 17px; padding-right: 18px; cursor: pointer; text-overflow: ellipsis;
   background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
   background-position: calc(100% - 9px) 50%, calc(100% - 4px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
 .item select option { color: #000; }
+.item.footnote { font-size: 13px; gap: 14px; }
+.item.footnote svg { opacity: 0.85; }
 .group-foot { font-size: 13px; color: var(--fg2); margin: 8px 16px 0; line-height: 1.35; }
 
 /* Switch */
