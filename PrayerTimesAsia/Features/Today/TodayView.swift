@@ -513,7 +513,7 @@ struct TodayView: View {
     /// list as on Sun Path - the two styles met in the middle.
     private func centrePage(now: Date, day: PrayerDay, shown: PrayerDay,
                             current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             ZStack(alignment: .topTrailing) {
                 if let current, let next, let tomorrow = model.day(containing: now.addingTimeInterval(86_400)) {
                     DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
@@ -532,7 +532,7 @@ struct TodayView: View {
                 .padding(.top, 4)
             }
             // Room for the now-dot, which sits on the ring's edge.
-            .padding(.bottom, 12)
+            .padding(.bottom, 10)
             sunPlaceChip()
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
