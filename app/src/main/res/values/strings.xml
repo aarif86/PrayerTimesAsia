@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Prayer Times Asia</string>
+    <string name="widget_next_name">Next prayer</string>
+    <string name="widget_next_description">Countdown to the next prayer, under your Living Sky.</string>
+    <string name="widget_timetable_name">Today\'s timetable</string>
+    <string name="widget_timetable_description">Today\'s prayer times in your Prayer screen style.</string>
+</resources>
