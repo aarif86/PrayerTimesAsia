@@ -521,7 +521,7 @@ struct TodayView: View {
                             currentPrayer: current.prayer,
                             countdown: Self.short(next.time.timeIntervalSince(now)),
                             nextName: next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))
-                        .frame(width: 156, height: 156)
+                        .frame(width: 148, height: 148)
                         .frame(maxWidth: .infinity)
                 }
                 VStack(spacing: 8) {
@@ -531,6 +531,8 @@ struct TodayView: View {
                 }
                 .padding(.top, 4)
             }
+            // Room for the now-dot, which sits on the ring's edge.
+            .padding(.bottom, 12)
             sunPlaceChip()
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
