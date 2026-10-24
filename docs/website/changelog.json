@@ -1,0 +1,92 @@
+{
+  "app": "Prayer Times Asia",
+  "note": "Public changelog for the website. Newest first. type: new | improved | fixed. Builds are TestFlight build numbers of version 1.0.0.",
+  "releases": [
+    {
+      "version": "1.0.0",
+      "build": 7,
+      "date": "2026-10-24",
+      "title": "Four ways to see your day",
+      "summary": "Choose how the Prayer screen looks, and meet the people behind the app.",
+      "changes": [
+        { "type": "new", "text": "Prayer screen styles in Settings > Display: Classic list (default), Day Dial, Sun Path and Colour Bands." },
+        { "type": "new", "text": "Day Dial: the whole day as a 24-hour ring in the colours of the sky, with every prayer time inside it." },
+        { "type": "new", "text": "Colour Bands: each prayer a full-width band of colour, a tribute to the classic Singapore timetable." },
+        { "type": "new", "text": "Sun Path: the sun's arc across today's sky, with each prayer marked on it." },
+        { "type": "improved", "text": "Classic list fills the screen: everything, including Show more and the official MUIS source, without scrolling." },
+        { "type": "improved", "text": "The Day Dial follows the natural colours of the day: bright dawn for Subuh, hot noon for Zohor, sunset for Maghrib, night for Isyak." },
+        { "type": "new", "text": "From the makers: Badal Haji & Umrah (Badal.sg) and NasarDigital, shown only under Show more and in Settings. Turn them off any time." }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 6,
+      "date": "2026-10-23",
+      "title": "One calm colour palette",
+      "summary": "The same colours everywhere, and a simpler Qibla compass.",
+      "changes": [
+        { "type": "improved", "text": "One colour palette across the whole app: brand peach, qibla gold, prayer colours only on prayer rows." },
+        { "type": "improved", "text": "Qibla: the centre is a single arrow pointing at the qibla, instead of moving numbers." }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 5,
+      "date": "2026-10-23",
+      "title": "A new icon",
+      "summary": "A watch with the Ka'bah at its heart.",
+      "changes": [
+        { "type": "new", "text": "New app icon: a compass-bezel watch with the Ka'bah at the centre and skeleton sword hands at 8:02." }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 4,
+      "date": "2026-10-22",
+      "title": "Times first",
+      "summary": "A redesign around what matters most: the prayer times.",
+      "changes": [
+        { "type": "improved", "text": "Large, clear times with AM/PM always on the same line; the countdown is small at the top." },
+        { "type": "new", "text": "Show more / Show less with Dhuha, the middle and the last third of the night (and Imsak in Ramadan). Free." },
+        { "type": "new", "text": "Light mode with a gently breathing sun and drifting clouds; Automatic, Light or Dark." },
+        { "type": "new", "text": "Falak is its own tab, with an AR camera view and a spirit level." },
+        { "type": "new", "text": "Prayer alerts at the exact time, with an optional early reminder and a Syuruk alert." },
+        { "type": "new", "text": "Qibla turns green when you face it, with a tick, a ripple and a tap, plus step-by-step instructions." },
+        { "type": "new", "text": "Prayer names follow you: Subuh or Fajr from your home country or phone, with the local word shown when you travel." },
+        { "type": "new", "text": "Big Home Screen widget: today's timetable, a mini version of the app." },
+        { "type": "improved", "text": "New consistent icon set: prayer mat, compass, telescope, masjid and plane." }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 3,
+      "date": "2026-10-22",
+      "title": "Falak Mode",
+      "summary": "Find the qibla and Asr from the sun, the classical way.",
+      "changes": [
+        { "type": "new", "text": "Falak Mode: Qibla Day, rashdul qiblat, shadow-stick Asr and sky signs, clearly labelled and pending review." },
+        { "type": "new", "text": "Ramadan and Eid dates with their sources, and 'My community follows' setting." },
+        { "type": "new", "text": "Subscribe to official prayer times in your calendar (MUIS and every JAKIM zone)." },
+        { "type": "new", "text": "Help verify times where you are: send a masjid timetable photo, no account needed." },
+        { "type": "new", "text": "Travellers see today's combined (jamak) prayer windows." }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 2,
+      "date": "2026-10-22",
+      "title": "First build",
+      "summary": "Accurate, offline prayer times for Muslims living and travelling across Asia.",
+      "changes": [
+        { "type": "new", "text": "Prayer times for every country in Asia, calculated on the phone and working offline." },
+        { "type": "new", "text": "Official timetables when online: MUIS (Singapore), JAKIM (Malaysia, by zone) and Kemenag (Indonesia)." },
+        { "type": "new", "text": "Checked against a full year of official tables: offline times are never earlier than official." },
+        { "type": "new", "text": "Every day shows its source: official, masjid, community or calculated." },
+        { "type": "new", "text": "Travel mode: switches country method automatically, with musafir guidance and a trip log." },
+        { "type": "new", "text": "Qibla compass, nearby masjid and musollah search, Home and Lock Screen widgets, Live Activity countdown." },
+        { "type": "new", "text": "Optional prayer tracker with streak, and a Subuh wake-up alarm." },
+        { "type": "new", "text": "No third-party ads, no accounts, no tracking. Your location never leaves your phone." }
+      ]
+    }
+  ]
+}
