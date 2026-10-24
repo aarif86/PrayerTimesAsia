@@ -1,0 +1,31 @@
+{
+  "name": "prayer-times-asia-web",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Prayer Times Asia for the web: accurate prayer times, qibla and falak for Muslims living and travelling across Asia.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/nunito": "^5.3.0",
+    "leaflet": "^1.9.4",
+    "lucide-preact": "^1.61.0",
+    "preact": "^10.27.2"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.2",
+    "@types/leaflet": "^1.9.21",
+    "playwright": "^1.56.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.12",
+    "vitest": "^3.2.4"
+  }
+}
