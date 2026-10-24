@@ -21,7 +21,6 @@ enum MakersOffer: String, CaseIterable, Identifiable {
         }
     }
 
-
     var site: String {
         switch self {
         case .badal: "Badal.sg"
