@@ -2,6 +2,23 @@
 
 What's new in Prayer Times Asia, newest first.
 
+## Your look, one tap away
+
+*1.0.0 (build 8) · 24 October 2026*
+
+Switch Prayer screen styles from the Prayer screen, a simpler set of tabs, and travel features when you need them.
+
+**New**
+
+- Palette button on the Prayer screen: tap for the next style, touch and hold to pick one. Your choice is kept.
+
+**Improved**
+
+- Settings is now a main tab: Prayer, Qibla, Falak, Masjid, Settings.
+- Musafir features are optional. When you land in another country we ask if you'd like jamak and qasar guidance; Journey opens from Settings or the plane chip.
+- Dhuha and the blessed night times are in English for everyone.
+- Masjid: an (i) button tells you who built the app, instead of a card at the end of the list.
+
 ## Four ways to see your day
 
 *1.0.0 (build 7) · 24 October 2026*

@@ -2,25 +2,133 @@
   "app": "Prayer Times Asia",
   "note": "Roadmap and feature requests for the website. status: now | next | later | done. source: who asked (team, user, falak, community).",
   "roadmap": [
-    { "status": "now", "title": "Falak review", "text": "A member of the falak committee in Singapore checks Falak Mode before it loses its 'pending review' label.", "source": "team" },
-    { "status": "next", "title": "Time Sensitive prayer alerts", "text": "Alerts that break through Focus modes so you never miss a prayer.", "source": "user" },
-    { "status": "next", "title": "Badal Haji season", "text": "Order reminders around six months before Aidiladha for Badal Haji.", "source": "team" },
-    { "status": "next", "title": "Badal.my for Malaysia", "text": "Badal Haji & Umrah for Malaysians, shown to users in Malaysia.", "source": "team" },
-    { "status": "later", "title": "App Store launch", "text": "From TestFlight to the App Store, free.", "source": "team" },
-    { "status": "later", "title": "Masjid timetables", "text": "Jamaah times and Jumu'ah from local masjids, verified by the community.", "source": "community" },
-    { "status": "later", "title": "Website", "text": "Changelog, roadmap and feature requests on the web.", "source": "team" }
+    {
+      "status": "now",
+      "title": "Falak review",
+      "text": "A member of the falak committee in Singapore checks Falak Mode before it loses its 'pending review' label.",
+      "source": "team"
+    },
+    {
+      "status": "next",
+      "title": "Time Sensitive prayer alerts",
+      "text": "Alerts that break through Focus modes so you never miss a prayer.",
+      "source": "user"
+    },
+    {
+      "status": "next",
+      "title": "Badal Haji season",
+      "text": "Order reminders around six months before Aidiladha for Badal Haji.",
+      "source": "team"
+    },
+    {
+      "status": "next",
+      "title": "Badal.my for Malaysia",
+      "text": "Badal Haji & Umrah for Malaysians, shown to users in Malaysia.",
+      "source": "team"
+    },
+    {
+      "status": "later",
+      "title": "App Store launch",
+      "text": "From TestFlight to the App Store, free.",
+      "source": "team"
+    },
+    {
+      "status": "later",
+      "title": "Masjid timetables",
+      "text": "Jamaah times and Jumu'ah from local masjids, verified by the community.",
+      "source": "community"
+    },
+    {
+      "status": "later",
+      "title": "Website",
+      "text": "Changelog, roadmap and feature requests on the web.",
+      "source": "team"
+    }
   ],
   "requests": [
-    { "status": "done", "build": 4, "title": "Make the times the main thing", "source": "user" },
-    { "status": "done", "build": 4, "title": "Keep AM/PM on the same line", "source": "user" },
-    { "status": "done", "build": 4, "title": "Show more with blessed times, for free", "source": "user" },
-    { "status": "done", "build": 4, "title": "Light mode", "source": "user" },
-    { "status": "done", "build": 4, "title": "Notify me when it's prayer time", "source": "user" },
-    { "status": "done", "build": 4, "title": "Use Subuh or Fajr depending on where I'm from", "source": "user" },
-    { "status": "done", "build": 4, "title": "Show clearly when I'm facing the qibla", "source": "user" },
-    { "status": "done", "build": 5, "title": "An icon that looks like a prayer app, not astrology", "source": "user" },
-    { "status": "done", "build": 7, "title": "See everything on one screen without scrolling", "source": "user" },
-    { "status": "done", "build": 7, "title": "Bring back the colourful timetable look", "source": "user" },
-    { "status": "next", "build": null, "title": "Prayer alerts during Focus / Do Not Disturb", "source": "user" }
+    {
+      "status": "done",
+      "build": 4,
+      "title": "Make the times the main thing",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 4,
+      "title": "Keep AM/PM on the same line",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 4,
+      "title": "Show more with blessed times, for free",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 4,
+      "title": "Light mode",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 4,
+      "title": "Notify me when it's prayer time",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 4,
+      "title": "Use Subuh or Fajr depending on where I'm from",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 4,
+      "title": "Show clearly when I'm facing the qibla",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 5,
+      "title": "An icon that looks like a prayer app, not astrology",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 7,
+      "title": "See everything on one screen without scrolling",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 7,
+      "title": "Bring back the colourful timetable look",
+      "source": "user"
+    },
+    {
+      "status": "next",
+      "build": null,
+      "title": "Prayer alerts during Focus / Do Not Disturb",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 8,
+      "title": "Switch the Prayer screen style from the Prayer screen",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 8,
+      "title": "Make travel (Journey) features optional",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 8,
+      "title": "Blessed times in English for all Muslims in Singapore",
+      "source": "user"
+    }
   ]
 }

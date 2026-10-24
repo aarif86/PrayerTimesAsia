@@ -33,3 +33,6 @@ Where Prayer Times Asia is heading.
 | See everything on one screen without scrolling | Done in build 7 |
 | Bring back the colourful timetable look | Done in build 7 |
 | Prayer alerts during Focus / Do Not Disturb | Next |
+| Switch the Prayer screen style from the Prayer screen | Done in build 8 |
+| Make travel (Journey) features optional | Done in build 8 |
+| Blessed times in English for all Muslims in Singapore | Done in build 8 |
