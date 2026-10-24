@@ -18,6 +18,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - run: echo > build.log
 
       - uses: actions/setup-java@v4
         with:
@@ -27,13 +28,22 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Core tests (the prayer engine, Falak, Hijri, parsers)
-        run: ./gradlew :core:test --stacktrace
+        run: ./gradlew :core:test 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
 
       - name: Build the debug APK and an unsigned release (checks R8)
-        run: ./gradlew :app:assembleDebug :app:assembleRelease --stacktrace
+        run: ./gradlew :app:assembleDebug :app:assembleRelease 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
 
       - name: App unit tests and JVM screenshots (Robolectric + Roborazzi)
-        run: ./gradlew :app:recordRoborazziDebug --stacktrace
+        run: ./gradlew :app:recordRoborazziDebug 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
+
+      - name: Error summary
+        if: failure()
+        run: |
+          grep -E "^e: |What went wrong|FAILED|Exception|error:|Error:" -A3 build.log | grep -v "^\s*at " | head -150 || true
+          for f in $(find . -path '*test-results*' -name '*.xml' 2>/dev/null); do
+            grep -l "<failure" "$f" >/dev/null 2>&1 && grep -A8 "<failure" "$f" | head -40
+          done
+          true
 
       - name: Upload the debug APK
         if: always()
