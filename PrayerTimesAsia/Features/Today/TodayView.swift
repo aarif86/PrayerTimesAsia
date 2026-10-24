@@ -513,7 +513,7 @@ struct TodayView: View {
     /// list as on Sun Path - the two styles met in the middle.
     private func centrePage(now: Date, day: PrayerDay, shown: PrayerDay,
                             current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
-        VStack(alignment: .leading, spacing: fill ? 12 : 12) {
+        VStack(alignment: .leading, spacing: 10) {
             ZStack(alignment: .topTrailing) {
                 if let current, let next, let tomorrow = model.day(containing: now.addingTimeInterval(86_400)) {
                     DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
@@ -521,7 +521,7 @@ struct TodayView: View {
                             currentPrayer: current.prayer,
                             countdown: Self.short(next.time.timeIntervalSince(now)),
                             nextName: next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))
-                        .frame(width: 184, height: 184)
+                        .frame(width: 156, height: 156)
                         .frame(maxWidth: .infinity)
                 }
                 VStack(spacing: 8) {
@@ -532,7 +532,6 @@ struct TodayView: View {
                 .padding(.top, 4)
             }
             sunPlaceChip()
-                .padding(.top, 6)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
