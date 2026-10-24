@@ -385,7 +385,7 @@ fun ArrivalCard(state: AppState) {
             Text("Asr", style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f))
             Box {
                 Text(
-                    (if (r.asrSchool == AsrSchool.HANAFI) "Later Asr (Hanafi)" else "Earlier Asr (Shafi'i)") + "  ⌃⌄",
+                    (if (r.asrSchool == AsrSchool.HANAFI) "Later Asr (Hanafi)" else "Earlier Asr (Shafi'i)") + "  ▾",
                     style = Txt.subheadline, color = Palette.primary, textAlign = TextAlign.End,
                     modifier = Modifier.clickable { asrMenu = true },
                 )

@@ -23,7 +23,7 @@ val Rounded = FontFamily(
 
 /** Big rounded figures: times, countdowns, titles. Tabular digits so times line up. */
 fun display(size: TextUnit, weight: FontWeight = FontWeight.SemiBold) =
-    TextStyle(fontFamily = Rounded, fontSize = size, fontWeight = weight, fontFeatureSettings = "tnum")
+    TextStyle(fontFamily = Rounded, fontSize = size, fontWeight = weight, fontFeatureSettings = "tnum", lineHeight = size * 1.15)
 
 /** Body text, the iOS text styles in sp. */
 object Txt {

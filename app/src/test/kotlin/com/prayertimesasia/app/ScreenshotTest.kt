@@ -40,7 +40,7 @@ import java.util.Locale
 
 /**
  * JVM screenshots of every screen (Robolectric native graphics + Roborazzi),
- * in demo mode: Pasir Ris, Singapore, Sunday 25 October 2026 - the moment of the
+ * in demo mode: Pasir Ris, Singapore, Sunday 25 October 2026, 4:49 am - the moment of the
  * iOS app's own screenshots. Run with `./gradlew :app:recordRoborazziDebug`;
  * the images land in app/build/outputs/roborazzi.
  */
@@ -57,7 +57,7 @@ class ScreenshotTest {
     private fun state(demo: DemoConfig): AppState {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
         val s = AppState(ctx, null, OfficialRepository(ctx), Directories(ctx), demo.preferences(demo.now ?: night),
-            fixedNow = demo.now, sideEffects = false, locale = Locale("en", "SG"))
+            fixedNow = demo.now, sideEffects = false, locale = Locale("en", "AU"))
         Demo.seed(s, demo)
         return s
     }

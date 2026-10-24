@@ -230,7 +230,7 @@ fun HeroDial(
 
 /** A label's footprint, as a fraction of the dial. */
 internal fun labelSize(mark: DialMark, size: Dp): Pair<Dp, Dp> =
-    if (mark.minor) size * 0.22f to size * 0.08f else size * 0.22f to size * (if (mark.extraLine) 0.14f else 0.105f)
+    if (mark.minor) size * 0.22f to size * 0.095f else size * 0.23f to size * (if (mark.extraLine) 0.155f else 0.12f)
 
 /**
  * Where each label goes: just inside the ring at its time, its outer edge touching

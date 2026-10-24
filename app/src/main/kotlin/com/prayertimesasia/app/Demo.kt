@@ -91,8 +91,8 @@ data class DemoConfig(
             if (!state.official.hasTable(OfficialSource.Muis, 2026)) state.official.seed(OfficialSource.Muis, 2026, muis25Oct2026)
         }
 
-        /** Sunday 25 October 2026, 8:49 pm in Singapore - the iOS screenshots' moment. */
-        val night: Instant = ZonedDateTime.of(2026, 10, 25, 20, 49, 0, 0, ZoneId.of("Asia/Singapore")).toInstant()
+        /** Sunday 25 October 2026, 4:49 am in Singapore - the iOS screenshots' moment (Isyak, before Subuh). */
+        val night: Instant = ZonedDateTime.of(2026, 10, 25, 4, 49, 0, 0, ZoneId.of("Asia/Singapore")).toInstant()
         /** The same day, mid-morning. */
         val morning: Instant = ZonedDateTime.of(2026, 10, 25, 10, 20, 0, 0, ZoneId.of("Asia/Singapore")).toInstant()
 

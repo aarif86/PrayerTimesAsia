@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -351,8 +352,9 @@ fun <T> PickerRow(label: String, value: String, options: List<Pair<String, T>>, 
     var open by remember { mutableStateOf(false) }
     RowShell({ open = true }) {
         Text(label, style = Txt.body, color = Palette.primary)
-        Text("$value  ⌃⌄", style = Txt.body, color = Palette.secondary, maxLines = 1, modifier = Modifier.weight(1f),
+        Text(value, style = Txt.body, color = Palette.secondary, maxLines = 1, modifier = Modifier.weight(1f),
             textAlign = androidx.compose.ui.text.style.TextAlign.End)
+        Icon(Icons.Filled.UnfoldMore, null, Modifier.size(18.dp), tint = Palette.secondary)
     }
     if (open) {
         AlertDialog(

@@ -371,7 +371,7 @@ private fun PrayerMark(state: AppState, day: PrayerDay, prayer: Prayer, time: In
             .alpha(if (passed && !prayed) 0.55f else 1f)) {
             val own = r.prayerName(prayer, time)
             val name = r.localName(prayer, time)?.let { "$own · $it" } ?: own
-            Text(name, fontSize = (size.value * 0.034f).sp, fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.SemiBold,
+            Text(name, fontSize = (size.value * 0.034f).sp, lineHeight = (size.value * 0.04f).sp, fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.SemiBold,
                 color = if (isCurrent) prayer.tint else Palette.primary.copy(alpha = 0.75f), maxLines = 1, textAlign = TextAlign.Center,
                 fontFamily = com.prayertimesasia.app.ui.theme.Rounded)
             com.prayertimesasia.app.ui.components.TimeText(r.timeParts(time), size = (size.value * 0.05f).sp,
@@ -407,7 +407,7 @@ private fun BlessedMark(state: AppState, blessed: com.prayertimesasia.core.Bless
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
             Icon(blessed.icon, null, Modifier.size((size.value * 0.03f).dp), tint = Palette.secondary)
-            Text(blessed.shortName, fontSize = (size.value * 0.028f).sp, fontWeight = FontWeight.SemiBold, color = Palette.secondary, maxLines = 1)
+            Text(blessed.shortName, fontSize = (size.value * 0.028f).sp, lineHeight = (size.value * 0.034f).sp, fontWeight = FontWeight.SemiBold, color = Palette.secondary, maxLines = 1)
         }
         com.prayertimesasia.app.ui.components.TimeText(r.timeParts(time), size = (size.value * 0.04f).sp, weight = FontWeight.Medium,
             color = Palette.primary.copy(alpha = 0.85f))
