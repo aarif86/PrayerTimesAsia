@@ -7,19 +7,27 @@ struct PrayerTimesAsiaApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TimelineView(.everyMinute) { context in
-                RootView()
-                    .environment(model)
-                    .preferredColorScheme(model.colorScheme(at: context.date))
-                    .environment(\.softNight, model.prefs.appearance == .system)
-            }
-            .onChange(of: scenePhase) { _, phase in
-                if phase == .active { model.appBecameActive() }
-            }
-            .onChange(of: model.location.location) { _, location in
-                if let location { model.handle(location: location) }
-            }
-            .onChange(of: model.prefs) { old, _ in model.preferencesChanged(from: old) }
+            RootView()
+                .environment(model)
+                .preferredColorScheme(model.colorScheme)
+                .environment(\.softNight, model.prefs.appearance == .system)
+                .task {
+                    while !Task.isCancelled {
+                        model.tickSky()
+                        try? await Task.sleep(for: .seconds(30))
+                    }
+                }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active { model.appBecameActive(); model.tickSky() }
+                }
+                .onChange(of: model.location.location) { _, location in
+                    if let location { model.handle(location: location) }
+                    model.tickSky()
+                }
+                .onChange(of: model.prefs) { old, _ in
+                    model.preferencesChanged(from: old)
+                    model.tickSky()
+                }
         }
     }
 }

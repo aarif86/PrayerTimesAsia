@@ -91,15 +91,26 @@ final class AppModel {
         return p
     }
 
+    /// The sky right now, shared by every tab; moved on once a minute by `tickSky()`.
+    private(set) var skyNow: SkyColors = .night
+    /// Between Maghrib and sunrise; nil until today's times are known.
+    private(set) var isNightNow: Bool?
+
+    func tickSky(_ date: Date = .now) {
+        let day = day(containing: date)
+        let sky = day.map { SkyColors.at(date, day: $0) } ?? .night
+        if sky != skyNow { skyNow = sky }
+        let night = day.map { date < $0.time(.sunrise) || date >= $0.time(.maghrib) }
+        if night != isNightNow { isNightNow = night }
+    }
+
     /// Light or Dark as chosen; Automatic follows the sky - light from sunrise
-    /// to Maghrib, the soft night after (nil: follow the phone, before we know the times).
-    func colorScheme(at date: Date) -> ColorScheme? {
+    /// to Maghrib, the soft night after (nil: follow the phone until we know the times).
+    var colorScheme: ColorScheme? {
         switch prefs.appearance {
-        case .light: return .light
-        case .dark: return .dark
-        case .system:
-            guard let day = day(containing: date) else { return nil }
-            return date >= day.time(.sunrise) && date < day.time(.maghrib) ? .light : .dark
+        case .light: .light
+        case .dark: .dark
+        case .system: isNightNow.map { $0 ? .dark : .light }
         }
     }
 
