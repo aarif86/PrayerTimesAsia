@@ -56,13 +56,17 @@ struct TodayView: View {
                 .environment(\.colorScheme, .dark)
             } else {
             ViewThatFits(in: .vertical) {
-                if model.prefs.todayStyle == .dial {
+                if model.prefs.todayStyle == .centre {
+                    centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                } else if model.prefs.todayStyle == .dial {
                     dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true)
                 } else {
                     page(now: now, day: day, shown: shown, current: current, next: next, fill: true)
                 }
                 ScrollView {
-                    if model.prefs.todayStyle == .dial {
+                    if model.prefs.todayStyle == .centre {
+                        centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                    } else if model.prefs.todayStyle == .dial {
                         dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false)
                     } else {
                         page(now: now, day: day, shown: shown, current: current, next: next, fill: false)
@@ -501,6 +505,59 @@ struct TodayView: View {
         .buttonStyle(.plain)
         .padding(.horizontal, 8)
         .background(BandsPalette.dateBar)
+    }
+
+    // MARK: Centre Dial style
+
+    /// The Day Dial centred at the top, buttons beside it, then the day and the
+    /// list as on Sun Path - the two styles met in the middle.
+    private func centrePage(now: Date, day: PrayerDay, shown: PrayerDay,
+                            current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
+        VStack(alignment: .leading, spacing: fill ? 12 : 12) {
+            ZStack(alignment: .topTrailing) {
+                if let current, let next, let tomorrow = model.day(containing: now.addingTimeInterval(86_400)) {
+                    DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
+                            currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
+                            currentPrayer: current.prayer,
+                            countdown: Self.short(next.time.timeIntervalSince(now)),
+                            nextName: next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))
+                        .frame(width: 184, height: 184)
+                        .frame(maxWidth: .infinity)
+                }
+                VStack(spacing: 8) {
+                    styleButton
+                    appearanceButton
+                    if model.prefs.trackerEnabled { streakChip(now) }
+                }
+                .padding(.top, 4)
+            }
+            sunPlaceChip()
+                .padding(.top, 6)
+            if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+            if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
+            sunDayNavigator(shown)
+            PrayerList(day: shown, now: now,
+                       current: dayOffset == 0 ? current?.prayer : nil,
+                       next: dayOffset == 0 ? next : nil,
+                       showMore: showMore, fill: fill)
+                .frame(maxHeight: fill ? .infinity : nil, alignment: .top)
+                .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { v in
+                    guard abs(v.translation.width) > abs(v.translation.height) * 2 else { return }
+                    withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
+                })
+            HStack {
+                SourceBadge(day: shown, compact: true)
+                Spacer(minLength: 8)
+                showMoreButton.fixedSize()
+            }
+            if model.prefs.showOffers && showMore {
+                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+            }
+        }
+        .padding(.horizontal, Theme.gutter)
+        .padding(.top, 4)
+        .padding(.bottom, fill ? 8 : 24)
     }
 
     // MARK: Sun Path style

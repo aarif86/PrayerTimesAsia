@@ -12,7 +12,7 @@ struct TimetableCard: View {
         if let s = snapshot, let day = s.day(containing: date) {
             switch style {
             case .list: list(s, day: day)
-            case .dial: dial(s, day: day)
+            case .dial, .centre: dial(s, day: day)
             case .sunPath: sunPath(s, day: day)
             case .bands: bands(s, day: day)
             }
