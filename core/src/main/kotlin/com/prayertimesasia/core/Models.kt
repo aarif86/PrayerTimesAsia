@@ -81,10 +81,10 @@ enum class Appearance {
 /** How the Prayer screen shows the day. */
 @Serializable
 enum class TodayStyle {
-    /** The Day Dial beside a list of the times. */
-    @SerialName("list") LIST,
-    /** The Day Dial centred at the top, then the day and the list. */
+    /** The Day Dial centred at the top, then the day and the list. The default. */
     @SerialName("centre") CENTRE,
+    /** "Side Dial": the Day Dial beside the date, the list below. */
+    @SerialName("list") LIST,
     /** The Day Dial fills the screen, every time inside it at its hour. */
     @SerialName("dial") DIAL,
     /** The sun's arc across the top, the current prayer small at the top left, then the list. */
@@ -94,7 +94,7 @@ enum class TodayStyle {
 
     val label: String
         get() = when (this) {
-            LIST -> "Classic list"
+            LIST -> "Side Dial"
             CENTRE -> "Centre Dial"
             DIAL -> "Day Dial"
             SUN_PATH -> "Sun Path"
@@ -149,7 +149,7 @@ data class Preferences(
     val communityAuthority: String? = null,
 
     val appearance: Appearance = Appearance.SYSTEM,
-    val todayStyle: TodayStyle = TodayStyle.LIST,
+    val todayStyle: TodayStyle = TodayStyle.CENTRE,
     /** The makers' own offers (Badal, NasarDigital) on the Prayer and Masjid screens. */
     val showOffers: Boolean = true,
     /** Travel concessions (jamak, qasar) and the Journey screen. Off until the user turns it on. */

@@ -15,11 +15,11 @@ git push git@github.com:<owner>/<new-repo>.git android:main
 | `core/` | Pure Kotlin/JVM: the prayer engine and everything that decides a time. A line-by-line port of the iOS `Core/` folder: the praytimes.org solar model with each authority's fitted offsets (MUIS, JAKIM, Kemenag and 10 others), country profiles and naming styles, the Umm al-Qura calendar, blessed times, Falak (Qibla Day, rashdul qiblat, shadow stick), musafir rules, JAKIM zones, the MUIS/JAKIM/Kemenag parsers, mosque profiles, the calendar sanad, preferences, and the resolver (official table > masjid > calculation). Also the Overpass parser and an offline list of Asian cities. |
 | `core/src/test/` | JUnit tests: the iOS test suite's expected values, plus exact-minute matches with the iOS app's own screenshots (Hanoi and Makkah) and a full-century check of the Hijri calendar. |
 | `app/` | The Android app (`com.prayertimesasia.app`, minSdk 26, target/compile SDK 35). |
-| `app/.../ui/today/` | The Prayer screen in all five styles: Classic list, Centre Dial, Day Dial, Sun Path, Colour Bands. |
+| `app/.../ui/today/` | The Prayer screen in all five styles: Centre Dial (default), Side Dial, Day Dial, Sun Path, Colour Bands. |
 | `app/.../ui/{qibla,falak,masjid,settings,journey,onboarding,makers}/` | The other tabs and sheets. |
 | `app/.../data/` | Official timetable downloads and disk cache, `mosques.json` / `calendar.json`, location (platform `LocationManager` + `Geocoder`), preferences. |
 | `app/.../alarms/` | Exact prayer alerts with `AlarmManager`, early reminders, Subuh wake-up, reschedule on boot / time change. |
-| `app/.../widget/` | Glance home-screen widgets: Next prayer (small and medium, live countdown) and Today's timetable (Classic list, Colour Bands or Day Dial, following the Prayer screen style). |
+| `app/.../widget/` | Glance home-screen widgets: Next prayer (small and medium, live countdown) and Today's timetable (Side Dial, Colour Bands or Day Dial, following the Prayer screen style). |
 | `app/src/test/` | Roborazzi JVM screenshots of every screen (Robolectric, no emulator) and the alarm-plan test. |
 | `.github/workflows/android.yml` | CI: core tests, debug APK, unsigned release (checks R8), screenshots. |
 
@@ -76,7 +76,7 @@ adb shell am start -n com.prayertimesasia.app/.MainActivity \
 | Masjid & musollah search, directions | Different | OpenStreetMap (Overpass API) on a radar around you, instead of Apple Maps. Directions open in whatever maps app the phone has (`geo:` intent, OSM web fallback). |
 | City search | Different | Built-in list of ~100 Asian cities (offline) plus the phone's own geocoder when it has one; no third-party search service. |
 | Makers: Badal.sg (Singapore) / NasarDigital, under Show more, (i) on Masjid, Settings with Show offers | Same | Same URLs and utm parameters. |
-| Widgets | Mostly | Next prayer (small, medium) and Today's timetable in Classic list, Colour Bands and Day Dial. No Lock Screen widget or Live Activity (Android has no equivalent); Sun Path uses the list layout in the widget. |
+| Widgets | Mostly | Next prayer (small, medium) and Today's timetable in Side Dial, Colour Bands and Day Dial. No Lock Screen widget or Live Activity (Android has no equivalent); Sun Path uses the list layout in the widget. |
 | Subscribe to the official calendar feed | Mostly | Opens the `webcal://` feed; calendar apps that accept URL subscriptions handle it. |
 
 ## Known gaps and things not verified

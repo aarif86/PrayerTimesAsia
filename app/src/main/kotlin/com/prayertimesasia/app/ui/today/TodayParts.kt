@@ -260,7 +260,7 @@ fun ShowMoreButton(state: AppState, modifier: Modifier = Modifier) {
     }
 }
 
-/** "‹ TODAY / Sun 25 Oct / 14 Jamadilawal 1448 ›" with ‹ › to move between days (Classic list). */
+/** "‹ TODAY / Sun 25 Oct / 14 Jamadilawal 1448 ›" with ‹ › to move between days (Side Dial). */
 @Composable
 fun DateBlock(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) -> Unit, onCalendar: () -> Unit) {
     val r = state.resolver

@@ -27,7 +27,7 @@ import java.time.ZonedDateTime
  */
 data class DemoConfig(
     val variant: String = "home",
-    val style: TodayStyle = TodayStyle.LIST,
+    val style: TodayStyle = TodayStyle.CENTRE,
     val appearance: Appearance = Appearance.DARK,
     val tab: Tab = Tab.PRAYER,
     val now: Instant? = null,
@@ -104,7 +104,7 @@ data class DemoConfig(
                 variant = intent.getStringExtra("variant") ?: "home",
                 style = pick(TodayStyle.entries.toTypedArray(), intent.getStringExtra("style")) {
                     listOf(it.name, it.name.replace("_", ""), it.label.replace(" ", ""))
-                } ?: TodayStyle.LIST,
+                } ?: TodayStyle.CENTRE,
                 appearance = pick(Appearance.entries.toTypedArray(), intent.getStringExtra("appearance")) {
                     listOf(it.name, if (it == Appearance.SYSTEM) "auto" else it.name)
                 } ?: Appearance.DARK,

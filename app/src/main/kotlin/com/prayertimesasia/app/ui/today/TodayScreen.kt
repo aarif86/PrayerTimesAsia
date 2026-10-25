@@ -233,7 +233,7 @@ fun Modifier.bleed(h: Dp): Modifier = layout { measurable, constraints ->
     layout(constraints.maxWidth, placeable.height) { placeable.place(-extra / 2, 0) }
 }
 
-// MARK: Classic list
+// MARK: Side Dial
 
 @Composable
 private fun ClassicPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> Unit, openCalendar: () -> Unit, openSanad: (PrayerDay) -> Unit) {
