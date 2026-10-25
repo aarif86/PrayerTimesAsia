@@ -22,7 +22,7 @@ enum WidgetStyleChoice: String, AppEnum {
     static let typeDisplayRepresentation: TypeDisplayRepresentation = "Style"
     static let caseDisplayRepresentations: [WidgetStyleChoice: DisplayRepresentation] = [
         .app: "Same as app",
-        .list: "Classic list",
+        .list: "Side Dial (list)",
         .dial: "Day Dial",
         .sunPath: "Sun Path",
         .bands: "Colour Bands",
@@ -30,7 +30,7 @@ enum WidgetStyleChoice: String, AppEnum {
 
     func resolved(_ snapshot: WidgetSnapshot?) -> TodayStyle {
         switch self {
-        case .app: snapshot?.style ?? .list
+        case .app: snapshot?.style ?? .centre
         case .list: .list
         case .dial: .dial
         case .sunPath: .sunPath

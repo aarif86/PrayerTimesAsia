@@ -119,7 +119,13 @@ struct Preferences: Codable, Equatable, Sendable {
     var communityAuthority: String?
 
     var appearance: Appearance = .system
-    var todayStyle: TodayStyle = .list
+    /// The Prayer screen style the user picked; nil until they pick one, so
+    /// everyone starts on Centre Dial.
+    var stylePick: TodayStyle?
+    var todayStyle: TodayStyle {
+        get { stylePick ?? .centre }
+        set { stylePick = newValue }
+    }
     /// The makers' own offers (Badal, NasarDigital) on the Prayer and Masjid screens.
     var showOffers = true
     /// Travel concessions (jamak, qasar) and the Journey screen. Off until the
@@ -168,7 +174,7 @@ struct Preferences: Codable, Equatable, Sendable {
         wakeUp = v(.wakeUp, d.wakeUp)
         communityAuthority = v(.communityAuthority, d.communityAuthority)
         appearance = v(.appearance, d.appearance)
-        todayStyle = v(.todayStyle, d.todayStyle)
+        stylePick = v(.stylePick, d.stylePick)
         showOffers = v(.showOffers, d.showOffers)
         musafirEnabled = v(.musafirEnabled, d.musafirEnabled)
         showLocalNames = v(.showLocalNames, d.showLocalNames)

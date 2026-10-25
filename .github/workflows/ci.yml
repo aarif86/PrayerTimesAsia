@@ -87,10 +87,10 @@ jobs:
             xcrun simctl launch "$UDID" com.prayertimesasia.app "$@"
             sleep 6
           }
-          shot -demo -tab today;          xcrun simctl io "$UDID" screenshot screenshots/1-today-singapore.png
-          shot -demo -tab today -light;   xcrun simctl io "$UDID" screenshot screenshots/1b-today-light.png
+          shot -demo -tab today -sidedial; xcrun simctl io "$UDID" screenshot screenshots/1-today-singapore.png
+          shot -demo -tab today -sidedial -light; xcrun simctl io "$UDID" screenshot screenshots/1b-today-light.png
           shot -demo-makkah -tab today -light; xcrun simctl io "$UDID" screenshot screenshots/1d-today-light-daytime.png
-          shot -demo -tab today -more;    xcrun simctl io "$UDID" screenshot screenshots/1c-today-show-more.png
+          shot -demo -tab today -sidedial -more; xcrun simctl io "$UDID" screenshot screenshots/1c-today-show-more.png
           shot -demo-travel -tab today;   xcrun simctl io "$UDID" screenshot screenshots/2-today-hanoi.png
           shot -demo-visitor -tab today;  xcrun simctl io "$UDID" screenshot screenshots/2b-today-visitor-kl.png
           shot -demo -tab today -dial;    xcrun simctl io "$UDID" screenshot screenshots/1e-today-dial.png

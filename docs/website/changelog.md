@@ -2,6 +2,17 @@
 
 What's new in Prayer Times Asia, newest first.
 
+## Centre Dial first
+
+*1.0.0 (build 10) · 25 October 2026*
+
+The Prayer screen now opens on Centre Dial, and Classic list is renamed Side Dial.
+
+**Improved**
+
+- Centre Dial is the default Prayer screen until you pick another style with the palette button.
+- Classic list is now called Side Dial, to sit alongside Centre Dial.
+
 ## Day and night, everywhere
 
 *1.0.0 (build 9) · 25 October 2026*

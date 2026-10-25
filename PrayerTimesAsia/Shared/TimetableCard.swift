@@ -30,7 +30,7 @@ struct TimetableCard: View {
         if style == .bands { BandsPalette.header } else { sky(snapshot, at: date) }
     }
 
-    // MARK: Classic list
+    // MARK: Side Dial (a mini version of the list)
 
     private func list(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
         let current = s.current(at: date)?.prayer

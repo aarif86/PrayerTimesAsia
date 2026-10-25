@@ -4,6 +4,23 @@
   "releases": [
     {
       "version": "1.0.0",
+      "build": 10,
+      "date": "2026-10-25",
+      "title": "Centre Dial first",
+      "summary": "The Prayer screen now opens on Centre Dial, and Classic list is renamed Side Dial.",
+      "changes": [
+        {
+          "type": "improved",
+          "text": "Centre Dial is the default Prayer screen until you pick another style with the palette button."
+        },
+        {
+          "type": "improved",
+          "text": "Classic list is now called Side Dial, to sit alongside Centre Dial."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
       "build": 9,
       "date": "2026-10-25",
       "title": "Day and night, everywhere",
