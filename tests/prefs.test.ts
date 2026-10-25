@@ -9,7 +9,7 @@ describe('Preferences', () => {
     expect(prefs.use24Hour).toBe(true)
     expect(prefs.musafirThresholdKm).toBe(89)
     expect(prefs.trackerEnabled).toBe(false)
-    expect(prefs.todayStyle).toBe('list')
+    expect(prefs.todayStyle).toBe('centre')
     expect(prefs.showOffers).toBe(true)
   })
 

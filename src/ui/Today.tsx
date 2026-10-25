@@ -404,7 +404,7 @@ function BlessedRow({ b, t, now }: { b: BlessedTime; t: number; now: number }) {
 
 const BLESSED_ICON: Record<BlessedTime, typeof Sun> = { imsak: Utensils, dhuha: Sun, midnight: CloudMoon, lastThird: Sparkles }
 
-// ---------- Classic list (Day Dial beside the list) ----------
+// ---------- Side Dial (Day Dial beside the list) ----------
 
 function DateBlock({ c }: { c: Ctx }) {
   const date = c.shown.times.dhuhr

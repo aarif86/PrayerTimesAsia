@@ -9,9 +9,9 @@ export const APPEARANCE_LABEL: Record<Appearance, string> = {
 
 /** How the Prayer screen shows the day (same order as the iOS TodayStyle). */
 export type TodayStyle = 'list' | 'centre' | 'dial' | 'sunPath' | 'bands'
-export const TODAY_STYLES: TodayStyle[] = ['list', 'centre', 'dial', 'sunPath', 'bands']
+export const TODAY_STYLES: TodayStyle[] = ['centre', 'list', 'dial', 'sunPath', 'bands']
 export const TODAY_STYLE_LABEL: Record<TodayStyle, string> = {
-  list: 'Classic list', centre: 'Centre Dial', dial: 'Day Dial', sunPath: 'Sun Path', bands: 'Colour Bands',
+  list: 'Side Dial', centre: 'Centre Dial', dial: 'Day Dial', sunPath: 'Sun Path', bands: 'Colour Bands',
 }
 
 export interface TripStop { countryCode: string; countryName: string; placeName: string; arrived: number }
@@ -77,7 +77,7 @@ export const DEFAULT_PREFS: Preferences = {
   excusedDays: [],
   communityAuthority: null,
   appearance: 'system',
-  todayStyle: 'list',
+  todayStyle: 'centre',
   showOffers: true,
   musafirEnabled: false,
   showLocalNames: true,

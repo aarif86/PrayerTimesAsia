@@ -60,7 +60,7 @@ badge says "Calculated".
 
 ## What is at parity with iOS
 
-- Prayer screen: Classic list (Day Dial beside the list), Centre Dial, Day Dial, Sun Path and Colour Bands; the palette
+- Prayer screen: Centre Dial (default), Side Dial (Day Dial beside the list), Day Dial, Sun Path and Colour Bands; the palette
   button cycles them (touch and hold / right-click to pick) and remembers the choice; Automatic / Light / Dark button,
   with Automatic following the sky (light from sunrise to Maghrib, the soft night after); a toast names the new style.
 - Living Sky behind every tab (keyframes pinned to the day's prayer times, stars at night, the breathing sun and
