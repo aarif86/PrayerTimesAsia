@@ -1,12 +1,13 @@
 name: Web
 
 # Type-checks, tests and builds the web app, then deploys it to GitHub Pages at
-# https://aarif86.github.io/PrayerTimesAsia/ (base path /PrayerTimesAsia/).
+# https://aarif86.github.io/PrayerTimesAsia/ (base path /<repo name>/).
+# Pull requests only build and check; main deploys once Pages is set to
+# Settings > Pages > Source: GitHub Actions. Until then the deploy is skipped.
 on:
   push:
     branches: [main]
     paths: ['web/**', 'testdata/**', '.github/workflows/web.yml']
-  # Pull requests run the checks and the build only; nothing is deployed.
   pull_request:
     paths: ['web/**', 'testdata/**', '.github/workflows/web.yml']
   workflow_dispatch:
@@ -18,7 +19,7 @@ permissions:
 
 concurrency:
   group: web-${{ github.event_name == 'pull_request' && github.ref || 'pages' }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -45,28 +46,34 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          BASE_PATH: /PrayerTimesAsia/
+          # Pages serves a project site under /<repo name>/, case and all.
+          BASE_PATH: /${{ github.event.repository.name }}/
       - name: Check the build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
         run: |
           test -f dist/index.html
           test -f dist/sw.js
           test -f dist/manifest.webmanifest
-          grep -q '/PrayerTimesAsia/assets/' dist/index.html
+          grep -q "${BASE_PATH}assets/" dist/index.html
           du -sh dist
       - uses: actions/upload-pages-artifact@v4
+        if: github.event_name != 'pull_request'
         with:
           path: web/dist
-      - name: Is GitHub Pages enabled?
+      - name: Is GitHub Pages set to deploy from GitHub Actions?
         id: pages
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh api "repos/${GITHUB_REPOSITORY}/pages" --jq .build_type > /dev/null 2>&1; then
+          build_type=$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq .build_type 2>/dev/null || true)
+          if [ "$build_type" = "workflow" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=GitHub Pages is off::Turn it on once: Settings > Pages > Build and deployment > Source: GitHub Actions. The next push to main that touches web/ (or Run workflow) deploys."
-            echo "GitHub Pages is not enabled yet: Settings > Pages > Source: **GitHub Actions**, then re-run." >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=GitHub Pages is not deploying from Actions::Settings > Pages > Build and deployment > Source: GitHub Actions (now: ${build_type:-off}). Then Actions > Web > Run workflow, or any push to main that touches web/."
+            echo "GitHub Pages is not set up yet (source: ${build_type:-off}). Settings > Pages > Source: **GitHub Actions**, then re-run." >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Which official APIs a browser may read (CORS, informational)
         continue-on-error: true
@@ -89,7 +96,7 @@ jobs:
 
   deploy:
     needs: build
-    if: needs.build.outputs.pages == 'true' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && needs.build.outputs.pages == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
