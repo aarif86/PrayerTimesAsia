@@ -214,10 +214,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .muted { color: var(--fg2); }
 .small { font-size: 0.88rem; }
 .setup-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 32px; align-items: start; }
-@media (max-width: 900px) { .setup-body { grid-template-columns: 1fr; } .setup-side { order: -1; } }
+/* Phones and narrow windows: one column, preview and "Put it on the TV" after the four steps, nothing pinned. */
+@media (max-width: 900px) { .setup-body { grid-template-columns: 1fr; } }
 .setup-form { display: grid; gap: 20px; min-width: 0; }
 fieldset { border: 1px solid var(--stroke); border-radius: 22px; padding: 16px 18px 20px; margin: 0; display: grid; gap: 8px; background: var(--glass); min-width: 0; }
-legend { padding: 0 6px; font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; }
+legend, .setup-card h2 { padding: 0 6px; font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 8px; }
+.setup-card h2 { margin: 0; padding: 0; }
+.step { display: inline-grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: 50%; background: var(--accent); color: rgba(0, 0, 0, 0.82); font-size: 0.85rem; font-weight: 800; flex: none; }
+.setup-card { border: 1px solid var(--stroke); border-radius: 22px; padding: 16px 18px 20px; background: var(--glass); display: grid; gap: 10px; min-width: 0; }
+.setup-card .eyebrow { margin: 0; }
+.setup-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.setup-steps li::marker { color: var(--accent); font-weight: 800; }
+details summary { cursor: pointer; }
+details textarea { margin-top: 8px; }
 fieldset p { margin: 0; }
 label { font-size: 0.92rem; color: var(--fg2); margin-top: 6px; }
 label.check { display: flex; gap: 10px; align-items: center; color: var(--fg); }
@@ -238,9 +247,12 @@ textarea { resize: vertical; }
 .setup-results li + li button { border-top: 1px solid var(--line); }
 .setup-results .muted { font-weight: 400; }
 .setup-iq { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-.setup-iq.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 420px) { .setup-iq { gap: 6px; } .setup-iq label { font-size: 0.8rem; } .setup-iq input { padding: 10px 6px; text-align: center; } }
+.setup-iq.two { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
 .setup-iq > div { display: grid; gap: 4px; }
-.setup-side { display: grid; gap: 14px; position: sticky; top: 16px; min-width: 0; }
+.setup-side { display: grid; gap: 16px; min-width: 0; }
+/* Keeps the preview in view while filling in the form, only where all of it fits on screen. */
+@media (min-width: 901px) and (min-height: 880px) { .setup-side { position: sticky; top: 16px; } }
 .setup-preview { aspect-ratio: 16 / 9; height: auto; border-radius: 14px; border: 1px solid var(--line); max-width: 100%; }
 .setup-link { display: grid; gap: 8px; }
 .setup-link textarea { font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; word-break: break-all; }

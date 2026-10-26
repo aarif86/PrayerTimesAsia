@@ -71,6 +71,9 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   jumuahDimMinutes: 40,
 }
 
+/** Shown in the setup preview until the committee chooses the masjid's location. */
+export const EXAMPLE_PLACE: ScreenPlace = { name: 'Pasir Ris', lat: 1.3721, lng: 103.9474, tz: 'Asia/Singapore', cc: 'SG', district: null }
+
 export const MAX_NOTICES = 8
 export const MAX_NOTICE_LENGTH = 160
 

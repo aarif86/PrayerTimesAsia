@@ -6,7 +6,7 @@ import { deviceTimeZone } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable } from '../services/officialTables'
 import {
-  encodeConfig, iqamahText, isHHMM, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah,
+  encodeConfig, EXAMPLE_PLACE, iqamahText, isHHMM, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah,
   type Obligatory, type ScreenConfig, type ScreenLanguage, type ScreenLook, type ScreenPlace,
 } from './config'
 import { Display } from './Display'
@@ -25,7 +25,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const [notices, setNotices] = useState(initial.notices.join('\n'))
   const [query, setQuery] = useState('')
   const [gps, setGps] = useState<'idle' | 'busy' | 'failed'>('idle')
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState<'copied' | 'shared' | null>(null)
   const [, setTables] = useState(0)
 
   const set = (change: Partial<ScreenConfig>) => setC((old) => ({ ...old, ...change }))
@@ -69,29 +69,38 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
     set({ notices: text.split('\n').map((s) => s.trim().slice(0, MAX_NOTICE_LENGTH)).filter(Boolean).slice(0, MAX_NOTICES) })
   }
 
+  const flash = (what: 'copied' | 'shared') => { setCopied(what); setTimeout(() => setCopied(null), 2500) }
   const copy = async () => {
-    try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2500) } catch {
-      const el = document.getElementById('screen-link') as HTMLTextAreaElement | null
-      el?.select()
+    try { await navigator.clipboard.writeText(link); flash('copied') } catch {
+      const box = document.getElementById('screen-link-box') as HTMLDetailsElement | null
+      if (box) box.open = true
+      ;(document.getElementById('screen-link') as HTMLTextAreaElement | null)?.select()
     }
   }
+  // Phones: the share sheet, so the link goes straight into WhatsApp or email.
+  const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+  const share = async () => {
+    try { await navigator.share({ title: `${c.name || 'Masjid'} prayer screen`, text: 'Open this link on the masjid TV:', url: link }); flash('shared') } catch { /* closed */ }
+  }
+  // Until a location is chosen the preview shows an example, so it is never blank.
+  const preview = c.place ? c : { ...c, place: EXAMPLE_PLACE, name: c.name || 'Your masjid' }
 
   return (
     <main class="setup">
       <header class="setup-head">
         <p class="eyebrow">Prayer Times Asia · Masjid screen</p>
         <h1>Set up your masjid's screen</h1>
-        <p class="muted">Fill this in on your phone or computer. You get one link: open it once on the TV's browser and the TV remembers it. Prayer times come from the official timetable and work without internet.</p>
+        <p class="muted">Four short steps on your phone or computer, then one link to open on the masjid TV. The TV remembers it, even after a power cut. Prayer times come from the official timetable (MUIS, JAKIM or Kemenag) and keep working without internet.</p>
       </header>
 
       <div class="setup-body">
         <form class="setup-form" onSubmit={(e) => e.preventDefault()}>
           <fieldset>
-            <legend>Masjid</legend>
+            <legend><span class="step">1</span>Your masjid</legend>
             <label for="s-name">Name shown on the screen</label>
             <input id="s-name" value={c.name} maxLength={80} placeholder="Masjid Al-Falah" onInput={(e) => set({ name: (e.target as HTMLInputElement).value })} />
 
-            <label for="s-place">Location</label>
+            <label for="s-place">Where is the masjid? (this sets the prayer times)</label>
             {c.place && (
               <p class="setup-chosen">
                 <b>{c.place.name}</b>{c.place.cc && <>, {profileFor(c.place.cc)?.name ?? c.place.cc}</>} <span class="muted">({c.place.lat.toFixed(3)}, {c.place.lng.toFixed(3)})</span>
@@ -123,8 +132,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
           </fieldset>
 
           <fieldset>
-            <legend>Iqamah</legend>
-            <p class="muted small">Minutes after the azan (for example 10), or a fixed time (for example 13:15). Leave empty for no iqamah countdown.</p>
+            <legend><span class="step">2</span>Iqamah times</legend>
+            <p class="muted small">For each prayer, type how many minutes after the azan the iqamah starts (for example 10), or a fixed time (for example 13:15). Leave a box empty to skip the iqamah countdown for that prayer.</p>
             <div class="setup-iq">
               {OBLIGATORY_PRAYERS.map((p) => (
                 <div key={p}>
@@ -140,25 +149,25 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); set({ jumuah: isHHMM(v) ? v.padStart(5, '0') : null }) }} />
             <div class="setup-iq two">
               <div>
-                <label for="s-dim">Dim during prayer (minutes)</label>
+                <label for="s-dim">Screen dims for the prayer (minutes)</label>
                 <input id="s-dim" type="number" min={0} max={30} value={c.dimMinutes} onInput={(e) => set({ dimMinutes: Math.max(0, Math.min(30, +(e.target as HTMLInputElement).value || 0)) })} />
               </div>
               <div>
-                <label for="s-dimj">On Friday</label>
+                <label for="s-dimj">On Friday (minutes)</label>
                 <input id="s-dimj" type="number" min={0} max={90} value={c.jumuahDimMinutes} onInput={(e) => set({ jumuahDimMinutes: Math.max(0, Math.min(90, +(e.target as HTMLInputElement).value || 0)) })} />
               </div>
             </div>
           </fieldset>
 
           <fieldset>
-            <legend>Notices</legend>
-            <label for="s-notices">One notice per line, up to {MAX_NOTICES}. They change every 12 seconds.</label>
+            <legend><span class="step">3</span>Notices <span class="muted small">(optional)</span></legend>
+            <label for="s-notices">One notice per line, up to {MAX_NOTICES}. The screen shows them one at a time, changing every 12 seconds.</label>
             <textarea id="s-notices" rows={5} value={notices} placeholder={'Kuliah Maghrib every Tuesday with Ustaz Ahmad\nKhairat kematian: contact the office'}
               onInput={(e) => setNoticeText((e.target as HTMLTextAreaElement).value)} />
           </fieldset>
 
           <fieldset>
-            <legend>Language and look</legend>
+            <legend><span class="step">4</span>Look and language</legend>
             <label for="s-look">Look</label>
             <select id="s-look" value={c.look} onChange={(e) => set({ look: (e.target as HTMLSelectElement).value as ScreenLook })}>
               <option value="night">Night: dark, calm in a dim hall</option>
@@ -188,17 +197,31 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         </form>
 
         <aside class="setup-side">
-          <p class="eyebrow">Preview</p>
-          <Frame class="setup-preview"><Display config={c} now={now} /></Frame>
-          <div class="setup-link">
-            <label for="screen-link">Link for the TV</label>
-            <textarea id="screen-link" readOnly rows={3} value={link} onFocus={(e) => (e.target as HTMLTextAreaElement).select()} />
+          <section class="setup-card">
+            <p class="eyebrow">Preview</p>
+            <Frame class="setup-preview"><Display config={preview} now={now} /></Frame>
+            {!c.place && <p class="muted small">This is an example. Choose your masjid's location in step 1 to see its own times.</p>}
+          </section>
+
+          <section class="setup-card setup-link">
+            <h2><span class="step">5</span>Put it on the TV</h2>
+            {!c.place && <p class="setup-error">Choose the masjid's location in step 1 first.</p>}
             <div class="setup-row">
-              <button type="button" class="primary" onClick={copy} disabled={!c.place}>{copied ? 'Copied' : 'Copy link'}</button>
-              <button type="button" onClick={() => onOpen(c)} disabled={!c.place}>Show the screen on this device</button>
+              {canShare && <button type="button" class="primary" onClick={share} disabled={!c.place}>{copied === 'shared' ? 'Sent' : 'Share link'}</button>}
+              <button type="button" class={canShare ? '' : 'primary'} onClick={copy} disabled={!c.place}>{copied === 'copied' ? 'Copied' : 'Copy link'}</button>
             </div>
-            <p class="muted small">Send the link to yourself (WhatsApp or email), open it on the TV's browser, and press OK for full screen. To change anything later, open this page again from the screen's "Edit screen" button and send the new link.</p>
-          </div>
+            <ol class="setup-steps">
+              <li>Send the link to yourself, for example on WhatsApp or by email.</li>
+              <li>On the masjid TV, open the web browser and open the link. (On a smart TV without a browser, a small Android TV box or Fire TV stick works.)</li>
+              <li>Press <b>OK</b> on the remote, or click once, for full screen. That's it: the TV keeps the screen and its settings.</li>
+            </ol>
+            <p class="muted small">To change something later, come back to this page, make the change and send the new link to the TV again.</p>
+            <button type="button" onClick={() => onOpen(c)} disabled={!c.place}>Try the full screen on this device</button>
+            <details id="screen-link-box">
+              <summary class="muted small">Show the link</summary>
+              <textarea id="screen-link" readOnly rows={4} value={link} onFocus={(e) => (e.target as HTMLTextAreaElement).select()} />
+            </details>
+          </section>
         </aside>
       </div>
     </main>

@@ -6,7 +6,7 @@ import { zoned } from '../core/tz'
 import { ensureTable } from '../services/officialTables'
 import { readJSON, writeJSON } from '../services/storage'
 import { registerServiceWorker } from '../ui/pwa'
-import { configFromHash, DEFAULT_CONFIG, encodeConfig, sanitize, type ScreenConfig } from './config'
+import { configFromHash, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, type ScreenConfig } from './config'
 import { Display } from './Display'
 import { Frame } from './Frame'
 import { officialSourceForScreen, WORDS } from './model'
@@ -22,7 +22,7 @@ const fixedNow = (() => { const t = Date.parse(query.get('now') ?? ''); return N
 export const DEMO_CONFIG: ScreenConfig = {
   ...DEFAULT_CONFIG,
   name: 'Masjid Al-Example',
-  place: { name: 'Pasir Ris', lat: 1.3721, lng: 103.9474, tz: 'Asia/Singapore', cc: 'SG' },
+  place: EXAMPLE_PLACE,
   jumuah: '13:00',
   notices: ['Kuliah Maghrib every Tuesday · Example notice', 'Please keep the corridors clear for wheelchairs · Example notice'],
 }
