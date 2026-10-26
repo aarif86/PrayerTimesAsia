@@ -164,6 +164,9 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               <option value="night">Night: dark, calm in a dim hall</option>
               <option value="day">Day: light, for bright halls and foyers</option>
               <option value="board">Board: times as a list, like a departure board</option>
+              <option value="bands">Bands: each prayer in its own colour, as in the app</option>
+              <option value="dial">Day Dial: the whole day as a ring, as in the app</option>
+              <option value="sunpath">Sun Path: the sun's arc over the day, as in the app</option>
             </select>
             <label for="s-names">Prayer names</label>
             <select id="s-names" value={c.names} onChange={(e) => set({ names: (e.target as HTMLSelectElement).value as NamingStyle })}>

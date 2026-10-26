@@ -1,6 +1,7 @@
 import { rowFor } from '../services/officialTables'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { formatHijri } from '../core/hijri'
+import { HeroDial, SunPath, type DialMark } from '../ui/Dials'
 import { LivingSky } from '../ui/LivingSky'
 import { skyAt } from '../ui/sky'
 import type { ScreenConfig } from './config'
@@ -27,11 +28,12 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
   const today = screenDay(now, c, rowFor)!
   const isToday = sd === today || sd.day.day === today.day.day
   const next = phase.kind === 'waiting' ? phase.next : null
+  const current = phase.kind === 'waiting' ? phase.current : phase.prayer
 
   return (
     <div class={`scr scr-${phase.kind} scr-look-${c.look}`} style={{ '--tint': `var(--t-${tint})` }}>
-      <LivingSky colors={skyAt(now, today.day)} scheme={c.look === 'day' ? 'light' : 'dark'} soft={false} />
-      {c.look !== 'day' && <div class="scr-shade" aria-hidden="true" />}
+      {c.look !== 'bands' && <LivingSky colors={skyAt(now, today.day)} scheme={c.look === 'day' ? 'light' : 'dark'} soft={false} />}
+      {c.look !== 'day' && c.look !== 'bands' && <div class="scr-shade" aria-hidden="true" />}
       <header class="scr-head">
         <div class="scr-title">
           <h1>{c.name || c.place.name}</h1>
@@ -40,7 +42,13 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
         <div class="scr-clock">{clock.time}{clock.suffix && <small>{clock.suffix}</small>}</div>
       </header>
 
+      {c.look === 'dial' && <Dial sd={sd} now={now} config={c} label={label} current={current} upcoming={next} isToday={isToday} />}
+
       <Hero phase={phase} now={now} config={c} label={label} />
+
+      {c.look === 'sunpath' && (
+        <section class="scr-sun" aria-hidden="true"><SunPath width={1600} height={240} now={now} day={sd.day} tz={tz} /></section>
+      )}
 
       <ol class="scr-grid">
         {sd.imsak != null && (
@@ -56,7 +64,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
           const passed = isToday && !on && sd.day.times[p] <= now
           const tag = on ? w.nowTag : p === next && phase.kind === 'waiting' ? w.inTag(shortLeft(phase.at - now)) : null
           return (
-            <li key={p} class={`scr-cell${on ? ' on' : ''}${passed ? ' passed' : ''}${p === 'sunrise' ? ' scr-syuruk' : ''}`} style={{ '--tint': `var(--t-${p})` }}>
+            <li key={p} class={`scr-cell p-${p}${on ? ' on' : ''}${passed ? ' passed' : ''}${p === 'sunrise' ? ' scr-syuruk' : ''}`} style={{ '--tint': `var(--t-${p})` }}>
               <i class="scr-bar" />
               <span class="scr-name">{label(p)}{sub && <em> · {sub}</em>}</span>
               <span class="scr-tag">{tag ?? '\u00a0'}</span>
@@ -83,6 +91,43 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * The app's Day Dial: the day as a ring in the sky's colours, each azan and iqamah at its hour.
+ * Drawn at 600 px and scaled to the screen (--ds), since the dial lays its labels out in pixels.
+ */
+function Dial({ sd, now, config: c, label, current, upcoming, isToday }: {
+  sd: NonNullable<ReturnType<typeof screenDay>>; now: number; config: ScreenConfig; label: (p: Prayer) => string
+  current: Prayer | null; upcoming: Prayer | null; isToday: boolean
+}) {
+  const w = WORDS[c.lang]
+  const tz = c.place!.tz
+  const nextFajr = screenDay(sd.day.times.dhuhr + 86_400_000, c, rowFor)?.day.times.fajr ?? sd.day.times.fajr + 86_400_000
+  const marks: DialMark[] = PRAYERS.map((p) => ({ id: p, date: sd.day.times[p], extraLine: p !== 'sunrise' && sd.iqamah[p] != null, tint: `var(--t-${p})` }))
+  if (sd.imsak != null) marks.push({ id: 'imsak', date: sd.imsak, minor: true })
+  return (
+    <section class="scr-dialbox">
+      <HeroDial size={600} now={now} day={sd.day} nextFajr={nextFajr} tz={tz} currentPrayer={isToday ? current : null} marks={marks}
+        label={(m) => {
+          if (m.id === 'imsak') return <div class="scr-dm minor"><span class="scr-dm-name">{w.imsak}</span><Time ms={m.date} tz={tz} h24={c.h24} small /></div>
+          const p = m.id as Prayer
+          const on = p === current
+          const iq = p === 'sunrise' ? undefined : sd.iqamah[p]
+          const passed = isToday && !on && m.date <= now
+          return (
+            <div class={`scr-dm${on ? ' on' : ''}${passed ? ' passed' : ''}`} style={{ '--tint': `var(--t-${p})` }}>
+              <span class="scr-dm-name">{label(p)}</span>
+              <Time ms={m.date} tz={tz} h24={c.h24} />
+              {iq != null && <span class="scr-dm-iq">{p === 'dhuhr' && sd.friday && c.jumuah ? w.khutbah : w.iqamah} <Time ms={iq} tz={tz} h24={c.h24} small /></span>}
+            </div>
+          )
+        }}
+        centre={() => current
+          ? <div class="scr-dial-centre" style={{ '--tint': `var(--t-${current})` }}><span>{w.nowTag}</span><b>{label(current)}</b></div>
+          : upcoming ? <div class="scr-dial-centre" style={{ '--tint': `var(--t-${upcoming})` }}><span>{w.next}</span><b>{label(upcoming)}</b></div> : null} />
+    </section>
   )
 }
 

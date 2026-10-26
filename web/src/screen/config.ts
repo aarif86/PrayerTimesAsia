@@ -13,9 +13,13 @@ export interface IqamahRule { after?: number; fixed?: string }
 
 export type ScreenLanguage = 'en' | 'ms' | 'id'
 
-/** Night (dark, the default), Day (light, for bright halls), Board (a departure-board list). */
-export type ScreenLook = 'night' | 'day' | 'board'
-export const LOOKS: readonly ScreenLook[] = ['night', 'day', 'board']
+/**
+ * Night (dark, the default), Day (light, for bright halls), Board (a departure-board list),
+ * and three from the app's Prayer screen styles: Bands (coloured bands), Dial (the Day Dial)
+ * and Sun Path (the sun's arc over the day).
+ */
+export type ScreenLook = 'night' | 'day' | 'board' | 'bands' | 'dial' | 'sunpath'
+export const LOOKS: readonly ScreenLook[] = ['night', 'day', 'board', 'bands', 'dial', 'sunpath']
 
 export interface ScreenPlace {
   name: string

@@ -245,3 +245,81 @@ textarea { resize: vertical; }
 .setup-link { display: grid; gap: 8px; }
 .setup-link textarea { font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; word-break: break-all; }
 .setup-link p { margin: 0; }
+
+/* MARK: Looks from the app's Prayer screen styles */
+
+/* Bands: each prayer a full-width band in its own colour on the app's charcoal (Bands style). */
+.scr-look-bands { --bg: rgb(43, 43, 43); --glass: rgb(61, 61, 61); --fill: rgba(255, 255, 255, 0.12); }
+.scr-look-bands .scr-grid { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: 1fr; grid-auto-rows: 1fr; gap: 0; }
+.landscape .scr-look-bands { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 4.4); }
+.landscape .scr-look-bands .scr-head { grid-column: 1; grid-row: 1; }
+.landscape .scr-look-bands .scr-hero { grid-column: 1; grid-row: 2; }
+.landscape .scr-look-bands .scr-foot { grid-column: 1; grid-row: 3; }
+.landscape .scr-look-bands .scr-big { font-size: calc(var(--u) * 17); }
+.landscape .scr-look-bands .scr-line { font-size: calc(var(--u) * 3.2); }
+.landscape .scr-look-bands .scr-grid { grid-column: 2; grid-row: 1 / -1; margin: calc(var(--u) * -3.4) calc(var(--u) * -4.4) calc(var(--u) * -3.4) 0; }
+.portrait .scr-look-bands .scr-grid { margin-inline: calc(var(--u) * -4.4); row-gap: 0; }
+.scr-look-bands .scr-cell {
+  grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name time" "tag iq"; justify-items: start; align-content: center; align-items: baseline;
+  column-gap: calc(var(--u) * 2); row-gap: calc(var(--u) * 0.2); padding: 0 calc(var(--u) * 4.4) 0 calc(var(--u) * 3.6);
+  border: 0; border-radius: 0; color: #fff; background: var(--band); -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.scr-look-bands .p-fajr { --band: rgb(33, 110, 92); }
+.scr-look-bands .p-sunrise { --band: rgb(143, 168, 82); }
+.scr-look-bands .p-dhuhr { --band: rgb(217, 171, 33); }
+.scr-look-bands .p-asr { --band: rgb(227, 148, 82); }
+.scr-look-bands .p-maghrib { --band: rgb(224, 110, 84); }
+.scr-look-bands .p-isha { --band: rgb(219, 79, 89); }
+.scr-look-bands .scr-imsak { --band: rgb(75, 75, 82); }
+.scr-look-bands .scr-cell.on { background: var(--band); box-shadow: inset calc(var(--u) * 1) 0 0 #fff; }
+.scr-look-bands .scr-cell.passed { opacity: 1; filter: saturate(0.55) brightness(0.62); }
+.scr-look-bands .scr-bar { display: none; }
+.scr-look-bands .scr-name { grid-area: name; font-size: calc(var(--u) * 4.6); font-weight: 700; }
+.scr-look-bands .scr-tag { grid-area: tag; color: #fff; opacity: 0.9; font-size: calc(var(--u) * 2.4); min-height: 0; }
+.scr-look-bands .scr-cell .scr-t { grid-area: time; justify-self: end; font-family: var(--font); font-weight: 300; font-size: calc(var(--u) * 7.6); }
+.scr-look-bands .scr-iq { grid-area: iq; justify-self: end; color: rgba(255, 255, 255, 0.85); font-size: calc(var(--u) * 2.6); }
+.scr-look-bands .scr-iq .scr-t { color: #fff; font-weight: 700; }
+.scr-look-bands .scr-syuruk .scr-t, .scr-look-bands .scr-imsak .scr-t { font-size: calc(var(--u) * 6); }
+
+/* Day Dial: the app's dial on the left, the countdown on the right. */
+.scr-look-dial .scr-grid { display: none; }
+.scr-dialbox { --ds: calc(var(--k) * 0.5); width: calc(600px * var(--ds)); height: calc(600px * var(--ds)); align-self: center; justify-self: center; }
+.scr-dialbox > .herodial { position: relative; transform: scale(var(--ds)); transform-origin: top left; }
+.scr-dialbox .herodial svg { position: absolute; inset: 0; }
+.scr-dialbox .dial-label { position: absolute; display: flex; }
+.scr-dialbox .herodial-centre { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; }
+.landscape .scr-look-dial { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 4); }
+.landscape .scr-look-dial .scr-head, .landscape .scr-look-dial .scr-foot { grid-column: 1 / -1; }
+.landscape .scr-look-dial .scr-big { font-size: calc(var(--u) * 18); }
+.portrait .scr-dialbox { --ds: calc(var(--k) * 1.18); }
+.scr-dm { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1.05;
+  border-radius: 16px; border: 1.5px solid transparent; }
+.scr-dm.on { background: color-mix(in srgb, var(--tint) 18%, transparent); border-color: color-mix(in srgb, var(--tint) 55%, transparent); }
+.scr-dm.passed { opacity: 0.55; }
+.scr-dm-name { font-size: 21px; font-weight: 700; white-space: nowrap; font-variant-numeric: normal; }
+.scr-dm.on .scr-dm-name { color: var(--tint); }
+.scr-dm .scr-t { font-size: 33px; font-weight: 700; white-space: nowrap; }
+.scr-dm-iq { font-size: 15px; color: var(--fg2); white-space: nowrap; font-variant-numeric: normal; }
+.scr-dm-iq .scr-t { font-size: 1em; color: var(--fg); }
+.scr-dm.minor .scr-dm-name { font-size: 14px; color: var(--fg2); }
+.scr-dm.minor .scr-t { font-size: 18px; }
+.scr-dial-centre { display: grid; justify-items: center; gap: 4px; text-align: center; }
+.scr-dial-centre span { font-size: 17px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tint, var(--accent)); }
+.scr-dial-centre b { font-family: var(--font-display); font-size: 46px; font-weight: 800; white-space: nowrap; }
+
+/* Sun Path: the sun's arc over the day between the countdown and the times. */
+.scr-look-sunpath { grid-template-rows: auto auto minmax(0, 1fr) auto auto; }
+.scr-look-sunpath .scr-big { font-size: calc(var(--u) * 14); }
+.scr-sun { display: flex; align-items: center; min-height: 0; margin-inline: calc(var(--u) * -4.4); }
+.scr-sun svg { width: 100%; height: 100%; }
+.scr-sun svg path { stroke-width: 5px; }
+.scr-sun svg circle[r="3.8"] { r: 9px; stroke-width: 3px; }
+.portrait .scr-look-sunpath { grid-template-rows: auto auto minmax(0, 0.5fr) auto auto; }
+.landscape .scr-look-bands .scr-head { flex-direction: column; gap: calc(var(--u) * 1); }
+.landscape .scr-look-bands .scr-title h1 { font-size: calc(var(--u) * 5); }
+.landscape .scr-look-bands .scr-title p { font-size: calc(var(--u) * 2.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.landscape .scr-look-bands .scr-clock { font-size: calc(var(--u) * 6.4); }
+.landscape .scr-look-bands .scr-notice { font-size: calc(var(--u) * 3); }
+.scr-look-bands .scr-cell .scr-iq .scr-t { font-size: calc(var(--u) * 3.4); font-family: var(--font-display); font-weight: 700; }
+.scr-sun svg circle[r="7"] { r: 15px; }
+.scr-sun svg circle[r="17"] { r: 36px; }

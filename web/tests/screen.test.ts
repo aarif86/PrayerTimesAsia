@@ -42,6 +42,7 @@ describe('screen config', () => {
     expect(DEFAULT_CONFIG.lang).toBe('en')
     expect(DEFAULT_CONFIG.look).toBe('night')
     expect(sanitize({ look: 'board' }).look).toBe('board')
+    expect(sanitize({ look: 'dial' }).look).toBe('dial')
     expect(sanitize({ look: 'disco' }).look).toBe('night')
   })
 
