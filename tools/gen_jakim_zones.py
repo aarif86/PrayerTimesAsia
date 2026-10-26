@@ -27,4 +27,4 @@ out += ['    ]', '', '    /// (zone, latitude, longitude)', '    static let poin
 for code, name, lat, lng in rows:
     out.append(f'        ("{code}", {lat}, {lng}),')
 out += ['    ]', '}']
-open(os.path.join(root, 'PrayerTimesAsia', 'Core', 'JakimZones.swift'), 'w').write('\n'.join(out) + '\n')
+open(os.path.join(root, 'ios', 'PrayerTimesAsia', 'Core', 'JakimZones.swift'), 'w').write('\n'.join(out) + '\n')
