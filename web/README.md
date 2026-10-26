@@ -6,14 +6,14 @@ PWA (Preact + TypeScript + Vite), no accounts, no ads, no analytics.
 
 - Live (GitHub Pages): **https://aarif86.github.io/PrayerTimesAsia/** - once Pages is switched on (one click, below).
 - Screenshots: [`docs/screenshots/`](docs/screenshots/) ([contact sheet](docs/screenshots/contact-sheet.png)).
-- This branch (`web`) is an orphan branch of `aarif86/PrayerTimesAsia`: it shares no history or files with the iOS app on `main`.
+- Lives in `web/` of the Prayer Times Asia project, next to `ios/` and `android/`; every push to `main` that touches `web/` builds, tests and deploys it.
 
 ## Turning on GitHub Pages (one time)
 
 The workflow builds and tests on every push to `web`, and deploys only when Pages is on:
 
 1. Repository **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-2. If the deploy then says the branch is not allowed: **Settings → Environments → github-pages → Deployment branches**, add `web`.
+2. If the deploy then says the branch is not allowed: **Settings → Environments → github-pages → Deployment branches**, add `main`.
 3. **Actions → Web → Run workflow** (or push to `web`).
 
 ## Run it

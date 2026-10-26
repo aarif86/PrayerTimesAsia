@@ -1,0 +1,23 @@
+# Still pending
+
+The same items are on the GitHub Project board (Issues). Ticked off here and there as they're done.
+
+## Waiting on you (the owner)
+
+- [ ] **Put the web app online** - GitHub: Settings → Pages → Source: *GitHub Actions*, then Actions → Web → Run workflow. (Or ask to host it on nsd.sg instead.)
+- [ ] **Try the Android app on a phone** - Actions → Android → newest green run → download *prayer-times-asia-debug-apk*, install, report what works.
+- [ ] **Badal Haji order dates** - when orders open and the last day to order for Hajj 1448, so the Badal card can say "orders now open" in season.
+- [ ] **Prayer alerts through Focus (Time Sensitive)** - Apple Developer → Identifiers → com.prayertimesasia.app → tick *Time Sensitive Notifications* → Save. Then tell Claude.
+- [ ] **Falak committee review** - send docs/falak-review.md to the falak committee member; their notes go on the board.
+- [ ] **Google Play account** - US$25 one-time at play.google.com/console (personal or Nasar Pte Ltd).
+- [ ] *(Optional)* Move the repo into a Nasar Pte Ltd GitHub organisation.
+
+## Waiting on Claude (do when asked)
+
+- [ ] Badal Haji season wording on the Prayer screen (after the dates arrive).
+- [ ] Badal.my for Malaysian users (when the site is ready).
+- [ ] Time Sensitive alerts in the app (after the Apple setting is on).
+- [ ] Google Play release build (after the account exists).
+- [ ] App Store release (listing, screenshots, review).
+- [ ] One shared set of "expected prayer times" in a shared folder that the iPhone, Android and web tests all read (today each has its own copy of the same numbers).
+- [ ] Tidy old work branches once the owner is happy (keep `design-dial-header`, the saved earlier design).

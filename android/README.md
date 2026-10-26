@@ -2,7 +2,7 @@
 
 The Android version of [Prayer Times Asia](https://github.com/aarif86/PrayerTimesAsia): accurate, offline prayer times for Muslims living and travelling across Asia. Kotlin, Jetpack Compose and Material 3. No ad networks, no analytics, no accounts, no Google Play services; location stays on the phone.
 
-This branch (`android`) has no history in common with the iOS app on `main`. To move it to its own repository later:
+Lives in `android/` of the Prayer Times Asia project, next to `ios/` and `web/`. (If it ever needs its own repository, `git subtree split --prefix=android` gives it its full history.) Previously:
 
 ```sh
 git push git@github.com:<owner>/<new-repo>.git android:main
@@ -34,7 +34,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :app:recordRoborazziDebug  # screenshots -> app/build/outputs/roborazzi/
 ```
 
-Every push to `android` runs CI, which uploads the debug APK as the `prayer-times-asia-debug-apk` artifact of the run (Actions tab) and force-pushes the screenshots to the `screenshots-android` branch:
+Every push to `main` that touches `android/` runs CI, which uploads the debug APK as the `prayer-times-asia-debug-apk` artifact of the run (Actions tab) and force-pushes the screenshots to the `screenshots-android` branch:
 
 ```sh
 git fetch origin screenshots-android
