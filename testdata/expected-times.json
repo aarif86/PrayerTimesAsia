@@ -1,0 +1,31 @@
+{
+  "about": "The one copy of the expected prayer times. The iPhone, Android and web tests and tools/reference_engine.py all read this file, so a wrong time in any app fails its build. Times are local 24h, in the order of 'prayers'. See testdata/README.md.",
+  "prayers": ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"],
+  "places": {
+    "singapore": { "lat": 1.3521, "lng": 103.8198, "timeZone": "Asia/Singapore" },
+    "kualaLumpur": { "lat": 3.1472, "lng": 101.6894, "timeZone": "Asia/Kuala_Lumpur" },
+    "hanoi": { "lat": 21.0285, "lng": 105.8542, "timeZone": "Asia/Ho_Chi_Minh" },
+    "makkah": { "lat": 21.422487, "lng": 39.826206, "timeZone": "Asia/Riyadh" }
+  },
+  "official": {
+    "rule": "Copied from official timetables. The calculation must never be earlier than these: prayers 0-2 minutes later, sunrise 0-1 minute earlier.",
+    "days": [
+      { "source": "MUIS 2026 timetable (data.gov.sg)", "method": "muis", "place": "singapore", "date": "2026-01-01", "times": ["05:44", "07:08", "13:10", "16:34", "19:11", "20:25"] },
+      { "source": "MUIS 2026 timetable (data.gov.sg)", "method": "muis", "place": "singapore", "date": "2026-08-01", "times": ["05:46", "07:06", "13:13", "16:34", "19:17", "20:29"] },
+      { "source": "MUIS 2026 timetable and the prayertime.sg app", "method": "muis", "place": "singapore", "date": "2026-10-21", "times": ["05:29", "06:47", "12:51", "16:07", "18:52", "20:02"] },
+      { "source": "JAKIM e-Solat, zone WLY01 (Kuala Lumpur)", "method": "jakim", "place": "kualaLumpur", "date": "2026-01-01", "times": ["06:06", "07:18", "13:19", "16:42", "19:17", "20:31"] }
+    ]
+  },
+  "exact": {
+    "rule": "What the apps show, to the minute (standard Asr). Pinned so any drift between the three engines shows up at once. A shorter list checks only the first prayers.",
+    "days": [
+      { "source": "tools/reference_engine.py (the iPhone engine)", "method": "muis", "place": "singapore", "date": "2026-10-21", "times": ["05:30", "06:47", "12:51", "16:08", "18:53", "20:03"] },
+      { "source": "iPhone screenshots 2-today-hanoi and 3-journey (Hoàn Kiếm)", "method": "sea", "place": "hanoi", "date": "2026-10-24", "times": ["04:33", "05:56", "11:42", "14:59", "17:26"] },
+      { "source": "iPhone screenshot 1d-today-light-daytime", "method": "ummalqura", "place": "makkah", "date": "2026-10-24", "times": ["05:04", "06:20", "12:05", "15:23", "17:50", "19:20"] }
+    ]
+  },
+  "wholeYear": {
+    "rule": "testdata/reference-2026.json: every day of 2026 for Singapore, Kuala Lumpur and Jakarta from tools/reference_engine.py final_minutes (minutes after local midnight). Each app must be within 1 minute on every prayer and exact on more than 99.5% of them (only float noise at a minute boundary may differ).",
+    "file": "reference-2026.json"
+  }
+}

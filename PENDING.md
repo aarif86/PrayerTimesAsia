@@ -21,5 +21,5 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 - [ ] Time Sensitive alerts in the app (after the Apple setting is on).
 - [ ] Google Play release build (after the account exists).
 - [ ] App Store release (listing, screenshots, review).
-- [ ] One shared set of "expected prayer times" in a shared folder that the iPhone, Android and web tests all read (today each has its own copy of the same numbers).
+- [x] One shared set of "expected prayer times" in a shared folder that the iPhone, Android and web tests all read - done: [`testdata/`](testdata/). The iPhone and Android tests now also check every day of 2026, like the web.
 - [ ] Tidy old work branches once the owner is happy (keep `design-dial-header`, the saved earlier design).

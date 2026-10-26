@@ -16,6 +16,7 @@ no accounts, no tracking; location never leaves the device.
 | `design/` | App icon and design sources | |
 | `docs/` | Changelog, roadmap, build log (for the website), App Store copy, falak review sheet | |
 | `tools/` | The Python reference engine and data checks every app is measured against | |
+| [`testdata/`](testdata/) | The one set of expected prayer times the iPhone, Android and web tests all read | |
 | `functions/` | Firebase backend for "Help verify times" submissions | |
 
 Each app has its own README with how to build and run it.
@@ -31,8 +32,8 @@ Each app has its own README with how to build and run it.
 
 | Workflow | Runs when | Does |
 |---|---|---|
-| CI | `ios/` changes | Builds and tests the iPhone app, takes simulator screenshots |
+| CI | `ios/` or `testdata/` changes, every pull request | Builds and tests the iPhone app, takes simulator screenshots |
 | Release to TestFlight | By hand only | Signs and uploads the iPhone app |
-| Android | `android/` changes | Tests, builds the APK, takes screenshots |
-| Web | `web/` or `site/` changes | Tests, builds, deploys the promo site and web app to GitHub Pages |
+| Android | `android/` or `testdata/` changes (pull requests too) | Tests, builds the APK, takes screenshots |
+| Web | `web/`, `site/` or `testdata/` changes (pull requests too) | Tests, builds, deploys the promo site and web app to GitHub Pages (from `main` only) |
 | Validate, Feeds, Firebase, TestFlight status | Their own files change / on a schedule | Data checks, calendar feeds, backend |
