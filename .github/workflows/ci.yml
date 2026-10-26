@@ -6,7 +6,7 @@ name: CI
 on:
   push:
     branches: [main]
-    paths-ignore: ['**.md', 'tools/validate_official.py', '.github/workflows/validate.yml', '.github/workflows/release.yml', 'docs/**', 'config/**', 'data/**', '.github/ISSUE_TEMPLATE/**', 'LICENSE', 'tools/fingerprint.py', 'tools/check_mosques.py', 'tools/check_calendar.py', 'tools/gen_ics.py', '.github/workflows/feeds.yml', 'tools/falak_reference.py', 'tools/probe_sources.py', 'functions/**', 'firebase.json', '.firebaserc', 'firestore.rules', 'storage.rules', '.github/workflows/firebase.yml', '.github/workflows/asc-status.yml', 'tools/asc_status.py']
+    paths: ['ios/**', 'data/mosques.json', 'tools/reference_engine.py', '.github/workflows/ci.yml']
   pull_request:
   workflow_dispatch:
 
@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: macos-26
+    defaults:
+      run:
+        working-directory: ios
     permissions:
       contents: write   # only to publish screenshots to the `screenshots` branch
     timeout-minutes: 45
@@ -30,6 +33,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Check the reference engine still matches official timetables
+        working-directory: .
         run: python3 tools/reference_engine.py
 
       - name: Install XcodeGen
@@ -119,7 +123,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: screenshots
-          path: screenshots/
+          path: ios/screenshots/
           if-no-files-found: ignore
 
       # Also publish them on an orphan `screenshots` branch so they can be

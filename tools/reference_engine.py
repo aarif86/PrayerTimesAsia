@@ -1,7 +1,7 @@
 """Reference port of PrayerEngine.swift, used to validate the maths on any machine.
 
 Run: python3 tools/reference_engine.py
-Keep this file in step with PrayerTimesAsia/Core/PrayerEngine.swift.
+Keep this file in step with ios/PrayerTimesAsia/Core/PrayerEngine.swift.
 """
 import math, datetime as dt
 

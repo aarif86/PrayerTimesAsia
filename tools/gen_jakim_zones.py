@@ -1,4 +1,4 @@
-"""Regenerates PrayerTimesAsia/Core/JakimZones.swift from tools/jakim_reference_points.json.
+"""Regenerates ios/PrayerTimesAsia/Core/JakimZones.swift from tools/jakim_reference_points.json.
 
 The JSON holds one reference point per district (largest polygon part, plus
 islands) with its JAKIM zone, derived from the district-to-zone mapping in

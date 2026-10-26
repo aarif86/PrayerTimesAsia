@@ -39,8 +39,9 @@ final class MosqueProfileTests: XCTestCase {
 
     func testShippedDatasetDecodes() throws {
         // data/mosques.json must always decode, or no profile would ever load.
+        // ios/PrayerTimesAsiaTests/ -> repo root, where the shared data lives.
         let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("data/mosques.json")
+            .deletingLastPathComponent().appendingPathComponent("data/mosques.json")
         let data = try Data(contentsOf: url)
         XCTAssertNoThrow(try JSONDecoder().decode(MosqueDataset.self, from: data))
     }

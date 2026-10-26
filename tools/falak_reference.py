@@ -1,4 +1,4 @@
-"""Reference port of PrayerTimesAsia/Core/Falak.swift (Falak Mode F1).
+"""Reference port of ios/PrayerTimesAsia/Core/Falak.swift (Falak Mode F1).
 
 Run: python3 tools/falak_reference.py [year]
 Prints the two Qibla Days (sun directly over the Ka'bah) for the year, and

@@ -59,7 +59,7 @@ and matches the official tables at home.
 ## Accuracy
 
 Online in Singapore/Malaysia the app shows the official table itself. Offline (and
-everywhere else) it calculates: `PrayerTimesAsia/Core/PrayerEngine.swift` is a
+everywhere else) it calculates: `ios/PrayerTimesAsia/Core/PrayerEngine.swift` is a
 pure-Foundation solar calculation and `tools/reference_engine.py` a line-by-line
 Python port. The **Validate against official timetables** workflow
 (`tools/validate_official.py`) downloads the full 2026 MUIS and JAKIM tables and
