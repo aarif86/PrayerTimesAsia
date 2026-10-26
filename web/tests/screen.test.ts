@@ -41,6 +41,8 @@ describe('screen config', () => {
   it('defaults to English and the Night look, and keeps a chosen look', () => {
     expect(DEFAULT_CONFIG.lang).toBe('en')
     expect(DEFAULT_CONFIG.look).toBe('night')
+    expect(DEFAULT_CONFIG.showIqamah).toBe(false)
+    expect(sanitize({ showIqamah: true }).showIqamah).toBe(true)
     expect(sanitize({ look: 'board' }).look).toBe('board')
     expect(sanitize({ look: 'dial' }).look).toBe('dial')
     expect(sanitize({ look: 'disco' }).look).toBe('night')

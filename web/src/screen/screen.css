@@ -335,3 +335,75 @@ textarea { resize: vertical; }
 .scr-look-bands .scr-cell .scr-iq .scr-t { font-size: calc(var(--u) * 3.4); font-family: var(--font-display); font-weight: 700; }
 .scr-sun svg circle[r="7"] { r: 15px; }
 .scr-sun svg circle[r="17"] { r: 36px; }
+
+/* MARK: One moving thing (v3)
+   Waiting: the clock is the hero (seconds small), the next prayer sits under it and changes once a minute.
+   After the azan: the iqamah countdown is the hero and the clock steps down to hh:mm. */
+.scr-date { margin: 0; text-align: right; font-size: calc(var(--u) * 2.8); line-height: 1.35; color: var(--fg2); white-space: nowrap; font-variant-numeric: normal; }
+.scr-date::first-line { color: var(--fg); font-weight: 600; }
+.scr-clockbig { display: inline-flex; align-items: baseline; font-weight: 700; letter-spacing: -0.02em; }
+.scr-sec { font-size: 0.3em; font-weight: 600; color: var(--fg3); margin-left: 0.12em; min-width: 1.25em; }
+.scr-clockbig small { font-size: 0.22em; font-weight: 700; color: var(--fg2); margin-left: 0.3em; letter-spacing: 0.04em; }
+.scr-next {
+  margin: calc(var(--u) * 1.2) 0 0; display: inline-flex; align-items: baseline; flex-wrap: wrap; justify-content: center;
+  gap: calc(var(--u) * 0.6) calc(var(--u) * 2.2); padding: calc(var(--u) * 1.2) calc(var(--u) * 3);
+  border-radius: 999px; background: var(--glass); border: 1px solid color-mix(in srgb, var(--tint) 50%, transparent);
+  font-size: calc(var(--u) * 4); -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px);
+}
+.scr-next-name { font-weight: 800; color: var(--tint); font-variant-numeric: normal; }
+.scr-next > .scr-t { font-weight: 700; }
+.scr-next .scr-t small { font-size: 0.5em; }
+.scr-next-iq { color: var(--fg2); font-size: 0.8em; font-variant-numeric: normal; }
+.scr-next-iq .scr-t { color: var(--fg); font-weight: 700; }
+.scr-in { font-weight: 700; color: var(--accent); font-size: 0.8em; font-variant-numeric: normal; }
+.scr-now { color: var(--fg); font-family: var(--font-display); font-weight: 700; }
+.scr-now small { font-size: 0.6em; margin-left: 0.15em; opacity: 0.7; }
+.scr-azan .scr-line { color: var(--gold); }
+/* The highlighted card is the next prayer: a tinted outline and a stronger time. */
+.scr-cell.on .scr-name { color: var(--tint); font-weight: 800; }
+.scr-look-bands .scr-cell.on .scr-name { color: #fff; }
+/* Bands: the hero sits on the left beside the bands. */
+.landscape .scr-look-bands .scr-head { flex-direction: column; }
+.landscape .scr-look-bands .scr-date { text-align: left; }
+.landscape .scr-look-bands .scr-big, .landscape .scr-look-board .scr-big, .landscape .scr-look-dial .scr-big { font-size: calc(var(--u) * 16); }
+.landscape .scr-look-bands .scr-next, .landscape .scr-look-board .scr-next, .landscape .scr-look-dial .scr-next { font-size: calc(var(--u) * 3.2); padding-inline: calc(var(--u) * 2); }
+.scr-look-sunpath .scr-big { font-size: calc(var(--u) * 15); }
+.portrait .scr-head { flex-direction: column; }
+.portrait .scr-date { text-align: left; }
+/* Setup: dropdown lists in the page's colours (Windows draws them white otherwise). */
+select { color-scheme: dark; }
+select option { background-color: #161a36; color: #fff; }
+.scr-look-board .scr-cell .scr-iq .scr-t { font-size: calc(var(--u) * 3.4); }
+
+/* Bigger prayer times: without the iqamah line the times take the space (the times are what people read). */
+.scr-grid.no-iq .scr-cell { gap: calc(var(--u) * 0.4); padding-block: calc(var(--u) * 2.2); }
+.scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 9); font-weight: 700; }
+.scr-grid.no-iq .scr-syuruk .scr-t, .scr-grid.no-iq .scr-imsak .scr-t { font-size: calc(var(--u) * 7); }
+.scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 4); }
+.scr-look-board .scr-grid.no-iq .scr-cell { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name time"; padding-block: calc(var(--u) * 1.2); }
+.scr-look-board .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 7.4); }
+.scr-look-board .scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 4.4); }
+.scr-look-bands .scr-grid.no-iq .scr-cell { grid-template-areas: "name time"; align-items: center; }
+.scr-look-bands .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 9.4); font-weight: 400; }
+.scr-look-bands .scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 5.2); }
+.scr-dm .scr-t { font-size: 38px; }
+.scr-dm-name { font-size: 23px; }
+.scr-next { font-size: calc(var(--u) * 4.6); }
+
+/* Bigger prayer times: without the iqamah line the times take the space (the times are what people read). */
+.scr-grid.no-iq .scr-cell { gap: calc(var(--u) * 0.4); padding-block: calc(var(--u) * 2.2); }
+.scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 9); font-weight: 700; }
+.scr-grid.no-iq .scr-syuruk .scr-t, .scr-grid.no-iq .scr-imsak .scr-t { font-size: calc(var(--u) * 7); }
+.scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 4); }
+.scr-look-board .scr-grid.no-iq .scr-cell { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name time"; padding-block: calc(var(--u) * 1.2); }
+.scr-look-board .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 7.4); }
+.scr-look-board .scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 4.4); }
+.scr-look-bands .scr-grid.no-iq .scr-cell { grid-template-areas: "name time"; align-items: center; }
+.scr-look-bands .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 9.4); font-weight: 400; }
+.scr-look-bands .scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 5.2); }
+.scr-dm .scr-t { font-size: 38px; }
+.scr-dm-name { font-size: 23px; }
+.scr-next { font-size: calc(var(--u) * 4.6); }
+.scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 8.2); }
+.scr-grid.no-iq .scr-cell .scr-t small { font-size: 0.34em; margin-left: 0.12em; }
+.portrait .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 10); }

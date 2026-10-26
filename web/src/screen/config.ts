@@ -43,6 +43,8 @@ export interface ScreenConfig {
   lang: ScreenLanguage
   look: ScreenLook
   iqamah: Partial<Record<Obligatory, IqamahRule>>
+  /** Print iqamah times beside the azan times (off: the countdown after the azan still runs). */
+  showIqamah: boolean
   /** Khutbah starts, "HH:mm"; Friday's Zohor becomes Jumu'ah. */
   jumuah: string | null
   notices: string[]
@@ -63,6 +65,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   lang: 'en',
   look: 'night',
   iqamah: { fajr: { after: 10 }, dhuhr: { after: 10 }, asr: { after: 10 }, maghrib: { after: 5 }, isha: { after: 10 } },
+  showIqamah: false,
   jumuah: null,
   notices: [],
   h24: false,
@@ -135,6 +138,7 @@ export function sanitize(raw: unknown): ScreenConfig {
       else if (rule && typeof rule.after === 'number' && rule.after >= 0 && rule.after <= 60) out.iqamah[prayer] = { after: Math.round(rule.after) }
     }
   }
+  out.showIqamah = r.showIqamah === true
   out.jumuah = isHHMM(r.jumuah) ? r.jumuah : null
   if (Array.isArray(r.notices)) {
     out.notices = r.notices.filter((n): n is string => typeof n === 'string')

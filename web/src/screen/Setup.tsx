@@ -133,7 +133,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
 
           <fieldset>
             <legend><span class="step">2</span>Iqamah times</legend>
-            <p class="muted small">For each prayer, type how many minutes after the azan the iqamah starts (for example 10), or a fixed time (for example 13:15). Leave a box empty to skip the iqamah countdown for that prayer.</p>
+            <p class="muted small">After the azan the screen counts down to the iqamah. For each prayer, type how many minutes after the azan the iqamah starts (for example 10), or a fixed time (for example 13:15). Leave a box empty to skip the countdown for that prayer.</p>
             <div class="setup-iq">
               {OBLIGATORY_PRAYERS.map((p) => (
                 <div key={p}>
@@ -144,6 +144,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                 </div>
               ))}
             </div>
+            <label class="check"><input id="s-showiq" type="checkbox" checked={c.showIqamah} onChange={(e) => set({ showIqamah: (e.target as HTMLInputElement).checked })} /> Also print the iqamah times on the screen (most jemaah only need the prayer times)</label>
             <label for="s-jumuah">Friday khutbah starts (24-hour, for example 13:00)</label>
             <input id="s-jumuah" value={c.jumuah ?? ''} placeholder="13:00" inputMode="numeric"
               onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); set({ jumuah: isHHMM(v) ? v.padStart(5, '0') : null }) }} />
