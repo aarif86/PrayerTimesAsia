@@ -1,15 +1,19 @@
 name: Web
 
-# Type-checks, tests and builds the web app, then deploys it to GitHub Pages at
-# https://aarif86.github.io/PrayerTimesAsia/ (base path /<repo name>/).
+# Type-checks, tests and builds the web app, then deploys it with the promo site
+# (site/) to GitHub Pages: the promo page at the root, the app under app/.
+#   No custom domain: https://aarif86.github.io/PrayerTimesAsia/ and .../app/
+#   Custom domain set in Settings > Pages (e.g. prayertimes.asia): / and /app/
+# The base path is picked from the Pages settings on each run, so after adding or
+# removing a custom domain, run this workflow once (Actions > Web > Run workflow).
 # Pull requests only build and check; main deploys once Pages is set to
 # Settings > Pages > Source: GitHub Actions. Until then the deploy is skipped.
 on:
   push:
     branches: [main]
-    paths: ['web/**', '.github/workflows/web.yml']
+    paths: ['web/**', 'site/**', '.github/workflows/web.yml']
   pull_request:
-    paths: ['web/**', '.github/workflows/web.yml']
+    paths: ['web/**', 'site/**', '.github/workflows/web.yml']
   workflow_dispatch:
 
 permissions:
@@ -27,54 +31,79 @@ jobs:
     timeout-minutes: 15
     outputs:
       pages: ${{ steps.pages.outputs.enabled }}
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v5
+      - name: Where does the site live? (Pages source and custom domain)
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          info=$(gh api "repos/${GITHUB_REPOSITORY}/pages" 2>/dev/null) || info='{}'
+          build_type=$(jq -r '.build_type // empty' <<<"$info")
+          cname=$(jq -r '.cname // empty' <<<"$info")
+          # Pages serves a project site under /<repo name>/, case and all; a custom domain at the root.
+          if [ -n "$cname" ]; then base=/; else base="/${REPO_NAME}/"; fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          echo "Site base path: ${base} (custom domain: ${cname:-none})" | tee -a "$GITHUB_STEP_SUMMARY"
+          if [ "${{ github.event_name }}" = pull_request ]; then exit 0; fi
+          if [ "$build_type" = "workflow" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=GitHub Pages is not deploying from Actions::Settings > Pages > Build and deployment > Source: GitHub Actions (now: ${build_type:-off}). Then Actions > Web > Run workflow, or any push to main that touches web/ or site/."
+            echo "GitHub Pages is not set up yet (source: ${build_type:-off}). Settings > Pages > Source: **GitHub Actions**, then re-run." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
       - name: Install
+        working-directory: web
         run: npm ci
       - name: Type-check
+        working-directory: web
         run: npm run typecheck
       - name: Unit tests (prayer engine, falak, official parsers)
+        working-directory: web
         run: npm test
       - name: Build
+        working-directory: web
         run: npm run build
         env:
-          # Pages serves a project site under /<repo name>/, case and all.
-          BASE_PATH: /${{ github.event.repository.name }}/
+          BASE_PATH: ${{ steps.pages.outputs.base }}app/
+      - name: Put the promo site and the app together
+        env:
+          BASE: ${{ steps.pages.outputs.base }}
+        run: |
+          rm -rf _site
+          cp -R site _site
+          rm -f _site/README.md
+          cp -R web/dist _site/app
+          sed -i "s#__BASE__#${BASE}#g" _site/404.html
       - name: Check the build
         env:
-          BASE_PATH: /${{ github.event.repository.name }}/
+          BASE_PATH: ${{ steps.pages.outputs.base }}app/
         run: |
-          test -f dist/index.html
-          test -f dist/sw.js
-          test -f dist/manifest.webmanifest
-          grep -q "${BASE_PATH}assets/" dist/index.html
-          du -sh dist
+          test -f _site/index.html
+          test -f _site/404.html
+          test -f _site/sw.js
+          test -f _site/app/index.html
+          test -f _site/app/sw.js
+          test -f _site/app/manifest.webmanifest
+          grep -q "${BASE_PATH}assets/" _site/app/index.html
+          ! grep -q "__BASE__" _site/404.html
+          # Every image and page the promo page links to is there.
+          for f in $(grep -oE '(src|href)="[^"#:]+"' _site/index.html | sed -E 's/^[a-z]+="//; s/"$//' | sort -u); do
+            case "$f" in */) f="${f}index.html" ;; esac
+            test -e "_site/$f" || { echo "::error::site/index.html links to a missing file: $f"; exit 1; }
+          done
+          du -sh _site _site/app
       - uses: actions/upload-pages-artifact@v4
         if: github.event_name != 'pull_request'
         with:
-          path: web/dist
-      - name: Is GitHub Pages set to deploy from GitHub Actions?
-        id: pages
-        if: github.event_name != 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          build_type=$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq .build_type 2>/dev/null || true)
-          if [ "$build_type" = "workflow" ]; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=GitHub Pages is not deploying from Actions::Settings > Pages > Build and deployment > Source: GitHub Actions (now: ${build_type:-off}). Then Actions > Web > Run workflow, or any push to main that touches web/."
-            echo "GitHub Pages is not set up yet (source: ${build_type:-off}). Settings > Pages > Source: **GitHub Actions**, then re-run." >> "$GITHUB_STEP_SUMMARY"
-          fi
+          path: _site
       - name: Which official APIs a browser may read (CORS, informational)
         continue-on-error: true
         run: |
