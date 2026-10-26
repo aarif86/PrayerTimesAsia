@@ -74,13 +74,12 @@ def hm(h, mode='round'):
     return f"{m // 60:02d}:{m % 60:02d}"
 
 if __name__ == '__main__':
-    # Official reference days. SG = MUIS (data.gov.sg / user screenshot), KL = JAKIM WLY01.
-    cases = [
-        ('muis', dt.date(2026, 1, 1), 1.3521, 103.8198, ['05:44', '07:08', '13:10', '16:34', '19:11', '20:25']),
-        ('muis', dt.date(2026, 8, 1), 1.3521, 103.8198, ['05:46', '07:06', '13:13', '16:34', '19:17', '20:29']),
-        ('muis', dt.date(2026, 10, 21), 1.3521, 103.8198, ['05:29', '06:47', '12:51', '16:07', '18:52', '20:02']),
-        ('jakim', dt.date(2026, 1, 1), 3.1472, 101.6894, ['06:06', '07:18', '13:19', '16:42', '19:17', '20:31']),
-    ]
+    # Official reference days, shared with the iPhone, Android and web tests.
+    import json, pathlib
+    expected = json.loads((pathlib.Path(__file__).resolve().parent.parent / 'testdata' / 'expected-times.json').read_text())
+    places = expected['places']
+    cases = [(e['method'], dt.date.fromisoformat(e['date']), places[e['place']]['lat'], places[e['place']]['lng'], e['times'])
+             for e in expected['official']['days']]
     keys = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']
     worst = 0
     early = 0

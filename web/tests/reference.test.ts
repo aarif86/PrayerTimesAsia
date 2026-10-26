@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { compute } from '../src/core/engine'
 import { methodWithId } from '../src/core/methods'
 import { PRAYERS } from '../src/core/prayer'
-import reference from './fixtures/reference-2026.json'
+import reference from '../../testdata/reference-2026.json'
 
 /**
- * Every day of 2026 for Singapore (MUIS), Kuala Lumpur (JAKIM) and Jakarta
- * (Kemenag), against the iOS repo's Python port of PrayerEngine.swift
+ * Every day of 2026 (testdata/reference-2026.json, shared with the iPhone and
+ * Android tests) for Singapore (MUIS), Kuala Lumpur (JAKIM) and Jakarta
+ * (Kemenag), against the Python port of PrayerEngine.swift
  * (tools/reference_engine.py final_minutes). That port is what the iOS
  * whole-year validation against the official tables runs on, so matching it
  * carries the same "never earlier than official" guarantee over to the web.

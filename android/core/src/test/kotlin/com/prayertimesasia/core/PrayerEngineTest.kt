@@ -9,36 +9,30 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /**
- * Reference days copied from official timetables (the same cases as the iOS
- * PrayerEngineTests). The offline calculation must never be earlier than the
- * official time: prayers 0-2 minutes later, sunrise 0-1 minute earlier.
+ * The expected times shared with the iPhone and web tests
+ * (testdata/expected-times.json). Official days: the offline calculation must
+ * never be earlier than the official time (prayers 0-2 minutes later, sunrise
+ * 0-1 minute earlier). Exact days: what the apps show, to the minute.
  */
 class PrayerEngineTest {
-    private data class Case(val method: CalculationMethod, val date: LocalDate, val coordinates: Coordinates, val official: List<String>)
-
     private val singapore = Coordinates(1.3521, 103.8198)
-    private val kualaLumpur = Coordinates(3.1472, 101.6894)
     private val sgt = ZoneId.of("Asia/Singapore")
 
-    private val cases = listOf(
-        // MUIS 2026 timetable (data.gov.sg) and the prayertime.sg app for 21 Oct.
-        Case(CalculationMethod.MUIS, LocalDate.of(2026, 1, 1), singapore, listOf("05:44", "07:08", "13:10", "16:34", "19:11", "20:25")),
-        Case(CalculationMethod.MUIS, LocalDate.of(2026, 8, 1), singapore, listOf("05:46", "07:06", "13:13", "16:34", "19:17", "20:29")),
-        Case(CalculationMethod.MUIS, LocalDate.of(2026, 10, 21), singapore, listOf("05:29", "06:47", "12:51", "16:07", "18:52", "20:02")),
-        // JAKIM e-Solat, zone WLY01 (Kuala Lumpur).
-        Case(CalculationMethod.JAKIM, LocalDate.of(2026, 1, 1), kualaLumpur, listOf("06:06", "07:18", "13:19", "16:42", "19:17", "20:31")),
-    )
-
-    private fun minutesOfDay(i: java.time.Instant): Int {
-        val z = i.atZone(sgt)
+    private fun minutesOfDay(i: java.time.Instant, zone: ZoneId): Int {
+        val z = i.atZone(zone)
         return z.hour * 60 + z.minute
     }
 
+    private fun compute(d: ExpectedTimes.Day) =
+        PrayerEngine.compute(d.date.year, d.date.monthValue, d.date.dayOfMonth, d.coordinates, d.method, AsrSchool.STANDARD)
+
     @Test fun calculationIsNeverEarlierThanOfficialTimetables() {
-        for (c in cases) {
-            val day = PrayerEngine.compute(c.date.year, c.date.monthValue, c.date.dayOfMonth, c.coordinates, c.method, AsrSchool.STANDARD)
-            for ((prayer, official) in Prayer.all.zip(c.official)) {
-                val got = minutesOfDay(day.time(prayer))
+        val days = ExpectedTimes.official
+        assertTrue("no official days in testdata", days.isNotEmpty())
+        for (c in days) {
+            val day = compute(c)
+            for ((prayer, official) in Prayer.all.zip(c.times)) {
+                val got = minutesOfDay(day.time(prayer), c.zone)
                 val (h, m) = official.split(":").map { it.toInt() }
                 val diff = got - (h * 60 + m)
                 val label = "${c.method.shortName} ${c.date} $prayer: $diff min off"
@@ -47,20 +41,34 @@ class PrayerEngineTest {
         }
     }
 
-    /**
-     * The exact minutes the iOS app shows for calculated days (from its CI
-     * screenshots), so any drift between the two engines shows up at once.
-     */
-    @Test fun matchesTheIosAppToTheMinute() {
-        fun hhmm(day: PrayerDay, zone: ZoneId) = day.ordered.map { TimeFormat.formatted(it.second, zone, true) }
-        // Hoàn Kiếm, Hanoi, Sat 24 Oct 2026, Southeast Asia 20°/18° (iOS 2-today-hanoi and 3-journey).
-        val hanoiZone = ZoneId.of("Asia/Ho_Chi_Minh")
-        val hanoi = PrayerEngine.compute(2026, 10, 24, Coordinates(21.0285, 105.8542), CalculationMethod.SOUTHEAST_ASIA, AsrSchool.STANDARD)
-        assertEquals(listOf("04:33", "05:56", "11:42", "14:59", "17:26"), hhmm(hanoi, hanoiZone).take(5))
-        // Makkah, Sat 24 Oct 2026, Umm al-Qura (iOS 1d-today-light-daytime).
-        val riyadh = ZoneId.of("Asia/Riyadh")
-        val makkah = PrayerEngine.compute(2026, 10, 24, Geo.kaaba, CalculationMethod.UMM_AL_QURA, AsrSchool.STANDARD)
-        assertEquals(listOf("05:04", "06:20", "12:05", "15:23", "17:50", "19:20"), hhmm(makkah, riyadh))
+    @Test fun matchesTheOtherAppsToTheMinute() {
+        val days = ExpectedTimes.exact
+        assertTrue("no exact days in testdata", days.isNotEmpty())
+        for (c in days) {
+            val got = compute(c).ordered.map { TimeFormat.formatted(it.second, c.zone, true) }
+            assertEquals("${c.method.id} ${c.date} (${c.source})", c.times, got.take(c.times.size))
+        }
+    }
+
+    /** Every day of 2026 against tools/reference_engine.py, as the web tests do. */
+    @Test fun wholeYearMatchesTheReferenceEngine() {
+        for (place in ExpectedTimes.wholeYear) {
+            var exact = 0
+            var total = 0
+            for ((date, minutes) in place.days) {
+                val day = PrayerEngine.compute(date.year, date.monthValue, date.dayOfMonth, place.coordinates, place.method, AsrSchool.STANDARD)
+                val midnight = date.atStartOfDay(java.time.ZoneOffset.ofHours(place.tzHours)).toInstant()
+                for ((prayer, expected) in Prayer.all.zip(minutes)) {
+                    val local = Math.round(java.time.Duration.between(midnight, day.time(prayer)).seconds / 60.0).toInt()
+                    val diff = local - expected
+                    assertTrue("${place.name} $date $prayer: $diff min off", kotlin.math.abs(diff) <= 1)
+                    if (diff == 0) exact++
+                    total++
+                }
+            }
+            // Only float noise at an exact minute boundary may differ.
+            assertTrue("${place.name}: only $exact of $total exact", exact.toDouble() / total > 0.995)
+        }
     }
 
     @Test fun timesAreChronological() {

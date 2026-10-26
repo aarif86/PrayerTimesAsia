@@ -1,43 +1,28 @@
 import XCTest
 @testable import PrayerTimesAsia
 
-/// Reference days copied from official timetables. The offline calculation must
-/// never be earlier than the official time: prayers 0-2 minutes later, sunrise
-/// 0-1 minute earlier. tools/reference_engine.py runs the same cases in Python,
-/// and tools/validate_official.py checks every day of the year in CI.
+/// The expected times shared with the Android and web tests
+/// (testdata/expected-times.json). Official days: the offline calculation must
+/// never be earlier than the official time (prayers 0-2 minutes later, sunrise
+/// 0-1 minute earlier). Exact days: what the apps show, to the minute.
+/// tools/reference_engine.py runs the same official days in Python, and
+/// tools/validate_official.py checks every day of the year in CI.
 final class PrayerEngineTests: XCTestCase {
-    private struct Case {
-        let method: CalculationMethod
-        let date: (Int, Int, Int)
-        let coordinates: Coordinates
-        let official: [String] // fajr, sunrise, dhuhr, asr, maghrib, isha (local, 24h)
-    }
-
     private let singapore = Coordinates(latitude: 1.3521, longitude: 103.8198)
-    private let kualaLumpur = Coordinates(latitude: 3.1472, longitude: 101.6894)
     private let sgt = TimeZone(identifier: "Asia/Singapore")!
 
-    private var cases: [Case] {
-        [
-            // MUIS 2026 timetable (data.gov.sg) and the prayertime.sg app for 21 Oct.
-            Case(method: .muis, date: (2026, 1, 1), coordinates: singapore,
-                 official: ["05:44", "07:08", "13:10", "16:34", "19:11", "20:25"]),
-            Case(method: .muis, date: (2026, 8, 1), coordinates: singapore,
-                 official: ["05:46", "07:06", "13:13", "16:34", "19:17", "20:29"]),
-            Case(method: .muis, date: (2026, 10, 21), coordinates: singapore,
-                 official: ["05:29", "06:47", "12:51", "16:07", "18:52", "20:02"]),
-            // JAKIM e-Solat, zone WLY01 (Kuala Lumpur).
-            Case(method: .jakim, date: (2026, 1, 1), coordinates: kualaLumpur,
-                 official: ["06:06", "07:18", "13:19", "16:42", "19:17", "20:31"]),
-        ]
+    private func compute(_ d: ExpectedTimes.Day) -> PrayerDay {
+        PrayerEngine.compute(year: d.date.year, month: d.date.month, day: d.date.day,
+                             at: d.coordinates, method: d.method, asr: .standard)
     }
 
-    func testCalculationIsNeverEarlierThanOfficialTimetables() {
-        for c in cases {
-            let day = PrayerEngine.compute(year: c.date.0, month: c.date.1, day: c.date.2,
-                                           at: c.coordinates, method: c.method, asr: .standard)
-            for (prayer, official) in zip(Prayer.allCases, c.official) {
-                let got = minutesOfDay(day.time(prayer))
+    func testCalculationIsNeverEarlierThanOfficialTimetables() throws {
+        let days = try ExpectedTimes.official()
+        XCTAssertFalse(days.isEmpty, "no official days in testdata")
+        for c in days {
+            let day = compute(c)
+            for (prayer, official) in zip(Prayer.allCases, c.times) {
+                let got = minutesOfDay(day.time(prayer), in: c.timeZone)
                 let parts = official.split(separator: ":").map { Int($0)! }
                 let diff = got - (parts[0] * 60 + parts[1])
                 let label = "\(c.method.shortName) \(c.date) \(prayer)"
@@ -47,6 +32,41 @@ final class PrayerEngineTests: XCTestCase {
                     XCTAssert((0...2).contains(diff), "\(label): \(diff) min off")
                 }
             }
+        }
+    }
+
+    func testMatchesTheOtherAppsToTheMinute() throws {
+        let days = try ExpectedTimes.exact()
+        XCTAssertFalse(days.isEmpty, "no exact days in testdata")
+        for c in days {
+            let day = compute(c)
+            let got = Prayer.allCases.map { p -> String in
+                let m = minutesOfDay(day.time(p), in: c.timeZone)
+                return String(format: "%02d:%02d", m / 60, m % 60)
+            }
+            XCTAssertEqual(Array(got.prefix(c.times.count)), c.times, "\(c.method.id) \(c.date) (\(c.source))")
+        }
+    }
+
+    /// Every day of 2026 against tools/reference_engine.py, as the Android and web tests do.
+    func testWholeYearMatchesTheReferenceEngine() throws {
+        for place in try ExpectedTimes.wholeYear() {
+            var exact = 0, total = 0
+            for (date, minutes) in place.days {
+                let ymd = date.split(separator: "-").map { Int($0)! }
+                let day = PrayerEngine.compute(year: ymd[0], month: ymd[1], day: ymd[2],
+                                               at: place.coordinates, method: place.method, asr: .standard)
+                let midnight = Astro.utcMidnight(year: ymd[0], month: ymd[1], day: ymd[2])
+                for (prayer, expected) in zip(Prayer.allCases, minutes) {
+                    let local = Int((day.time(prayer).timeIntervalSince(midnight) / 60).rounded()) + place.tzHours * 60
+                    let diff = local - expected
+                    XCTAssertLessThanOrEqual(abs(diff), 1, "\(place.name) \(date) \(prayer)")
+                    if diff == 0 { exact += 1 }
+                    total += 1
+                }
+            }
+            // Only float noise at an exact minute boundary may differ.
+            XCTAssertGreaterThan(Double(exact) / Double(total), 0.995, "\(place.name): only \(exact) of \(total) exact")
         }
     }
 
@@ -138,9 +158,9 @@ final class PrayerEngineTests: XCTestCase {
         XCTAssertNil(prefs.wakeUp)
     }
 
-    private func minutesOfDay(_ date: Date) -> Int {
+    private func minutesOfDay(_ date: Date, in timeZone: TimeZone) -> Int {
         var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = sgt
+        cal.timeZone = timeZone
         let c = cal.dateComponents([.hour, .minute], from: date)
         return c.hour! * 60 + c.minute!
     }
