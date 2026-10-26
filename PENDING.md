@@ -5,7 +5,7 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 ## Waiting on you (the owner)
 
 - [ ] **Put the web app online** - GitHub: Settings → Pages → Build and deployment → Source: *GitHub Actions*. The next change to `web/` on main publishes it to https://aarif86.github.io/PrayerTimesAsia/ (or Actions → Web → Run workflow to publish straight away). (Or ask to host it on nsd.sg instead.)
-- [ ] **Buy prayertimes.asia and point it at the website** - steps in [site/README.md](site/README.md) (about 10 minutes, plus waiting for DNS). Includes turning on email forwarding for hello@prayertimes.asia, which the website's buttons use.
+- [ ] **Buy prayertimes.asia and point it at the website** - steps in [site/README.md](site/README.md) (about 10 minutes, plus waiting for DNS). Includes turning on email forwarding for salam@prayertimes.asia, which the website's buttons use.
 - [ ] **Public TestFlight link** - App Store Connect → TestFlight → External Testing → a group → Public Link. Send it to Claude to put on the website instead of "ask for an invite".
 - [ ] **Try the Android app on a phone** - Actions → Android → newest green run → download *prayer-times-asia-debug-apk*, install, report what works.
 - [ ] **Badal Haji order dates** - when orders open and the last day to order for Hajj 1448, so the Badal card can say "orders now open" in season.

@@ -43,9 +43,9 @@ when it lived at the root. This README is not published.
 5. *(Recommended)* **Lock the domain to your account**: your GitHub profile Settings →
    Pages → Add a domain, and add the TXT record it shows. This stops anyone else
    using the domain on GitHub.
-6. **Make the email work.** The page's buttons send to `hello@prayertimes.asia`. Turn on
+6. **Make the email work.** The page's buttons send to `salam@prayertimes.asia`. Turn on
    email forwarding at the registrar (free at most, including Cloudflare Email Routing)
    to send it to your own inbox. To use another address instead, replace
-   `hello@prayertimes.asia` everywhere in `index.html`.
+   `salam@prayertimes.asia` everywhere in `index.html`.
 
 DNS changes usually show up within an hour, sometimes up to a day.
