@@ -38,6 +38,13 @@ describe('screen config', () => {
     expect(c.iqamah).toEqual({ asr: { fixed: '16:20' } })
   })
 
+  it('defaults to English and the Night look, and keeps a chosen look', () => {
+    expect(DEFAULT_CONFIG.lang).toBe('en')
+    expect(DEFAULT_CONFIG.look).toBe('night')
+    expect(sanitize({ look: 'board' }).look).toBe('board')
+    expect(sanitize({ look: 'disco' }).look).toBe('night')
+  })
+
   it('reads iqamah as minutes or a time', () => {
     expect(parseIqamah('10')).toEqual({ after: 10 })
     expect(parseIqamah(' 7 ')).toEqual({ after: 7 })

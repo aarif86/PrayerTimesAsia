@@ -13,6 +13,10 @@ export interface IqamahRule { after?: number; fixed?: string }
 
 export type ScreenLanguage = 'en' | 'ms' | 'id'
 
+/** Night (dark, the default), Day (light, for bright halls), Board (a departure-board list). */
+export type ScreenLook = 'night' | 'day' | 'board'
+export const LOOKS: readonly ScreenLook[] = ['night', 'day', 'board']
+
 export interface ScreenPlace {
   name: string
   lat: number
@@ -33,6 +37,7 @@ export interface ScreenConfig {
   /** Switch prayer names with Arabic every few seconds. */
   arabic: boolean
   lang: ScreenLanguage
+  look: ScreenLook
   iqamah: Partial<Record<Obligatory, IqamahRule>>
   /** Khutbah starts, "HH:mm"; Friday's Zohor becomes Jumu'ah. */
   jumuah: string | null
@@ -49,9 +54,10 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   name: '',
   place: null,
   zone: null,
-  names: 'malay',
+  names: 'arabic',
   arabic: false,
-  lang: 'ms',
+  lang: 'en',
+  look: 'night',
   iqamah: { fajr: { after: 10 }, dhuhr: { after: 10 }, asr: { after: 10 }, maghrib: { after: 5 }, isha: { after: 10 } },
   jumuah: null,
   notices: [],
@@ -113,6 +119,7 @@ export function sanitize(raw: unknown): ScreenConfig {
   if (NAMING.includes(r.names as NamingStyle)) out.names = r.names as NamingStyle
   out.arabic = r.arabic === true
   if (r.lang === 'en' || r.lang === 'ms' || r.lang === 'id') out.lang = r.lang
+  if (LOOKS.includes(r.look as ScreenLook)) out.look = r.look as ScreenLook
   if (r.iqamah && typeof r.iqamah === 'object') {
     out.iqamah = {}
     for (const prayer of OBLIGATORY_PRAYERS) {

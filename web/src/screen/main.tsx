@@ -27,7 +27,8 @@ export const DEMO_CONFIG: ScreenConfig = {
 }
 
 function initialConfig(): ScreenConfig | null {
-  if (query.has('demo')) return DEMO_CONFIG
+  // ?demo&look=day&lang=ms for screenshots of each variation.
+  if (query.has('demo')) return sanitize({ ...DEMO_CONFIG, look: query.get('look'), lang: query.get('lang') ?? 'en', names: query.get('names') ?? DEMO_CONFIG.names })
   const fromLink = configFromHash(location.hash)
   if (fromLink) { writeJSON(STORAGE, fromLink); return fromLink }
   const saved = readJSON<unknown>(STORAGE)

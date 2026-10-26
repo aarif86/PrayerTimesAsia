@@ -116,6 +116,34 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-dim p { margin: 0; font-size: calc(var(--u) * 3.4); }
 .scr-dim-clock { font-size: calc(var(--u) * 4.4) !important; }
 
+/* MARK: Looks */
+
+/* Day: light, for bright halls and foyers where a dark screen looks like a hole in the wall. */
+.scr-look-day {
+  --bg: #efece4; --bg2: #fbfaf6; --fg: #141629; --fg2: rgba(20, 22, 41, 0.66); --fg3: rgba(20, 22, 41, 0.42);
+  --line: rgba(20, 22, 41, 0.12); --gold: rgb(168, 108, 8);
+  color: var(--fg); color-scheme: light;
+}
+.scr-look-day .scr-cell { background: rgba(255, 255, 255, 0.75); }
+.scr-look-day .scr-cell.on { background: rgba(0, 0, 0, 0.06); background: color-mix(in srgb, var(--tint) 20%, #fff); }
+
+/* Board: countdown on the left, the day's times as rows on the right (like a departure board). */
+.landscape .scr-look-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 4); }
+.landscape .scr-look-board .scr-head, .landscape .scr-look-board .scr-foot { grid-column: 1 / -1; }
+.landscape .scr-look-board .scr-big { font-size: calc(var(--u) * 17); }
+.landscape .scr-look-board .scr-line { font-size: calc(var(--u) * 3.4); }
+.scr-look-board .scr-grid { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: 1fr; align-content: center; gap: calc(var(--u) * 0.9); }
+.scr-look-board .scr-cell {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); justify-items: start; align-items: baseline;
+  padding: calc(var(--u) * 1.1) calc(var(--u) * 2.4); border-top: 1px solid var(--line); border-left: calc(var(--u) * 0.6) solid var(--tint);
+  border-radius: calc(var(--u) * 0.8);
+}
+.scr-look-board .scr-cell .scr-t { font-size: calc(var(--u) * 5.6); justify-self: end; }
+.scr-look-board .scr-name { font-size: calc(var(--u) * 3.8); }
+.scr-look-board .scr-iq { justify-self: end; font-size: calc(var(--u) * 2.9); }
+.scr-look-board .scr-syuruk .scr-t, .scr-look-board .scr-imsak .scr-t { font-size: calc(var(--u) * 4.6); }
+.portrait .scr-look-board .scr-grid { grid-template-columns: 1fr; }
+
 /* Portrait: times in two columns under the countdown. */
 .portrait .scr-head { flex-direction: column; align-items: stretch; }
 .portrait .scr-clock { font-size: calc(var(--u) * 9); }

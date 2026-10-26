@@ -39,7 +39,9 @@ one link (the settings ride in the `#hash`, never sent anywhere) that the TV ope
 dims during prayer, keeps the TV awake, drifts a few pixels against burn-in and reloads at 3 am.
 Why it works this way: [docs/masjid-screen.md](../docs/masjid-screen.md). Screenshots: [`docs/screenshots/screen/`](docs/screenshots/screen/).
 
-Demo: `screen/?demo&now=2026-10-26T16:17:22%2B08:00` (add `&setup` for the setup page).
+Three looks: Night (default), Day (light) and Board (times as a list). English by default; Malay and Indonesian in setup.
+
+Demo: `screen/?demo&now=2026-10-26T16:17:22%2B08:00` (add `&look=day` or `&look=board`, `&lang=ms&names=malay`, or `&setup`).
 
 ## How it is built
 

@@ -7,7 +7,7 @@ import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable } from '../services/officialTables'
 import {
   encodeConfig, iqamahText, isHHMM, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah,
-  type Obligatory, type ScreenConfig, type ScreenLanguage, type ScreenPlace,
+  type Obligatory, type ScreenConfig, type ScreenLanguage, type ScreenLook, type ScreenPlace,
 } from './config'
 import { Display } from './Display'
 import { Frame } from './Frame'
@@ -159,6 +159,12 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
 
           <fieldset>
             <legend>Language and look</legend>
+            <label for="s-look">Look</label>
+            <select id="s-look" value={c.look} onChange={(e) => set({ look: (e.target as HTMLSelectElement).value as ScreenLook })}>
+              <option value="night">Night: dark, calm in a dim hall</option>
+              <option value="day">Day: light, for bright halls and foyers</option>
+              <option value="board">Board: times as a list, like a departure board</option>
+            </select>
             <label for="s-names">Prayer names</label>
             <select id="s-names" value={c.names} onChange={(e) => set({ names: (e.target as HTMLSelectElement).value as NamingStyle })}>
               {NAMING_STYLES.map((n) => <option key={n} value={n}>{NAMING_LABEL[n]}</option>)}
@@ -166,9 +172,9 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <label class="check"><input id="s-arabic" type="checkbox" checked={c.arabic} onChange={(e) => set({ arabic: (e.target as HTMLInputElement).checked })} /> Switch with Arabic names every 8 seconds</label>
             <label for="s-lang">Screen words</label>
             <select id="s-lang" value={c.lang} onChange={(e) => set({ lang: (e.target as HTMLSelectElement).value as ScreenLanguage })}>
+              <option value="en">English</option>
               <option value="ms">Bahasa Melayu</option>
               <option value="id">Bahasa Indonesia</option>
-              <option value="en">English</option>
             </select>
             <label class="check"><input id="s-h24" type="checkbox" checked={c.h24} onChange={(e) => set({ h24: (e.target as HTMLInputElement).checked })} /> 24-hour clock</label>
             <label for="s-hijri">Hijri date adjustment (days)</label>

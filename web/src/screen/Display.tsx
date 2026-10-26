@@ -23,7 +23,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
   const hijriStyle = c.names === 'malay' || c.names === 'indonesian' ? c.names : 'arabic'
 
   return (
-    <div class={`scr scr-${phase.kind}`} style={{ '--tint': `var(--t-${tint})` }}>
+    <div class={`scr scr-${phase.kind} scr-look-${c.look}`} style={{ '--tint': `var(--t-${tint})` }}>
       <header class="scr-head">
         <div class="scr-title">
           <h1>{c.name || c.place.name}</h1>
