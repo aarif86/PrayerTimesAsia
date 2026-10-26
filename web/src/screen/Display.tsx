@@ -21,14 +21,13 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
   const sd = phase.day
   const arabic = c.arabic && arabicTurn
   const label = (p: Prayer) => name(p, c.names, sd.friday, arabic)
-  const clock = clockParts(now, tz, c.h24, true)
   const tint = phase.kind === 'waiting' ? phase.next : phase.prayer
   const hijriStyle = c.names === 'malay' || c.names === 'indonesian' ? c.names : 'arabic'
   // The app's Living Sky: the sky outside the masjid, right now.
   const today = screenDay(now, c, rowFor)!
   const isToday = sd === today || sd.day.day === today.day.day
-  const next = phase.kind === 'waiting' ? phase.next : null
-  const current = phase.kind === 'waiting' ? phase.current : phase.prayer
+  // One prayer is highlighted: the one people are waiting for (or the one being called now).
+  const focus: Prayer = phase.kind === 'waiting' ? phase.next : phase.prayer
 
   return (
     <div class={`scr scr-${phase.kind} scr-look-${c.look}`} style={{ '--tint': `var(--t-${tint})` }}>
@@ -37,12 +36,12 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
       <header class="scr-head">
         <div class="scr-title">
           <h1>{c.name || c.place.name}</h1>
-          <p>{gregorianDate(now, tz, c.lang)} · {formatHijri(now, tz, hijriStyle, c.hijriAdj)}</p>
+          {c.name && <p>{c.place.name}</p>}
         </div>
-        <div class="scr-clock">{clock.time}{clock.suffix && <small>{clock.suffix}</small>}</div>
+        <p class="scr-date">{gregorianDate(now, tz, c.lang)}<br />{formatHijri(now, tz, hijriStyle, c.hijriAdj)}</p>
       </header>
 
-      {c.look === 'dial' && <Dial sd={sd} now={now} config={c} label={label} current={current} upcoming={next} isToday={isToday} />}
+      {c.look === 'dial' && <Dial sd={sd} now={now} config={c} label={label} focus={focus} isToday={isToday} />}
 
       <Hero phase={phase} now={now} config={c} label={label} />
 
@@ -58,16 +57,14 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
           </li>
         )}
         {PRAYERS.map((p) => {
-          const on = phase.kind === 'waiting' ? phase.current === p : phase.prayer === p
+          const on = p === focus
           const iq = p === 'sunrise' ? undefined : sd.iqamah[p]
           const sub = p === 'maghrib' && sd.ramadan ? w.iftar : null
           const passed = isToday && !on && sd.day.times[p] <= now
-          const tag = on ? w.nowTag : p === next && phase.kind === 'waiting' ? w.inTag(shortLeft(phase.at - now)) : null
           return (
             <li key={p} class={`scr-cell p-${p}${on ? ' on' : ''}${passed ? ' passed' : ''}${p === 'sunrise' ? ' scr-syuruk' : ''}`} style={{ '--tint': `var(--t-${p})` }}>
               <i class="scr-bar" />
               <span class="scr-name">{label(p)}{sub && <em> · {sub}</em>}</span>
-              <span class="scr-tag">{tag ?? '\u00a0'}</span>
               <Time ms={sd.day.times[p]} tz={tz} h24={c.h24} />
               <span class="scr-iq">{iq != null ? <>{p === 'dhuhr' && sd.friday && c.jumuah ? w.khutbah : w.iqamah} <Time ms={iq} tz={tz} h24={c.h24} small /></> : ' '}</span>
             </li>
@@ -79,7 +76,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
         <Notice notices={c.notices} now={now} />
         <p class="scr-brand">
           <span class="scr-pill"><b class={`scr-grade g-${sd.day.grade}`}>{sd.day.grade}</b>{sd.source}</span>
-          <span><b>prayertimes.asia</b> · {w.getApp}</span>
+          <span><b>prayertimes.asia</b></span>
         </p>
       </footer>
 
@@ -98,9 +95,9 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
  * The app's Day Dial: the day as a ring in the sky's colours, each azan and iqamah at its hour.
  * Drawn at 600 px and scaled to the screen (--ds), since the dial lays its labels out in pixels.
  */
-function Dial({ sd, now, config: c, label, current, upcoming, isToday }: {
+function Dial({ sd, now, config: c, label, focus, isToday }: {
   sd: NonNullable<ReturnType<typeof screenDay>>; now: number; config: ScreenConfig; label: (p: Prayer) => string
-  current: Prayer | null; upcoming: Prayer | null; isToday: boolean
+  focus: Prayer; isToday: boolean
 }) {
   const w = WORDS[c.lang]
   const tz = c.place!.tz
@@ -109,11 +106,11 @@ function Dial({ sd, now, config: c, label, current, upcoming, isToday }: {
   if (sd.imsak != null) marks.push({ id: 'imsak', date: sd.imsak, minor: true })
   return (
     <section class="scr-dialbox">
-      <HeroDial size={600} now={now} day={sd.day} nextFajr={nextFajr} tz={tz} currentPrayer={isToday ? current : null} marks={marks}
+      <HeroDial size={600} now={now} day={sd.day} nextFajr={nextFajr} tz={tz} currentPrayer={isToday ? focus : null} marks={marks}
         label={(m) => {
           if (m.id === 'imsak') return <div class="scr-dm minor"><span class="scr-dm-name">{w.imsak}</span><Time ms={m.date} tz={tz} h24={c.h24} small /></div>
           const p = m.id as Prayer
-          const on = p === current
+          const on = p === focus
           const iq = p === 'sunrise' ? undefined : sd.iqamah[p]
           const passed = isToday && !on && m.date <= now
           return (
@@ -124,41 +121,43 @@ function Dial({ sd, now, config: c, label, current, upcoming, isToday }: {
             </div>
           )
         }}
-        centre={() => current
-          ? <div class="scr-dial-centre" style={{ '--tint': `var(--t-${current})` }}><span>{w.nowTag}</span><b>{label(current)}</b></div>
-          : upcoming ? <div class="scr-dial-centre" style={{ '--tint': `var(--t-${upcoming})` }}><span>{w.next}</span><b>{label(upcoming)}</b></div> : null} />
+        centre={() => <div class="scr-dial-centre" style={{ '--tint': `var(--t-${focus})` }}><span>{w.next}</span><b>{label(focus)}</b></div>} />
     </section>
   )
 }
 
+/**
+ * The one thing that moves each second. Waiting: the clock (seconds small) and the next prayer,
+ * whose "in 40m" changes only once a minute. After the azan: the iqamah countdown takes over,
+ * and the clock steps down to hours and minutes.
+ */
 function Hero({ phase, now, config: c, label }: { phase: Phase; now: number; config: ScreenConfig; label: (p: Prayer) => string }) {
   const w = WORDS[c.lang]
   const tz = c.place!.tz
+  const clock = clockParts(now, tz, c.h24)
   if (phase.kind === 'azan') {
-    if (phase.iqamah == null) {
-      return <section class="scr-hero"><p class="scr-kicker">{w.azan}</p><p class="scr-big">{label(phase.prayer)}</p><p class="scr-line">{w.silence}</p></section>
-    }
-    const left = phase.iqamah - now
     const jumuah = phase.prayer === 'dhuhr' && phase.day.friday && !!c.jumuah
+    const left = phase.iqamah == null ? 0 : phase.iqamah - now
     return (
-      <section class={`scr-hero${left <= 60_000 ? ' scr-final' : ''}`}>
-        <p class="scr-kicker">{w.azan} {label(phase.prayer)} · {jumuah ? w.khutbah : w.iqamahIn}</p>
-        <p class="scr-big">{countdown(left)}</p>
-        <p class="scr-line">{w.silence}</p>
+      <section class={`scr-hero${phase.iqamah != null && left <= 60_000 ? ' scr-final' : ''}`}>
+        <p class="scr-kicker">{w.azan} {label(phase.prayer)}{phase.iqamah != null && <> · {jumuah ? w.khutbah : w.iqamahIn}</>}</p>
+        <p class="scr-big">{phase.iqamah != null ? countdown(left) : label(phase.prayer)}</p>
+        <p class="scr-line"><span class="scr-now">{clock.time}{clock.suffix && <small>{clock.suffix}</small>}</span> · {w.silence}</p>
       </section>
     )
   }
   if (phase.kind === 'prayer') return <section class="scr-hero" />
   const next = phase.next
   const iq = next === 'sunrise' ? undefined : phase.day.iqamah[next]
-  const title = next === 'sunrise' ? w.ends(label('fajr')) : label(next)
+  const sec = String(Math.floor(now / 1000) % 60).padStart(2, '0')
   return (
     <section class="scr-hero">
-      <p class="scr-kicker">{w.next} · {title}</p>
-      <p class="scr-big">{countdown(phase.at - now)}</p>
-      <p class="scr-line">
-        {label(next)} <Time ms={phase.at} tz={tz} h24={c.h24} />
-        {iq != null && <> · {next === 'dhuhr' && phase.day.friday && c.jumuah ? w.khutbah : w.iqamah} <Time ms={iq} tz={tz} h24={c.h24} /></>}
+      <p class="scr-big scr-clockbig">{clock.time}<span class="scr-sec">{sec}</span>{clock.suffix && <small>{clock.suffix}</small>}</p>
+      <p class="scr-next" style={{ '--tint': `var(--t-${next})` }}>
+        <span class="scr-next-name">{next === 'sunrise' ? w.ends(label('fajr')) : label(next)}</span>
+        <Time ms={phase.at} tz={tz} h24={c.h24} />
+        {iq != null && <span class="scr-next-iq">{next === 'dhuhr' && phase.day.friday && c.jumuah ? w.khutbah : w.iqamah} <Time ms={iq} tz={tz} h24={c.h24} /></span>}
+        <span class="scr-in">{w.inTag(shortLeft(phase.at - now))}</span>
       </p>
     </section>
   )
