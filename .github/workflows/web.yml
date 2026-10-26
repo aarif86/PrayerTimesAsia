@@ -5,7 +5,10 @@ name: Web
 on:
   push:
     branches: [main]
-    paths: ['web/**', '.github/workflows/web.yml']
+    paths: ['web/**', 'testdata/**', '.github/workflows/web.yml']
+  # Pull requests run the checks and the build only; nothing is deployed.
+  pull_request:
+    paths: ['web/**', 'testdata/**', '.github/workflows/web.yml']
   workflow_dispatch:
 
 permissions:
@@ -14,7 +17,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: web-pages
+  group: web-${{ github.event_name == 'pull_request' && github.ref || 'pages' }}
   cancel-in-progress: true
 
 jobs:
@@ -86,7 +89,7 @@ jobs:
 
   deploy:
     needs: build
-    if: needs.build.outputs.pages == 'true'
+    if: needs.build.outputs.pages == 'true' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:

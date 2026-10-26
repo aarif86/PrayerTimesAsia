@@ -6,7 +6,7 @@ name: CI
 on:
   push:
     branches: [main]
-    paths: ['ios/**', 'data/mosques.json', 'tools/reference_engine.py', '.github/workflows/ci.yml']
+    paths: ['ios/**', 'data/mosques.json', 'testdata/**', 'tools/reference_engine.py', '.github/workflows/ci.yml']
   pull_request:
   workflow_dispatch:
 

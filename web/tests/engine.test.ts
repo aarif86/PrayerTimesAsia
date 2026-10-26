@@ -3,41 +3,41 @@ import { sunAltitude } from '../src/core/astro'
 import { compute, ordered, type Coordinates } from '../src/core/engine'
 import { distanceKm, KAABA, qiblaBearing } from '../src/core/geo'
 import { formatHijri, hijriDate } from '../src/core/hijri'
-import { ALL_METHODS, METHODS, methodWithId, type CalculationMethod } from '../src/core/methods'
+import { ALL_METHODS, METHODS, methodWithId } from '../src/core/methods'
 import { musafirStatus } from '../src/core/musafir'
 import { PRAYERS } from '../src/core/prayer'
 import { countryForTimeZone, flag, PROFILES, profileFor, profileMethod } from '../src/core/regions'
 import { zoned, zonedTime } from '../src/core/tz'
+import expected from '../../testdata/expected-times.json'
 
 /**
- * Reference days copied from official timetables (same cases as the iOS
- * PrayerEngineTests). The offline calculation must never be earlier than the
- * official time: prayers 0-2 minutes later, sunrise 0-1 minute earlier.
+ * The expected times shared with the iPhone and Android tests
+ * (testdata/expected-times.json). Official days: the offline calculation must
+ * never be earlier than the official time (prayers 0-2 minutes later, sunrise
+ * 0-1 minute earlier). Exact days: what the apps show, to the minute.
  */
 const singapore: Coordinates = { latitude: 1.3521, longitude: 103.8198 }
-const kualaLumpur: Coordinates = { latitude: 3.1472, longitude: 101.6894 }
 const SGT = 'Asia/Singapore'
 
-const minutesOfDay = (ms: number) => { const z = zoned(ms, SGT); return z.hour * 60 + z.minute }
+interface Expected { method: string; place: string; date: string; times: string[] }
+const places = expected.places as Record<string, { lat: number; lng: number; timeZone: string }>
 
-interface Case { method: CalculationMethod; date: [number, number, number]; c: Coordinates; official: string[] }
+function computeExpected(e: Expected) {
+  const [y, m, d] = e.date.split('-').map(Number)
+  const place = places[e.place]
+  const day = compute(y, m, d, { latitude: place.lat, longitude: place.lng }, methodWithId(e.method)!, 'standard')
+  return PRAYERS.map((p) => { const z = zoned(day.times[p], place.timeZone); return z.hour * 60 + z.minute })
+}
 
-const cases: Case[] = [
-  // MUIS 2026 timetable (data.gov.sg) and prayertime.sg for 21 Oct.
-  { method: METHODS.muis, date: [2026, 1, 1], c: singapore, official: ['05:44', '07:08', '13:10', '16:34', '19:11', '20:25'] },
-  { method: METHODS.muis, date: [2026, 8, 1], c: singapore, official: ['05:46', '07:06', '13:13', '16:34', '19:17', '20:29'] },
-  { method: METHODS.muis, date: [2026, 10, 21], c: singapore, official: ['05:29', '06:47', '12:51', '16:07', '18:52', '20:02'] },
-  // JAKIM e-Solat, zone WLY01 (Kuala Lumpur).
-  { method: METHODS.jakim, date: [2026, 1, 1], c: kualaLumpur, official: ['06:06', '07:18', '13:19', '16:42', '19:17', '20:31'] },
-]
+const minutes = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m }
+const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
 
 describe('PrayerEngine', () => {
-  for (const c of cases) {
-    it(`is never earlier than the official ${c.method.shortName} table on ${c.date.join('-')}`, () => {
-      const day = compute(c.date[0], c.date[1], c.date[2], c.c, c.method, 'standard')
+  for (const e of expected.official.days as Expected[]) {
+    it(`is never earlier than the official ${e.method} table on ${e.date}`, () => {
+      const got = computeExpected(e)
       PRAYERS.forEach((prayer, i) => {
-        const [h, m] = c.official[i].split(':').map(Number)
-        const diff = minutesOfDay(day.times[prayer]) - (h * 60 + m)
+        const diff = got[i] - minutes(e.times[i])
         if (prayer === 'sunrise') expect(diff, `${prayer}: ${diff} min off`).toBeGreaterThanOrEqual(-1)
         else expect(diff, `${prayer}: ${diff} min off`).toBeGreaterThanOrEqual(0)
         expect(diff, `${prayer}: ${diff} min off`).toBeLessThanOrEqual(prayer === 'sunrise' ? 0 : 2)
@@ -45,12 +45,11 @@ describe('PrayerEngine', () => {
     })
   }
 
-  it('gives Singapore 21 Oct 2026 exactly as the iOS app (MUIS method)', () => {
-    const day = compute(2026, 10, 21, singapore, METHODS.muis, 'standard')
-    const got = PRAYERS.map((p) => { const z = zoned(day.times[p], SGT); return `${String(z.hour).padStart(2, '0')}:${String(z.minute).padStart(2, '0')}` })
-    // Same as tools/reference_engine.py (the iOS Python port); pinned so any change is noticed.
-    expect(got).toEqual(['05:30', '06:47', '12:51', '16:08', '18:53', '20:03'])
-  })
+  for (const e of expected.exact.days as Expected[]) {
+    it(`gives ${e.place} ${e.date} (${e.method}) exactly as the other apps`, () => {
+      expect(computeExpected(e).slice(0, e.times.length).map(hhmm)).toEqual(e.times)
+    })
+  }
 
   it('keeps times chronological for every method (Tokyo, midsummer, Hanafi)', () => {
     const tokyo = { latitude: 35.6762, longitude: 139.6503 }
