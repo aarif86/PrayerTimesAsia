@@ -91,6 +91,7 @@ jobs:
           test -f _site/sw.js
           test -f _site/app/index.html
           test -f _site/app/sw.js
+          test -f _site/app/screen/index.html
           test -f _site/app/manifest.webmanifest
           grep -q "${BASE_PATH}assets/" _site/app/index.html
           ! grep -q "__BASE__" _site/404.html
