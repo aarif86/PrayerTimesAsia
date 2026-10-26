@@ -1,8 +1,10 @@
 import { rowFor } from '../services/officialTables'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { formatHijri } from '../core/hijri'
+import { LivingSky } from '../ui/LivingSky'
+import { skyAt } from '../ui/sky'
 import type { ScreenConfig } from './config'
-import { clockParts, countdown, gregorianDate, name, phaseAt, WORDS, type Phase } from './model'
+import { clockParts, countdown, gregorianDate, name, phaseAt, screenDay, shortLeft, WORDS, type Phase } from './model'
 
 /**
  * The masjid screen. Sizes are in viewport units so the same layout reads from
@@ -21,9 +23,15 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
   const clock = clockParts(now, tz, c.h24, true)
   const tint = phase.kind === 'waiting' ? phase.next : phase.prayer
   const hijriStyle = c.names === 'malay' || c.names === 'indonesian' ? c.names : 'arabic'
+  // The app's Living Sky: the sky outside the masjid, right now.
+  const today = screenDay(now, c, rowFor)!
+  const isToday = sd === today || sd.day.day === today.day.day
+  const next = phase.kind === 'waiting' ? phase.next : null
 
   return (
     <div class={`scr scr-${phase.kind} scr-look-${c.look}`} style={{ '--tint': `var(--t-${tint})` }}>
+      <LivingSky colors={skyAt(now, today.day)} scheme={c.look === 'day' ? 'light' : 'dark'} soft={false} />
+      {c.look !== 'day' && <div class="scr-shade" aria-hidden="true" />}
       <header class="scr-head">
         <div class="scr-title">
           <h1>{c.name || c.place.name}</h1>
@@ -45,9 +53,13 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
           const on = phase.kind === 'waiting' ? phase.current === p : phase.prayer === p
           const iq = p === 'sunrise' ? undefined : sd.iqamah[p]
           const sub = p === 'maghrib' && sd.ramadan ? w.iftar : null
+          const passed = isToday && !on && sd.day.times[p] <= now
+          const tag = on ? w.nowTag : p === next && phase.kind === 'waiting' ? w.inTag(shortLeft(phase.at - now)) : null
           return (
-            <li key={p} class={`scr-cell${on ? ' on' : ''}${p === 'sunrise' ? ' scr-syuruk' : ''}`} style={{ '--tint': `var(--t-${p})` }}>
+            <li key={p} class={`scr-cell${on ? ' on' : ''}${passed ? ' passed' : ''}${p === 'sunrise' ? ' scr-syuruk' : ''}`} style={{ '--tint': `var(--t-${p})` }}>
+              <i class="scr-bar" />
               <span class="scr-name">{label(p)}{sub && <em> · {sub}</em>}</span>
+              <span class="scr-tag">{tag ?? '\u00a0'}</span>
               <Time ms={sd.day.times[p]} tz={tz} h24={c.h24} />
               <span class="scr-iq">{iq != null ? <>{p === 'dhuhr' && sd.friday && c.jumuah ? w.khutbah : w.iqamah} <Time ms={iq} tz={tz} h24={c.h24} small /></> : ' '}</span>
             </li>
@@ -57,7 +69,10 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
 
       <footer class="scr-foot">
         <Notice notices={c.notices} now={now} />
-        <p class="scr-brand"><b>prayertimes.asia</b> · {w.getApp}<span class="scr-src"> · {w.source}: {sd.source}</span></p>
+        <p class="scr-brand">
+          <span class="scr-pill"><b class={`scr-grade g-${sd.day.grade}`}>{sd.day.grade}</b>{sd.source}</span>
+          <span><b>prayertimes.asia</b> · {w.getApp}</span>
+        </p>
       </footer>
 
       {phase.kind === 'prayer' && (

@@ -140,6 +140,7 @@ export interface Words {
   next: string; iqamah: string; azan: string; iqamahIn: string; silence: string; inPrayer: string
   khutbah: string; imsak: string; iftar: string; ends: (n: string) => string; fullScreen: string
   edit: string; source: string; getApp: string; noPlace: string
+  nowTag: string; inTag: (d: string) => string
 }
 
 export const WORDS: Record<ScreenLanguage, Words> = {
@@ -148,18 +149,21 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     inPrayer: 'Prayer in progress', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Iftar', ends: (n) => `${n} ends`,
     fullScreen: 'Press OK or click for full screen', edit: 'Edit screen', source: 'Times', getApp: 'Prayer times on your phone',
     noPlace: 'Choose the masjid\'s location to show prayer times.',
+    nowTag: 'Now', inTag: (d) => `in ${d}`,
   },
   ms: {
     next: 'Seterusnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Sila senyapkan telefon bimbit anda',
     inPrayer: 'Solat sedang didirikan', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Tamat ${n}`,
     fullScreen: 'Tekan OK atau klik untuk skrin penuh', edit: 'Ubah skrin', source: 'Waktu', getApp: 'Waktu solat di telefon anda',
     noPlace: 'Pilih lokasi masjid untuk memaparkan waktu solat.',
+    nowTag: 'Sekarang', inTag: (d) => `${d} lagi`,
   },
   id: {
     next: 'Berikutnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Mohon nonaktifkan nada dering ponsel',
     inPrayer: 'Sholat sedang berlangsung', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Akhir ${n}`,
     fullScreen: 'Tekan OK atau klik untuk layar penuh', edit: 'Ubah layar', source: 'Jadwal', getApp: 'Jadwal sholat di ponsel Anda',
     noPlace: 'Pilih lokasi masjid untuk menampilkan jadwal sholat.',
+    nowTag: 'Sekarang', inTag: (d) => `${d} lagi`,
   },
 }
 
@@ -180,7 +184,14 @@ export function clockParts(ms: number, tz: string, h24: boolean, seconds = false
   const ss = seconds ? `:${String(z.second).padStart(2, '0')}` : ''
   if (h24) return { time: `${String(z.hour).padStart(2, '0')}:${mm}${ss}`, suffix: null }
   const h = z.hour % 12 === 0 ? 12 : z.hour % 12
-  return { time: `${h}:${mm}${ss}`, suffix: z.hour < 12 ? 'am' : 'pm' }
+  return { time: `${h}:${mm}${ss}`, suffix: z.hour < 12 ? 'AM' : 'PM' }
+}
+
+/** "4h 39m" or "40m", as the app writes time left (rounded up to the minute). */
+export function shortLeft(ms: number): string {
+  const mins = Math.max(0, Math.ceil(ms / 60_000))
+  const h = Math.floor(mins / 60), m = mins % 60
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 
 /** "1:02:09" or "12:09", rounded up so it reaches 0:00 at the moment itself. */
