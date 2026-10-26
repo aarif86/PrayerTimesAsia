@@ -85,7 +85,7 @@ jobs:
           script: |
             const marker = '<!-- android-test-apk -->';
             const body = `${marker}\n### 📱 Android test build\n\n` +
-              `[Download the APK](${process.env.URL}) for commit ${context.sha.slice(0, 7)} ` +
+              `[Download the APK](${process.env.URL}) for commit ${context.payload.pull_request.head.sha.slice(0, 7)} ` +
               `(sign in to GitHub on the phone; it downloads as a zip, open it and tap \`prayer-times-asia-${process.env.TAG}.apk\`).\n\n` +
               `First time? See *Install a test build on your phone* in \`android/README.md\`. Links last 90 days.`;
             const { owner, repo } = context.repo;
