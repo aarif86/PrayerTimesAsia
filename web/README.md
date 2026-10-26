@@ -31,6 +31,16 @@ Demo mode, as used for the screenshots (nothing is saved): `?demo&now=2026-10-25
 with `style` = `list | centre | dial | sunPath | bands`, `appearance` = `system | light | dark`, `tab` = `today | qibla | falak | masjid | settings`,
 `more=1` (Show more), `aligned=1` (qibla aligned), `demo=visitor|travel|makkah` (the iOS demo variants).
 
+## Masjid screen (`screen/`)
+
+A second page for masjid TVs: the next prayer's countdown, the six times with iqamah, Jumu'ah, Ramadan Imsak and
+notices, with the same official tables and engine as the app. Setup happens on a phone at `screen/#setup`; it gives
+one link (the settings ride in the `#hash`, never sent anywhere) that the TV opens once and remembers. The screen
+dims during prayer, keeps the TV awake, drifts a few pixels against burn-in and reloads at 3 am.
+Why it works this way: [docs/masjid-screen.md](../docs/masjid-screen.md). Screenshots: [`docs/screenshots/screen/`](docs/screenshots/screen/).
+
+Demo: `screen/?demo&now=2026-10-26T16:17:22%2B08:00` (add `&setup` for the setup page).
+
 ## How it is built
 
 | Folder | What |
