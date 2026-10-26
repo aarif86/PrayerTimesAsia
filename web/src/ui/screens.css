@@ -1,6 +1,6 @@
 /* ---------- Prayer screen ---------- */
 .screen.tab-today { display: flex; flex-direction: column; }
-.today { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.today { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 0; }
 .today-page { flex: 1; display: flex; flex-direction: column; gap: 12px; padding-top: 4px; min-height: 100%; }
 .center-row { display: flex; justify-content: center; }
 
@@ -262,6 +262,7 @@
 
 .leaflet-container.masjid-map, .leaflet-container.map-box { font: inherit; background: #1b1f3a; }
 :root[data-theme="light"] .leaflet-container.masjid-map, :root[data-theme="light"] .leaflet-container.map-box { background: #e8eaf2; }
+.leaflet-layer.night-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.85) saturate(0.5); }
 .you-pin span { display: block; width: 18px; height: 18px; border-radius: 50%; background: #2f7cf6; border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4); }
 .space-pin span { display: flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; color: #fff;
   border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
