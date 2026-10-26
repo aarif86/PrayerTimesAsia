@@ -1,6 +1,7 @@
 import preact from '@preact/preset-vite'
 import { createHash } from 'node:crypto'
 import { defineConfig, type Plugin } from 'vite'
+import { NATIVE_APPS } from './src/core/nativeApps'
 
 /**
  * Writes sw.js after the build with the list of files to keep offline, so the
@@ -76,9 +77,19 @@ self.addEventListener('notificationclick', (event) => {
   }
 }
 
+/** Safari's own App Store banner, once the iPhone app has an App Store listing. */
+function appleAppBanner(): Plugin {
+  return {
+    name: 'ptasia-apple-app-banner',
+    transformIndexHtml: () => NATIVE_APPS.ios.appStoreId
+      ? [{ tag: 'meta', attrs: { name: 'apple-itunes-app', content: `app-id=${NATIVE_APPS.ios.appStoreId}` }, injectTo: 'head' }]
+      : [],
+  }
+}
+
 export default defineConfig({
   base: process.env.BASE_PATH ?? '/PrayerTimesAsia/',
-  plugins: [preact(), serviceWorker()],
+  plugins: [preact(), serviceWorker(), appleAppBanner()],
   build: { target: 'es2022', sourcemap: false, chunkSizeWarningLimit: 300 },
   test: { environment: 'node', include: ['tests/**/*.test.ts'] },
 } as Parameters<typeof defineConfig>[0])

@@ -11,7 +11,7 @@ import { store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
 import { MakersCard, OFFERS } from './Makers'
 import { TabJourney } from './icons'
-import { canInstall, install, isStandalone } from './pwa'
+import { canInstall, install, isStandalone, phoneAppOffer } from './pwa'
 
 export const VERSION = '1.0.0 (web)'
 
@@ -30,6 +30,7 @@ export function SettingsScreen() {
   const p = s.prefs
   const place = s.activePlace
   const source = s.officialSource
+  const appOffer = phoneAppOffer()
   const feed = source ? feedName(source) : null
   const [perm, setPerm] = useState(permission())
   const support = alertSupport()
@@ -138,6 +139,14 @@ export function SettingsScreen() {
           </>
         )}
       </Group>
+
+      {appOffer && (
+        <Group title="Phone app" foot={appOffer.detail}>
+          <a class="item" href={appOffer.href} target={appOffer.kind === 'ask' ? undefined : '_blank'} rel="noopener">
+            <Smartphone size={20} /><span class="label">{appOffer.title}</span><ChevronRight size={16} class="secondary" />
+          </a>
+        </Group>
+      )}
 
       {!isStandalone() && (
         <Group title="Install" foot="Installed, it opens like an app from your Home Screen or dock, works offline, and on iPhone it is the only way the web can show alerts.">
