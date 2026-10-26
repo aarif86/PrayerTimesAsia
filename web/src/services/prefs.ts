@@ -50,6 +50,7 @@ export interface Preferences {
   musafirEnabled: boolean
   showLocalNames: boolean
   alertsPromptDismissed: boolean
+  appPromptDismissed: boolean
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -82,6 +83,7 @@ export const DEFAULT_PREFS: Preferences = {
   musafirEnabled: false,
   showLocalNames: true,
   alertsPromptDismissed: false,
+  appPromptDismissed: false,
 }
 
 const NULLABLE = new Set<keyof Preferences>([

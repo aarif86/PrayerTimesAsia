@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
   Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
-  CloudMoon, Contrast, Droplet, Flame, MapPin, MoonStar, Navigation, Palette, Plane, Sparkles, Sun, Moon, Undo2, Utensils, X,
+  CloudMoon, Contrast, Droplet, Flame, MapPin, MoonStar, Navigation, Palette, Plane, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
@@ -17,6 +17,7 @@ import { store, useNow, useStore } from '../services/store'
 import { fmtDate, openSheet, short, SourceBadge, Switch, TimeText } from './common'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { featuredOffer, MakersCard } from './Makers'
+import { appBannerShownByBrowser, phoneAppOffer } from './pwa'
 
 type Moment = { prayer: Prayer; time: number } | null
 
@@ -249,6 +250,25 @@ function Offer({ c }: { c: Ctx }) {
   return <MakersCard offer={featuredOffer(store.offerCountry)} placement="prayer" compact />
 }
 
+/** One prompt at a time: the phone app first, since its alerts ring even when it's closed. */
+function TopPrompt() {
+  return phoneAppOffer() && !store.prefs.appPromptDismissed && !appBannerShownByBrowser() ? <AppPrompt /> : <AlertsPrompt />
+}
+
+/** On a phone, offer the iPhone or Android app. */
+function AppPrompt() {
+  const offer = phoneAppOffer()
+  if (!offer) return null
+  return (
+    <div class="alerts-prompt">
+      <Smartphone size={19} class="accent" style={{ flex: 'none' }} />
+      <span class="text">{offer.title}</span>
+      <a class="primary-btn" href={offer.href} target={offer.kind === 'ask' ? undefined : '_blank'} rel="noopener">{offer.action}</a>
+      <button class="x" aria-label="Not now" onClick={() => store.update((p) => { p.appPromptDismissed = true })}><X size={15} strokeWidth={3} /></button>
+    </div>
+  )
+}
+
 /** One tap to be told when each prayer begins. */
 function AlertsPrompt() {
   if (store.prefs.notificationsEnabled || store.prefs.alertsPromptDismissed) return null
@@ -444,7 +464,7 @@ function ClassicPage({ c }: { c: Ctx }) {
           <div><SourceBadge day={c.shown} compact /></div>
         </div>
       </div>
-      <AlertsPrompt />
+      <TopPrompt />
       <ArrivalCard />
       <PrayerList c={c} fill />
       <ShowMoreButton c={c} />
@@ -486,7 +506,7 @@ function CentrePage({ c }: { c: Ctx }) {
         <Controls c={c} order="column" />
       </div>
       <SunPlaceChip offset={c.offset} />
-      <AlertsPrompt />
+      <TopPrompt />
       <ArrivalCard />
       <MusafirChip now={c.now} />
       <DayNavigator c={c} />
@@ -532,7 +552,7 @@ function DialPage({ c }: { c: Ctx }) {
   return (
     <div class="today-page page dial-page">
       <div class="top-bar"><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
-      <AlertsPrompt />
+      <TopPrompt />
       <ArrivalCard />
       <button class="date-header" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? 'Ramadan and Eid dates with their sources' : 'Back to today'}>
         <span class="caps-day accent">{dayLabel(c.offset)}</span>
@@ -640,7 +660,7 @@ function SunPathPage({ c }: { c: Ctx }) {
         <SunPath width={width} height={96} now={now} day={c.day} tz={store.timeZone} />
       </div>
       <SunPlaceChip offset={c.offset} />
-      <AlertsPrompt />
+      <TopPrompt />
       <ArrivalCard />
       <MusafirChip now={now} />
       <DayNavigator c={c} />
@@ -674,7 +694,7 @@ function BandsPage({ c }: { c: Ctx }) {
         {current && next && offset === 0 && (
           <div class="bands-status mono">{store.name(current.prayer, current.time)} now · {short(next.time - now)} until {store.name(next.prayer, next.time)}</div>
         )}
-        <AlertsPrompt />
+        <TopPrompt />
         <ArrivalCard />
       </div>
       <div class="bands-date">
