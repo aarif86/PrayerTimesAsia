@@ -40,7 +40,7 @@
 .alerts-prompt { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 999px; background: color-mix(in srgb, var(--fg) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent); }
 .alerts-prompt .text { flex: 1; font-size: 15px; font-weight: 600; line-height: 1.25; }
-.alerts-prompt .primary-btn { padding: 8px 14px; }
+.alerts-prompt .primary-btn { padding: 8px 14px; text-decoration: none; white-space: nowrap; }
 .alerts-prompt .x { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; opacity: 0.6; flex: none; }
 
 .list-wrap { display: flex; flex-direction: column; touch-action: pan-y; }
