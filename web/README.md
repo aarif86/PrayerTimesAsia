@@ -4,7 +4,7 @@ The web version of **Prayer Times Asia**, the iOS app for Muslims living and tra
 times with their source, qibla, falak (sun-and-shadow) tools and nearby masjids. An installable, offline-capable
 PWA (Preact + TypeScript + Vite), no accounts, no ads, no analytics.
 
-- Live (GitHub Pages): **https://aarif86.github.io/PrayerTimesAsia/** - once Pages is switched on (one click, below).
+- Live (GitHub Pages): **https://aarif86.github.io/PrayerTimesAsia/app/** (the promo page from `site/` is at the root; both move to prayertimes.asia once the domain is set up, see [site/README.md](../site/README.md)).
 - Screenshots: [`docs/screenshots/`](docs/screenshots/) ([contact sheet](docs/screenshots/contact-sheet.png)).
 - Lives in `web/` of the Prayer Times Asia project, next to `ios/` and `android/`; every push to `main` that touches `web/` builds, tests and deploys it.
 
@@ -34,7 +34,7 @@ with `style` = `list | centre | dial | sunPath | bands`, `appearance` = `system 
 ## Masjid screen (`screen/`)
 
 A second page for masjid TVs: the next prayer's countdown, the six times with iqamah, Jumu'ah, Ramadan Imsak and
-notices, with the same official tables and engine as the app. Setup happens on a phone at `screen/#setup`; it gives
+notices, with the same official tables and engine as the app. Live at **https://aarif86.github.io/PrayerTimesAsia/app/screen/**. Setup happens on a phone at `screen/#setup`; it gives
 one link (the settings ride in the `#hash`, never sent anywhere) that the TV opens once and remembers. The screen
 dims during prayer, keeps the TV awake, drifts a few pixels against burn-in and reloads at 3 am.
 Why it works this way: [docs/masjid-screen.md](../docs/masjid-screen.md). Screenshots: [`docs/screenshots/screen/`](docs/screenshots/screen/).

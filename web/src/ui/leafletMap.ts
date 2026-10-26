@@ -5,16 +5,17 @@ import { KAABA } from '../core/geo'
 
 /**
  * OpenStreetMap through Leaflet, loaded only when a map is opened. Tiles come
- * from CARTO's free basemaps (they see the area being looked at, nothing else).
+ * from openstreetmap.org itself, which needs no key (it sees the area being
+ * looked at, nothing else). In dark mode the same tiles are recoloured night-dark.
  */
 export type Leaflet = typeof L
 
 export function createMap(el: HTMLElement, center: Coordinates, dark: boolean, zoom = 14): L.Map {
   const map = L.map(el, { zoomControl: false, attributionControl: true, preferCanvas: false })
     .setView([center.latitude, center.longitude], zoom)
-  L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'rastertiles/voyager'}/{z}/{x}/{y}{r}.png`, {
-    maxZoom: 19, subdomains: 'abcd',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, className: dark ? 'night-tiles' : '',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
   }).addTo(map)
   L.control.zoom({ position: 'bottomright' }).addTo(map)
   map.attributionControl.setPrefix(false)

@@ -489,6 +489,7 @@ function demoPreferences(demo: Demo): Preferences {
   const style = q.get('style') as TodayStyle | null
   if (style && ['list', 'centre', 'dial', 'sunPath', 'bands'].includes(style)) p.todayStyle = style
   if (q.get('alerts') === 'on') { p.notificationsEnabled = true; p.alertsPromptDismissed = true }
+  p.appPromptDismissed = q.get('appprompt') !== 'on'
   if (demo.variant === 'visitor') {
     p.home = { id: 'demo-sydney', name: 'Sydney', countryCode: 'AU', countryName: 'Australia', timeZoneID: 'Australia/Sydney', coordinates: { latitude: -33.8688, longitude: 151.2093 } }
     p.manualPlace = { id: 'demo-kl', name: 'Kuala Lumpur', countryCode: 'MY', countryName: 'Malaysia', timeZoneID: 'Asia/Kuala_Lumpur', coordinates: { latitude: 3.139, longitude: 101.6869 } }

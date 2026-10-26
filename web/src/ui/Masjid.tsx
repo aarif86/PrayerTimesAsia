@@ -24,7 +24,7 @@ export interface PrayerSpace {
 
 type Kind = 'all' | 'masjid' | 'musollah'
 const MUSOLLAH_WORDS = ['musolla', 'musalla', 'musholla', 'surau', 'prayer room', 'prayer space', 'mushola', 'prayer hall']
-const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter']
+const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter']
 
 interface OsmElement { id: number; type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }
 
@@ -60,17 +60,17 @@ async function searchNearby(center: Coordinates): Promise<PrayerSpace[] | null> 
     const cached = sessionStorage.getItem(cacheKey)
     if (cached) return JSON.parse(cached) as PrayerSpace[]
   } catch { /* ignore */ }
-  const q = `[out:json][timeout:25];(nwr["amenity"="place_of_worship"]["religion"="muslim"](around:12000,${lat},${lng}););out center tags 300;`
-  for (const base of OVERPASS) {
-    const r = await fetchOK(`${base}?data=${encodeURIComponent(q)}`, 25000)
-    if (!r) continue
-    try {
-      const spaces = parseOverpass(await r.json(), center)
-      try { sessionStorage.setItem(cacheKey, JSON.stringify(spaces)) } catch { /* ignore */ }
-      return spaces
-    } catch { /* try the next mirror */ }
+  const q = `[out:json][timeout:20];(nwr["amenity"="place_of_worship"]["religion"="muslim"](around:12000,${lat},${lng}););out center tags 300;`
+  const ask = async (base: string) => {
+    const r = await fetchOK(`${base}?data=${encodeURIComponent(q)}`, 20000)
+    if (!r) throw new Error('no answer')
+    return parseOverpass(await r.json(), center)
   }
-  return null
+  // Ask every mirror at once and take the first answer, so one busy or dead
+  // server can't leave the list spinning.
+  const spaces = await Promise.any(OVERPASS.map(ask)).catch(() => null)
+  if (spaces) try { sessionStorage.setItem(cacheKey, JSON.stringify(spaces)) } catch { /* ignore */ }
+  return spaces
 }
 
 function directionsURL(s: PrayerSpace): string {

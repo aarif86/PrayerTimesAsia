@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
+import { NATIVE_APPS } from './src/core/nativeApps'
 
 /**
  * Writes sw.js after the build with the list of files to keep offline, so the
@@ -21,7 +22,7 @@ function serviceWorker(): Plugin {
       const source = `/* Prayer Times Asia service worker (generated) */
 const VERSION = ${JSON.stringify(version)}
 const SHELL = 'ptasia-shell-' + VERSION
-const TILES = 'ptasia-tiles'
+const TILES = 'ptasia-tiles-osm'
 const PRECACHE = ${JSON.stringify([...new Set(precache)])}
 
 self.addEventListener('install', (event) => {
@@ -29,7 +30,7 @@ self.addEventListener('install', (event) => {
 })
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith('ptasia-shell-') && k !== SHELL).map((k) => caches.delete(k))))
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => (k.startsWith('ptasia-shell-') && k !== SHELL) || (k.startsWith('ptasia-tiles') && k !== TILES)).map((k) => caches.delete(k))))
     .then(() => self.clients.claim()))
 })
 
@@ -60,7 +61,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
   // Map tiles: keep the last few hundred for offline use.
-  if (url.hostname.endsWith('basemaps.cartocdn.com')) {
+  if (url.hostname === 'tile.openstreetmap.org') {
     event.respondWith(caches.open(TILES).then((c) => c.match(req).then((hit) => hit || fetch(req).then((r) => {
       if (r.ok) { c.put(req, r.clone()); trimTiles() }
       return r
@@ -83,9 +84,19 @@ self.addEventListener('notificationclick', (event) => {
 
 const root = dirname(fileURLToPath(import.meta.url))
 
+/** Safari's own App Store banner, once the iPhone app has an App Store listing (not on the masjid screen). */
+function appleAppBanner(): Plugin {
+  return {
+    name: 'ptasia-apple-app-banner',
+    transformIndexHtml: (_html, ctx) => NATIVE_APPS.ios.appStoreId && !ctx.path.includes('screen/')
+      ? [{ tag: 'meta', attrs: { name: 'apple-itunes-app', content: `app-id=${NATIVE_APPS.ios.appStoreId}` }, injectTo: 'head' }]
+      : [],
+  }
+}
+
 export default defineConfig({
   base: process.env.BASE_PATH ?? '/PrayerTimesAsia/',
-  plugins: [preact(), serviceWorker()],
+  plugins: [preact(), serviceWorker(), appleAppBanner()],
   build: {
     target: 'es2022', sourcemap: false, chunkSizeWarningLimit: 300,
     // Two pages: the app, and the masjid screen for TVs (screen/).
