@@ -20,6 +20,17 @@ android {
         versionName = "1.0.0"
     }
 
+    // One shared debug key, so every CI test build installs over the last one without uninstalling.
+    // Debug keys are public by design; this one never signs anything for the Play Store.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             // Signing is set up by the owner (see README); CI builds an unsigned release to check R8.

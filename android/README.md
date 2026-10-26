@@ -34,12 +34,23 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :app:recordRoborazziDebug  # screenshots -> app/build/outputs/roborazzi/
 ```
 
-Every push to `main` that touches `android/` runs CI, which uploads the debug APK as the `prayer-times-asia-debug-apk` artifact of the run (Actions tab) and force-pushes the screenshots to the `screenshots-android` branch:
+Every pull request and every push to `main` that touches `android/` runs CI, which uploads the debug APK as the `prayer-times-asia-debug-apk` artifact of the run (Actions tab). On a pull request it also posts (and keeps updating) a comment with a direct download link. Pushes to `main` force-push the screenshots to the `screenshots-android` branch:
 
 ```sh
 git fetch origin screenshots-android
 git show origin/screenshots-android:01-today-list-night.png > today.png
 ```
+
+### Install a test build on your phone
+
+Test builds are signed with the shared debug key in `app/debug.keystore`, so each new one installs over the last and keeps your settings.
+
+1. On the phone, open the pull request on github.com (signed in) and tap **Download the APK** in the *Android test build* comment. Without a PR: Actions → Android → newest green run → *prayer-times-asia-debug-apk*.
+2. It downloads as a `.zip`. Open it in **Files** (or *Downloads*), tap it to extract, then tap the `.apk` inside.
+3. The first time, Android asks to allow installs from that app (Chrome or Files): tap **Settings → Allow from this source**, go back, tap **Install**.
+4. If Play Protect warns about an unknown app, tap **More details → Install anyway**. This is normal for builds that aren't from the Play Store.
+
+If an install fails with *App not installed* or *package conflicts*, an older copy was signed with a different key: uninstall Prayer Times Asia once, then install again.
 
 ### Demo mode (screenshots, store listing)
 
