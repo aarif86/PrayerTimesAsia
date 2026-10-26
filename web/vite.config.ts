@@ -19,7 +19,7 @@ function serviceWorker(): Plugin {
       const source = `/* Prayer Times Asia service worker (generated) */
 const VERSION = ${JSON.stringify(version)}
 const SHELL = 'ptasia-shell-' + VERSION
-const TILES = 'ptasia-tiles'
+const TILES = 'ptasia-tiles-osm'
 const PRECACHE = ${JSON.stringify([...new Set(precache)])}
 
 self.addEventListener('install', (event) => {
@@ -27,7 +27,7 @@ self.addEventListener('install', (event) => {
 })
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith('ptasia-shell-') && k !== SHELL).map((k) => caches.delete(k))))
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => (k.startsWith('ptasia-shell-') && k !== SHELL) || (k.startsWith('ptasia-tiles') && k !== TILES)).map((k) => caches.delete(k))))
     .then(() => self.clients.claim()))
 })
 
@@ -55,7 +55,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
   // Map tiles: keep the last few hundred for offline use.
-  if (url.hostname.endsWith('basemaps.cartocdn.com')) {
+  if (url.hostname === 'tile.openstreetmap.org') {
     event.respondWith(caches.open(TILES).then((c) => c.match(req).then((hit) => hit || fetch(req).then((r) => {
       if (r.ok) { c.put(req, r.clone()); trimTiles() }
       return r
