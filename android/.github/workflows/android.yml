@@ -1,0 +1,93 @@
+name: Android
+
+on:
+  push:
+    branches: [android]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo > build.log
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Core tests (the prayer engine, Falak, Hijri, parsers)
+        run: ./gradlew :core:test 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
+
+      - name: Build the debug APK and an unsigned release (checks R8)
+        run: ./gradlew :app:assembleDebug :app:assembleRelease 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
+
+      - name: App unit tests and JVM screenshots (Robolectric + Roborazzi)
+        run: ./gradlew :app:recordRoborazziDebug 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
+
+      - name: Upload the debug APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prayer-times-asia-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-screenshots
+          path: app/build/outputs/roborazzi/*.png
+          if-no-files-found: ignore
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            core/build/reports/tests/
+            app/build/reports/tests/
+          if-no-files-found: ignore
+
+      - name: Publish screenshots to the screenshots-android branch
+        if: success() && github.ref == 'refs/heads/android'
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          mkdir -p /tmp/shots
+          cp app/build/outputs/roborazzi/*.png /tmp/shots/
+          cd /tmp/shots
+          git init -q -b screenshots-android
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -q -F - <<MSG
+          Android screenshots for ${GITHUB_SHA::7}
+
+          Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_01NdiKGwEktW7nQx1d8AJQww
+          MSG
+          git push -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" screenshots-android
+
+      - name: Error summary
+        if: failure()
+        run: |
+          grep -E "^e: |What went wrong|FAILED|Exception|error:|Error:" -A3 build.log | grep -v "^\s*at " | head -150 || true
+          for f in $(find . -path '*test-results*' -name '*.xml' 2>/dev/null); do
+            grep -l "<failure" "$f" >/dev/null 2>&1 && grep -A8 "<failure" "$f" | head -40
+          done
+          true

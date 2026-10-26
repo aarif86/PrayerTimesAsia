@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The prayer mat line icon, for the status bar. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M6.8,2 H17.2 A1.8,1.8 0 0 1 19,3.8 V17.7 A1.8,1.8 0 0 1 17.2,19.5 H6.8 A1.8,1.8 0 0 1 5,17.7 V3.8 A1.8,1.8 0 0 1 6.8,2 Z"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M8.6,15.5V10.2a3.4,3.4 0 0 1 6.8,0V15.5 M8.6,15.5h6.8"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M7.5,19.5v2.6M10,19.5v2.6M12.5,19.5v2.6M15,19.5v2.6M17,19.5v2.6"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.4"
+        android:strokeLineCap="round" />
+</vector>
