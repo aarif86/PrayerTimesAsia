@@ -12,6 +12,7 @@ So a wrong time in any app fails that app's build.
 | File | What's in it |
 |---|---|
 | `expected-times.json` | **official**: days copied from MUIS / JAKIM timetables (an app may be 0-2 min later, sunrise 0-1 min earlier, never earlier). **exact**: what the apps show, to the minute. Places and method ids are shared by all three apps. |
+| `masjid-links.json` | Links from a masjid screen's QR code ("your masjid" iqamah rules). Every app must read the valid ones exactly as expected and refuse the invalid ones. |
 | `reference-2026.json` | Every day of 2026 for Singapore, Kuala Lumpur and Jakarta from `tools/reference_engine.py` `final_minutes` (minutes after local midnight). Each app must be within 1 minute, and exact on more than 99.5%. |
 
 Adding a day: add it to `official.days` (with its source) or `exact.days`, then

@@ -145,6 +145,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               ))}
             </div>
             <label class="check"><input id="s-showiq" type="checkbox" checked={c.showIqamah} onChange={(e) => set({ showIqamah: (e.target as HTMLInputElement).checked })} /> Also print the iqamah times on the screen (most jemaah only need the prayer times)</label>
+            <label class="check"><input id="s-showqr" type="checkbox" checked={c.showQr} onChange={(e) => set({ showQr: (e.target as HTMLInputElement).checked })} /> Show a QR code that jemaah scan to see these iqamah times in the Prayer Times Asia app</label>
             <label for="s-jumuah">Friday khutbah starts (24-hour, for example 13:00)</label>
             <input id="s-jumuah" value={c.jumuah ?? ''} placeholder="13:00" inputMode="numeric"
               onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); set({ jumuah: isHHMM(v) ? v.padStart(5, '0') : null }) }} />

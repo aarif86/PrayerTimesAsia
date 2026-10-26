@@ -376,6 +376,13 @@ function PrayerList({ c, fill }: { c: Ctx; fill: boolean }) {
   )
 }
 
+/** "Jamaah 1:20 PM", with a countdown between the azan and the iqamah. */
+function jamaahText(day: PrayerDay, p: Prayer, now: number): string | null {
+  const j = day.jamaah[p]
+  if (j == null) return null
+  return day.times[p] <= now && now < j ? `Jamaah ${store.formatted(j)} · in ${short(j - now)}` : `Jamaah ${store.formatted(j)}`
+}
+
 function PrayerRow({ p, t, now, day, isCurrent, next }: { p: Prayer; t: number; now: number; day: PrayerDay; isCurrent: boolean; next: Moment }) {
   const prefs = store.prefs
   const passed = t <= now && !isCurrent
@@ -383,7 +390,7 @@ function PrayerRow({ p, t, now, day, isCurrent, next }: { p: Prayer; t: number; 
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const local = store.localName(p, t)
-  const jamaah = day.jamaah[p]
+  const jamaah = jamaahText(day, p, now)
   const other = day.alternate[p]
   return (
     <div class={`prayer-row ${isCurrent ? 'current' : ''}`} style={{ '--tint': tint(p), '--tint-soft': tint(p, 0.16), '--tint-line': tint(p, 0.45), opacity: passed && !prayed ? 0.55 : 1 }}
@@ -397,7 +404,7 @@ function PrayerRow({ p, t, now, day, isCurrent, next }: { p: Prayer; t: number; 
         </div>
         {isCurrent && <div class="now-tag">NOW</div>}
         {!isCurrent && next && <div class="in-tag mono">in {short(next.time - now)}</div>}
-        {jamaah != null && <div class="extra">Jamaah {store.formatted(jamaah)}</div>}
+        {jamaah && <div class="extra">{jamaah}</div>}
         {other != null && day.alternateSource && <div class="extra alt">{day.alternateSource} {store.formatted(other)}</div>}
       </div>
       <TimeText ms={t} size={27} />
@@ -613,7 +620,7 @@ function DialPrayerLabel({ p, t, now, size, day, isCurrent }: { p: Prayer; t: nu
         {!prayed && prefs.notificationsEnabled && !notifying && isObligatory(p) && <BellOff size={size * 0.026} style={{ opacity: 0.5 }} />}
       </span>
       <TimeText ms={t} size={size * 0.05} weight={isCurrent ? 700 : 600} />
-      {day.jamaah[p] != null && <span style={{ fontSize: `${size * 0.027}px`, opacity: 0.75 }}>Jamaah {store.formatted(day.jamaah[p]!)}</span>}
+      {day.jamaah[p] != null && <span style={{ fontSize: `${size * 0.027}px`, opacity: 0.75 }}>{jamaahText(day, p, now)}</span>}
     </button>
   )
 }
@@ -705,7 +712,7 @@ function BandsPage({ c }: { c: Ctx }) {
         <button aria-label="Next day" onClick={() => c.setOffset(offset + 1)}><ChevronRight size={20} strokeWidth={2.6} /></button>
       </div>
       <div class="bands" {...swipe}>
-        {PRAYERS.map((p) => <PrayerBand p={p} t={shown.times[p]} now={now} isCurrent={offset === 0 && p === current?.prayer}
+        {PRAYERS.map((p) => <PrayerBand p={p} t={shown.times[p]} jamaah={shown.jamaah[p]} now={now} isCurrent={offset === 0 && p === current?.prayer}
           next={offset === 0 && p === next?.prayer ? next : null} />)}
         {blessed.map(([b, t]) => <BlessedBand b={b} t={t} now={now} />)}
       </div>
@@ -717,7 +724,7 @@ function BandsPage({ c }: { c: Ctx }) {
   )
 }
 
-function PrayerBand({ p, t, now, isCurrent, next }: { p: Prayer; t: number; now: number; isCurrent: boolean; next: Moment }) {
+function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: number; jamaah?: number; now: number; isCurrent: boolean; next: Moment }) {
   const prefs = store.prefs
   const notifying = prefs.notificationsEnabled && prefs.notifyPrayers.includes(p)
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
@@ -736,6 +743,7 @@ function PrayerBand({ p, t, now, isCurrent, next }: { p: Prayer; t: number; now:
           {prayed && <CheckCircle2 size={16} />}
         </span>
         {next && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>in {short(next.time - now)}</span>}
+        {isCurrent && jamaah != null && t <= now && now < jamaah && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>Jamaah in {short(jamaah - now)}</span>}
       </span>
       <span class="spacer" />
       <span class="band-time"><span>{parts.time}</span>{parts.suffix && <span class="sfx">{parts.suffix}</span>}</span>

@@ -8,6 +8,7 @@ import { FalakScreen } from './Falak'
 import { ARScreen, LevelSheet } from './FalakTools'
 import { TabFalak, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 import { LivingSky } from './LivingSky'
+import { MasjidLinkSheet } from './MyMasjid'
 import { QiblaScreen } from './Qibla'
 import { SettingsScreen } from './Settings'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
@@ -106,6 +107,7 @@ export function App() {
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}
       {sheet?.kind === 'install' && <InstallSheet />}
       {sheet?.kind === 'credits' && <CreditsSheet />}
+      {s.pendingMasjid && !sheet && <MasjidLinkSheet m={s.pendingMasjid} />}
     </>
   )
 }

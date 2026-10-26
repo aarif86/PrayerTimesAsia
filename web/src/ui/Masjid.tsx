@@ -7,6 +7,7 @@ import { fetchOK } from '../services/storage'
 import { useStore } from '../services/store'
 import { openSheet, Segmented } from './common'
 import { tint } from './Dials'
+import { MyMasjidGroup } from './MyMasjid'
 
 /**
  * Masjids and musollahs (surau, prayer rooms) near the active place, from
@@ -152,6 +153,7 @@ export default function MasjidScreen() {
         </div>
       </div>
       <div class="page" style={{ paddingTop: '14px' }}>
+        <MyMasjidGroup />
         <Segmented value={kind} onChange={setKind} options={[{ value: 'all', label: 'All' }, { value: 'masjid', label: 'Masjid' }, { value: 'musollah', label: 'Musollah' }]} />
         {!place && <Empty title="Choose a place" body="Allow location or pick a city on the Prayer tab." />}
         {place && loading && spaces.length === 0 && <div class="masjid-loading"><Loader2 class="spin" size={22} /> Searching nearby…</div>}

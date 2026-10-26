@@ -2,8 +2,9 @@ import { useEffect, useState } from 'preact/hooks'
 import { computeBlessed, type BlessedTime } from '../core/blessed'
 import { defaultAuthority, type CalendarAnnouncement, type CalendarDataset, type HijriEvent } from '../core/calendarSanad'
 import { computeFor, ordered, type PrayerDay } from '../core/engine'
-import { KAABA } from '../core/geo'
+import { distanceKm, KAABA } from '../core/geo'
 import { isRamadan } from '../core/hijri'
+import { masjidProfile, MY_MASJID_RADIUS_KM, parseMasjidLink, type MasjidLink } from '../core/masjidLink'
 import { methodWithId, type CalculationMethod } from '../core/methods'
 import { musafirStatus, type MusafirRules, type MusafirStatus } from '../core/musafir'
 import { officialSourceFor, sourceLabel, type OfficialSource } from '../core/official'
@@ -44,6 +45,8 @@ class AppStore {
   showJourney = false
   mosques: MosqueDataset = { version: 1, licence: 'CC-BY-4.0', mosques: [] }
   calendar: CalendarDataset = { version: 1, licence: 'CC-BY-4.0', announcements: [] }
+  /** A masjid from a screen's QR code, waiting for the user to say yes. */
+  pendingMasjid: MasjidLink | null = null
   /** Bumped on every change, so views re-read. */
   revision = 0
   private listeners = new Set<() => void>()
@@ -58,6 +61,47 @@ class AppStore {
     if (m?.mosques) this.mosques = m
     const c = readJSON<CalendarDataset>('ptasia.calendar')
     if (c?.announcements) this.calendar = c
+    if (this.demo && new URLSearchParams(location.search).get('masjid') === 'link') this.pendingMasjid = DEMO_MASJID
+    if (typeof location !== 'undefined' && !this.demo) {
+      this.readMasjidLink()
+      window.addEventListener('hashchange', () => { this.readMasjidLink(); this.emit() })
+    }
+  }
+
+  // MARK: Your masjid
+
+  private readMasjidLink(): void {
+    if (location.hash.startsWith('#masjid?')) this.pendingMasjid = parseMasjidLink(location.hash.slice(1))
+  }
+
+  private clearMasjidHash(): void {
+    if (location.hash.startsWith('#masjid')) history.replaceState(null, '', location.pathname + location.search)
+  }
+
+  /** Yes to the masjid from the QR code: its iqamah times show on the Prayer screen from now on. */
+  followMasjid(): void {
+    const m = this.pendingMasjid
+    this.pendingMasjid = null
+    if (!this.demo) this.clearMasjidHash()
+    if (m) this.update((p) => { p.myMasjid = m }); else this.emit()
+  }
+
+  dismissMasjid(): void {
+    this.pendingMasjid = null
+    if (!this.demo) this.clearMasjidHash()
+    this.emit()
+  }
+
+  forgetMasjid(): void {
+    this.update((p) => { p.myMasjid = null })
+  }
+
+  /** Your masjid, when the place shown is within reach of it (not while travelling). */
+  get myMasjidHere(): MasjidLink | null {
+    const m = this.prefs.myMasjid
+    const place = this.activePlace
+    if (!m || !place) return null
+    return distanceKm({ latitude: m.lat, longitude: m.lng }, place.coordinates) <= MY_MASJID_RADIUS_KM ? m : null
   }
 
   // MARK: Change
@@ -211,9 +255,12 @@ class AppStore {
     } else {
       result = { ...computed, grade: this.method.id === 'ummalqura' ? 'A' : 'D' }
     }
-    if (mosque) {
-      result.mosqueName = mosque.name
-      result.jamaah = jamaahTimes(mosque, result, tz, this.isFriday(result.times.dhuhr))
+    // Jamaah: your own masjid first, else a published masjid profile here.
+    const mine = this.myMasjidHere
+    const jamaahFrom = mine ? masjidProfile(mine) : mosque
+    if (jamaahFrom) {
+      result.mosqueName = jamaahFrom.name
+      result.jamaah = jamaahTimes(jamaahFrom, result, tz, this.isFriday(result.times.dhuhr))
     }
     return result
   }
@@ -465,6 +512,13 @@ function parseDemo(): Demo | null {
   }
 }
 
+/** For screenshots only: a made-up masjid in Pasir Ris with typical iqamah gaps. */
+const DEMO_MASJID: MasjidLink = {
+  name: 'Example Masjid, Pasir Ris', lat: 1.3735, lng: 103.9490, tz: 'Asia/Singapore', cc: 'SG',
+  jamaah: { fajr: { after: 15 }, dhuhr: { after: 10 }, asr: { after: 10 }, maghrib: { after: 5 }, isha: { after: 10 } },
+  jumuah: '13:00',
+}
+
 const PASIR_RIS: Place = {
   id: 'demo-pasir-ris', name: 'Pasir Ris', region: null, countryCode: 'SG', countryName: 'Singapore',
   timeZoneID: 'Asia/Singapore', coordinates: { latitude: 1.3721, longitude: 103.9474 },
@@ -490,6 +544,7 @@ function demoPreferences(demo: Demo): Preferences {
   if (style && ['list', 'centre', 'dial', 'sunPath', 'bands'].includes(style)) p.todayStyle = style
   if (q.get('alerts') === 'on') { p.notificationsEnabled = true; p.alertsPromptDismissed = true }
   p.appPromptDismissed = q.get('appprompt') !== 'on'
+  if (q.get('masjid') === 'on') p.myMasjid = DEMO_MASJID
   if (demo.variant === 'visitor') {
     p.home = { id: 'demo-sydney', name: 'Sydney', countryCode: 'AU', countryName: 'Australia', timeZoneID: 'Australia/Sydney', coordinates: { latitude: -33.8688, longitude: 151.2093 } }
     p.manualPlace = { id: 'demo-kl', name: 'Kuala Lumpur', countryCode: 'MY', countryName: 'Malaysia', timeZoneID: 'Asia/Kuala_Lumpur', coordinates: { latitude: 3.139, longitude: 101.6869 } }

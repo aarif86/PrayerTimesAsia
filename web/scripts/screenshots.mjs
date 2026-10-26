@@ -62,13 +62,16 @@ const shots = [
   ['25-calendar-sheet', { style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('.date-main')],
   ['26-places-sheet', { style: 'list', appearance: 'dark', now: NIGHT }, async (p) => { await p.click('.place-chip'); await p.fill('input[type=search]', 'ku') }],
   ['27-style-menu', { style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Prayer screen style"]', { button: 'right' })],
+  ['29-your-masjid-link', { style: 'list', appearance: 'dark', now: NIGHT, masjid: 'link' }],
+  ['30-jamaah-countdown', { style: 'list', appearance: 'system', now: '2026-10-25T12:57:00+08:00', masjid: 'on' }],
+  ['31-masjid-yours', { tab: 'masjid', appearance: 'dark', now: NIGHT, masjid: 'on' }],
   ['28-journey', { demo: 'travel', style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Musafir"]')],
 ]
 
 const feed = process.env.FEED_FILE && existsSync(process.env.FEED_FILE) ? readFileSync(process.env.FEED_FILE, 'utf8') : null
 const overpass = readFileSync(join(root, 'scripts/fixtures/overpass-pasir-ris.json'), 'utf8')
 
-const browser = await chromium.launch()
+const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {})
 const context = await browser.newContext({
   viewport: { width: 393, height: 852 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true,
   locale: 'en-US', timezoneId: 'Asia/Singapore', colorScheme: 'dark',

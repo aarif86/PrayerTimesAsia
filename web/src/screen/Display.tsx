@@ -1,10 +1,12 @@
+import { useMemo } from 'preact/hooks'
+import qrcode from 'qrcode-generator'
 import { rowFor } from '../services/officialTables'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { formatHijri } from '../core/hijri'
 import { HeroDial, SunPath, type DialMark } from '../ui/Dials'
 import { LivingSky } from '../ui/LivingSky'
 import { skyAt } from '../ui/sky'
-import type { ScreenConfig } from './config'
+import { masjidAppLink, type ScreenConfig } from './config'
 import { clockParts, countdown, gregorianDate, name, phaseAt, screenDay, shortLeft, WORDS, type Phase } from './model'
 
 /**
@@ -72,7 +74,8 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
         })}
       </ol>
 
-      <footer class="scr-foot">
+      <footer class={`scr-foot${c.showQr ? ' with-qr' : ''}`}>
+        {c.showQr && <QrCard config={c} caption={w.scan} />}
         <Notice notices={c.notices} now={now} />
         <p class="scr-brand">
           <span class="scr-pill"><b class={`scr-grade g-${sd.day.grade}`}>{sd.day.grade}</b>{sd.source}</span>
@@ -88,6 +91,24 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
         </div>
       )}
     </div>
+  )
+}
+
+function QrCard({ config: c, caption }: { config: ScreenConfig; caption: string }) {
+  const link = masjidAppLink(c)
+  const svg = useMemo(() => {
+    if (!link) return ''
+    const qr = qrcode(0, 'L')
+    qr.addData(link)
+    qr.make()
+    return qr.createSvgTag({ scalable: true, margin: 2 })
+  }, [link])
+  if (!svg) return null
+  return (
+    <figure class="scr-qr">
+      <div class="scr-qr-code" dangerouslySetInnerHTML={{ __html: svg }} />
+      <figcaption>{caption}</figcaption>
+    </figure>
   )
 }
 

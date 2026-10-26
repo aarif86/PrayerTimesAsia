@@ -140,7 +140,7 @@ export interface Words {
   next: string; iqamah: string; azan: string; iqamahIn: string; silence: string; inPrayer: string
   khutbah: string; imsak: string; iftar: string; ends: (n: string) => string; fullScreen: string
   edit: string; source: string; getApp: string; noPlace: string
-  nowTag: string; inTag: (d: string) => string
+  nowTag: string; inTag: (d: string) => string; scan: string
 }
 
 export const WORDS: Record<ScreenLanguage, Words> = {
@@ -149,21 +149,21 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     inPrayer: 'Prayer in progress', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Iftar', ends: (n) => `${n} ends`,
     fullScreen: 'Press OK or click for full screen', edit: 'Edit screen', source: 'Times', getApp: 'Prayer times on your phone',
     noPlace: 'Choose the masjid\'s location to show prayer times.',
-    nowTag: 'Now', inTag: (d) => `in ${d}`,
+    nowTag: 'Now', inTag: (d) => `in ${d}`, scan: 'Scan for iqamah times',
   },
   ms: {
     next: 'Seterusnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Sila senyapkan telefon bimbit anda',
     inPrayer: 'Solat sedang didirikan', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Tamat ${n}`,
     fullScreen: 'Tekan OK atau klik untuk skrin penuh', edit: 'Ubah skrin', source: 'Waktu', getApp: 'Waktu solat di telefon anda',
     noPlace: 'Pilih lokasi masjid untuk memaparkan waktu solat.',
-    nowTag: 'Sekarang', inTag: (d) => `${d} lagi`,
+    nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Imbas untuk waktu iqamah',
   },
   id: {
     next: 'Berikutnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Mohon nonaktifkan nada dering ponsel',
     inPrayer: 'Sholat sedang berlangsung', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Akhir ${n}`,
     fullScreen: 'Tekan OK atau klik untuk layar penuh', edit: 'Ubah layar', source: 'Jadwal', getApp: 'Jadwal sholat di ponsel Anda',
     noPlace: 'Pilih lokasi masjid untuk menampilkan jadwal sholat.',
-    nowTag: 'Sekarang', inTag: (d) => `${d} lagi`,
+    nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Pindai untuk jadwal iqamah',
   },
 }
 
