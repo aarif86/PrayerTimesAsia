@@ -4,7 +4,7 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 
 ## Waiting on you (the owner)
 
-- [ ] **Put the web app online** - GitHub: Settings → Pages → Source: *GitHub Actions*, then Actions → Web → Run workflow. (Or ask to host it on nsd.sg instead.)
+- [ ] **Put the web app online** - GitHub: Settings → Pages → Build and deployment → Source: *GitHub Actions*. The next change to `web/` on main publishes it to https://aarif86.github.io/PrayerTimesAsia/ (or Actions → Web → Run workflow to publish straight away). (Or ask to host it on nsd.sg instead.)
 - [ ] **Try the Android app on a phone** - open a PR, tap *Download the APK* in its Android test build comment, install (steps in android/README.md), report what works.
 - [ ] **Badal Haji order dates** - when orders open and the last day to order for Hajj 1448, so the Badal card can say "orders now open" in season.
 - [ ] **Prayer alerts through Focus (Time Sensitive)** - Apple Developer → Identifiers → com.prayertimesasia.app → tick *Time Sensitive Notifications* → Save. Then tell Claude.
