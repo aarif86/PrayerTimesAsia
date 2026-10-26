@@ -4,7 +4,7 @@ The web version of **Prayer Times Asia**, the iOS app for Muslims living and tra
 times with their source, qibla, falak (sun-and-shadow) tools and nearby masjids. An installable, offline-capable
 PWA (Preact + TypeScript + Vite), no accounts, no ads, no analytics.
 
-- Live (GitHub Pages): **https://aarif86.github.io/PrayerTimesAsia/** - once Pages is switched on (one click, below).
+- Live (GitHub Pages): **https://aarif86.github.io/PrayerTimesAsia/app/** (the promo page from `site/` is at the root; both move to prayertimes.asia once the domain is set up, see [site/README.md](../site/README.md)).
 - Screenshots: [`docs/screenshots/`](docs/screenshots/) ([contact sheet](docs/screenshots/contact-sheet.png)).
 - Lives in `web/` of the Prayer Times Asia project, next to `ios/` and `android/`; every push to `main` that touches `web/` builds, tests and deploys it.
 
