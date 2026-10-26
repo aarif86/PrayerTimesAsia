@@ -49,7 +49,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
         <section class="scr-sun" aria-hidden="true"><SunPath width={1600} height={240} now={now} day={sd.day} tz={tz} /></section>
       )}
 
-      <ol class="scr-grid">
+      <ol class={`scr-grid${c.showIqamah ? '' : ' no-iq'}`}>
         {sd.imsak != null && (
           <li class="scr-cell scr-imsak">
             <span class="scr-name">{w.imsak}</span>
@@ -58,7 +58,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
         )}
         {PRAYERS.map((p) => {
           const on = p === focus
-          const iq = p === 'sunrise' ? undefined : sd.iqamah[p]
+          const iq = p === 'sunrise' || !c.showIqamah ? undefined : sd.iqamah[p]
           const sub = p === 'maghrib' && sd.ramadan ? w.iftar : null
           const passed = isToday && !on && sd.day.times[p] <= now
           return (
@@ -66,7 +66,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
               <i class="scr-bar" />
               <span class="scr-name">{label(p)}{sub && <em> · {sub}</em>}</span>
               <Time ms={sd.day.times[p]} tz={tz} h24={c.h24} />
-              <span class="scr-iq">{iq != null ? <>{p === 'dhuhr' && sd.friday && c.jumuah ? w.khutbah : w.iqamah} <Time ms={iq} tz={tz} h24={c.h24} small /></> : ' '}</span>
+              {c.showIqamah && <span class="scr-iq">{iq != null ? <>{p === 'dhuhr' && sd.friday && c.jumuah ? w.khutbah : w.iqamah} <Time ms={iq} tz={tz} h24={c.h24} small /></> : ' '}</span>}
             </li>
           )
         })}
@@ -102,7 +102,7 @@ function Dial({ sd, now, config: c, label, focus, isToday }: {
   const w = WORDS[c.lang]
   const tz = c.place!.tz
   const nextFajr = screenDay(sd.day.times.dhuhr + 86_400_000, c, rowFor)?.day.times.fajr ?? sd.day.times.fajr + 86_400_000
-  const marks: DialMark[] = PRAYERS.map((p) => ({ id: p, date: sd.day.times[p], extraLine: p !== 'sunrise' && sd.iqamah[p] != null, tint: `var(--t-${p})` }))
+  const marks: DialMark[] = PRAYERS.map((p) => ({ id: p, date: sd.day.times[p], extraLine: c.showIqamah && p !== 'sunrise' && sd.iqamah[p] != null, tint: `var(--t-${p})` }))
   if (sd.imsak != null) marks.push({ id: 'imsak', date: sd.imsak, minor: true })
   return (
     <section class="scr-dialbox">
@@ -111,7 +111,7 @@ function Dial({ sd, now, config: c, label, focus, isToday }: {
           if (m.id === 'imsak') return <div class="scr-dm minor"><span class="scr-dm-name">{w.imsak}</span><Time ms={m.date} tz={tz} h24={c.h24} small /></div>
           const p = m.id as Prayer
           const on = p === focus
-          const iq = p === 'sunrise' ? undefined : sd.iqamah[p]
+          const iq = p === 'sunrise' || !c.showIqamah ? undefined : sd.iqamah[p]
           const passed = isToday && !on && m.date <= now
           return (
             <div class={`scr-dm${on ? ' on' : ''}${passed ? ' passed' : ''}`} style={{ '--tint': `var(--t-${p})` }}>
@@ -148,7 +148,7 @@ function Hero({ phase, now, config: c, label }: { phase: Phase; now: number; con
   }
   if (phase.kind === 'prayer') return <section class="scr-hero" />
   const next = phase.next
-  const iq = next === 'sunrise' ? undefined : phase.day.iqamah[next]
+  const iq = next === 'sunrise' || !c.showIqamah ? undefined : phase.day.iqamah[next]
   const sec = String(Math.floor(now / 1000) % 60).padStart(2, '0')
   return (
     <section class="scr-hero">

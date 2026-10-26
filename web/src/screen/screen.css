@@ -374,3 +374,36 @@ textarea { resize: vertical; }
 select { color-scheme: dark; }
 select option { background-color: #161a36; color: #fff; }
 .scr-look-board .scr-cell .scr-iq .scr-t { font-size: calc(var(--u) * 3.4); }
+
+/* Bigger prayer times: without the iqamah line the times take the space (the times are what people read). */
+.scr-grid.no-iq .scr-cell { gap: calc(var(--u) * 0.4); padding-block: calc(var(--u) * 2.2); }
+.scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 9); font-weight: 700; }
+.scr-grid.no-iq .scr-syuruk .scr-t, .scr-grid.no-iq .scr-imsak .scr-t { font-size: calc(var(--u) * 7); }
+.scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 4); }
+.scr-look-board .scr-grid.no-iq .scr-cell { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name time"; padding-block: calc(var(--u) * 1.2); }
+.scr-look-board .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 7.4); }
+.scr-look-board .scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 4.4); }
+.scr-look-bands .scr-grid.no-iq .scr-cell { grid-template-areas: "name time"; align-items: center; }
+.scr-look-bands .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 9.4); font-weight: 400; }
+.scr-look-bands .scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 5.2); }
+.scr-dm .scr-t { font-size: 38px; }
+.scr-dm-name { font-size: 23px; }
+.scr-next { font-size: calc(var(--u) * 4.6); }
+
+/* Bigger prayer times: without the iqamah line the times take the space (the times are what people read). */
+.scr-grid.no-iq .scr-cell { gap: calc(var(--u) * 0.4); padding-block: calc(var(--u) * 2.2); }
+.scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 9); font-weight: 700; }
+.scr-grid.no-iq .scr-syuruk .scr-t, .scr-grid.no-iq .scr-imsak .scr-t { font-size: calc(var(--u) * 7); }
+.scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 4); }
+.scr-look-board .scr-grid.no-iq .scr-cell { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name time"; padding-block: calc(var(--u) * 1.2); }
+.scr-look-board .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 7.4); }
+.scr-look-board .scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 4.4); }
+.scr-look-bands .scr-grid.no-iq .scr-cell { grid-template-areas: "name time"; align-items: center; }
+.scr-look-bands .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 9.4); font-weight: 400; }
+.scr-look-bands .scr-grid.no-iq .scr-name { font-size: calc(var(--u) * 5.2); }
+.scr-dm .scr-t { font-size: 38px; }
+.scr-dm-name { font-size: 23px; }
+.scr-next { font-size: calc(var(--u) * 4.6); }
+.scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 8.2); }
+.scr-grid.no-iq .scr-cell .scr-t small { font-size: 0.34em; margin-left: 0.12em; }
+.portrait .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 10); }
