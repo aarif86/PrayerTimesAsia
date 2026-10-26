@@ -4,10 +4,13 @@ on:
   push:
     branches: [main]
     paths: ['android/**', '.github/workflows/android.yml']
+  pull_request:
+    paths: ['android/**', '.github/workflows/android.yml']
   workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: android-${{ github.ref }}
@@ -40,13 +43,57 @@ jobs:
       - name: App unit tests and JVM screenshots (Robolectric + Roborazzi)
         run: ./gradlew :app:recordRoborazziDebug 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
 
+      - name: Name the APK after the PR or commit
+        id: apk
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then tag="pr${{ github.event.number }}"; else tag="${GITHUB_SHA::7}"; fi
+          f=app/build/outputs/apk/debug/app-debug.apk
+          [ -f "$f" ] && mv "$f" "app/build/outputs/apk/debug/prayer-times-asia-$tag.apk"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
       - name: Upload the debug APK
+        id: upload-apk
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: prayer-times-asia-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: ignore
+
+      - name: Say where to download the APK
+        if: always() && steps.upload-apk.outputs.artifact-url != ''
+        env:
+          URL: ${{ steps.upload-apk.outputs.artifact-url }}
+        run: |
+          {
+            echo "## Android test build"
+            echo
+            echo "[Download prayer-times-asia-${{ steps.apk.outputs.tag }}.apk]($URL) (a zip; open it on the phone and tap the .apk inside)."
+            echo "Steps: android/README.md → *Install a test build on your phone*."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post the download link on the PR
+        if: >-
+          always() && github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          steps.upload-apk.outputs.artifact-url != ''
+        uses: actions/github-script@v7
+        env:
+          URL: ${{ steps.upload-apk.outputs.artifact-url }}
+          TAG: ${{ steps.apk.outputs.tag }}
+        with:
+          script: |
+            const marker = '<!-- android-test-apk -->';
+            const body = `${marker}\n### 📱 Android test build\n\n` +
+              `[Download the APK](${process.env.URL}) for commit ${context.sha.slice(0, 7)} ` +
+              `(sign in to GitHub on the phone; it downloads as a zip, open it and tap \`prayer-times-asia-${process.env.TAG}.apk\`).\n\n` +
+              `First time? See *Install a test build on your phone* in \`android/README.md\`. Links last 90 days.`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const mine = comments.find(c => c.body && c.body.includes(marker));
+            if (mine) await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            else await github.rest.issues.createComment({ owner, repo, issue_number, body });
 
       - name: Upload screenshots
         if: always()
