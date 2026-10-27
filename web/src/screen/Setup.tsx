@@ -178,6 +178,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               <option value="dial">Day Dial: the whole day as a ring, as in the app</option>
               <option value="sunpath">Sun Path: the sun's arc over the day, as in the app</option>
             </select>
+            <p class="muted small">Have an idea for a new look? <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md" target="_blank" rel="noopener">Send us your design</a>, no coding needed.</p>
             <label for="s-names">Prayer names</label>
             <select id="s-names" value={c.names} onChange={(e) => set({ names: (e.target as HTMLSelectElement).value as NamingStyle })}>
               {NAMING_STYLES.map((n) => <option key={n} value={n}>{NAMING_LABEL[n]}</option>)}

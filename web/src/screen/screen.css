@@ -242,6 +242,7 @@ textarea { resize: vertical; }
 .setup button.primary { background: var(--accent); color: rgba(0, 0, 0, 0.82); border-color: transparent; font-weight: 700; }
 .setup-chosen { margin: 0; }
 .setup-error { color: var(--danger); }
+.setup .muted a { color: var(--accent); }
 .setup-results { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .setup-results button { width: 100%; text-align: left; border: 0; border-radius: 0; display: flex; justify-content: space-between; gap: 12px; background: transparent; }
 .setup-results li + li button { border-top: 1px solid var(--line); }

@@ -1,0 +1,62 @@
+name: New look for the masjid screen
+description: Share an idea, sketch, picture or AI-made mock-up for a new masjid screen look. No coding needed.
+title: "[look] "
+labels: ["design", "screen-look"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping. Anything is welcome: a phone photo of a sketch, a screenshot of a design you made
+        in Canva or Figma, or a page an AI made for you. The guide has a ready-made prompt you can paste into
+        ChatGPT, Claude or Gemini: [Design a new look](https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md).
+
+        We pick looks that are easy to read from the back of the hall and calm during prayer. If yours is chosen we build
+        it into the screen, thank you by name in the changelog (unless you'd rather not), and every masjid can pick it for free.
+  - type: input
+    id: name
+    attributes:
+      label: Name for the look
+      placeholder: e.g. Marble, Lantern, Kampung
+    validations:
+      required: true
+  - type: textarea
+    id: pictures
+    attributes:
+      label: Your design
+      description: Drag pictures, a PDF or a zipped .html file in here. A TV-shaped (landscape) picture is best; add a portrait one too if you have it.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea in a few words
+      description: What should it feel like, and where would it suit? (Dim prayer hall, bright foyer, outside board ...)
+      placeholder: e.g. Warm cream and green like old kampung masjid tiles, for bright foyers.
+    validations:
+      required: true
+  - type: dropdown
+    id: how
+    attributes:
+      label: How did you make it?
+      options:
+        - Drew or described it by hand
+        - Design app (Canva, Figma, Photoshop ...)
+        - Asked an AI with the prompt in the guide
+        - Built it in the code (I will open a pull request)
+        - Something else
+  - type: input
+    id: credit
+    attributes:
+      label: Name to thank in the changelog (optional)
+      placeholder: e.g. Siti from Masjid Al-Islah, or leave empty to stay anonymous
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: Before you send
+      options:
+        - label: The design is my own (or made by an AI for me) and uses no logos, photos or fonts I don't have the right to share.
+          required: true
+        - label: It has no pictures of people or animals, no music symbols and no adverts.
+          required: true
+        - label: I'm happy for it to be used in Prayer Times Asia under the project's open-source licence (MIT).
+          required: true
