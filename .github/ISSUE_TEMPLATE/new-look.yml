@@ -1,7 +1,7 @@
-name: New look for the masjid screen
-description: Share an idea, sketch, picture or AI-made mock-up for a new masjid screen look. No coding needed.
+name: New look for the app or masjid screen
+description: Share an idea, sketch, picture or AI-made mock-up for a new app style or masjid screen look. No coding needed.
 title: "[look] "
-labels: ["design", "screen-look"]
+labels: ["design"]
 body:
   - type: markdown
     attributes:
@@ -11,7 +11,17 @@ body:
         ChatGPT, Claude or Gemini: [Design a new look](https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md).
 
         We pick looks that are easy to read from the back of the hall and calm during prayer. If yours is chosen we build
-        it into the screen, thank you by name in the changelog (unless you'd rather not), and every masjid can pick it for free.
+        it in, thank you by name in the changelog (unless you'd rather not), and everyone can pick it for free.
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where is it for?
+      options:
+        - The app's Prayer screen (phone)
+        - The masjid TV screen
+        - Both
+    validations:
+      required: true
   - type: input
     id: name
     attributes:
@@ -23,14 +33,14 @@ body:
     id: pictures
     attributes:
       label: Your design
-      description: Drag pictures, a PDF or a zipped .html file in here. A TV-shaped (landscape) picture is best; add a portrait one too if you have it.
+      description: Drag pictures, a PDF or a zipped .html file in here. For the app, a light and a dark picture if you can; for the masjid screen, a landscape (TV-shaped) one.
     validations:
       required: true
   - type: textarea
     id: idea
     attributes:
       label: The idea in a few words
-      description: What should it feel like, and where would it suit? (Dim prayer hall, bright foyer, outside board ...)
+      description: What should it feel like, and where would it suit? (Ramadan nights, a dim prayer hall, a bright foyer ...)
       placeholder: e.g. Warm cream and green like old kampung masjid tiles, for bright foyers.
     validations:
       required: true

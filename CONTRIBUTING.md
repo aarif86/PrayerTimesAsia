@@ -27,9 +27,9 @@ goes to the review queue in Firebase). Or use the GitHub issue forms in this rep
 Photos are evidence only and are not republished without the mosque's permission.
 Submitted data is shared under **CC-BY 4.0**.
 
-# Designing a new masjid screen look
+# Designing a new look
 
-Designers, artists and anyone with an idea can suggest the next look for the masjid screen, with or without code:
+Designers, artists and anyone with an idea can suggest the next look for the app's Prayer screen or the masjid screen, with or without code:
 send a sketch, an AI-made mock-up (there is a ready-made prompt), or a pull request.
-See **[Design a new look](docs/design-a-look.md)** and the *New look for the masjid screen* issue form.
+See **[Design a new look](docs/design-a-look.md)** and the *New look for the app or masjid screen* issue form.
 Looks are shared under the project's MIT licence.
