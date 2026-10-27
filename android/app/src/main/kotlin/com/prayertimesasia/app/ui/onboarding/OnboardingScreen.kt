@@ -36,7 +36,7 @@ import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.display
 
 @Composable
-fun OnboardingScreen(state: AppState, chooseCity: () -> Unit) {
+fun OnboardingScreen(state: AppState, bringIn: () -> Unit = {}, chooseCity: () -> Unit) {
     Box(Modifier.fillMaxSize()) {
         LivingSkyBackground(SkyColors.dawn)
         Column(
@@ -65,6 +65,8 @@ fun OnboardingScreen(state: AppState, chooseCity: () -> Unit) {
                     }.padding(vertical = 16.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 Text("Choose a city instead", style = Txt.subheadlineSemibold, color = Palette.primary,
                     modifier = Modifier.clip(CircleShape).clickable(onClick = chooseCity).padding(8.dp))
+                Text("Bring in settings from another phone", style = Txt.footnote, color = Palette.primary.copy(alpha = 0.85f),
+                    modifier = Modifier.clip(CircleShape).clickable(onClick = bringIn).padding(6.dp))
                 Text("No third-party ads. No account. Your location stays on your phone.", style = Txt.caption,
                     color = Palette.primary.copy(alpha = 0.75f))
             }

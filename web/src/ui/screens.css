@@ -307,3 +307,9 @@
 @media (min-width: 700px) {
   .tabbar { bottom: 18px; }
 }
+
+/* Move my settings */
+.move-qr-wrap { display: flex; justify-content: center; }
+.move-qr { width: min(260px, 70vw); aspect-ratio: 1; border-radius: 12px; background: #fff; }
+.move-paste { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 12px; border: 0; background: var(--fill); font-size: 15px; resize: vertical; word-break: break-all; }
+.move-list { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 4px; }

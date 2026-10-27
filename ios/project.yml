@@ -25,7 +25,7 @@ targets:
       path: Generated/Info.plist
       properties:
         CFBundleDisplayName: "Prayer Times Asia"
-        NSCameraUsageDescription: "Falak Mode uses the camera to draw the qibla line and the stick's shadow on the floor in front of you. Nothing is recorded or sent."
+        NSCameraUsageDescription: "Falak Mode uses the camera to draw the qibla line and the stick's shadow on the floor in front of you, and Bring in settings uses it to scan the QR code from your other phone. Nothing is recorded or sent."
         NSLocationWhenInUseUsageDescription: "Your location is used on your phone to calculate prayer times and the qibla direction where you are. It is never sent anywhere."
         UILaunchScreen:
           UIColorName: LaunchBackground

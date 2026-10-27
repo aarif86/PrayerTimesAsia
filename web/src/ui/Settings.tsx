@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks'
-import { BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Smartphone } from 'lucide-preact'
+import { ArrowDownToLine, ArrowRightLeft, BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Smartphone } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
@@ -138,6 +138,15 @@ export function SettingsScreen() {
             <button class="item" onClick={testAlert}><BellRing size={20} /><span class="label">Send a test alert</span></button>
           </>
         )}
+      </Group>
+
+      <Group title="Moving to another phone" foot="Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. It works between the web, iPhone and Android.">
+        <button class="item" onClick={() => openSheet({ kind: 'move-out' })}>
+          <ArrowRightLeft size={20} /><span class="label">Move my settings</span><ChevronRight size={16} class="secondary" />
+        </button>
+        <button class="item" onClick={() => openSheet({ kind: 'move-in' })}>
+          <ArrowDownToLine size={20} /><span class="label">Bring in settings</span><ChevronRight size={16} class="secondary" />
+        </button>
       </Group>
 
       {appOffer && (
