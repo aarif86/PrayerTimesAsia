@@ -148,15 +148,12 @@ function Hero({ phase, now, config: c, label }: { phase: Phase; now: number; con
   }
   if (phase.kind === 'prayer') return <section class="scr-hero" />
   const next = phase.next
-  const iq = next === 'sunrise' || !c.showIqamah ? undefined : phase.day.iqamah[next]
   const sec = String(Math.floor(now / 1000) % 60).padStart(2, '0')
   return (
     <section class="scr-hero">
       <p class="scr-big scr-clockbig">{clock.time}<span class="scr-sec">{sec}</span>{clock.suffix && <small>{clock.suffix}</small>}</p>
       <p class="scr-next" style={{ '--tint': `var(--t-${next})` }}>
         <span class="scr-next-name">{next === 'sunrise' ? w.ends(label('fajr')) : label(next)}</span>
-        <Time ms={phase.at} tz={tz} h24={c.h24} />
-        {iq != null && <span class="scr-next-iq">{next === 'dhuhr' && phase.day.friday && c.jumuah ? w.khutbah : w.iqamah} <Time ms={iq} tz={tz} h24={c.h24} /></span>}
         <span class="scr-in">{w.inTag(shortLeft(phase.at - now))}</span>
       </p>
     </section>
