@@ -92,9 +92,9 @@ fun SettingsScreen(
     openPlaces: () -> Unit,
     openWidgetPreview: () -> Unit,
     openCredits: () -> Unit,
+    listState: LazyListState = rememberLazyListState(),
     openMoveOut: () -> Unit = {},
     openMoveIn: () -> Unit = {},
-    listState: LazyListState = rememberLazyListState(),
 ) {
     val r = state.resolver
     val p = state.prefs
