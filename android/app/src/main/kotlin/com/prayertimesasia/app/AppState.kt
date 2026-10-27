@@ -10,6 +10,7 @@ import com.prayertimesasia.app.data.Directories
 import com.prayertimesasia.app.data.LocationService
 import com.prayertimesasia.app.data.OfficialRepository
 import com.prayertimesasia.app.data.PrefsStore
+import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
 import com.prayertimesasia.core.Appearance
@@ -22,6 +23,7 @@ import com.prayertimesasia.core.TripStop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -234,6 +236,18 @@ class AppState(
         refreshOfficialTimetable()
         scope.launch { directories.refreshIfStale() }
         rescheduleAlerts()
+        countOpen()
+    }
+
+    private val usage by lazy { UsageCounter(context) }
+
+    /** Anonymous count of this open, a few seconds in so the GPS place has usually arrived. */
+    private fun countOpen() {
+        if (!prefs.shareUsage || !prefs.hasOnboarded) return
+        scope.launch {
+            delay(8_000)
+            if (prefs.shareUsage) usage.countOpen(resolver.activePlace)
+        }
     }
 
     /** The day [offset] days from today, or today. */

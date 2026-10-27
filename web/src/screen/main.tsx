@@ -5,6 +5,7 @@ import { useEffect, useState } from 'preact/hooks'
 import { zoned } from '../core/tz'
 import { ensureTable } from '../services/officialTables'
 import { readJSON, writeJSON } from '../services/storage'
+import { countScreenRunning, SCREEN_EVERY_MS } from '../services/usage'
 import { registerServiceWorker } from '../ui/pwa'
 import { configFromHash, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, type ScreenConfig } from './config'
 import { Display } from './Display'
@@ -14,6 +15,7 @@ import { Setup } from './Setup'
 import './screen.css'
 
 const STORAGE = 'ptasia.screen'
+const SCREEN_VERSION = '1.0.0'
 
 /** Screenshot mode: ?demo (an example masjid) and ?now=2026-10-26T16:30:00%2B08:00 (a fixed clock). */
 const query = new URLSearchParams(location.search)
@@ -84,6 +86,18 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
     fetchTables()
     const id = setInterval(fetchTables, 6 * 3_600_000)
     return () => clearInterval(id)
+  }, [config])
+
+  // Anonymous check-in: on start and every six hours, unless the committee turned it off.
+  useEffect(() => {
+    if (fixedNow != null || query.has('demo') || !config.report || !config.place) return
+    const checkIn = () => countScreenRunning(SCREEN_VERSION, {
+      masjid: config.name, city: config.place?.district || config.place?.name || null,
+      countryCode: config.place?.cc ?? null, look: config.look, language: config.lang,
+    })
+    const first = setTimeout(checkIn, 20_000)
+    const id = setInterval(checkIn, SCREEN_EVERY_MS)
+    return () => { clearTimeout(first); clearInterval(id) }
   }, [config])
 
   // Keep the TV awake where the browser allows it; ask again when the page comes back.

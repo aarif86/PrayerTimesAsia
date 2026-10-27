@@ -164,9 +164,11 @@ export function SettingsScreen() {
         </p>
       </Group>
 
-      <Group title="Privacy">
-        <div class="item footnote"><Hand size={18} />No third-party ads, no accounts, no tracking, no analytics.</div>
-        <div class="item footnote"><MapPinOff size={18} />Your location stays in this browser. The place name comes from a built-in list, not a server.</div>
+      <Group title="Privacy" foot={<a href="../privacy.html">Full privacy details</a>}>
+        <div class="item footnote"><Hand size={18} />No third-party ads, no accounts, no tracking across other apps or sites.</div>
+        <div class="item footnote"><MapPinOff size={18} />Your exact location stays in this browser. The place name comes from a built-in list, not a server.</div>
+        <ToggleItem label="Share anonymous usage counts" on={p.shareUsage} onChange={(v) => store.update((x) => { x.shareUsage = v })}
+          sub="Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept." />
         <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (CARTO tiles, Overpass), which see the area you look at.</div>
       </Group>
 

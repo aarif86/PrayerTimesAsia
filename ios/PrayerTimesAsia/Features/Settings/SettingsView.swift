@@ -162,10 +162,15 @@ struct SettingsView: View {
                         .font(.footnote)
                 }
 
-                Section("Privacy") {
-                    Label("No third-party ads, no accounts, no tracking.", systemImage: "hand.raised.fill")
-                    Label("Your location never leaves your phone.", systemImage: "location.slash.fill")
+                Section {
+                    Label("No third-party ads, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
+                    Label("Your exact location never leaves your phone.", systemImage: "location.slash.fill")
                     Label("Nearby masjid search goes through Apple Maps.", systemImage: "map.fill")
+                    Toggle("Share anonymous usage counts", isOn: $model.prefs.shareUsage)
+                } header: {
+                    Text("Privacy")
+                } footer: {
+                    Text("Usage counts tell us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept.")
                 }
                 .font(.footnote)
 

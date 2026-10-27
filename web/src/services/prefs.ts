@@ -51,6 +51,8 @@ export interface Preferences {
   showLocalNames: boolean
   alertsPromptDismissed: boolean
   appPromptDismissed: boolean
+  /** Anonymous usage counts (city and country, never coordinates). See services/usage.ts. */
+  shareUsage: boolean
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -84,6 +86,7 @@ export const DEFAULT_PREFS: Preferences = {
   showLocalNames: true,
   alertsPromptDismissed: false,
   appPromptDismissed: false,
+  shareUsage: true,
 }
 
 const NULLABLE = new Set<keyof Preferences>([

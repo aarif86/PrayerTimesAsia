@@ -9,7 +9,7 @@ import { ARScreen, LevelSheet } from './FalakTools'
 import { TabFalak, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 import { LivingSky } from './LivingSky'
 import { QiblaScreen } from './Qibla'
-import { SettingsScreen } from './Settings'
+import { SettingsScreen, VERSION } from './Settings'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
 import { SKY, skyAt } from './sky'
 import { TodayScreen } from './Today'
@@ -55,7 +55,10 @@ export function App() {
     if (s.prefs.hasOnboarded && s.prefs.useGPS) s.locate()
     s.refreshOfficial()
     void s.refreshData()
-    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); scheduleAlerts() } }
+    // Counted a few seconds in, so the GPS place has usually arrived.
+    const count = () => setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000)
+    count()
+    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); scheduleAlerts(); count() } }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])

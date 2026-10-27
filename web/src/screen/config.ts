@@ -53,6 +53,8 @@ export interface ScreenConfig {
   /** Minutes the screen stays dim after iqamah (prayer in progress). */
   dimMinutes: number
   jumuahDimMinutes: number
+  /** Let Prayer Times Asia count this screen (masjid name, city, look; see services/usage.ts). */
+  report: boolean
 }
 
 export const DEFAULT_CONFIG: ScreenConfig = {
@@ -72,6 +74,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   hijriAdj: 0,
   dimMinutes: 10,
   jumuahDimMinutes: 40,
+  report: true,
 }
 
 /** Shown in the setup preview until the committee chooses the masjid's location. */
@@ -148,6 +151,8 @@ export function sanitize(raw: unknown): ScreenConfig {
   out.hijriAdj = clamp(r.hijriAdj, -2, 2, 0)
   out.dimMinutes = clamp(r.dimMinutes, 0, 30, DEFAULT_CONFIG.dimMinutes)
   out.jumuahDimMinutes = clamp(r.jumuahDimMinutes, 0, 90, DEFAULT_CONFIG.jumuahDimMinutes)
+  // Links made before this setting existed count, like new ones.
+  out.report = r.report !== false
   return out
 }
 

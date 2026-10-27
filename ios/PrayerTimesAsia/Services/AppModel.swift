@@ -363,7 +363,20 @@ final class AppModel {
         Task { await mosques.refreshIfStale() }
         Task { await hijriCalendar.refreshIfStale() }
         scheduleNotifications()
+        countOpen()
     }
+
+    /// Anonymous count of this open, a few seconds in so the GPS place has usually arrived.
+    private func countOpen() {
+        guard prefs.shareUsage, prefs.hasOnboarded, !Self.isDemo else { return }
+        Task {
+            try? await Task.sleep(for: .seconds(8))
+            guard prefs.shareUsage else { return }
+            UsageCounter.countOpen(place: activePlace)
+        }
+    }
+
+    private static var isDemo: Bool { ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") || $0 == "-widget-preview" } }
 
     /// Called when GPS moves. Reverse-geocodes when online; falls back to the
     /// phone's time zone for the country when offline, so times still appear.

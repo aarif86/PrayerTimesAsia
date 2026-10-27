@@ -21,6 +21,21 @@
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
 
+  <!-- Anonymous visitor counts (TelemetryDeck: no cookies, no IP addresses kept). The Web workflow
+       fills in the App ID from config/analytics.json; until then, and for browsers that ask sites
+       not to track (Global Privacy Control), nothing loads. See docs/analytics.md. -->
+  <script>
+    (function () {
+      var id = '__TELEMETRYDECK_APP_ID__';
+      if (!id || id.indexOf('__') === 0 || navigator.globalPrivacyControl) return;
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://cdn.telemetrydeck.com/websdk/telemetrydeck.min.js';
+      s.setAttribute('data-app-id', id);
+      document.head.appendChild(s);
+    })();
+  </script>
+
   <style>
     :root {
       --night: #0b0f2a;
@@ -502,7 +517,7 @@
         </details>
         <details>
           <summary>What happens to my location?</summary>
-          <p>It stays on your phone. There is no account, no tracking and no analytics. The app only asks the official sources for your year's timetable (by zone, never your exact spot).</p>
+          <p>It stays on your phone. There is no account and no tracking across other apps. The app only asks the official sources for your year's timetable (by zone, never your exact spot). To know where people use it, the app sends anonymous counts with just the city and country, and you can turn them off in Settings. <a href="privacy.html">Full privacy details</a>.</p>
         </details>
         <details>
           <summary>Is the musafir guidance a fatwa?</summary>
@@ -526,6 +541,7 @@
     </div>
     <div>
       <a href="app/">Web app</a> ·
+      <a href="privacy.html">Privacy</a> ·
       <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/website/changelog.md">What's new</a> ·
       <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>
     </div>

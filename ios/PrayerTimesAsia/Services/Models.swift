@@ -135,6 +135,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var showLocalNames = true
     /// The "Turn on prayer alerts" bar on the Prayer screen was closed.
     var alertsPromptDismissed = false
+    /// Anonymous usage counts (city and country, never coordinates). See UsageCounter.
+    var shareUsage = true
 
     private static let key = "preferences.v1"
 
@@ -179,6 +181,7 @@ struct Preferences: Codable, Equatable, Sendable {
         musafirEnabled = v(.musafirEnabled, d.musafirEnabled)
         showLocalNames = v(.showLocalNames, d.showLocalNames)
         alertsPromptDismissed = v(.alertsPromptDismissed, d.alertsPromptDismissed)
+        shareUsage = v(.shareUsage, d.shareUsage)
     }
 
     static func load() -> Preferences {

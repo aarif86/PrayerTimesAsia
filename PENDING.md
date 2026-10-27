@@ -11,6 +11,7 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 - [ ] **Badal Haji order dates** - when orders open and the last day to order for Hajj 1448, so the Badal card can say "orders now open" in season.
 - [ ] **Prayer alerts through Focus (Time Sensitive)** - Apple Developer → Identifiers → com.prayertimesasia.app → tick *Time Sensitive Notifications* → Save. Then tell Claude.
 - [ ] **Falak committee review** - send docs/falak-review.md to the falak committee member; their notes go on the board.
+- [ ] **Usage counts (TelemetryDeck)** - sign up free, create one app, paste its App ID into `config/analytics.json` on main. Steps in [docs/analytics.md](docs/analytics.md) (about 5 minutes). Then, in App Store Connect → App Privacy, add the two "not linked, analytics" items listed in docs/app-store.md.
 - [ ] **Google Play account** - US$25 one-time at play.google.com/console (personal or Nasar Pte Ltd).
 - [ ] *(Optional)* Move the repo into a Nasar Pte Ltd GitHub organisation.
 

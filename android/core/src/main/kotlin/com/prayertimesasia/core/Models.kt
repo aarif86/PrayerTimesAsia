@@ -162,6 +162,8 @@ data class Preferences(
     val showMore: Boolean = false,
     /** The Falak shadow stick, centimetres. */
     val stickHeight: Double = 100.0,
+    /** Anonymous usage counts (city and country, never coordinates). See the app's UsageCounter. */
+    val shareUsage: Boolean = true,
 ) {
     fun encode(): String = CoreJson.encodeToString(serializer(), this)
 

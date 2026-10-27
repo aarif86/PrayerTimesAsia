@@ -11,9 +11,9 @@ name: Web
 on:
   push:
     branches: [main]
-    paths: ['web/**', 'site/**', 'testdata/**', '.github/workflows/web.yml']
+    paths: ['web/**', 'site/**', 'testdata/**', 'config/analytics.json', '.github/workflows/web.yml']
   pull_request:
-    paths: ['web/**', 'site/**', 'testdata/**', '.github/workflows/web.yml']
+    paths: ['web/**', 'site/**', 'testdata/**', 'config/analytics.json', '.github/workflows/web.yml']
   workflow_dispatch:
 
 permissions:
@@ -82,6 +82,11 @@ jobs:
           rm -f _site/README.md
           cp -R web/dist _site/app
           sed -i "s#__BASE__#${BASE}#g" _site/404.html
+          # Visitor counts on the promo page: the App ID from config/analytics.json (empty = off).
+          id=$(jq -r 'if .enabled == false then "" else (.telemetryDeckAppID // "") end' config/analytics.json | tr -cd 'A-Za-z0-9-')
+          sed -i "s#__TELEMETRYDECK_APP_ID__#${id}#g" _site/index.html
+          if [ -n "$id" ]; then state=on; else state="off (no App ID in config/analytics.json)"; fi
+          echo "Promo page visitor counts: $state" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Check the build
         env:
           BASE_PATH: ${{ steps.pages.outputs.base }}app/
@@ -95,6 +100,7 @@ jobs:
           test -f _site/app/manifest.webmanifest
           grep -q "${BASE_PATH}assets/" _site/app/index.html
           ! grep -q "__BASE__" _site/404.html
+          ! grep -q "__TELEMETRYDECK_APP_ID__" _site/index.html
           # Every image and page the promo page links to is there.
           for f in $(grep -oE '(src|href)="[^"#:]+"' _site/index.html | sed -E 's/^[a-z]+="//; s/"$//' | sort -u); do
             case "$f" in */) f="${f}index.html" ;; esac
