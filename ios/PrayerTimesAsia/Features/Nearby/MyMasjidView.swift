@@ -39,12 +39,14 @@ struct MasjidLinkSheet: View {
                     .frame(maxWidth: .infinity)
                     .listRowBackground(Color.clear)
                 }
-                Section("Iqamah") {
+                Section {
                     let rows = rules(link, model: model)
                     if rows.isEmpty {
                         Text("This masjid hasn't set its iqamah times yet.").foregroundStyle(.secondary)
                     }
                     ForEach(rows) { r in LabeledContent(r.label, value: r.value) }
+                } header: {
+                    Text("Iqamah")
                 } footer: {
                     if let current = model.prefs.myMasjid, current.name != link.name {
                         Text("This replaces \(current.name).")

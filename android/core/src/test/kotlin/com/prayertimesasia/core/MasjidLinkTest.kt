@@ -35,11 +35,11 @@ class MasjidLinkTest {
     }
 
     @Test fun yourMasjidGivesJamaahNearbyOnly() {
-        val link = MasjidLink.parse("prayertimesasia://masjid?n=Masjid+Ujian&ll=1.3721,103.9474&tz=Asia/Singapore&i=15,13:15,,5,")!
+        val link = MasjidLink.parse("prayertimesasia://masjid?n=Masjid+Ujian&ll=1.3721,103.9474&tz=Asia/Singapore&i=15,13:15,,5,")!!
         val pasirRis = Place(name = "Pasir Ris", countryCode = "SG", countryName = "Singapore",
             timeZoneId = "Asia/Singapore", coordinates = Coordinates(1.3721, 103.9474))
         val r = Resolver(Preferences(useGPS = false, manualPlace = pasirRis, myMasjid = link))
-        val day = r.day(Instant.parse("2026-10-26T04:00:00Z"))!
+        val day = r.day(Instant.parse("2026-10-26T04:00:00Z"))!!
         assertEquals("Masjid Ujian", day.mosqueName)
         assertEquals(day.time(Prayer.FAJR).plusSeconds(15 * 60), day.jamaah[Prayer.FAJR])
         assertEquals(day.time(Prayer.MAGHRIB).plusSeconds(5 * 60), day.jamaah[Prayer.MAGHRIB])
@@ -47,7 +47,7 @@ class MasjidLinkTest {
         assertEquals(13, day.jamaah.getValue(Prayer.DHUHR).atZone(ZoneId.of("Asia/Singapore")).hour)
 
         val kl = pasirRis.copy(name = "Kuala Lumpur", countryCode = "MY", timeZoneId = "Asia/Kuala_Lumpur", coordinates = Coordinates(3.139, 101.6869))
-        val away = Resolver(Preferences(useGPS = false, manualPlace = kl, myMasjid = link)).day(Instant.parse("2026-10-26T04:00:00Z"))!
+        val away = Resolver(Preferences(useGPS = false, manualPlace = kl, myMasjid = link)).day(Instant.parse("2026-10-26T04:00:00Z"))!!
         assertTrue(away.jamaah.isEmpty())
     }
 }
