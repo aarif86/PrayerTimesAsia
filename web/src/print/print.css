@@ -1,0 +1,189 @@
+/* Printable calendars: A4 sheets in millimetres, previewed on screen at the size that fits.
+   The prayer tints are the app's own (screen.css / Theme.swift). */
+
+:root {
+  --font: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-display: "Nunito Variable", ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif;
+  --t-fajr: rgb(98, 128, 204);
+  --t-sunrise: rgb(222, 166, 64);
+  --t-dhuhr: rgb(232, 138, 30);
+  --t-asr: rgb(214, 106, 44);
+  --t-maghrib: rgb(204, 72, 66);
+  --t-isha: rgb(96, 82, 184);
+  --ink: #1c2232;
+  --ink2: #5d6475;
+  --ink3: #9aa0ad;
+  --rule: #e3e1db;
+  --night: #1b2350;
+  --gold: #b9862f;
+  --friday: #fbf2df;
+  --lastten: #eef0fb;
+  --desk: #e9e6df;
+  --panel: #fbfaf7;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--desk); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+
+/* MARK: Page */
+
+.print-page { display: grid; grid-template-columns: 340px 1fr; min-height: 100vh; }
+.controls { background: var(--panel); border-right: 1px solid var(--rule); padding: 24px 20px 32px; display: flex; flex-direction: column; gap: 18px; max-height: 100vh; overflow: auto; position: sticky; top: 0; }
+.controls h1 { font-family: var(--font-display); font-size: 24px; line-height: 1.15; margin: 4px 0 8px; }
+.controls .eyebrow { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+.muted { color: var(--ink2); margin: 0; }
+.small { font-size: 13px; line-height: 1.45; }
+fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+legend { font-weight: 700; font-size: 14px; margin-bottom: 8px; padding: 0; }
+label { font-size: 13px; color: var(--ink2); margin-top: 4px; }
+label.check { display: flex; gap: 8px; align-items: center; color: var(--ink); font-size: 14px; }
+input[type=search], input:not([type]), select { width: 100%; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 10px; background: #fff; font-size: 15px; }
+button { cursor: pointer; }
+.sheet-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sheet-picker button { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--rule); background: #fff; text-align: left; font-size: 14px; font-weight: 600; }
+.sheet-picker button.on { border-color: var(--night); box-shadow: inset 0 0 0 1px var(--night); background: #f1f2fa; }
+.sheet-picker .ico { font-size: 18px; color: var(--gold); }
+.month-picker { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 4px; }
+.month-picker button { width: 40px; height: 40px; border: 0; background: transparent; font-size: 22px; border-radius: 8px; }
+.month-picker button:hover { background: #f1f0ec; }
+button.link { background: none; border: 0; padding: 0; color: var(--night); text-decoration: underline; font-size: 14px; align-self: flex-start; }
+.chosen { margin: 0; font-size: 15px; }
+.results { list-style: none; margin: 0; padding: 0; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: #fff; }
+.results button { display: flex; flex-direction: column; width: 100%; text-align: left; padding: 8px 12px; border: 0; border-bottom: 1px solid var(--rule); background: none; font-size: 15px; }
+.results button span { font-size: 12px; }
+.results li:last-child button { border-bottom: 0; }
+.error { color: #b3261e; font-size: 13px; margin: 0; }
+.primary { background: var(--night); color: #fff; border: 0; border-radius: 14px; padding: 14px 16px; font-weight: 700; font-size: 16px; }
+.primary:disabled { opacity: .45; cursor: default; }
+
+.preview { padding: 32px 24px 64px; display: flex; justify-content: center; align-items: flex-start; overflow: hidden; }
+.preview .paper { zoom: var(--z, 1); box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 12px 40px rgba(40,30,10,.16); }
+
+@media (max-width: 860px) {
+  .print-page { grid-template-columns: 1fr; }
+  .controls { position: static; max-height: none; border-right: 0; border-bottom: 1px solid var(--rule); padding: 20px 16px; }
+  .preview { padding: 16px; }
+}
+
+/* MARK: Paper */
+
+.paper {
+  width: 210mm; height: 297mm; padding: 12mm 12mm 10mm; background: #fff; color: var(--ink);
+  display: flex; flex-direction: column; overflow: hidden; flex: none;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  font-size: 9pt;
+}
+.paper.empty { align-items: center; justify-content: center; color: var(--ink3); font-size: 14pt; }
+
+.sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8mm; }
+.sheet-head .eyebrow { margin: 0; font-size: 9pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+.sheet-head .eyebrow span { color: var(--ink2); font-weight: 600; }
+.sheet-head h1 { margin: 1mm 0 0; font-family: var(--font-display); font-weight: 800; font-size: 30pt; line-height: 1.05; color: var(--night); }
+.hijri-span { margin: 1mm 0 0; font-size: 11pt; color: var(--ink2); }
+.head-moon { width: 16mm; height: 16mm; color: var(--gold); flex: none; transform: rotate(-20deg); }
+.tintbar { display: flex; height: 1.4mm; border-radius: 1mm; overflow: hidden; margin: 5mm 0 3mm; }
+.tintbar i { flex: 1; }
+
+/* Timetables */
+.tt { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tt th { font-size: 8pt; font-weight: 700; color: var(--ink2); text-align: left; padding: 0 1.5mm 1.8mm; border-bottom: .35mm solid var(--ink); white-space: nowrap; }
+.tt th i { display: inline-block; width: 2mm; height: 2mm; border-radius: 50%; margin-right: 1.2mm; vertical-align: .1mm; }
+.tt td { padding: 0 1.5mm; height: calc(206mm / var(--rows, 31)); border-bottom: .2mm solid var(--rule); font-size: 10pt; }
+.tt .c-date { width: 9mm; font-weight: 700; }
+.tt .c-day { width: 15mm; color: var(--ink2); }
+.tt .c-hijri { width: 11mm; color: var(--ink3); }
+.tt .c-time { text-align: right; }
+.tt th.c-time { text-align: right; }
+.tt td.p-sunrise { color: var(--ink3); }
+.tt tr.friday td { background: var(--friday); }
+.tt tr.friday .c-day { color: var(--gold); font-weight: 700; }
+.tt tr.week-start td { border-top: .35mm solid #cfccc4; }
+.tt tr.new-month .c-hijri { color: var(--night); font-weight: 700; }
+
+.sheet-foot { margin-top: auto; padding-top: 4mm; display: flex; align-items: flex-end; justify-content: space-between; gap: 8mm; }
+.sheet-foot .notes p { margin: 0 0 1mm; font-size: 7.5pt; color: var(--ink2); line-height: 1.4; max-width: 125mm; }
+.brand { display: flex; align-items: center; gap: 3mm; flex: none; }
+.brand div { display: flex; flex-direction: column; font-size: 7.5pt; color: var(--ink2); max-width: 30mm; }
+.brand b { font-family: var(--font-display); font-size: 9.5pt; color: var(--night); }
+.qr svg { display: block; width: 100%; height: 100%; }
+
+/* Ramadan */
+.sheet-ramadan .sheet-head h1 { color: var(--night); }
+.lanterns { display: flex; align-items: flex-start; gap: 2mm; color: var(--gold); font-size: 12pt; }
+.sheet-ramadan .tt { margin-top: 6mm; }
+.sheet-ramadan .tt td { height: calc(198mm / var(--rows, 30)); }
+.tt .c-num { width: 8mm; font-weight: 800; color: var(--night); }
+.sheet-ramadan .tt .c-date { width: 17mm; font-weight: 600; }
+.tt .c-imsak { color: var(--ink2); }
+.tt .c-iftar { font-weight: 800; color: var(--maghrib-ink, #a3352f); }
+.tt th.c-iftar { color: var(--t-maghrib); }
+.tt .c-tick { width: 12mm; text-align: center; }
+.tt .box { display: inline-block; width: 4mm; height: 4mm; border: .3mm solid var(--ink3); border-radius: 1mm; vertical-align: middle; }
+.tt tr.last-ten td { background: var(--lastten); }
+.tt tr.last-ten-start td { border-top: .45mm solid var(--night); }
+.last-ten-key { margin: 2.5mm 0 0; font-size: 8pt; color: var(--ink2); display: flex; align-items: center; gap: 2mm; }
+.last-ten-key .swatch { width: 4mm; height: 3mm; background: var(--lastten); border: .2mm solid #cdd1ee; border-radius: .6mm; }
+
+/* MARK: Sticker calendar */
+
+.sheet-stickers { padding: 8mm; }
+.tiles { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(9, 1fr); border-top: .25mm dashed #b8b4aa; border-left: .25mm dashed #b8b4aa; }
+.tile { border-right: .25mm dashed #b8b4aa; border-bottom: .25mm dashed #b8b4aa; padding: 2.2mm 2.6mm; display: flex; flex-direction: column; min-height: 0; position: relative; }
+.tile.friday { background: var(--friday); }
+.tile-top { display: grid; grid-template-columns: auto 1fr; column-gap: 2mm; align-items: baseline; }
+.tile-day { grid-row: span 2; font-family: var(--font-display); font-weight: 800; font-size: 19pt; line-height: 1; color: var(--night); }
+.tile-wd { font-size: 7.5pt; font-weight: 700; line-height: 1.15; }
+.tile.friday .tile-wd { color: var(--gold); }
+.tile-hijri { font-size: 6.5pt; color: var(--ink2); line-height: 1.15; }
+.tile-times { margin: auto 0 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: 2.5mm; row-gap: .5mm; font-variant-numeric: tabular-nums; }
+.tile-times div { display: flex; justify-content: space-between; font-size: 7pt; line-height: 1.25; }
+.tile-times dt { color: var(--ink2); white-space: nowrap; overflow: hidden; }
+.tile-times dt i { display: inline-block; width: 1.5mm; height: 1.5mm; border-radius: 50%; margin-right: .8mm; vertical-align: .2mm; }
+.tile-times dd { margin: 0; font-weight: 700; }
+.tile-times .p-sunrise dd { font-weight: 500; color: var(--ink2); }
+.tile-title { background: var(--night); color: #fff; justify-content: center; gap: .6mm; }
+.tile-title b { font-family: var(--font-display); font-size: 15pt; line-height: 1.05; }
+.tile-title span { font-size: 7pt; opacity: .8; }
+.tile-title .tile-place { font-weight: 700; opacity: 1; color: #f2d79b; }
+.tile-moon { width: 6mm; height: 6mm; color: var(--gold); position: absolute; right: 2.6mm; top: 2.2mm; transform: rotate(-20deg); }
+.tile-qr { flex-direction: row; align-items: center; gap: 2.5mm; font-size: 7pt; color: var(--ink2); }
+.tile-spare { align-items: center; justify-content: center; color: var(--ink3); font-family: var(--font-display); font-size: 7.5pt; font-weight: 700; }
+.tile-spare .tile-moon { position: static; width: 8mm; height: 8mm; margin-bottom: 1mm; opacity: .6; }
+.cut-note { margin: 2mm 0 0; font-size: 7pt; color: var(--ink3); }
+
+/* MARK: Kids' tracker */
+
+.sheet-tracker { padding: 11mm 12mm 9mm; }
+.tracker-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; padding: 5mm 6mm; border-radius: 5mm; background: linear-gradient(120deg, #1b2350, #3a3f8f 60%, #6a4fb0); color: #fff; }
+.tracker-head h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 22pt; line-height: 1.05; }
+.tracker-head p { margin: 1.5mm 0 0; font-size: 10pt; opacity: .85; }
+.name-line { font-size: 10pt; display: flex; align-items: flex-end; gap: 2mm; white-space: nowrap; }
+.name-line span { display: inline-block; width: 45mm; border-bottom: .35mm solid rgba(255,255,255,.8); height: 5mm; }
+.tracker-grid { margin-top: 4mm; display: flex; flex-direction: column; }
+.tr { display: grid; grid-template-columns: 20mm repeat(5, 1fr); align-items: center; height: calc(212mm / var(--rows, 31)); border-bottom: .2mm solid var(--rule); }
+.tr.friday { background: var(--friday); }
+.tr-head { height: 8mm; border-bottom: .35mm solid var(--ink); }
+.tr-head .tr-p { font-family: var(--font-display); font-weight: 800; font-size: 10.5pt; justify-content: center; }
+.tr-date { font-size: 8.5pt; color: var(--ink2); padding-left: 1.5mm; }
+.tr-date b { font-size: 10.5pt; color: var(--ink); margin-right: .8mm; }
+.tr-p { display: flex; align-items: center; justify-content: center; gap: 1.6mm; }
+.dot { width: 4.6mm; height: 4.6mm; border-radius: 50%; border: .5mm solid; background: #fff; flex: none; }
+.tr-p small { font-size: 6.5pt; color: var(--ink3); font-variant-numeric: tabular-nums; width: 7mm; }
+.tracker-foot { margin-top: auto; padding-top: 4mm; display: flex; gap: 5mm; align-items: flex-end; }
+.score { display: flex; flex-direction: column; gap: 1mm; font-size: 8pt; color: var(--ink2); border: .3mm solid var(--rule); border-radius: 3mm; padding: 2.5mm 3.5mm; min-width: 38mm; }
+.score b { font-family: var(--font-display); font-size: 13pt; color: var(--ink); min-height: 6mm; }
+.score.wide { flex: 1; }
+.tracker-foot .brand { margin-left: 2mm; }
+
+/* MARK: Print */
+
+@page { size: A4; margin: 0; }
+@media print {
+  html, body { background: #fff; }
+  .print-page { display: block; }
+  .controls { display: none; }
+  .preview { padding: 0; display: block; }
+  .preview .paper { zoom: 1; box-shadow: none; margin: 0; }
+}

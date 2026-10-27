@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks'
-import { BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Smartphone } from 'lucide-preact'
+import { BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
@@ -91,6 +91,9 @@ export function SettingsScreen() {
         <button class="item" onClick={downloadICS}>
           <Download size={20} /><span class="label">Add the next 30 days to a calendar<span class="sub">An .ics file with an alert at every prayer, for {place?.name ?? 'your place'}</span></span>
         </button>
+        <a class="item" href="print/">
+          <Printer size={20} /><span class="label">Print a prayer calendar<span class="sub">A monthly or Ramadan timetable, a sticker calendar or a kids' prayer tracker</span></span>
+        </a>
       </Group>
 
       <Group title="Prayer names" foot={'Your names stay the same wherever you are: Automatic uses your home country\'s words, or your browser\'s language. When you travel somewhere that uses different words, the local name appears small beside it - "Fajr" with "Subuh" in Kuala Lumpur - so the masjid\'s signs make sense. Spellings follow each authority\'s own timetable.'}>

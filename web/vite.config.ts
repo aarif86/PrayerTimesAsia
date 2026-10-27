@@ -15,7 +15,7 @@ function serviceWorker(): Plugin {
     apply: 'build',
     generateBundle(_options, bundle) {
       const files = Object.keys(bundle).filter((f) => !f.endsWith('.map') && f !== 'sw.js')
-      const precache = ['./', 'index.html', 'screen/', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
+      const precache = ['./', 'index.html', 'screen/', 'print/', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
         'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/badge-96.png',
         ...files.filter((f) => !f.endsWith('.html') && !/\.(woff2?)$/.test(f) || /latin-wght-normal/.test(f))]
       const version = createHash('sha256').update(files.sort().join('|')).digest('hex').slice(0, 12)
@@ -46,10 +46,10 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url)
   // The app itself: cache first (versioned), the page network first so updates arrive.
   if (url.origin === self.location.origin) {
-    // The masjid screen (screen/) is its own page, kept under its own path for offline restarts.
+    // The masjid screen (screen/) and the print page (print/) are their own pages, kept under their own paths for offline restarts.
     if (req.mode === 'navigate') {
-      const screen = url.pathname.includes('/screen/')
-      const key = screen ? 'screen/' : 'index.html'
+      const page = url.pathname.match(/\/(screen|print)\//)
+      const key = page ? page[1] + '/' : 'index.html'
       event.respondWith(fetch(req).then((r) => { const copy = r.clone(); caches.open(SHELL).then((c) => c.put(key, copy)); return r })
         .catch(() => caches.match(key, { ignoreSearch: true }).then((hit) => hit || caches.match('index.html', { ignoreSearch: true }))))
       return
@@ -88,7 +88,7 @@ const root = dirname(fileURLToPath(import.meta.url))
 function appleAppBanner(): Plugin {
   return {
     name: 'ptasia-apple-app-banner',
-    transformIndexHtml: (_html, ctx) => NATIVE_APPS.ios.appStoreId && !ctx.path.includes('screen/')
+    transformIndexHtml: (_html, ctx) => NATIVE_APPS.ios.appStoreId && !ctx.path.includes('screen/') && !ctx.path.includes('print/')
       ? [{ tag: 'meta', attrs: { name: 'apple-itunes-app', content: `app-id=${NATIVE_APPS.ios.appStoreId}` }, injectTo: 'head' }]
       : [],
   }
@@ -99,8 +99,8 @@ export default defineConfig({
   plugins: [preact(), serviceWorker(), appleAppBanner()],
   build: {
     target: 'es2022', sourcemap: false, chunkSizeWarningLimit: 300,
-    // Two pages: the app, and the masjid screen for TVs (screen/).
-    rollupOptions: { input: { main: resolve(root, 'index.html'), screen: resolve(root, 'screen/index.html') } },
+    // Three pages: the app, the masjid screen for TVs (screen/) and printable calendars (print/).
+    rollupOptions: { input: { main: resolve(root, 'index.html'), screen: resolve(root, 'screen/index.html'), print: resolve(root, 'print/index.html') } },
   },
   test: { environment: 'node', include: ['tests/**/*.test.ts'] },
 } as Parameters<typeof defineConfig>[0])
