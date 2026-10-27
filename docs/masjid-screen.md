@@ -31,6 +31,7 @@ and what we took from each.
 - **Unattended running:** keeps the TV awake where the browser allows it, shifts slightly every few minutes against burn-in, reloads at 3 am when online, and remembers its settings after a power cut.
 - **Setup:** a form on a phone (masjid name, place, iqamah per prayer, Jumu'ah time, notices, language). It gives one link to open on the TV, and a live preview.
 - **Portrait or landscape:** the layout follows the screen.
+- **QR code for jemaah:** a small code in the bottom-right corner ("Scan for iqamah times"; on by default, can be turned off in setup). Scanning it opens the web app, which asks before adding the masjid as "your masjid". From then on its iqamah times show as "Jamaah" under each prayer, with a countdown between azan and iqamah, whenever the phone is within 10 km of the masjid. The iPhone and Android apps read the same link (`prayertimesasia://masjid?...`), and the web app offers "Open this in the app". Idea taken from Al-Harameen's QR stickers for mosques.
 
 ## Later (not in this version)
 

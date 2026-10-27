@@ -162,6 +162,8 @@ data class Preferences(
     val showMore: Boolean = false,
     /** The Falak shadow stick, centimetres. */
     val stickHeight: Double = 100.0,
+    /** The masjid whose iqamah times show on the Prayer screen, from its screen's QR code. */
+    val myMasjid: MasjidLink? = null,
 ) {
     fun encode(): String = CoreJson.encodeToString(serializer(), this)
 

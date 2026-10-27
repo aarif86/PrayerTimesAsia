@@ -71,6 +71,14 @@ class Resolver(
     val officialSource: OfficialSource?
         get() = activePlace?.let { Official.source(it, method, prefs.jakimZoneOverride) }
 
+    /** Your masjid, when the place shown is within reach of it (not while travelling). */
+    val myMasjidHere: MasjidLink?
+        get() {
+            val m = prefs.myMasjid ?: return null
+            val place = activePlace ?: return null
+            return if (Geo.distanceKm(m.coordinates, place.coordinates) <= MasjidLink.RADIUS_KM) m else null
+        }
+
     /** The mosque profile (Grade B) covering where you are, if any. */
     val nearbyMosque: MosqueProfile? get() = activePlace?.let { mosques.profile(it.coordinates) }
 
@@ -105,10 +113,12 @@ class Resolver(
         } else {
             result = computed.copy(grade = if (method.id == "ummalqura") SourceGrade.OFFICIAL else SourceGrade.CALCULATED)
         }
-        if (mosque != null) {
+        // Jamaah: your own masjid first, else a published masjid profile here.
+        val jamaahFrom = myMasjidHere?.profile ?: mosque
+        if (jamaahFrom != null) {
             result = result.copy(
-                mosqueName = mosque.name,
-                jamaah = mosque.jamaahTimes(result, zone, isFriday(result.time(Prayer.DHUHR))),
+                mosqueName = jamaahFrom.name,
+                jamaah = jamaahFrom.jamaahTimes(result, zone, isFriday(result.time(Prayer.DHUHR))),
             )
         }
         return result

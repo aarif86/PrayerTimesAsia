@@ -145,6 +145,8 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                         icon = {}) { Text(k.label) }
                 }
             }
+            MyMasjidCard(state)
+            Spacer(Modifier.height(10.dp))
             when {
                 place == null -> Empty("Choose a place", "Allow location or pick a city on the Prayer tab.")
                 loading && spaces.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

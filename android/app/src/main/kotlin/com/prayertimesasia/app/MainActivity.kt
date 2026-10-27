@@ -1,6 +1,7 @@
 package com.prayertimesasia.app
 
 import android.Manifest
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -30,7 +31,13 @@ class MainActivity : ComponentActivity(), Permissions {
         val demo = DemoConfig.from(intent)
         state = if (demo != null) app.demoState(demo) else app.state
         state.permissions = this
+        if (savedInstanceState == null) state.openLink(intent?.dataString)
         setContent { PrayerTimesRoot(state) }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        state.openLink(intent.dataString)
     }
 
     override fun onResume() {

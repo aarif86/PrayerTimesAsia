@@ -13,6 +13,7 @@ import com.prayertimesasia.app.data.PrefsStore
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
 import com.prayertimesasia.core.Appearance
+import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerDay
@@ -63,6 +64,8 @@ class AppState(
     var now by mutableStateOf(fixedNow ?: Instant.now())
     var selectedTab by mutableStateOf(Tab.PRAYER)
     var showJourney by mutableStateOf(false)
+    /** A masjid from a screen's QR code, waiting for the user to say yes. */
+    var pendingMasjid by mutableStateOf<MasjidLink?>(null)
     var locationRequested by mutableStateOf(false)
     var permissions: Permissions? = null
     /** Screenshots: pretend the phone faces the qibla. */
@@ -152,6 +155,20 @@ class AppState(
     }
 
     fun setHome(place: Place) = update { it.copy(home = place) }
+
+    /** prayertimesasia://masjid?... from a masjid screen's QR code (or the web app's "Open in the app"). */
+    fun openLink(uri: String?) {
+        if (uri == null || !uri.startsWith("prayertimesasia:")) return
+        MasjidLink.parse(uri)?.let { pendingMasjid = it }
+    }
+
+    fun followPendingMasjid() {
+        val link = pendingMasjid ?: return
+        pendingMasjid = null
+        update { it.copy(myMasjid = link) }
+    }
+
+    fun forgetMasjid() = update { it.copy(myMasjid = null) }
 
     /** Travel mode: notice a new country, remember when we got here, show the welcome card. */
     private fun arrived(place: Place) {

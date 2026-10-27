@@ -28,6 +28,7 @@ import com.prayertimesasia.app.widget.WidgetModel
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.Coordinates
 import com.prayertimesasia.core.Geo
+import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.PrayerSpace
 import com.prayertimesasia.core.TodayStyle
 import org.junit.Rule
@@ -129,6 +130,15 @@ class ScreenshotTest {
         ).sortedBy { it.distanceKm }
         shoot("09-masjid", d(TodayStyle.LIST, tab = Tab.MASJID))
     }
+    private val masjidLink = MasjidLink.parse(
+        "prayertimesasia://masjid?n=Example+Masjid,+Pasir+Ris&ll=1.3735,103.9490&tz=Asia/Singapore&cc=SG&i=15,10,10,5,10&j=13:00")!!
+
+    @Test fun your_masjid_sheet() = shoot("13-your-masjid-sheet", d(TodayStyle.LIST)) { it.pendingMasjid = masjidLink }
+    @Test fun your_masjid_jamaah() = shoot("13b-your-masjid-jamaah-countdown",
+        d(TodayStyle.LIST, Appearance.LIGHT, java.time.ZonedDateTime.parse("2026-10-25T12:57:00+08:00").toInstant())) {
+        it.update { p -> p.copy(myMasjid = masjidLink) }
+    }
+
     @Test fun settings() = shoot("10-settings", d(TodayStyle.LIST, tab = Tab.SETTINGS))
     @Test fun settings_makers() = shootScreen("10b-settings-makers", d(TodayStyle.LIST, tab = Tab.SETTINGS)) { s ->
         SettingsScreen(s, {}, {}, {}, rememberLazyListState(initialFirstVisibleItemIndex = 11))

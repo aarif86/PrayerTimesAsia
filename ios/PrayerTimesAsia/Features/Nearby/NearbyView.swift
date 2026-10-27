@@ -136,6 +136,9 @@ struct NearbyView: View {
                 .pickerStyle(.segmented)
                 .padding()
 
+                MyMasjidRow()
+                    .padding(.bottom, 8)
+
                 list
             }
             .background(SkyNow())

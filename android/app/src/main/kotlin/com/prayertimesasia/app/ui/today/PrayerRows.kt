@@ -67,6 +67,12 @@ import com.prayertimesasia.core.TimeFormat
 import com.prayertimesasia.core.secondsSince
 import java.time.Instant
 
+/** "Jamaah 1:20 PM", with a countdown between the azan and the iqamah. */
+internal fun jamaahLine(r: com.prayertimesasia.core.Resolver, day: PrayerDay, prayer: Prayer, jamaah: Instant, now: Instant): String {
+    val text = "Jamaah ${r.formatted(jamaah)}"
+    return if (day.time(prayer) <= now && now < jamaah) "$text · in ${TimeFormat.short(jamaah.secondsSince(now))}" else text
+}
+
 val BlessedTime.icon: ImageVector
     get() = when (this) {
         BlessedTime.IMSAK -> Icons.Filled.Restaurant
@@ -167,7 +173,7 @@ private fun PrayerRow(
                         color = prayer.tint)
                 }
                 day.jamaah[prayer]?.let {
-                    Text("Jamaah ${r.formatted(it)}", style = Txt.caption.copy(fontWeight = FontWeight.Medium), color = Palette.primary.copy(alpha = 0.75f))
+                    Text(jamaahLine(r, day, prayer, it, now), style = Txt.caption.copy(fontWeight = FontWeight.Medium), color = Palette.primary.copy(alpha = 0.75f))
                 }
                 val other = day.alternate[prayer]
                 val name = day.alternateSource

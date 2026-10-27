@@ -56,6 +56,7 @@ import com.prayertimesasia.app.ui.falak.FalakScreen
 import com.prayertimesasia.app.ui.falak.LevelScreen
 import com.prayertimesasia.app.ui.journey.JourneyScreen
 import com.prayertimesasia.app.ui.makers.MakersSheetContent
+import com.prayertimesasia.app.ui.masjid.MasjidLinkSheetContent
 import com.prayertimesasia.app.ui.masjid.MasjidScreen
 import com.prayertimesasia.app.ui.onboarding.OnboardingScreen
 import com.prayertimesasia.app.ui.qibla.QiblaScreen
@@ -157,6 +158,9 @@ fun PrayerTimesRoot(state: AppState) {
                 }
             }
             Overlays(state, overlay) { overlay = it }
+            state.pendingMasjid?.let { link ->
+                AppSheet({ state.pendingMasjid = null }) { MasjidLinkSheetContent(state, link) }
+            }
         }
     }
 }

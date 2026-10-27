@@ -28,6 +28,7 @@ struct PrayerTimesAsiaApp: App {
                     model.preferencesChanged(from: old)
                     model.tickSky()
                 }
+                .onOpenURL { model.open(url: $0) }
         }
     }
 }
@@ -58,6 +59,7 @@ struct RootView: View {
             .tint(.primary)
             .onAppear { model.applyDemoTab() }
             .sheet(isPresented: $model.showJourney) { JourneyView() }
+            .sheet(item: $model.pendingMasjid) { MasjidLinkSheet(link: $0) }
             .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-widget-preview"))) {
                 NavigationStack { WidgetPreviewView() }
             }
