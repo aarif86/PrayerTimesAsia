@@ -178,7 +178,7 @@ struct SettingsView: View {
                 Section {
                     Label("No third-party ads, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
                     Label("Your exact location never leaves your phone.", systemImage: "location.slash.fill")
-                    Label("Nearby masjid search goes through Apple Maps.", systemImage: "map.fill")
+                    Label("Nearby masjid search goes through Apple Maps and OpenStreetMap (only the area is sent).", systemImage: "map.fill")
                     Toggle("Share anonymous usage counts", isOn: $model.prefs.shareUsage)
                 } header: {
                     Text("Privacy")
