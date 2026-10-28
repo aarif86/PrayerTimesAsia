@@ -189,6 +189,7 @@ struct SettingsView: View {
                 Section {
                     NavigationLink("Sources & credits") { CreditsView() }
                     Link("Help verify times where you are", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md")!)
+                    Link("Design a new look", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md")!)
                     LabeledContent("Version", value: Bundle.main.appVersion)
                 } footer: {
                     Text("Prayer Times Asia - made for Muslims living and travelling across Asia.")

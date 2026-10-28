@@ -234,6 +234,9 @@ fun SettingsScreen(
                     LinkRow("Help verify times where you are", null) {
                         runCatching { uri.openUri("https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md") }
                     }
+                    LinkRow("Design a new look", null) {
+                        runCatching { uri.openUri("https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md") }
+                    }
                     ValueRow("Version", "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
                 }
             }
