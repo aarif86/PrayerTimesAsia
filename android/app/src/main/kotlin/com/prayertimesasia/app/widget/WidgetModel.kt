@@ -26,6 +26,17 @@ data class WidgetModel(
     val nextTime: String?,
     val zone: java.time.ZoneId,
 ) {
+    /**
+     * Which row carries the live countdown: the next prayer's ("in "), or once the
+     * next is tomorrow's Subuh, the one we are in ("Subuh in ").
+     */
+    fun countdownRow(): Pair<Prayer, String>? {
+        val next = this.next ?: return null
+        if (kotlin.math.abs(day.time(next.first).epochSecond - next.second.epochSecond) < 60) return next.first to "in "
+        val cur = current?.first ?: return null
+        return cur to "$nextName in "
+    }
+
     companion object {
         fun from(r: Resolver, now: Instant, style: TodayStyle = r.prefs.todayStyle): WidgetModel? {
             val place = r.activePlace ?: return null

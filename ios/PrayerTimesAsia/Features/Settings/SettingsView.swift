@@ -157,15 +157,33 @@ struct SettingsView: View {
                     Text("An alert at the exact time of each prayer you choose, plus an early reminder if you like. Worked out on your phone and topped up every time you open the app - nothing comes from a server.")
                 }
 
+                Section {
+                    NavigationLink { MoveOutView() } label: {
+                        Label("Move my settings", systemImage: "arrow.left.arrow.right")
+                    }
+                    NavigationLink { MoveInView() } label: {
+                        Label("Bring in settings", systemImage: "square.and.arrow.down")
+                    }
+                } header: {
+                    Text("Moving to another phone")
+                } footer: {
+                    Text("Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. Works between iPhone, Android and the web. Restoring a new iPhone from an iCloud backup brings them too.")
+                }
+
                 Section("Accuracy") {
                     Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.")
                         .font(.footnote)
                 }
 
-                Section("Privacy") {
-                    Label("No third-party ads, no accounts, no tracking.", systemImage: "hand.raised.fill")
-                    Label("Your location never leaves your phone.", systemImage: "location.slash.fill")
-                    Label("Nearby masjid search goes through Apple Maps.", systemImage: "map.fill")
+                Section {
+                    Label("No third-party ads, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
+                    Label("Your exact location never leaves your phone.", systemImage: "location.slash.fill")
+                    Label("Nearby masjid search goes through Apple Maps and OpenStreetMap (only the area is sent).", systemImage: "map.fill")
+                    Toggle("Share anonymous usage counts", isOn: $model.prefs.shareUsage)
+                } header: {
+                    Text("Privacy")
+                } footer: {
+                    Text("Usage counts tell us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept.")
                 }
                 .font(.footnote)
 
@@ -184,6 +202,7 @@ struct SettingsView: View {
                 Section {
                     NavigationLink("Sources & credits") { CreditsView() }
                     Link("Help verify times where you are", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md")!)
+                    Link("Design a new look", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md")!)
                     LabeledContent("Version", value: Bundle.main.appVersion)
                 } footer: {
                     Text("Prayer Times Asia - made for Muslims living and travelling across Asia.")

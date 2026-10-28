@@ -30,6 +30,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.Map
@@ -91,6 +93,8 @@ fun SettingsScreen(
     openWidgetPreview: () -> Unit,
     openCredits: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
+    openMoveOut: () -> Unit = {},
+    openMoveIn: () -> Unit = {},
 ) {
     val r = state.resolver
     val p = state.prefs
@@ -207,16 +211,23 @@ fun SettingsScreen(
                 }
             }
             item {
+                Section("Moving to another phone", "Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. Works between Android, iPhone and the web. Setting up a new Android phone from your Google backup brings them too.") {
+                    LinkRow("Move my settings", Icons.Filled.SwapHoriz, openMoveOut)
+                    LinkRow("Bring in settings", Icons.Filled.Download, openMoveIn)
+                }
+            }
+            item {
                 Section("Accuracy") {
                     Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.",
                         style = Txt.footnote, color = Palette.primary, modifier = Modifier.padding(16.dp))
                 }
             }
             item {
-                Section("Privacy") {
-                    LabelRow(Icons.Filled.PanTool, "No third-party ads, no accounts, no tracking.")
-                    LabelRow(Icons.Filled.LocationOff, "Your location never leaves your phone.")
+                Section("Privacy", "Usage counts tell us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept.") {
+                    LabelRow(Icons.Filled.PanTool, "No third-party ads, no accounts, no tracking across other apps.")
+                    LabelRow(Icons.Filled.LocationOff, "Your exact location never leaves your phone.")
                     LabelRow(Icons.Filled.Map, "Nearby masjid search sends only the search area to OpenStreetMap.")
+                    SwitchRow("Share anonymous usage counts", p.shareUsage) { on -> state.update { it.copy(shareUsage = on) } }
                 }
             }
             item {
@@ -232,6 +243,9 @@ fun SettingsScreen(
                     LinkRow("Sources & credits", null, openCredits)
                     LinkRow("Help verify times where you are", null) {
                         runCatching { uri.openUri("https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md") }
+                    }
+                    LinkRow("Design a new look", null) {
+                        runCatching { uri.openUri("https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md") }
                     }
                     ValueRow("Version", "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
                 }

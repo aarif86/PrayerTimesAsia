@@ -106,9 +106,10 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
         loading = true
         failed = false
         val found = withContext(Dispatchers.IO) {
-            runCatching {
-                PrayerSpaces.parseOverpass(Http.postForm(PrayerSpaces.OVERPASS_URL, mapOf("data" to PrayerSpaces.overpassQuery(c))), c)
-            }.getOrNull()
+            val query = PrayerSpaces.overpassQuery(c)
+            PrayerSpaces.OVERPASS_URLS.firstNotNullOfOrNull { url ->
+                runCatching { PrayerSpaces.parseOverpass(Http.postForm(url, mapOf("data" to query), timeoutMs = 20_000), c) }.getOrNull()
+            }
         }
         loading = false
         if (found == null) failed = true else {
@@ -145,6 +146,8 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                         icon = {}) { Text(k.label) }
                 }
             }
+            MyMasjidCard(state)
+            Spacer(Modifier.height(10.dp))
             when {
                 place == null -> Empty("Choose a place", "Allow location or pick a city on the Prayer tab.")
                 loading && spaces.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

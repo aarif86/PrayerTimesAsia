@@ -58,18 +58,27 @@ ALSO
 • Prayer reminders, Jumaat on Fridays, Hijri date with ±2 day adjustment, 24-hour time
 
 PRIVATE BY DESIGN
-No third-party ads. No account. No tracking. Your location never leaves your phone.
+No third-party ads. No account. No tracking. Your exact location never leaves your phone.
 
 Musafir guidance is general information, not a fatwa - when unsure, follow your local religious authority.
 
 ## App Privacy (nutrition label)
 
-**Data Not Linked to You** - only if someone submits: *User Content → Photos* and
-*Other User Content* (a mosque timetable photo and what they type), purpose App
-Functionality, not linked to identity, no tracking. Everyone else: nothing collected.
-Location is used on-device only. Network requests: official timetables (year, JAKIM
-zone code or Kemenag regency name), data/mosques.json, Apple Maps search, and
-voluntary submissions. No analytics or crash SDKs.
+**Data Not Linked to You**, none used for tracking:
+- *Usage Data → Product Interaction*, purpose **Analytics**: anonymous app-open
+  counts (UsageCounter.swift, TelemetryDeck), unless the user turns them off in
+  Settings → Privacy.
+- *Location → Coarse Location*, purpose **Analytics**: the city and country of the
+  place in use, sent with those counts. Never coordinates.
+- Only if someone submits: *User Content → Photos* and *Other User Content* (a
+  mosque timetable photo and what they type), purpose App Functionality.
+
+Precise location is used on-device only. Network requests: official timetables (year,
+JAKIM zone code or Kemenag regency name), data/mosques.json, config/analytics.json,
+Apple Maps search, the anonymous counts, and voluntary submissions. No analytics or
+crash SDKs (the counts are a plain HTTPS request). Privacy policy URL:
+https://aarif86.github.io/PrayerTimesAsia/privacy.html (prayertimes.asia/privacy.html
+once the domain is set up).
 
 ## Screenshots
 

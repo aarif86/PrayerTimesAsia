@@ -10,9 +10,11 @@ import com.prayertimesasia.app.data.Directories
 import com.prayertimesasia.app.data.LocationService
 import com.prayertimesasia.app.data.OfficialRepository
 import com.prayertimesasia.app.data.PrefsStore
+import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
 import com.prayertimesasia.core.Appearance
+import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerDay
@@ -22,6 +24,7 @@ import com.prayertimesasia.core.TripStop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -63,6 +66,8 @@ class AppState(
     var now by mutableStateOf(fixedNow ?: Instant.now())
     var selectedTab by mutableStateOf(Tab.PRAYER)
     var showJourney by mutableStateOf(false)
+    /** A masjid from a screen's QR code, waiting for the user to say yes. */
+    var pendingMasjid by mutableStateOf<MasjidLink?>(null)
     var locationRequested by mutableStateOf(false)
     var permissions: Permissions? = null
     /** Screenshots: pretend the phone faces the qibla. */
@@ -153,6 +158,20 @@ class AppState(
 
     fun setHome(place: Place) = update { it.copy(home = place) }
 
+    /** prayertimesasia://masjid?... from a masjid screen's QR code (or the web app's "Open in the app"). */
+    fun openLink(uri: String?) {
+        if (uri == null || !uri.startsWith("prayertimesasia:")) return
+        MasjidLink.parse(uri)?.let { pendingMasjid = it }
+    }
+
+    fun followPendingMasjid() {
+        val link = pendingMasjid ?: return
+        pendingMasjid = null
+        update { it.copy(myMasjid = link) }
+    }
+
+    fun forgetMasjid() = update { it.copy(myMasjid = null) }
+
     /** Travel mode: notice a new country, remember when we got here, show the welcome card. */
     private fun arrived(place: Place) {
         update { prev ->
@@ -234,6 +253,18 @@ class AppState(
         refreshOfficialTimetable()
         scope.launch { directories.refreshIfStale() }
         rescheduleAlerts()
+        countOpen()
+    }
+
+    private val usage by lazy { UsageCounter(context) }
+
+    /** Anonymous count of this open, a few seconds in so the GPS place has usually arrived. */
+    private fun countOpen() {
+        if (!prefs.shareUsage || !prefs.hasOnboarded) return
+        scope.launch {
+            delay(8_000)
+            if (prefs.shareUsage) usage.countOpen(resolver.activePlace)
+        }
     }
 
     /** The day [offset] days from today, or today. */

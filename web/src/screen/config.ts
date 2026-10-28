@@ -1,3 +1,4 @@
+import { masjidQuery } from '../core/masjidLink'
 import type { NamingStyle, Prayer } from '../core/prayer'
 
 /**
@@ -45,6 +46,8 @@ export interface ScreenConfig {
   iqamah: Partial<Record<Obligatory, IqamahRule>>
   /** Print iqamah times beside the azan times (off: the countdown after the azan still runs). */
   showIqamah: boolean
+  /** A QR code worshippers scan to see this masjid's iqamah times in the app. */
+  showQr: boolean
   /** Khutbah starts, "HH:mm"; Friday's Zohor becomes Jumu'ah. */
   jumuah: string | null
   notices: string[]
@@ -53,6 +56,8 @@ export interface ScreenConfig {
   /** Minutes the screen stays dim after iqamah (prayer in progress). */
   dimMinutes: number
   jumuahDimMinutes: number
+  /** Let Prayer Times Asia count this screen (masjid name, city, look; see services/usage.ts). */
+  report: boolean
 }
 
 export const DEFAULT_CONFIG: ScreenConfig = {
@@ -66,12 +71,14 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   look: 'night',
   iqamah: { fajr: { after: 10 }, dhuhr: { after: 10 }, asr: { after: 10 }, maghrib: { after: 5 }, isha: { after: 10 } },
   showIqamah: false,
+  showQr: true,
   jumuah: null,
   notices: [],
   h24: false,
   hijriAdj: 0,
   dimMinutes: 10,
   jumuahDimMinutes: 40,
+  report: true,
 }
 
 /** Shown in the setup preview until the committee chooses the masjid's location. */
@@ -139,6 +146,7 @@ export function sanitize(raw: unknown): ScreenConfig {
     }
   }
   out.showIqamah = r.showIqamah === true
+  out.showQr = r.showQr !== false
   out.jumuah = isHHMM(r.jumuah) ? r.jumuah : null
   if (Array.isArray(r.notices)) {
     out.notices = r.notices.filter((n): n is string => typeof n === 'string')
@@ -148,6 +156,8 @@ export function sanitize(raw: unknown): ScreenConfig {
   out.hijriAdj = clamp(r.hijriAdj, -2, 2, 0)
   out.dimMinutes = clamp(r.dimMinutes, 0, 30, DEFAULT_CONFIG.dimMinutes)
   out.jumuahDimMinutes = clamp(r.jumuahDimMinutes, 0, 90, DEFAULT_CONFIG.jumuahDimMinutes)
+  // Links made before this setting existed count, like new ones.
+  out.report = r.report !== false
   return out
 }
 
@@ -174,4 +184,14 @@ export function decodeConfig(text: string): ScreenConfig | null {
 export function configFromHash(hash: string): ScreenConfig | null {
   const m = /(?:^#|&)c=([A-Za-z0-9_-]+)/.exec(hash)
   return m ? decodeConfig(m[1]) : null
+}
+
+/** The web app with this masjid's iqamah rules, for worshippers to scan (core/masjidLink.ts). */
+export function masjidAppLink(c: ScreenConfig, at: string = location.href): string | null {
+  if (!c.place) return null
+  const app = new URL('../', at.split('#')[0])
+  return `${app.origin}${app.pathname}#${masjidQuery({
+    name: c.name || c.place.name, lat: c.place.lat, lng: c.place.lng, tz: c.place.tz, cc: c.place.cc,
+    jamaah: c.iqamah, jumuah: c.jumuah,
+  })}`
 }

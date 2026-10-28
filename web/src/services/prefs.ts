@@ -1,3 +1,4 @@
+import type { MasjidLink } from '../core/masjidLink'
 import type { Place } from '../core/place'
 import { OBLIGATORY, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
 
@@ -51,6 +52,10 @@ export interface Preferences {
   showLocalNames: boolean
   alertsPromptDismissed: boolean
   appPromptDismissed: boolean
+  /** The masjid whose iqamah times show on the Prayer screen, from its screen's QR code. */
+  myMasjid: MasjidLink | null
+  /** Anonymous usage counts (city and country, never coordinates). See services/usage.ts. */
+  shareUsage: boolean
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -84,11 +89,13 @@ export const DEFAULT_PREFS: Preferences = {
   showLocalNames: true,
   alertsPromptDismissed: false,
   appPromptDismissed: false,
+  myMasjid: null,
+  shareUsage: true,
 }
 
 const NULLABLE = new Set<keyof Preferences>([
   'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'jakimZoneOverride',
-  'lastCountryCode', 'arrivedAt', 'communityAuthority',
+  'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid',
 ])
 
 const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
@@ -117,6 +124,7 @@ export function decodePreferences(raw: unknown): Preferences {
       // Nullable values: accept the right primitive or an object (places).
       if ((key === 'manualPlace' || key === 'home') && !isPlace(v)) continue
       if (key === 'arrivedAt' && typeof v !== 'number') continue
+      if (key === 'myMasjid' && !isMasjid(v)) continue
       if (['methodOverrideID', 'jakimZoneOverride', 'lastCountryCode', 'communityAuthority'].includes(key) && typeof v !== 'string') continue
       ;(out as unknown as Record<string, unknown>)[key] = v
       continue
@@ -131,6 +139,12 @@ export function decodePreferences(raw: unknown): Preferences {
     if (typeof v === typeof d) (out as unknown as Record<string, unknown>)[key] = v
   }
   return out
+}
+
+function isMasjid(v: unknown): v is MasjidLink {
+  const m = v as MasjidLink
+  return !!m && typeof m === 'object' && typeof m.name === 'string' && typeof m.lat === 'number' &&
+    typeof m.lng === 'number' && typeof m.tz === 'string' && !!m.jamaah && typeof m.jamaah === 'object'
 }
 
 function isPlace(v: unknown): v is Place {

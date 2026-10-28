@@ -1,0 +1,94 @@
+{
+  "about": "Move my settings: codes every app must read (see docs/move-settings.md). code = \"PTA1.\" + base64url(raw DEFLATE(JSON of settings)).",
+  "cases": [
+    {
+      "name": "fresh install",
+      "settings": {
+        "v": 1
+      },
+      "code": "PTA1.q1YqU7IyrAUA"
+    },
+    {
+      "name": "Singapore home, two saved places, tracker",
+      "settings": {
+        "v": 1,
+        "useGPS": false,
+        "home": {
+          "name": "Singapore",
+          "countryCode": "SG",
+          "countryName": "Singapore",
+          "timeZoneID": "Asia/Singapore",
+          "lat": 1.3521,
+          "lon": 103.8198
+        },
+        "manualPlace": {
+          "name": "Singapore",
+          "countryCode": "SG",
+          "countryName": "Singapore",
+          "timeZoneID": "Asia/Singapore",
+          "lat": 1.3521,
+          "lon": 103.8198
+        },
+        "savedPlaces": [
+          {
+            "name": "Kuala Lumpur",
+            "region": "Wilayah Persekutuan",
+            "countryCode": "MY",
+            "countryName": "Malaysia",
+            "timeZoneID": "Asia/Kuala_Lumpur",
+            "lat": 3.139,
+            "lon": 101.6869
+          },
+          {
+            "name": "Bandung",
+            "region": "Jawa Barat",
+            "countryCode": "ID",
+            "countryName": "Indonesia",
+            "timeZoneID": "Asia/Jakarta",
+            "lat": -6.9175,
+            "lon": 107.6191,
+            "district": "Kota Bandung"
+          }
+        ],
+        "methodOverrideID": "muis",
+        "asrOverride": "hanafi",
+        "namingOverride": "malay",
+        "use24Hour": true,
+        "hijriAdjustment": -1,
+        "notifyPrayers": [
+          "fajr",
+          "maghrib",
+          "isha"
+        ],
+        "reminderMinutesBefore": 10,
+        "musafirEnabled": true,
+        "musafirThresholdKm": 89,
+        "jakimZoneOverride": "WLY01",
+        "communityAuthority": "MUIS",
+        "appearance": "dark",
+        "todayStyle": "bands",
+        "showOffers": false,
+        "showLocalNames": false,
+        "trackerEnabled": true,
+        "prayedLog": {
+          "2026-10-25": [
+            "fajr",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "2026-10-26": [
+            "fajr",
+            "dhuhr"
+          ]
+        },
+        "excusedDays": [
+          "2026-10-20"
+        ],
+        "wakeUp": "sunriseMinus30"
+      },
+      "code": "PTA1.xZNRT9swEID_Crpnt4vbUdq8lTGxQhmVOoTYhKajvjRuY7s620CE-t8npxCqlT3vKdKdL_f5u_MLPEIuBURP57M55AVWngSUzhDkL2AxfWGu7RI3jgkELFy0gesvTjWZ8_fQ98PDQRv66SxNziCHsdf4aT9bYYBcdvvHPSmgchZymfW7QzkabgUYtBGrWYWL_03i8ZFUA-Ih_9WiXEas8GgazSYyCGBa6lQIt7rCGsujGbGndQwR7QHs1d0B7BVWWHuNH7I2vX63vRrcflf2Ry2t7A6Gg9FWtHinaFW0y32yC3zCo1NkDAdAk7MDoIlVztK_iC5wjRzwDaYz6I7kyXGLc9IdyJEUoLQPrBch-XIhdd9Rbe8FGAqlU9ePxKzV7tcmag8C0PNbGHIo0WKhQaSbabvcy5jkDJrt7X3-5iJDHjim_dUr1mO1ij4YsolPCrAu6KKeMdbEaZJQ4CrZNLgsWT-AAO1LhPtkzGiriK-0jYH8KRVpTXKZCTDRY6H5q8WHitRbv9foj5LJl65Slwby4UjACtfaJHF70LfTu0w2to2JVod6HEPpWIc6bcHNZJ4EbDaEjDbtPijkdZqBU1jPQ12l2ANalUz50j1dF0Vzode3m0JTt8AqzfE9HBgXa_obfJNsqKlbpjfWy3qDjsw6veM9O6qMJe9m8qGrtmhwUHS_FUDPi-hJnWHdKG9PZ6n2Cdd0s4EcfLSsPSXfvp_B9g8"
+    }
+  ]
+}

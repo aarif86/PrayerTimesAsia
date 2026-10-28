@@ -56,9 +56,12 @@ import com.prayertimesasia.app.ui.falak.FalakScreen
 import com.prayertimesasia.app.ui.falak.LevelScreen
 import com.prayertimesasia.app.ui.journey.JourneyScreen
 import com.prayertimesasia.app.ui.makers.MakersSheetContent
+import com.prayertimesasia.app.ui.masjid.MasjidLinkSheetContent
 import com.prayertimesasia.app.ui.masjid.MasjidScreen
 import com.prayertimesasia.app.ui.onboarding.OnboardingScreen
 import com.prayertimesasia.app.ui.qibla.QiblaScreen
+import com.prayertimesasia.app.ui.settings.MoveInContent
+import com.prayertimesasia.app.ui.settings.MoveOutContent
 import com.prayertimesasia.app.ui.settings.SettingsScreen
 import com.prayertimesasia.app.ui.theme.AppIcons
 import com.prayertimesasia.app.ui.theme.BandsPalette
@@ -90,6 +93,8 @@ sealed class Overlay {
     data object Credits : Overlay()
     data object Level : Overlay()
     data object Camera : Overlay()
+    data object MoveOut : Overlay()
+    data object MoveIn : Overlay()
 }
 
 /** The app's theme: dark or light from the sky (Automatic) or as chosen, and the soft night. */
@@ -136,7 +141,7 @@ fun PrayerTimesRoot(state: AppState) {
     if (!state.prefs.hasOnboarded) {
         SkyTheme(state, forceDark = true) {
             Box(Modifier.fillMaxSize()) {
-                OnboardingScreen(state) { overlay = Overlay.Places }
+                OnboardingScreen(state, bringIn = { overlay = Overlay.MoveIn }) { overlay = Overlay.Places }
                 Overlays(state, overlay) { overlay = it }
             }
         }
@@ -157,6 +162,9 @@ fun PrayerTimesRoot(state: AppState) {
                 }
             }
             Overlays(state, overlay) { overlay = it }
+            state.pendingMasjid?.let { link ->
+                AppSheet({ state.pendingMasjid = null }) { MasjidLinkSheetContent(state, link) }
+            }
         }
     }
 }
@@ -170,7 +178,7 @@ fun TabContent(state: AppState, open: (Overlay) -> Unit) {
         Tab.FALAK -> FalakScreen(state, openCamera = { open(Overlay.Camera) }, openLevel = { open(Overlay.Level) })
         Tab.MASJID -> MasjidScreen(state, openAbout = { open(Overlay.About) })
         Tab.SETTINGS -> SettingsScreen(state, openPlaces = { open(Overlay.Places) }, openWidgetPreview = { open(Overlay.WidgetPreview) },
-            openCredits = { open(Overlay.Credits) })
+            openCredits = { open(Overlay.Credits) }, openMoveOut = { open(Overlay.MoveOut) }, openMoveIn = { open(Overlay.MoveIn) })
     }
 }
 
@@ -186,6 +194,8 @@ private fun Overlays(state: AppState, overlay: Overlay?, set: (Overlay?) -> Unit
         Overlay.Credits -> AppSheet(close) { CreditsContent() }
         Overlay.Level -> AppSheet(close) { LevelScreen() }
         Overlay.WidgetPreview -> AppSheet(close) { WidgetPreviewContent(state) }
+        Overlay.MoveOut -> AppSheet(close) { MoveOutContent(state) }
+        Overlay.MoveIn -> AppSheet(close) { MoveInContent(state, close) }
         Overlay.Camera -> Dialog(onDismissRequest = close, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             FalakCameraScreen(state, close)
         }

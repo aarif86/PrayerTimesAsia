@@ -23,6 +23,8 @@ final class AppModel {
     /// Settings opens as a sheet from the gear on Today.
     /// Journey opens as a sheet (from Settings or the musafir chip).
     var showJourney = false
+    /// A masjid from a screen's QR code, waiting for the user to say yes.
+    var pendingMasjid: MasjidLink?
 
     /// `settings` is not a tab; `-tab settings` opens the Settings sheet.
     enum Tab: String, Hashable { case today, qibla, falak, nearby, journey, settings }
@@ -33,6 +35,36 @@ final class AppModel {
     init() {
         prefs = Preferences.load()
         if let demo = Self.demoPreferences() { prefs = demo }
+        if ProcessInfo.processInfo.arguments.contains("-masjid-link") { pendingMasjid = Self.demoMasjid }
+    }
+
+    /// For screenshots only: a made-up masjid in Pasir Ris with typical iqamah gaps.
+    static let demoMasjid = MasjidLink(
+        name: "Example Masjid, Pasir Ris", lat: 1.3735, lng: 103.9490, tz: "Asia/Singapore", cc: "SG",
+        jamaah: ["fajr": .init(after: 15), "dhuhr": .init(after: 10), "asr": .init(after: 10),
+                 "maghrib": .init(after: 5), "isha": .init(after: 10)],
+        jumuah: "13:00")
+
+    // MARK: Your masjid
+
+    /// prayertimesasia://masjid?... from a masjid screen's QR code (or the web app's "Open in the app").
+    func open(url: URL) {
+        guard url.scheme == "prayertimesasia", let link = MasjidLink.parse(url.absoluteString) else { return }
+        pendingMasjid = link
+    }
+
+    func followPendingMasjid() {
+        if let link = pendingMasjid { prefs.myMasjid = link }
+        pendingMasjid = nil
+    }
+
+    func forgetMasjid() { prefs.myMasjid = nil }
+
+    /// Your masjid, when the place shown is within reach of it (not while travelling).
+    var myMasjidHere: MasjidLink? {
+        guard let m = prefs.myMasjid, let place = activePlace,
+              Geo.distanceKm(m.coordinates, place.coordinates) <= MasjidLink.radiusKm else { return nil }
+        return m
     }
 
     /// `-demo` (home in Singapore) or `-demo-travel` (just landed in Hanoi)
@@ -60,6 +92,7 @@ final class AppModel {
         }
         p.appearance = args.contains("-light") ? .light : args.contains("-auto") ? .system : .dark
         p.todayStyle = args.contains("-dial") ? .dial : args.contains("-sunpath") ? .sunPath : args.contains("-centre") ? .centre : args.contains("-bands") ? .bands : args.contains("-sidedial") ? .list : .centre
+        if args.contains("-masjid") { p.myMasjid = demoMasjid }
         if args.contains("-demo-visitor") {
             // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
             p.home = Place(name: "Sydney", region: nil, countryCode: "AU", countryName: "Australia",
@@ -213,9 +246,10 @@ final class AppModel {
             result = computed
             result.grade = method.id == "ummalqura" ? .official : .calculated
         }
-        if let mosque {
-            result.mosqueName = mosque.name
-            result.jamaah = mosque.jamaahTimes(for: result, timeZone: place.timeZone, isFriday: isFriday(result.time(.dhuhr)))
+        // Jamaah: your own masjid first, else a published masjid profile here.
+        if let jamaahFrom = myMasjidHere?.profile ?? mosque {
+            result.mosqueName = jamaahFrom.name
+            result.jamaah = jamaahFrom.jamaahTimes(for: result, timeZone: place.timeZone, isFriday: isFriday(result.time(.dhuhr)))
         }
         return result
     }
@@ -363,7 +397,20 @@ final class AppModel {
         Task { await mosques.refreshIfStale() }
         Task { await hijriCalendar.refreshIfStale() }
         scheduleNotifications()
+        countOpen()
     }
+
+    /// Anonymous count of this open, a few seconds in so the GPS place has usually arrived.
+    private func countOpen() {
+        guard prefs.shareUsage, prefs.hasOnboarded, !Self.isDemo else { return }
+        Task {
+            try? await Task.sleep(for: .seconds(8))
+            guard prefs.shareUsage else { return }
+            UsageCounter.countOpen(place: activePlace)
+        }
+    }
+
+    private static var isDemo: Bool { ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") || $0 == "-widget-preview" } }
 
     /// Called when GPS moves. Reverse-geocodes when online; falls back to the
     /// phone's time zone for the country when offline, so times still appear.

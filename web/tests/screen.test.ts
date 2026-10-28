@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { OfficialSource } from '../src/core/official'
 import { zonedTime } from '../src/core/tz'
-import { configFromHash, DEFAULT_CONFIG, decodeConfig, encodeConfig, parseIqamah, sanitize, type ScreenConfig } from '../src/screen/config'
+import { parseMasjidLink } from '../src/core/masjidLink'
+import { configFromHash, DEFAULT_CONFIG, decodeConfig, encodeConfig, masjidAppLink, parseIqamah, sanitize, type ScreenConfig } from '../src/screen/config'
 import { countdown, phaseAt, screenDay, type Row } from '../src/screen/model'
 
 const TZ = 'Asia/Singapore'
@@ -154,5 +155,24 @@ describe('countdown', () => {
     expect(countdown(0)).toBe('0:00')
     expect(countdown(59_001)).toBe('1:00')
     expect(countdown(3_725_000)).toBe('1:02:05')
+  })
+})
+
+describe('QR code for worshippers', () => {
+  it('is on unless the committee turns it off', () => {
+    expect(DEFAULT_CONFIG.showQr).toBe(true)
+    expect(sanitize({}).showQr).toBe(true)
+    expect(sanitize({ showQr: false }).showQr).toBe(false)
+  })
+
+  it("opens the web app next to the screen with the masjid's iqamah rules", () => {
+    const c = { ...SG, iqamah: { fajr: { after: 15 }, dhuhr: { fixed: '13:15' }, maghrib: { after: 5 } } }
+    const link = masjidAppLink(c, 'https://aarif86.github.io/PrayerTimesAsia/app/screen/#c=abc')!
+    expect(link.startsWith('https://aarif86.github.io/PrayerTimesAsia/app/#masjid?n=Masjid+Ujian&')).toBe(true)
+    expect(parseMasjidLink(link)).toEqual({
+      name: 'Masjid Ujian', lat: 1.3721, lng: 103.9474, tz: TZ, cc: 'SG',
+      jamaah: { fajr: { after: 15 }, dhuhr: { fixed: '13:15' }, maghrib: { after: 5 } }, jumuah: '13:00',
+    })
+    expect(masjidAppLink({ ...SG, place: null }, 'https://x/app/screen/')).toBeNull()
   })
 })

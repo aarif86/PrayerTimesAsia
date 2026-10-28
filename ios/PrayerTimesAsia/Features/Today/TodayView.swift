@@ -764,6 +764,12 @@ struct TodayView: View {
     }
 
     /// "9h 22m", "22m", "45s".
+    /// "Jamaah 1:20 PM", with a countdown between the azan and the iqamah.
+    @MainActor static func jamaahText(_ jamaah: Date, for prayer: Prayer, on day: PrayerDay, now: Date, model: AppModel) -> String {
+        let text = "Jamaah \(model.formatted(jamaah))"
+        return day.time(prayer) <= now && now < jamaah ? "\(text) · in \(short(jamaah.timeIntervalSince(now)))" : text
+    }
+
     static func short(_ seconds: TimeInterval) -> String {
         let s = max(0, Int(seconds.rounded(.up)))
         if s < 60 { return "\(s)s" }
@@ -937,7 +943,7 @@ private struct PrayerList: View {
                         .foregroundStyle(prayer.tint)
                 }
                 if let jamaah = day.jamaah[prayer] {
-                    Text("Jamaah \(model.formatted(jamaah))").font(.caption.weight(.medium)).opacity(0.75)
+                    Text(TodayView.jamaahText(jamaah, for: prayer, on: day, now: now, model: model)).font(.caption.weight(.medium)).opacity(0.75)
                 }
                 if let other = day.alternate[prayer], let name = day.alternateSource {
                     Text("\(name) \(model.formatted(other))")
@@ -1067,7 +1073,7 @@ private struct PrayerMark: View {
                 .lineLimit(1).minimumScaleFactor(0.7)
                 TimeText(parts: model.timeParts(time), size: size * 0.05, weight: isCurrent ? .bold : .semibold)
                 if let jamaah = day.jamaah[prayer] {
-                    Text("Jamaah \(model.formatted(jamaah))").font(.system(size: size * 0.027, weight: .medium)).opacity(0.75)
+                    Text(TodayView.jamaahText(jamaah, for: prayer, on: day, now: now, model: model)).font(.system(size: size * 0.027, weight: .medium)).opacity(0.75)
                 } else if let other = day.alternate[prayer], let source = day.alternateSource {
                     Text("\(source) \(model.formatted(other))")
                         .font(.system(size: size * 0.027, weight: .medium))

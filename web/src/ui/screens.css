@@ -307,3 +307,17 @@
 @media (min-width: 700px) {
   .tabbar { bottom: 18px; }
 }
+
+/* Your masjid (from a masjid screen's QR code) */
+.my-masjid-head { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 8px 16px 0; }
+.my-masjid-head .subhead { max-width: 34ch; line-height: 1.35; }
+.my-masjid-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+.my-masjid-app { text-align: center; margin: 14px 16px 6px; }
+.my-masjid-app a { color: var(--accent); font-weight: 600; }
+.my-masjid-hint { margin: 2px 4px 14px; line-height: 1.4; }
+.my-masjid-row { margin-bottom: 14px; }
+/* Move my settings */
+.move-qr-wrap { display: flex; justify-content: center; }
+.move-qr { width: min(260px, 70vw); aspect-ratio: 1; border-radius: 12px; background: #fff; }
+.move-paste { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 12px; border: 0; background: var(--fill); font-size: 15px; resize: vertical; word-break: break-all; }
+.move-list { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 4px; }

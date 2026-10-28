@@ -15,8 +15,8 @@ import { name, officialSourceForScreen } from './model'
 
 /**
  * The committee's page: fill in the masjid's details on a phone, watch the
- * preview, and get one link to open on the TV. Nothing is sent anywhere; the
- * settings live in the link.
+ * preview, and get one link to open on the TV. The settings live in the link;
+ * the only thing sent is the anonymous check-in below (`report`), if left on.
  */
 export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: number; onOpen: (c: ScreenConfig) => void }) {
   const [c, setC] = useState<ScreenConfig>(initial)
@@ -145,6 +145,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               ))}
             </div>
             <label class="check"><input id="s-showiq" type="checkbox" checked={c.showIqamah} onChange={(e) => set({ showIqamah: (e.target as HTMLInputElement).checked })} /> Also print the iqamah times on the screen (most jemaah only need the prayer times)</label>
+            <label class="check"><input id="s-showqr" type="checkbox" checked={c.showQr} onChange={(e) => set({ showQr: (e.target as HTMLInputElement).checked })} /> Show a QR code that jemaah scan to see these iqamah times in the Prayer Times Asia app</label>
             <label for="s-jumuah">Friday khutbah starts (24-hour, for example 13:00)</label>
             <input id="s-jumuah" value={c.jumuah ?? ''} placeholder="13:00" inputMode="numeric"
               onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); set({ jumuah: isHHMM(v) ? v.padStart(5, '0') : null }) }} />
@@ -178,6 +179,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               <option value="dial">Day Dial: the whole day as a ring, as in the app</option>
               <option value="sunpath">Sun Path: the sun's arc over the day, as in the app</option>
             </select>
+            <p class="muted small">Have an idea for a new look? <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md" target="_blank" rel="noopener">Send us your design</a>, no coding needed.</p>
             <label for="s-names">Prayer names</label>
             <select id="s-names" value={c.names} onChange={(e) => set({ names: (e.target as HTMLSelectElement).value as NamingStyle })}>
               {NAMING_STYLES.map((n) => <option key={n} value={n}>{NAMING_LABEL[n]}</option>)}
@@ -194,6 +196,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <select id="s-hijri" value={String(c.hijriAdj)} onChange={(e) => set({ hijriAdj: +(e.target as HTMLSelectElement).value })}>
               {[-2, -1, 0, 1, 2].map((n) => <option key={n} value={String(n)}>{n > 0 ? `+${n}` : n}</option>)}
             </select>
+            <label class="check"><input id="s-report" type="checkbox" checked={c.report} onChange={(e) => set({ report: (e.target as HTMLInputElement).checked })} /> Let Prayer Times Asia know this screen is running (the masjid's name, city and look, a few times a day, so we can help if something goes wrong)</label>
           </fieldset>
         </form>
 
@@ -217,6 +220,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               <li>Press <b>OK</b> on the remote, or click once, for full screen. That's it: the TV keeps the screen and its settings.</li>
             </ol>
             <p class="muted small">To change something later, come back to this page, make the change and send the new link to the TV again.</p>
+            <p class="muted small">For the notice board: <a href={`../print/#c=${encodeConfig({ ...c, showIqamah: true })}&sheet=month`} target="_blank" rel="noopener">print this month's timetable</a> or the Ramadan timetable, with the same times and iqamah.</p>
             <button type="button" onClick={() => onOpen(c)} disabled={!c.place}>Try the full screen on this device</button>
             <details id="screen-link-box">
               <summary class="muted small">Show the link</summary>

@@ -135,6 +135,10 @@ struct Preferences: Codable, Equatable, Sendable {
     var showLocalNames = true
     /// The "Turn on prayer alerts" bar on the Prayer screen was closed.
     var alertsPromptDismissed = false
+    /// The masjid whose iqamah times show on the Prayer screen, from its screen's QR code.
+    var myMasjid: MasjidLink?
+    /// Anonymous usage counts (city and country, never coordinates). See UsageCounter.
+    var shareUsage = true
 
     private static let key = "preferences.v1"
 
@@ -179,6 +183,8 @@ struct Preferences: Codable, Equatable, Sendable {
         musafirEnabled = v(.musafirEnabled, d.musafirEnabled)
         showLocalNames = v(.showLocalNames, d.showLocalNames)
         alertsPromptDismissed = v(.alertsPromptDismissed, d.alertsPromptDismissed)
+        myMasjid = v(.myMasjid, d.myMasjid)
+        shareUsage = v(.shareUsage, d.shareUsage)
     }
 
     static func load() -> Preferences {

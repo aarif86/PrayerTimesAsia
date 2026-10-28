@@ -379,7 +379,7 @@ private fun PrayerMark(state: AppState, day: PrayerDay, prayer: Prayer, time: In
             val jamaah = day.jamaah[prayer]
             val other = day.alternate[prayer]
             if (jamaah != null) {
-                Text("Jamaah ${r.formatted(jamaah)}", fontSize = (size.value * 0.027f).sp, color = Palette.primary.copy(alpha = 0.75f))
+                Text(jamaahLine(r, day, prayer, jamaah, now), fontSize = (size.value * 0.027f).sp, color = Palette.primary.copy(alpha = 0.75f))
             } else if (other != null && day.alternateSource != null) {
                 Text("${day.alternateSource} ${r.formatted(other)}", fontSize = (size.value * 0.027f).sp, maxLines = 1,
                     color = com.prayertimesasia.core.SourceGrade.MASJID.tint)

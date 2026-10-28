@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// The large widget's face, in each of the Prayer screen's styles: a mini
-/// version of the list, the Day Dial, the Sun Path or the Colour Bands.
+/// version of the list, the Day Dial, the Sun Path or the Colour Bands. Every
+/// style shows how long until the next prayer.
 /// Shared so the app can show it too (Settings preview, CI).
 struct TimetableCard: View {
     let snapshot: WidgetSnapshot?
@@ -34,11 +35,13 @@ struct TimetableCard: View {
 
     private func list(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
         let current = s.current(at: date)?.prayer
+        let countdown = countdownRow(s, day: day)
         return VStack(spacing: 8) {
             header(s, day: day)
             VStack(spacing: 2) {
                 ForEach(Prayer.allCases) { prayer in
-                    row(s, prayer: prayer, time: day.time(prayer), isCurrent: prayer == current)
+                    row(s, prayer: prayer, time: day.time(prayer), isCurrent: prayer == current,
+                        countdown: countdown?.prayer == prayer ? countdown : nil)
                 }
             }
             .padding(5)
@@ -158,6 +161,7 @@ struct TimetableCard: View {
     /// Each prayer a full-width band, like the classic Singapore timetable.
     private func bands(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
         let current = s.current(at: date)?.prayer
+        let countdown = countdownRow(s, day: day)
         return VStack(spacing: 0) {
             VStack(spacing: 1) {
                 Text(Hijri.format(date, timeZone: s.timeZone, style: s.naming, adjustment: s.hijriAdjustment ?? 0))
@@ -173,12 +177,20 @@ struct TimetableCard: View {
                 let parts = timeParts(s, time)
                 let isCurrent = prayer == current
                 HStack(alignment: .firstTextBaseline) {
-                    Text(s.name(prayer, at: time)).font(.system(size: 21, weight: .bold))
-                    if isCurrent {
-                        Text("NOW").font(.system(size: 10, weight: .heavy))
-                            .padding(.horizontal, 6).padding(.vertical, 2)
-                            .background(.white.opacity(0.25), in: Capsule())
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(s.name(prayer, at: time)).font(.system(size: 21, weight: .bold))
+                            if isCurrent {
+                                Text("NOW").font(.system(size: 10, weight: .heavy))
+                                    .padding(.horizontal, 6).padding(.vertical, 2)
+                                    .background(.white.opacity(0.25), in: Capsule())
+                            }
+                        }
+                        if let countdown, countdown.prayer == prayer {
+                            countdownText(countdown).font(.system(size: 12, weight: .semibold)).opacity(0.9)
+                        }
                     }
+                    .lineLimit(1)
                     Spacer()
                     Text(parts.time).font(.system(size: 25, weight: .light)).monospacedDigit()
                     if let suffix = parts.suffix { Text(suffix).font(.system(size: 15, weight: .light)) }
@@ -227,14 +239,24 @@ struct TimetableCard: View {
         }
     }
 
-    private func row(_ s: WidgetSnapshot, prayer: Prayer, time: Date, isCurrent: Bool) -> some View {
+    private func row(_ s: WidgetSnapshot, prayer: Prayer, time: Date, isCurrent: Bool,
+                     countdown: Countdown?) -> some View {
         let parts = timeParts(s, time)
         let passed = time <= date && !isCurrent
         return HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 0) {
                 Text(s.name(prayer, at: time)).font(.system(size: 16, weight: .semibold))
-                if isCurrent {
-                    Text("NOW").font(.system(size: 9, weight: .heavy)).foregroundStyle(prayer.tint)
+                if isCurrent || countdown != nil {
+                    HStack(spacing: 5) {
+                        if isCurrent {
+                            Text("NOW").font(.system(size: 9, weight: .heavy)).foregroundStyle(prayer.tint)
+                        }
+                        if let countdown {
+                            countdownText(countdown).font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(Color(red: 0.97, green: 0.74, blue: 0.56))
+                        }
+                    }
+                    .lineLimit(1)
                 }
             }
             Spacer(minLength: 4)
@@ -260,6 +282,22 @@ struct TimetableCard: View {
             Capsule().fill(prayer.tint.opacity(isCurrent ? 1 : 0.6)).frame(width: 3).padding(.vertical, 10).offset(x: 2)
         }
         .opacity(passed ? 0.6 : 1)
+    }
+
+    typealias Countdown = (prayer: Prayer, label: String, until: Date)
+
+    /// Which row carries the live "in 1:23:45": the next prayer's, or once the
+    /// next is tomorrow's Subuh, the one we are in ("Subuh in 7:12:03").
+    private func countdownRow(_ s: WidgetSnapshot, day: PrayerDay) -> Countdown? {
+        guard let next = s.next(after: date) else { return nil }
+        if abs(day.time(next.prayer).timeIntervalSince(next.time)) < 60 { return (next.prayer, "in", next.time) }
+        guard let current = s.current(at: date)?.prayer else { return nil }
+        return (current, "\(s.name(next.prayer, at: next.time)) in", next.time)
+    }
+
+    /// Ticks by itself between timeline entries.
+    private func countdownText(_ c: Countdown) -> Text {
+        Text("\(c.label) ") + Text(timerInterval: date...max(date, c.until), countsDown: true).monospacedDigit()
     }
 
     private func timeParts(_ s: WidgetSnapshot, _ date: Date) -> (time: String, suffix: String?) {

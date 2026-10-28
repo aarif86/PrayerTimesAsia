@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks'
-import { BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Smartphone } from 'lucide-preact'
+import { ArrowDownToLine, ArrowRightLeft, BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
@@ -91,6 +91,9 @@ export function SettingsScreen() {
         <button class="item" onClick={downloadICS}>
           <Download size={20} /><span class="label">Add the next 30 days to a calendar<span class="sub">An .ics file with an alert at every prayer, for {place?.name ?? 'your place'}</span></span>
         </button>
+        <a class="item" href="print/">
+          <Printer size={20} /><span class="label">Print a prayer calendar<span class="sub">A monthly or Ramadan timetable, a sticker calendar or a kids' prayer tracker</span></span>
+        </a>
       </Group>
 
       <Group title="Prayer names" foot={'Your names stay the same wherever you are: Automatic uses your home country\'s words, or your browser\'s language. When you travel somewhere that uses different words, the local name appears small beside it - "Fajr" with "Subuh" in Kuala Lumpur - so the masjid\'s signs make sense. Spellings follow each authority\'s own timetable.'}>
@@ -140,6 +143,15 @@ export function SettingsScreen() {
         )}
       </Group>
 
+      <Group title="Moving to another phone" foot="Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. It works between the web, iPhone and Android.">
+        <button class="item" onClick={() => openSheet({ kind: 'move-out' })}>
+          <ArrowRightLeft size={20} /><span class="label">Move my settings</span><ChevronRight size={16} class="secondary" />
+        </button>
+        <button class="item" onClick={() => openSheet({ kind: 'move-in' })}>
+          <ArrowDownToLine size={20} /><span class="label">Bring in settings</span><ChevronRight size={16} class="secondary" />
+        </button>
+      </Group>
+
       {appOffer && (
         <Group title="Phone app" foot={appOffer.detail}>
           <a class="item" href={appOffer.href} target={appOffer.kind === 'ask' ? undefined : '_blank'} rel="noopener">
@@ -164,9 +176,11 @@ export function SettingsScreen() {
         </p>
       </Group>
 
-      <Group title="Privacy">
-        <div class="item footnote"><Hand size={18} />No third-party ads, no accounts, no tracking, no analytics.</div>
-        <div class="item footnote"><MapPinOff size={18} />Your location stays in this browser. The place name comes from a built-in list, not a server.</div>
+      <Group title="Privacy" foot={<a href="../privacy.html">Full privacy details</a>}>
+        <div class="item footnote"><Hand size={18} />No third-party ads, no accounts, no tracking across other apps or sites.</div>
+        <div class="item footnote"><MapPinOff size={18} />Your exact location stays in this browser. The place name comes from a built-in list, not a server.</div>
+        <ToggleItem label="Share anonymous usage counts" on={p.shareUsage} onChange={(v) => store.update((x) => { x.shareUsage = v })}
+          sub="Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept." />
         <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (CARTO tiles, Overpass), which see the area you look at.</div>
       </Group>
 
@@ -178,6 +192,7 @@ export function SettingsScreen() {
       <Group foot="Prayer Times Asia - made for Muslims living and travelling across Asia.">
         <button class="item" onClick={() => openSheet({ kind: 'credits' })}><span class="label">Sources &amp; credits</span><ChevronRight size={16} class="secondary" /></button>
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><span class="label">Help verify times where you are</span><ChevronRight size={16} class="secondary" /></a>
+        <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md" target="_blank" rel="noopener noreferrer"><span class="label">Design a new look</span><ChevronRight size={16} class="secondary" /></a>
         <div class="item"><span class="label">Version</span><span class="value">{VERSION}</span></div>
       </Group>
     </div>

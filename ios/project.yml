@@ -25,13 +25,18 @@ targets:
       path: Generated/Info.plist
       properties:
         CFBundleDisplayName: "Prayer Times Asia"
-        NSCameraUsageDescription: "Falak Mode uses the camera to draw the qibla line and the stick's shadow on the floor in front of you. Nothing is recorded or sent."
+        NSCameraUsageDescription: "Falak Mode uses the camera to draw the qibla line and the stick's shadow on the floor in front of you, and Bring in settings uses it to scan the QR code from your other phone. Nothing is recorded or sent."
         NSLocationWhenInUseUsageDescription: "Your location is used on your phone to calculate prayer times and the qibla direction where you are. It is never sent anywhere."
         UILaunchScreen:
           UIColorName: LaunchBackground
         ITSAppUsesNonExemptEncryption: false
         # The next-prayer countdown Live Activity (drawn by PrayerTimesAsiaWidgets).
         NSSupportsLiveActivities: true
+        # prayertimesasia://masjid?... from a masjid screen's QR code ("your masjid").
+        CFBundleURLTypes:
+          - CFBundleURLName: com.prayertimesasia.app.masjid
+            CFBundleURLSchemes:
+              - prayertimesasia
         NSAlarmKitUsageDescription: "Prayer Times Asia sets your Subuh wake-up alarm so it rings even in Silent mode."
         # Both reference build settings so release.yml can bump the build
         # number per run without editing this file.

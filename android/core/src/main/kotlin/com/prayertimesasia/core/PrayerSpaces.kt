@@ -24,17 +24,26 @@ data class PrayerSpace(
  * area is sent, and only when the Masjid tab is open.
  */
 object PrayerSpaces {
-    const val OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+    /** Tried in order, so one busy or dead server can't leave the list empty. */
+    val OVERPASS_URLS = listOf(
+        "https://overpass-api.de/api/interpreter",
+        "https://overpass.private.coffee/api/interpreter",
+        "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    )
     private val musollahWords = listOf("musolla", "musalla", "musholla", "surau", "prayer room", "prayer space", "mushola", "musolah", "musollah")
 
-    /** Muslim places of worship within [radiusM] metres, nodes and buildings, with their centres. */
-    fun overpassQuery(center: Coordinates, radiusM: Int = 10_000): String {
+    /**
+     * Muslim places of worship within [radiusM] metres, nodes and buildings, with their centres.
+     * No result cap: Overpass caps in id order, not nearest first, so a cap dropped
+     * nearby surau in busy areas such as Johor Bahru next to Singapore.
+     */
+    fun overpassQuery(center: Coordinates, radiusM: Int = 12_000): String {
         val around = "(around:$radiusM,${fmt("%.5f", center.latitude)},${fmt("%.5f", center.longitude)})"
         return "[out:json][timeout:25];(" +
             "node[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"]$around;" +
             "way[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"]$around;" +
             "relation[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"]$around;" +
-            ");out center 150;"
+            ");out center;"
     }
 
     fun parseOverpass(text: String, center: Coordinates, maxKm: Double = 15.0): List<PrayerSpace> {

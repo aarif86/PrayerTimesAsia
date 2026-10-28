@@ -1,0 +1,36 @@
+{
+  "about": "Masjid links from a masjid screen's QR code (prayertimesasia://masjid?... or the web app's #masjid?...). Every app must read 'valid' links exactly as 'expected' (iqamah per prayer: after = minutes after azan, fixed = HH:mm) and refuse every 'invalid' one.",
+  "valid": [
+    {
+      "link": "masjid?n=Masjid+Al-Istighfar&ll=1.3735,103.9490&tz=Asia%2FSingapore&cc=SG&i=15%2C10%2C10%2C5%2C10&j=13%3A00",
+      "expected": {
+        "name": "Masjid Al-Istighfar", "lat": 1.3735, "lng": 103.949, "tz": "Asia/Singapore", "cc": "SG",
+        "jamaah": { "fajr": { "after": 15 }, "dhuhr": { "after": 10 }, "asr": { "after": 10 }, "maghrib": { "after": 5 }, "isha": { "after": 10 } },
+        "jumuah": "13:00"
+      }
+    },
+    {
+      "link": "prayertimesasia://masjid?n=Surau%20Kampung%20Baru&ll=3.1650,101.7000&tz=Asia/Kuala_Lumpur&i=,13:30,,5,20:45",
+      "expected": {
+        "name": "Surau Kampung Baru", "lat": 3.165, "lng": 101.7, "tz": "Asia/Kuala_Lumpur", "cc": null,
+        "jamaah": { "dhuhr": { "fixed": "13:30" }, "maghrib": { "after": 5 }, "isha": { "fixed": "20:45" } },
+        "jumuah": null
+      }
+    },
+    {
+      "link": "https://prayertimes.asia/app/#masjid?n=Masjid+Istiqlal&ll=-6.1702,106.8310&tz=Asia/Jakarta&cc=id&i=0,9:5,99,abc,10&j=25:00",
+      "expected": {
+        "name": "Masjid Istiqlal", "lat": -6.1702, "lng": 106.831, "tz": "Asia/Jakarta", "cc": "ID",
+        "jamaah": { "fajr": { "after": 0 }, "isha": { "after": 10 } },
+        "jumuah": null
+      }
+    }
+  ],
+  "invalid": [
+    "masjid?ll=1.37,103.94&tz=Asia/Singapore&i=10,10,10,5,10",
+    "masjid?n=No+place&tz=Asia/Singapore",
+    "masjid?n=Bad+latitude&ll=91,103.9&tz=Asia/Singapore",
+    "masjid?n=Bad+zone&ll=1.37,103.94&tz=..%2Fetc",
+    "https://example.com/#screen?n=Not+a+masjid+link"
+  ]
+}

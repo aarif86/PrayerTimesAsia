@@ -139,6 +139,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-dots i.on { background: var(--fg); }
 .scr-brand { margin: 0; display: flex; align-items: center; gap: calc(var(--u) * 1.6); font-size: calc(var(--u) * 2.2); color: var(--fg2); white-space: nowrap; overflow: hidden; }
 .scr-brand b { color: var(--fg); }
+/* Bottom-right: a QR code jemaah scan for this masjid's iqamah times in the app. */
+.scr-foot.with-qr { grid-template-columns: minmax(0, 1fr) auto; column-gap: calc(var(--u) * 2.4); align-items: center; }
+.scr-foot.with-qr > * { grid-column: 1; }
+.scr-foot.with-qr > .scr-qr { grid-column: 2; grid-row: 1 / span 2; }
+.scr-qr { margin: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: calc(var(--u) * 1.4); }
+.scr-qr figcaption { max-width: calc(var(--u) * 13); font-size: calc(var(--u) * 2.2); line-height: 1.25; color: var(--fg2); text-align: right; font-weight: 600; }
+.scr-qr-code { width: calc(var(--u) * 11.5); height: calc(var(--u) * 11.5); flex: none; background: #fff; border-radius: calc(var(--u) * 1.2); padding: calc(var(--u) * 0.4); }
+.scr-qr-code svg { display: block; width: 100%; height: 100%; }
 /* The app's source badge: "A  MUIS official timetable". */
 .scr-pill { display: inline-flex; align-items: center; gap: calc(var(--u) * 0.8); padding: calc(var(--u) * 0.5) calc(var(--u) * 1.4) calc(var(--u) * 0.5) calc(var(--u) * 0.5);
   border-radius: 999px; background: var(--fill); color: var(--fg); font-weight: 600; }
@@ -242,6 +250,7 @@ textarea { resize: vertical; }
 .setup button.primary { background: var(--accent); color: rgba(0, 0, 0, 0.82); border-color: transparent; font-weight: 700; }
 .setup-chosen { margin: 0; }
 .setup-error { color: var(--danger); }
+.setup .muted a { color: var(--accent); }
 .setup-results { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .setup-results button { width: 100%; text-align: left; border: 0; border-radius: 0; display: flex; justify-content: space-between; gap: 12px; background: transparent; }
 .setup-results li + li button { border-top: 1px solid var(--line); }

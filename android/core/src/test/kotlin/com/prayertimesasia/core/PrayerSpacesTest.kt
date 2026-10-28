@@ -34,7 +34,8 @@ class PrayerSpacesTest {
         assertTrue(spaces[0].isMusollah)
         assertFalse(spaces[2].isMusollah)
         assertEquals("Pasir Ris Walk", spaces[2].address)
-        assertTrue(PrayerSpaces.overpassQuery(center).contains("around:10000,1.37210,103.94740"))
+        assertTrue(PrayerSpaces.overpassQuery(center).contains("around:12000,1.37210,103.94740"))
+        assertTrue(PrayerSpaces.overpassQuery(center).endsWith(");out center;"))
     }
 
     @Test fun citySearch() {
