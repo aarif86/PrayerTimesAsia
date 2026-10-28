@@ -132,6 +132,16 @@ private fun Countdown(context: Context, to: Instant) {
     AndroidRemoteViews(rv)
 }
 
+/** "in 1:23:45" (or "Subuh in 7:12:03") under a row's name. */
+@Composable
+private fun RowCountdown(context: Context, m: WidgetModel, label: String) {
+    val next = m.next ?: return
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = style(12, FontWeight.Medium, white(0.85f)), maxLines = 1)
+        Countdown(context, next.second)
+    }
+}
+
 @Composable
 private fun Empty() {
     Box(GlanceModifier.fillMaxSize().background(Color(0xFF0C1A3A)).padding(12.dp), contentAlignment = Alignment.Center) {
@@ -207,6 +217,7 @@ private fun TimetableContent(context: Context) {
     val base = GlanceModifier.fillMaxSize().appWidgetBackground().cornerRadius(24.dp).clickable(actionStartActivity<MainActivity>())
     when (m.style) {
         TodayStyle.BANDS -> Column(base.background(BandsPalette.header)) {
+            val countdown = m.countdownRow()
             Column(GlanceModifier.fillMaxWidth().padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(m.hijri, style = style(17, FontWeight.Bold), maxLines = 1)
                 Text("${m.placeName} ${m.flag}  ·  ${m.sourceLabel}", style = style(11, FontWeight.Medium, white(0.65f)), maxLines = 1)
@@ -218,8 +229,13 @@ private fun TimetableContent(context: Context) {
                     GlanceModifier.fillMaxWidth().defaultWeight().background(BandsPalette.color(p)).padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(m.names.getValue(p), style = style(21, FontWeight.Bold))
-                    if (isCurrent) Text("  NOW", style = style(10, FontWeight.Bold))
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(m.names.getValue(p), style = style(21, FontWeight.Bold))
+                            if (isCurrent) Text("  NOW", style = style(10, FontWeight.Bold))
+                        }
+                        if (countdown?.first == p) RowCountdown(context, m, countdown.second)
+                    }
                     Spacer(GlanceModifier.defaultWeight())
                     Text(t.first, style = style(25))
                     t.second?.let { Text(" $it", style = style(15)) }
@@ -271,6 +287,7 @@ private fun TimetableContent(context: Context) {
             Text("${m.dateLine} · ${m.hijri}", style = style(12, color = white(0.75f)), maxLines = 1)
             Spacer(GlanceModifier.height(6.dp))
             Column(GlanceModifier.fillMaxWidth().defaultWeight().cornerRadius(18.dp).background(Color.Black.copy(alpha = 0.18f)).padding(5.dp)) {
+                val countdown = m.countdownRow()
                 Prayer.all.forEach { p ->
                     val isCurrent = p == m.current?.first
                     val passed = m.day.time(p) <= m.now && !isCurrent
@@ -283,8 +300,10 @@ private fun TimetableContent(context: Context) {
                     ) {
                         Box(GlanceModifier.width(3.dp).height(18.dp).cornerRadius(2.dp).background(p.tint)) {}
                         Spacer(GlanceModifier.width(8.dp))
-                        Text(m.names.getValue(p) + if (isCurrent) "  · NOW" else "", style = style(16, FontWeight.Medium, white(alpha)),
-                            modifier = GlanceModifier.defaultWeight())
+                        Column(GlanceModifier.defaultWeight()) {
+                            Text(m.names.getValue(p) + if (isCurrent) "  · NOW" else "", style = style(16, FontWeight.Medium, white(alpha)))
+                            if (countdown?.first == p) RowCountdown(context, m, countdown.second)
+                        }
                         Text(t.first, style = style(22, FontWeight.Bold, white(alpha)))
                         t.second?.let { Text(" $it", style = style(11, FontWeight.Bold, white(alpha * 0.7f))) }
                     }

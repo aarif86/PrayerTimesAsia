@@ -88,6 +88,8 @@ private fun ClassicList(m: WidgetModel) {
                 .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(18.dp)).padding(5.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
+            val countdown = m.countdownRow()
+            val next = m.next
             Prayer.all.forEach { p ->
                 val isCurrent = p == current
                 val passed = m.day.time(p) <= m.now && !isCurrent
@@ -102,7 +104,11 @@ private fun ClassicList(m: WidgetModel) {
                     Spacer(Modifier.width(8.dp))
                     Column(Modifier.weight(1f)) {
                         Text(m.names.getValue(p), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White, fontFamily = Rounded)
-                        if (isCurrent) Text("NOW", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = p.tint)
+                        if (isCurrent || countdown?.first == p) Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            if (isCurrent) Text("NOW", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = p.tint)
+                            if (countdown?.first == p && next != null) Text(countdown.second + TimeFormat.countdown(next.second.secondsSince(m.now)),
+                                fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = peach, maxLines = 1)
+                        }
                     }
                     val t = m.times.getValue(p)
                     Text(t.first, style = display(22.sp), color = Color.White)
@@ -180,6 +186,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawDialRing(m: Wid
 @Composable
 private fun Bands(m: WidgetModel) {
     val current = m.current?.first
+    val countdown = m.countdownRow()
+    val next = m.next
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxWidth().padding(vertical = 9.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(m.hijri, style = display(17.sp), color = Color.White, maxLines = 1)
@@ -191,11 +199,17 @@ private fun Bands(m: WidgetModel) {
             Box(Modifier.fillMaxWidth().weight(1f).background(BandsPalette.color(p))) {
                 if (isCurrent) Box(Modifier.width(4.dp).fillMaxSize().background(Color.White))
                 Row(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(m.names.getValue(p), fontFamily = Rounded, fontSize = 21.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    if (isCurrent) {
-                        Spacer(Modifier.width(6.dp))
-                        Text("NOW", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Color.White,
-                            modifier = Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.25f)).padding(horizontal = 6.dp, vertical = 2.dp))
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(m.names.getValue(p), fontFamily = Rounded, fontSize = 21.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            if (isCurrent) {
+                                Spacer(Modifier.width(6.dp))
+                                Text("NOW", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Color.White,
+                                    modifier = Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.25f)).padding(horizontal = 6.dp, vertical = 2.dp))
+                            }
+                        }
+                        if (countdown?.first == p && next != null) Text(countdown.second + TimeFormat.countdown(next.second.secondsSince(m.now)),
+                            fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.9f), maxLines = 1)
                     }
                     Spacer(Modifier.weight(1f))
                     val t = m.times.getValue(p)

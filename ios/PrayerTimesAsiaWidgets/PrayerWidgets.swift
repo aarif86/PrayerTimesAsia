@@ -169,19 +169,30 @@ struct LockScreenView: View {
     var body: some View {
         if let s = entry.snapshot, let next = s.next(after: entry.date) {
             let name = s.name(next.prayer, at: next.time)
+            let shortTime = s.format(next.time).replacingOccurrences(of: " AM", with: "").replacingOccurrences(of: " PM", with: "")
             switch family {
             case .accessoryCircular:
                 ZStack {
                     AccessoryWidgetBackground()
                     VStack(spacing: 0) {
-                        Image(systemName: next.prayer.symbol).font(.caption)
-                        Text(s.format(next.time).replacingOccurrences(of: " AM", with: "").replacingOccurrences(of: " PM", with: ""))
+                        Image(systemName: next.prayer.symbol).font(.caption2)
+                        Text(shortTime)
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
                             .minimumScaleFactor(0.6)
+                        Text(timerInterval: entry.date...max(entry.date, next.time), countsDown: true)
+                            .font(.system(size: 10, weight: .medium, design: .rounded)).monospacedDigit()
+                            .multilineTextAlignment(.center)
+                            .minimumScaleFactor(0.6)
                     }
+                    .lineLimit(1)
+                    .padding(.horizontal, 6)
                 }
             case .accessoryInline:
-                Label("\(name) \(s.format(next.time))", systemImage: next.prayer.symbol)
+                Label {
+                    Text("\(name) \(shortTime) · ") + Text(timerInterval: entry.date...max(entry.date, next.time), countsDown: true)
+                } icon: {
+                    Image(systemName: next.prayer.symbol)
+                }
             default:
                 VStack(alignment: .leading, spacing: 1) {
                     Label(name, systemImage: next.prayer.symbol).font(.headline)
