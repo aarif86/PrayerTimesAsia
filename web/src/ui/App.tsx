@@ -9,6 +9,7 @@ import { ARScreen, LevelSheet } from './FalakTools'
 import { TabFalak, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 import { LivingSky } from './LivingSky'
 import { MasjidLinkSheet } from './MyMasjid'
+import { MoveInSheet, MoveOutSheet, takeMoveFromLink } from './Move'
 import { QiblaScreen } from './Qibla'
 import { SettingsScreen, VERSION } from './Settings'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
@@ -53,6 +54,8 @@ export function App() {
   }, [scheme, bands])
 
   useEffect(() => {
+    const moved = takeMoveFromLink()
+    if (moved) openSheet({ kind: 'move-in', code: moved })
     if (s.prefs.hasOnboarded && s.prefs.useGPS) s.locate()
     s.refreshOfficial()
     void s.refreshData()
@@ -73,6 +76,7 @@ export function App() {
         <LivingSky colors={SKY.dawn} scheme="dark" soft={false} />
         <Onboarding />
         {sheet?.kind === 'places' && <PlacesSheet />}
+        {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
       </>
     )
   }
@@ -111,6 +115,8 @@ export function App() {
       {sheet?.kind === 'install' && <InstallSheet />}
       {sheet?.kind === 'credits' && <CreditsSheet />}
       {s.pendingMasjid && !sheet && <MasjidLinkSheet m={s.pendingMasjid} />}
+      {sheet?.kind === 'move-out' && <MoveOutSheet />}
+      {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
     </>
   )
 }
@@ -133,6 +139,7 @@ function Onboarding() {
         <div class="onb-actions">
           <button class="onb-primary" onClick={() => { store.update((p) => { p.hasOnboarded = true }); store.useGPS() }}>Use my location</button>
           <button class="onb-secondary" onClick={() => { store.update((p) => { p.hasOnboarded = true; p.useGPS = false }); openSheet({ kind: 'places' }) }}>Choose a city instead</button>
+          <button class="onb-secondary" onClick={() => openSheet({ kind: 'move-in' })}>Bring in settings from another phone</button>
           <p class="caption" style={{ opacity: 0.75, textAlign: 'center' }}>No third-party ads. No account. Your location stays on your device.</p>
         </div>
       </div>

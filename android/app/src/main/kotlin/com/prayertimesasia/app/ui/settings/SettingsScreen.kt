@@ -30,6 +30,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.Map
@@ -91,6 +93,8 @@ fun SettingsScreen(
     openWidgetPreview: () -> Unit,
     openCredits: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
+    openMoveOut: () -> Unit = {},
+    openMoveIn: () -> Unit = {},
 ) {
     val r = state.resolver
     val p = state.prefs
@@ -204,6 +208,12 @@ fun SettingsScreen(
                         }
                         ExactAlarmRow(context)
                     }
+                }
+            }
+            item {
+                Section("Moving to another phone", "Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. Works between Android, iPhone and the web. Setting up a new Android phone from your Google backup brings them too.") {
+                    LinkRow("Move my settings", Icons.Filled.SwapHoriz, openMoveOut)
+                    LinkRow("Bring in settings", Icons.Filled.Download, openMoveIn)
                 }
             }
             item {

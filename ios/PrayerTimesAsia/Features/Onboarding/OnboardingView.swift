@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
+    @State private var showMoveIn = false
     @State private var appeared = false
 
     var body: some View {
@@ -38,6 +39,9 @@ struct OnboardingView: View {
                     }
                     Button("Choose a city instead") { showPlaces = true }
                         .font(.subheadline.weight(.semibold))
+                    Button("Bring in settings from another phone") { showMoveIn = true }
+                        .font(.footnote.weight(.semibold))
+                        .opacity(0.85)
                     Text("No third-party ads. No account. Your location stays on your phone.")
                         .font(.caption).opacity(0.75)
                 }
@@ -55,6 +59,9 @@ struct OnboardingView: View {
         .sheet(isPresented: $showPlaces, onDismiss: {
             if model.activePlace != nil { model.prefs.hasOnboarded = true }
         }) { PlacesView() }
+        .sheet(isPresented: $showMoveIn) {
+            NavigationStack { MoveInView(isSheet: true) }
+        }
     }
 
     private func feature(_ icon: String, _ title: String, _ detail: String) -> some View {

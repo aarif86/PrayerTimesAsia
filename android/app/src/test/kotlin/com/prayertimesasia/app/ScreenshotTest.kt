@@ -141,7 +141,7 @@ class ScreenshotTest {
 
     @Test fun settings() = shoot("10-settings", d(TodayStyle.LIST, tab = Tab.SETTINGS))
     @Test fun settings_makers() = shootScreen("10b-settings-makers", d(TodayStyle.LIST, tab = Tab.SETTINGS)) { s ->
-        SettingsScreen(s, {}, {}, {}, rememberLazyListState(initialFirstVisibleItemIndex = 11))
+        SettingsScreen(s, {}, {}, {}, rememberLazyListState(initialFirstVisibleItemIndex = 12))
     }
     @Test fun journey() = shootScreen("11-journey", d(TodayStyle.LIST, variant = "travel")) { s ->
         com.prayertimesasia.app.ui.journey.JourneyScreen(s) {}
