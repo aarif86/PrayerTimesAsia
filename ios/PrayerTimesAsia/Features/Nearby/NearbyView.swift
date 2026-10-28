@@ -202,27 +202,51 @@ struct NearbyView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 Map(position: $camera, selection: $selected) {
-                    if let place = model.activePlace {
-                        Annotation("You", coordinate: CLLocationCoordinate2D(latitude: place.coordinates.latitude,
-                                                                             longitude: place.coordinates.longitude)) {
-                            Circle().fill(.blue).frame(width: 14, height: 14)
-                                .overlay(Circle().stroke(.white, lineWidth: 3))
-                        }
-                    }
                     ForEach(visible) { space in
                         Marker(space.name, systemImage: space.isMusollah ? "house.fill" : "moon.stars.fill",
                                coordinate: space.coordinate)
                             .tint(space.isMusollah ? Prayer.fajr.tint : Theme.accent)
                             .tag(space)
                     }
+                    // Drawn after the pins so it sits on top of them.
+                    if let you = youCoordinate {
+                        Annotation("You are here", coordinate: you, anchor: .center) {
+                            ZStack {
+                                Circle().fill(.blue.opacity(0.18)).frame(width: 44, height: 44)
+                                Circle().fill(.blue).frame(width: 18, height: 18)
+                                    .overlay(Circle().stroke(.white, lineWidth: 3))
+                                    .shadow(radius: 2)
+                            }
+                        }
+                        .annotationTitles(.visible)
+                    }
                 }
                 .frame(height: 300)
+                .overlay(alignment: .bottomTrailing) {
+                    if youCoordinate != nil {
+                        Button { selected = nil; showYou(animated: true) } label: {
+                            Image(systemName: "location.fill")
+                                .font(.body.weight(.semibold))
+                                .frame(width: 44, height: 44)
+                                .background(.regularMaterial, in: Circle())
+                        }
+                        .accessibilityLabel("Show where I am")
+                        .padding(12)
+                    }
+                }
 
                 Picker("Type", selection: $kind) {
                     ForEach(PrayerSpace.Kind.allCases) { Text($0.rawValue).tag($0) }
                 }
                 .pickerStyle(.segmented)
-                .padding()
+                .padding([.horizontal, .top])
+
+                if let place = model.activePlace {
+                    Label("Distances from you, near \(place.name)", systemImage: "location.fill")
+                        .font(.footnote).foregroundStyle(.secondary).lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal).padding(.vertical, 8)
+                }
 
                 list
             }
@@ -238,6 +262,7 @@ struct NearbyView: View {
             .sheet(isPresented: $showAbout) { MakersSheet(placement: "masjid") }
             .task(id: model.activePlace?.coordinates) {
                 guard let c = model.activePlace?.coordinates else { return }
+                showYou(animated: false)
                 await search.search(around: c)
             }
             .onChange(of: selected) { _, space in
@@ -246,6 +271,18 @@ struct NearbyView: View {
                 }
             }
         }
+    }
+
+    private var youCoordinate: CLLocationCoordinate2D? {
+        model.activePlace.map { CLLocationCoordinate2D(latitude: $0.coordinates.latitude, longitude: $0.coordinates.longitude) }
+    }
+
+    /// Centre on you at walking scale (about 3 km across), rather than zooming
+    /// out to fit every pin within 15 km, which hid where you are.
+    private func showYou(animated: Bool) {
+        guard let you = youCoordinate else { return }
+        let target = MapCameraPosition.region(MKCoordinateRegion(center: you, latitudinalMeters: 3_000, longitudinalMeters: 3_000))
+        if animated { withAnimation { camera = target } } else { camera = target }
     }
 
     @ViewBuilder
