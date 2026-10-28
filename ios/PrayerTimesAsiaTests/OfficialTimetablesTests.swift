@@ -67,6 +67,30 @@ final class NearbySearchTests: XCTestCase {
             XCTAssertFalse(NearbySearch.looksLikePrayerSpace(name), name)
         }
     }
+
+    /// Johor Bahru: Apple Maps lists almost nothing here, OpenStreetMap does.
+    func testReadsOpenStreetMapPlaces() {
+        let json = """
+        {"elements":[
+          {"type":"node","id":1,"lat":1.4655,"lon":103.7578,"tags":{"amenity":"place_of_worship","religion":"muslim","name":"Masjid Sultan Abu Bakar","addr:street":"Jalan Skudai","addr:city":"Johor Bahru"}},
+          {"type":"way","id":2,"center":{"lat":1.5030,"lon":103.7770},"tags":{"amenity":"place_of_worship","religion":"muslim","name":"Surau Al-Ikhlas"}},
+          {"type":"node","id":3,"lat":1.5040,"lon":103.7780,"tags":{"amenity":"place_of_worship","religion":"muslim","place_of_worship":"musalla"}},
+          {"type":"node","id":4,"lat":3.1390,"lon":101.6869,"tags":{"amenity":"place_of_worship","religion":"muslim","name":"Far Away Masjid"}}
+        ]}
+        """
+        let here = Coordinates(latitude: 1.5022, longitude: 103.7766)
+        let spaces = NearbySearch.parseOverpass(Data(json.utf8), center: here) ?? []
+        XCTAssertEqual(spaces.map(\.name), ["Surau Al-Ikhlas", "Musollah", "Masjid Sultan Abu Bakar"])
+        XCTAssertEqual(spaces.map(\.isMusollah), [true, true, false])
+        XCTAssertEqual(spaces.last?.address, "Jalan Skudai, Johor Bahru")
+        XCTAssertNil(NearbySearch.parseOverpass(Data("not json".utf8), center: here))
+    }
+
+    func testOverpassQueryHasNoResultCap() {
+        let q = NearbySearch.overpassQuery(around: Coordinates(latitude: 1.5022, longitude: 103.7766))
+        XCTAssertTrue(q.contains("around:12000,1.5022,103.7766"), q)
+        XCTAssertTrue(q.hasSuffix("out center tags;"), q)
+    }
 }
 
 @MainActor

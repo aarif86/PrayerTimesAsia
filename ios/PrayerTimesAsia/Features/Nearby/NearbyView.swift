@@ -2,8 +2,9 @@ import MapKit
 import SwiftUI
 
 /// Masjids and musollahs (surau, prayer rooms) near the active place, found with
-/// Apple Maps search. Works anywhere Apple has listings - which in much of Asia
-/// is where a traveller needs it most.
+/// Apple Maps search and OpenStreetMap together. Apple's listings are rich in
+/// Singapore but thin in much of Malaysia and Indonesia (in Johor Bahru it lists
+/// hardly any masjid or surau), where OpenStreetMap fills the gaps.
 struct PrayerSpace: Identifiable, Hashable {
     enum Kind: String, CaseIterable, Identifiable {
         case all = "All", masjid = "Masjid", musollah = "Musollah"
@@ -31,7 +32,10 @@ final class NearbySearch {
     private(set) var failed = false
 
     private static let queries = ["masjid", "mosque", "musolla", "surau", "prayer room"]
-    private static let musollahWords = ["musolla", "musalla", "musholla", "surau", "prayer room", "prayer space", "mushola"]
+    nonisolated private static let musollahWords = ["musolla", "musalla", "musholla", "surau", "prayer room", "prayer space", "mushola", "prayer hall"]
+    nonisolated private static let overpassMirrors = ["https://overpass-api.de/api/interpreter",
+                                          "https://overpass.private.coffee/api/interpreter",
+                                          "https://maps.mail.ru/osm/tools/overpass/api/interpreter"]
 
     func search(around center: Coordinates) async {
         if let last = searchedAround, Geo.distanceKm(last, center) < 0.5, !spaces.isEmpty { return }
@@ -40,6 +44,8 @@ final class NearbySearch {
         defer { isLoading = false }
         let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
                                         latitudinalMeters: 10_000, longitudinalMeters: 10_000)
+        // OpenStreetMap runs alongside the Apple searches.
+        async let osm = Self.searchOpenStreetMap(around: center)
         var found: [String: PrayerSpace] = [:]
         var anySucceeded = false
         await withTaskGroup(of: [MKMapItem].self) { group in
@@ -70,9 +76,91 @@ final class NearbySearch {
                 }
             }
         }
-        spaces = found.values.sorted { $0.distanceKm < $1.distanceKm }
+        let fromOSM = await osm
+        if fromOSM != nil { anySucceeded = true }
+        var merged = Array(found.values)
+        // The same masjid is often in both; keep Apple's (better directions)
+        // and add OpenStreetMap places that aren't already pinned close by.
+        for space in fromOSM ?? [] where !merged.contains(where: { Self.metres($0.coordinate, space.coordinate) < 80 }) {
+            merged.append(space)
+        }
+        spaces = merged.sorted { $0.distanceKm < $1.distanceKm }
         searchedAround = center
         failed = !anySucceeded && spaces.isEmpty
+    }
+
+    private nonisolated static func metres(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> Double {
+        CLLocation(latitude: a.latitude, longitude: a.longitude)
+            .distance(from: CLLocation(latitude: b.latitude, longitude: b.longitude))
+    }
+
+    /// Muslim places of worship within [radius] metres, from OpenStreetMap's
+    /// Overpass API. No result cap: Overpass returns capped results in id order,
+    /// not nearest first, which would drop places near the user in busy areas.
+    nonisolated static func overpassQuery(around c: Coordinates, radius: Int = 12_000) -> String {
+        let at = String(format: "%.4f,%.4f", c.latitude, c.longitude)
+        return "[out:json][timeout:20];(nwr[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"](around:\(radius),\(at)););out center tags;"
+    }
+
+    /// Asks every mirror at once and takes the first answer, so one busy server
+    /// can't hold up the list. Only the search area is sent. Nil when none answer.
+    nonisolated static func searchOpenStreetMap(around center: Coordinates) async -> [PrayerSpace]? {
+        let query = overpassQuery(around: center)
+        return await withTaskGroup(of: [PrayerSpace]?.self) { group in
+            for base in Self.overpassMirrors {
+                group.addTask {
+                    var parts = URLComponents(string: base)
+                    parts?.queryItems = [URLQueryItem(name: "data", value: query)]
+                    guard let url = parts?.url else { return nil }
+                    var request = URLRequest(url: url, timeoutInterval: 20)
+                    request.setValue("PrayerTimesAsia iOS", forHTTPHeaderField: "User-Agent")
+                    guard let answer = try? await URLSession.shared.data(for: request),
+                          (answer.1 as? HTTPURLResponse)?.statusCode == 200 else { return nil }
+                    return Self.parseOverpass(answer.0, center: center)
+                }
+            }
+            for await result in group {
+                if let result {
+                    group.cancelAll()
+                    return result
+                }
+            }
+            return nil
+        }
+    }
+
+    /// Overpass JSON to prayer spaces within 15 km, nearest first.
+    nonisolated static func parseOverpass(_ data: Data, center: Coordinates) -> [PrayerSpace]? {
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let elements = root["elements"] as? [[String: Any]] else { return nil }
+        var found: [String: PrayerSpace] = [:]
+        for e in elements {
+            let mid = e["center"] as? [String: Any]
+            guard let lat = (e["lat"] ?? mid?["lat"]) as? Double,
+                  let lon = (e["lon"] ?? mid?["lon"]) as? Double else { continue }
+            let tags = e["tags"] as? [String: String] ?? [:]
+            let rawName = [tags["name:en"], tags["name"]].compactMap { $0 }.first { !$0.isEmpty } ?? ""
+            let lower = rawName.lowercased()
+            let kindTag = (tags["place_of_worship:type"] ?? tags["place_of_worship"] ?? "").lowercased()
+            let isMusollah = musollahWords.contains { lower.contains($0) }
+                || ["musalla", "musholla", "surau", "prayer_room", "musallah"].contains(kindTag)
+            let point = Coordinates(latitude: lat, longitude: lon)
+            let km = Geo.distanceKm(center, point)
+            guard km <= 15 else { continue }
+            let name = rawName.isEmpty ? (isMusollah ? "Musollah" : "Masjid") : rawName
+            let key = "\(name.lowercased())|\((lat * 2000).rounded())|\((lon * 2000).rounded())"
+            guard found[key] == nil else { continue }
+            let street = [tags["addr:housenumber"], tags["addr:street"]].compactMap { $0 }.joined(separator: " ")
+            let address = [street.isEmpty ? nil : street, tags["addr:suburb"] ?? tags["addr:city"]]
+                .compactMap { $0 }.joined(separator: ", ")
+            let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
+            item.name = name
+            found[key] = PrayerSpace(id: "osm/\(e["type"] as? String ?? "node")/\(e["id"] as? Int ?? 0)",
+                                     name: name, address: address, coordinate: coordinate, distanceKm: km,
+                                     isMusollah: isMusollah, item: item)
+        }
+        return found.values.sorted { $0.distanceKm < $1.distanceKm }
     }
 
     /// Search for "mosque" also returns shops and streets named after one; keep
@@ -172,7 +260,7 @@ struct NearbyView: View {
                                    systemImage: "moon.stars",
                                    description: Text(search.failed
                                                      ? "Searching needs an internet connection."
-                                                     : "Apple Maps has no \(kind == .musollah ? "musollah" : "masjid") listed within 15 km. Use the Qibla tab to pray where you are."))
+                                                     : "Neither Apple Maps nor OpenStreetMap lists a \(kind == .musollah ? "musollah" : "masjid") within 15 km. Use the Qibla tab to pray where you are."))
         } else {
             List {
                 ForEach(visible) { space in

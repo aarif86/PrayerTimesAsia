@@ -165,7 +165,7 @@ struct SettingsView: View {
                 Section("Privacy") {
                     Label("No third-party ads, no accounts, no tracking.", systemImage: "hand.raised.fill")
                     Label("Your location never leaves your phone.", systemImage: "location.slash.fill")
-                    Label("Nearby masjid search goes through Apple Maps.", systemImage: "map.fill")
+                    Label("Nearby masjid search goes through Apple Maps and OpenStreetMap (only the area is sent).", systemImage: "map.fill")
                 }
                 .font(.footnote)
 
