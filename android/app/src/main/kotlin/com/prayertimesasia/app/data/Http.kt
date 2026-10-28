@@ -16,7 +16,10 @@ object Http {
         return request(url, body, timeoutMs)
     }
 
-    private fun request(url: String, body: String?, timeoutMs: Int): String {
+    fun postJson(url: String, json: String, timeoutMs: Int = 20_000): String =
+        request(url, json, timeoutMs, "application/json; charset=utf-8")
+
+    private fun request(url: String, body: String?, timeoutMs: Int, contentType: String = "application/x-www-form-urlencoded; charset=utf-8"): String {
         val c = URL(url).openConnection() as HttpURLConnection
         try {
             c.connectTimeout = timeoutMs
@@ -26,7 +29,7 @@ object Http {
             if (body != null) {
                 c.requestMethod = "POST"
                 c.doOutput = true
-                c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                c.setRequestProperty("Content-Type", contentType)
                 c.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
             }
             if (c.responseCode != 200) throw IOException("HTTP ${c.responseCode} for $url")

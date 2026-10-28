@@ -15,8 +15,8 @@ import { name, officialSourceForScreen } from './model'
 
 /**
  * The committee's page: fill in the masjid's details on a phone, watch the
- * preview, and get one link to open on the TV. Nothing is sent anywhere; the
- * settings live in the link.
+ * preview, and get one link to open on the TV. The settings live in the link;
+ * the only thing sent is the anonymous check-in below (`report`), if left on.
  */
 export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: number; onOpen: (c: ScreenConfig) => void }) {
   const [c, setC] = useState<ScreenConfig>(initial)
@@ -195,6 +195,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <select id="s-hijri" value={String(c.hijriAdj)} onChange={(e) => set({ hijriAdj: +(e.target as HTMLSelectElement).value })}>
               {[-2, -1, 0, 1, 2].map((n) => <option key={n} value={String(n)}>{n > 0 ? `+${n}` : n}</option>)}
             </select>
+            <label class="check"><input id="s-report" type="checkbox" checked={c.report} onChange={(e) => set({ report: (e.target as HTMLInputElement).checked })} /> Let Prayer Times Asia know this screen is running (the masjid's name, city and look, a few times a day, so we can help if something goes wrong)</label>
           </fieldset>
         </form>
 

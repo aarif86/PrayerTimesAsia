@@ -54,6 +54,8 @@ export interface Preferences {
   appPromptDismissed: boolean
   /** The masjid whose iqamah times show on the Prayer screen, from its screen's QR code. */
   myMasjid: MasjidLink | null
+  /** Anonymous usage counts (city and country, never coordinates). See services/usage.ts. */
+  shareUsage: boolean
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -88,6 +90,7 @@ export const DEFAULT_PREFS: Preferences = {
   alertsPromptDismissed: false,
   appPromptDismissed: false,
   myMasjid: null,
+  shareUsage: true,
 }
 
 const NULLABLE = new Set<keyof Preferences>([

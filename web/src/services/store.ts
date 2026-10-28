@@ -19,6 +19,7 @@ import { nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
 import { DEFAULT_PREFS, loadPreferences, savePreferences, type Preferences, type TodayStyle } from './prefs'
 import { fetchOK, readJSON, readString, writeJSON, writeString } from './storage'
+import { countAppOpen } from './usage'
 
 export type Tab = 'today' | 'qibla' | 'falak' | 'masjid' | 'settings'
 export const TABS: Tab[] = ['today', 'qibla', 'falak', 'masjid', 'settings']
@@ -139,6 +140,13 @@ class AppStore {
   }
 
   // MARK: Where and which rules
+
+  /** Anonymous count of this open, once the place is known (see services/usage.ts). */
+  countOpen(version: string): void {
+    if (this.demo || !this.prefs.shareUsage || !this.prefs.hasOnboarded) return
+    const p = this.activePlace
+    countAppOpen(version, { city: p?.name, countryCode: p?.countryCode })
+  }
 
   get activePlace(): Place | null {
     return this.prefs.useGPS ? (this.gpsPlace ?? this.prefs.manualPlace) : this.prefs.manualPlace

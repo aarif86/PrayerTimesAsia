@@ -213,10 +213,11 @@ fun SettingsScreen(
                 }
             }
             item {
-                Section("Privacy") {
-                    LabelRow(Icons.Filled.PanTool, "No third-party ads, no accounts, no tracking.")
-                    LabelRow(Icons.Filled.LocationOff, "Your location never leaves your phone.")
+                Section("Privacy", "Usage counts tell us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept.") {
+                    LabelRow(Icons.Filled.PanTool, "No third-party ads, no accounts, no tracking across other apps.")
+                    LabelRow(Icons.Filled.LocationOff, "Your exact location never leaves your phone.")
                     LabelRow(Icons.Filled.Map, "Nearby masjid search sends only the search area to OpenStreetMap.")
+                    SwitchRow("Share anonymous usage counts", p.shareUsage) { on -> state.update { it.copy(shareUsage = on) } }
                 }
             }
             item {

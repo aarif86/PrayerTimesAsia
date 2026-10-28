@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Privacy · Prayer Times Asia</title>
+  <meta name="description" content="What Prayer Times Asia keeps on your phone, and the anonymous counts it sends." />
+  <meta name="theme-color" content="#0b0f2a" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+  <style>
+    :root { --night: #0b0f2a; --text: #eef0fa; --muted: #a9b2d6; --gold: #f2c063; --line: rgba(255, 255, 255, 0.10);
+      --font: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--night); color: var(--text); font: 17px/1.6 var(--font); }
+    main { max-width: 720px; margin: 0 auto; padding: 40px 20px 64px; }
+    h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 6px; }
+    h2 { font-size: 1.2rem; margin: 32px 0 6px; color: var(--gold); }
+    p, li { color: var(--muted); }
+    strong { color: var(--text); }
+    a { color: var(--gold); }
+    table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.95rem; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--text); font-weight: 600; }
+    td { color: var(--muted); }
+    .back { display: inline-block; margin-bottom: 24px; }
+    :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← Prayer Times Asia</a>
+  <h1>Privacy</h1>
+  <p>Updated 27 October 2026. This covers the website, the web app, the masjid screen, and the iPhone and Android apps.</p>
+
+  <h2>The short version</h2>
+  <p>No ads, no accounts, and no tracking across other apps or sites. Your exact location stays on your device. To understand how many people use Prayer Times Asia and where, the apps send a few <strong>anonymous counts</strong>, and you can turn them off.</p>
+
+  <h2>What stays on your device</h2>
+  <p>Your location, saved places, settings, alerts and prayer tracker are kept on your phone or in your browser. Prayer times are worked out on the device, or taken from the official timetable it downloads (the request names only the year and the zone, never your exact spot).</p>
+
+  <h2>Anonymous usage counts</h2>
+  <p>When the app opens (at most once an hour), and when a masjid screen is running (a few times a day), it sends a short note to <a href="https://telemetrydeck.com/privacy/">TelemetryDeck</a>, a privacy-first analytics service based in the EU. The note contains:</p>
+  <table>
+    <tr><th>Sent</th><th>Why</th></tr>
+    <tr><td>A random number made on your device</td><td>To count people, not visits. It is not linked to your name, phone number, email or Apple or Google account, and TelemetryDeck scrambles it again before storing it.</td></tr>
+    <tr><td>The city and country of the place you use for prayer times</td><td>To know where to add official timetables. Never your coordinates or street.</td></tr>
+    <tr><td>App version, iPhone, Android or web, system version, language</td><td>To know what to support and test.</td></tr>
+    <tr><td>Masjid screens only: the masjid's name and the screen's look</td><td>To know which masjids use the screen, so we can help if something goes wrong.</td></tr>
+  </table>
+  <p>TelemetryDeck does not keep IP addresses and sets no cookies. On this website it counts page visits the same way (a visitor's number changes every day).</p>
+
+  <h2>Turning the counts off</h2>
+  <ul>
+    <li><strong>iPhone, Android and web app:</strong> Settings → Privacy → Share anonymous usage counts.</li>
+    <li><strong>Masjid screen:</strong> on the setup page, untick "Let Prayer Times Asia know this screen is running", then send the new link to the TV.</li>
+    <li><strong>Browsers with Global Privacy Control</strong> are never counted.</li>
+  </ul>
+
+  <h2>Things you choose to send</h2>
+  <p>If you use "Help verify times", the masjid timetable photo and what you type are sent so we can check them. If you email us, we see your email. Nearby masjid search on iPhone goes through Apple Maps; on Android and the web it sends only the map area to OpenStreetMap services.</p>
+
+  <h2>Questions</h2>
+  <p>Prayer Times Asia is made by Nasar Pte Ltd, Singapore. Email <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>.</p>
+</main>
+</body>
+</html>
