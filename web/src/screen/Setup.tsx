@@ -218,6 +218,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               <li>Press <b>OK</b> on the remote, or click once, for full screen. That's it: the TV keeps the screen and its settings.</li>
             </ol>
             <p class="muted small">To change something later, come back to this page, make the change and send the new link to the TV again.</p>
+            <p class="muted small">For the notice board: <a href={`../print/#c=${encodeConfig({ ...c, showIqamah: true })}&sheet=month`} target="_blank" rel="noopener">print this month's timetable</a> or the Ramadan timetable, with the same times and iqamah.</p>
             <button type="button" onClick={() => onOpen(c)} disabled={!c.place}>Try the full screen on this device</button>
             <details id="screen-link-box">
               <summary class="muted small">Show the link</summary>
