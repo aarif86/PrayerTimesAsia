@@ -32,4 +32,13 @@ Submitted data is shared under **CC-BY 4.0**.
 Designers, artists and anyone with an idea can suggest the next look for the app's Prayer screen or the masjid screen, with or without code:
 send a sketch, an AI-made mock-up (there is a ready-made prompt), or a pull request.
 See **[Design a new look](docs/design-a-look.md)** and the *New look for the app or masjid screen* issue form.
-Looks are shared under the project's MIT licence.
+Looks are shared under the project's licence (below).
+
+# Licence for what you send
+
+The code is under the **GNU AGPL 3.0** ([NOTICE.md](NOTICE.md)). By sending code, a design
+or a translation (pull request, issue form or email), you agree that it is shared under
+the GNU AGPL 3.0 with the app store permission in NOTICE.md, so it can go into the
+App Store and Google Play. Timetable and masjid data is shared under CC-BY 4.0 (above).
+
+Copies of the app are welcome under their own name. See [TRADEMARKS.md](TRADEMARKS.md).

@@ -220,6 +220,9 @@
     .steps .btns { margin-top: 16px; }
 
     /* FAQ */
+    .promises .grid { grid-template-columns: repeat(4, 1fr); }
+    @media (max-width: 960px) { .promises .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .promises .grid { grid-template-columns: 1fr; } }
     .faq { max-width: 780px; margin: 30px auto 0; }
     details { background: var(--card); border: 1px solid var(--card-line); border-radius: 16px; padding: 4px 20px; margin-bottom: 12px; }
     summary { cursor: pointer; font-weight: 700; padding: 14px 0; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
@@ -246,6 +249,7 @@
       <a href="#countries">Countries</a>
       <a href="#coming">Coming next</a>
       <a href="#masjid">For masjids</a>
+      <a href="#promises">Our promises</a>
       <a href="#faq">Questions</a>
     </nav>
     <a class="btn btn-primary btn-sm" href="app/">Open the app</a>
@@ -496,6 +500,38 @@
     </div>
   </section>
 
+  <section id="promises" class="promises">
+    <div class="wrap">
+      <div class="center">
+        <span class="eyebrow">Our promises</span>
+        <h2>Built fisabilillah. Kept that way.</h2>
+        <p class="lead">Prayer Times Asia is not for sale. These four promises hold for the apps, the website and the masjid screen.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></div>
+          <h3>Free forever</h3>
+          <p>No subscriptions, no paid features, nothing to buy inside the app.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg></div>
+          <h3>No ads</h3>
+          <p>Not in the apps, not on the masjid screen, not in notifications or the azan.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+          <h3>Your data stays yours</h3>
+          <p>No account, and your location stays on your phone. Nothing personal is ever sold or shared.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
+          <h3>Always open source</h3>
+          <p>Anyone can check how it works. <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/NOTICE.md">Copies must stay open too</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="faq">
     <div class="wrap">
       <div class="center">
@@ -506,6 +542,10 @@
         <details>
           <summary>Is it really free?</summary>
           <p>Yes. Prayer Times Asia is built fisabilillah by Nasar Pte Ltd. There are no third-party ads, no subscriptions and no in-app purchases.</p>
+        </details>
+        <details>
+          <summary>Could the app be sold one day?</summary>
+          <p>No. It is not for sale, and it will never carry ads or sell data. The code is open under a licence that keeps every copy open, and only the official app may use the Prayer Times Asia name. Masjids, organisations and well-wishers who want to help can sponsor running costs or work with us: write to <a href="mailto:salam@prayertimes.asia?subject=Supporting%20Prayer%20Times%20Asia">salam@prayertimes.asia</a>.</p>
         </details>
         <details>
           <summary>How accurate are the times?</summary>

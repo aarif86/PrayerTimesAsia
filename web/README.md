@@ -138,5 +138,5 @@ is repeatable; map tiles could not be reached from the machine that took them, s
 
 ## Licence
 
-MIT, like the iOS app. Official timetables: MUIS (Singapore Open Data Licence), JAKIM e-Solat, Kemenag via myquran.
+GNU AGPL 3.0, like the iOS app (see [NOTICE.md](../NOTICE.md)). Official timetables: MUIS (Singapore Open Data Licence), JAKIM e-Solat, Kemenag via myquran.
 Map data © OpenStreetMap contributors. Fonts: Inter and Nunito (SIL OFL). Icons: Lucide (ISC) and the app's own set.

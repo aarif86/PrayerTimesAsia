@@ -1,7 +1,7 @@
 # Prayer Times Asia
 
 Prayer times and qibla for Muslims living and travelling across Asia.
-**Every time has a source. We show it.** Free forever, open source (MIT).
+**Every time has a source. We show it.** Free forever, open source (GNU AGPL 3.0, see [NOTICE.md](../NOTICE.md)).
 Native SwiftUI, iOS 17+. No third-party ads, no accounts, no tracking. Location never leaves the phone.
 
 ## Why it exists

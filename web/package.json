@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Prayer Times Asia for the web: accurate prayer times, qibla and falak for Muslims living and travelling across Asia.",
   "type": "module",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

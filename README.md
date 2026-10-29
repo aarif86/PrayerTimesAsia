@@ -37,3 +37,9 @@ Each app has its own README with how to build and run it.
 | Android | `android/` or `testdata/` changes (pull requests too) | Tests, builds the APK, takes screenshots |
 | Web | `web/`, `site/` or `testdata/` changes (pull requests too) | Tests, builds, deploys the promo site and web app to GitHub Pages (from `main` only) |
 | Validate, Feeds, Firebase, TestFlight status | Their own files change / on a schedule | Data checks, calendar feeds, backend |
+
+## Licence and promises
+
+Free forever, no ads, no selling data, always open source: [docs/stewardship.md](docs/stewardship.md).
+Code: GNU AGPL 3.0 with an app store permission ([NOTICE.md](NOTICE.md)). Data in `data/`: CC-BY 4.0.
+The name and icon: [TRADEMARKS.md](TRADEMARKS.md).
