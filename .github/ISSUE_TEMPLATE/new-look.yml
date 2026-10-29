@@ -68,5 +68,5 @@ body:
           required: true
         - label: It has no pictures of people or animals, no music symbols and no adverts.
           required: true
-        - label: I'm happy for it to be used in Prayer Times Asia under the project's open-source licence (MIT).
+        - label: I'm happy for it to be used in Prayer Times Asia under the project's open-source licence (GNU AGPL 3.0), including in the App Store and Google Play.
           required: true

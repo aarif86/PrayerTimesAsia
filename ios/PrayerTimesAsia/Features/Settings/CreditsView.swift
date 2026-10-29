@@ -36,7 +36,7 @@ struct CreditsView: View {
                detail: "Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.",
                url: "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md"),
         Credit(title: "This app",
-               detail: "Open source under the MIT licence. Made by Aarif Raziff.",
+               detail: "Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.",
                url: "https://github.com/aarif86/PrayerTimesAsia"),
     ]
 

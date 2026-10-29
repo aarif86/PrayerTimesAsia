@@ -111,4 +111,4 @@ adb shell am start -n com.prayertimesasia.app/.MainActivity \
 
 ## Licence and credits
 
-MIT, like the iOS app. Official timetables: MUIS via data.gov.sg (Singapore Open Data Licence v1.0), JAKIM e-Solat, Kemenag via api.myquran.com. JAKIM zone points from mptwaktusolat/malaysia.geojson. Places © OpenStreetMap contributors (ODbL). Nunito font © The Nunito Project Authors (SIL Open Font License 1.1).
+GNU AGPL 3.0, like the iOS app (see [NOTICE.md](../NOTICE.md)). Official timetables: MUIS via data.gov.sg (Singapore Open Data Licence v1.0), JAKIM e-Solat, Kemenag via api.myquran.com. JAKIM zone points from mptwaktusolat/malaysia.geojson. Places © OpenStreetMap contributors (ODbL). Nunito font © The Nunito Project Authors (SIL Open Font License 1.1).
