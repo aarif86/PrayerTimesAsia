@@ -59,14 +59,14 @@ jobs:
               local name=$1; shift
               xcrun simctl terminate "$UDID" com.prayertimesasia.app || true
               xcrun simctl launch "$UDID" com.prayertimesasia.app "$@"
-              sleep 8
+              sleep "${WAIT:-8}"
               xcrun simctl io "$UDID" screenshot "shots/$prefix-$name.png"
             }
             shot 1-today      -demo -tab today -sidedial
             shot 2-landed     -demo-travel -tab today
             shot 3-journey    -demo-travel -tab journey
             shot 4-qibla      -demo -tab qibla -aligned
-            shot 5-masjid     -demo -tab nearby
+            WAIT=25 shot 5-masjid -demo -tab nearby   # map and search need longer
             shot 6-falak      -demo -tab falak
             shot 7-today-day  -demo-makkah -tab today -light
             xcrun simctl shutdown "$UDID" || true
