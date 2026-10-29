@@ -46,6 +46,7 @@ jobs:
           APP=$(find build/dd/Build/Products -name 'PrayerTimesAsia.app' -path '*iphonesimulator*' | head -n1)
           mkdir -p shots
           capture() { # $1 = device-name pattern, $2 = file prefix
+            local prefix=$2
             UDID=$(xcrun simctl list devices available -j | jq -r --arg p "$1" '
               [.devices | to_entries[] | .value[] | select(.isAvailable and (.name | test($p)))][-1].udid')
             if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then xcrun simctl list devices available; exit 1; fi
@@ -59,7 +60,7 @@ jobs:
               xcrun simctl terminate "$UDID" com.prayertimesasia.app || true
               xcrun simctl launch "$UDID" com.prayertimesasia.app "$@"
               sleep 8
-              xcrun simctl io "$UDID" screenshot "shots/$2-$name.png"
+              xcrun simctl io "$UDID" screenshot "shots/$prefix-$name.png"
             }
             shot 1-today      -demo -tab today -sidedial
             shot 2-landed     -demo-travel -tab today
