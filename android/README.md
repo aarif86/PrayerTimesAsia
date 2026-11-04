@@ -18,7 +18,7 @@ git push git@github.com:<owner>/<new-repo>.git android:main
 | `app/.../ui/today/` | The Prayer screen in all five styles: Centre Dial (default), Side Dial, Day Dial, Sun Path, Colour Bands. |
 | `app/.../ui/{qibla,falak,masjid,settings,journey,onboarding,makers}/` | The other tabs and sheets. |
 | `app/.../data/` | Official timetable downloads and disk cache, `mosques.json` / `calendar.json`, location (platform `LocationManager` + `Geocoder`), preferences. |
-| `app/.../alarms/` | Exact prayer alerts with `AlarmManager`, early reminders, Subuh wake-up, reschedule on boot / time change. |
+| `app/.../alarms/` | Exact prayer alerts with `AlarmManager`, reminders before prayer, Subuh wake-up, reschedule on boot / time change. |
 | `app/.../widget/` | Glance home-screen widgets: Next prayer (small and medium, live countdown) and Today's timetable (Side Dial, Colour Bands or Day Dial, following the Prayer screen style). |
 | `app/src/test/` | Roborazzi JVM screenshots of every screen (Robolectric, no emulator) and the alarm-plan test. |
 | `.github/workflows/android.yml` | CI: core tests, debug APK, unsigned release (checks R8), screenshots. |
@@ -80,7 +80,7 @@ adb shell am start -n com.prayertimesasia.app/.MainActivity \
 | Names follow the user, local name when travelling | Same | |
 | Tabs: Prayer, Qibla, Falak, Masjid, Settings; Journey optional | Same | Musafir features offered on the arrival card. |
 | Prayer tracker with streak and excused days | Same | |
-| Alerts at the exact time, early reminder, Syuruk alert, Subuh wake-up | Same idea | `AlarmManager` exact alarms (asks for "Alarms & reminders" on Android 12+, falls back to inexact if refused), rescheduled on boot, update, time and time-zone change. The wake-up is an alarm-channel notification rather than iOS 26's AlarmKit alarm. |
+| Alerts at the exact time, reminder before prayer (its own switch, 5 to 60 min), Syuruk alert, Subuh wake-up | Same idea | `AlarmManager` exact alarms (asks for "Alarms & reminders" on Android 12+, falls back to inexact if refused), rescheduled on boot, update, time and time-zone change. The wake-up is an alarm-channel notification rather than iOS 26's AlarmKit alarm. |
 | Qibla compass, green aligned state with haptic, steps, calibration hint | Same | Rotation-vector sensor, corrected to true north with the magnetic declination for where you are. |
 | Falak cards, level | Same | |
 | Falak AR | Different | A camera view with a compass overlay (qibla, sun, shadow direction) instead of ARKit's floor-anchored stick; no ARCore, so it works on any phone with a camera and compass. |

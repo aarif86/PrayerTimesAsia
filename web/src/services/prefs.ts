@@ -34,6 +34,7 @@ export interface Preferences {
   hijriAdjustment: number
   notificationsEnabled: boolean
   notifyPrayers: Prayer[]
+  /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
   reminderMinutesBefore: number
   musafirThresholdKm: number
   jakimZoneOverride: string | null
@@ -167,3 +168,7 @@ export function loadPreferences(): Preferences {
 export function savePreferences(p: Preferences): void {
   try { localStorage.setItem(KEY, JSON.stringify(p)) } catch { /* private mode: keep in memory */ }
 }
+
+/** "Reminder before prayer": on at 15 minutes, any of these to choose from. */
+export const DEFAULT_REMINDER_MINUTES = 15
+export const REMINDER_CHOICES = [5, 10, 15, 20, 30, 45, 60]

@@ -25,7 +25,11 @@ enum NotificationScheduler {
             content.title = alert.title
             content.body = alert.body
             content.sound = .default
-            content.interruptionLevel = .active
+            // Time Sensitive: rings through Focus (Work, Do Not Disturb...) so a
+            // reminder isn't lost in a meeting. iOS honours it once the app's
+            // Time Sensitive Notifications capability is on (see PENDING.md);
+            // until then it simply behaves as a normal alert.
+            content.interruptionLevel = .timeSensitive
             let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: alert.fireDate)
             let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
             center.add(UNNotificationRequest(identifier: alert.id, content: content, trigger: trigger))

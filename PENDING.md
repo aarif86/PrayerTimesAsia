@@ -9,7 +9,7 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 - [ ] **Public TestFlight link** - App Store Connect → TestFlight → External Testing → a group → Public Link. Send it to Claude to put on the website instead of "ask for an invite".
 - [ ] **Try the Android app on a phone** - open a PR, tap *Download the APK* in its Android test build comment, install (steps in android/README.md), report what works.
 - [ ] **Badal Haji order dates** - when orders open and the last day to order for Hajj 1448, so the Badal card can say "orders now open" in season.
-- [ ] **Prayer alerts through Focus (Time Sensitive)** - Apple Developer → Identifiers → com.prayertimesasia.app → tick *Time Sensitive Notifications* → Save. Then tell Claude.
+- [ ] **Prayer alerts through Focus (Time Sensitive)** - Apple Developer → Identifiers → com.prayertimesasia.app → tick *Time Sensitive Notifications* → Save. Then tell Claude. This is what lets the new "Reminder before prayer" ring during a Work or Do Not Disturb Focus on iPhone; the app already asks for it.
 - [ ] **Falak committee review** - send docs/falak-review.md to the falak committee member; their notes go on the board.
 - [ ] **Usage counts (TelemetryDeck)** - sign up free, create one app, paste its App ID into `config/analytics.json` on main. Steps in [docs/analytics.md](docs/analytics.md) (about 5 minutes). Then, in App Store Connect → App Privacy, add the two "not linked, analytics" items listed in docs/app-store.md.
 - [ ] **Backup person on every account** - pick one trusted person and add them to the domain, Apple Developer, Google Play, GitHub, Firebase and TelemetryDeck. Tick them off in the table in [docs/stewardship.md](docs/stewardship.md) (who, never passwords).
@@ -21,7 +21,7 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 
 - [ ] Badal Haji season wording on the Prayer screen (after the dates arrive).
 - [ ] Badal.my for Malaysian users (when the site is ready).
-- [ ] Time Sensitive alerts in the app (after the Apple setting is on).
+- [ ] Time Sensitive alerts in the app (after the Apple setting is on): alerts and reminders are already marked Time Sensitive in the code; what's left is adding the capability to the app and a fresh signing profile for the release workflow.
 - [ ] Google Play release build (after the account exists).
 - [ ] App Store release (listing, screenshots, review).
 - [x] One shared set of "expected prayer times" in a shared folder that the iPhone, Android and web tests all read - done: [`testdata/`](testdata/). The iPhone and Android tests now also check every day of 2026, like the web.

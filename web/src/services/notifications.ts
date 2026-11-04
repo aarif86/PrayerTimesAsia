@@ -39,8 +39,10 @@ interface Alert { id: string; title: string; body: string; at: number }
 /** The alerts for the next two days, as the iOS scheduler builds them. */
 export function upcomingAlerts(now: number): Alert[] {
   const place = store.activePlace
-  if (!place || !store.prefs.notificationsEnabled) return []
   const prefs = store.prefs
+  const early = prefs.reminderMinutesBefore
+  const onTime = prefs.notificationsEnabled
+  if (!place || (!onTime && early <= 0)) return []
   const here = isInAsia(place) ? `${place.name} ${flag(placeProfile(place).code)}` : place.name
   const out: Alert[] = []
   for (let offset = 0; offset < 2; offset++) {
@@ -51,17 +53,20 @@ export function upcomingAlerts(now: number): Alert[] {
       const time = day.times[prayer]
       const name = store.name(prayer, time)
       const id = `${day.year}-${day.month}-${day.day}-${prayer}`
+      if (early > 0) {
+        // The heads-up before the prayer, on its own switch: for when a meeting
+        // or work would otherwise run past the time.
+        out.push({
+          id: `${id}-early`, title: prayer === 'sunrise' ? `${store.name('fajr')} ends in ${early} min` : `${name} in ${early} min`,
+          body: `${name} at ${store.formatted(time)} · ${here}`, at: time - early * 60_000,
+        })
+      }
+      if (!onTime) continue
       if (prayer === 'sunrise') {
         out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended. ${here}`, at: time })
         continue
       }
       out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}`, at: time })
-      if (prefs.reminderMinutesBefore > 0) {
-        out.push({
-          id: `${id}-early`, title: `${name} in ${prefs.reminderMinutesBefore} min`,
-          body: `${name} at ${store.formatted(time)} · ${here}`, at: time - prefs.reminderMinutesBefore * 60_000,
-        })
-      }
     }
   }
   return out.filter((a) => a.at > now).sort((a, b) => a.at - b.at)
@@ -90,7 +95,7 @@ export function scheduleAlerts(): void {
 }
 
 export async function show(title: string, body: string, tag: string): Promise<void> {
-  const options: NotificationOptions = { body, tag, icon: `${import.meta.env.BASE_URL}icons/icon-192.png`, badge: `${import.meta.env.BASE_URL}icons/badge-96.png` }
+  const options: NotificationOptions = { body, tag, requireInteraction: tag.endsWith('-early'), icon: `${import.meta.env.BASE_URL}icons/icon-192.png`, badge: `${import.meta.env.BASE_URL}icons/badge-96.png` }
   try {
     const reg = await navigator.serviceWorker?.getRegistration()
     if (reg) { await reg.showNotification(title, options); return }
