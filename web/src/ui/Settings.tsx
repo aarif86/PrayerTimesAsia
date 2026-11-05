@@ -6,7 +6,7 @@ import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
 import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, type NamingStyle, type Prayer } from '../core/prayer'
 import { flag, profileMethod } from '../core/regions'
 import { alertSupport, downloadICS, permission, requestPermission, testAlert } from '../services/notifications'
-import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
+import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
 import { store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
 import { MakersCard, OFFERS } from './Makers'
@@ -48,6 +48,16 @@ export function SettingsScreen() {
     if (ok) store.update((x) => { x.notificationsEnabled = true })
     else openSheet({ kind: 'alerts-help' })
   }
+
+  const setReminder = async (on: boolean) => {
+    if (!on) { store.update((x) => { x.reminderMinutesBefore = 0 }); return }
+    if (support !== 'supported') { openSheet({ kind: 'alerts-help' }); return }
+    const ok = await requestPermission()
+    setPerm(permission())
+    if (ok) store.update((x) => { x.reminderMinutesBefore = DEFAULT_REMINDER_MINUTES })
+    else openSheet({ kind: 'alerts-help' })
+  }
+  const reminderOn = p.reminderMinutesBefore > 0 && perm === 'granted'
 
   const timetable = !source ? 'Calculated on this device'
     : s.hasTable() ? `Official · downloaded${s.tableVia() === 'feed' ? ' (feed)' : ''}` : 'Official · will download when online'
@@ -124,20 +134,23 @@ export function SettingsScreen() {
       </Group>
 
       <Group title="Alerts" foot={<>
-        An alert at the exact time of each prayer you choose, plus an early reminder if you like. <b>On the web, alerts ring only while Prayer Times Asia is open</b> - in a tab or as an installed app.
-        For alerts when it's closed, add the times to your calendar above: your calendar rings them.
+        Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both. <b>On the web, they ring only while Prayer Times Asia is open</b> - in a tab or as an installed app.
+        For alerts when it's closed, add the times to your calendar above: your calendar rings them, reminder included.
         {perm === 'denied' && ' Notifications are blocked for this site in your browser settings.'}
       </>}>
         <ToggleItem label="Prayer time alerts" on={p.notificationsEnabled && perm === 'granted'} onChange={(v) => void setAlerts(v)} />
-        {p.notificationsEnabled && perm === 'granted' && (
+        <ToggleItem label="Reminder before prayer" on={reminderOn} onChange={(v) => void setReminder(v)} />
+        {reminderOn && (
+          <SelectItem label="Remind me" value={String(p.reminderMinutesBefore)}
+            options={REMINDER_CHOICES.map((m) => ({ value: String(m), label: `${m} min before` }))}
+            onChange={(v) => store.update((x) => { x.reminderMinutesBefore = parseInt(v, 10) })} />
+        )}
+        {(p.notificationsEnabled || p.reminderMinutesBefore > 0) && perm === 'granted' && (
           <>
             {PRAYERS.map((pr: Prayer) => (
               <ToggleItem label={pr === 'sunrise' ? `${s.name(pr)} (${s.name('fajr')} ends)` : s.name(pr)} on={p.notifyPrayers.includes(pr)}
                 onChange={(v) => store.update((x) => { x.notifyPrayers = v ? [...new Set([...x.notifyPrayers, pr])] : x.notifyPrayers.filter((q) => q !== pr) })} />
             ))}
-            <SelectItem label="Early reminder" value={String(p.reminderMinutesBefore)}
-              options={[{ value: '0', label: 'Off' }, { value: '5', label: '5 min before' }, { value: '10', label: '10 min before' }, { value: '15', label: '15 min before' }]}
-              onChange={(v) => store.update((x) => { x.reminderMinutesBefore = parseInt(v, 10) })} />
             <button class="item" onClick={testAlert}><BellRing size={20} /><span class="label">Send a test alert</span></button>
           </>
         )}

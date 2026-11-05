@@ -59,7 +59,7 @@ install; a missing key means the default. `"v": 1` is always there.
 | `todayStyle` | `centre`, `list`, `dial`, `sunPath`, `bands` |
 | `hijriAdjustment` | -2 to 2 |
 | `notifyPrayers` | list of `fajr`, `sunrise`, `dhuhr`, `asr`, `maghrib`, `isha` |
-| `reminderMinutesBefore` | minutes |
+| `reminderMinutesBefore` | minutes before each prayer for "Reminder before prayer" (0 = off) |
 | `musafirThresholdKm` | km |
 | `prayedLog` | `{"yyyy-MM-dd": [prayers]}` |
 | `excusedDays` | list of `yyyy-MM-dd` |

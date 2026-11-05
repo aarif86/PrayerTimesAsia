@@ -90,7 +90,11 @@ struct Preferences: Codable, Equatable, Sendable {
 
     var notificationsEnabled = false
     var notifyPrayers: Set<Prayer> = Set(Prayer.obligatory)
+    /// Minutes before each chosen prayer for the "Reminder before prayer"
+    /// heads-up; 0 = off. Separate from the alert at the prayer time itself.
     var reminderMinutesBefore = 0
+    static let defaultReminderMinutes = 15
+    static let reminderChoices = [5, 10, 15, 20, 30, 45, 60]
 
     var musafirThresholdKm: Double = 81
     /// Pinned JAKIM zone; nil = nearest to where you are.
