@@ -276,6 +276,35 @@
     @media (max-width: 860px) { .letter-row { grid-template-columns: 1fr; } .trip-photo { max-width: 420px; margin: 0 auto; } }
         @media (max-width: 600px) { .letter { padding: 30px 22px; } }
     #who .card h3 { margin-bottom: 8px; }
+    /* Small examples of the app on each "who it's for" card */
+    .ex { border-radius: 16px; padding: 12px 14px; margin: -4px 0 18px; font-size: 0.86rem; line-height: 1.35; color: var(--text);
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.10); box-shadow: 0 14px 30px -18px rgba(0,0,0,.8); transition: transform .4s ease; }
+    #who .card:hover .ex { transform: translateY(-3px); }
+    .ex .ex-sub { color: var(--muted); font-size: 0.8rem; }
+    .ex-main { font-weight: 700; }
+    .ex-note { display: flex; gap: 10px; align-items: flex-start; background: rgba(240,242,255,0.12); backdrop-filter: blur(8px); }
+    .ex-note img { width: 30px; height: 30px; border-radius: 8px; flex: none; }
+    .ex-note > div { flex: 1; }
+    .ex-top { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--muted); }
+    .ex-top b { font-weight: 600; letter-spacing: .02em; text-transform: uppercase; }
+    .ex-pill { margin-top: 8px; display: inline-block; background: rgba(242,182,90,.16); color: var(--gold); border-radius: 999px; padding: 4px 10px; font-size: 0.76rem; font-weight: 600; }
+    .ex-list { padding: 4px 14px; }
+    .ex-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .ex-row:last-child { border-bottom: 0; }
+    .ex-row b { color: var(--gold); font-weight: 600; white-space: nowrap; }
+    .ex-days, .ex-dots { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+    .ex-days span { font-size: 0.7rem; color: var(--muted); }
+    .ex-dots { margin: 6px 0 8px; justify-items: center; }
+    .ex-dots i { width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--ember)); }
+    .ex-dots i.p { background: repeating-linear-gradient(45deg, rgba(255,255,255,.25) 0 3px, rgba(255,255,255,.08) 3px 6px); }
+    .ex-cal { padding: 8px 10px; font-variant-numeric: tabular-nums; }
+    .ex-calh, .ex-calr { display: grid; grid-template-columns: 1.1fr repeat(4, 1fr); gap: 4px; padding: 4px 0; font-size: 0.76rem; text-align: center; }
+    .ex-calh { color: var(--gold); font-weight: 600; font-size: 0.7rem; }
+    .ex-calr span:first-child, .ex-calh span:first-child { text-align: left; color: var(--muted); }
+    .ex-calr + .ex-calr { border-top: 1px solid rgba(255,255,255,0.07); }
+    .ex-tv { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(160deg, #0d1436, #1a1446); border: 6px solid #05070f; border-radius: 12px; }
+    .ex-big { font-size: 1.7rem; font-weight: 800; letter-spacing: .02em; font-variant-numeric: tabular-nums; color: var(--gold); line-height: 1.1; }
+    .ex-qr { width: 58px; height: 58px; border-radius: 6px; flex: none; }
     .ask-band { text-align: center; border-radius: 30px; padding: 56px 28px; border: 1px solid var(--card-line);
       background: radial-gradient(70% 120% at 50% 0%, #f39a4a33, transparent 70%), linear-gradient(135deg, #1d2160, #2b1a4f 60%, #3d1f3f); }
     .ask-band .lead { margin: 0 auto; }
@@ -503,26 +532,32 @@
       </div>
       <div class="grid">
         <div class="card">
+          <div class="ex ex-note" aria-hidden="true"><img src="img/icon-192.png" alt="" /><div><div class="ex-top"><b>Prayer Times Asia</b><span>now</span></div><div class="ex-main">Asar in 15 minutes</div><div class="ex-sub">4.11 pm at Raffles Place</div></div></div>
           <h3>The worker between meetings</h3>
           <p>A gentle reminder before Zohor and Asar, and the next prayer right on your home screen, so a busy day never makes you miss salah.</p>
         </div>
         <div class="card">
+          <div class="ex ex-card" aria-hidden="true"><div class="ex-main">✈️ Welcome to Bangkok</div><div class="ex-sub">Times now follow Thailand.</div><div class="ex-pill">1,430 km from home · You can qasar and jamak</div></div>
           <h3>The traveller</h3>
           <p>Land in Bangkok or Tokyo and the times already match the local masjid. It also tells you how far you are from home and whether you can shorten and combine your prayers.</p>
         </div>
         <div class="card">
+          <div class="ex ex-list" aria-hidden="true"><div class="ex-row"><span>🕌 Musollah, Level 3</span><b>250 m</b></div><div class="ex-row"><span>🕌 Masjid Al&#8209;Falah</span><b>1.2 km</b></div><div class="ex-row ex-qibla"><span>🧭 Qibla</span><b>293°</b></div></div>
           <h3>The student abroad</h3>
           <p>Far from a masjid, it finds the nearest musollah or prayer room, shows the qibla and still works with no signal.</p>
         </div>
         <div class="card">
+          <div class="ex ex-track" aria-hidden="true"><div class="ex-days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div><div class="ex-dots"><i></i><i></i><i class="p"></i><i class="p"></i><i class="p"></i><i></i><i></i></div><div class="ex-sub">Paused for 3 days · Record kept</div></div>
           <h3>The sister</h3>
           <p>Keep track of your prayers, with a pause for haid or illness so your record isn't broken. It stays on your phone and is never sent anywhere.</p>
         </div>
         <div class="card">
+          <div class="ex ex-cal" aria-hidden="true"><div class="ex-calh"><span></span><span>Subuh</span><span>Zohor</span><span>Asar</span><span>Maghrib</span></div><div class="ex-calr"><span>Fri 6</span><span>5.28</span><span>12.50</span><span>4.11</span><span>6.52</span></div><div class="ex-calr"><span>Sat 7</span><span>5.27</span><span>12.50</span><span>4.11</span><span>6.52</span></div><div class="ex-calr"><span>Sun 8</span><span>5.27</span><span>12.50</span><span>4.12</span><span>6.53</span></div></div>
           <h3>The family at home</h3>
           <p>Times on every phone in the house, and a printable monthly calendar for the fridge or the surau wall.</p>
         </div>
         <div class="card">
+          <div class="ex ex-tv" aria-hidden="true"><div><div class="ex-sub">Asar iqamah in</div><div class="ex-big">08:24</div><div class="ex-sub">Azan 4.11 · Iqamah 4.21</div></div><svg class="ex-qr" viewBox="-1 -1 27 27" aria-hidden="true"><rect x="-1" y="-1" width="27" height="27" fill="#fff"/><path d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM13 0h1v1h-1zM14 0h1v1h-1zM18 0h1v1h-1zM19 0h1v1h-1zM20 0h1v1h-1zM21 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM10 1h1v1h-1zM12 1h1v1h-1zM13 1h1v1h-1zM16 1h1v1h-1zM18 1h1v1h-1zM24 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM9 2h1v1h-1zM11 2h1v1h-1zM13 2h1v1h-1zM14 2h1v1h-1zM15 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM21 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM9 3h1v1h-1zM11 3h1v1h-1zM13 3h1v1h-1zM15 3h1v1h-1zM16 3h1v1h-1zM18 3h1v1h-1zM20 3h1v1h-1zM21 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM12 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM18 5h1v1h-1zM24 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM19 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM9 7h1v1h-1zM12 7h1v1h-1zM13 7h1v1h-1zM0 8h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM11 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM0 9h1v1h-1zM2 9h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM7 9h1v1h-1zM9 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM13 9h1v1h-1zM14 9h1v1h-1zM15 9h1v1h-1zM17 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM9 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM13 10h1v1h-1zM15 10h1v1h-1zM17 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM24 10h1v1h-1zM0 11h1v1h-1zM2 11h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM7 11h1v1h-1zM9 11h1v1h-1zM17 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM23 11h1v1h-1zM24 11h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1zM11 12h1v1h-1zM15 12h1v1h-1zM18 12h1v1h-1zM24 12h1v1h-1zM0 13h1v1h-1zM5 13h1v1h-1zM7 13h1v1h-1zM10 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM20 13h1v1h-1zM23 13h1v1h-1zM0 14h1v1h-1zM1 14h1v1h-1zM2 14h1v1h-1zM3 14h1v1h-1zM6 14h1v1h-1zM7 14h1v1h-1zM8 14h1v1h-1zM13 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM18 14h1v1h-1zM20 14h1v1h-1zM21 14h1v1h-1zM22 14h1v1h-1zM23 14h1v1h-1zM24 14h1v1h-1zM0 15h1v1h-1zM2 15h1v1h-1zM4 15h1v1h-1zM5 15h1v1h-1zM8 15h1v1h-1zM12 15h1v1h-1zM15 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM19 15h1v1h-1zM21 15h1v1h-1zM22 15h1v1h-1zM24 15h1v1h-1zM0 16h1v1h-1zM3 16h1v1h-1zM6 16h1v1h-1zM7 16h1v1h-1zM8 16h1v1h-1zM10 16h1v1h-1zM11 16h1v1h-1zM12 16h1v1h-1zM13 16h1v1h-1zM15 16h1v1h-1zM16 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM19 16h1v1h-1zM20 16h1v1h-1zM22 16h1v1h-1zM23 16h1v1h-1zM8 17h1v1h-1zM11 17h1v1h-1zM14 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM0 18h1v1h-1zM1 18h1v1h-1zM2 18h1v1h-1zM3 18h1v1h-1zM4 18h1v1h-1zM5 18h1v1h-1zM6 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM12 18h1v1h-1zM14 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM20 18h1v1h-1zM24 18h1v1h-1zM0 19h1v1h-1zM6 19h1v1h-1zM8 19h1v1h-1zM11 19h1v1h-1zM13 19h1v1h-1zM15 19h1v1h-1zM16 19h1v1h-1zM20 19h1v1h-1zM24 19h1v1h-1zM0 20h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM8 20h1v1h-1zM9 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM12 20h1v1h-1zM14 20h1v1h-1zM15 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM18 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM0 21h1v1h-1zM2 21h1v1h-1zM3 21h1v1h-1zM4 21h1v1h-1zM6 21h1v1h-1zM8 21h1v1h-1zM10 21h1v1h-1zM12 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM16 21h1v1h-1zM17 21h1v1h-1zM18 21h1v1h-1zM23 21h1v1h-1zM24 21h1v1h-1zM0 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM6 22h1v1h-1zM10 22h1v1h-1zM11 22h1v1h-1zM14 22h1v1h-1zM20 22h1v1h-1zM21 22h1v1h-1zM22 22h1v1h-1zM23 22h1v1h-1zM24 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM10 23h1v1h-1zM11 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM17 23h1v1h-1zM19 23h1v1h-1zM20 23h1v1h-1zM22 23h1v1h-1zM23 23h1v1h-1zM24 23h1v1h-1zM0 24h1v1h-1zM1 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM11 24h1v1h-1zM12 24h1v1h-1zM16 24h1v1h-1zM18 24h1v1h-1zM21 24h1v1h-1zM24 24h1v1h-1z" fill="#0b0f2a"/></svg></div>
           <h3>The masjid committee</h3>
           <p>A free prayer times screen for the masjid TV with azan and iqamah times, and a QR code so jamaah can take your times home.</p>
         </div>
