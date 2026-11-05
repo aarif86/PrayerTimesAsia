@@ -96,7 +96,7 @@ export function PlacesSheet() {
               <div class="group">{s.prefs.savedPlaces.map((p) => row(p, true))}</div>
             </>
           )}
-          <p class="group-foot">Search any city in Asia - Hanoi, Osaka, Seoul, Istanbul. Times are calculated in your browser, so they keep working offline. Your location never leaves this device.</p>
+          <p class="group-foot">Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated in your browser, so they keep working offline. Your location never leaves this device.</p>
         </>
       ) : (
         <>

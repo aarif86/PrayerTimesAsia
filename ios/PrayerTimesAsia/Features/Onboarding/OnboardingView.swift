@@ -15,7 +15,7 @@ struct OnboardingView: View {
                     Text("Prayer Times\nAsia")
                         .font(Theme.display(52, .bold))
                         .lineSpacing(-6)
-                    Text("Wherever you land in Asia, know when to pray and which way to face.")
+                    Text("Wherever you land, know when to pray and which way to face.")
                         .font(.title3.weight(.medium))
                         .opacity(0.9)
                 }

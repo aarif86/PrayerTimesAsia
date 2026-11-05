@@ -282,7 +282,7 @@ private fun CalendarRow(title: String, date: String, detail: String, status: Cal
     }
 }
 
-/** Current location, saved places and search (built-in Asian cities, then the phone's geocoder). */
+/** Current location, saved places and search (built-in cities worldwide, then the phone's geocoder). */
 @Composable
 fun PlacesSheetContent(state: AppState, onDone: () -> Unit) {
     var query by remember { mutableStateOf("") }
@@ -328,7 +328,7 @@ fun PlacesSheetContent(state: AppState, onDone: () -> Unit) {
                     }
                 }
                 item {
-                    Text("Search any city in Asia - Hanoi, Osaka, Seoul, Istanbul. Times are calculated on your phone, so they keep working offline.",
+                    Text("Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated on your phone, so they keep working offline.",
                         style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(vertical = 16.dp))
                 }
             } else {

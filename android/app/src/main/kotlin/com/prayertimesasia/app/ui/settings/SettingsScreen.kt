@@ -249,7 +249,7 @@ fun SettingsScreen(
                 }
             }
             item {
-                Section(null, "Prayer Times Asia - made for Muslims living and travelling across Asia.") {
+                Section(null, "Prayer Times Asia. Built in Asia, made for Muslims everywhere.") {
                     LinkRow("Sources & credits", null, openCredits)
                     LinkRow("Help verify times where you are", null) {
                         runCatching { uri.openUri("https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md") }

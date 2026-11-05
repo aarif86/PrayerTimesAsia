@@ -218,7 +218,7 @@ struct SettingsView: View {
                     Link("Design a new look", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md")!)
                     LabeledContent("Version", value: Bundle.main.appVersion)
                 } footer: {
-                    Text("Prayer Times Asia - made for Muslims living and travelling across Asia.")
+                    Text("Prayer Times Asia. Built in Asia, made for Muslims everywhere.")
                 }
             }
             .onAppear {
