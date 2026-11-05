@@ -14,7 +14,7 @@ git push git@github.com:<owner>/<new-repo>.git android:main
 | --- | --- |
 | `core/` | Pure Kotlin/JVM: the prayer engine and everything that decides a time. A line-by-line port of the iOS `Core/` folder: the praytimes.org solar model with each authority's fitted offsets (MUIS, JAKIM, Kemenag and 10 others), country profiles and naming styles, the Umm al-Qura calendar, blessed times, Falak (Qibla Day, rashdul qiblat, shadow stick), musafir rules, JAKIM zones, the MUIS/JAKIM/Kemenag parsers, mosque profiles, the calendar sanad, preferences, and the resolver (official table > masjid > calculation). Also the Overpass parser and an offline list of Asian cities. |
 | `core/src/test/` | JUnit tests: the iOS test suite's expected values, plus exact-minute matches with the iOS app's own screenshots (Hanoi and Makkah) and a full-century check of the Hijri calendar. |
-| `app/` | The Android app (`com.prayertimesasia.app`, minSdk 26, target/compile SDK 35). |
+| `app/` | The Android app (`com.prayertimesasia.app`, minSdk 26, target/compile SDK 36). |
 | `app/.../ui/today/` | The Prayer screen in all five styles: Centre Dial (default), Side Dial, Day Dial, Sun Path, Colour Bands. |
 | `app/.../ui/{qibla,falak,masjid,settings,journey,onboarding,makers}/` | The other tabs and sheets. |
 | `app/.../data/` | Official timetable downloads and disk cache, `mosques.json` / `calendar.json`, location (platform `LocationManager` + `Geocoder`), preferences. |

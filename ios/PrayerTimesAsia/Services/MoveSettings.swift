@@ -46,6 +46,7 @@ struct MovedSettings: Codable, Equatable {
     var trackerEnabled: Bool?
     var prayedLog: [String: [Prayer]]?
     var excusedDays: [String]?
+    var trackerPausedSince: String?
     var wakeUp: WakeUpTiming?
 
     static let version = 1
@@ -87,6 +88,7 @@ struct MovedSettings: Codable, Equatable {
             prayedLog = log.mapValues { $0.compactMap { $0.value } }
         }
         excusedDays = field(.excusedDays)
+        trackerPausedSince = field(.trackerPausedSince)
         wakeUp = field(.wakeUp)
     }
 
@@ -137,6 +139,7 @@ extension MovedSettings {
         let log = p.prayedLog.filter { !$0.value.isEmpty }
         prayedLog = log.isEmpty ? nil : log.mapValues { set in Prayer.allCases.filter { set.contains($0) } }
         excusedDays = p.excusedDays.isEmpty ? nil : p.excusedDays.sorted()
+        trackerPausedSince = p.trackerPausedSince
         wakeUp = p.wakeUp
     }
 
@@ -171,6 +174,7 @@ extension MovedSettings {
             out.prayedLog[day, default: []].formUnion(prayers)
         }
         out.excusedDays.formUnion(excusedDays ?? [])
+        out.trackerPausedSince = trackerPausedSince.flatMap { $0.wholeMatch(of: #/\d{4}-\d{2}-\d{2}/#) != nil ? $0 : nil }
         out.wakeUp = wakeUp
         return out
     }

@@ -14,7 +14,7 @@ import { countryForTimeZone, FALLBACK_PROFILE, personalNaming, profileFor, profi
 import {
   disagreements, jamaahTimes, mosqueAsr, mosqueMethod, mosqueNear, type MosqueDataset, type MosqueProfile,
 } from '../core/sources'
-import { dayKey, daysBetween, deviceTimeZone, zoned, zonedTime } from '../core/tz'
+import { dayKey, daysBetween, deviceTimeZone, ymdKey, zoned, zonedTime } from '../core/tz'
 import { nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
 import { DEFAULT_PREFS, loadPreferences, savePreferences, type Preferences, type TodayStyle } from './prefs'
@@ -343,7 +343,37 @@ class AppStore {
     })
   }
 
-  isExcused(ms: number): boolean { return this.prefs.excusedDays.includes(this.dayKey(ms)) }
+  isExcused(ms: number): boolean { return this.isExcusedKey(this.dayKey(ms)) }
+
+  /** Marked excused on its own, or inside a pause (from the day it began; days ahead aren't counted yet). */
+  isExcusedKey(key: string): boolean {
+    const since = this.prefs.trackerPausedSince
+    return this.prefs.excusedDays.includes(key) || (!!since && key >= since && key <= this.dayKey(this.now()))
+  }
+
+  /** How a day went: prayers ticked and whether it was excused. */
+  trackerDay(key: string): { prayed: number; excused: boolean } {
+    return { prayed: (this.prefs.prayedLog[key] ?? []).filter((p) => OBLIGATORY.includes(p)).length, excused: this.isExcusedKey(key) }
+  }
+
+  get trackerPaused(): boolean { return !!this.prefs.trackerPausedSince }
+
+  /** Pause for haid, nifas or illness: today and every day until it's ended count as excused, so the streak waits. */
+  pauseTracker(ms: number): void {
+    const key = this.dayKey(ms)
+    this.update((p) => { p.trackerPausedSince = key })
+  }
+
+  /** End the pause: the paused days are kept as excused days, today included. */
+  endTrackerPause(ms: number): void {
+    const since = this.prefs.trackerPausedSince
+    if (!since) return
+    const today = this.dayKey(ms)
+    this.update((p) => {
+      p.excusedDays = [...new Set([...p.excusedDays, ...daysFrom(since, today)])].sort()
+      p.trackerPausedSince = null
+    })
+  }
 
   toggleExcused(ms: number): void {
     const key = this.dayKey(ms)
@@ -357,7 +387,7 @@ class AppStore {
     let count = 0
     for (let i = 0; i < 400; i++) {
       const key = this.dayKey(now - i * 86_400_000)
-      const complete = this.prefs.excusedDays.includes(key) || (this.prefs.prayedLog[key]?.length ?? 0) >= OBLIGATORY.length
+      const complete = this.isExcusedKey(key) || (this.prefs.prayedLog[key]?.length ?? 0) >= OBLIGATORY.length
       if (complete) count++
       else if (i > 0) break
     }
@@ -546,6 +576,19 @@ function demoPreferences(demo: Demo): Preferences {
   for (let back = 1; back <= 3; back++) {
     p.prayedLog[dayKey(now - back * 86_400_000, 'Asia/Singapore')] = [...OBLIGATORY]
   }
+  // ?tracker=month (a month of history) or ?tracker=paused (the same, paused two days ago).
+  const tracker = q.get('tracker')
+  if (tracker === 'month' || tracker === 'paused') {
+    const pattern = [5, 5, 4, 5, 5, 3, 5, 5, 5, 2, 5, 5, 4, 5, 5, 5, 5, 4, 5, 5, 5, 3, 5, 5, 5, 5]
+    for (let back = 1; back <= 30; back++) {
+      const key = dayKey(now - back * 86_400_000, 'Asia/Singapore')
+      if (back >= 12 && back <= 17) { p.excusedDays.push(key); continue }
+      const n = pattern[back % pattern.length]
+      p.prayedLog[key] = OBLIGATORY.slice(0, n)
+    }
+    p.prayedLog[dayKey(now, 'Asia/Singapore')] = OBLIGATORY.slice(0, 1)
+    if (tracker === 'paused') p.trackerPausedSince = dayKey(now - 2 * 86_400_000, 'Asia/Singapore')
+  }
   const appearance = q.get('appearance')
   p.appearance = appearance === 'light' || appearance === 'dark' || appearance === 'system' ? appearance : 'dark'
   const style = q.get('style') as TodayStyle | null
@@ -600,3 +643,16 @@ export function useNow(intervalMs = 1000): number {
 
 export type { AppStore }
 export { daysBetween }
+
+/** Every "yyyy-MM-dd" from `from` to `to`, both included (at most a year). */
+export function daysFrom(from: string, to: string): string[] {
+  const out: string[] = []
+  const [y, m, d] = from.split('-').map(Number)
+  for (let i = 0; i < 366; i++) {
+    const t = new Date(Date.UTC(y, m - 1, d + i))
+    const key = ymdKey(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate())
+    if (key > to) break
+    out.push(key)
+  }
+  return out
+}

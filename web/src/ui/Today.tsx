@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
   Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
-  CloudMoon, Contrast, Droplet, Flame, MapPin, MoonStar, Navigation, Palette, Plane, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
+  CloudMoon, Contrast, Droplet, Flame, Pause, MapPin, MoonStar, Navigation, Palette, Plane, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
@@ -152,26 +152,13 @@ function StyleButton({ c }: { c: Ctx }) {
 
 function StreakChip({ now }: { now: number }) {
   const excused = store.isExcused(now)
-  const [menu, setMenu] = useState(false)
+  const paused = store.trackerPaused
   return (
-    <span style={{ position: 'relative' }}>
-      <button class="streak-chip" onClick={() => setMenu(!menu)} aria-label={`Streak ${store.streak(now)} days${excused ? ', excused today' : ''}`}>
-        {excused ? <Droplet size={15} fill="currentColor" /> : <Flame size={15} fill="currentColor" />}
-        <span class="mono">{store.streak(now)}</span>
-      </button>
-      {menu && (
-        <div class="sheet-backdrop" style={{ background: 'transparent' }} onClick={() => setMenu(false)}>
-          <div class="menu" style={{ right: '20px', top: 'calc(var(--safe-top) + 60px)' }}>
-            <button onClick={() => { setMenu(false); store.toggleExcused(now) }}>
-              {excused ? <X size={16} /> : <Droplet size={16} />}{excused ? 'Not excused today' : 'Excused today'}
-            </button>
-            <div class="caption secondary" style={{ padding: '4px 12px 8px', maxWidth: '240px' }}>
-              Mark today as excused - for example during haid or illness - so your streak continues.
-            </div>
-          </div>
-        </div>
-      )}
-    </span>
+    <button class="streak-chip" onClick={() => openSheet({ kind: 'tracker' })}
+      aria-label={`Prayer tracker: streak ${store.streak(now)} days${paused ? ', paused' : excused ? ', excused today' : ''}`}>
+      {paused ? <Pause size={15} /> : excused ? <Droplet size={15} fill="currentColor" /> : <Flame size={15} fill="currentColor" />}
+      <span class="mono">{store.streak(now)}</span>
+    </button>
   )
 }
 
