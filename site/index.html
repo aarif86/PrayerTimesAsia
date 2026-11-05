@@ -263,6 +263,16 @@
     .letter blockquote { margin: 0; font-size: 1.12rem; }
     .letter figcaption { margin-top: 10px; color: var(--gold); font-weight: 700; }
     .letter .ars { margin: 4px 0 0; font-size: 0.9rem; color: var(--muted); }
+    .letter-row { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 28px; align-items: center; max-width: 1060px; margin: 44px auto 0; }
+    .letter-row .letter { margin: 0; max-width: none; }
+    .trip-photo { margin: 0; }
+    .trip-photo img { width: 100%; height: auto; display: block; border-radius: 24px; border: 1px solid var(--card-line); box-shadow: 0 30px 60px -30px rgba(0,0,0,.7); transform: rotate(-1.5deg); transition: transform .6s ease; }
+    .trip-photo:hover img { transform: rotate(0deg) scale(1.01); }
+    .trip-photo figcaption { margin-top: 12px; font-size: 0.9rem; color: var(--muted); text-align: center; }
+    .signed { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+    .signed img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); flex: none; }
+    .signed figcaption { margin-top: 0; }
+    @media (max-width: 860px) { .letter-row { grid-template-columns: 1fr; } .trip-photo { max-width: 420px; margin: 0 auto; } }
         @media (max-width: 600px) { .letter { padding: 30px 22px; } }
     #who .card h3 { margin-bottom: 8px; }
     .ask-band { text-align: center; border-radius: 30px; padding: 56px 28px; border: 1px solid var(--card-line);
@@ -430,6 +440,11 @@
         </div>
       </div>
 
+      <div class="letter-row">
+      <figure class="trip-photo">
+        <img src="img/vietnam-masjid.webp" alt="A masjid gate and minaret in Vietnam, between the city's glass towers" loading="lazy" width="800" height="800" />
+        <figcaption>A masjid in Vietnam, on the trip that started it all.</figcaption>
+      </figure>
       <figure class="letter">
         <blockquote>
           <p>Assalamualaikum.</p>
@@ -437,9 +452,15 @@
           <p>So back home in Singapore, I decided to build one. Fully focused on salah, with times worked out the way each country does, starting with Asia and now around the world, and nothing to sell you.</p>
           <p>It's free and it will stay free. If it helps you, make du'a for us, and share it with someone who prays.</p>
         </blockquote>
-        <figcaption>Ustaz Aarif Raziff, founder of Prayer Times Asia</figcaption>
-        <p class="ars">Recognised by MUIS under the Asatizah Recognition Scheme. <a href="https://www.muis.gov.sg/education/asatizah-development/asatizah-recognition-scheme/ars-directory/" target="_blank" rel="noopener">See the ARS directory</a>.</p>
+        <div class="signed">
+          <img src="img/ustaz-aarif.webp" alt="Ustaz Aarif Raziff" width="64" height="64" loading="lazy" />
+          <div>
+            <figcaption>Ustaz Aarif Raziff, founder of Prayer Times Asia</figcaption>
+            <p class="ars">Recognised by MUIS under the Asatizah Recognition Scheme. <a href="https://www.muis.gov.sg/education/asatizah-development/asatizah-recognition-scheme/ars-directory/" target="_blank" rel="noopener">See the ARS directory</a>.</p>
+          </div>
+        </div>
       </figure>
+      </div>
     </div>
   </section>
 
@@ -860,7 +881,7 @@
     if (list && !still) list.innerHTML += list.innerHTML.replace(/<li>/g, '<li aria-hidden="true">');
 
     // Sections rise into view as you scroll, a little after each other.
-    var groups = ['main section .center', '.chapter', '.letter', '.feature', '.grid > .card', '.countries > .card',
+    var groups = ['main section .center', '.chapter', '.trip-photo', '.letter', '.feature', '.grid > .card', '.countries > .card',
       '.steps > .card', '.partner', '.faq details', '.ask-band'];
     var items = document.querySelectorAll(groups.join(','));
     items.forEach(function (el) {
