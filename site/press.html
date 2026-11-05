@@ -34,11 +34,17 @@
   .dl small { display: block; color: var(--muted); }
   .contact { background: linear-gradient(135deg, rgba(242,182,90,.16), rgba(255,255,255,.04)); border: 1px solid var(--line); border-radius: 18px; padding: 20px 24px; margin: 40px 0; }
   .contact p { color: var(--text); margin: 0; }
-  footer { color: var(--muted); padding: 10px 0 50px; font-size: 0.92rem; }
+  footer.wrap { color: var(--muted); padding: 34px 20px 100px; margin-top: 56px; border-top: 1px solid var(--line); font-size: 0.92rem; }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  header a.back { font-weight: 600; font-size: 0.92rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; transition: color .2s, border-color .2s; }
+  header a.back:hover { color: var(--gold); border-color: var(--gold); }
+  .totop { position: fixed; right: 20px; bottom: 20px; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: #1a1f45; color: var(--gold); font-size: 1.3rem; cursor: pointer; display: grid; place-items: center; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .3s, transform .3s; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+  .totop.show { opacity: 1; transform: none; pointer-events: auto; }
+  .totop:hover { border-color: var(--gold); }
 </style>
 </head>
 <body>
-<header><div class="wrap"><a href="./"><img src="img/icon-192.png" alt="" />Prayer Times Asia</a></div></header>
+<header><div class="wrap"><a href="./"><img src="img/icon-192.png" alt="" />Prayer Times Asia</a><a class="back" href="./">&#8592; Back to home</a></div></header>
 <main class="wrap">
   <h1>For press</h1>
   <p class="lead">Everything you need to write about Prayer Times Asia in one place. Use the text and images freely in coverage of the app.</p>
@@ -74,5 +80,9 @@
   </div>
 </main>
 <footer class="wrap"><a href="./">Back to Prayer Times Asia</a></footer>
+<button class="totop" type="button" aria-label="Back to top" title="Back to top">&#8593;</button>
+<script>
+  var tb = document.querySelector('.totop'); window.addEventListener('scroll', function () { tb.classList.toggle('show', window.scrollY > 500); }, { passive: true }); tb.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+</script>
 </body>
 </html>

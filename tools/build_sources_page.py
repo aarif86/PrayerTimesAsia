@@ -82,7 +82,7 @@ page = f'''<!doctype html>
   .tools {{ display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 14px; }}
   input, select {{ font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }}
   input {{ flex: 1; min-width: 220px; }}
-  .table {{ overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; }}
+  .table {{ margin-bottom: 30px; overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; }}
   table {{ width: 100%; border-collapse: collapse; font-size: 0.93rem; }}
   th, td {{ text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }}
   th {{ color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); position: sticky; top: 0; }}
@@ -95,13 +95,19 @@ page = f'''<!doctype html>
   .tag.table {{ background: rgba(92, 200, 140, 0.18); color: #8fe3b4; }}
   .tag.authority {{ background: rgba(242, 182, 90, 0.18); color: var(--gold); }}
   .tag.standard {{ background: rgba(255,255,255,0.08); color: var(--muted); }}
-  footer {{ color: var(--muted); padding: 34px 0 50px; font-size: 0.92rem; }}
+  footer.wrap {{ color: var(--muted); padding: 34px 20px 100px; margin-top: 64px; border-top: 1px solid var(--line); font-size: 0.92rem; }}
   footer a, .lead a {{ color: var(--gold); }}
+  header .wrap {{ display: flex; align-items: center; justify-content: space-between; gap: 12px; }}
+  header a.back {{ font-weight: 600; font-size: 0.92rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; transition: color .2s, border-color .2s; }}
+  header a.back:hover {{ color: var(--gold); border-color: var(--gold); }}
+  .totop {{ position: fixed; right: 20px; bottom: 20px; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: #1a1f45; color: var(--gold); font-size: 1.3rem; cursor: pointer; display: grid; place-items: center; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .3s, transform .3s; box-shadow: 0 6px 20px rgba(0,0,0,.35); }}
+  .totop.show {{ opacity: 1; transform: none; pointer-events: auto; }}
+  .totop:hover {{ border-color: var(--gold); }}
   @media (max-width: 700px) {{ td.n {{ display: none; }} th.n {{ display: none; }} }}
 </style>
 </head>
 <body>
-<header><div class="wrap"><a href="./"><img src="img/icon-192.png" alt="" />Prayer Times Asia</a></div></header>
+<header><div class="wrap"><a href="./"><img src="img/icon-192.png" alt="" />Prayer Times Asia</a><a class="back" href="./">&#8592; Back to home</a></div></header>
 <main class="wrap">
   <h1>Where our times come from</h1>
   <p class="lead">Prayer Times Asia follows your local religious authority first. Here is every country in the app, whose times it follows there, and how it works them out. This list comes straight from the app, so what you read here is exactly what the app does. If your masjid follows something different, please <a href="mailto:salam@prayertimes.asia?subject=Prayer%20time%20source">tell us</a>.</p>
@@ -121,10 +127,12 @@ page = f'''<!doctype html>
   </table></div>
 </main>
 <footer class="wrap">Anywhere not listed uses the Muslim World League method. You can always change this in the app's Settings. <a href="./">Back to Prayer Times Asia</a></footer>
+<button class="totop" type="button" aria-label="Back to top" title="Back to top">&#8593;</button>
 <script>
   var q = document.getElementById('q'), s = document.getElementById('s'), rows = document.querySelectorAll('tbody tr');
   function f() {{ var t = q.value.trim().toLowerCase(), k = s.value;
     rows.forEach(function (r) {{ r.hidden = (t && r.dataset.q.indexOf(t) < 0) || (k && r.dataset.s !== k); }}); }}
+  var tb = document.querySelector('.totop'); window.addEventListener('scroll', function () {{ tb.classList.toggle('show', window.scrollY > 500); }}, {{ passive: true }}); tb.addEventListener('click', function () {{ window.scrollTo({{ top: 0, behavior: 'smooth' }}); }});
   q.addEventListener('input', f); s.addEventListener('change', f);
 </script>
 </body>
