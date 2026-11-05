@@ -65,6 +65,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prayertimesasia.app.alarms.AlarmScheduler
+import com.prayertimesasia.app.alarms.Azan
 import com.prayertimesasia.app.AppState
 import com.prayertimesasia.app.BuildConfig
 import com.prayertimesasia.app.ui.components.Dims
@@ -192,9 +193,12 @@ fun SettingsScreen(
                 }
             }
             item {
-                Section("Alerts", "Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both. To let them through Do Not Disturb, allow reminders there. Worked out on your phone and topped up every time you open the app and when the phone restarts - nothing comes from a server.") {
+                Section("Alerts", "Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both. With Play the azan on (when available), prayer time alerts play the azan, and a Subuh azan at Subuh. To let them through Do Not Disturb, allow reminders there. Worked out on your phone and topped up every time you open the app and when the phone restarts - nothing comes from a server.") {
                     SwitchRow("Prayer time alerts", p.notificationsEnabled) { on ->
                         if (on) state.enableAlerts() else state.update { it.copy(notificationsEnabled = false) }
+                    }
+                    if (p.notificationsEnabled && Azan.isAvailable(context)) {
+                        SwitchRow("Play the azan", p.azanSound) { on -> state.update { it.copy(azanSound = on) } }
                     }
                     SwitchRow("Reminder before prayer", p.reminderMinutesBefore > 0) { on ->
                         if (on) state.enableReminder() else state.update { it.copy(reminderMinutesBefore = 0) }

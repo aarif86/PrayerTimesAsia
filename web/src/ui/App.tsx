@@ -15,6 +15,7 @@ import { SettingsScreen, VERSION } from './Settings'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
 import { SKY, skyAt } from './sky'
 import { TodayScreen } from './Today'
+import { TrackerSheet } from './Tracker'
 
 const MasjidScreen = lazy(() => import('./Masjid'))
 
@@ -94,6 +95,8 @@ export function App() {
           {s.tab === 'settings' && <SettingsScreen />}
         </main>
       </div>
+      {/* Big screens have room beside the app: a way back to the website. */}
+      <a class="site-link" href="../">&larr; prayertimes.asia</a>
       <nav class="tabbar" role="tablist" aria-label="Sections">
         {TABS.map((t) => {
           const Icon = TAB_ICON[t]
@@ -109,6 +112,7 @@ export function App() {
       {sheet?.kind === 'calendar' && <CalendarSheet />}
       {sheet?.kind === 'makers' && <MakersSheet placement={sheet.placement} />}
       {sheet?.kind === 'journey' && <JourneySheet />}
+      {sheet?.kind === 'tracker' && <TrackerSheet />}
       {sheet?.kind === 'level' && <LevelSheet />}
       {sheet?.kind === 'ar' && <ARScreen />}
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}

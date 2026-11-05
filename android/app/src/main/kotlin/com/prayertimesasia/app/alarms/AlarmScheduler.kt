@@ -21,7 +21,11 @@ object AlarmScheduler {
     const val DEFAULT_REMINDER_MINUTES = 15
     val REMINDER_CHOICES = listOf(5, 10, 15, 20, 30, 45, 60)
 
-    data class Alert(val id: String, val title: String, val body: String, val at: Instant, val kind: Kind)
+    /** Which sound a prayer time alert plays; the azan only when the recordings are in the app (see Azan). */
+    enum class Sound { STANDARD, AZAN, AZAN_SUBUH }
+
+    data class Alert(val id: String, val title: String, val body: String, val at: Instant, val kind: Kind,
+                     val sound: Sound = Sound.STANDARD)
 
     /** What should ring in the next two days, soonest first. Pure, so it can be tested. */
     fun plan(r: Resolver, now: Instant): List<Alert> {
@@ -49,7 +53,12 @@ object AlarmScheduler {
                         out += Alert(id, "$name · ${r.formatted(time)}", "${Prayer.FAJR.name(r.naming)} has ended. $here", time, Kind.PRAYER)
                         continue
                     }
-                    out += Alert(id, "$name · ${r.formatted(time)}", "It's time for $name in $here", time, Kind.PRAYER)
+                    val sound = when {
+                        !p.azanSound -> Sound.STANDARD
+                        prayer == Prayer.FAJR -> Sound.AZAN_SUBUH
+                        else -> Sound.AZAN
+                    }
+                    out += Alert(id, "$name · ${r.formatted(time)}", "It's time for $name in $here", time, Kind.PRAYER, sound)
                 }
             }
             p.wakeUp?.let { w ->
@@ -95,6 +104,7 @@ object AlarmScheduler {
         val intent = Intent(context, AlarmReceiver::class.java).setAction("com.prayertimesasia.app.ALERT")
         if (alert != null) {
             intent.putExtra("id", alert.id).putExtra("title", alert.title).putExtra("body", alert.body).putExtra("kind", alert.kind.name)
+                .putExtra("sound", alert.sound.name)
         }
         val flags = PendingIntent.FLAG_IMMUTABLE or (if (alert == null) PendingIntent.FLAG_NO_CREATE else PendingIntent.FLAG_UPDATE_CURRENT)
         return PendingIntent.getBroadcast(context, code, intent, flags)

@@ -1,3 +1,4 @@
+import { azanAvailable } from '../services/azan'
 import { useEffect, useState } from 'preact/hooks'
 import { ArrowDownToLine, ArrowRightLeft, BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
@@ -139,6 +140,9 @@ export function SettingsScreen() {
         {perm === 'denied' && ' Notifications are blocked for this site in your browser settings.'}
       </>}>
         <ToggleItem label="Prayer time alerts" on={p.notificationsEnabled && perm === 'granted'} onChange={(v) => void setAlerts(v)} />
+        {p.notificationsEnabled && perm === 'granted' && azanAvailable() && (
+          <ToggleItem label="Play the azan" on={p.azanSound} onChange={(v) => store.update((x) => { x.azanSound = v })} />
+        )}
         <ToggleItem label="Reminder before prayer" on={reminderOn} onChange={(v) => void setReminder(v)} />
         {reminderOn && (
           <SelectItem label="Remind me" value={String(p.reminderMinutesBefore)}
@@ -194,7 +198,7 @@ export function SettingsScreen() {
         <div class="item footnote"><MapPinOff size={18} />Your exact location stays in this browser. The place name comes from a built-in list, not a server.</div>
         <ToggleItem label="Share anonymous usage counts" on={p.shareUsage} onChange={(v) => store.update((x) => { x.shareUsage = v })}
           sub="Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept." />
-        <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (CARTO tiles, Overpass), which see the area you look at.</div>
+        <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (map tiles and Overpass), which see the area you look at.</div>
       </Group>
 
       <Group id="makers" title="From the makers" foot="Prayer Times Asia is free and built fisabilillah by Nasar Pte Ltd. The only offers you will see are our own - no ad networks, nothing tracked.">
@@ -203,6 +207,7 @@ export function SettingsScreen() {
       </Group>
 
       <Group foot="Prayer Times Asia - made for Muslims living and travelling across Asia.">
+        <a class="item" href="../"><span class="label">About Prayer Times Asia</span><ChevronRight size={16} class="secondary" /></a>
         <button class="item" onClick={() => openSheet({ kind: 'credits' })}><span class="label">Sources &amp; credits</span><ChevronRight size={16} class="secondary" /></button>
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><span class="label">Help verify times where you are</span><ChevronRight size={16} class="secondary" /></a>
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md" target="_blank" rel="noopener noreferrer"><span class="label">Design a new look</span><ChevronRight size={16} class="secondary" /></a>

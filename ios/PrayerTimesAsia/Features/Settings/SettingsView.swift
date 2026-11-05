@@ -133,6 +133,9 @@ struct SettingsView: View {
                                 else { model.prefs.notificationsEnabled = false }
                             }
                         }))
+                    if model.prefs.notificationsEnabled && Azan.isAvailable {
+                        Toggle("Play the azan", isOn: $model.prefs.azanSound)
+                    }
                     Toggle("Reminder before prayer", isOn: Binding(
                         get: { model.prefs.reminderMinutesBefore > 0 },
                         set: { on in
@@ -164,7 +167,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Alerts")
                 } footer: {
-                    Text("Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both. Worked out on your phone and topped up every time you open the app - nothing comes from a server.")
+                    Text("Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both." + (Azan.isAvailable ? " With Play the azan on, prayer time alerts open with the azan (a Subuh azan at Subuh)." : "") + " Worked out on your phone and topped up every time you open the app - nothing comes from a server.")
                 }
 
                 Section {

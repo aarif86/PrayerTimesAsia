@@ -17,6 +17,7 @@ import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.trackerDays
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.Preferences
 import com.prayertimesasia.core.Resolver
@@ -66,6 +67,7 @@ class AppState(
     var now by mutableStateOf(fixedNow ?: Instant.now())
     var selectedTab by mutableStateOf(Tab.PRAYER)
     var showJourney by mutableStateOf(false)
+    var showTracker by mutableStateOf(false)
     /** A masjid from a screen's QR code, waiting for the user to say yes. */
     var pendingMasjid by mutableStateOf<MasjidLink?>(null)
     var locationRequested by mutableStateOf(false)
@@ -94,8 +96,8 @@ class AppState(
         if (!sideEffects) return
         store?.save(prefs)
         // Ticking a prayer in the tracker shouldn't reschedule every alarm.
-        val a = prefs.copy(prayedLog = emptyMap(), excusedDays = emptySet(), showMore = false)
-        val b = old.copy(prayedLog = emptyMap(), excusedDays = emptySet(), showMore = false)
+        val a = prefs.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false)
+        val b = old.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false)
         if (a == b) return
         refreshOfficialTimetable()
         rescheduleAlerts()
@@ -198,6 +200,15 @@ class AppState(
         // Keep about a year of history.
         if (log.size > 400) log = log - log.keys.min()
         p.copy(prayedLog = log)
+    }
+
+    /** Pause for haid, nifas or illness: today and every day until it's ended count as excused, so the streak waits. */
+    fun pauseTracker(on: Instant) = update { it.copy(trackerPausedSince = resolver.dayKey(on)) }
+
+    /** End the pause: the paused days are kept as excused days, today included. */
+    fun endTrackerPause(on: Instant) = update { p ->
+        val since = p.trackerPausedSince ?: return@update p
+        p.copy(excusedDays = p.excusedDays + trackerDays(since, resolver.dayKey(on)), trackerPausedSince = null)
     }
 
     fun toggleExcused(on: Instant) = update { p ->

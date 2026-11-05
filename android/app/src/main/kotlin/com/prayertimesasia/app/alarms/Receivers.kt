@@ -27,6 +27,9 @@ object Notifications {
     /** "before-prayer" replaced the quieter "reminder" channel: Android never lets an app raise a channel's importance afterwards. */
     const val REMINDER = "before-prayer"
     const val WAKE = "wakeup"
+    /** Prayer time alerts with the azan. Android fixes a channel's sound when it is created, so each recording has its own. */
+    const val AZAN = "prayer-azan"
+    const val AZAN_SUBUH = "prayer-azan-subuh"
 
     fun createChannels(context: Context) {
         if (Build.VERSION.SDK_INT < 26) return
@@ -38,6 +41,16 @@ object Notifications {
         nm.createNotificationChannel(NotificationChannel(REMINDER, "Reminder before prayer", NotificationManager.IMPORTANCE_HIGH).apply {
             description = "A heads-up a few minutes before each prayer, so a meeting doesn't run past it."
         })
+        Azan.uri(context, subuh = false)?.let { uri ->
+            nm.createNotificationChannel(NotificationChannel(AZAN, "Prayer times with azan", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "The azan at the time each prayer begins."
+                setSound(uri, Azan.attributes)
+            })
+            nm.createNotificationChannel(NotificationChannel(AZAN_SUBUH, "Subuh with azan", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "The Subuh azan at the time Subuh begins."
+                setSound(Azan.uri(context, subuh = true) ?: uri, Azan.attributes)
+            })
+        }
         nm.createNotificationChannel(NotificationChannel(WAKE, "Subuh wake-up", NotificationManager.IMPORTANCE_HIGH).apply {
             description = "Rings like an alarm before Subuh ends."
             setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
@@ -49,14 +62,19 @@ object Notifications {
     fun canPost(context: Context): Boolean =
         Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
-    fun post(context: Context, id: String, title: String, body: String, kind: AlarmScheduler.Kind) {
+    fun post(context: Context, id: String, title: String, body: String, kind: AlarmScheduler.Kind,
+             sound: AlarmScheduler.Sound = AlarmScheduler.Sound.STANDARD) {
         if (!canPost(context)) return
         val open = PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val channel = when (kind) {
             AlarmScheduler.Kind.EARLY -> REMINDER
             AlarmScheduler.Kind.WAKE -> WAKE
-            else -> PRAYER
+            else -> when {
+                sound == AlarmScheduler.Sound.STANDARD || !Azan.isAvailable(context) -> PRAYER
+                sound == AlarmScheduler.Sound.AZAN_SUBUH -> AZAN_SUBUH
+                else -> AZAN
+            }
         }
         val n = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_stat_prayer)
@@ -80,7 +98,8 @@ class AlarmReceiver : BroadcastReceiver() {
         val kind = runCatching { AlarmScheduler.Kind.valueOf(intent.getStringExtra("kind") ?: "") }.getOrNull()
         if (kind != null && kind != AlarmScheduler.Kind.REFRESH) {
             Notifications.post(context, intent.getStringExtra("id") ?: "alert", intent.getStringExtra("title") ?: "",
-                intent.getStringExtra("body") ?: "", kind)
+                intent.getStringExtra("body") ?: "", kind,
+                runCatching { AlarmScheduler.Sound.valueOf(intent.getStringExtra("sound") ?: "") }.getOrDefault(AlarmScheduler.Sound.STANDARD))
         }
         refresh(context, goAsync())
     }

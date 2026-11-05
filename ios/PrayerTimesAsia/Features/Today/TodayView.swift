@@ -6,6 +6,7 @@ struct TodayView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
     @State private var showCalendar = false
+    @State private var showTracker = false
     /// Days away from today shown in the list (‹ › and swipe); 0 = today.
     @State private var dayOffset = 0
     /// Show the blessed times (Dhuha, middle and last third of the night).
@@ -24,6 +25,7 @@ struct TodayView: View {
         }
         .sheet(isPresented: $showPlaces) { PlacesView() }
         .sheet(isPresented: $showCalendar) { CalendarSanadView() }
+        .sheet(isPresented: $showTracker) { TrackerView() }
         .onAppear {
             // Demo screenshots: Show more only when asked, never carried over from a previous run.
             let args = ProcessInfo.processInfo.arguments
@@ -788,23 +790,19 @@ struct TodayView: View {
 
     private func streakChip(_ now: Date) -> some View {
         let excused = model.isExcused(now)
-        return Menu {
-            Button {
-                model.toggleExcused(now)
-            } label: {
-                Label(excused ? "Not excused today" : "Excused today", systemImage: excused ? "xmark.circle" : "drop.fill")
-            }
-        } label: {
+        let paused = model.trackerPaused
+        return Button { showTracker = true } label: {
             HStack(spacing: 4) {
-                Image(systemName: excused ? "drop.fill" : "flame.fill")
+                Image(systemName: paused ? "pause.fill" : excused ? "drop.fill" : "flame.fill")
                 Text("\(model.streak)").monospacedDigit()
             }
             .font(.subheadline.weight(.semibold))
             .padding(.horizontal, 10).padding(.vertical, 8)
             .background(Color.primary.opacity(0.1), in: Capsule())
         }
-        .accessibilityLabel("Streak \(model.streak) days\(excused ? ", excused today" : "")")
-        .accessibilityHint("Mark today as excused - for example during haid or illness - so your streak continues.")
+        .buttonStyle(.plain)
+        .accessibilityLabel("Prayer tracker: streak \(model.streak) days\(paused ? ", paused" : excused ? ", excused today" : "")")
+        .accessibilityHint("Opens the tracker: pause it for haid or illness, and see each month.")
     }
 
     // MARK: Day

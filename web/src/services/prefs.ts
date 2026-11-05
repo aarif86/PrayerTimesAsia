@@ -36,6 +36,8 @@ export interface Preferences {
   notifyPrayers: Prayer[]
   /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
   reminderMinutesBefore: number
+  /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings - see services/azan.ts. */
+  azanSound: boolean
   musafirThresholdKm: number
   jakimZoneOverride: string | null
   lastCountryCode: string | null
@@ -45,6 +47,8 @@ export interface Preferences {
   trackerEnabled: boolean
   prayedLog: Record<string, Prayer[]>
   excusedDays: string[]
+  /** "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from then until it is ended counts as excused. */
+  trackerPausedSince: string | null
   communityAuthority: string | null
   appearance: Appearance
   todayStyle: TodayStyle
@@ -73,6 +77,7 @@ export const DEFAULT_PREFS: Preferences = {
   notificationsEnabled: false,
   notifyPrayers: [...OBLIGATORY],
   reminderMinutesBefore: 0,
+  azanSound: true,
   musafirThresholdKm: 81,
   jakimZoneOverride: null,
   lastCountryCode: null,
@@ -82,6 +87,7 @@ export const DEFAULT_PREFS: Preferences = {
   trackerEnabled: false,
   prayedLog: {},
   excusedDays: [],
+  trackerPausedSince: null,
   communityAuthority: null,
   appearance: 'system',
   todayStyle: 'centre',
@@ -96,7 +102,7 @@ export const DEFAULT_PREFS: Preferences = {
 
 const NULLABLE = new Set<keyof Preferences>([
   'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'jakimZoneOverride',
-  'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid',
+  'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince',
 ])
 
 const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
@@ -127,6 +133,7 @@ export function decodePreferences(raw: unknown): Preferences {
       if (key === 'arrivedAt' && typeof v !== 'number') continue
       if (key === 'myMasjid' && !isMasjid(v)) continue
       if (['methodOverrideID', 'jakimZoneOverride', 'lastCountryCode', 'communityAuthority'].includes(key) && typeof v !== 'string') continue
+      if (key === 'trackerPausedSince' && !(typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v))) continue
       ;(out as unknown as Record<string, unknown>)[key] = v
       continue
     }
