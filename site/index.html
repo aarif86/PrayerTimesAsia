@@ -157,7 +157,11 @@
       border-radius: 38px; padding: 8px; background: #05071a;
       box-shadow: 0 0 0 1.5px #ffffff22, 0 30px 60px -20px #000c, 0 0 80px -20px #f39a4a44;
     }
-    .phone img { border-radius: 31px; width: 100%; height: auto; aspect-ratio: 603 / 1311; }
+    .phone img { display: block; border-radius: 31px; width: 100%; height: auto; aspect-ratio: 603 / 1311; }
+    /* Android: squarer corners, thin even bezel and a punch hole camera. */
+    .phone.android { position: relative; border-radius: 28px; padding: 6px; background: #0a0b12; }
+    .phone.android img { border-radius: 22px; aspect-ratio: 603 / 1347; }
+    .phone.android::before { content: ""; position: absolute; top: 13px; left: 50%; width: 11px; height: 11px; margin-left: -5.5px; border-radius: 50%; background: #000; box-shadow: 0 0 0 1.5px #1c1f2e; }
 
     /* Trust strip */
     .strip { padding: 22px 0; border-top: 1px solid var(--card-line); border-bottom: 1px solid var(--card-line); background: rgba(255,255,255,0.02); }
@@ -168,7 +172,7 @@
     /* Feature rows */
     .feature { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; padding: 40px 0; }
     .feature.flip .copy { order: 2; }
-    .feature .shot { display: flex; justify-content: center; gap: 18px; }
+    .feature .shot { display: flex; justify-content: center; align-items: flex-start; gap: 18px; }
     .feature .shot .phone { width: 250px; }
     .feature .shot .phone + .phone { margin-top: 50px; }
     .feature ul { padding-left: 1.1em; color: var(--muted); margin: 0; }
@@ -425,10 +429,10 @@
             <span class="two">iPhone and Android<small>Join the test</small></span>
           </a>
         </div>
-        <p class="note"><a href="#story">Read the story</a> · Built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Pte Ltd.</p>
+        <p class="note"><a href="#story">Read the story</a> · Built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Pte Ltd</a></p>
       </div>
       <div class="hero-phones" aria-hidden="true">
-        <div class="phone back"><img src="img/today-light.webp" alt="" width="603" height="1311" /></div>
+        <div class="phone android back"><img src="img/android-today-light.webp" alt="" width="603" height="1347" /></div>
         <div class="phone front"><img src="img/today.webp" alt="" width="603" height="1311" /></div>
       </div>
     </div>
@@ -590,7 +594,7 @@
         </div>
         <div class="shot">
           <div class="phone"><img src="img/today.webp" alt="The Prayer screen, a dial counting down to Isyak, and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone"><img src="img/bands.webp" alt="The Colour Bands style, each prayer time on its own bright band" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-bands.webp" alt="The Colour Bands style, each prayer time on its own bright band" loading="lazy" width="603" height="1347" /></div>
         </div>
       </div>
 
@@ -608,7 +612,7 @@
         </div>
         <div class="shot">
           <div class="phone"><img src="img/travel.webp" alt="Arriving in Hanoi, a welcome card explains the app switched to the Southeast Asia method" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone"><img src="img/journey.webp" alt="Journey, 2,195 km from home, you may shorten and combine prayers" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-journey.webp" alt="Journey, 2,195 km from home, you may shorten and combine prayers" loading="lazy" width="603" height="1347" /></div>
         </div>
       </div>
 
@@ -625,7 +629,7 @@
         </div>
         <div class="shot">
           <div class="phone"><img src="img/qibla.webp" alt="The qibla compass showing Aligned, facing 293 degrees" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone"><img src="img/falak.webp" alt="Falak, the shadow right now and the days to the next Qibla Day" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-falak.webp" alt="Falak, the shadow right now and the days to the next Qibla Day" loading="lazy" width="603" height="1347" /></div>
         </div>
       </div>
 
@@ -636,7 +640,7 @@
           <p class="muted">See masjids, musollahs and prayer rooms near you on a map, with how far each one is. Handy in a new city, or in a mall at Asar.</p>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/masjid.webp" alt="A map and list of masjids and musollahs near Pasir Ris" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-masjid.webp" alt="A map and list of masjids and musollahs near Pasir Ris" loading="lazy" width="603" height="1347" /></div>
           <div class="phone"><img src="img/widget.webp" alt="The big Home Screen widget with today's prayer times" loading="lazy" width="603" height="1311" /></div>
         </div>
       </div>
@@ -878,7 +882,7 @@
   <div class="wrap">
     <div>
       <strong style="color: var(--text)">Prayer Times Asia</strong><br />
-      Built fisabilillah by Ustaz Aarif Raziff and Nasar Pte Ltd, Singapore.
+      Built fisabilillah by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Pte Ltd</a>, Singapore.
     </div>
     <div>
       <a href="app/">Web app</a> ·
