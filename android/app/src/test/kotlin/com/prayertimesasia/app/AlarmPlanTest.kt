@@ -40,4 +40,19 @@ class AlarmPlanTest {
         // Syuruk isn't a prayer: no alert unless chosen.
         assertTrue(plan.none { it.id.endsWith("-sunrise") })
     }
+
+    @Test fun reminderBeforePrayerWorksOnItsOwn() {
+        // Only the heads-up switched on: every chosen prayer gets a reminder 15 min early, and no alert at the time itself.
+        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, notificationsEnabled = false,
+            reminderMinutesBefore = AlarmScheduler.DEFAULT_REMINDER_MINUTES)
+        val r = Resolver(prefs, locale = Locale("en", "SG"))
+        val plan = AlarmScheduler.plan(r, now)
+        assertTrue(plan.none { it.kind == AlarmScheduler.Kind.PRAYER })
+        val today = r.day(now)!!
+        val first = plan.first { it.kind == AlarmScheduler.Kind.EARLY }
+        assertEquals(today.time(Prayer.FAJR).minusSeconds(900), first.at)
+        assertEquals("Subuh in 15 min", first.title)
+        // One per chosen prayer each day (two days ahead, minus the ones already past).
+        assertTrue(plan.count { it.kind == AlarmScheduler.Kind.EARLY } >= 10)
+    }
 }

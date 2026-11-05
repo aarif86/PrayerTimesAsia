@@ -123,6 +123,7 @@ data class Preferences(
 
     val notificationsEnabled: Boolean = false,
     val notifyPrayers: Set<Prayer> = Prayer.obligatory.toSet(),
+    /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
     val reminderMinutesBefore: Int = 0,
 
     val musafirThresholdKm: Double = 81.0,

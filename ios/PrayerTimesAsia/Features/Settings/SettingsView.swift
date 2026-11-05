@@ -133,7 +133,23 @@ struct SettingsView: View {
                                 else { model.prefs.notificationsEnabled = false }
                             }
                         }))
-                    if model.prefs.notificationsEnabled {
+                    Toggle("Reminder before prayer", isOn: Binding(
+                        get: { model.prefs.reminderMinutesBefore > 0 },
+                        set: { on in
+                            Task {
+                                if on {
+                                    if await NotificationScheduler.requestPermission() {
+                                        model.prefs.reminderMinutesBefore = Preferences.defaultReminderMinutes
+                                    }
+                                } else { model.prefs.reminderMinutesBefore = 0 }
+                            }
+                        }))
+                    if model.prefs.reminderMinutesBefore > 0 {
+                        Picker("Remind me", selection: $model.prefs.reminderMinutesBefore) {
+                            ForEach(Preferences.reminderChoices, id: \.self) { Text("\($0) min before").tag($0) }
+                        }
+                    }
+                    if model.prefs.notificationsEnabled || model.prefs.reminderMinutesBefore > 0 {
                         ForEach(Prayer.allCases) { prayer in
                             Toggle(prayer == .sunrise
                                    ? "\(prayer.name(model.naming)) (\(Prayer.fajr.name(model.naming)) ends)"
@@ -144,17 +160,11 @@ struct SettingsView: View {
                                     else { model.prefs.notifyPrayers.remove(prayer) }
                                 }))
                         }
-                        Picker("Early reminder", selection: $model.prefs.reminderMinutesBefore) {
-                            Text("Off").tag(0)
-                            Text("5 min before").tag(5)
-                            Text("10 min before").tag(10)
-                            Text("15 min before").tag(15)
-                        }
                     }
                 } header: {
                     Text("Alerts")
                 } footer: {
-                    Text("An alert at the exact time of each prayer you choose, plus an early reminder if you like. Worked out on your phone and topped up every time you open the app - nothing comes from a server.")
+                    Text("Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both. Worked out on your phone and topped up every time you open the app - nothing comes from a server.")
                 }
 
                 Section {

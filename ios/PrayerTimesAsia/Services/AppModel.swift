@@ -498,14 +498,24 @@ final class AppModel {
         guard let place = activePlace else { return }
         var alerts: [NotificationScheduler.Alert] = []
         let early = prefs.reminderMinutesBefore
+        let onTime = prefs.notificationsEnabled
         let here = place.isInAsia ? "\(place.name) \(place.profile.flag)" : place.name
-        // iOS keeps at most 64 pending; early reminders double the count.
-        for offset in 0..<(early > 0 ? 6 : 12) {
+        // iOS keeps at most 64 pending; alerts plus early reminders double the count.
+        for offset in 0..<(onTime && early > 0 ? 6 : 12) {
             guard let pd = day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
             for prayer in Prayer.allCases where prefs.notifyPrayers.contains(prayer) {
                 let time = pd.time(prayer)
                 let name = prayer.name(naming, isFriday: isFriday(time))
                 let id = "\(pd.year)-\(pd.month)-\(pd.day)-\(prayer.rawValue)"
+                if early > 0 {
+                    // The heads-up before the prayer, on its own switch: for when a
+                    // meeting or work would otherwise run past the time.
+                    let title = prayer == .sunrise ? "\(Prayer.fajr.name(naming)) ends in \(early) min" : "\(name) in \(early) min"
+                    alerts.append(.init(id: id + "-early", title: title,
+                                        body: "\(name) at \(formatted(time)) · \(here)",
+                                        fireDate: time.addingTimeInterval(Double(-early) * 60)))
+                }
+                guard onTime else { continue }
                 if prayer == .sunrise {
                     alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
                                         body: "\(Prayer.fajr.name(naming)) has ended. \(here)", fireDate: time))
@@ -513,11 +523,6 @@ final class AppModel {
                 }
                 alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
                                     body: "It's time for \(name) in \(here)", fireDate: time))
-                if early > 0 {
-                    alerts.append(.init(id: id + "-early", title: "\(name) in \(early) min",
-                                        body: "\(name) at \(formatted(time)) · \(here)",
-                                        fireDate: time.addingTimeInterval(Double(-early) * 60)))
-                }
             }
         }
         // Subuh wake-up: a real alarm (AlarmKit, iOS 26+) where possible,
@@ -531,7 +536,7 @@ final class AppModel {
             }
         }
         let notificationAlerts = alerts
-        let notificationsOn = prefs.notificationsEnabled
+        let notificationsOn = onTime || early > 0
         Task {
             let alarmsHandled = await WakeUpAlarm.schedule(wakeUps)
             var all = notificationsOn ? notificationAlerts : []

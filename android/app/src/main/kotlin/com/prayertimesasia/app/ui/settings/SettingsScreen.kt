@@ -64,6 +64,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.prayertimesasia.app.alarms.AlarmScheduler
 import com.prayertimesasia.app.AppState
 import com.prayertimesasia.app.BuildConfig
 import com.prayertimesasia.app.ui.components.Dims
@@ -191,20 +192,25 @@ fun SettingsScreen(
                 }
             }
             item {
-                Section("Alerts", "An alert at the exact time of each prayer you choose, plus an early reminder if you like. Worked out on your phone and topped up every time you open the app and when the phone restarts - nothing comes from a server.") {
+                Section("Alerts", "Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both. To let them through Do Not Disturb, allow reminders there. Worked out on your phone and topped up every time you open the app and when the phone restarts - nothing comes from a server.") {
                     SwitchRow("Prayer time alerts", p.notificationsEnabled) { on ->
                         if (on) state.enableAlerts() else state.update { it.copy(notificationsEnabled = false) }
                     }
-                    if (p.notificationsEnabled) {
+                    SwitchRow("Reminder before prayer", p.reminderMinutesBefore > 0) { on ->
+                        if (on) state.enableReminder() else state.update { it.copy(reminderMinutesBefore = 0) }
+                    }
+                    if (p.reminderMinutesBefore > 0) {
+                        PickerRow("Remind me", "${p.reminderMinutesBefore} min before",
+                            AlarmScheduler.REMINDER_CHOICES.map { "$it min before" to it }, p.reminderMinutesBefore) { m ->
+                            state.update { it.copy(reminderMinutesBefore = m) }
+                        }
+                    }
+                    if (p.notificationsEnabled || p.reminderMinutesBefore > 0) {
                         Prayer.all.forEach { prayer ->
                             SwitchRow(if (prayer == Prayer.SUNRISE) "${prayer.name(r.naming)} (${Prayer.FAJR.name(r.naming)} ends)" else prayer.name(r.naming),
                                 prayer in p.notifyPrayers) { on ->
                                 state.update { it.copy(notifyPrayers = if (on) it.notifyPrayers + prayer else it.notifyPrayers - prayer) }
                             }
-                        }
-                        PickerRow("Early reminder", if (p.reminderMinutesBefore == 0) "Off" else "${p.reminderMinutesBefore} min before",
-                            listOf("Off" to 0, "5 min before" to 5, "10 min before" to 10, "15 min before" to 15), p.reminderMinutesBefore) { m ->
-                            state.update { it.copy(reminderMinutesBefore = m) }
                         }
                         ExactAlarmRow(context)
                     }

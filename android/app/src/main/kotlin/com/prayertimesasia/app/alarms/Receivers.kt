@@ -24,7 +24,8 @@ import kotlinx.coroutines.launch
 
 object Notifications {
     const val PRAYER = "prayer"
-    const val REMINDER = "reminder"
+    /** "before-prayer" replaced the quieter "reminder" channel: Android never lets an app raise a channel's importance afterwards. */
+    const val REMINDER = "before-prayer"
     const val WAKE = "wakeup"
 
     fun createChannels(context: Context) {
@@ -33,8 +34,9 @@ object Notifications {
         nm.createNotificationChannel(NotificationChannel(PRAYER, "Prayer times", NotificationManager.IMPORTANCE_HIGH).apply {
             description = "An alert at the exact time each prayer begins."
         })
-        nm.createNotificationChannel(NotificationChannel(REMINDER, "Early reminders", NotificationManager.IMPORTANCE_DEFAULT).apply {
-            description = "A few minutes before each prayer."
+        nm.deleteNotificationChannel("reminder")
+        nm.createNotificationChannel(NotificationChannel(REMINDER, "Reminder before prayer", NotificationManager.IMPORTANCE_HIGH).apply {
+            description = "A heads-up a few minutes before each prayer, so a meeting doesn't run past it."
         })
         nm.createNotificationChannel(NotificationChannel(WAKE, "Subuh wake-up", NotificationManager.IMPORTANCE_HIGH).apply {
             description = "Rings like an alarm before Subuh ends."
@@ -63,7 +65,7 @@ object Notifications {
             .setContentIntent(open)
             .setAutoCancel(true)
             .setCategory(if (kind == AlarmScheduler.Kind.WAKE) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
-            .setPriority(if (kind == AlarmScheduler.Kind.EARLY) NotificationCompat.PRIORITY_DEFAULT else NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
         try {
             NotificationManagerCompat.from(context).notify(id.hashCode(), n)

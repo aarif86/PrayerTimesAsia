@@ -18,6 +18,9 @@ import java.time.Instant
 object AlarmScheduler {
     enum class Kind { PRAYER, EARLY, WAKE, REFRESH }
 
+    const val DEFAULT_REMINDER_MINUTES = 15
+    val REMINDER_CHOICES = listOf(5, 10, 15, 20, 30, 45, 60)
+
     data class Alert(val id: String, val title: String, val body: String, val at: Instant, val kind: Kind)
 
     /** What should ring in the next two days, soonest first. Pure, so it can be tested. */
@@ -29,20 +32,24 @@ object AlarmScheduler {
         for (offset in 0..2) {
             val day = r.day(now, offset) ?: continue
             val key = "${day.year}-${day.month}-${day.day}"
-            if (p.notificationsEnabled) {
+            val early = p.reminderMinutesBefore
+            if (p.notificationsEnabled || early > 0) {
                 for (prayer in Prayer.all.filter { it in p.notifyPrayers }) {
                     val time = day.time(prayer)
                     val name = r.prayerName(prayer, time)
                     val id = "$key-${prayer.raw}"
+                    if (early > 0) {
+                        // The heads-up before the prayer, on its own switch: for when a
+                        // meeting or work would otherwise run past the time.
+                        val title = if (prayer == Prayer.SUNRISE) "${Prayer.FAJR.name(r.naming)} ends in $early min" else "$name in $early min"
+                        out += Alert("$id-early", title, "$name at ${r.formatted(time)} · $here", time.minusSeconds(early * 60L), Kind.EARLY)
+                    }
+                    if (!p.notificationsEnabled) continue
                     if (prayer == Prayer.SUNRISE) {
                         out += Alert(id, "$name · ${r.formatted(time)}", "${Prayer.FAJR.name(r.naming)} has ended. $here", time, Kind.PRAYER)
                         continue
                     }
                     out += Alert(id, "$name · ${r.formatted(time)}", "It's time for $name in $here", time, Kind.PRAYER)
-                    if (p.reminderMinutesBefore > 0) {
-                        out += Alert("$id-early", "$name in ${p.reminderMinutesBefore} min", "$name at ${r.formatted(time)} · $here",
-                            time.minusSeconds(p.reminderMinutesBefore * 60L), Kind.EARLY)
-                    }
                 }
             }
             p.wakeUp?.let { w ->

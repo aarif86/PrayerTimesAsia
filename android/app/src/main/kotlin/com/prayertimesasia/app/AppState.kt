@@ -216,6 +216,15 @@ class AppState(
         }
     }
 
+    /** "Reminder before prayer": asks for notification permission, then rings [minutes] before each chosen prayer. */
+    fun enableReminder(minutes: Int = AlarmScheduler.DEFAULT_REMINDER_MINUTES) {
+        scope.launch {
+            val granted = permissions?.notifications() ?: true
+            if (!granted) return@launch
+            update { it.copy(reminderMinutesBefore = minutes) }
+        }
+    }
+
     fun toggleNotify(prayer: Prayer) {
         if (!prefs.notificationsEnabled) {
             enableAlerts(setOf(prayer))
