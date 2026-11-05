@@ -213,3 +213,12 @@ input, select, textarea { font: inherit; color: inherit; }
 @media (min-width: 700px) {
   .shell { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04); }
 }
+
+/* Back to the website, only where there is room beside the app and it isn't installed. */
+.site-link { display: none; }
+@media (min-width: 900px) and (display-mode: browser) {
+  .site-link { display: block; position: fixed; top: 18px; left: 22px; z-index: 5; padding: 8px 14px; border-radius: 999px;
+    color: var(--fg); text-decoration: none; font-weight: 600; font-size: 15px; opacity: .8;
+    background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .site-link:hover { opacity: 1; }
+}
