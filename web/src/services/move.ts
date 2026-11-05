@@ -55,6 +55,7 @@ export interface MovedSettings {
   trackerEnabled?: boolean
   prayedLog?: Record<string, Prayer[]>
   excusedDays?: string[]
+  trackerPausedSince?: string | null
   /** The Subuh wake-up alarm (iPhone and Android only); kept so a web stop on the way doesn't lose it. */
   wakeUp?: string
 }
@@ -63,7 +64,7 @@ export interface MovedSettings {
 const SIMPLE_KEYS = [
   'useGPS', 'methodOverrideID', 'asrOverride', 'namingOverride', 'use24Hour', 'hijriAdjustment', 'reminderMinutesBefore',
   'musafirEnabled', 'musafirThresholdKm', 'jakimZoneOverride', 'communityAuthority', 'appearance', 'todayStyle',
-  'showOffers', 'showLocalNames', 'trackerEnabled',
+  'showOffers', 'showLocalNames', 'trackerEnabled', 'trackerPausedSince',
 ] as const satisfies readonly (keyof Preferences & keyof MovedSettings)[]
 
 function movedPlace(p: Place): MovedPlace {
