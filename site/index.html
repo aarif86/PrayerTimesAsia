@@ -39,7 +39,6 @@
   </script>
 
   <!-- Windows has no flag emoji: load just these flags from Google Fonts. -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&text=%F0%9F%87%B8%F0%9F%87%AC%F0%9F%87%B2%F0%9F%87%BE%F0%9F%87%AE%F0%9F%87%A9%F0%9F%87%A7%F0%9F%87%B3%F0%9F%87%B9%F0%9F%87%AD%F0%9F%87%BB%F0%9F%87%B3%F0%9F%87%B5%F0%9F%87%AD%F0%9F%87%AF%F0%9F%87%B5%F0%9F%87%B0%F0%9F%87%B7%F0%9F%87%AE%F0%9F%87%B3%F0%9F%87%B9%F0%9F%87%B7&display=swap" />
   <style>
     :root {
       --night: #0b0f2a;
@@ -199,7 +198,9 @@
     .countries { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-top: 36px; }
     .countries .card h3 { display: flex; align-items: center; gap: 10px; }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    .chip { font-family: var(--font), "Noto Color Emoji"; background: rgba(255,255,255,0.06); border: 1px solid var(--card-line); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; color: var(--text); }
+    /* Flag emoji for Windows, which has none. Flag characters only (unicode-range). Twemoji Country Flags, MIT and CC-BY 4.0, see fonts/. */
+    @font-face { font-family: "Twemoji Country Flags"; src: url("fonts/TwemojiCountryFlags.woff2") format("woff2"); unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E007F; font-display: swap; }
+    .chip { font-family: "Twemoji Country Flags", var(--font); background: rgba(255,255,255,0.06); border: 1px solid var(--card-line); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; color: var(--text); }
 
     /* Masjid partner band */
     .partner { background: linear-gradient(135deg, #1d2160, #2b1a4f 60%, #3d1f3f); border: 1px solid var(--card-line); border-radius: 30px;
@@ -370,7 +371,7 @@
       <a href="#faq">Questions</a>
     </nav>
     <div class="top-right">
-      <div class="lang" role="group" aria-label="Language"><a href="./" hreflang="en" aria-current="page">EN</a><a href="ms/" hreflang="ms" lang="ms">BM</a></div>
+      <div class="lang" role="group" aria-label="Language"><a href="./" hreflang="en" aria-current="page">EN</a><a href="ms/" hreflang="ms" lang="ms">BM</a><a href="id/" hreflang="id" lang="id">ID</a></div>
       <a class="btn btn-primary btn-sm" href="app/">Open the app</a>
     </div>
   </div>
@@ -406,6 +407,7 @@
   <div class="strip">
     <div class="wrap">
       <ul>
+        <li>Follows your local religious authority</li>
         <li>Official timetables where they exist</li>
         <li>143 countries</li>
         <li>Works offline</li>
@@ -426,7 +428,7 @@
         <div class="chapter">
           <span class="num">1</span>
           <h3>He landed with no proper prayer app</h3>
-          <p>Ustaz Aarif arrived in Vietnam and looked for a prayer app he could trust. The big ones show ads around your salah and charge a subscription for things that used to be free. Even the best one he found wasn't made for Asia.</p>
+          <p>Ustaz Aarif, an Al&#8209;Azhar graduate recognised by MUIS, arrived in Vietnam and looked for a prayer app he could trust. The big ones show ads around your salah and charge a subscription for things that used to be free. Even the best one he found wasn't made for Asia.</p>
         </div>
         <div class="chapter">
           <span class="num">2</span>
@@ -456,7 +458,7 @@
           <img src="img/ustaz-aarif.webp" alt="Ustaz Aarif Raziff" width="64" height="64" loading="lazy" />
           <div>
             <figcaption>Ustaz Aarif Raziff, founder of Prayer Times Asia</figcaption>
-            <p class="ars">Recognised by MUIS under the Asatizah Recognition Scheme. <a href="https://www.muis.gov.sg/education/asatizah-development/asatizah-recognition-scheme/ars-directory/" target="_blank" rel="noopener">See the ARS directory</a>.</p>
+            <p class="ars">Graduate of Al&#8209;Azhar University in Cairo in Islamic Jurisprudence. Recognised by MUIS under the Asatizah Recognition Scheme. <a href="https://www.muis.gov.sg/education/asatizah-development/asatizah-recognition-scheme/ars-directory/" target="_blank" rel="noopener">See the ARS directory</a> or <a href="https://aarif.sg/" target="_blank" rel="noopener">read more about him</a>.</p>
           </div>
         </div>
       </figure>
@@ -474,8 +476,8 @@
       <div class="grid">
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 .9-4.5 4.3 1 6.3L12 16.6 6.5 19.5l1-6.3L3 8.9 9 8z"/></svg></div>
-          <h3>Official sources first</h3>
-          <p>In Singapore, Malaysia and Indonesia the app uses the MUIS, JAKIM and Kemenag timetables exactly as they are published.</p>
+          <h3>Your local religious authority first</h3>
+          <p>In Singapore, Malaysia and Indonesia the app uses the MUIS, JAKIM and Kemenag timetables exactly as they are published. Elsewhere it follows the method your local religious authority uses.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
@@ -485,7 +487,7 @@
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
           <h3>Open for anyone to check</h3>
-          <p>The falak readings are with a falak committee member for review, and the code is open, so anyone can see how every time is worked out.</p>
+          <p>We are seeking a review of the falak readings from qualified falak experts, and the code is open, so anyone can see how every time is worked out.</p>
         </div>
       </div>
     </div>
@@ -579,7 +581,7 @@
           <ul>
             <li>Bearing and distance to Makkah</li>
             <li>Qibla Day countdown, for checking with the sun</li>
-            <li>Shadow and sun readings, now with a falak committee member for review</li>
+            <li>Shadow and sun readings, the way the muwaqqit did</li>
           </ul>
         </div>
         <div class="shot">
@@ -607,7 +609,7 @@
       <div class="center">
         <span class="eyebrow">Where it works</span>
         <h2>Asia first. Now worldwide.</h2>
-        <p class="lead">143 countries. Wherever there is a religious authority, the app follows it, with its Asr school and prayer names, so the times match what the local masjid announces. Where there isn't one, it uses a trusted standard method and tells you which.</p>
+        <p class="lead">143 countries. Wherever there is a religious authority, the app follows it, with its Asr school and prayer names, so the times match what the local masjid announces. Where there isn't one, it uses a trusted standard method and tells you which. <a href="sources.html">See every country and its source</a>.</p>
       </div>
       <div class="countries">
         <div class="card">
@@ -787,7 +789,7 @@
         </details>
         <details>
           <summary>How accurate are the times?</summary>
-          <p>In Singapore, Malaysia and Indonesia the app uses the official MUIS, JAKIM and Kemenag timetables, and its own working is checked against them for every day of the year. In other countries it follows the local religious authority, such as Umm al&#8209;Qura in Saudi Arabia or Diyanet in Türkiye, and where there isn't one it uses the method most masjids there follow. Every time is set to err on the safe side, never before the prayer has begun.</p>
+          <p>In Singapore, Malaysia and Indonesia the app uses the official MUIS, JAKIM and Kemenag timetables, and its own working is checked against them for every day of the year. In other countries it follows the local religious authority, such as Umm al&#8209;Qura in Saudi Arabia or Diyanet in Türkiye, and where there isn't one it uses the method most masjids there follow. Every time is set to err on the safe side, never before the prayer has begun. <a href="sources.html">See every country and its source</a>.</p>
         </details>
         <details>
           <summary>I don't live in Asia. Will it work for me?</summary>
@@ -803,7 +805,7 @@
         </details>
         <details>
           <summary>Is the musafir guidance a fatwa?</summary>
-          <p>No. Jamak and qasar guidance is general information to help you plan. When unsure, follow your local religious authority.</p>
+          <p>No. It is general guidance to help you plan, not a fatwa. Shortening (qasar) and combining (jamak) prayers on a journey is a concession from Allah, mentioned in Surah an&#8209;Nisa, verse 101. Ibn Abbas reported that the Prophet ﷺ combined Zohor with Asar and Maghrib with Isyak when travelling (Sahih al&#8209;Bukhari). Scholars differ on the details, such as the distance and how many days, so when unsure, follow your local religious authority.</p>
         </details>
         <details>
           <summary>Whose Hijri date and Ramadan start does it follow?</summary>
@@ -811,7 +813,7 @@
         </details>
         <details>
           <summary>My masjid's times are different. What should I do?</summary>
-          <p>Please tell us. Send the masjid's name and a photo of its timetable to <a href="mailto:salam@prayertimes.asia?subject=Times%20differ">salam@prayertimes.asia</a>, or use "Help verify times" inside the app.</p>
+          <p>Your local religious authority and your masjid come first, so follow them. Then please tell us. Send the masjid's name and a photo of its timetable to <a href="mailto:salam@prayertimes.asia?subject=Times%20differ">salam@prayertimes.asia</a>, or use "Help verify times" inside the app.</p>
         </details>
       </div>
     </div>
@@ -842,7 +844,7 @@
     <div>
       <a href="app/">Web app</a> ·
       <a href="privacy.html">Privacy</a> ·
-      <a href="mailto:salam@prayertimes.asia?subject=Press%20enquiry">Press</a> ·
+      <a href="press.html">Press</a> ·
       <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/website/changelog.md">What's new</a> ·
       <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md">Design a new look</a> ·
       <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>

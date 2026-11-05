@@ -1,8 +1,8 @@
 /* Prayer Times Asia - one calm palette (Theme.swift), the Living Sky, SF-like type. */
 
 :root {
-  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter Variable", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --font-display: ui-rounded, "SF Pro Rounded", "Nunito Variable", -apple-system, system-ui, sans-serif;
+  --font-body: "Twemoji Country Flags", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter Variable", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-display: "Twemoji Country Flags", ui-rounded, "SF Pro Rounded", "Nunito Variable", -apple-system, system-ui, sans-serif;
   --corner: 22px;
   --gutter: 20px;
   --tabbar-h: 64px;

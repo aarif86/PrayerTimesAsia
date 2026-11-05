@@ -1,5 +1,6 @@
 import '@fontsource-variable/inter/wght.css'
 import '@fontsource-variable/nunito/wght.css'
+import '../ui/flags.css'
 import { render } from 'preact'
 import { useEffect, useState } from 'preact/hooks'
 import { zoned } from '../core/tz'
