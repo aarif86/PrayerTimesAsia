@@ -1,89 +1,78 @@
 import Foundation
 
-/// What the app does by default in each Asian country: which authority's
+/// Where a country's times come from: the authority's timetable the app
+/// downloads, the authority's own method calculated on the phone, or a
+/// standard method where no authority's times can be used.
+enum TimesSource: String, Sendable, Hashable {
+    case table, authority, standard
+}
+
+/// What the app does by default in each country: whose times it follows, which
 /// method, which Asr school, and how prayer names are spelled.
 ///
 /// This table is the heart of "travel mode": land in a new country and these
-/// defaults switch automatically (unless the user pinned their own).
+/// defaults switch automatically (unless the user pinned their own). The rows
+/// live in data/countries.json (one copy for all three apps); edit that and run
+/// tools/gen_countries.py, which writes Countries.swift.
+///
+/// The owner's rule: the local official or state religious authority first; a
+/// standard method only where no authority's times can be used, and the app says so.
 struct CountryProfile: Sendable, Hashable {
     let code: String          // ISO 3166-1 alpha-2
     let name: String
     let methodID: String
     let asr: AsrSchool
     let naming: NamingStyle
+    var source: TimesSource = .standard
+    /// Who sets the times, e.g. "Diyanet, Türkiye's Presidency of Religious Affairs".
+    var authority: String? = nil
+    /// What the person should know here, e.g. which masjids differ.
+    var note: String? = nil
+    /// The country's rule for short summer nights, used when the method has none of its own.
+    var highLatitude: HighLatitudeRule? = nil
 
-    var method: CalculationMethod { CalculationMethod.with(id: methodID) ?? .mwl }
+    /// The country's method, with the country's own rule for short summer nights.
+    var method: CalculationMethod { (CalculationMethod.with(id: methodID) ?? .mwl).withHighLatitude(highLatitude) }
+
+    /// A method picked in Settings, used here: keeps its own high-latitude rule, else takes the country's.
+    func here(_ m: CalculationMethod) -> CalculationMethod {
+        m.highLatitude == .fallback ? m.withHighLatitude(highLatitude) : m
+    }
+
     var flag: String {
         code.uppercased().unicodeScalars
             .compactMap { UnicodeScalar(127397 + $0.value) }
             .map { String($0) }.joined()
     }
+
+    /// Where the times come from, in plain words. Same wording as the web and Android apps.
+    func sourceSummary(method: CalculationMethod, pinned: Bool, short: Bool = false) -> String {
+        if short {
+            if pinned { return "You chose \(method.name) in Settings." }
+            switch source {
+            case .table: return "Official timetable from \(authority ?? name)."
+            case .authority: return "Follows \(authority ?? name)."
+            case .standard: return "No official timetable here, so the app uses \(method.name). Your local masjid may differ by a few minutes."
+            }
+        }
+        if pinned {
+            let auto = source == .standard ? "the method most used here" : (authority ?? "the local authority")
+            return "You chose \(method.name) in Settings. Automatic would follow \(auto)."
+        }
+        switch source {
+        case .table:
+            return "Official timetable from \(authority ?? name). When it can't be downloaded, the app works it out with the same method."
+        case .authority:
+            return "Follows \(authority ?? name), worked out on your phone with their method so it works offline." + (note.map { " \($0)" } ?? "")
+        case .standard:
+            let lead = note ?? "No official timetable the app can use here yet, so it uses \(method.name), a standard method."
+            return lead + " Your local masjid may differ by a few minutes. You can choose another method in Settings, or send us your masjid's timetable."
+        }
+    }
 }
 
 enum AsiaRegions {
-    private static func p(_ code: String, _ name: String, _ method: String, _ asr: AsrSchool = .standard,
-                          _ naming: NamingStyle = .international) -> CountryProfile {
-        CountryProfile(code: code, name: name, methodID: method, asr: asr, naming: naming)
-    }
-
-    static let profiles: [CountryProfile] = [
-        // Southeast Asia
-        p("SG", "Singapore", "muis", .standard, .malay),
-        p("MY", "Malaysia", "jakim", .standard, .malay),
-        p("BN", "Brunei", "sea", .standard, .malay),
-        p("ID", "Indonesia", "kemenag", .standard, .indonesian),
-        p("TH", "Thailand", "sea"),
-        p("VN", "Vietnam", "sea"),
-        p("KH", "Cambodia", "sea"),
-        p("LA", "Laos", "sea"),
-        p("MM", "Myanmar", "sea"),
-        p("PH", "Philippines", "sea"),
-        p("TL", "Timor-Leste", "sea"),
-        // East Asia
-        p("JP", "Japan", "mwl"),
-        p("KR", "South Korea", "mwl"),
-        p("KP", "North Korea", "mwl"),
-        p("CN", "China", "mwl", .hanafi),
-        p("TW", "Taiwan", "mwl"),
-        p("HK", "Hong Kong", "mwl"),
-        p("MO", "Macau", "mwl"),
-        p("MN", "Mongolia", "mwl", .hanafi),
-        // South Asia
-        p("IN", "India", "karachi", .hanafi, .southAsian),
-        p("PK", "Pakistan", "karachi", .hanafi, .southAsian),
-        p("BD", "Bangladesh", "karachi", .hanafi, .southAsian),
-        p("AF", "Afghanistan", "karachi", .hanafi, .southAsian),
-        p("NP", "Nepal", "karachi", .hanafi, .southAsian),
-        p("BT", "Bhutan", "karachi", .hanafi, .southAsian),
-        p("LK", "Sri Lanka", "karachi", .standard, .southAsian),
-        p("MV", "Maldives", "karachi", .standard, .southAsian),
-        // Central Asia
-        p("KZ", "Kazakhstan", "mwl", .hanafi),
-        p("UZ", "Uzbekistan", "mwl", .hanafi),
-        p("KG", "Kyrgyzstan", "mwl", .hanafi),
-        p("TJ", "Tajikistan", "mwl", .hanafi),
-        p("TM", "Turkmenistan", "mwl", .hanafi),
-        // West Asia
-        p("SA", "Saudi Arabia", "ummalqura"),
-        p("AE", "United Arab Emirates", "dubai"),
-        p("QA", "Qatar", "qatar"),
-        p("KW", "Kuwait", "kuwait"),
-        p("BH", "Bahrain", "ummalqura"),
-        p("OM", "Oman", "mwl"),
-        p("YE", "Yemen", "mwl"),
-        p("JO", "Jordan", "mwl"),
-        p("PS", "Palestine", "mwl"),
-        p("IL", "Israel", "mwl"),
-        p("LB", "Lebanon", "mwl"),
-        p("SY", "Syria", "egyptian"),
-        p("IQ", "Iraq", "mwl"),
-        p("IR", "Iran", "tehran"),
-        p("TR", "Türkiye", "diyanet", .hanafi, .turkish),
-        p("AZ", "Azerbaijan", "mwl"),
-        p("GE", "Georgia", "mwl"),
-        p("AM", "Armenia", "mwl"),
-        p("CY", "Cyprus", "diyanet", .hanafi, .turkish),
-    ]
+    static let profiles: [CountryProfile] = Countries.profiles
 
     private static let byCode: [String: CountryProfile] =
         Dictionary(uniqueKeysWithValues: profiles.map { ($0.code, $0) })
@@ -93,48 +82,31 @@ enum AsiaRegions {
         return byCode[code]
     }
 
-    /// Used outside Asia: still works, with the international default.
-    static let fallback = CountryProfile(code: "", name: "Outside Asia", methodID: "mwl",
-                                         asr: .standard, naming: .international)
+    /// Somewhere not in the table: still works, with the international method.
+    static let fallback = CountryProfile(code: "", name: "Worldwide", methodID: "mwl",
+                                         asr: .standard, naming: .international, highLatitude: .angle)
 
     /// Offline country guess from the phone's time zone, for when the phone has
     /// GPS but no data to reverse-geocode (fresh off the plane, no roaming).
     /// The phone's zone updates from the mobile network on landing.
     static func countryCode(forTimeZone id: String) -> String? {
-        timeZoneCountries[id]
+        Countries.timeZoneCountries[id]
     }
 
     /// A representative zone for a country (first match), used when a search
     /// result comes back without a time zone.
     static func timeZoneID(forCountry code: String?) -> String? {
         guard let code = code?.uppercased() else { return nil }
-        return timeZoneCountries.filter { $0.value == code }.keys.sorted().first
+        return Countries.timeZoneCountries.filter { $0.value == code }.keys.sorted().first
     }
-
-    private static let timeZoneCountries: [String: String] = [
-        "Asia/Singapore": "SG", "Asia/Kuala_Lumpur": "MY", "Asia/Kuching": "MY", "Asia/Brunei": "BN",
-        "Asia/Jakarta": "ID", "Asia/Pontianak": "ID", "Asia/Makassar": "ID", "Asia/Jayapura": "ID",
-        "Asia/Bangkok": "TH", "Asia/Ho_Chi_Minh": "VN", "Asia/Saigon": "VN", "Asia/Phnom_Penh": "KH",
-        "Asia/Vientiane": "LA", "Asia/Yangon": "MM", "Asia/Rangoon": "MM", "Asia/Manila": "PH", "Asia/Dili": "TL",
-        "Asia/Tokyo": "JP", "Asia/Seoul": "KR", "Asia/Pyongyang": "KP", "Asia/Shanghai": "CN", "Asia/Urumqi": "CN",
-        "Asia/Taipei": "TW", "Asia/Hong_Kong": "HK", "Asia/Macau": "MO", "Asia/Ulaanbaatar": "MN",
-        "Asia/Kolkata": "IN", "Asia/Calcutta": "IN", "Asia/Karachi": "PK", "Asia/Dhaka": "BD", "Asia/Kabul": "AF",
-        "Asia/Kathmandu": "NP", "Asia/Thimphu": "BT", "Asia/Colombo": "LK", "Indian/Maldives": "MV",
-        "Asia/Almaty": "KZ", "Asia/Tashkent": "UZ", "Asia/Samarkand": "UZ", "Asia/Bishkek": "KG",
-        "Asia/Dushanbe": "TJ", "Asia/Ashgabat": "TM",
-        "Asia/Riyadh": "SA", "Asia/Dubai": "AE", "Asia/Qatar": "QA", "Asia/Kuwait": "KW", "Asia/Bahrain": "BH",
-        "Asia/Muscat": "OM", "Asia/Aden": "YE", "Asia/Amman": "JO", "Asia/Gaza": "PS", "Asia/Hebron": "PS",
-        "Asia/Jerusalem": "IL", "Asia/Beirut": "LB", "Asia/Damascus": "SY", "Asia/Baghdad": "IQ",
-        "Asia/Tehran": "IR", "Europe/Istanbul": "TR", "Asia/Baku": "AZ", "Asia/Tbilisi": "GE",
-        "Asia/Yerevan": "AM", "Asia/Nicosia": "CY",
-    ]
 }
 
 extension NamingStyle {
     /// Your names, when you haven't picked any: your home country's, else your
     /// phone's language or region, else International.
     static func personal(homeCountry: String?, locale: Locale = .current) -> NamingStyle {
-        if let home = AsiaRegions.profile(for: homeCountry) { return home.naming }
+        // A home with its own spelling wins; an international one lets the phone's language decide.
+        if let home = AsiaRegions.profile(for: homeCountry), home.naming != .international { return home.naming }
         switch locale.language.languageCode?.identifier {
         case "ms": return .malay
         case "id": return .indonesian

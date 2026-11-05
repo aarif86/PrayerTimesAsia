@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { sourceLabel } from '../core/official'
 import { NAMING_LABEL, NAMING_STYLES, type NamingStyle } from '../core/prayer'
-import { profileFor, timeZoneForPlace } from '../core/regions'
+import { FALLBACK_PROFILE, profileFor, profileMethod, sourceSummary, timeZoneForPlace } from '../core/regions'
 import { deviceTimeZone } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable } from '../services/officialTables'
@@ -122,6 +122,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               </ul>
             )}
             <p class="muted small">Times from: <b>{official ? sourceLabel(official) : c.place ? 'calculation for this country' : '-'}</b></p>
+            {c.place && <p class="muted small">{(() => { const pr = profileFor(c.place.cc) ?? FALLBACK_PROFILE; return sourceSummary(pr, profileMethod(pr), false) })()}</p>}
             {official?.kind === 'jakim' && (
               <>
                 <label for="s-zone">JAKIM zone (only if the masjid uses a different one)</label>

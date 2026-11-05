@@ -46,7 +46,7 @@ fun OnboardingScreen(state: AppState, bringIn: () -> Unit = {}, chooseCity: () -
             Spacer(Modifier.weight(1f))
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Prayer Times\nAsia", style = display(52.sp, FontWeight.Bold).copy(lineHeight = 54.sp), color = Palette.primary)
-                Text("Wherever you land in Asia, know when to pray and which way to face.", style = Txt.title3.copy(fontWeight = FontWeight.Medium),
+                Text("Wherever you land, know when to pray and which way to face.", style = Txt.title3.copy(fontWeight = FontWeight.Medium),
                     color = Palette.primary.copy(alpha = 0.9f))
             }
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

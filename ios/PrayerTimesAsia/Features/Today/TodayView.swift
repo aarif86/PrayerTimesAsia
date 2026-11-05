@@ -1292,13 +1292,17 @@ private struct ArrivalCard: View {
                 HStack(alignment: .top, spacing: 12) {
                     Text(profile.flag.isEmpty ? "🌏" : profile.flag).font(.system(size: 34))
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(profile.code.isEmpty ? "Outside Asia" : "Welcome to \(profile.name)")
+                        Text(profile.code.isEmpty ? "Welcome" : "Welcome to \(profile.name)")
                             .font(.headline)
                         Text(model.isMethodAutomatic
                              ? "Switched to \(model.method.name) (\(model.method.parameterSummary)), local time. Works offline."
                              : "Local time applied. You've pinned \(model.method.shortName) in Settings.")
                             .font(.subheadline)
                             .opacity(0.85)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(model.sourceShort)
+                            .font(.caption)
+                            .opacity(0.75)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 0)

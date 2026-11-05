@@ -26,5 +26,7 @@ jobs:
         run: python3 tools/check_mosques.py
       - name: Check data/calendar.json
         run: python3 tools/check_calendar.py
+      - name: Check the country tables match data/countries.json
+        run: python3 tools/gen_countries.py --check
       - name: Compare with official timetables
         run: python3 tools/validate_official.py ${{ github.event.inputs.zones }}

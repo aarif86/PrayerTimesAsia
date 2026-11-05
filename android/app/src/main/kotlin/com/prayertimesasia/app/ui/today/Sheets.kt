@@ -136,9 +136,9 @@ fun SanadSheetContent(state: AppState, day: PrayerDay) {
     val uri = LocalUriHandler.current
     val detail = when (day.grade) {
         SourceGrade.OFFICIAL -> if (day.officialSource != null) "Downloaded once a year from the authority and kept on your phone, so it works offline."
-        else "${r.method.parameterSummary}. This is the authority's own published method."
+        else "${r.method.parameterSummary}. ${r.sourceSummary}"
         SourceGrade.MASJID, SourceGrade.COMMUNITY -> r.nearbyMosque?.method?.note ?: day.grade.explanation
-        else -> "${r.method.parameterSummary} · ${if (r.asrSchool == AsrSchool.HANAFI) "Hanafi" else "Shafi'i"} Asr. ${r.method.note}"
+        else -> "${r.method.parameterSummary} · ${if (r.asrSchool == AsrSchool.HANAFI) "Hanafi" else "Shafi'i"} Asr. ${r.sourceSummary} ${r.method.note}"
     }
     LazyColumn(Modifier.fillMaxWidth().padding(horizontal = Dims.gutter)) {
         item {
@@ -282,7 +282,7 @@ private fun CalendarRow(title: String, date: String, detail: String, status: Cal
     }
 }
 
-/** Current location, saved places and search (built-in Asian cities, then the phone's geocoder). */
+/** Current location, saved places and search (built-in cities worldwide, then the phone's geocoder). */
 @Composable
 fun PlacesSheetContent(state: AppState, onDone: () -> Unit) {
     var query by remember { mutableStateOf("") }
@@ -328,7 +328,7 @@ fun PlacesSheetContent(state: AppState, onDone: () -> Unit) {
                     }
                 }
                 item {
-                    Text("Search any city in Asia - Hanoi, Osaka, Seoul, Istanbul. Times are calculated on your phone, so they keep working offline.",
+                    Text("Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated on your phone, so they keep working offline.",
                         style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(vertical = 16.dp))
                 }
             } else {

@@ -22,6 +22,21 @@ export interface CalculationMethod {
   offsets: Partial<Record<Prayer, number>>
   matchesOfficialTable: boolean
   note: string
+  /**
+   * What to do on nights when twilight barely ends (far north or south in
+   * summer). 'fallback' (the original rule) only steps in when the sun never
+   * reaches the angle: one seventh of the night. 'angle', 'seventh' and
+   * 'middle' cap Fajr and Isha at that share of the night every day.
+   * 'moonsighting' is the Moonsighting Committee's seasonal rule.
+   */
+  highLatitude: HighLatitudeRule
+}
+
+export type HighLatitudeRule = 'fallback' | 'angle' | 'seventh' | 'middle' | 'moonsighting'
+
+/** The same method with another high-latitude rule (a country's own, see countries.ts). */
+export function withHighLatitude(m: CalculationMethod, rule: HighLatitudeRule | undefined): CalculationMethod {
+  return !rule || rule === m.highLatitude ? m : { ...m, highLatitude: rule }
 }
 
 function fmt(v: number): string {
@@ -33,9 +48,9 @@ export function parameterSummary(m: CalculationMethod): string {
   return `Fajr ${fmt(m.fajrAngle)}° · ${isha}`
 }
 
-const M = (m: Omit<CalculationMethod, 'ramadanIshaInterval' | 'maghribAngle' | 'ishaInterval'> &
-  Partial<Pick<CalculationMethod, 'ramadanIshaInterval' | 'maghribAngle' | 'ishaInterval'>>): CalculationMethod => ({
-  ishaInterval: null, ramadanIshaInterval: null, maghribAngle: null, ...m,
+const M = (m: Omit<CalculationMethod, 'ramadanIshaInterval' | 'maghribAngle' | 'ishaInterval' | 'highLatitude'> &
+  Partial<Pick<CalculationMethod, 'ramadanIshaInterval' | 'maghribAngle' | 'ishaInterval' | 'highLatitude'>>): CalculationMethod => ({
+  ishaInterval: null, ramadanIshaInterval: null, maghribAngle: null, highLatitude: 'fallback', ...m,
 })
 
 export const METHODS = {
@@ -65,7 +80,7 @@ export const METHODS = {
   mwl: M({
     id: 'mwl', name: 'Muslim World League', shortName: 'MWL', fajrAngle: 18, ishaAngle: 17,
     offsets: {}, matchesOfficialTable: false,
-    note: 'The most widely used international convention; common in East Asia.',
+    note: 'The Muslim World League. The most widely used international method.',
   }),
   karachi: M({
     id: 'karachi', name: 'Karachi · University of Islamic Sciences', shortName: 'Karachi', fajrAngle: 18, ishaAngle: 18,
@@ -75,7 +90,7 @@ export const METHODS = {
   ummalqura: M({
     id: 'ummalqura', name: 'Umm al-Qura · Makkah', shortName: 'Umm al-Qura', fajrAngle: 18.5, ishaAngle: null,
     ishaInterval: 90, ramadanIshaInterval: 120, offsets: {}, matchesOfficialTable: false,
-    note: 'Saudi Arabia. Isha is 90 minutes after Maghrib, 120 in Ramadan.',
+    note: 'The official calendar of Saudi Arabia, followed by the Haramain in Makkah and Madinah. Isha is 90 minutes after Maghrib, 120 in Ramadan.',
   }),
   dubai: M({
     id: 'dubai', name: 'Dubai · UAE', shortName: 'UAE', fajrAngle: 18.2, ishaAngle: 18.2,
@@ -92,8 +107,9 @@ export const METHODS = {
   }),
   diyanet: M({
     id: 'diyanet', name: 'Diyanet · Türkiye', shortName: 'Diyanet', fajrAngle: 18, ishaAngle: 17,
-    offsets: { sunrise: -7, dhuhr: 5, asr: 4, maghrib: 7 }, matchesOfficialTable: false,
-    note: 'An approximation of the Diyanet method; most accurate within Türkiye.',
+    offsets: { sunrise: -7.25, dhuhr: 4.75, asr: 3.25, maghrib: 5.875, isha: -1.125 }, matchesOfficialTable: false,
+    highLatitude: 'angle',
+    note: "Diyanet's method (Fajr 18°, Isha 17°, Asr at one shadow length), with precautionary minutes fitted on its published Istanbul timetable. Used by Turkish masjids across Europe too.",
   }),
   tehran: M({
     id: 'tehran', name: 'Tehran · Jafari', shortName: 'Jafari', fajrAngle: 17.7, ishaAngle: 14, maghribAngle: 4.5,
@@ -102,13 +118,55 @@ export const METHODS = {
   }),
   egyptian: M({
     id: 'egyptian', name: 'Egyptian General Authority', shortName: 'Egypt', fajrAngle: 19.5, ishaAngle: 17.5,
-    offsets: {}, matchesOfficialTable: false, note: 'Common in the Levant.',
+    offsets: {}, matchesOfficialTable: false, note: 'The Egyptian General Authority of Survey. Also common in Syria, Libya and Sudan.',
+  }),
+  isna: M({
+    id: 'isna', name: 'ISNA · North America', shortName: 'ISNA', fajrAngle: 15, ishaAngle: 15,
+    offsets: {}, matchesOfficialTable: false, highLatitude: 'angle',
+    note: 'The Islamic Society of North America. Followed by many masjids in the United States and Canada.',
+  }),
+  moonsighting: M({
+    id: 'moonsighting', name: 'Moonsighting Committee', shortName: 'Moonsighting', fajrAngle: 18, ishaAngle: 18,
+    offsets: { dhuhr: 5, maghrib: 3 }, matchesOfficialTable: false, highLatitude: 'moonsighting',
+    note: 'Made for northern countries. Fajr and Isha follow the seasons so summer nights stay workable. Common in the UK, Ireland and North America.',
+  }),
+  uoif: M({
+    id: 'uoif', name: 'Musulmans de France · 12°', shortName: 'France 12°', fajrAngle: 12, ishaAngle: 12,
+    offsets: {}, matchesOfficialTable: false, highLatitude: 'angle',
+    note: 'The 12° angle used by Musulmans de France (formerly UOIF). Fajr is later and Isha earlier than most methods.',
+  }),
+  russia: M({
+    id: 'russia', name: 'Muslims of Russia', shortName: 'Russia', fajrAngle: 16, ishaAngle: 15,
+    offsets: {}, matchesOfficialTable: false, highLatitude: 'angle',
+    note: 'The Spiritual Administration of Muslims of Russia.',
+  }),
+  algeria: M({
+    id: 'algeria', name: 'Algeria', shortName: 'Algeria', fajrAngle: 18, ishaAngle: 17,
+    offsets: { maghrib: 3 }, matchesOfficialTable: false,
+    note: "The method of Algeria's Ministry of Religious Affairs and Endowments.",
+  }),
+  tunisia: M({
+    id: 'tunisia', name: 'Tunisia', shortName: 'Tunisia', fajrAngle: 18, ishaAngle: 18,
+    offsets: { dhuhr: 7, maghrib: 2 }, matchesOfficialTable: false,
+    note: "The method of Tunisia's Ministry of Religious Affairs.",
+  }),
+  morocco: M({
+    id: 'morocco', name: 'Morocco', shortName: 'Morocco', fajrAngle: 19, ishaAngle: 17,
+    offsets: { dhuhr: 5, maghrib: 2 }, matchesOfficialTable: false,
+    note: "The method of Morocco's Ministry of Habous and Islamic Affairs.",
+  }),
+  jordan: M({
+    id: 'jordan', name: 'Jordan', shortName: 'Jordan', fajrAngle: 18, ishaAngle: 18,
+    offsets: {}, matchesOfficialTable: false,
+    note: "The method of Jordan's Ministry of Awqaf and Islamic Affairs. Also used in Palestine.",
   }),
 } satisfies Record<string, CalculationMethod>
 
 export const ALL_METHODS: CalculationMethod[] = [
   METHODS.muis, METHODS.jakim, METHODS.kemenag, METHODS.sea, METHODS.mwl, METHODS.karachi,
   METHODS.ummalqura, METHODS.dubai, METHODS.qatar, METHODS.kuwait, METHODS.diyanet, METHODS.tehran, METHODS.egyptian,
+  METHODS.isna, METHODS.moonsighting, METHODS.uoif, METHODS.russia, METHODS.algeria, METHODS.tunisia, METHODS.morocco,
+  METHODS.jordan,
 ]
 
 export function methodWithId(id: string | null | undefined): CalculationMethod | undefined {

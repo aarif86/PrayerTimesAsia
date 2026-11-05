@@ -278,10 +278,13 @@ function ArrivalCard() {
       <div class="row" style={{ alignItems: 'flex-start', gap: '12px' }}>
         <span style={{ fontSize: '34px', lineHeight: 1 }}>{profile.code ? flag(profile.code) : '🌏'}</span>
         <div style={{ flex: 1 }}>
-          <div class="headline">{profile.code ? `Welcome to ${profile.name}` : 'Outside Asia'}</div>
+          <div class="headline">{profile.code ? `Welcome to ${profile.name}` : 'Welcome'}</div>
           <div class="subhead" style={{ opacity: 0.85, marginTop: '4px' }}>
             {store.isMethodAutomatic ? `Switched to ${method.name} (${parameterSummary(method)}), local time. Works offline.`
               : `Local time applied. You've pinned ${method.shortName} in Settings.`}
+          </div>
+          <div class="caption" style={{ opacity: 0.75, marginTop: '6px' }}>
+            {store.sourceShort}
           </div>
         </div>
         <button aria-label="Dismiss" onClick={() => store.update((p) => { p.arrivalBannerDismissed = true })} style={{ padding: '6px' }}><X size={16} strokeWidth={3} /></button>

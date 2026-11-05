@@ -96,7 +96,7 @@ export function PlacesSheet() {
               <div class="group">{s.prefs.savedPlaces.map((p) => row(p, true))}</div>
             </>
           )}
-          <p class="group-foot">Search any city in Asia - Hanoi, Osaka, Seoul, Istanbul. Times are calculated in your browser, so they keep working offline. Your location never leaves this device.</p>
+          <p class="group-foot">Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated in your browser, so they keep working offline. Your location never leaves this device.</p>
         </>
       ) : (
         <>
@@ -135,12 +135,12 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
       : 'Downloaded once a year from the authority and kept in this browser, so it works offline.'
     if (day.sunriseCalculated) detail += ` ${s.name('sunrise')} is not in the feed, so it is calculated (never later than the official time).`
   } else if (day.grade === 'A') {
-    detail = `${parameterSummary(s.method)}. This is the authority's own published method.`
+    detail = `${parameterSummary(s.method)}. ${s.sourceSummary}`
   } else if (day.grade === 'B' || day.grade === 'C') {
     const m = s.nearbyMosque
     detail = (m && mosqueMethod(m)?.note) ?? GRADE_EXPLANATION[day.grade]
   } else {
-    detail = `${parameterSummary(s.method)} · ${s.asrSchool === 'hanafi' ? 'Hanafi' : "Shafi'i"} Asr. ${s.method.note}`
+    detail = `${parameterSummary(s.method)} · ${s.asrSchool === 'hanafi' ? 'Hanafi' : "Shafi'i"} Asr. ${s.sourceSummary} ${s.method.note}`
   }
   const alternates = OBLIGATORY.filter((p) => day.alternate[p] != null)
   const jamaah = OBLIGATORY.filter((p) => day.jamaah[p] != null)

@@ -79,7 +79,7 @@ if __name__ == '__main__':
     expected = json.loads((pathlib.Path(__file__).resolve().parent.parent / 'testdata' / 'expected-times.json').read_text())
     places = expected['places']
     cases = [(e['method'], dt.date.fromisoformat(e['date']), places[e['place']]['lat'], places[e['place']]['lng'], e['times'])
-             for e in expected['official']['days']]
+             for e in expected['official']['days'] if e['method'] in METHODS]  # the Asian tables (UTC+8)
     keys = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']
     worst = 0
     early = 0
