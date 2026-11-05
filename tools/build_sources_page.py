@@ -24,9 +24,9 @@ METHOD_NAMES = {'muis': 'MUIS timetable', 'jakim': 'JAKIM timetable', 'kemenag':
                 'russia': 'Spiritual Administration of Muslims of Russia', 'algeria': 'Algeria Ministry of Religious Affairs',
                 'tunisia': 'Tunisia Ministry of Religious Affairs', 'morocco': 'Morocco Ministry of Habous',
                 'jordan': 'Jordan Ministry of Awqaf'}
-WHO = {'table': ('Official timetable', 'The authority publishes a timetable and the app shows it as published.'),
-       'authority': ("The authority's own method", 'The app works the times out on your phone with the method this authority uses.'),
-       'standard': ('Standard method', 'There is no national timetable the app can use, so it uses the method most masjids there follow.')}
+WHO = {'table': ('Official times', 'The authority publishes the times and the app shows them exactly as they are.'),
+       'authority': ('Follows the local authority', 'The app works out the times on your phone, the same way this authority does.'),
+       'standard': ("What most masjids use", 'There is no national authority the app can follow, so it uses what most masjids there use.')}
 
 
 def flag(code):
@@ -104,15 +104,15 @@ page = f'''<!doctype html>
 <header><div class="wrap"><a href="./"><img src="img/icon-192.png" alt="" />Prayer Times Asia</a></div></header>
 <main class="wrap">
   <h1>Where our times come from</h1>
-  <p class="lead">Prayer Times Asia follows your local religious authority first. This is every country the app knows, whose times it follows there, and the method it uses. It is built from the same table as the app itself, so what you read here is what the app does. If your masjid follows something different, please <a href="mailto:salam@prayertimes.asia?subject=Prayer%20time%20source">tell us</a>.</p>
+  <p class="lead">Prayer Times Asia follows your local religious authority first. Here is every country in the app, whose times it follows there, and how it works them out. This list comes straight from the app, so what you read here is exactly what the app does. If your masjid follows something different, please <a href="mailto:salam@prayertimes.asia?subject=Prayer%20time%20source">tell us</a>.</p>
   <div class="cards">{cards}</div>
   <div class="tools">
     <input id="q" type="search" placeholder="Search a country or authority" aria-label="Search a country or authority" />
     <select id="s" aria-label="Show">
       <option value="">All {len(countries)} countries</option>
-      <option value="table">Official timetables</option>
-      <option value="authority">The authority's own method</option>
-      <option value="standard">Standard method</option>
+      <option value="table">Official times</option>
+      <option value="authority">Follows the local authority</option>
+      <option value="standard">What most masjids use</option>
     </select>
   </div>
   <div class="table"><table>
@@ -120,7 +120,7 @@ page = f'''<!doctype html>
     <tbody>{''.join(rows)}</tbody>
   </table></div>
 </main>
-<footer class="wrap">Anywhere not listed uses the Muslim World League method. You can always change the method and Asr school in the app's Settings. <a href="./">Back to Prayer Times Asia</a></footer>
+<footer class="wrap">Anywhere not listed uses the Muslim World League method. You can always change this in the app's Settings. <a href="./">Back to Prayer Times Asia</a></footer>
 <script>
   var q = document.getElementById('q'), s = document.getElementById('s'), rows = document.querySelectorAll('tbody tr');
   function f() {{ var t = q.value.trim().toLowerCase(), k = s.value;
