@@ -17,7 +17,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Prayer Times Asia" />
   <meta property="og:title" content="Prayer Times Asia | know when to pray, wherever you land" />
-  <meta property="og:description" content="Free prayer times and qibla across Asia. Official MUIS and JAKIM timetables, works offline, no ads, no tracking." />
+  <meta property="og:description" content="Free prayer times and qibla across Asia. Official timetables where they exist, works offline, no ads, no tracking." />
   <meta property="og:image" content="https://aarif86.github.io/PrayerTimesAsia/img/share.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -38,6 +38,8 @@
     })();
   </script>
 
+  <!-- Windows has no flag emoji: load just these flags from Google Fonts. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&text=%F0%9F%87%B8%F0%9F%87%AC%F0%9F%87%B2%F0%9F%87%BE%F0%9F%87%AE%F0%9F%87%A9%F0%9F%87%A7%F0%9F%87%B3%F0%9F%87%B9%F0%9F%87%AD%F0%9F%87%BB%F0%9F%87%B3%F0%9F%87%B5%F0%9F%87%AD%F0%9F%87%AF%F0%9F%87%B5%F0%9F%87%B0%F0%9F%87%B7%F0%9F%87%AE%F0%9F%87%B3%F0%9F%87%B9%F0%9F%87%B7&display=swap" />
   <style>
     :root {
       --night: #0b0f2a;
@@ -189,7 +191,7 @@
     .countries { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-top: 36px; }
     .countries .card h3 { display: flex; align-items: center; gap: 10px; }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    .chip { background: rgba(255,255,255,0.06); border: 1px solid var(--card-line); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; color: var(--text); }
+    .chip { font-family: var(--font), "Noto Color Emoji"; background: rgba(255,255,255,0.06); border: 1px solid var(--card-line); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; color: var(--text); }
 
     /* Masjid partner band */
     .partner { background: linear-gradient(135deg, #1d2160, #2b1a4f 60%, #3d1f3f); border: 1px solid var(--card-line); border-radius: 30px;
@@ -385,7 +387,7 @@
   <div class="strip">
     <div class="wrap">
       <ul>
-        <li>Official MUIS &amp; JAKIM timetables</li>
+        <li>Official timetables where they exist</li>
         <li>Works offline</li>
         <li>Switches country for you</li>
         <li>Exact location stays on your phone</li>
@@ -442,7 +444,7 @@
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 .9-4.5 4.3 1 6.3L12 16.6 6.5 19.5l1-6.3L3 8.9 9 8z"/></svg></div>
           <h3>Official sources first</h3>
-          <p>In Singapore and Malaysia the app uses the MUIS and JAKIM timetables exactly as they are published.</p>
+          <p>In Singapore, Malaysia and Indonesia the app uses the MUIS, JAKIM and Kemenag timetables exactly as they are published.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
@@ -507,7 +509,8 @@
           <h3>The times you trust, at a glance</h3>
           <p class="muted">A live dial counts down to the next prayer, with the whole day underneath. Pick the look you like, from a centre dial, a side dial, a sun path or bright colour bands, in light or dark.</p>
           <ul>
-            <li>Singapore uses the official MUIS timetable, Malaysia the official JAKIM e-Solat table for your zone</li>
+            <li>Singapore uses the official MUIS timetable, Malaysia the JAKIM e-Solat table for your zone, Indonesia the Kemenag table for your regency</li>
+            <li>Prayer names follow where you are, Subuh or Fajr, Zohor or Dhuhr</li>
             <li>Alerts when each prayer begins, Jumaat on Fridays</li>
             <li>Hijri date, Dhuha and the blessed night times</li>
             <li>Home Screen and Lock Screen widgets on iPhone and Android</li>
@@ -579,7 +582,7 @@
         <div class="card">
           <h3>Official timetables</h3>
           <p>Downloaded once a year and kept on your phone.</p>
-          <div class="chips"><span class="chip">🇸🇬 Singapore · MUIS</span><span class="chip">🇲🇾 Malaysia · JAKIM, by zone</span><span class="chip">🇮🇩 Indonesia · Kemenag method</span></div>
+          <div class="chips"><span class="chip">🇸🇬 Singapore · MUIS</span><span class="chip">🇲🇾 Malaysia · JAKIM, by zone</span><span class="chip">🇮🇩 Indonesia · Kemenag, by regency</span></div>
         </div>
         <div class="card">
           <h3>Local method, worked out on your phone</h3>
@@ -748,7 +751,7 @@
         </details>
         <details>
           <summary>How accurate are the times?</summary>
-          <p>In Singapore and Malaysia the app uses the official MUIS and JAKIM timetables. When it has to work them out itself (offline, or in other countries), it uses each country's own method, checked against the official tables for every day of the year and set to err on the safe side, never before the prayer has begun.</p>
+          <p>In Singapore, Malaysia and Indonesia the app uses the official MUIS, JAKIM and Kemenag timetables. When it has to work them out itself (offline, or in other countries), it uses each country's own method, checked against the official tables for every day of the year and set to err on the safe side, never before the prayer has begun.</p>
         </details>
         <details>
           <summary>Does it need the internet?</summary>
@@ -761,6 +764,10 @@
         <details>
           <summary>Is the musafir guidance a fatwa?</summary>
           <p>No. Jamak and qasar guidance is general information to help you plan. When unsure, follow your local religious authority.</p>
+        </details>
+        <details>
+          <summary>Whose Hijri date and Ramadan start does it follow?</summary>
+          <p>By default, the religious authority of your home country, so MUIS in Singapore, the Keeper of the Rulers' Seal in Malaysia and Kemenag in Indonesia. Tap the Hijri date to choose another authority, and adjust the date by a day in Settings if your community differs.</p>
         </details>
         <details>
           <summary>My masjid's times are different. What should I do?</summary>
@@ -795,6 +802,7 @@
     <div>
       <a href="app/">Web app</a> ·
       <a href="privacy.html">Privacy</a> ·
+      <a href="mailto:salam@prayertimes.asia?subject=Press%20enquiry">Press</a> ·
       <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/website/changelog.md">What's new</a> ·
       <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md">Design a new look</a> ·
       <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>
