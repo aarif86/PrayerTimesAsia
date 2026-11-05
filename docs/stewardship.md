@@ -17,6 +17,20 @@ breaking a promise to every user and masjid.
    shared. Only anonymous counts (city and country), which anyone can switch off.
 4. **Always open source.** The code stays public under the GNU AGPL ([NOTICE.md](../NOTICE.md)).
 
+## How the makers keep going
+
+Decided 5 November 2026. The app is Nasar Pte Ltd's shop window, not its product.
+
+- **Allowed:** "Built by Nasar Pte Ltd" with a link to NasarDigital on the website, the
+  About/Settings pages, and the small "From the makers" card in the apps (Badal.sg in
+  Singapore, NasarDigital elsewhere), which anyone can switch off.
+- **Never:** a paid tier, "Pro" plan, locked feature, subscription or in-app purchase,
+  for anyone. Masjids get the full mosque screen free too.
+- **Not for now:** charging masjids for setup or care plans, and asking users for
+  donations. Revisit only if the owner raises it.
+- Nasar promotion never appears on prayer screens, the azan, notifications or the
+  masjid TV.
+
 ## What must be protected
 
 The code cannot be "bought": it is already public. These can, so they stay with the
@@ -37,7 +51,7 @@ project and are never transferred to a business:
 | An authority wants its own branded version | Yes. The licence allows it. Ask them to share improvements back and use their own name. |
 | A sponsor wants their logo in the app | About page and website only. Never on prayer screens, azan, notifications or the masjid TV. |
 | A company offers the owner a job because of the app | Fine personally. The app, name and listings stay where they are. |
-| Running costs grow beyond what the owner pays comfortably | Open optional donations (GitHub Sponsors or LaunchGood) and publish a yearly costs page. |
+| Running costs grow beyond what the owner pays comfortably | Nasar covers them from its paid work. Ask a sponsor if needed. No donation drive for now (owner decided, 5 November 2026). |
 | Sponsor money passes about S$5,000 a year, a formal deal with an authority or masjid network, or a second person shares the work | Set up a non-profit company limited by guarantee and move the listings, domain, trademark and repo into it. |
 | A copy with ads appears using the name or icon | Report it to Apple or Google as impersonation. If it hides its changed code, ask it to publish the code (AGPL). |
 | The owner can no longer look after it | Hand it to the non-profit body or the backup person below. Never sell or give the listings to a business. |
