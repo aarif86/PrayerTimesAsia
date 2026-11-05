@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material.icons.filled.Opacity
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -138,27 +139,21 @@ fun StyleButton(state: AppState, background: Color = Palette.primary.copy(alpha 
     }
 }
 
-/** The tracker's streak; tap to mark today as excused (haid, illness) so it carries on. */
+/** The tracker's streak; tap to open the tracker (pause, month view). */
 @Composable
 fun StreakChip(state: AppState, background: Color = Palette.primary.copy(alpha = 0.1f)) {
     val r = state.resolver
     val excused = r.isExcused(state.now)
-    var menu by remember { mutableStateOf(false) }
-    Box {
-        Row(
-            Modifier.clip(CircleShape).background(background, CircleShape).clickable { menu = true }
-                .padding(horizontal = 10.dp, vertical = 8.dp)
-                .semantics { contentDescription = "Streak ${r.streak(state.now)} days${if (excused) ", excused today" else ""}" },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Icon(if (excused) Icons.Filled.Opacity else Icons.Filled.Whatshot, null, Modifier.size(16.dp), tint = Palette.primary)
-            Text("${r.streak(state.now)}", style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
-        }
-        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            DropdownMenuItem(text = { Text(if (excused) "Not excused today" else "Excused today") },
-                onClick = { menu = false; state.toggleExcused(state.now) })
-        }
+    val paused = state.prefs.trackerPausedSince != null
+    Row(
+        Modifier.clip(CircleShape).background(background, CircleShape).clickable { state.showTracker = true }
+            .padding(horizontal = 10.dp, vertical = 8.dp)
+            .semantics { contentDescription = "Prayer tracker: streak ${r.streak(state.now)} days${if (paused) ", paused" else if (excused) ", excused today" else ""}" },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(if (paused) Icons.Filled.Pause else if (excused) Icons.Filled.Opacity else Icons.Filled.Whatshot, null, Modifier.size(16.dp), tint = Palette.primary)
+        Text("${r.streak(state.now)}", style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
     }
 }
 

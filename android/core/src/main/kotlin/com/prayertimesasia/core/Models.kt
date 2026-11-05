@@ -145,6 +145,8 @@ data class Preferences(
     val prayedLog: Map<String, Set<Prayer>> = emptyMap(),
     /** Days excused (haid, illness, ...): they keep the streak alive. */
     val excusedDays: Set<String> = emptySet(),
+    /** "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from then until the pause ends counts as excused. */
+    val trackerPausedSince: String? = null,
 
     /** Subuh wake-up alarm; null = off. */
     val wakeUp: WakeUpTiming? = null,
