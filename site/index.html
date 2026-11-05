@@ -144,7 +144,7 @@
     .hero .note { font-size: 0.9rem; color: var(--muted); }
     .hero-phones { position: relative; height: 600px; }
     .hero-phones .phone { position: absolute; width: 260px; }
-    .hero-phones .phone.back { right: 0; top: 50px; transform: rotate(6deg); opacity: 0.9; }
+    .hero-phones .phone.back { right: 0; top: 50px; transform: rotate(6deg); }
     .hero-phones .phone.front { left: 10px; top: 0; transform: rotate(-4deg); z-index: 2; }
     @media (max-width: 900px) {
       .hero .wrap { grid-template-columns: 1fr; }
@@ -159,8 +159,9 @@
     }
     .phone img { display: block; border-radius: 31px; width: 100%; height: auto; aspect-ratio: 603 / 1311; }
     /* Android: squarer corners, thin even bezel and a punch hole camera. */
-    .phone.android { position: relative; border-radius: 28px; padding: 6px; background: #0a0b12; }
+    .phone.android { border-radius: 28px; padding: 6px; background: #0a0b12; }
     .phone.android img { border-radius: 22px; aspect-ratio: 603 / 1347; }
+    .feature .shot .phone.android { position: relative; }
     .phone.android::before { content: ""; position: absolute; top: 13px; left: 50%; width: 11px; height: 11px; margin-left: -5.5px; border-radius: 50%; background: #000; box-shadow: 0 0 0 1.5px #1c1f2e; }
 
     /* Trust strip */
@@ -432,7 +433,7 @@
         <p class="note"><a href="#story">Read the story</a> · Built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Pte Ltd</a></p>
       </div>
       <div class="hero-phones" aria-hidden="true">
-        <div class="phone android back"><img src="img/android-today-light.webp" alt="" width="603" height="1347" /></div>
+        <div class="phone android back"><img src="img/android-dial.webp" alt="" width="603" height="1347" /></div>
         <div class="phone front"><img src="img/today.webp" alt="" width="603" height="1311" /></div>
       </div>
     </div>
