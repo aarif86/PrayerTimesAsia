@@ -95,6 +95,8 @@ export function App() {
           {s.tab === 'settings' && <SettingsScreen />}
         </main>
       </div>
+      {/* Big screens have room beside the app: a way back to the website. */}
+      <a class="site-link" href="../">&larr; prayertimes.asia</a>
       <nav class="tabbar" role="tablist" aria-label="Sections">
         {TABS.map((t) => {
           const Icon = TAB_ICON[t]

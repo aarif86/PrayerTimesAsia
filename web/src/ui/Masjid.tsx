@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
+import type { ComponentChildren } from 'preact'
 import { Footprints, House, Info, Loader2, MoonStar } from 'lucide-preact'
 import type { Coordinates } from '../core/engine'
 import { distanceKm } from '../core/geo'
@@ -56,21 +57,29 @@ export function parseOverpass(json: { elements?: OsmElement[] }, center: Coordin
 
 async function searchNearby(center: Coordinates): Promise<PrayerSpace[] | null> {
   const lat = center.latitude.toFixed(4), lng = center.longitude.toFixed(4)
-  const cacheKey = `ptasia.masjid.${lat},${lng}`
+  // Remembered for a week per ~1 km square, so coming back is instant even when
+  // the free OpenStreetMap servers are busy. Distances are worked out again from here.
+  const cacheKey = `ptasia.masjid.${center.latitude.toFixed(2)},${center.longitude.toFixed(2)}`
   try {
-    const cached = sessionStorage.getItem(cacheKey)
-    if (cached) return JSON.parse(cached) as PrayerSpace[]
+    const cached = JSON.parse(localStorage.getItem(cacheKey) ?? 'null') as { at: number; spaces: PrayerSpace[] } | null
+    if (cached && Date.now() - cached.at < 7 * 86_400_000 && Array.isArray(cached.spaces)) {
+      return cached.spaces
+        .map((x) => ({ ...x, distanceKm: distanceKm(center, x.coordinates) }))
+        .filter((x) => x.distanceKm <= 15)
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+    }
   } catch { /* ignore */ }
   const q = `[out:json][timeout:20];(nwr["amenity"="place_of_worship"]["religion"="muslim"](around:12000,${lat},${lng}););out center tags;`
   const ask = async (base: string) => {
-    const r = await fetchOK(`${base}?data=${encodeURIComponent(q)}`, 20000)
+    // Busy public servers can take 15-30 s to answer, so give each one time.
+    const r = await fetchOK(`${base}?data=${encodeURIComponent(q)}`, 45000)
     if (!r) throw new Error('no answer')
     return parseOverpass(await r.json(), center)
   }
   // Ask every mirror at once and take the first answer, so one busy or dead
   // server can't leave the list spinning.
   const spaces = await Promise.any(OVERPASS.map(ask)).catch(() => null)
-  if (spaces) try { sessionStorage.setItem(cacheKey, JSON.stringify(spaces)) } catch { /* ignore */ }
+  if (spaces) try { localStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), spaces })) } catch { /* ignore */ }
   return spaces
 }
 
@@ -88,6 +97,8 @@ export default function MasjidScreen() {
   const [spaces, setSpaces] = useState<PrayerSpace[]>([])
   const [loading, setLoading] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [slow, setSlow] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const [kind, setKind] = useState<Kind>('all')
   const mapEl = useRef<HTMLDivElement>(null)
   const map = useRef<{ api: typeof import('./leafletMap'); map: import('leaflet').Map; layer: import('leaflet').LayerGroup } | null>(null)
@@ -100,14 +111,16 @@ export default function MasjidScreen() {
   useEffect(() => {
     if (!place) return
     let cancelled = false
-    setLoading(true); setFailed(false)
+    setLoading(true); setFailed(false); setSlow(false)
+    const slowTimer = setTimeout(() => setSlow(true), 8000)
     searchNearby(place.coordinates).then((r) => {
+      clearTimeout(slowTimer)
       if (cancelled) return
       setLoading(false)
       if (r) setSpaces(r); else { setSpaces([]); setFailed(true) }
     })
-    return () => { cancelled = true }
-  }, [place?.coordinates.latitude, place?.coordinates.longitude])
+    return () => { cancelled = true; clearTimeout(slowTimer) }
+  }, [place?.coordinates.latitude, place?.coordinates.longitude, attempt])
 
   useEffect(() => {
     if (!place || !mapEl.current) return
@@ -156,10 +169,11 @@ export default function MasjidScreen() {
         <MyMasjidGroup />
         <Segmented value={kind} onChange={setKind} options={[{ value: 'all', label: 'All' }, { value: 'masjid', label: 'Masjid' }, { value: 'musollah', label: 'Musollah' }]} />
         {!place && <Empty title="Choose a place" body="Allow location or pick a city on the Prayer tab." />}
-        {place && loading && spaces.length === 0 && <div class="masjid-loading"><Loader2 class="spin" size={22} /> Searching nearby…</div>}
+        {place && loading && spaces.length === 0 && <div class="masjid-loading"><Loader2 class="spin" size={22} /> {slow ? 'The free map server is busy. Still looking…' : 'Searching nearby…'}</div>}
         {place && !loading && visible.length === 0 && (
           <Empty title={failed ? "Couldn't search" : 'Nothing listed nearby'}
-            body={failed ? 'Searching needs an internet connection.' : `OpenStreetMap has no ${kind === 'musollah' ? 'musollah' : 'masjid'} listed within 15 km. Use the Qibla tab to pray where you are.`} />
+            body={failed ? "The free map servers didn't answer. Check your connection, or try again in a minute." : `OpenStreetMap has no ${kind === 'musollah' ? 'musollah' : 'masjid'} listed within 15 km. Use the Qibla tab to pray where you are.`}
+            action={failed ? <button class="primary-btn" style={{ marginTop: 14 }} onClick={() => setAttempt((n) => n + 1)}>Try again</button> : undefined} />
         )}
         <ul class="space-list">
           {visible.map((sp) => (
@@ -182,12 +196,13 @@ export default function MasjidScreen() {
   )
 }
 
-function Empty({ title, body }: { title: string; body: string }) {
+function Empty({ title, body, action }: { title: string; body: string; action?: ComponentChildren }) {
   return (
     <div class="empty">
       <MoonStar size={40} strokeWidth={1.4} style={{ opacity: 0.6 }} />
       <div class="headline">{title}</div>
       <div class="subhead secondary">{body}</div>
+      {action}
     </div>
   )
 }
