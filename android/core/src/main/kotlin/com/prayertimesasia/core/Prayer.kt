@@ -108,7 +108,8 @@ enum class NamingStyle(val raw: String) {
          * [language] is an ISO 639 code; Android still reports Indonesian as "in".
          */
         fun personal(homeCountry: String?, language: String?, region: String?): NamingStyle {
-            AsiaRegions.profile(homeCountry)?.let { return it.naming }
+            // A home with its own spelling wins; an international one lets the phone's language decide.
+            AsiaRegions.profile(homeCountry)?.let { if (it.naming != INTERNATIONAL) return it.naming }
             when (language?.lowercase()) {
                 "ms" -> return MALAY
                 "id", "in" -> return INDONESIAN

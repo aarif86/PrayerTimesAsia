@@ -71,7 +71,7 @@ export function SettingsScreen() {
         <button class="item" onClick={() => openSheet({ kind: 'places' })}>
           <span class="label">Place</span><span class="value">{place?.name ?? 'Not set'}</span><ChevronRight size={16} class="secondary" />
         </button>
-        <div class="item"><span class="label">Country rules</span><span class="value">{s.profile.code ? `${flag(s.profile.code)} ${s.profile.name}` : 'Outside Asia'}</span></div>
+        <div class="item"><span class="label">Country rules</span><span class="value">{s.profile.code ? `${flag(s.profile.code)} ${s.profile.name}` : s.profile.name}</span></div>
       </Group>
 
       <Group title="Travel" foot="Jamak and qasar guidance, combined prayer windows and a log of where you've prayed. We'll ask when you land in another country.">
@@ -81,7 +81,7 @@ export function SettingsScreen() {
         )}
       </Group>
 
-      <Group title="Calculation" foot={<>Automatic follows the country you're in, so landing in a new country switches it for you. {s.method.note}</>}>
+      <Group title="Calculation" foot={<>{s.sourceSummary} Automatic follows the country you're in, so landing in a new country switches it for you. {s.method.note}</>}>
         <SelectItem label="Method" value={p.methodOverrideID ?? 'auto'}
           options={[{ value: 'auto', label: `Automatic · ${profileMethod(s.profile).shortName}` }, ...ALL_METHODS.map((m) => ({ value: m.id, label: m.name }))]}
           onChange={(v) => store.update((x) => { x.methodOverrideID = v === 'auto' ? null : v })} />
@@ -206,7 +206,7 @@ export function SettingsScreen() {
         <ToggleItem label="Show offers on Prayer and Masjid" on={p.showOffers} onChange={(v) => store.update((x) => { x.showOffers = v })} />
       </Group>
 
-      <Group foot="Prayer Times Asia - made for Muslims living and travelling across Asia.">
+      <Group foot="Prayer Times Asia. Built in Asia, made for Muslims everywhere.">
         <a class="item" href="../"><span class="label">About Prayer Times Asia</span><ChevronRight size={16} class="secondary" /></a>
         <button class="item" onClick={() => openSheet({ kind: 'credits' })}><span class="label">Sources &amp; credits</span><ChevronRight size={16} class="secondary" /></button>
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><span class="label">Help verify times where you are</span><ChevronRight size={16} class="secondary" /></a>

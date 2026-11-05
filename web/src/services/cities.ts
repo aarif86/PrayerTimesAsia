@@ -1,5 +1,6 @@
 import { distanceKm } from '../core/geo'
 import type { Place } from '../core/place'
+import { WORLD_CITIES } from '../core/countries'
 import { profileFor, timeZoneForPlace } from '../core/regions'
 
 /**
@@ -118,20 +119,6 @@ const ROWS: Row[] = [
   ['Nicosia', 'Nicosia', 'CY', 35.1856, 33.3823],
 ]
 
-/** A few places outside Asia that travellers and expatriates ask for (International method). */
-const OUTSIDE: [string, string, string, string, number, number, string][] = [
-  ['London', 'England', 'GB', 'United Kingdom', 51.5074, -0.1278, 'Europe/London'],
-  ['Paris', 'Île-de-France', 'FR', 'France', 48.8566, 2.3522, 'Europe/Paris'],
-  ['Berlin', 'Berlin', 'DE', 'Germany', 52.5200, 13.4050, 'Europe/Berlin'],
-  ['Cairo', 'Cairo', 'EG', 'Egypt', 30.0444, 31.2357, 'Africa/Cairo'],
-  ['Sydney', 'New South Wales', 'AU', 'Australia', -33.8688, 151.2093, 'Australia/Sydney'],
-  ['Melbourne', 'Victoria', 'AU', 'Australia', -37.8136, 144.9631, 'Australia/Melbourne'],
-  ['Perth', 'Western Australia', 'AU', 'Australia', -31.9505, 115.8605, 'Australia/Perth'],
-  ['Auckland', 'Auckland', 'NZ', 'New Zealand', -36.8485, 174.7633, 'Pacific/Auckland'],
-  ['New York', 'New York', 'US', 'United States', 40.7128, -74.0060, 'America/New_York'],
-  ['Toronto', 'Ontario', 'CA', 'Canada', 43.6532, -79.3832, 'America/Toronto'],
-]
-
 function slug(s: string): string {
   return s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
 }
@@ -144,9 +131,10 @@ export const CITIES: Place[] = [
     coordinates: { latitude: lat, longitude: lng },
     district: district ?? null,
   })),
-  ...OUTSIDE.map(([name, region, code, country, lat, lng, tz]) => ({
+  // The rest of the world, from data/countries.json.
+  ...WORLD_CITIES.map(([name, region, code, lat, lng, tz]) => ({
     id: `city-${code.toLowerCase()}-${slug(name)}`,
-    name, region, countryCode: code, countryName: country, timeZoneID: tz,
+    name, region, countryCode: code, countryName: profileFor(code)?.name ?? code, timeZoneID: tz,
     coordinates: { latitude: lat, longitude: lng }, district: null,
   })),
 ]

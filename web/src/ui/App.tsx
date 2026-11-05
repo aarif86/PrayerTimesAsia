@@ -132,7 +132,7 @@ function Onboarding() {
         <div class="spacer" />
         <div>
           <h1 class="display onb-title">Prayer Times<br />Asia</h1>
-          <p class="onb-lead">Wherever you land in Asia, know when to pray and which way to face.</p>
+          <p class="onb-lead">Wherever you land, know when to pray and which way to face.</p>
         </div>
         <div class="onb-features">
           <Feature icon={<Globe2 size={24} />} title="Every country's own method" detail="MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia - and sensible defaults everywhere else." />

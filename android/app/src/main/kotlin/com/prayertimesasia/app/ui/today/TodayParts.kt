@@ -345,12 +345,13 @@ fun ArrivalCard(state: AppState) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(profile.flag.ifEmpty { "🌏" }, fontSize = 34.sp)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(if (profile.code.isEmpty()) "Outside Asia" else "Welcome to ${profile.name}", style = Txt.headline, color = Palette.primary)
+                Text(if (profile.code.isEmpty()) "Welcome" else "Welcome to ${profile.name}", style = Txt.headline, color = Palette.primary)
                 Text(
                     if (r.isMethodAutomatic) "Switched to ${r.method.name} (${r.method.parameterSummary}), local time. Works offline."
                     else "Local time applied. You've pinned ${r.method.shortName} in Settings.",
                     style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f),
                 )
+                Text(r.sourceShort, style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
             }
             Icon(Icons.Filled.Close, "Dismiss", Modifier.size(28.dp).clip(CircleShape)
                 .clickable { state.update { it.copy(arrivalBannerDismissed = true) } }.padding(6.dp), tint = Palette.primary)

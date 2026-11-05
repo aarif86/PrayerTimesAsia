@@ -74,12 +74,12 @@ export function compute(
   const night = 24 - (sunset - t.sunrise)
   const interval = (ramadan ? method.ramadanIshaInterval : null) ?? method.ishaInterval
   if (interval != null) t.isha = t.maghrib + interval / 60
-  // High-latitude safety net ("one-seventh of the night"). Never triggers in tropical Asia.
-  const fajrSevenths = t.sunrise - night / 7
-  if (angleTime(method.fajrAngle, t.fajr / 24, true) == null) t.fajr = fajrSevenths
-  if (method.ishaAngle != null && angleTime(method.ishaAngle, t.isha / 24, false) == null) {
-    t.isha = sunset + night / 7
-  }
+  const fajrReached = angleTime(method.fajrAngle, t.fajr / 24, true) != null
+  const ishaReached = method.ishaAngle == null || angleTime(method.ishaAngle, t.isha / 24, false) != null
+  const adjusted = highLatitude(method, lat, year, month, day, t.sunrise, sunset, night,
+    fajrReached ? t.fajr : null, method.ishaAngle == null ? t.isha : ishaReached ? t.isha : null)
+  t.fajr = adjusted.fajr
+  if (method.ishaAngle != null) t.isha = adjusted.isha
 
   const midnight = utcMidnight(year, month, day)
   const times = {} as Record<Prayer, number>
@@ -90,6 +90,61 @@ export function compute(
     times[prayer] = midnight + minutes * 60_000
   }
   return { year, month, day, times, grade: 'D', jamaah: {}, alternate: {} }
+}
+
+/**
+ * Fajr and Isha on nights when twilight barely ends (hours, local mean time).
+ * `fajr` / `isha` are null when the sun never reaches the method's angle.
+ * Never changes anything in tropical Asia: the caps are far beyond the angle times there.
+ */
+export function highLatitude(method: CalculationMethod, lat: number, year: number, month: number, day: number,
+  sunrise: number, sunset: number, night: number, fajr: number | null, isha: number | null): { fajr: number; isha: number } {
+  const rule = method.highLatitude
+  if (rule === 'moonsighting') {
+    // Above 55° the committee starts from one seventh of the night, then applies the same seasonal limits.
+    if (Math.abs(lat) >= 55) { fajr = sunrise - night / 7; isha = sunset + night / 7 }
+    const doy = dayOfYear(year, month, day)
+    const safeFajr = sunrise - seasonalMinutes(lat, year, doy, MORNING) / 60
+    const safeIsha = sunset + seasonalMinutes(lat, year, doy, EVENING) / 60
+    return {
+      fajr: fajr == null || safeFajr > fajr ? safeFajr : fajr,
+      isha: isha == null || safeIsha < isha ? safeIsha : isha,
+    }
+  }
+  if (rule === 'fallback') {
+    return { fajr: fajr ?? sunrise - night / 7, isha: isha ?? sunset + night / 7 }
+  }
+  const portion = (angle: number) => rule === 'middle' ? night / 2 : rule === 'seventh' ? night / 7 : angle / 60 * night
+  const fajrCap = sunrise - portion(method.fajrAngle)
+  const ishaCap = sunset + portion(method.ishaAngle ?? method.fajrAngle)
+  return {
+    fajr: fajr == null || fajr < fajrCap ? fajrCap : fajr,
+    isha: isha == null || isha > ishaCap ? ishaCap : isha,
+  }
+}
+
+function dayOfYear(year: number, month: number, day: number): number {
+  return Math.round((Date.UTC(year, month - 1, day) - Date.UTC(year, 0, 1)) / 86_400_000) + 1
+}
+
+// Moonsighting Committee (Khalid Shaukat): minutes before sunrise / after sunset
+// at four points of the year, scaled by latitude, joined by straight lines.
+const MORNING: [number, number][] = [[75, 28.65], [75, 19.44], [75, 32.74], [75, 48.10]]
+const EVENING: [number, number][] = [[75, 25.60], [75, 2.050], [75, -9.21], [75, 6.14]]
+
+function seasonalMinutes(lat: number, year: number, doy: number, table: [number, number][]): number {
+  const [a, b, c, d] = table.map(([base, k]) => base + k / 55 * Math.abs(lat))
+  const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
+  const days = leap ? 366 : 365
+  let dyy = lat >= 0 ? doy + 10 : doy - (leap ? 173 : 172)
+  if (dyy >= days) dyy -= days
+  if (dyy < 0) dyy += days
+  if (dyy < 91) return a + (b - a) / 91 * dyy
+  if (dyy < 137) return b + (c - b) / 46 * (dyy - 91)
+  if (dyy < 183) return c + (d - c) / 46 * (dyy - 137)
+  if (dyy < 229) return d + (c - d) / 46 * (dyy - 183)
+  if (dyy < 275) return c + (b - c) / 46 * (dyy - 229)
+  return b + (a - b) / 91 * (dyy - 275)
 }
 
 /** The prayer day for the local calendar date containing `ms` in `tz`. */

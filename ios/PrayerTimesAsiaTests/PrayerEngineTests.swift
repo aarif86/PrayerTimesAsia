@@ -112,6 +112,25 @@ final class PrayerEngineTests: XCTestCase {
         XCTAssertEqual(AsiaRegions.profile(for: "SG")?.flag, "🇸🇬")
     }
 
+    func testWorldwideCountriesFollowTheirAuthority() {
+        XCTAssertGreaterThan(AsiaRegions.profiles.count, 140)
+        XCTAssertEqual(AsiaRegions.profile(for: "SA")?.source, .authority)
+        XCTAssertEqual(AsiaRegions.profile(for: "TR")?.asr, .standard) // Diyanet's Ikindi is one shadow length
+        XCTAssertEqual(AsiaRegions.profile(for: "GB")?.method.id, "moonsighting")
+        XCTAssertEqual(AsiaRegions.countryCode(forTimeZone: "Europe/Paris"), "FR")
+        for profile in AsiaRegions.profiles {
+            for (pinned, short) in [(false, false), (true, false), (false, true), (true, true)] {
+                let text = profile.sourceSummary(method: profile.method, pinned: pinned, short: short)
+                XCTAssertFalse(text.contains(":") || text.contains(" - ") || text.contains("—"), profile.code)
+            }
+        }
+        // A method picked in Settings takes the country's summer night rule.
+        let norway = AsiaRegions.profile(for: "NO")!
+        XCTAssertEqual(norway.here(.egyptian).highLatitude, .angle)
+        XCTAssertEqual(norway.here(.moonsighting).highLatitude, .moonsighting)
+        XCTAssertEqual(AsiaRegions.profile(for: "MY")!.method.highLatitude, .fallback)
+    }
+
     func testMusafirStatus() {
         let rules = Musafir.Rules(school: .standard, thresholdKm: 81)
         let hanoi = Coordinates(latitude: 21.0278, longitude: 105.8342)

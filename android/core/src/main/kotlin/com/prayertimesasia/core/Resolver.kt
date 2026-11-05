@@ -29,9 +29,14 @@ class Resolver(
 
     val profile: CountryProfile get() = activePlace?.profile ?: AsiaRegions.fallback
 
-    val method: CalculationMethod get() = CalculationMethod.withId(prefs.methodOverrideId) ?: profile.method
+    val method: CalculationMethod
+        get() = CalculationMethod.withId(prefs.methodOverrideId)?.let(profile::here) ?: profile.method
 
     val isMethodAutomatic: Boolean get() = prefs.methodOverrideId == null
+    /** Whose times these are, in plain words (official timetable, the authority's method, or a standard one). */
+    val sourceSummary: String get() = profile.sourceSummary(method, pinned = !isMethodAutomatic)
+    /** The same in one sentence or two, for the welcome card. */
+    val sourceShort: String get() = profile.sourceSummary(method, pinned = !isMethodAutomatic, short = true)
     val asrSchool: AsrSchool get() = prefs.asrOverride ?: profile.asr
 
     /** Your prayer names - from your home or your phone, not from where you are. */
