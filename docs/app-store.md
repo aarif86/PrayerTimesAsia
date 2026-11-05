@@ -82,14 +82,41 @@ once the domain is set up).
 
 ## Screenshots
 
-From the CI `screenshots` branch (6.9" iPhone): 1 Today (Singapore), 2 Today
-(just landed in Hanoi, welcome card), 3 Journey (musafir), 4 Qibla, 6 Masjid.
-Suggested captions:
+Apple needs two sets because the app also runs on iPad: 6.9" iPhone
+(1320 × 2868) and 13" iPad (2064 × 2752). Captioned, ready to drag in:
+`design/store/app-store/iphone-*.png` and `ipad-*.png`.
+
+To redo them: Actions → **Store screenshots** → Run workflow (takes the raw
+shots on a Pro Max and an iPad Pro 13" simulator and puts them on the
+`store-screenshots-raw` branch), then
+`python3 tools/store_frames.py iphone RAW_DIR design/store/app-store` (and `ipad`).
+
+Captions, in order:
 1. "Know when to pray, wherever you land"
 2. "Switches the moment you arrive"
 3. "Jamak & qasar, worked out for you"
 4. "Face the Kaaba in one glance"
 5. "Find a masjid or musollah nearby"
+6. "Qibla Day and the shadow stick"
+7. "A sky that follows the sun"
+
+## App Review Information
+
+Sign-in required: **No**. Contact: Aarif Raziff, phone and email.
+
+Notes (paste as is):
+
+```
+Prayer Times Asia shows the five daily Muslim prayer times and the qibla (direction of Makkah) for Asia. It is free, has no account, no ads and no in-app purchases.
+
+Location: the app asks for location while in use, to pick the official timetable for the user's country and zone (MUIS in Singapore, JAKIM in Malaysia) and to point the qibla compass. Times are worked out or looked up on the device; exact coordinates are never sent anywhere. If location is declined, the user can pick a city from the list.
+
+To see travel mode without travelling: Prayer tab → tap the place name → pick a city in Vietnam or Japan. A welcome card explains how the times changed, and the Journey tab shows the traveller (musafir) rules.
+
+Notifications are optional prayer alerts the user turns on.
+
+The app is open source (GNU AGPL 3.0), published by NASAR PTE. LTD.
+```
 
 ## What to test (TestFlight notes)
 

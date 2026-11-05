@@ -16,7 +16,8 @@ android {
         applicationId = "com.prayertimesasia.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
+        // The Play release workflow passes its run number, so every upload is higher than the last.
+        versionCode = providers.environmentVariable("VERSION_CODE").orNull?.toIntOrNull() ?: 1
         versionName = "1.0.0"
     }
 
@@ -29,11 +30,24 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // The Play upload key. Only present in the "Release to Google Play" workflow, which
+        // decodes it from repo secrets; everywhere else the release build stays unsigned.
+        val uploadKeystore = providers.environmentVariable("UPLOAD_KEYSTORE_PATH").orNull
+        if (uploadKeystore != null) {
+            create("upload") {
+                storeFile = file(uploadKeystore)
+                storePassword = providers.environmentVariable("UPLOAD_KEYSTORE_PASSWORD").get()
+                keyAlias = providers.environmentVariable("UPLOAD_KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("UPLOAD_KEY_PASSWORD").get()
+            }
+        }
     }
 
     buildTypes {
         release {
-            // Signing is set up by the owner (see README); CI builds an unsigned release to check R8.
+            // Signed with the upload key when the Play release workflow provides it; CI otherwise
+            // builds an unsigned release just to check R8.
+            signingConfigs.findByName("upload")?.let { signingConfig = it }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

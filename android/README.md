@@ -98,16 +98,22 @@ adb shell am start -n com.prayertimesasia.app/.MainActivity \
 - Display font is Nunito (SIL OFL, bundled) in place of SF Pro Rounded.
 - The app is English only, like the iOS app.
 
-## Publishing on Google Play (owner steps)
+## Google Play releases
 
-1. Create a Google Play developer account (one-time fee) and the app with package `com.prayertimesasia.app`.
-2. Create an upload key and keep it safe (never commit it):
+Same idea as the iPhone's "Release to TestFlight": Actions → **Release to Google Play** → Run workflow. It runs the core tests, builds the signed App Bundle (`.aab`) with `versionCode` = the run number, offers it for download on the run page, and, once the Play upload secret exists, sends it to the chosen track (internal testing by default, as a draft you release in Play Console).
+
+One-time setup (owner):
+
+1. **Play developer account** as an organisation: NASAR PTE. LTD., D-U-N-S 599628730. Create the app *Prayer Times Asia* (free, app). Listing text, Data safety answers and graphics: [docs/play-store.md](../docs/play-store.md) and `design/store/play/`.
+2. **Upload key.** Make it once and keep a copy somewhere safe (a password manager), never in the repo:
    `keytool -genkeypair -v -keystore upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`
-   Enrol in Play App Signing so Google holds the app signing key.
-3. Add a `signingConfigs { create("release") { ... } }` block to `app/build.gradle.kts` that reads the keystore path and passwords from environment variables or `~/.gradle/gradle.properties`, and set `signingConfig` on the `release` build type. Build with `./gradlew :app:bundleRelease` and upload the `.aab`.
-4. Bump `versionCode` (and `versionName`) in `app/build.gradle.kts` for every upload.
-5. Play Console declarations: Data safety (collected, not shared, not linked to the user, optional: *App activity → App interactions* and *Location → Approximate location*, purpose Analytics, for the anonymous usage counts in UsageCounter.kt that the user can turn off; precise location used on device only; other network requests send only a year, zone code, regency name, or for the Masjid tab the search area; data is encrypted in transit), the **exact alarm** permission (prayer alerts are user-requested alarms at a specific time), location permission (foreground only), camera (Falak view, nothing recorded), and a privacy policy URL (https://aarif86.github.io/PrayerTimesAsia/privacy.html, or prayertimes.asia/privacy.html once the domain is set up).
-6. Store listing: reuse the copy in `docs/app-store.md` on `main`, the icon (`icon-1024.png`, downscaled to 512 px) and screenshots from demo mode on a real phone.
+   Google holds the real app signing key (Play App Signing, on by default), so a lost upload key can be reset through Play Console support.
+3. **GitHub secrets** (Settings → Secrets and variables → Actions):
+   `ANDROID_UPLOAD_KEYSTORE_BASE64` (output of `base64 -w0 upload.jks`, or `base64 -i upload.jks` on a Mac), `ANDROID_UPLOAD_KEYSTORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS` (`upload`), `ANDROID_UPLOAD_KEY_PASSWORD`.
+4. **First upload by hand:** run the workflow, download the `.aab` from the run page, and upload it in Play Console → Test and release → Internal testing → Create new release. (Google only lets the automatic upload work after the app has its first build.)
+5. *(Optional, for one-tap uploads after that)* Google Cloud: create a service account, make a JSON key, then Play Console → Users and permissions → invite the service account's email with *Release to testing tracks* (and *Release to production* if wanted). Save the JSON as the `PLAY_SERVICE_ACCOUNT_JSON` secret.
+
+Without the signing secrets the workflow stops in its first step and says which ones are missing; the normal Android CI keeps building an unsigned release just to check R8.
 
 ## Licence and credits
 
