@@ -17,6 +17,7 @@ src, table_path, out_path = sys.argv[1:4]
 page = open(src, encoding='utf-8').read()
 table = json.load(open(table_path, encoding='utf-8'))
 missing = []
+used = set()
 
 
 def tr(text):
@@ -26,6 +27,7 @@ def tr(text):
     if key not in table:
         missing.append(key)
         return text
+    used.add(key)
     lead = text[: len(text) - len(text.lstrip())]
     tail = text[len(text.rstrip()):]
     out = html.escape(table[key], quote=False)
@@ -89,4 +91,7 @@ must_replace(
 import os
 os.makedirs(os.path.dirname(out_path) or '.', exist_ok=True)
 open(out_path, 'w', encoding='utf-8').write(work)
+unused = [k for k in table if k not in used]
+if unused:
+    print(f'Note, {len(unused)} Malay lines in {table_path} are no longer on the English page')
 print(f'Built {out_path}')

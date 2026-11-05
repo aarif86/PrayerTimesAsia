@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Prayer Times Asia | prayer times and qibla wherever you land</title>
-  <meta name="description" content="Built by Ustaz Aarif Raziff after a trip to Vietnam with no proper prayer app. Free prayer times and qibla for Muslims living and travelling across Asia. Official timetables where they exist, works offline, no ads, no account, no tracking. On the web today, iPhone and Android in testing." />
+  <meta name="description" content="Built by Ustaz Aarif Raziff after a trip to Vietnam with no proper prayer app. Free prayer times and qibla, built in Asia and made for Muslims everywhere. Your local religious authority first, official timetables where they exist, works offline, no ads, no account, no tracking. On the web today, iPhone and Android in testing." />
   <meta name="theme-color" content="#0b0f2a" />
   <meta name="color-scheme" content="dark" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
@@ -17,7 +17,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Prayer Times Asia" />
   <meta property="og:title" content="Prayer Times Asia | know when to pray, wherever you land" />
-  <meta property="og:description" content="Free prayer times and qibla across Asia. Official timetables where they exist, works offline, no ads, no tracking." />
+  <meta property="og:description" content="Free prayer times and qibla, built in Asia for Muslims everywhere. Your local authority first, works offline, no ads, no tracking." />
   <meta property="og:image" content="https://aarif86.github.io/PrayerTimesAsia/img/share.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -107,7 +107,8 @@
     header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 62px; gap: 12px; }
     .brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 800; }
     .brand img { width: 34px; height: 34px; border-radius: 9px; }
-    nav.links { display: flex; gap: 22px; }
+    nav.links { display: flex; gap: 22px; white-space: nowrap; }
+    @media (max-width: 1080px) { nav.links { gap: 16px; font-size: 0.92rem; } }
     nav.links a { color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 600; }
     nav.links a:hover { color: var(--text); }
     @media (max-width: 820px) { nav.links { display: none; } }
@@ -353,11 +354,9 @@
     <a class="brand" href="#top"><img src="img/icon-192.png" alt="" width="34" height="34" />Prayer Times Asia</a>
     <nav class="links" aria-label="Sections">
       <a href="#story">Our story</a>
-      <a href="#who">Who it's for</a>
       <a href="#features">Features</a>
       <a href="#countries">Countries</a>
       <a href="#masjid">For masjids</a>
-      <a href="#promises">Our promises</a>
       <a href="#faq">Questions</a>
     </nav>
     <div class="top-right">
@@ -374,7 +373,7 @@
       <div>
         <span class="eyebrow">By Ustaz Aarif Raziff · Free fisabilillah</span>
         <h1>A prayer app with <span>nothing to sell you.</span></h1>
-        <p class="lead">When Ustaz Aarif landed in Vietnam, he couldn't find a proper prayer app. So he asked himself, why not build one? Times worked out the way each country in Asia does, official timetables where they exist, no ads, no subscriptions, and your exact location stays on your phone.</p>
+        <p class="lead">When Ustaz Aarif landed in Vietnam, he couldn't find a proper prayer app. So he asked himself, why not build one? Built in Asia, made for every Muslim. Times follow your local religious authority first, official timetables where they exist, no ads, no subscriptions, and your exact location stays on your phone.</p>
         <div class="btns">
           <a class="btn btn-primary" href="app/">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
@@ -398,6 +397,7 @@
     <div class="wrap">
       <ul>
         <li>Official timetables where they exist</li>
+        <li>143 countries</li>
         <li>Works offline</li>
         <li>Switches country for you</li>
         <li>Exact location stays on your phone</li>
@@ -434,7 +434,7 @@
         <blockquote>
           <p>Assalamualaikum.</p>
           <p>When I landed in Vietnam, I couldn't find a proper prayer app. The ones I found were full of ads or asked for a subscription.</p>
-          <p>So back home in Singapore, I decided to build one. Fully focused on salah, with times worked out the way each country in Asia does, and nothing to sell you.</p>
+          <p>So back home in Singapore, I decided to build one. Fully focused on salah, with times worked out the way each country does, starting with Asia and now around the world, and nothing to sell you.</p>
           <p>It's free and it will stay free. If it helps you, make du'a for us, and share it with someone who prays.</p>
         </blockquote>
         <figcaption>Ustaz Aarif Raziff, founder of Prayer Times Asia</figcaption>
@@ -585,8 +585,8 @@
     <div class="wrap">
       <div class="center">
         <span class="eyebrow">Where it works</span>
-        <h2>Exact at home. Ready on the road.</h2>
-        <p class="lead">Each country uses its own method, Asr school and prayer names, so the times match what the local masjid announces.</p>
+        <h2>Asia first. Now worldwide.</h2>
+        <p class="lead">143 countries. Wherever there is a religious authority, the app follows it, with its Asr school and prayer names, so the times match what the local masjid announces. Where there isn't one, it uses a trusted standard method and tells you which.</p>
       </div>
       <div class="countries">
         <div class="card">
@@ -595,9 +595,14 @@
           <div class="chips"><span class="chip">🇸🇬 Singapore · MUIS</span><span class="chip">🇲🇾 Malaysia · JAKIM, by zone</span><span class="chip">🇮🇩 Indonesia · Kemenag, by regency</span></div>
         </div>
         <div class="card">
-          <h3>Local method, worked out on your phone</h3>
-          <p>No connection needed.</p>
-          <div class="chips"><span class="chip">🇧🇳 Brunei</span><span class="chip">🇹🇭 Thailand</span><span class="chip">🇻🇳 Vietnam</span><span class="chip">🇵🇭 Philippines</span><span class="chip">🇯🇵 Japan</span><span class="chip">🇰🇷 Korea</span><span class="chip">🇮🇳 India</span><span class="chip">🇹🇷 Türkiye</span><span class="chip">The Gulf</span><span class="chip">and the rest of Asia</span></div>
+          <h3>The local authority's method</h3>
+          <p>Worked out on your phone, no connection needed.</p>
+          <div class="chips"><span class="chip">🇸🇦 Saudi Arabia · Umm al&#8209;Qura</span><span class="chip">🇹🇷 Türkiye · Diyanet</span><span class="chip">🇦🇪 UAE</span><span class="chip">🇶🇦 Qatar</span><span class="chip">🇰🇼 Kuwait</span><span class="chip">🇯🇴 Jordan</span><span class="chip">🇪🇬 Egypt</span><span class="chip">🇲🇦 Morocco</span><span class="chip">🇷🇺 Russia</span><span class="chip">and more</span></div>
+        </div>
+        <div class="card">
+          <h3>Where there's no national authority</h3>
+          <p>The method most masjids there use, named in the app.</p>
+          <div class="chips"><span class="chip">🇻🇳 Vietnam, 🇹🇭 Thailand, 🇯🇵 Japan and the rest of Asia</span><span class="chip">🇬🇧 UK · Moonsighting Committee</span><span class="chip">🇺🇸 USA and 🇨🇦 Canada · ISNA</span><span class="chip">🇪🇺 Europe · Muslim World League</span></div>
         </div>
       </div>
     </div>
@@ -657,7 +662,7 @@
         <div>
           <span class="eyebrow">For masjids and imams</span>
           <h2>Help us get it right for your community.</h2>
-          <p class="muted">We want to work with imams and masjid committees across Asia so the app reflects how your community really prays. If you look after a masjid or musollah, we would love to hear from you.</p>
+          <p class="muted">We want to work with imams and masjid committees in Asia and beyond so the app reflects how your community really prays. If you look after a masjid or musollah, we would love to hear from you.</p>
           <ul>
             <li>Check our times against your local timetable and tell us where they differ</li>
             <li>Share your iqamah and Jumu'ah times so nearby jamaah can find them</li>
@@ -761,7 +766,11 @@
         </details>
         <details>
           <summary>How accurate are the times?</summary>
-          <p>In Singapore, Malaysia and Indonesia the app uses the official MUIS, JAKIM and Kemenag timetables. When it has to work them out itself (offline, or in other countries), it uses each country's own method, checked against the official tables for every day of the year and set to err on the safe side, never before the prayer has begun.</p>
+          <p>In Singapore, Malaysia and Indonesia the app uses the official MUIS, JAKIM and Kemenag timetables, and its own working is checked against them for every day of the year. In other countries it follows the local religious authority, such as Umm al&#8209;Qura in Saudi Arabia or Diyanet in Türkiye, and where there isn't one it uses the method most masjids there follow. Every time is set to err on the safe side, never before the prayer has begun.</p>
+        </details>
+        <details>
+          <summary>I don't live in Asia. Will it work for me?</summary>
+          <p>Yes. It was built in Asia and Asia comes first, but it now covers 143 countries. In London it uses the Moonsighting Committee method, in North America ISNA, in Makkah Umm al&#8209;Qura and in Istanbul Diyanet. The app always shows which source it is using, and you can change it in Settings.</p>
         </details>
         <details>
           <summary>Does it need the internet?</summary>
