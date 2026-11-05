@@ -357,7 +357,49 @@ final class AppModel {
         if prefs.prayedLog.count > 400, let oldest = prefs.prayedLog.keys.min() { prefs.prayedLog[oldest] = nil }
     }
 
-    func isExcused(_ date: Date) -> Bool { prefs.excusedDays.contains(dayKey(date)) }
+    func isExcused(_ date: Date) -> Bool { isExcused(key: dayKey(date)) }
+
+    /// Marked excused on its own, or inside a pause (from the day it began up to today).
+    func isExcused(key: String) -> Bool {
+        if prefs.excusedDays.contains(key) { return true }
+        guard let since = prefs.trackerPausedSince else { return false }
+        return key >= since && key <= dayKey(.now)
+    }
+
+    /// How a day went: prayers ticked and whether it was excused.
+    func trackerDay(_ key: String) -> (prayed: Int, excused: Bool) {
+        ((prefs.prayedLog[key] ?? []).intersection(Prayer.obligatory).count, isExcused(key: key))
+    }
+
+    var trackerPaused: Bool { prefs.trackerPausedSince != nil }
+
+    /// Pause for haid, nifas or illness: today and every day until it's ended
+    /// count as excused, so the streak waits.
+    func pauseTracker(_ date: Date = .now) { prefs.trackerPausedSince = dayKey(date) }
+
+    /// End the pause: the paused days are kept as excused days, today included.
+    func endTrackerPause(_ date: Date = .now) {
+        guard let since = prefs.trackerPausedSince else { return }
+        prefs.excusedDays.formUnion(Self.days(from: since, to: dayKey(date)))
+        prefs.trackerPausedSince = nil
+    }
+
+    /// Every "yyyy-MM-dd" from `from` to `to`, both included (at most a year).
+    nonisolated static func days(from: String, to: String) -> [String] {
+        let parts = from.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3 else { return [] }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        guard let start = cal.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2])) else { return [] }
+        var out: [String] = []
+        for i in 0..<366 {
+            let c = cal.dateComponents([.year, .month, .day], from: cal.date(byAdding: .day, value: i, to: start)!)
+            let key = String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
+            if key > to { break }
+            out.append(key)
+        }
+        return out
+    }
 
     func toggleExcused(_ date: Date) {
         let key = dayKey(date)
@@ -371,7 +413,7 @@ final class AppModel {
         var date = Date.now
         for i in 0..<400 {
             let key = dayKey(date)
-            let complete = prefs.excusedDays.contains(key) || (prefs.prayedLog[key]?.count ?? 0) >= Prayer.obligatory.count
+            let complete = isExcused(key: key) || (prefs.prayedLog[key]?.count ?? 0) >= Prayer.obligatory.count
             if complete { count += 1 } else if i > 0 { break }
             date = date.addingTimeInterval(-86_400)
         }
@@ -386,6 +428,7 @@ final class AppModel {
         var a = prefs, b = old
         a.prayedLog = [:]; b.prayedLog = [:]
         a.excusedDays = []; b.excusedDays = []
+        a.trackerPausedSince = nil; b.trackerPausedSince = nil
         guard a != b else { return }
         refreshOfficialTimetable()
         scheduleNotifications()

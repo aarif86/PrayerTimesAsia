@@ -118,6 +118,9 @@ struct Preferences: Codable, Equatable, Sendable {
     var prayedLog: [String: Set<Prayer>] = [:]
     /// Days excused (haid, illness, ...): they keep the streak alive.
     var excusedDays: Set<String> = []
+    /// "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from
+    /// then until the pause ends counts as excused. nil = not paused.
+    var trackerPausedSince: String?
 
     /// Subuh wake-up alarm; nil = off.
     var wakeUp: WakeUpTiming?
@@ -183,6 +186,7 @@ struct Preferences: Codable, Equatable, Sendable {
         trackerEnabled = v(.trackerEnabled, d.trackerEnabled)
         prayedLog = v(.prayedLog, d.prayedLog)
         excusedDays = v(.excusedDays, d.excusedDays)
+        trackerPausedSince = v(.trackerPausedSince, d.trackerPausedSince)
         wakeUp = v(.wakeUp, d.wakeUp)
         communityAuthority = v(.communityAuthority, d.communityAuthority)
         appearance = v(.appearance, d.appearance)
