@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Prayer Times Asia | prayer times and qibla wherever you land</title>
-  <meta name="description" content="Built by Ustaz Aarif Raziff after a trip to Vietnam with no proper prayer app. Free prayer times and qibla for Muslims living and travelling across Asia. Official MUIS and JAKIM timetables, works offline, no ads, no account, no tracking. On the web today, iPhone and Android in testing." />
+  <meta name="description" content="Built by Ustaz Aarif Raziff after a trip to Vietnam with no proper prayer app. Free prayer times and qibla for Muslims living and travelling across Asia. Official timetables where they exist, works offline, no ads, no account, no tracking. On the web today, iPhone and Android in testing." />
   <meta name="theme-color" content="#0b0f2a" />
   <meta name="color-scheme" content="dark" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
@@ -126,6 +126,13 @@
     .btn small { display: block; font-weight: 600; font-size: 0.72rem; opacity: 0.75; line-height: 1.1; }
     .btn .two { text-align: left; line-height: 1.2; }
     .btn-sm { padding: 10px 16px; min-height: 40px; font-size: 0.92rem; }
+    .top-right { display: flex; align-items: center; gap: 10px; }
+    .brand, .btn-sm { white-space: nowrap; }
+    @media (max-width: 480px) { .top-right .btn-sm { display: none; } }
+    .lang { display: inline-flex; border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 3px; }
+    .lang a { padding: 6px 11px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em; color: inherit; opacity: 0.7; text-decoration: none; transition: background .25s, opacity .25s; }
+    .lang a:hover { opacity: 1; }
+    .lang a[aria-current="page"] { background: rgba(255,255,255,0.14); opacity: 1; }
     .btns { display: flex; flex-wrap: wrap; gap: 12px; }
     .btn svg { width: 22px; height: 22px; flex: none; }
 
@@ -353,7 +360,10 @@
       <a href="#promises">Our promises</a>
       <a href="#faq">Questions</a>
     </nav>
-    <a class="btn btn-primary btn-sm" href="app/">Open the app</a>
+    <div class="top-right">
+      <div class="lang" role="group" aria-label="Language"><a href="./" hreflang="en" aria-current="page">EN</a><a href="ms/" hreflang="ms" lang="ms">BM</a></div>
+      <a class="btn btn-primary btn-sm" href="app/">Open the app</a>
+    </div>
   </div>
 </header>
 
@@ -406,7 +416,7 @@
         <div class="chapter">
           <span class="num">1</span>
           <h3>He landed with no proper prayer app</h3>
-          <p>Ustaz Aarif arrived in Vietnam and looked for a prayer app he could trust. The big ones show ads around your salah, charge a subscription for things that used to be free, and some have been caught sharing where their users go. Even the best one he found wasn't made for Asia.</p>
+          <p>Ustaz Aarif arrived in Vietnam and looked for a prayer app he could trust. The big ones show ads around your salah and charge a subscription for things that used to be free. Even the best one he found wasn't made for Asia.</p>
         </div>
         <div class="chapter">
           <span class="num">2</span>
@@ -517,8 +527,8 @@
           </ul>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/today.webp" alt="The Prayer screen: a dial counting down to Isyak, and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone"><img src="img/bands.webp" alt="The Colour Bands style: each prayer time on its own bright band" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone"><img src="img/today.webp" alt="The Prayer screen, a dial counting down to Isyak, and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone"><img src="img/bands.webp" alt="The Colour Bands style, each prayer time on its own bright band" loading="lazy" width="603" height="1311" /></div>
         </div>
       </div>
 
@@ -535,8 +545,8 @@
           </ul>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/travel.webp" alt="Arriving in Hanoi: a welcome card explains the app switched to the Southeast Asia method" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone"><img src="img/journey.webp" alt="Journey: 2,195 km from home, you may shorten and combine prayers" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone"><img src="img/travel.webp" alt="Arriving in Hanoi, a welcome card explains the app switched to the Southeast Asia method" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone"><img src="img/journey.webp" alt="Journey, 2,195 km from home, you may shorten and combine prayers" loading="lazy" width="603" height="1311" /></div>
         </div>
       </div>
 
@@ -553,7 +563,7 @@
         </div>
         <div class="shot">
           <div class="phone"><img src="img/qibla.webp" alt="The qibla compass showing Aligned, facing 293 degrees" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone"><img src="img/falak.webp" alt="Falak: the shadow right now and the days to the next Qibla Day" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone"><img src="img/falak.webp" alt="Falak, the shadow right now and the days to the next Qibla Day" loading="lazy" width="603" height="1311" /></div>
         </div>
       </div>
 
@@ -718,7 +728,7 @@
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg></div>
           <h3>No ads</h3>
-          <p>Not in the apps, not on the masjid screen, not in notifications or the azan.</p>
+          <p>Not in the apps, not on the masjid screen, not in notifications or the azan. The only extra is a small card for our own services, which you can turn off.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
@@ -743,11 +753,11 @@
       <div class="faq">
         <details>
           <summary>Is it really free?</summary>
-          <p>Yes. Prayer Times Asia is built fisabilillah by Ustaz Aarif Raziff and Nasar Pte Ltd. There are no third-party ads, no subscriptions and no in-app purchases.</p>
+          <p>Yes. Prayer Times Asia is built fisabilillah by Ustaz Aarif Raziff. Nasar Pte Ltd, his company, pays the running costs, and we earn our living from other work, never from this app. There are no third-party ads, no subscriptions and no in-app purchases. The only thing you'll see is a small card for our own services, and you can turn it off.</p>
         </details>
         <details>
           <summary>Could the app be sold one day?</summary>
-          <p>No. It is not for sale, and it will never carry ads or sell data. The code is open under a licence that keeps every copy open, and only the official app may use the Prayer Times Asia name. Masjids, organisations and well-wishers who want to help can sponsor running costs or work with us. Write to <a href="mailto:salam@prayertimes.asia?subject=Supporting%20Prayer%20Times%20Asia">salam@prayertimes.asia</a>.</p>
+          <p>No. It is not for sale, and it will never carry ads or sell data. The code is open under a licence that keeps every copy open, and only the official app may use the Prayer Times Asia name.</p>
         </details>
         <details>
           <summary>How accurate are the times?</summary>
