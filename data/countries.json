@@ -1,0 +1,3096 @@
+{
+ "about": "Who sets prayer times in each country, and the method the app uses there. The single source for the iPhone, Android and web apps: run python3 tools/gen_countries.py after editing. source: table = the authority publishes a timetable the app downloads; authority = the app calculates with the authority's own published method; standard = no timetable the app can read, so a standard method (with the note saying which masjids differ). highLatitude: the rule for nights when twilight barely ends (angle = twilight angle portion, seventh = one seventh of the night, middle = middle of the night); left out, the method's own rule applies.",
+ "countries": [
+  {
+   "code": "SG",
+   "name": "Singapore",
+   "method": "muis",
+   "asr": "standard",
+   "naming": "malay",
+   "source": "table",
+   "authority": "MUIS, the Islamic Religious Council of Singapore",
+   "zones": [
+    "Asia/Singapore"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MY",
+   "name": "Malaysia",
+   "method": "jakim",
+   "asr": "standard",
+   "naming": "malay",
+   "source": "table",
+   "authority": "JAKIM e-Solat, for your state zone",
+   "zones": [
+    "Asia/Kuala_Lumpur",
+    "Asia/Kuching"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BN",
+   "name": "Brunei",
+   "method": "sea",
+   "asr": "standard",
+   "naming": "malay",
+   "source": "standard",
+   "note": "The Ministry of Religious Affairs publishes a timetable the app cannot read yet, so it uses the 20° and 18° convention of the Malay world.",
+   "zones": [
+    "Asia/Brunei"
+   ],
+   "cities": []
+  },
+  {
+   "code": "ID",
+   "name": "Indonesia",
+   "method": "kemenag",
+   "asr": "standard",
+   "naming": "indonesian",
+   "source": "table",
+   "authority": "Kemenag, the Ministry of Religious Affairs",
+   "zones": [
+    "Asia/Jakarta",
+    "Asia/Pontianak",
+    "Asia/Makassar",
+    "Asia/Jayapura"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TH",
+   "name": "Thailand",
+   "method": "sea",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the 20° and 18° convention of the Malay world.",
+   "zones": [
+    "Asia/Bangkok"
+   ],
+   "cities": []
+  },
+  {
+   "code": "VN",
+   "name": "Vietnam",
+   "method": "sea",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the 20° and 18° convention of the Malay world.",
+   "zones": [
+    "Asia/Ho_Chi_Minh",
+    "Asia/Saigon"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KH",
+   "name": "Cambodia",
+   "method": "sea",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the 20° and 18° convention of the Malay world.",
+   "zones": [
+    "Asia/Phnom_Penh"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LA",
+   "name": "Laos",
+   "method": "sea",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the 20° and 18° convention of the Malay world.",
+   "zones": [
+    "Asia/Vientiane"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MM",
+   "name": "Myanmar",
+   "method": "sea",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the 20° and 18° convention of the Malay world.",
+   "zones": [
+    "Asia/Yangon",
+    "Asia/Rangoon"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PH",
+   "name": "Philippines",
+   "method": "sea",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the 20° and 18° convention of the Malay world.",
+   "zones": [
+    "Asia/Manila"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TL",
+   "name": "Timor-Leste",
+   "method": "sea",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the 20° and 18° convention of the Malay world.",
+   "zones": [
+    "Asia/Dili"
+   ],
+   "cities": []
+  },
+  {
+   "code": "JP",
+   "name": "Japan",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Tokyo"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KR",
+   "name": "South Korea",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Seoul"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KP",
+   "name": "North Korea",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Pyongyang"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CN",
+   "name": "China",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Shanghai",
+    "Asia/Urumqi"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TW",
+   "name": "Taiwan",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Taipei"
+   ],
+   "cities": []
+  },
+  {
+   "code": "HK",
+   "name": "Hong Kong",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Hong_Kong"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MO",
+   "name": "Macau",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Macau"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MN",
+   "name": "Mongolia",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Ulaanbaatar"
+   ],
+   "cities": []
+  },
+  {
+   "code": "IN",
+   "name": "India",
+   "method": "karachi",
+   "asr": "hanafi",
+   "naming": "southAsian",
+   "source": "standard",
+   "note": "The app uses the Karachi method, the one most masjids across South Asia follow.",
+   "zones": [
+    "Asia/Kolkata",
+    "Asia/Calcutta"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PK",
+   "name": "Pakistan",
+   "method": "karachi",
+   "asr": "hanafi",
+   "naming": "southAsian",
+   "source": "standard",
+   "note": "The app uses the Karachi method, the one most masjids across South Asia follow.",
+   "zones": [
+    "Asia/Karachi"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BD",
+   "name": "Bangladesh",
+   "method": "karachi",
+   "asr": "hanafi",
+   "naming": "southAsian",
+   "source": "standard",
+   "note": "The app uses the Karachi method, the one most masjids across South Asia follow.",
+   "zones": [
+    "Asia/Dhaka"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AF",
+   "name": "Afghanistan",
+   "method": "karachi",
+   "asr": "hanafi",
+   "naming": "southAsian",
+   "source": "standard",
+   "note": "The app uses the Karachi method, the one most masjids across South Asia follow.",
+   "zones": [
+    "Asia/Kabul"
+   ],
+   "cities": []
+  },
+  {
+   "code": "NP",
+   "name": "Nepal",
+   "method": "karachi",
+   "asr": "hanafi",
+   "naming": "southAsian",
+   "source": "standard",
+   "note": "The app uses the Karachi method, the one most masjids across South Asia follow.",
+   "zones": [
+    "Asia/Kathmandu"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BT",
+   "name": "Bhutan",
+   "method": "karachi",
+   "asr": "hanafi",
+   "naming": "southAsian",
+   "source": "standard",
+   "note": "The app uses the Karachi method, the one most masjids across South Asia follow.",
+   "zones": [
+    "Asia/Thimphu"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LK",
+   "name": "Sri Lanka",
+   "method": "karachi",
+   "asr": "standard",
+   "naming": "southAsian",
+   "source": "standard",
+   "note": "The app uses the Karachi method, the one most masjids across South Asia follow.",
+   "zones": [
+    "Asia/Colombo"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MV",
+   "name": "Maldives",
+   "method": "karachi",
+   "asr": "standard",
+   "naming": "southAsian",
+   "source": "standard",
+   "note": "The app uses the Karachi method, the one most masjids across South Asia follow.",
+   "zones": [
+    "Indian/Maldives"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KZ",
+   "name": "Kazakhstan",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Asia/Almaty"
+   ],
+   "cities": []
+  },
+  {
+   "code": "UZ",
+   "name": "Uzbekistan",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Asia/Tashkent",
+    "Asia/Samarkand"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KG",
+   "name": "Kyrgyzstan",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Asia/Bishkek"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TJ",
+   "name": "Tajikistan",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Asia/Dushanbe"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TM",
+   "name": "Turkmenistan",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Asia/Ashgabat"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SA",
+   "name": "Saudi Arabia",
+   "method": "ummalqura",
+   "asr": "standard",
+   "naming": "international",
+   "source": "authority",
+   "authority": "Umm al-Qura, the official calendar of Saudi Arabia that the Haramain in Makkah and Madinah follow",
+   "zones": [
+    "Asia/Riyadh"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AE",
+   "name": "United Arab Emirates",
+   "method": "dubai",
+   "asr": "standard",
+   "naming": "international",
+   "source": "authority",
+   "authority": "the UAE General Authority of Islamic Affairs and Endowments",
+   "zones": [
+    "Asia/Dubai"
+   ],
+   "cities": []
+  },
+  {
+   "code": "QA",
+   "name": "Qatar",
+   "method": "qatar",
+   "asr": "standard",
+   "naming": "international",
+   "source": "authority",
+   "authority": "Qatar's Ministry of Awqaf and Islamic Affairs",
+   "zones": [
+    "Asia/Qatar"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KW",
+   "name": "Kuwait",
+   "method": "kuwait",
+   "asr": "standard",
+   "naming": "international",
+   "source": "authority",
+   "authority": "Kuwait's Ministry of Awqaf and Islamic Affairs",
+   "zones": [
+    "Asia/Kuwait"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BH",
+   "name": "Bahrain",
+   "method": "ummalqura",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Bahrain"
+   ],
+   "cities": []
+  },
+  {
+   "code": "OM",
+   "name": "Oman",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Muscat"
+   ],
+   "cities": []
+  },
+  {
+   "code": "YE",
+   "name": "Yemen",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Aden"
+   ],
+   "cities": []
+  },
+  {
+   "code": "JO",
+   "name": "Jordan",
+   "method": "jordan",
+   "asr": "standard",
+   "naming": "international",
+   "source": "authority",
+   "authority": "Jordan's Ministry of Awqaf and Islamic Affairs",
+   "zones": [
+    "Asia/Amman"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PS",
+   "name": "Palestine",
+   "method": "jordan",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Gaza",
+    "Asia/Hebron"
+   ],
+   "cities": []
+  },
+  {
+   "code": "IL",
+   "name": "Israel",
+   "method": "jordan",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Jerusalem"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LB",
+   "name": "Lebanon",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Beirut"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SY",
+   "name": "Syria",
+   "method": "egyptian",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Damascus"
+   ],
+   "cities": []
+  },
+  {
+   "code": "IQ",
+   "name": "Iraq",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Baghdad"
+   ],
+   "cities": []
+  },
+  {
+   "code": "IR",
+   "name": "Iran",
+   "method": "tehran",
+   "asr": "standard",
+   "naming": "international",
+   "source": "authority",
+   "authority": "the Institute of Geophysics, University of Tehran",
+   "zones": [
+    "Asia/Tehran"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TR",
+   "name": "Türkiye",
+   "method": "diyanet",
+   "asr": "standard",
+   "naming": "turkish",
+   "source": "authority",
+   "authority": "Diyanet, Türkiye's Presidency of Religious Affairs",
+   "zones": [
+    "Europe/Istanbul"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AZ",
+   "name": "Azerbaijan",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Baku"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GE",
+   "name": "Georgia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Tbilisi"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AM",
+   "name": "Armenia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Asia/Yerevan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CY",
+   "name": "Cyprus",
+   "method": "diyanet",
+   "asr": "standard",
+   "naming": "turkish",
+   "source": "standard",
+   "note": "The app uses Diyanet, which Turkish Cypriot masjids follow.",
+   "zones": [
+    "Asia/Nicosia",
+    "Asia/Famagusta"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GB",
+   "name": "United Kingdom",
+   "method": "moonsighting",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "There is no single national body for UK prayer times, and many masjids print their own. Many London masjids follow the London Unified Prayer Timetable. The app uses the Moonsighting Committee method, which was made for northern countries.",
+   "zones": [
+    "Europe/London"
+   ],
+   "cities": [
+    [
+     "London",
+     "England",
+     51.5074,
+     -0.1278
+    ],
+    [
+     "Birmingham",
+     "England",
+     52.4862,
+     -1.8904
+    ],
+    [
+     "Manchester",
+     "England",
+     53.4808,
+     -2.2426
+    ],
+    [
+     "Bradford",
+     "England",
+     53.796,
+     -1.7594
+    ],
+    [
+     "Leeds",
+     "England",
+     53.8008,
+     -1.5491
+    ],
+    [
+     "Leicester",
+     "England",
+     52.6369,
+     -1.1398
+    ],
+    [
+     "Luton",
+     "England",
+     51.8787,
+     -0.42
+    ],
+    [
+     "Blackburn",
+     "England",
+     53.7486,
+     -2.4875
+    ],
+    [
+     "Sheffield",
+     "England",
+     53.3811,
+     -1.4701
+    ],
+    [
+     "Liverpool",
+     "England",
+     53.4084,
+     -2.9916
+    ],
+    [
+     "Bristol",
+     "England",
+     51.4545,
+     -2.5879
+    ],
+    [
+     "Newcastle",
+     "England",
+     54.9783,
+     -1.6178
+    ],
+    [
+     "Glasgow",
+     "Scotland",
+     55.8642,
+     -4.2518
+    ],
+    [
+     "Edinburgh",
+     "Scotland",
+     55.9533,
+     -3.1883
+    ],
+    [
+     "Cardiff",
+     "Wales",
+     51.4816,
+     -3.1791
+    ],
+    [
+     "Belfast",
+     "Northern Ireland",
+     54.5973,
+     -5.9301
+    ]
+   ]
+  },
+  {
+   "code": "IE",
+   "name": "Ireland",
+   "method": "moonsighting",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "Irish masjids publish their own timetables. The app uses the Moonsighting Committee method, made for northern countries.",
+   "zones": [
+    "Europe/Dublin"
+   ],
+   "cities": [
+    [
+     "Dublin",
+     "Leinster",
+     53.3498,
+     -6.2603
+    ],
+    [
+     "Cork",
+     "Munster",
+     51.8985,
+     -8.4756
+    ]
+   ]
+  },
+  {
+   "code": "FR",
+   "name": "France",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "France has no single body for prayer times. The Grande Mosquée de Paris uses 18°, Musulmans de France uses 12°. The app uses the Muslim World League method, which is close to 18°.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Paris"
+   ],
+   "cities": [
+    [
+     "Paris",
+     "Île-de-France",
+     48.8566,
+     2.3522
+    ],
+    [
+     "Marseille",
+     "Provence",
+     43.2965,
+     5.3698
+    ],
+    [
+     "Lyon",
+     "Auvergne-Rhône-Alpes",
+     45.764,
+     4.8357
+    ],
+    [
+     "Lille",
+     "Hauts-de-France",
+     50.6292,
+     3.0573
+    ],
+    [
+     "Toulouse",
+     "Occitanie",
+     43.6047,
+     1.4442
+    ],
+    [
+     "Strasbourg",
+     "Grand Est",
+     48.5734,
+     7.7521
+    ],
+    [
+     "Nice",
+     "Provence",
+     43.7102,
+     7.262
+    ]
+   ]
+  },
+  {
+   "code": "DE",
+   "name": "Germany",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the Muslim World League method. Many Turkish masjids here follow Diyanet, which you can choose in Settings.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Berlin"
+   ],
+   "cities": [
+    [
+     "Berlin",
+     "Berlin",
+     52.52,
+     13.405
+    ],
+    [
+     "Hamburg",
+     "Hamburg",
+     53.5511,
+     9.9937
+    ],
+    [
+     "Munich",
+     "Bavaria",
+     48.1351,
+     11.582
+    ],
+    [
+     "Cologne",
+     "North Rhine-Westphalia",
+     50.9375,
+     6.9603
+    ],
+    [
+     "Frankfurt",
+     "Hesse",
+     50.1109,
+     8.6821
+    ],
+    [
+     "Stuttgart",
+     "Baden-Württemberg",
+     48.7758,
+     9.1829
+    ],
+    [
+     "Duisburg",
+     "North Rhine-Westphalia",
+     51.4344,
+     6.7623
+    ]
+   ]
+  },
+  {
+   "code": "NL",
+   "name": "Netherlands",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the Muslim World League method. Many Turkish masjids here follow Diyanet, which you can choose in Settings.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Amsterdam"
+   ],
+   "cities": [
+    [
+     "Amsterdam",
+     "North Holland",
+     52.3676,
+     4.9041
+    ],
+    [
+     "Rotterdam",
+     "South Holland",
+     51.9244,
+     4.4777
+    ],
+    [
+     "The Hague",
+     "South Holland",
+     52.0705,
+     4.3007
+    ],
+    [
+     "Utrecht",
+     "Utrecht",
+     52.0907,
+     5.1214
+    ]
+   ]
+  },
+  {
+   "code": "BE",
+   "name": "Belgium",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the Muslim World League method. Many Turkish masjids here follow Diyanet, which you can choose in Settings.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Brussels"
+   ],
+   "cities": [
+    [
+     "Brussels",
+     "Brussels",
+     50.8503,
+     4.3517
+    ],
+    [
+     "Antwerp",
+     "Flanders",
+     51.2194,
+     4.4025
+    ]
+   ]
+  },
+  {
+   "code": "LU",
+   "name": "Luxembourg",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Luxembourg"
+   ],
+   "cities": [
+    [
+     "Luxembourg",
+     "Luxembourg",
+     49.6116,
+     6.1319
+    ]
+   ]
+  },
+  {
+   "code": "AT",
+   "name": "Austria",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the Muslim World League method. Many Turkish masjids here follow Diyanet, which you can choose in Settings.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Vienna"
+   ],
+   "cities": [
+    [
+     "Vienna",
+     "Vienna",
+     48.2082,
+     16.3738
+    ]
+   ]
+  },
+  {
+   "code": "CH",
+   "name": "Switzerland",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the Muslim World League method. Many Turkish masjids here follow Diyanet, which you can choose in Settings.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Zurich"
+   ],
+   "cities": [
+    [
+     "Zurich",
+     "Zurich",
+     47.3769,
+     8.5417
+    ],
+    [
+     "Geneva",
+     "Geneva",
+     46.2044,
+     6.1432
+    ]
+   ]
+  },
+  {
+   "code": "DK",
+   "name": "Denmark",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the Muslim World League method. In summer the sky here never gets fully dark, so Fajr and Isha follow a twilight rule.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Copenhagen"
+   ],
+   "cities": [
+    [
+     "Copenhagen",
+     "Capital Region",
+     55.6761,
+     12.5683
+    ]
+   ]
+  },
+  {
+   "code": "SE",
+   "name": "Sweden",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the Muslim World League method. In summer the sky here never gets fully dark, so Fajr and Isha follow a twilight rule.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Stockholm"
+   ],
+   "cities": [
+    [
+     "Stockholm",
+     "Stockholm",
+     59.3293,
+     18.0686
+    ],
+    [
+     "Malmö",
+     "Skåne",
+     55.605,
+     13.0038
+    ],
+    [
+     "Gothenburg",
+     "Västra Götaland",
+     57.7089,
+     11.9746
+    ]
+   ]
+  },
+  {
+   "code": "NO",
+   "name": "Norway",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the Muslim World League method. In summer the sky here never gets fully dark, so Fajr and Isha follow a twilight rule.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Oslo"
+   ],
+   "cities": [
+    [
+     "Oslo",
+     "Oslo",
+     59.9139,
+     10.7522
+    ]
+   ]
+  },
+  {
+   "code": "FI",
+   "name": "Finland",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the Muslim World League method. In summer the sky here never gets fully dark, so Fajr and Isha follow a twilight rule.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Helsinki"
+   ],
+   "cities": [
+    [
+     "Helsinki",
+     "Uusimaa",
+     60.1699,
+     24.9384
+    ]
+   ]
+  },
+  {
+   "code": "IS",
+   "name": "Iceland",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "The app uses the Muslim World League method. In summer the sky here never gets fully dark, so Fajr and Isha follow a twilight rule.",
+   "highLatitude": "angle",
+   "zones": [
+    "Atlantic/Reykjavik"
+   ],
+   "cities": [
+    [
+     "Reykjavík",
+     "Capital Region",
+     64.1466,
+     -21.9426
+    ]
+   ]
+  },
+  {
+   "code": "ES",
+   "name": "Spain",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Madrid",
+    "Africa/Ceuta"
+   ],
+   "cities": [
+    [
+     "Madrid",
+     "Madrid",
+     40.4168,
+     -3.7038
+    ],
+    [
+     "Barcelona",
+     "Catalonia",
+     41.3874,
+     2.1686
+    ],
+    [
+     "Granada",
+     "Andalusia",
+     37.1773,
+     -3.5986
+    ],
+    [
+     "Córdoba",
+     "Andalusia",
+     37.8882,
+     -4.7794
+    ],
+    [
+     "Ceuta",
+     "Ceuta",
+     35.8894,
+     -5.3213
+    ]
+   ]
+  },
+  {
+   "code": "PT",
+   "name": "Portugal",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Lisbon"
+   ],
+   "cities": [
+    [
+     "Lisbon",
+     "Lisbon",
+     38.7223,
+     -9.1393
+    ]
+   ]
+  },
+  {
+   "code": "IT",
+   "name": "Italy",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Rome"
+   ],
+   "cities": [
+    [
+     "Rome",
+     "Lazio",
+     41.9028,
+     12.4964
+    ],
+    [
+     "Milan",
+     "Lombardy",
+     45.4642,
+     9.19
+    ]
+   ]
+  },
+  {
+   "code": "MT",
+   "name": "Malta",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Europe/Malta"
+   ],
+   "cities": [
+    [
+     "Valletta",
+     "Malta",
+     35.8989,
+     14.5146
+    ]
+   ]
+  },
+  {
+   "code": "GR",
+   "name": "Greece",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Athens"
+   ],
+   "cities": [
+    [
+     "Athens",
+     "Attica",
+     37.9838,
+     23.7275
+    ],
+    [
+     "Komotini",
+     "Thrace",
+     41.1224,
+     25.4066
+    ]
+   ]
+  },
+  {
+   "code": "BA",
+   "name": "Bosnia and Herzegovina",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "note": "The Islamic Community here publishes its own timetable, which the app cannot read yet, so it uses the Muslim World League method.",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Sarajevo"
+   ],
+   "cities": [
+    [
+     "Sarajevo",
+     "Sarajevo",
+     43.8563,
+     18.4131
+    ],
+    [
+     "Mostar",
+     "Herzegovina",
+     43.3438,
+     17.8078
+    ]
+   ]
+  },
+  {
+   "code": "AL",
+   "name": "Albania",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Tirane"
+   ],
+   "cities": [
+    [
+     "Tirana",
+     "Tirana",
+     41.3275,
+     19.8187
+    ]
+   ]
+  },
+  {
+   "code": "XK",
+   "name": "Kosovo",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "note": "The Islamic Community here publishes its own timetable, which the app cannot read yet, so it uses the Muslim World League method.",
+   "highLatitude": "angle",
+   "zones": [],
+   "cities": [
+    [
+     "Pristina",
+     "Pristina",
+     42.6629,
+     21.1655,
+     "Europe/Belgrade"
+    ],
+    [
+     "Prizren",
+     "Prizren",
+     42.2139,
+     20.7397,
+     "Europe/Belgrade"
+    ]
+   ]
+  },
+  {
+   "code": "MK",
+   "name": "North Macedonia",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Skopje"
+   ],
+   "cities": [
+    [
+     "Skopje",
+     "Skopje",
+     41.9981,
+     21.4254
+    ]
+   ]
+  },
+  {
+   "code": "ME",
+   "name": "Montenegro",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Podgorica"
+   ],
+   "cities": [
+    [
+     "Podgorica",
+     "Podgorica",
+     42.4304,
+     19.2594
+    ]
+   ]
+  },
+  {
+   "code": "RS",
+   "name": "Serbia",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Belgrade"
+   ],
+   "cities": [
+    [
+     "Belgrade",
+     "Belgrade",
+     44.7866,
+     20.4489
+    ],
+    [
+     "Novi Pazar",
+     "Raška",
+     43.1367,
+     20.5122
+    ]
+   ]
+  },
+  {
+   "code": "HR",
+   "name": "Croatia",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Zagreb"
+   ],
+   "cities": [
+    [
+     "Zagreb",
+     "Zagreb",
+     45.815,
+     15.9819
+    ]
+   ]
+  },
+  {
+   "code": "SI",
+   "name": "Slovenia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Ljubljana"
+   ],
+   "cities": [
+    [
+     "Ljubljana",
+     "Ljubljana",
+     46.0569,
+     14.5058
+    ]
+   ]
+  },
+  {
+   "code": "BG",
+   "name": "Bulgaria",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Sofia"
+   ],
+   "cities": [
+    [
+     "Sofia",
+     "Sofia",
+     42.6977,
+     23.3219
+    ]
+   ]
+  },
+  {
+   "code": "RO",
+   "name": "Romania",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Bucharest"
+   ],
+   "cities": [
+    [
+     "Bucharest",
+     "Bucharest",
+     44.4268,
+     26.1025
+    ],
+    [
+     "Constanța",
+     "Constanța",
+     44.1598,
+     28.6348
+    ]
+   ]
+  },
+  {
+   "code": "HU",
+   "name": "Hungary",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Budapest"
+   ],
+   "cities": [
+    [
+     "Budapest",
+     "Budapest",
+     47.4979,
+     19.0402
+    ]
+   ]
+  },
+  {
+   "code": "CZ",
+   "name": "Czechia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Prague"
+   ],
+   "cities": [
+    [
+     "Prague",
+     "Prague",
+     50.0755,
+     14.4378
+    ]
+   ]
+  },
+  {
+   "code": "SK",
+   "name": "Slovakia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Bratislava"
+   ],
+   "cities": [
+    [
+     "Bratislava",
+     "Bratislava",
+     48.1486,
+     17.1077
+    ]
+   ]
+  },
+  {
+   "code": "PL",
+   "name": "Poland",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Warsaw"
+   ],
+   "cities": [
+    [
+     "Warsaw",
+     "Masovia",
+     52.2297,
+     21.0122
+    ]
+   ]
+  },
+  {
+   "code": "LT",
+   "name": "Lithuania",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Vilnius"
+   ],
+   "cities": [
+    [
+     "Vilnius",
+     "Vilnius",
+     54.6872,
+     25.2797
+    ]
+   ]
+  },
+  {
+   "code": "LV",
+   "name": "Latvia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Riga"
+   ],
+   "cities": [
+    [
+     "Riga",
+     "Riga",
+     56.9496,
+     24.1052
+    ]
+   ]
+  },
+  {
+   "code": "EE",
+   "name": "Estonia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Tallinn"
+   ],
+   "cities": [
+    [
+     "Tallinn",
+     "Harju",
+     59.437,
+     24.7536
+    ]
+   ]
+  },
+  {
+   "code": "UA",
+   "name": "Ukraine",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Kyiv",
+    "Europe/Kiev",
+    "Europe/Simferopol"
+   ],
+   "cities": [
+    [
+     "Kyiv",
+     "Kyiv",
+     50.4501,
+     30.5234
+    ],
+    [
+     "Simferopol",
+     "Crimea",
+     44.9521,
+     34.1024
+    ]
+   ]
+  },
+  {
+   "code": "BY",
+   "name": "Belarus",
+   "method": "mwl",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Minsk"
+   ],
+   "cities": [
+    [
+     "Minsk",
+     "Minsk",
+     53.9006,
+     27.559
+    ]
+   ]
+  },
+  {
+   "code": "MD",
+   "name": "Moldova",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Europe/Chisinau"
+   ],
+   "cities": [
+    [
+     "Chișinău",
+     "Chișinău",
+     47.0105,
+     28.8638
+    ]
+   ]
+  },
+  {
+   "code": "RU",
+   "name": "Russia",
+   "method": "russia",
+   "asr": "hanafi",
+   "naming": "international",
+   "source": "authority",
+   "authority": "the Spiritual Administration of Muslims of Russia",
+   "zones": [
+    "Europe/Moscow",
+    "Europe/Kazan",
+    "Europe/Samara",
+    "Asia/Yekaterinburg",
+    "Asia/Novosibirsk",
+    "Asia/Vladivostok"
+   ],
+   "cities": [
+    [
+     "Moscow",
+     "Moscow",
+     55.7558,
+     37.6173,
+     "Europe/Moscow"
+    ],
+    [
+     "Kazan",
+     "Tatarstan",
+     55.7963,
+     49.1088,
+     "Europe/Moscow"
+    ],
+    [
+     "Ufa",
+     "Bashkortostan",
+     54.7388,
+     55.9721,
+     "Asia/Yekaterinburg"
+    ],
+    [
+     "Grozny",
+     "Chechnya",
+     43.3178,
+     45.6949,
+     "Europe/Moscow"
+    ],
+    [
+     "Makhachkala",
+     "Dagestan",
+     42.9849,
+     47.5047,
+     "Europe/Moscow"
+    ],
+    [
+     "Saint Petersburg",
+     "Saint Petersburg",
+     59.9311,
+     30.3609,
+     "Europe/Moscow"
+    ]
+   ]
+  },
+  {
+   "code": "EG",
+   "name": "Egypt",
+   "method": "egyptian",
+   "asr": "standard",
+   "naming": "international",
+   "source": "authority",
+   "authority": "the Egyptian General Authority of Survey",
+   "zones": [
+    "Africa/Cairo"
+   ],
+   "cities": [
+    [
+     "Cairo",
+     "Cairo",
+     30.0444,
+     31.2357
+    ],
+    [
+     "Alexandria",
+     "Alexandria",
+     31.2001,
+     29.9187
+    ],
+    [
+     "Luxor",
+     "Luxor",
+     25.6872,
+     32.6396
+    ]
+   ]
+  },
+  {
+   "code": "MA",
+   "name": "Morocco",
+   "method": "morocco",
+   "asr": "standard",
+   "naming": "international",
+   "source": "authority",
+   "authority": "Morocco's Ministry of Habous and Islamic Affairs",
+   "zones": [
+    "Africa/Casablanca"
+   ],
+   "cities": [
+    [
+     "Casablanca",
+     "Casablanca-Settat",
+     33.5731,
+     -7.5898
+    ],
+    [
+     "Rabat",
+     "Rabat-Salé-Kénitra",
+     34.0209,
+     -6.8416
+    ],
+    [
+     "Marrakesh",
+     "Marrakesh-Safi",
+     31.6295,
+     -7.9811
+    ],
+    [
+     "Fez",
+     "Fès-Meknès",
+     34.0181,
+     -5.0078
+    ],
+    [
+     "Tangier",
+     "Tanger-Tétouan",
+     35.7595,
+     -5.834
+    ]
+   ]
+  },
+  {
+   "code": "DZ",
+   "name": "Algeria",
+   "method": "algeria",
+   "asr": "standard",
+   "naming": "international",
+   "source": "authority",
+   "authority": "Algeria's Ministry of Religious Affairs and Endowments",
+   "zones": [
+    "Africa/Algiers"
+   ],
+   "cities": [
+    [
+     "Algiers",
+     "Algiers",
+     36.7538,
+     3.0588
+    ],
+    [
+     "Oran",
+     "Oran",
+     35.6971,
+     -0.6308
+    ],
+    [
+     "Constantine",
+     "Constantine",
+     36.365,
+     6.6147
+    ]
+   ]
+  },
+  {
+   "code": "TN",
+   "name": "Tunisia",
+   "method": "tunisia",
+   "asr": "standard",
+   "naming": "international",
+   "source": "authority",
+   "authority": "Tunisia's Ministry of Religious Affairs",
+   "zones": [
+    "Africa/Tunis"
+   ],
+   "cities": [
+    [
+     "Tunis",
+     "Tunis",
+     36.8065,
+     10.1815
+    ],
+    [
+     "Kairouan",
+     "Kairouan",
+     35.6781,
+     10.0963
+    ]
+   ]
+  },
+  {
+   "code": "LY",
+   "name": "Libya",
+   "method": "egyptian",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Tripoli"
+   ],
+   "cities": [
+    [
+     "Tripoli",
+     "Tripoli",
+     32.8872,
+     13.1913
+    ],
+    [
+     "Benghazi",
+     "Benghazi",
+     32.1194,
+     20.0868
+    ]
+   ]
+  },
+  {
+   "code": "SD",
+   "name": "Sudan",
+   "method": "egyptian",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Khartoum"
+   ],
+   "cities": [
+    [
+     "Khartoum",
+     "Khartoum",
+     15.5007,
+     32.5599
+    ]
+   ]
+  },
+  {
+   "code": "MR",
+   "name": "Mauritania",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Nouakchott"
+   ],
+   "cities": [
+    [
+     "Nouakchott",
+     "Nouakchott",
+     18.0735,
+     -15.9582
+    ]
+   ]
+  },
+  {
+   "code": "SN",
+   "name": "Senegal",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Dakar"
+   ],
+   "cities": [
+    [
+     "Dakar",
+     "Dakar",
+     14.7167,
+     -17.4677
+    ]
+   ]
+  },
+  {
+   "code": "GM",
+   "name": "Gambia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Banjul"
+   ],
+   "cities": [
+    [
+     "Banjul",
+     "Banjul",
+     13.4549,
+     -16.579
+    ]
+   ]
+  },
+  {
+   "code": "ML",
+   "name": "Mali",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Bamako"
+   ],
+   "cities": [
+    [
+     "Bamako",
+     "Bamako",
+     12.6392,
+     -8.0029
+    ]
+   ]
+  },
+  {
+   "code": "NE",
+   "name": "Niger",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Niamey"
+   ],
+   "cities": [
+    [
+     "Niamey",
+     "Niamey",
+     13.5116,
+     2.1254
+    ]
+   ]
+  },
+  {
+   "code": "BF",
+   "name": "Burkina Faso",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Ouagadougou"
+   ],
+   "cities": [
+    [
+     "Ouagadougou",
+     "Centre",
+     12.3714,
+     -1.5197
+    ]
+   ]
+  },
+  {
+   "code": "GN",
+   "name": "Guinea",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Conakry"
+   ],
+   "cities": [
+    [
+     "Conakry",
+     "Conakry",
+     9.6412,
+     -13.5784
+    ]
+   ]
+  },
+  {
+   "code": "SL",
+   "name": "Sierra Leone",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Freetown"
+   ],
+   "cities": [
+    [
+     "Freetown",
+     "Western Area",
+     8.4657,
+     -13.2317
+    ]
+   ]
+  },
+  {
+   "code": "CI",
+   "name": "Côte d'Ivoire",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Abidjan"
+   ],
+   "cities": [
+    [
+     "Abidjan",
+     "Abidjan",
+     5.36,
+     -4.0083
+    ]
+   ]
+  },
+  {
+   "code": "GH",
+   "name": "Ghana",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Accra"
+   ],
+   "cities": [
+    [
+     "Accra",
+     "Greater Accra",
+     5.6037,
+     -0.187
+    ]
+   ]
+  },
+  {
+   "code": "TD",
+   "name": "Chad",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Ndjamena"
+   ],
+   "cities": [
+    [
+     "N'Djamena",
+     "N'Djamena",
+     12.1348,
+     15.0557
+    ]
+   ]
+  },
+  {
+   "code": "CM",
+   "name": "Cameroon",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Douala"
+   ],
+   "cities": [
+    [
+     "Yaoundé",
+     "Centre",
+     3.848,
+     11.5021
+    ]
+   ]
+  },
+  {
+   "code": "SO",
+   "name": "Somalia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Mogadishu"
+   ],
+   "cities": [
+    [
+     "Mogadishu",
+     "Banaadir",
+     2.0469,
+     45.3182
+    ]
+   ]
+  },
+  {
+   "code": "DJ",
+   "name": "Djibouti",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Djibouti"
+   ],
+   "cities": [
+    [
+     "Djibouti",
+     "Djibouti",
+     11.5721,
+     43.1456
+    ]
+   ]
+  },
+  {
+   "code": "ET",
+   "name": "Ethiopia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Addis_Ababa"
+   ],
+   "cities": [
+    [
+     "Addis Ababa",
+     "Addis Ababa",
+     8.9806,
+     38.7578
+    ]
+   ]
+  },
+  {
+   "code": "ER",
+   "name": "Eritrea",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Asmara"
+   ],
+   "cities": [
+    [
+     "Asmara",
+     "Maekel",
+     15.3229,
+     38.9251
+    ]
+   ]
+  },
+  {
+   "code": "KE",
+   "name": "Kenya",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Nairobi"
+   ],
+   "cities": [
+    [
+     "Nairobi",
+     "Nairobi",
+     -1.2921,
+     36.8219
+    ]
+   ]
+  },
+  {
+   "code": "TZ",
+   "name": "Tanzania",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Dar_es_Salaam"
+   ],
+   "cities": [
+    [
+     "Dar es Salaam",
+     "Dar es Salaam",
+     -6.7924,
+     39.2083
+    ]
+   ]
+  },
+  {
+   "code": "UG",
+   "name": "Uganda",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Kampala"
+   ],
+   "cities": [
+    [
+     "Kampala",
+     "Central",
+     0.3476,
+     32.5825
+    ]
+   ]
+  },
+  {
+   "code": "RW",
+   "name": "Rwanda",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Kigali"
+   ],
+   "cities": [
+    [
+     "Kigali",
+     "Kigali",
+     -1.9441,
+     30.0619
+    ]
+   ]
+  },
+  {
+   "code": "MZ",
+   "name": "Mozambique",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Maputo"
+   ],
+   "cities": [
+    [
+     "Maputo",
+     "Maputo",
+     -25.9692,
+     32.5732
+    ]
+   ]
+  },
+  {
+   "code": "MW",
+   "name": "Malawi",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Blantyre"
+   ],
+   "cities": [
+    [
+     "Lilongwe",
+     "Central",
+     -13.9626,
+     33.7741
+    ]
+   ]
+  },
+  {
+   "code": "ZM",
+   "name": "Zambia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Lusaka"
+   ],
+   "cities": [
+    [
+     "Lusaka",
+     "Lusaka",
+     -15.3875,
+     28.3228
+    ]
+   ]
+  },
+  {
+   "code": "ZW",
+   "name": "Zimbabwe",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Harare"
+   ],
+   "cities": [
+    [
+     "Harare",
+     "Harare",
+     -17.8252,
+     31.0335
+    ]
+   ]
+  },
+  {
+   "code": "KM",
+   "name": "Comoros",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Indian/Comoro"
+   ],
+   "cities": [
+    [
+     "Moroni",
+     "Grande Comore",
+     -11.7172,
+     43.2473
+    ]
+   ]
+  },
+  {
+   "code": "MG",
+   "name": "Madagascar",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Indian/Antananarivo"
+   ],
+   "cities": [
+    [
+     "Antananarivo",
+     "Analamanga",
+     -18.8792,
+     47.5079
+    ]
+   ]
+  },
+  {
+   "code": "MU",
+   "name": "Mauritius",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Indian/Mauritius"
+   ],
+   "cities": [
+    [
+     "Port Louis",
+     "Port Louis",
+     -20.1609,
+     57.5012
+    ]
+   ]
+  },
+  {
+   "code": "SC",
+   "name": "Seychelles",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Indian/Mahe"
+   ],
+   "cities": [
+    [
+     "Victoria",
+     "Mahé",
+     -4.6191,
+     55.4513
+    ]
+   ]
+  },
+  {
+   "code": "NG",
+   "name": "Nigeria",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Africa/Lagos"
+   ],
+   "cities": [
+    [
+     "Lagos",
+     "Lagos",
+     6.5244,
+     3.3792
+    ],
+    [
+     "Kano",
+     "Kano",
+     12.0022,
+     8.592
+    ],
+    [
+     "Abuja",
+     "FCT",
+     9.0765,
+     7.3986
+    ],
+    [
+     "Sokoto",
+     "Sokoto",
+     13.0059,
+     5.2476
+    ]
+   ]
+  },
+  {
+   "code": "ZA",
+   "name": "South Africa",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "South African masjids and the Muslim Judicial Council publish local timetables, which the app cannot read yet, so it uses the Muslim World League method.",
+   "highLatitude": "angle",
+   "zones": [
+    "Africa/Johannesburg"
+   ],
+   "cities": [
+    [
+     "Johannesburg",
+     "Gauteng",
+     -26.2041,
+     28.0473
+    ],
+    [
+     "Cape Town",
+     "Western Cape",
+     -33.9249,
+     18.4241
+    ],
+    [
+     "Durban",
+     "KwaZulu-Natal",
+     -29.8587,
+     31.0218
+    ]
+   ]
+  },
+  {
+   "code": "US",
+   "name": "United States",
+   "method": "isna",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "There is no single national body. The app uses ISNA, which many North American masjids follow, and some follow the Moonsighting Committee instead.",
+   "zones": [
+    "America/New_York",
+    "America/Chicago",
+    "America/Denver",
+    "America/Los_Angeles",
+    "America/Phoenix",
+    "America/Detroit",
+    "America/Anchorage",
+    "Pacific/Honolulu"
+   ],
+   "cities": [
+    [
+     "New York",
+     "New York",
+     40.7128,
+     -74.006,
+     "America/New_York"
+    ],
+    [
+     "Washington, D.C.",
+     "District of Columbia",
+     38.9072,
+     -77.0369,
+     "America/New_York"
+    ],
+    [
+     "Dearborn",
+     "Michigan",
+     42.3223,
+     -83.1763,
+     "America/Detroit"
+    ],
+    [
+     "Chicago",
+     "Illinois",
+     41.8781,
+     -87.6298,
+     "America/Chicago"
+    ],
+    [
+     "Houston",
+     "Texas",
+     29.7604,
+     -95.3698,
+     "America/Chicago"
+    ],
+    [
+     "Dallas",
+     "Texas",
+     32.7767,
+     -96.797,
+     "America/Chicago"
+    ],
+    [
+     "Atlanta",
+     "Georgia",
+     33.749,
+     -84.388,
+     "America/New_York"
+    ],
+    [
+     "Philadelphia",
+     "Pennsylvania",
+     39.9526,
+     -75.1652,
+     "America/New_York"
+    ],
+    [
+     "Minneapolis",
+     "Minnesota",
+     44.9778,
+     -93.265,
+     "America/Chicago"
+    ],
+    [
+     "Los Angeles",
+     "California",
+     34.0522,
+     -118.2437,
+     "America/Los_Angeles"
+    ],
+    [
+     "San Francisco",
+     "California",
+     37.7749,
+     -122.4194,
+     "America/Los_Angeles"
+    ],
+    [
+     "Seattle",
+     "Washington",
+     47.6062,
+     -122.3321,
+     "America/Los_Angeles"
+    ],
+    [
+     "Phoenix",
+     "Arizona",
+     33.4484,
+     -112.074,
+     "America/Phoenix"
+    ],
+    [
+     "Denver",
+     "Colorado",
+     39.7392,
+     -104.9903,
+     "America/Denver"
+    ]
+   ]
+  },
+  {
+   "code": "CA",
+   "name": "Canada",
+   "method": "isna",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "There is no single national body. The app uses ISNA, which many North American masjids follow, and some follow the Moonsighting Committee instead.",
+   "zones": [
+    "America/Toronto",
+    "America/Vancouver",
+    "America/Edmonton",
+    "America/Winnipeg",
+    "America/Halifax",
+    "America/Regina",
+    "America/St_Johns"
+   ],
+   "cities": [
+    [
+     "Toronto",
+     "Ontario",
+     43.6532,
+     -79.3832,
+     "America/Toronto"
+    ],
+    [
+     "Mississauga",
+     "Ontario",
+     43.589,
+     -79.6441,
+     "America/Toronto"
+    ],
+    [
+     "Ottawa",
+     "Ontario",
+     45.4215,
+     -75.6972,
+     "America/Toronto"
+    ],
+    [
+     "Montreal",
+     "Quebec",
+     45.5019,
+     -73.5674,
+     "America/Toronto"
+    ],
+    [
+     "Calgary",
+     "Alberta",
+     51.0447,
+     -114.0719,
+     "America/Edmonton"
+    ],
+    [
+     "Edmonton",
+     "Alberta",
+     53.5461,
+     -113.4938,
+     "America/Edmonton"
+    ],
+    [
+     "Vancouver",
+     "British Columbia",
+     49.2827,
+     -123.1207,
+     "America/Vancouver"
+    ],
+    [
+     "Winnipeg",
+     "Manitoba",
+     49.8951,
+     -97.1384,
+     "America/Winnipeg"
+    ]
+   ]
+  },
+  {
+   "code": "MX",
+   "name": "Mexico",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "America/Mexico_City"
+   ],
+   "cities": [
+    [
+     "Mexico City",
+     "CDMX",
+     19.4326,
+     -99.1332
+    ]
+   ]
+  },
+  {
+   "code": "BR",
+   "name": "Brazil",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "America/Sao_Paulo"
+   ],
+   "cities": [
+    [
+     "São Paulo",
+     "São Paulo",
+     -23.5505,
+     -46.6333
+    ],
+    [
+     "Rio de Janeiro",
+     "Rio de Janeiro",
+     -22.9068,
+     -43.1729
+    ]
+   ]
+  },
+  {
+   "code": "AR",
+   "name": "Argentina",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "America/Argentina/Buenos_Aires"
+   ],
+   "cities": [
+    [
+     "Buenos Aires",
+     "Buenos Aires",
+     -34.6037,
+     -58.3816
+    ]
+   ]
+  },
+  {
+   "code": "CL",
+   "name": "Chile",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "America/Santiago"
+   ],
+   "cities": [
+    [
+     "Santiago",
+     "Santiago",
+     -33.4489,
+     -70.6693
+    ]
+   ]
+  },
+  {
+   "code": "CO",
+   "name": "Colombia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "America/Bogota"
+   ],
+   "cities": [
+    [
+     "Bogotá",
+     "Bogotá",
+     4.711,
+     -74.0721
+    ]
+   ]
+  },
+  {
+   "code": "PE",
+   "name": "Peru",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "America/Lima"
+   ],
+   "cities": [
+    [
+     "Lima",
+     "Lima",
+     -12.0464,
+     -77.0428
+    ]
+   ]
+  },
+  {
+   "code": "VE",
+   "name": "Venezuela",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "America/Caracas"
+   ],
+   "cities": [
+    [
+     "Caracas",
+     "Capital District",
+     10.4806,
+     -66.9036
+    ]
+   ]
+  },
+  {
+   "code": "TT",
+   "name": "Trinidad and Tobago",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "America/Port_of_Spain"
+   ],
+   "cities": [
+    [
+     "Port of Spain",
+     "Port of Spain",
+     10.6549,
+     -61.5019
+    ]
+   ]
+  },
+  {
+   "code": "GY",
+   "name": "Guyana",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "America/Guyana"
+   ],
+   "cities": [
+    [
+     "Georgetown",
+     "Demerara-Mahaica",
+     6.8013,
+     -58.1551
+    ]
+   ]
+  },
+  {
+   "code": "SR",
+   "name": "Suriname",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "America/Paramaribo"
+   ],
+   "cities": [
+    [
+     "Paramaribo",
+     "Paramaribo",
+     5.852,
+     -55.2038
+    ]
+   ]
+  },
+  {
+   "code": "AU",
+   "name": "Australia",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "note": "Australian masjids publish their own timetables. The app uses the Muslim World League method.",
+   "highLatitude": "angle",
+   "zones": [
+    "Australia/Sydney",
+    "Australia/Melbourne",
+    "Australia/Brisbane",
+    "Australia/Perth",
+    "Australia/Adelaide",
+    "Australia/Darwin",
+    "Australia/Hobart"
+   ],
+   "cities": [
+    [
+     "Sydney",
+     "New South Wales",
+     -33.8688,
+     151.2093,
+     "Australia/Sydney"
+    ],
+    [
+     "Melbourne",
+     "Victoria",
+     -37.8136,
+     144.9631,
+     "Australia/Melbourne"
+    ],
+    [
+     "Brisbane",
+     "Queensland",
+     -27.4698,
+     153.0251,
+     "Australia/Brisbane"
+    ],
+    [
+     "Perth",
+     "Western Australia",
+     -31.9505,
+     115.8605,
+     "Australia/Perth"
+    ],
+    [
+     "Adelaide",
+     "South Australia",
+     -34.9285,
+     138.6007,
+     "Australia/Adelaide"
+    ],
+    [
+     "Darwin",
+     "Northern Territory",
+     -12.4634,
+     130.8456,
+     "Australia/Darwin"
+    ]
+   ]
+  },
+  {
+   "code": "NZ",
+   "name": "New Zealand",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "highLatitude": "angle",
+   "zones": [
+    "Pacific/Auckland"
+   ],
+   "cities": [
+    [
+     "Auckland",
+     "Auckland",
+     -36.8485,
+     174.7633
+    ],
+    [
+     "Wellington",
+     "Wellington",
+     -41.2865,
+     174.7762
+    ],
+    [
+     "Christchurch",
+     "Canterbury",
+     -43.5321,
+     172.6362
+    ]
+   ]
+  },
+  {
+   "code": "FJ",
+   "name": "Fiji",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Pacific/Fiji"
+   ],
+   "cities": [
+    [
+     "Suva",
+     "Central",
+     -18.1248,
+     178.4501
+    ]
+   ]
+  },
+  {
+   "code": "PG",
+   "name": "Papua New Guinea",
+   "method": "mwl",
+   "asr": "standard",
+   "naming": "international",
+   "source": "standard",
+   "zones": [
+    "Pacific/Port_Moresby"
+   ],
+   "cities": [
+    [
+     "Port Moresby",
+     "National Capital",
+     -9.4438,
+     147.1803
+    ]
+   ]
+  }
+ ]
+}

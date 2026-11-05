@@ -5,7 +5,11 @@
     "singapore": { "lat": 1.3521, "lng": 103.8198, "timeZone": "Asia/Singapore" },
     "kualaLumpur": { "lat": 3.1472, "lng": 101.6894, "timeZone": "Asia/Kuala_Lumpur" },
     "hanoi": { "lat": 21.0285, "lng": 105.8542, "timeZone": "Asia/Ho_Chi_Minh" },
-    "makkah": { "lat": 21.422487, "lng": 39.826206, "timeZone": "Asia/Riyadh" }
+    "makkah": { "lat": 21.422487, "lng": 39.826206, "timeZone": "Asia/Riyadh" },
+    "madinah": { "lat": 24.4672, "lng": 39.6111, "timeZone": "Asia/Riyadh" },
+    "istanbul": { "lat": 41.0082, "lng": 28.9784, "timeZone": "Europe/Istanbul" },
+    "london": { "lat": 51.5074, "lng": -0.1278, "timeZone": "Europe/London" },
+    "newYork": { "lat": 40.7128, "lng": -74.006, "timeZone": "America/New_York" }
   },
   "official": {
     "rule": "Copied from official timetables. The calculation must never be earlier than these: prayers 0-2 minutes later, sunrise 0-1 minute earlier.",
@@ -13,7 +17,10 @@
       { "source": "MUIS 2026 timetable (data.gov.sg)", "method": "muis", "place": "singapore", "date": "2026-01-01", "times": ["05:44", "07:08", "13:10", "16:34", "19:11", "20:25"] },
       { "source": "MUIS 2026 timetable (data.gov.sg)", "method": "muis", "place": "singapore", "date": "2026-08-01", "times": ["05:46", "07:06", "13:13", "16:34", "19:17", "20:29"] },
       { "source": "MUIS 2026 timetable and the prayertime.sg app", "method": "muis", "place": "singapore", "date": "2026-10-21", "times": ["05:29", "06:47", "12:51", "16:07", "18:52", "20:02"] },
-      { "source": "JAKIM e-Solat, zone WLY01 (Kuala Lumpur)", "method": "jakim", "place": "kualaLumpur", "date": "2026-01-01", "times": ["06:06", "07:18", "13:19", "16:42", "19:17", "20:31"] }
+      { "source": "JAKIM e-Solat, zone WLY01 (Kuala Lumpur)", "method": "jakim", "place": "kualaLumpur", "date": "2026-01-01", "times": ["06:06", "07:18", "13:19", "16:42", "19:17", "20:31"] },
+      { "source": "Diyanet published Istanbul timetable (Ramadan 1447 imsakiye, via ntv.com.tr)", "method": "diyanet", "place": "istanbul", "date": "2026-02-19", "times": ["06:22", "07:47", "13:23", "16:20", "18:49", "20:09"] },
+      { "source": "Diyanet published Istanbul timetable (Ramadan 1447 imsakiye, via ntv.com.tr)", "method": "diyanet", "place": "istanbul", "date": "2026-02-24", "times": ["06:15", "07:39", "13:22", "16:24", "18:55", "20:15"] },
+      { "source": "Diyanet published Istanbul timetable (Ramadan 1447 imsakiye, via ntv.com.tr)", "method": "diyanet", "place": "istanbul", "date": "2026-03-02", "times": ["06:06", "07:30", "13:21", "16:29", "19:02", "20:21"] }
     ]
   },
   "exact": {
@@ -21,7 +28,11 @@
     "days": [
       { "source": "tools/reference_engine.py (the iPhone engine)", "method": "muis", "place": "singapore", "date": "2026-10-21", "times": ["05:30", "06:47", "12:51", "16:08", "18:53", "20:03"] },
       { "source": "iPhone screenshots 2-today-hanoi and 3-journey (Hoàn Kiếm)", "method": "sea", "place": "hanoi", "date": "2026-10-24", "times": ["04:33", "05:56", "11:42", "14:59", "17:26"] },
-      { "source": "iPhone screenshot 1d-today-light-daytime", "method": "ummalqura", "place": "makkah", "date": "2026-10-24", "times": ["05:04", "06:20", "12:05", "15:23", "17:50", "19:20"] }
+      { "source": "iPhone screenshot 1d-today-light-daytime", "method": "ummalqura", "place": "makkah", "date": "2026-10-24", "times": ["05:04", "06:20", "12:05", "15:23", "17:50", "19:20"] },
+      { "source": "adhan-js 4.4.3 (independent library) agrees within 1 minute", "method": "moonsighting", "place": "london", "date": "2026-06-21", "times": ["02:44", "04:44", "13:08", "17:26", "21:25", "22:43"] },
+      { "source": "adhan-js 4.4.3 (independent library) agrees within 1 minute", "method": "moonsighting", "place": "london", "date": "2026-12-21", "times": ["06:22", "08:04", "12:04", "13:38", "15:57", "17:33"] },
+      { "source": "adhan-js 4.4.3 (independent library) agrees within 1 minute", "method": "isna", "place": "newYork", "date": "2026-06-21", "times": ["03:46", "05:26", "12:58", "16:59", "20:31", "22:11"] },
+      { "source": "web engine, Umm al-Qura", "method": "ummalqura", "place": "madinah", "date": "2026-11-05", "times": ["05:11", "06:31", "12:06", "15:17", "17:40", "19:10"] }
     ]
   },
   "wholeYear": {

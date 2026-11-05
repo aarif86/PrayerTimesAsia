@@ -54,7 +54,7 @@ export function mosqueMethod(m: MosqueProfile): CalculationMethod | null {
   return {
     id: `mosque-${m.id}`, name: m.name, shortName: m.name,
     fajrAngle: fp.fajrAngle, ishaAngle: fp.ishaAngle ?? null, ishaInterval: fp.ishaInterval ?? null,
-    ramadanIshaInterval: null, maghribAngle: null, offsets, matchesOfficialTable: false,
+    ramadanIshaInterval: null, maghribAngle: null, offsets, matchesOfficialTable: false, highLatitude: 'fallback',
     note: `${m.name}'s own timetable (Fajr ${fp.fajrAngle}° · ${isha}), from: ${m.source}.`,
   }
 }

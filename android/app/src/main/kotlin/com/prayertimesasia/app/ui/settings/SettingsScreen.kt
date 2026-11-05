@@ -112,7 +112,7 @@ fun SettingsScreen(
             item {
                 Section("Location") {
                     ValueRow("Place", r.activePlace?.name ?: "Not set", onClick = openPlaces)
-                    ValueRow("Country rules", if (r.profile.code.isEmpty()) "Outside Asia" else "${r.profile.flag} ${r.profile.name}")
+                    ValueRow("Country rules", if (r.profile.code.isEmpty()) r.profile.name else "${r.profile.flag} ${r.profile.name}")
                 }
             }
             item {
@@ -122,7 +122,7 @@ fun SettingsScreen(
                 }
             }
             item {
-                Section("Calculation", "Automatic follows the country you're in, so landing in a new country switches it for you. ${r.method.note}") {
+                Section("Calculation", "${r.sourceSummary} Automatic follows the country you're in, so landing in a new country switches it for you. ${r.method.note}") {
                     PickerRow("Method", if (p.methodOverrideId == null) "Automatic · ${r.profile.method.shortName}" else r.method.name,
                         listOf<Pair<String, String?>>("Automatic · ${r.profile.method.shortName}" to null) + CalculationMethod.all.map { it.name to it.id },
                         p.methodOverrideId) { id -> state.update { it.copy(methodOverrideId = id) } }

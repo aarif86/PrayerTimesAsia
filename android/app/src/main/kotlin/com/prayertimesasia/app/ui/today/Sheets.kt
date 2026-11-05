@@ -136,9 +136,9 @@ fun SanadSheetContent(state: AppState, day: PrayerDay) {
     val uri = LocalUriHandler.current
     val detail = when (day.grade) {
         SourceGrade.OFFICIAL -> if (day.officialSource != null) "Downloaded once a year from the authority and kept on your phone, so it works offline."
-        else "${r.method.parameterSummary}. This is the authority's own published method."
+        else "${r.method.parameterSummary}. ${r.sourceSummary}"
         SourceGrade.MASJID, SourceGrade.COMMUNITY -> r.nearbyMosque?.method?.note ?: day.grade.explanation
-        else -> "${r.method.parameterSummary} · ${if (r.asrSchool == AsrSchool.HANAFI) "Hanafi" else "Shafi'i"} Asr. ${r.method.note}"
+        else -> "${r.method.parameterSummary} · ${if (r.asrSchool == AsrSchool.HANAFI) "Hanafi" else "Shafi'i"} Asr. ${r.sourceSummary} ${r.method.note}"
     }
     LazyColumn(Modifier.fillMaxWidth().padding(horizontal = Dims.gutter)) {
         item {

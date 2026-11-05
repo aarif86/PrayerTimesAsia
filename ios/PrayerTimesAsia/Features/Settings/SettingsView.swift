@@ -16,7 +16,7 @@ struct SettingsView: View {
                     Button { showPlaces = true } label: {
                         LabeledContent("Place", value: model.activePlace?.name ?? "Not set")
                     }
-                    LabeledContent("Country rules", value: model.profile.code.isEmpty ? "Outside Asia" : "\(model.profile.flag) \(model.profile.name)")
+                    LabeledContent("Country rules", value: model.profile.code.isEmpty ? model.profile.name : "\(model.profile.flag) \(model.profile.name)")
                 }
 
                 Section {
@@ -60,7 +60,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Calculation")
                 } footer: {
-                    Text("Automatic follows the country you're in, so landing in a new country switches it for you. \(model.method.note)")
+                    Text("\(model.sourceSummary) Automatic follows the country you're in, so landing in a new country switches it for you. \(model.method.note)")
                 }
 
                 Section {

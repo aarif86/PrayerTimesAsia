@@ -107,14 +107,15 @@ object PrayerEngine {
         val night = 24 - (sunset - t.getValue(Prayer.SUNRISE))
         val interval = (if (isRamadan) method.ramadanIshaInterval else null) ?: method.ishaInterval
         if (interval != null) t[Prayer.ISHA] = t.getValue(Prayer.MAGHRIB) + interval / 60
-        // High-latitude safety net ("one-seventh of the night") for days when the
-        // sun never reaches the twilight angle. Never triggers in tropical Asia.
-        val fajrSevenths = t.getValue(Prayer.SUNRISE) - night / 7
-        if (angleTime(method.fajrAngle, t.getValue(Prayer.FAJR) / 24, true) == null) t[Prayer.FAJR] = fajrSevenths
+        // Short summer nights far from the equator (see HighLatitudeRule).
+        // Never changes anything in tropical Asia.
+        val fajrReached = angleTime(method.fajrAngle, t.getValue(Prayer.FAJR) / 24, true) != null
         val ishaAngle = method.ishaAngle
-        if (ishaAngle != null && angleTime(ishaAngle, t.getValue(Prayer.ISHA) / 24, false) == null) {
-            t[Prayer.ISHA] = sunset + night / 7
-        }
+        val ishaReached = ishaAngle == null || angleTime(ishaAngle, t.getValue(Prayer.ISHA) / 24, false) != null
+        val adjusted = highLatitude(method, lat, year, month, day, t.getValue(Prayer.SUNRISE), sunset, night,
+            if (fajrReached) t.getValue(Prayer.FAJR) else null, if (ishaReached) t.getValue(Prayer.ISHA) else null)
+        t[Prayer.FAJR] = adjusted.first
+        if (ishaAngle != null) t[Prayer.ISHA] = adjusted.second
 
         val midnightUTC = Astro.utcMidnight(year, month, day)
         val times = Prayer.all.associateWith { prayer ->
@@ -125,6 +126,61 @@ object PrayerEngine {
             midnightUTC.plusSeconds((minutes * 60).toLong())
         }
         return PrayerDay(year, month, day, times)
+    }
+
+    /**
+     * Fajr and Isha (hours, local mean time) on nights when twilight barely
+     * ends. [fajr] / [isha] are null when the sun never reaches the angle.
+     * Same as highLatitude() in the web engine.
+     */
+    fun highLatitude(method: CalculationMethod, lat: Double, year: Int, month: Int, day: Int,
+                     sunrise: Double, sunset: Double, night: Double, fajr: Double?, isha: Double?): Pair<Double, Double> {
+        return when (method.highLatitude) {
+            HighLatitudeRule.MOONSIGHTING -> {
+                var f = fajr
+                var i = isha
+                // Above 55° the committee starts from one seventh of the night, then the same seasonal limits.
+                if (abs(lat) >= 55) { f = sunrise - night / 7; i = sunset + night / 7 }
+                val doy = java.time.LocalDate.of(year, month, day).dayOfYear
+                val safeFajr = sunrise - seasonalMinutes(lat, year, doy, MORNING) / 60
+                val safeIsha = sunset + seasonalMinutes(lat, year, doy, EVENING) / 60
+                Pair(if (f == null || safeFajr > f) safeFajr else f, if (i == null || safeIsha < i) safeIsha else i)
+            }
+            HighLatitudeRule.FALLBACK -> Pair(fajr ?: (sunrise - night / 7), isha ?: (sunset + night / 7))
+            else -> {
+                fun portion(angle: Double) = when (method.highLatitude) {
+                    HighLatitudeRule.MIDDLE -> night / 2
+                    HighLatitudeRule.SEVENTH -> night / 7
+                    else -> angle / 60 * night
+                }
+                val fajrCap = sunrise - portion(method.fajrAngle)
+                val ishaCap = sunset + portion(method.ishaAngle ?: method.fajrAngle)
+                Pair(if (fajr == null || fajr < fajrCap) fajrCap else fajr, if (isha == null || isha > ishaCap) ishaCap else isha)
+            }
+        }
+    }
+
+    // Moonsighting Committee (Khalid Shaukat): minutes before sunrise / after sunset
+    // at four points of the year, scaled by latitude, joined by straight lines.
+    private val MORNING = doubleArrayOf(28.65, 19.44, 32.74, 48.10)
+    private val EVENING = doubleArrayOf(25.60, 2.050, -9.21, 6.14)
+
+    private fun seasonalMinutes(lat: Double, year: Int, doy: Int, k: DoubleArray): Double {
+        val (a, b, c, d) = k.map { 75 + it / 55 * abs(lat) }
+        val leap = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+        val days = if (leap) 366 else 365
+        var dyy = if (lat >= 0) doy + 10 else doy - (if (leap) 173 else 172)
+        if (dyy >= days) dyy -= days
+        if (dyy < 0) dyy += days
+        val x = dyy.toDouble()
+        return when {
+            dyy < 91 -> a + (b - a) / 91 * x
+            dyy < 137 -> b + (c - b) / 46 * (x - 91)
+            dyy < 183 -> c + (d - c) / 46 * (x - 137)
+            dyy < 229 -> d + (c - d) / 46 * (x - 183)
+            dyy < 275 -> c + (b - c) / 46 * (x - 229)
+            else -> b + (a - b) / 91 * (x - 275)
+        }
     }
 
     /** Convenience: the prayer day for the local calendar date containing [instant] in [zone]. */

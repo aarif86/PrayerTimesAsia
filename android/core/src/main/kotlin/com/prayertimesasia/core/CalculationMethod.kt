@@ -1,6 +1,15 @@
 package com.prayertimesasia.core
 
 /**
+ * The rule for nights when the sun barely gets below the twilight angle.
+ * FALLBACK (the original rule) only steps in when the angle is never reached:
+ * one seventh of the night. ANGLE, SEVENTH and MIDDLE cap Fajr and Isha at that
+ * share of the night every day. MOONSIGHTING is the Moonsighting Committee's
+ * seasonal rule. Same as the web and iPhone engines.
+ */
+enum class HighLatitudeRule { FALLBACK, ANGLE, SEVENTH, MIDDLE, MOONSIGHTING }
+
+/**
  * The parameters one authority uses to turn the sun's position into prayer times.
  *
  * Every time the engine produces is `ceil(astronomical time + offset)` to the
@@ -31,7 +40,13 @@ data class CalculationMethod(
     /** True when the angles and offsets reproduce an authority's own published timetable. */
     val matchesOfficialTable: Boolean,
     val note: String,
+    /** What to do on nights when twilight barely ends; see [HighLatitudeRule]. */
+    val highLatitude: HighLatitudeRule = HighLatitudeRule.FALLBACK,
 ) {
+    /** The same method with another high-latitude rule (a country's own, see Countries.kt). */
+    fun withHighLatitude(rule: HighLatitudeRule?): CalculationMethod =
+        if (rule == null || rule == highLatitude) this else copy(highLatitude = rule)
+
     val parameterSummary: String
         get() {
             val isha = ishaAngle?.let { "Isha ${format(it)}°" } ?: "Isha +${(ishaInterval ?: 0.0).toInt()} min"
@@ -70,7 +85,7 @@ data class CalculationMethod(
 
         val MWL = CalculationMethod(
             "mwl", "Muslim World League", "MWL", 18.0, 17.0, null, null, null, emptyMap(), false,
-            "The most widely used international convention; common in East Asia.")
+            "The Muslim World League. The most widely used international method.")
 
         val KARACHI = CalculationMethod(
             "karachi", "Karachi · University of Islamic Sciences", "Karachi", 18.0, 18.0, null, null, null, emptyMap(), false,
@@ -78,7 +93,7 @@ data class CalculationMethod(
 
         val UMM_AL_QURA = CalculationMethod(
             "ummalqura", "Umm al-Qura · Makkah", "Umm al-Qura", 18.5, null, 90.0, 120.0, null, emptyMap(), false,
-            "Saudi Arabia. Isha is 90 minutes after Maghrib, 120 in Ramadan.")
+            "The official calendar of Saudi Arabia, followed by the Haramain in Makkah and Madinah. Isha is 90 minutes after Maghrib, 120 in Ramadan.")
 
         val DUBAI = CalculationMethod(
             "dubai", "Dubai · UAE", "UAE", 18.2, 18.2, null, null, null,
@@ -94,8 +109,10 @@ data class CalculationMethod(
 
         val TURKEY = CalculationMethod(
             "diyanet", "Diyanet · Türkiye", "Diyanet", 18.0, 17.0, null, null, null,
-            mapOf(Prayer.SUNRISE to -7.0, Prayer.DHUHR to 5.0, Prayer.ASR to 4.0, Prayer.MAGHRIB to 7.0), false,
-            "An approximation of the Diyanet method; most accurate within Türkiye.")
+            mapOf(Prayer.SUNRISE to -7.25, Prayer.DHUHR to 4.75, Prayer.ASR to 3.25, Prayer.MAGHRIB to 5.875,
+                Prayer.ISHA to -1.125), false,
+            "Diyanet's method (Fajr 18°, Isha 17°, Asr at one shadow length), with precautionary minutes fitted on its published Istanbul timetable. Used by Turkish masjids across Europe too.",
+            HighLatitudeRule.ANGLE)
 
         val TEHRAN = CalculationMethod(
             "tehran", "Tehran · Jafari", "Jafari", 17.7, 14.0, null, null, 4.5, emptyMap(), false,
@@ -103,10 +120,49 @@ data class CalculationMethod(
 
         val EGYPTIAN = CalculationMethod(
             "egyptian", "Egyptian General Authority", "Egypt", 19.5, 17.5, null, null, null, emptyMap(), false,
-            "Common in the Levant.")
+            "The Egyptian General Authority of Survey. Also common in Syria, Libya and Sudan.")
+
+        val ISNA = CalculationMethod(
+            "isna", "ISNA · North America", "ISNA", 15.0, 15.0, null, null, null, emptyMap(), false,
+            "The Islamic Society of North America. Followed by many masjids in the United States and Canada.",
+            HighLatitudeRule.ANGLE)
+
+        val MOONSIGHTING = CalculationMethod(
+            "moonsighting", "Moonsighting Committee", "Moonsighting", 18.0, 18.0, null, null, null,
+            mapOf(Prayer.DHUHR to 5.0, Prayer.MAGHRIB to 3.0), false,
+            "Made for northern countries. Fajr and Isha follow the seasons so summer nights stay workable. Common in the UK, Ireland and North America.",
+            HighLatitudeRule.MOONSIGHTING)
+
+        val UOIF = CalculationMethod(
+            "uoif", "Musulmans de France · 12°", "France 12°", 12.0, 12.0, null, null, null, emptyMap(), false,
+            "The 12° angle used by Musulmans de France (formerly UOIF). Fajr is later and Isha earlier than most methods.",
+            HighLatitudeRule.ANGLE)
+
+        val RUSSIA = CalculationMethod(
+            "russia", "Muslims of Russia", "Russia", 16.0, 15.0, null, null, null, emptyMap(), false,
+            "The Spiritual Administration of Muslims of Russia.", HighLatitudeRule.ANGLE)
+
+        val ALGERIA = CalculationMethod(
+            "algeria", "Algeria", "Algeria", 18.0, 17.0, null, null, null, mapOf(Prayer.MAGHRIB to 3.0), false,
+            "The method of Algeria's Ministry of Religious Affairs and Endowments.")
+
+        val TUNISIA = CalculationMethod(
+            "tunisia", "Tunisia", "Tunisia", 18.0, 18.0, null, null, null,
+            mapOf(Prayer.DHUHR to 7.0, Prayer.MAGHRIB to 2.0), false,
+            "The method of Tunisia's Ministry of Religious Affairs.")
+
+        val MOROCCO = CalculationMethod(
+            "morocco", "Morocco", "Morocco", 19.0, 17.0, null, null, null,
+            mapOf(Prayer.DHUHR to 5.0, Prayer.MAGHRIB to 2.0), false,
+            "The method of Morocco's Ministry of Habous and Islamic Affairs.")
+
+        val JORDAN = CalculationMethod(
+            "jordan", "Jordan", "Jordan", 18.0, 18.0, null, null, null, emptyMap(), false,
+            "The method of Jordan's Ministry of Awqaf and Islamic Affairs. Also used in Palestine.")
 
         val all: List<CalculationMethod> = listOf(
             MUIS, JAKIM, KEMENAG, SOUTHEAST_ASIA, MWL, KARACHI, UMM_AL_QURA, DUBAI, QATAR, KUWAIT, TURKEY, TEHRAN, EGYPTIAN,
+            ISNA, MOONSIGHTING, UOIF, RUSSIA, ALGERIA, TUNISIA, MOROCCO, JORDAN,
         )
 
         fun withId(id: String?): CalculationMethod? = all.firstOrNull { it.id == id }

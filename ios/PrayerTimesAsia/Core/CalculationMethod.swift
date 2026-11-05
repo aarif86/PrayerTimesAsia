@@ -10,6 +10,15 @@ import Foundation
 /// for JAKIM, whose zones each use their own reference point, it is within about
 /// 2 minutes and errs late.
 /// When online, OfficialTimetables replaces the calculation with the exact table.
+/// The rule for nights when the sun barely gets below the twilight angle.
+/// `fallback` (the original rule) only steps in when the angle is never reached:
+/// one seventh of the night. `angle`, `seventh` and `middle` cap Fajr and Isha at
+/// that share of the night every day. `moonsighting` is the Moonsighting
+/// Committee's seasonal rule. Same as the web and Android engines.
+enum HighLatitudeRule: String, Sendable, Hashable {
+    case fallback, angle, seventh, middle, moonsighting
+}
+
 struct CalculationMethod: Identifiable, Hashable, Sendable {
     let id: String
     /// Long name, e.g. "MUIS · Singapore".
@@ -31,6 +40,17 @@ struct CalculationMethod: Identifiable, Hashable, Sendable {
     /// timetable; false for widely used international conventions.
     let matchesOfficialTable: Bool
     let note: String
+    /// What to do on nights when twilight barely ends (far north or south in
+    /// summer). See HighLatitudeRule. Countries can set their own (Countries.swift).
+    var highLatitude: HighLatitudeRule = .fallback
+
+    /// The same method with another high-latitude rule.
+    func withHighLatitude(_ rule: HighLatitudeRule?) -> CalculationMethod {
+        guard let rule, rule != highLatitude else { return self }
+        var copy = self
+        copy.highLatitude = rule
+        return copy
+    }
 
     var parameterSummary: String {
         let isha = ishaAngle.map { "Isha \(Self.format($0))°" } ?? "Isha +\(Int(ishaInterval ?? 0)) min"
@@ -75,7 +95,7 @@ extension CalculationMethod {
         id: "mwl", name: "Muslim World League", shortName: "MWL",
         fajrAngle: 18, ishaAngle: 17, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
         offsets: [:], matchesOfficialTable: false,
-        note: "The most widely used international convention; common in East Asia.")
+        note: "The Muslim World League. The most widely used international method.")
 
     static let karachi = CalculationMethod(
         id: "karachi", name: "Karachi · University of Islamic Sciences", shortName: "Karachi",
@@ -87,7 +107,7 @@ extension CalculationMethod {
         id: "ummalqura", name: "Umm al-Qura · Makkah", shortName: "Umm al-Qura",
         fajrAngle: 18.5, ishaAngle: nil, ishaInterval: 90, ramadanIshaInterval: 120, maghribAngle: nil,
         offsets: [:], matchesOfficialTable: false,
-        note: "Saudi Arabia. Isha is 90 minutes after Maghrib, 120 in Ramadan.")
+        note: "The official calendar of Saudi Arabia, followed by the Haramain in Makkah and Madinah. Isha is 90 minutes after Maghrib, 120 in Ramadan.")
 
     static let dubai = CalculationMethod(
         id: "dubai", name: "Dubai · UAE", shortName: "UAE",
@@ -109,8 +129,9 @@ extension CalculationMethod {
     static let turkey = CalculationMethod(
         id: "diyanet", name: "Diyanet · Türkiye", shortName: "Diyanet",
         fajrAngle: 18, ishaAngle: 17, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
-        offsets: [.sunrise: -7, .dhuhr: 5, .asr: 4, .maghrib: 7], matchesOfficialTable: false,
-        note: "An approximation of the Diyanet method; most accurate within Türkiye.")
+        offsets: [.sunrise: -7.25, .dhuhr: 4.75, .asr: 3.25, .maghrib: 5.875, .isha: -1.125], matchesOfficialTable: false,
+        note: "Diyanet's method (Fajr 18°, Isha 17°, Asr at one shadow length), with precautionary minutes fitted on its published Istanbul timetable. Used by Turkish masjids across Europe too.",
+        highLatitude: .angle)
 
     static let tehran = CalculationMethod(
         id: "tehran", name: "Tehran · Jafari", shortName: "Jafari",
@@ -121,11 +142,64 @@ extension CalculationMethod {
     static let egyptian = CalculationMethod(
         id: "egyptian", name: "Egyptian General Authority", shortName: "Egypt",
         fajrAngle: 19.5, ishaAngle: 17.5, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
-        offsets: [:], matchesOfficialTable: false, note: "Common in the Levant.")
+        offsets: [:], matchesOfficialTable: false, note: "The Egyptian General Authority of Survey. Also common in Syria, Libya and Sudan.")
+
+    static let isna = CalculationMethod(
+        id: "isna", name: "ISNA · North America", shortName: "ISNA",
+        fajrAngle: 15, ishaAngle: 15, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [:], matchesOfficialTable: false,
+        note: "The Islamic Society of North America. Followed by many masjids in the United States and Canada.",
+        highLatitude: .angle)
+
+    static let moonsighting = CalculationMethod(
+        id: "moonsighting", name: "Moonsighting Committee", shortName: "Moonsighting",
+        fajrAngle: 18, ishaAngle: 18, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.dhuhr: 5, .maghrib: 3], matchesOfficialTable: false,
+        note: "Made for northern countries. Fajr and Isha follow the seasons so summer nights stay workable. Common in the UK, Ireland and North America.",
+        highLatitude: .moonsighting)
+
+    static let uoif = CalculationMethod(
+        id: "uoif", name: "Musulmans de France · 12°", shortName: "France 12°",
+        fajrAngle: 12, ishaAngle: 12, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [:], matchesOfficialTable: false,
+        note: "The 12° angle used by Musulmans de France (formerly UOIF). Fajr is later and Isha earlier than most methods.",
+        highLatitude: .angle)
+
+    static let russia = CalculationMethod(
+        id: "russia", name: "Muslims of Russia", shortName: "Russia",
+        fajrAngle: 16, ishaAngle: 15, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [:], matchesOfficialTable: false,
+        note: "The Spiritual Administration of Muslims of Russia.",
+        highLatitude: .angle)
+
+    static let algeria = CalculationMethod(
+        id: "algeria", name: "Algeria", shortName: "Algeria",
+        fajrAngle: 18, ishaAngle: 17, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.maghrib: 3], matchesOfficialTable: false,
+        note: "The method of Algeria's Ministry of Religious Affairs and Endowments.")
+
+    static let tunisia = CalculationMethod(
+        id: "tunisia", name: "Tunisia", shortName: "Tunisia",
+        fajrAngle: 18, ishaAngle: 18, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.dhuhr: 7, .maghrib: 2], matchesOfficialTable: false,
+        note: "The method of Tunisia's Ministry of Religious Affairs.")
+
+    static let morocco = CalculationMethod(
+        id: "morocco", name: "Morocco", shortName: "Morocco",
+        fajrAngle: 19, ishaAngle: 17, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.dhuhr: 5, .maghrib: 2], matchesOfficialTable: false,
+        note: "The method of Morocco's Ministry of Habous and Islamic Affairs.")
+
+    static let jordan = CalculationMethod(
+        id: "jordan", name: "Jordan", shortName: "Jordan",
+        fajrAngle: 18, ishaAngle: 18, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [:], matchesOfficialTable: false,
+        note: "The method of Jordan's Ministry of Awqaf and Islamic Affairs. Also used in Palestine.")
 
     static let all: [CalculationMethod] = [
         .muis, .jakim, .kemenag, .southeastAsia, .mwl, .karachi,
         .ummAlQura, .dubai, .qatar, .kuwait, .turkey, .tehran, .egyptian,
+        .isna, .moonsighting, .uoif, .russia, .algeria, .tunisia, .morocco, .jordan,
     ]
 
     static func with(id: String) -> CalculationMethod? { all.first { $0.id == id } }

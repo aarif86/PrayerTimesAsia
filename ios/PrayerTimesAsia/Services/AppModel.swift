@@ -162,10 +162,14 @@ final class AppModel {
     var profile: CountryProfile { activePlace?.profile ?? AsiaRegions.fallback }
 
     var method: CalculationMethod {
-        prefs.methodOverrideID.flatMap(CalculationMethod.with(id:)) ?? profile.method
+        prefs.methodOverrideID.flatMap(CalculationMethod.with(id:)).map(profile.here) ?? profile.method
     }
 
     var isMethodAutomatic: Bool { prefs.methodOverrideID == nil }
+    /// Whose times these are, in plain words (official timetable, the authority's method, or a standard one).
+    var sourceSummary: String { profile.sourceSummary(method: method, pinned: !isMethodAutomatic) }
+    /// The same in one sentence or two, for the welcome card.
+    var sourceShort: String { profile.sourceSummary(method: method, pinned: !isMethodAutomatic, short: true) }
     var asrSchool: AsrSchool { prefs.asrOverride ?? profile.asr }
     /// Your prayer names - from your home or your phone, not from where you
     /// are, so they stay the same as you travel.

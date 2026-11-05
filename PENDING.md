@@ -16,6 +16,9 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 - [ ] **Domain on auto-renew** - when buying prayertimes.asia, turn on auto-renew and add a second contact email.
 - [ ] **Google Play account** - US$25 one-time at play.google.com/console (personal or Nasar Pte Ltd).
 - [ ] *(Optional)* Move the repo into a Nasar Pte Ltd GitHub organisation.
+- [ ] **Worldwide times, check the country list** - [docs/worldwide-times.md](docs/worldwide-times.md) lists whose times the app follows in each country. Please read it (and ideally the falak committee too) and tell Claude anything to change.
+- [ ] **London Unified Prayer Timetable** - free sign-up for an API key at londonprayertimes.com/api, then give it to Claude so London shows the exact timetable most London masjids follow.
+- [ ] **Diyanet timetable account** *(later)* - a free account at awqatsalah.diyanet.gov.tr lets the app download Diyanet's exact tables for Türkiye and Turkish masjids in Europe, like MUIS and JAKIM today.
 
 ## Waiting on Claude (do when asked)
 

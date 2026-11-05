@@ -10,12 +10,12 @@ import { musafirStatus, type MusafirRules, type MusafirStatus } from '../core/mu
 import { officialSourceFor, sourceLabel, type OfficialSource } from '../core/official'
 import { isNear, newPlaceId, placeProfile, type Place } from '../core/place'
 import { OBLIGATORY, PRAYERS, prayerName, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
-import { countryForTimeZone, FALLBACK_PROFILE, personalNaming, profileFor, profileMethod, type CountryProfile } from '../core/regions'
+import { countryForTimeZone, FALLBACK_PROFILE, methodHere, personalNaming, profileFor, profileMethod, sourceSummary, type CountryProfile } from '../core/regions'
 import {
   disagreements, jamaahTimes, mosqueAsr, mosqueMethod, mosqueNear, type MosqueDataset, type MosqueProfile,
 } from '../core/sources'
 import { dayKey, daysBetween, deviceTimeZone, ymdKey, zoned, zonedTime } from '../core/tz'
-import { nearestCity } from './cities'
+import { CITIES, nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
 import { DEFAULT_PREFS, loadPreferences, savePreferences, type Preferences, type TodayStyle } from './prefs'
 import { fetchOK, readJSON, readString, writeJSON, writeString } from './storage'
@@ -158,10 +158,15 @@ class AppStore {
   }
 
   get method(): CalculationMethod {
-    return methodWithId(this.prefs.methodOverrideID) ?? profileMethod(this.profile)
+    const pinned = methodWithId(this.prefs.methodOverrideID)
+    return pinned ? methodHere(pinned, this.profile) : profileMethod(this.profile)
   }
 
   get isMethodAutomatic(): boolean { return this.prefs.methodOverrideID == null }
+  /** Whose times these are, in plain words (official timetable, the authority's method, or a standard one). */
+  get sourceSummary(): string { return sourceSummary(this.profile, this.method, !this.isMethodAutomatic) }
+  /** The same in one sentence or two, for the welcome card. */
+  get sourceShort(): string { return sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true) }
   get asrSchool(): AsrSchool { return this.prefs.asrOverride ?? this.profile.asr }
   get personalNaming(): NamingStyle { return personalNaming(this.prefs.home?.countryCode, navigatorLocale()) }
   /** Your names - from your home or your browser, not from where you are. */
@@ -617,6 +622,15 @@ function demoPreferences(demo: Demo): Preferences {
       { countryCode: 'VN', countryName: 'Vietnam', placeName: 'Hoàn Kiếm', arrived: now },
       { countryCode: 'SG', countryName: 'Singapore', placeName: 'Pasir Ris', arrived: now - 86_400_000 * 30 },
     ]
+  }
+  // ?city=city-gb-london: just landed in any built-in city (worldwide screenshots).
+  const city = CITIES.find((c) => c.id === q.get('city'))
+  if (city) {
+    p.manualPlace = city
+    p.lastCountryCode = city.countryCode ?? null
+    p.musafirEnabled = true
+    p.arrivedAt = now
+    p.arrivalBannerDismissed = false
   }
   return p
 }
