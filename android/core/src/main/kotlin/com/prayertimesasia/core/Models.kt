@@ -125,6 +125,8 @@ data class Preferences(
     val notifyPrayers: Set<Prayer> = Prayer.obligatory.toSet(),
     /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
     val reminderMinutesBefore: Int = 0,
+    /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings. */
+    val azanSound: Boolean = true,
 
     val musafirThresholdKm: Double = 81.0,
     /** Pinned JAKIM zone; null = nearest to where you are. */

@@ -522,7 +522,8 @@ final class AppModel {
                     continue
                 }
                 alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
-                                    body: "It's time for \(name) in \(here)", fireDate: time))
+                                    body: "It's time for \(name) in \(here)", fireDate: time,
+                                    sound: prefs.azanSound ? (prayer == .fajr ? .azanSubuh : .azan) : .standard))
             }
         }
         // Subuh wake-up: a real alarm (AlarmKit, iOS 26+) where possible,

@@ -1,3 +1,4 @@
+import { azanAvailable } from '../services/azan'
 import { useEffect, useState } from 'preact/hooks'
 import { ArrowDownToLine, ArrowRightLeft, BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
@@ -139,6 +140,9 @@ export function SettingsScreen() {
         {perm === 'denied' && ' Notifications are blocked for this site in your browser settings.'}
       </>}>
         <ToggleItem label="Prayer time alerts" on={p.notificationsEnabled && perm === 'granted'} onChange={(v) => void setAlerts(v)} />
+        {p.notificationsEnabled && perm === 'granted' && azanAvailable() && (
+          <ToggleItem label="Play the azan" on={p.azanSound} onChange={(v) => store.update((x) => { x.azanSound = v })} />
+        )}
         <ToggleItem label="Reminder before prayer" on={reminderOn} onChange={(v) => void setReminder(v)} />
         {reminderOn && (
           <SelectItem label="Remind me" value={String(p.reminderMinutesBefore)}

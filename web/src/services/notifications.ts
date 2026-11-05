@@ -2,6 +2,7 @@ import { isInAsia, placeProfile } from '../core/place'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { flag } from '../core/regions'
 import { zoned } from '../core/tz'
+import { playAzan } from './azan'
 import { store } from './store'
 
 /**
@@ -34,7 +35,7 @@ export async function requestPermission(): Promise<boolean> {
   try { return (await Notification.requestPermission()) === 'granted' } catch { return false }
 }
 
-interface Alert { id: string; title: string; body: string; at: number }
+interface Alert { id: string; title: string; body: string; at: number; prayer?: Prayer }
 
 /** The alerts for the next two days, as the iOS scheduler builds them. */
 export function upcomingAlerts(now: number): Alert[] {
@@ -66,7 +67,7 @@ export function upcomingAlerts(now: number): Alert[] {
         out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended. ${here}`, at: time })
         continue
       }
-      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}`, at: time })
+      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}`, at: time, prayer })
     }
   }
   return out.filter((a) => a.at > now).sort((a, b) => a.at - b.at)
@@ -89,6 +90,7 @@ export function scheduleAlerts(): void {
     if (t >= next.at && t - next.at < 60_000 && !fired.has(next.id)) {
       fired.add(next.id)
       void show(next.title, next.body, next.id)
+      if (next.prayer && store.prefs.azanSound) playAzan(next.prayer === 'fajr')
     }
     scheduleAlerts()
   }, Math.max(0, wait))

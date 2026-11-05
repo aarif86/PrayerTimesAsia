@@ -55,4 +55,18 @@ class AlarmPlanTest {
         // One per chosen prayer each day (two days ahead, minus the ones already past).
         assertTrue(plan.count { it.kind == AlarmScheduler.Kind.EARLY } >= 10)
     }
+
+    @Test fun azanAtPrayerTimeWithASubuhAzanAtSubuh() {
+        val on = Preferences(useGPS = false, manualPlace = place, home = place, notificationsEnabled = true, reminderMinutesBefore = 10)
+        val plan = AlarmScheduler.plan(Resolver(on, locale = Locale("en", "SG")), now)
+        val prayers = plan.filter { it.kind == AlarmScheduler.Kind.PRAYER }
+        assertEquals(AlarmScheduler.Sound.AZAN_SUBUH, prayers.first { it.id.endsWith("-fajr") }.sound)
+        assertTrue(prayers.filter { !it.id.endsWith("-fajr") }.all { it.sound == AlarmScheduler.Sound.AZAN })
+        // Reminders before the prayer stay quiet: the azan is for the time itself.
+        assertTrue(plan.filter { it.kind == AlarmScheduler.Kind.EARLY }.all { it.sound == AlarmScheduler.Sound.STANDARD })
+
+        val off = on.copy(azanSound = false)
+        val quiet = AlarmScheduler.plan(Resolver(off, locale = Locale("en", "SG")), now)
+        assertTrue(quiet.all { it.sound == AlarmScheduler.Sound.STANDARD })
+    }
 }

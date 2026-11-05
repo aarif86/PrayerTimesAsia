@@ -95,6 +95,9 @@ struct Preferences: Codable, Equatable, Sendable {
     var reminderMinutesBefore = 0
     static let defaultReminderMinutes = 15
     static let reminderChoices = [5, 10, 15, 20, 30, 45, 60]
+    /// Prayer time alerts play the azan (a Subuh azan at Subuh) instead of the
+    /// phone's alert sound, when the app has the recordings (see Azan.swift).
+    var azanSound = true
 
     var musafirThresholdKm: Double = 81
     /// Pinned JAKIM zone; nil = nearest to where you are.
@@ -169,6 +172,7 @@ struct Preferences: Codable, Equatable, Sendable {
         notificationsEnabled = v(.notificationsEnabled, d.notificationsEnabled)
         notifyPrayers = v(.notifyPrayers, d.notifyPrayers)
         reminderMinutesBefore = v(.reminderMinutesBefore, d.reminderMinutesBefore)
+        azanSound = v(.azanSound, d.azanSound)
         musafirThresholdKm = v(.musafirThresholdKm, d.musafirThresholdKm)
         jakimZoneOverride = v(.jakimZoneOverride, d.jakimZoneOverride)
         lastCountryCode = v(.lastCountryCode, d.lastCountryCode)

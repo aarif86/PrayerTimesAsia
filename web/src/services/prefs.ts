@@ -36,6 +36,8 @@ export interface Preferences {
   notifyPrayers: Prayer[]
   /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
   reminderMinutesBefore: number
+  /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings - see services/azan.ts. */
+  azanSound: boolean
   musafirThresholdKm: number
   jakimZoneOverride: string | null
   lastCountryCode: string | null
@@ -73,6 +75,7 @@ export const DEFAULT_PREFS: Preferences = {
   notificationsEnabled: false,
   notifyPrayers: [...OBLIGATORY],
   reminderMinutesBefore: 0,
+  azanSound: true,
   musafirThresholdKm: 81,
   jakimZoneOverride: null,
   lastCountryCode: null,
