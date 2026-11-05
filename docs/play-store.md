@@ -27,6 +27,26 @@ version is in [app-store.md](app-store.md); the build steps are in
 Prayer times & qibla across Asia. Official MUIS & JAKIM times, offline, no ads
 ```
 
+## Malay and Indonesian listings (search words)
+
+Google Play has no keyword box: it finds apps by the title, short description
+and full description in each listing language. Add **Malay (ms)** and
+**Indonesian (id)** under Grow → Store presence → Main store listing → Manage
+translations → Add your own translations. Paste the English full description
+for now; these short descriptions carry the local search words.
+
+Malay short description (80 / 80):
+
+```
+Waktu solat & kiblat di Asia. Waktu rasmi MUIS & JAKIM, tanpa iklan, luar talian
+```
+
+Indonesian short description (71 / 80):
+
+```
+Jadwal sholat & kiblat. Waktu resmi Kemenag, tanpa iklan, bisa offline.
+```
+
 ## Full description (about 1,900 / 4,000)
 
 ```
