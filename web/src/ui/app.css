@@ -222,3 +222,38 @@ input, select, textarea { font: inherit; color: inherit; }
     background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
   .site-link:hover { opacity: 1; }
 }
+/* Prayer tracker sheet */
+.tracker-top { display: flex; flex-direction: column; gap: 10px; }
+.tracker-streak { display: flex; align-items: center; gap: 8px; color: var(--accent); }
+.tracker-streak .big { font-size: 30px; font-weight: 700; color: var(--text, inherit); }
+.tracker-streak .secondary { font-size: 15px; }
+.tracker-top p { margin: 0; }
+.tracker-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 999px; background: var(--accent); color: #1b1410; font-weight: 600; font-size: 15px; }
+.pill-btn.quiet { background: var(--fill); color: inherit; font-weight: 500; }
+.pill-btn.quiet.on { background: color-mix(in srgb, #e06c8a 30%, transparent); }
+.tracker-month-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.tracker-month-head h3 { margin: 0; font-size: 17px; }
+.tracker-month-head .round-btn[disabled] { opacity: 0.35; }
+.tracker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; justify-items: center; }
+.tracker-wd { font-size: 12px; padding-bottom: 2px; }
+.tracker-day {
+  width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; position: relative;
+}
+.tracker-day::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(var(--green) var(--fill), color-mix(in srgb, currentColor 14%, transparent) 0);
+  -webkit-mask: radial-gradient(circle, transparent 15px, #000 15.5px); mask: radial-gradient(circle, transparent 15px, #000 15.5px);
+}
+.tracker-day > * { position: relative; }
+.tracker-day.full { background: var(--green); color: #fff; font-weight: 600; }
+.tracker-day.excused:not(.full) { background: color-mix(in srgb, #e06c8a 28%, transparent); color: #e06c8a; }
+.tracker-day.full::before, .tracker-day.excused::before, .tracker-day.future::before { display: none; }
+.tracker-day.future { opacity: 0.35; }
+.tracker-day.is-today { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tracker-legend { display: flex; gap: 14px; justify-content: center; margin-top: 12px; }
+.tracker-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.tracker-key { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.tracker-key.full { background: var(--green); }
+.tracker-key.part { background: conic-gradient(var(--green) 140deg, color-mix(in srgb, currentColor 20%, transparent) 0); }
+.tracker-sum { margin: 12px 0 0; text-align: center; }

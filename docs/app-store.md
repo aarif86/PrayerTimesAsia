@@ -19,6 +19,48 @@ waktu solat,azan,adhan,kiblat,qiblat,muis,jakim,salah,solat,namaz,masjid,musolla
 (Apple already indexes the name and subtitle, so "prayer", "times", "qibla" and
 "Asia" are deliberately not repeated.)
 
+## Extra listing languages: Malay and Indonesian (search words)
+
+Add these in App Store Connect → App Information / the version page → the
+language menu at the top right → **Malay** and **Indonesian**. Each extra
+language brings its own 100 keyword characters, so people searching in Malay or
+Indonesian find the app even before the app itself is translated. Name,
+description and screenshots can stay English for now (paste the English
+description); only the subtitle, keywords and promotional text change.
+
+Words already in the name or subtitle are not repeated. Indonesians mostly
+write "sholat" or "salat" and "adzan", Malaysians and Singaporeans "solat" and
+"azan", so each list uses its own spellings.
+
+### Malay (ms)
+
+| Field | Value | Limit |
+|---|---|---|
+| Subtitle | Waktu solat & kiblat di Asia | 28 / 30 |
+| Promotional text | Waktu solat & kiblat di Asia. Waktu rasmi MUIS & JAKIM, tanpa iklan, luar talian. | 80 / 170 |
+
+Keywords (98 / 100):
+
+```
+azan,jakim,muis,e-solat,surau,masjid,musolla,imsak,subuh,maghrib,takwim,hijrah,qasar,jamak,musafir
+```
+
+### Indonesian (id)
+
+| Field | Value | Limit |
+|---|---|---|
+| Subtitle | Jadwal sholat & arah kiblat | 27 / 30 |
+| Promotional text | Jadwal sholat & kiblat. Waktu resmi Kemenag, tanpa iklan, bisa offline. | 71 / 170 |
+
+Keywords (98 / 100):
+
+```
+jadwal salat,sholat,shalat,adzan,azan,kemenag,imsakiyah,imsak,masjid,musala,ramadhan,puasa,hijriah
+```
+
+Both lists should be read once by a native speaker before going live (the
+wording, not the meaning, is what to check).
+
 ## Promotional text (125 / 170)
 
 Land anywhere in Asia and know when to pray and which way to face. Official MUIS and JAKIM timetables, works offline, no ads.

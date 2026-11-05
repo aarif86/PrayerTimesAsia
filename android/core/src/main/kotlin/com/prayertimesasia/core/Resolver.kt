@@ -158,7 +158,18 @@ class Resolver(
     fun dayKey(instant: Instant): String = instant.atZone(zone).toLocalDate().toString()
 
     fun isPrayed(prayer: Prayer, on: Instant): Boolean = prefs.prayedLog[dayKey(on)]?.contains(prayer) ?: false
-    fun isExcused(on: Instant): Boolean = dayKey(on) in prefs.excusedDays
+    fun isExcused(on: Instant): Boolean = isExcused(dayKey(on), dayKey(on))
+
+    /** Marked excused on its own, or inside a pause (from the day it began up to [today]). */
+    fun isExcused(key: String, today: String): Boolean {
+        if (key in prefs.excusedDays) return true
+        val since = prefs.trackerPausedSince ?: return false
+        return key >= since && key <= today
+    }
+
+    /** How a day went: prayers ticked (of the five) and whether it was excused. */
+    fun trackerDay(key: String, today: String): Pair<Int, Boolean> =
+        (prefs.prayedLog[key].orEmpty().count { it in Prayer.obligatory }) to isExcused(key, today)
 
     /**
      * Consecutive days with all five prayers marked (or excused). Today counts
@@ -167,9 +178,10 @@ class Resolver(
     fun streak(now: Instant): Int {
         var count = 0
         var date: LocalDate = now.atZone(zone).toLocalDate()
+        val today = date.toString()
         for (i in 0 until 400) {
             val key = date.toString()
-            val complete = key in prefs.excusedDays || (prefs.prayedLog[key]?.size ?: 0) >= Prayer.obligatory.size
+            val complete = isExcused(key, today) || (prefs.prayedLog[key]?.size ?: 0) >= Prayer.obligatory.size
             if (complete) count++ else if (i > 0) break
             date = date.minusDays(1)
         }
@@ -204,4 +216,10 @@ class Resolver(
             return out
         }
     }
+}
+
+/** Every "yyyy-MM-dd" from [from] to [to], both included (at most a year). */
+fun trackerDays(from: String, to: String): List<String> {
+    val start = runCatching { LocalDate.parse(from) }.getOrNull() ?: return emptyList()
+    return (0L until 366L).map { start.plusDays(it).toString() }.takeWhile { it <= to }
 }

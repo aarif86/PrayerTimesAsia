@@ -49,6 +49,7 @@ data class MovedSettings(
     val trackerEnabled: Boolean? = null,
     val prayedLog: Map<String, List<String>>? = null,
     val excusedDays: List<String>? = null,
+    val trackerPausedSince: String? = null,
     val wakeUp: WakeUpTiming? = null,
 ) {
     @Serializable
@@ -110,6 +111,7 @@ data class MovedSettings(
             trackerEnabled = trackerEnabled ?: d.trackerEnabled,
             prayedLog = log,
             excusedDays = p.excusedDays + excusedDays.orEmpty(),
+            trackerPausedSince = trackerPausedSince?.takeIf { DAY.matches(it) },
             wakeUp = wakeUp,
         )
     }
@@ -202,6 +204,7 @@ data class MovedSettings(
                 prayedLog = p.prayedLog.filterValues { it.isNotEmpty() }.takeIf { it.isNotEmpty() }
                     ?.mapValues { ordered(it.value) }?.toSortedMap(),
                 excusedDays = p.excusedDays.takeIf { it.isNotEmpty() }?.sorted(),
+                trackerPausedSince = p.trackerPausedSince,
                 wakeUp = p.wakeUp,
             )
         }

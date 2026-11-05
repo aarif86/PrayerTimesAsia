@@ -125,6 +125,8 @@ data class Preferences(
     val notifyPrayers: Set<Prayer> = Prayer.obligatory.toSet(),
     /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
     val reminderMinutesBefore: Int = 0,
+    /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings. */
+    val azanSound: Boolean = true,
 
     val musafirThresholdKm: Double = 81.0,
     /** Pinned JAKIM zone; null = nearest to where you are. */
@@ -143,6 +145,8 @@ data class Preferences(
     val prayedLog: Map<String, Set<Prayer>> = emptyMap(),
     /** Days excused (haid, illness, ...): they keep the streak alive. */
     val excusedDays: Set<String> = emptySet(),
+    /** "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from then until the pause ends counts as excused. */
+    val trackerPausedSince: String? = null,
 
     /** Subuh wake-up alarm; null = off. */
     val wakeUp: WakeUpTiming? = null,

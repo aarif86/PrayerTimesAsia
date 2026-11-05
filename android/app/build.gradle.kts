@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "com.prayertimesasia.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.prayertimesasia.app"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         // The Play release workflow passes its run number, so every upload is higher than the last.
         versionCode = providers.environmentVariable("VERSION_CODE").orNull?.toIntOrNull() ?: 1
         versionName = "1.0.0"

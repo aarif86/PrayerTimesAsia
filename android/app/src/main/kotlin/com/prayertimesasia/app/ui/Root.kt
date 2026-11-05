@@ -72,6 +72,7 @@ import com.prayertimesasia.app.ui.theme.Rounded
 import com.prayertimesasia.app.ui.theme.SkyScheme
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.today.AppSheet
+import com.prayertimesasia.app.ui.today.TrackerSheetContent
 import com.prayertimesasia.app.ui.today.CalendarSheetContent
 import com.prayertimesasia.app.ui.today.PlacesSheetContent
 import com.prayertimesasia.app.ui.today.SanadSheetContent
@@ -143,6 +144,9 @@ fun PrayerTimesRoot(state: AppState) {
             Box(Modifier.fillMaxSize()) {
                 OnboardingScreen(state, bringIn = { overlay = Overlay.MoveIn }) { overlay = Overlay.Places }
                 Overlays(state, overlay) { overlay = it }
+            if (state.showTracker) {
+                AppSheet({ state.showTracker = false }) { TrackerSheetContent(state) }
+            }
             }
         }
         return
