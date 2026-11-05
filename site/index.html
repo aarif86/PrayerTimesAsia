@@ -61,7 +61,7 @@
       font-family: var(--font);
       font-size: 17px;
       line-height: 1.6;
-      overflow-x: hidden;
+      overflow-x: clip;
     }
     /* The night sky behind everything: a few soft glows and stars. */
     body::before {
@@ -237,17 +237,114 @@
 
     :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 8px; }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn { transition: none; } }
+
+    /* ---------- Story sections ---------- */
+    .chapters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; position: relative; }
+    @media (max-width: 860px) { .chapters { grid-template-columns: 1fr; } }
+    .chapter { background: var(--card); border: 1px solid var(--card-line); border-radius: var(--radius); padding: 26px; }
+    .chapter p { color: var(--muted); margin: 0; }
+    .chapter .num { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; margin-bottom: 14px;
+      font-weight: 800; color: #1b1230; background: linear-gradient(135deg, var(--gold), var(--ember)); box-shadow: 0 0 24px -4px var(--ember); }
+    .letter { margin: 40px auto 0; max-width: 780px; padding: 36px 40px; border-radius: 28px; position: relative;
+      background: linear-gradient(160deg, #1d2160cc, #2b1a4fcc); border: 1px solid var(--card-line); }
+    .letter::before { content: "\201C"; position: absolute; top: -18px; left: 28px; font-size: 6rem; line-height: 1; color: var(--gold); opacity: .5; font-family: Georgia, serif; }
+    .letter blockquote { margin: 0; font-size: 1.12rem; }
+    .letter figcaption { margin-top: 10px; color: var(--gold); font-weight: 700; }
+    .letter figcaption::before { content: "— "; }
+    @media (max-width: 600px) { .letter { padding: 30px 22px; } }
+    #who .card h3 { margin-bottom: 8px; }
+    .ask-band { text-align: center; border-radius: 30px; padding: 56px 28px; border: 1px solid var(--card-line);
+      background: radial-gradient(70% 120% at 50% 0%, #f39a4a33, transparent 70%), linear-gradient(135deg, #1d2160, #2b1a4f 60%, #3d1f3f); }
+    .ask-band .lead { margin: 0 auto; }
+    .ask-band .btns { justify-content: center; margin-top: 26px; }
+
+    /* ---------- Motion ---------- */
+    /* Everything moves with transform and opacity only, so it stays smooth on phones.
+       Reveals only hide content once the script has run (html.js), and all of it
+       switches off for people who ask their device for less motion. */
+    .sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+    .sky .glow { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; will-change: transform; }
+    .sky .g1 { width: 46vmax; height: 46vmax; background: #2a2f78; top: -18vmax; right: -12vmax; animation: drift1 26s ease-in-out infinite alternate; }
+    .sky .g2 { width: 40vmax; height: 40vmax; background: #3a1f52; bottom: -16vmax; left: -14vmax; animation: drift2 32s ease-in-out infinite alternate; }
+    .sky .g3 { width: 24vmax; height: 24vmax; background: #f39a4a; opacity: .12; top: 30%; left: 40%; animation: drift3 38s ease-in-out infinite alternate; }
+    .sky .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; animation: twinkle var(--d, 4s) ease-in-out var(--delay, 0s) infinite; }
+    .sky .shoot { position: absolute; top: 12%; left: 70%; width: 120px; height: 1.5px; opacity: 0;
+      background: linear-gradient(90deg, #fff, transparent); transform: rotate(-20deg); animation: shoot 11s ease-in 3s infinite; }
+    @keyframes drift1 { to { transform: translate(-8vmax, 10vmax) scale(1.1); } }
+    @keyframes drift2 { to { transform: translate(10vmax, -8vmax) scale(1.15); } }
+    @keyframes drift3 { to { transform: translate(-14vmax, 12vmax) scale(.85); } }
+    @keyframes twinkle { 0%, 100% { opacity: .15; transform: scale(.8); } 50% { opacity: .9; transform: scale(1.2); } }
+    @keyframes shoot { 0% { opacity: 0; transform: translate(0, 0) rotate(-20deg); } 3% { opacity: 1; } 9% { opacity: 0; transform: translate(-340px, 124px) rotate(-20deg); } 100% { opacity: 0; } }
+
+    .hero h1 span { background-size: 200% auto; animation: shimmer 6s linear infinite; }
+    @keyframes shimmer { to { background-position: 200% center; } }
+    .hero-phones .phone.front { animation: floatA 7s ease-in-out infinite; }
+    .hero-phones .phone.back { animation: floatB 8s ease-in-out infinite; }
+    @keyframes floatA { 0%, 100% { transform: rotate(-4deg) translateY(0); } 50% { transform: rotate(-3deg) translateY(-14px); } }
+    @keyframes floatB { 0%, 100% { transform: rotate(6deg) translateY(0); } 50% { transform: rotate(7deg) translateY(12px); } }
+    .hero-phones .tilt { position: absolute; inset: 0; transition: transform .6s cubic-bezier(.2,.8,.2,1); will-change: transform; }
+
+    .js .intro { opacity: 0; transform: translateY(18px); animation: rise .9s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(var(--i, 0) * 110ms + 100ms); }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+    .js .reveal { opacity: 0; transform: translateY(28px) scale(.98); transition: opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1);
+      transition-delay: calc(var(--i, 0) * 90ms); }
+    .js .reveal.in { opacity: 1; transform: none; }
+    .js .feature.reveal .shot .phone { transform: translateY(40px) rotate(var(--r, 0deg)); transition: transform 1.1s cubic-bezier(.2,.8,.2,1) .15s; }
+    .js .feature.reveal .shot .phone + .phone { --r: 3deg; transition-delay: .3s; }
+    .js .feature.reveal.in .shot .phone { transform: rotate(0); }
+
+    .strip { overflow: hidden; }
+    .strip .wrap { max-width: none; padding: 0; }
+    .js .strip ul { flex-wrap: nowrap; justify-content: flex-start; width: max-content; animation: marquee 34s linear infinite; }
+    .strip:hover ul { animation-play-state: paused; }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+
+    .card, .chapter { transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s, box-shadow .35s; position: relative; overflow: hidden; }
+    .card::after, .chapter::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s;
+      background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), #f2c06322, transparent 70%); }
+    .card:hover, .chapter:hover { transform: translateY(-4px); border-color: #f2c06355; box-shadow: 0 20px 40px -24px #000; }
+    .card:hover::after, .chapter:hover::after { opacity: 1; }
+    .js .reveal.in.card:hover, .js .reveal.in.chapter:hover { transform: translateY(-4px); }
+
+    .btn-primary { position: relative; overflow: hidden; }
+    .btn-primary::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%;
+      background: linear-gradient(100deg, transparent, #ffffff88, transparent); transform: skewX(-20deg); animation: sheen 5s ease-in-out 2s infinite; }
+    @keyframes sheen { 0%, 70% { left: -60%; } 100% { left: 130%; } }
+
+    header.top { transition: background .4s, box-shadow .4s; }
+    header.top.scrolled { background: rgba(11, 15, 42, 0.9); box-shadow: 0 10px 30px -18px #000; }
+    .progress { position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 20; transform-origin: 0 50%; transform: scaleX(0);
+      background: linear-gradient(90deg, var(--gold), var(--ember), var(--rose)); }
+
+    .tv-row div.on { animation: pulse 2.4s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 #f39a4a00; } 50% { box-shadow: 0 0 18px 2px #f39a4a66; } }
+    .tv-now b { font-variant-numeric: tabular-nums; }
+    .chapter .num { animation: glowNum 3s ease-in-out infinite; }
+    .chapter:nth-child(2) .num { animation-delay: 1s; } .chapter:nth-child(3) .num { animation-delay: 2s; }
+    @keyframes glowNum { 0%, 100% { box-shadow: 0 0 14px -6px var(--ember); } 50% { box-shadow: 0 0 30px 0 var(--ember); } }
+    details { transition: background .3s, border-color .3s; }
+    details[open] { background: rgba(255,255,255,0.07); border-color: #f2c06344; }
+    details[open] p { animation: rise .5s cubic-bezier(.2,.8,.2,1); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .js .intro, .js .reveal, .js .feature.reveal .shot .phone { opacity: 1; transform: none; }
+      .js .strip ul { flex-wrap: wrap; justify-content: center; width: auto; }
+    }
   </style>
 </head>
 <body>
+<div class="sky" aria-hidden="true"><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div><div class="shoot"></div></div>
+<div class="progress" aria-hidden="true"></div>
 
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#top"><img src="img/icon-192.png" alt="" width="34" height="34" />Prayer Times Asia</a>
     <nav class="links" aria-label="Sections">
+      <a href="#story">Our story</a>
+      <a href="#who">Who it's for</a>
       <a href="#features">Features</a>
       <a href="#countries">Countries</a>
-      <a href="#coming">Coming next</a>
       <a href="#masjid">For masjids</a>
       <a href="#promises">Our promises</a>
       <a href="#faq">Questions</a>
@@ -261,9 +358,9 @@
   <section class="hero">
     <div class="wrap">
       <div>
-        <span class="eyebrow">Free · No ads · No account</span>
-        <h1>Know when to pray, <span>wherever you land</span> in Asia.</h1>
-        <p class="lead">Prayer times and qibla for Muslims living and travelling across Asia. Official MUIS and JAKIM timetables at home, the right local method the moment you cross a border, and it keeps working with no signal.</p>
+        <span class="eyebrow">Made by an ustaz · Free fisabilillah</span>
+        <h1>A prayer app with <span>nothing to sell you.</span></h1>
+        <p class="lead">An ustaz in Singapore set out to make the prayer app he could hand to his own students and jamaah without a warning attached: official times, no ads, no subscriptions, and your location never leaves your phone. It works at home and wherever you land in Asia.</p>
         <div class="btns">
           <a class="btn btn-primary" href="app/">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
@@ -274,7 +371,7 @@
             <span class="two">iPhone and Android<small>Join the test</small></span>
           </a>
         </div>
-        <p class="note">Built fisabilillah in Singapore by Nasar Pte Ltd.</p>
+        <p class="note"><a href="#story">Read why we built it</a> · Built fisabilillah in Singapore by Nasar Pte Ltd.</p>
       </div>
       <div class="hero-phones" aria-hidden="true">
         <div class="phone back"><img src="img/today-light.webp" alt="" width="603" height="1311" /></div>
@@ -294,6 +391,103 @@
       </ul>
     </div>
   </div>
+
+  <section id="story" class="story">
+    <div class="wrap">
+      <div class="center">
+        <span class="eyebrow">Our story</span>
+        <h2>Why an ustaz built a prayer app.</h2>
+      </div>
+      <div class="chapters">
+        <div class="chapter">
+          <span class="num">1</span>
+          <h3>Prayer apps became businesses</h3>
+          <p>The most popular ones now show ads around your salah, charge a subscription for things that used to be free, and some have been caught sharing where their users go. And when you travel, the times often don't match the masjid down the road.</p>
+        </div>
+        <div class="chapter">
+          <span class="num">2</span>
+          <h3>So he made one himself</h3>
+          <p>Not a startup, and not a product to sell later. A prayer app built fisabilillah, as sadaqah jariah, for anyone who prays, with the official timetables of each country built in.</p>
+        </div>
+        <div class="chapter">
+          <span class="num">3</span>
+          <h3>And promised to keep it that way</h3>
+          <p>Free forever, no ads, no account, your data stays yours, and the code open for anyone to check. <a href="#promises">Read the four promises</a>.</p>
+        </div>
+      </div>
+
+      <figure class="letter">
+        <blockquote>
+          <p>Assalamualaikum. As an ustaz, people often ask me which prayer app they should use. For years my honest answer came with a warning attached: turn this off, ignore those ads, be careful what it does with your location.</p>
+          <p>I wanted an app I could recommend with a clear heart. So, with Allah's help and a team of AI assistants doing the typing, I built one. I decide what goes in it. The times come from the official authorities and are checked every day of the year. The fiqh is reviewed by people who know it better than any machine.</p>
+          <p>It is free, and it will stay free. All I ask is your du'a, and that you share it with someone who prays.</p>
+        </blockquote>
+        <figcaption>The founder, an ustaz in Singapore</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="built" class="built">
+    <div class="wrap">
+      <div class="center">
+        <span class="eyebrow">How it's made</span>
+        <h2>One ustaz. An AI team. Every time checked.</h2>
+        <p class="lead">What used to take a company of developers, one person can now build with AI. The AI writes the code. The ustaz decides what is right, and the official sources have the final word on every time.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 .9-4.5 4.3 1 6.3L12 16.6 6.5 19.5l1-6.3L3 8.9 9 8z"/></svg></div>
+          <h3>The ustaz decides</h3>
+          <p>What the app does, how it speaks, and what is right for the ummah. Nothing reaches your phone without his say.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
+          <h3>The AI team builds</h3>
+          <p>AI assistants write and test the iPhone, Android and web apps and the masjid screen, so one person can build what used to need a whole team.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
+          <h3>The sources check</h3>
+          <p>MUIS and JAKIM timetables are used as they are. Worked-out times are tested against the official tables for every day of the year, and the falak readings are with a falak committee member for review.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="who">
+    <div class="wrap">
+      <div class="center">
+        <span class="eyebrow">Who it's for</span>
+        <h2>For everyone who prays, wherever life takes them.</h2>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>The worker between meetings</h3>
+          <p>A gentle alert before Zohor and Asar, and a widget that shows the next prayer at a glance, so a busy day never runs past salah.</p>
+        </div>
+        <div class="card">
+          <h3>The traveller</h3>
+          <p>Land in Bangkok or Tokyo and the times already follow the local method. It tells you how far you are from home and whether you may shorten and combine.</p>
+        </div>
+        <div class="card">
+          <h3>The student abroad</h3>
+          <p>Far from a masjid, it finds the nearest musollah or prayer room, points to the qibla and keeps working with no signal.</p>
+        </div>
+        <div class="card">
+          <h3>The sister</h3>
+          <p>A prayer tracker with a pause for haid or illness that keeps your streak, kept only on your phone and never sent anywhere.</p>
+        </div>
+        <div class="card">
+          <h3>The family at home</h3>
+          <p>Times on every phone in the house, and a printable monthly calendar for the fridge or the surau wall.</p>
+        </div>
+        <div class="card">
+          <h3>The masjid committee</h3>
+          <p>A free display screen for the masjid TV with azan and iqamah times, and a QR code so jamaah carry your times home.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section id="features">
     <div class="wrap">
@@ -548,6 +742,10 @@
           <p>No. It is not for sale, and it will never carry ads or sell data. The code is open under a licence that keeps every copy open, and only the official app may use the Prayer Times Asia name. Masjids, organisations and well-wishers who want to help can sponsor running costs or work with us: write to <a href="mailto:salam@prayertimes.asia?subject=Supporting%20Prayer%20Times%20Asia">salam@prayertimes.asia</a>.</p>
         </details>
         <details>
+          <summary>An app built with AI? Can I trust the times?</summary>
+          <p>The AI writes the code; it does not decide the times. In Singapore and Malaysia the times come straight from MUIS and JAKIM. Everywhere else they follow each country's own method, tested against the official tables for every day of the year. An ustaz decides what goes in the app, the falak readings are being reviewed by a falak committee member, and the code is open so anyone can check it.</p>
+        </details>
+        <details>
           <summary>How accurate are the times?</summary>
           <p>In Singapore and Malaysia the app uses the official MUIS and JAKIM timetables. When it has to work them out itself (offline, or in other countries), it uses each country's own method, checked against the official tables for every day of the year and set to err on the safe side, never before the prayer has begun.</p>
         </details>
@@ -571,6 +769,20 @@
     </div>
   </section>
 
+  <section class="ask">
+    <div class="wrap">
+      <div class="ask-band reveal">
+        <span class="eyebrow">Our only ask</span>
+        <h2>If it helps you pray on time, make du'a for everyone who built it.</h2>
+        <p class="lead">And share it with one person who prays. That is how a free app reaches the ummah: one friend, one family group, one masjid at a time.</p>
+        <div class="btns">
+          <a class="btn btn-primary" href="app/">Open the app</a>
+          <a class="btn btn-ghost" href="https://wa.me/?text=A%20free%20prayer%20app%20made%20by%20an%20ustaz%2C%20no%20ads%3A%20https%3A%2F%2Fprayertimes.asia" target="_blank" rel="noopener">Share on WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer>
@@ -589,5 +801,101 @@
   </div>
 </footer>
 
+
+<script>
+  // Motion, added only when the browser can run it. With no script, or with
+  // "reduce motion" turned on, the page shows everything at once and stays still.
+  (function () {
+    var root = document.documentElement;
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    root.classList.add('js');
+
+    // Stars that twinkle at their own pace.
+    var sky = document.querySelector('.sky');
+    for (var i = 0; i < 70; i++) {
+      var st = document.createElement('i');
+      st.className = 'star';
+      st.style.left = Math.random() * 100 + '%';
+      st.style.top = Math.random() * 100 + '%';
+      st.style.setProperty('--d', (3 + Math.random() * 5).toFixed(1) + 's');
+      st.style.setProperty('--delay', (-Math.random() * 8).toFixed(1) + 's');
+      if (Math.random() < 0.2) { st.style.width = st.style.height = '3px'; }
+      sky.appendChild(st);
+    }
+
+    // The hero comes in line by line.
+    var intro = document.querySelectorAll('.hero .eyebrow, .hero h1, .hero .lead, .hero .btns, .hero .note');
+    intro.forEach(function (el, n) { el.classList.add('intro'); el.style.setProperty('--i', n); });
+
+    // The trust strip loops: repeat its items once so the scroll is seamless.
+    var list = document.querySelector('.strip ul');
+    if (list && !still) list.innerHTML += list.innerHTML.replace(/<li>/g, '<li aria-hidden="true">');
+
+    // Sections rise into view as you scroll, a little after each other.
+    var groups = ['main section .center', '.chapter', '.letter', '.feature', '.grid > .card', '.countries > .card',
+      '.steps > .card', '.partner', '.faq details', '.ask-band'];
+    var items = document.querySelectorAll(groups.join(','));
+    items.forEach(function (el) {
+      el.classList.add('reveal');
+      var sibs = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+      el.style.setProperty('--i', Math.min(sibs, 5));
+    });
+    if ('IntersectionObserver' in window && !still) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+      items.forEach(function (el) { io.observe(el); });
+    } else {
+      items.forEach(function (el) { el.classList.add('in'); });
+    }
+
+    // A soft light follows the pointer across cards.
+    document.addEventListener('pointermove', function (e) {
+      var c = e.target.closest && e.target.closest('.card, .chapter');
+      if (!c) return;
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    }, { passive: true });
+
+    // Header settles, a thin progress line fills, and the hero phones lean with the scroll and the pointer.
+    var header = document.querySelector('header.top');
+    var bar = document.querySelector('.progress');
+    var phones = document.querySelector('.hero-phones');
+    var tilt = null;
+    if (phones && !still) {
+      tilt = document.createElement('div');
+      tilt.className = 'tilt';
+      while (phones.firstChild) tilt.appendChild(phones.firstChild);
+      phones.appendChild(tilt);
+    }
+    var px = 0, py = 0, ticking = false;
+    function frame() {
+      ticking = false;
+      var y = window.scrollY;
+      header.classList.toggle('scrolled', y > 10);
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
+      if (tilt) tilt.style.transform = 'translate3d(' + (px * 14) + 'px,' + (y * -0.08 + py * 10) + 'px,0) rotate(' + (px * 2) + 'deg)';
+    }
+    function ask() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+    window.addEventListener('scroll', ask, { passive: true });
+    window.addEventListener('pointermove', function (e) {
+      px = e.clientX / window.innerWidth - 0.5; py = e.clientY / window.innerHeight - 0.5; ask();
+    }, { passive: true });
+    frame();
+
+    // The masjid screen preview counts down for real.
+    var clock = document.querySelector('.tv-now b');
+    if (clock) {
+      var left = 12 * 60 + 40;
+      setInterval(function () {
+        left = left > 0 ? left - 1 : 15 * 60;
+        var m = Math.floor(left / 60), s = left % 60;
+        clock.textContent = '00:' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+      }, 1000);
+    }
+  })();
+</script>
 </body>
 </html>
