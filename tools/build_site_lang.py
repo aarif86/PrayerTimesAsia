@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a translated home page (ms/ or id/) from the English one.
+"""Build a translated home page (ms/, id/, ar/, ur/, bn/, tr/, fr/) from the English one.
 
     python3 tools/build_site_lang.py ms site/index.html site/i18n/ms.json _site/ms/index.html
     python3 tools/build_site_lang.py id site/index.html site/i18n/id.json _site/id/index.html
@@ -8,8 +8,14 @@ Every piece of visible text, every alt/aria-label and the page title and link
 previews are looked up in site/i18n/<lang>.json (English -> that language). The
 build fails and lists what is missing when the English page gains text the
 language file doesn't have yet, so they never drift apart silently. Keys that
-start with "_" are settings, not page text ("_share" is the WhatsApp link).
+start with "_" are settings, not page text ("_share" is the WhatsApp link,
+"_label" the short name on the language button, "_appnote" a line saying the app
+itself is still in English, "_head" extra tags for the <head>, such as a font).
+Arabic and Urdu pages are built right to left. Anything between <!--notr--> and
+<!--/notr--> is left as it is (the language menu, where each name is in its own
+language).
 """
+RTL = {'ar', 'ur', 'fa'}
 import html
 import json
 import re
@@ -46,7 +52,7 @@ def keep(m):
 
 
 head_end = page.index('<body')
-work = re.sub(r'<(script|style|svg)\b[\s\S]*?</\1>', keep, page)
+work = re.sub(r'<!--notr-->[\s\S]*?<!--/notr-->|<(script|style|svg)\b[\s\S]*?</\1>', keep, page)
 
 # Text between tags (the <title> and everything in <body>).
 title_re = re.compile(r'(<title>)([^<]*)(</title>)')
@@ -75,7 +81,9 @@ work = re.sub(r'\x00(\d+)\x00', lambda m: kept[int(m.group(1))], work)
 work = re.sub(r'\b(href|src)="(?!https?:|mailto:|#|/|data:)([^"]*)"',
               lambda m: f'{m.group(1)}="../{m.group(2)}"', work)
 work = work.replace('url("fonts/', 'url("../fonts/')
-work = work.replace('<html lang="en">', f'<html lang="{lang}">', 1)
+work = work.replace('<html lang="en">', f'<html lang="{lang}"' + (' dir="rtl"' if lang in RTL else '') + '>', 1)
+if table.get('_head'):
+    work = work.replace('</head>', table['_head'] + '\n</head>', 1)
 
 
 def must_replace(old, new):
@@ -85,9 +93,14 @@ def must_replace(old, new):
     work = work.replace(old, new)
 
 
-must_replace('href=".././" hreflang="en" aria-current="page"', 'href="../" hreflang="en"')
+must_replace('href=".././" hreflang="en" aria-current="page"', 'href="../" hreflang="en" lang="en"')
+must_replace('<span class="cur">EN</span>', f'<span class="cur">{table.get("_label", lang.upper())}</span>')
 # Language switch: English is one folder up, this language is here.
 must_replace(f'href="../{lang}/" hreflang="{lang}" lang="{lang}"', f'href="./" hreflang="{lang}" lang="{lang}" aria-current="page"')
+# A short line under the hero saying the app itself is in English for now.
+if table.get('_appnote'):
+    m = re.search(r'<p class="note">[\s\S]*?</p>', work)
+    work = work[:m.end()] + f'\n        <p class="app-lang">{html.escape(table["_appnote"], quote=False)}</p>' + work[m.end():]
 # WhatsApp share text.
 must_replace(
     'https://wa.me/?text=A%20free%20prayer%20app%20made%20by%20Ustaz%20Aarif%2C%20no%20ads%20https%3A%2F%2Fprayertimes.asia',

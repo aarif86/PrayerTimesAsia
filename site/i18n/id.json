@@ -136,8 +136,6 @@
   "Press": "Media",
   "What's new": "Yang baru",
   "Design a new look": "Rancang tampilan baru",
-  "EN": "EN",
-  "BM": "BM",
   "Qibla & Falak": "Kiblat & Falak",
   "Language": "Bahasa",
   "When Ustaz Aarif landed in Vietnam, he couldn't find a proper prayer app. So he asked himself, why not build one? Built in Asia, made for every Muslim. Times follow your local religious authority first, official timetables where they exist, no ads, no subscriptions, and your exact location stays on your phone.": "Saat Ustaz Aarif tiba di Vietnam, ia tidak menemukan aplikasi salat yang layak. Maka ia bertanya pada dirinya sendiri, mengapa tidak membuatnya? Dibangun di Asia, untuk setiap Muslim. Waktu salat mengikuti otoritas keagamaan setempat Anda lebih dulu, jadwal resmi bila tersedia, tanpa iklan, tanpa langganan, dan lokasi persis Anda tetap di ponsel Anda.",
@@ -164,7 +162,6 @@
   "Ustaz Aarif Raziff": "Ustaz Aarif Raziff",
   "Saigon Central Mosque on Dong Du street, on the trip that started it all.": "Masjid Raya Saigon di jalan Dong Du, dalam perjalanan yang memulai semuanya.",
   "The gate and minaret of Saigon Central Mosque, between the city's glass towers": "Gerbang dan menara Masjid Raya Saigon, di antara gedung-gedung kaca kota",
-  "ID": "ID",
   "Follows your local religious authority": "Mengikuti otoritas keagamaan setempat Anda",
   "or": "atau",
   "read more about him": "baca selengkapnya tentang beliau",
@@ -261,5 +258,7 @@
   "(Nasar Pte Ltd)": "(Nasar Pte Ltd)",
   "(Nasar Pte Ltd).": "(Nasar Pte Ltd).",
   "Yes. Ustaz Aarif Raziff builds it fisabilillah. His company,": "Ya. Ustaz Aarif Raziff membangunnya fisabilillah. Perusahaannya,",
-  "(Nasar Pte Ltd), pays the costs, and we earn our living from other work, never from this app. There are no ads from others, no subscriptions and nothing to buy. The only thing you'll see is a small card for our own services, and you can turn it off.": "(Nasar Pte Ltd), menanggung biayanya, dan kami mencari nafkah dari pekerjaan lain, bukan dari aplikasi ini. Tidak ada iklan dari pihak lain, tidak ada langganan dan tidak ada yang perlu dibeli. Satu-satunya yang akan Anda lihat adalah kartu kecil untuk layanan kami sendiri, dan Anda bisa mematikannya."
+  "(Nasar Pte Ltd), pays the costs, and we earn our living from other work, never from this app. There are no ads from others, no subscriptions and nothing to buy. The only thing you'll see is a small card for our own services, and you can turn it off.": "(Nasar Pte Ltd), menanggung biayanya, dan kami mencari nafkah dari pekerjaan lain, bukan dari aplikasi ini. Tidak ada iklan dari pihak lain, tidak ada langganan dan tidak ada yang perlu dibeli. Satu-satunya yang akan Anda lihat adalah kartu kecil untuk layanan kami sendiri, dan Anda bisa mematikannya.",
+  "_label": "ID",
+  "_appnote": "Aplikasinya masih dalam bahasa Inggris untuk saat ini."
 }
