@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { announcementDate, basisLabel, defaultAuthority, expectedDate, upcomingEvents, type CalendarDataset } from '../src/core/calendarSanad'
-import { prayerName } from '../src/core/prayer'
+import { NAMING_STYLES, PRAYERS, hijriMonths, prayerName } from '../src/core/prayer'
 import { personalNaming } from '../src/core/regions'
 import { zonedTime } from '../src/core/tz'
 
@@ -14,6 +14,27 @@ describe('Prayer names', () => {
     expect(personalNaming(null, 'ms-MY')).toBe('malay')
     expect(personalNaming(null, 'en_PK')).toBe('southAsian')
     expect(personalNaming('AU', 'id-ID')).toBe('indonesian')
+  })
+
+  it("follow the phone's language first, in its own script", () => {
+    expect(personalNaming(null, 'ar-SA')).toBe('arabicScript')
+    expect(personalNaming('PK', 'ur-PK')).toBe('urdu')
+    expect(personalNaming('BD', 'bn-BD')).toBe('bengali')
+    expect(personalNaming('FR', 'fr-FR')).toBe('french')
+    expect(personalNaming('SG', 'tr-TR')).toBe('turkish')
+    // An English phone still gets the home country's words.
+    expect(personalNaming('PK', 'en-PK')).toBe('southAsian')
+  })
+
+  it('have every name in every language', () => {
+    for (const style of NAMING_STYLES) {
+      for (const p of PRAYERS) expect(prayerName(p, style).length).toBeGreaterThan(0)
+      expect(prayerName('dhuhr', style, true).length).toBeGreaterThan(0)
+      expect(hijriMonths(style)).toHaveLength(12)
+    }
+    expect(prayerName('dhuhr', 'arabicScript')).toBe('الظهر')
+    expect(prayerName('dhuhr', 'urdu', true)).toBe('جمعہ')
+    expect(prayerName('isha', 'bengali')).toBe('এশা')
   })
 
   it("follow each authority's spelling", () => {

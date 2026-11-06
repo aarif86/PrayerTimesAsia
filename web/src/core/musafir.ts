@@ -1,6 +1,6 @@
 import type { Coordinates } from './engine'
 import { distanceKm } from './geo'
-import { NAMES, type AsrSchool, type NamingStyle } from './prayer'
+import { NAMES, isRightToLeft, type AsrSchool, type NamingStyle } from './prayer'
 
 /**
  * Traveller's concessions (rukhsah): shortening (qasar) and combining (jamak).
@@ -28,7 +28,8 @@ export function musafirStatus(home: Coordinates | null | undefined, current: Coo
 }
 
 export function musafirGuidance(status: MusafirStatus, rules: MusafirRules, naming: NamingStyle): { title: string; body: string } {
-  const n = NAMES[naming]
+  // Right-to-left names would scramble an English sentence, so use International there.
+  const n = NAMES[isRightToLeft(naming) ? 'arabic' : naming]
   const four = `${n.dhuhr}, ${n.asr} and ${n.isha}`
   switch (status.kind) {
     case 'home':

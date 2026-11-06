@@ -535,6 +535,11 @@ class AppStore {
 }
 
 function navigatorLocale(): string {
+  // A language picked on our website (same address) comes first, then the browser's.
+  try {
+    const site = localStorage.getItem('pta-lang')
+    if (site && site !== 'en') return site
+  } catch { /* storage blocked */ }
   try { return navigator.language || 'en' } catch { return 'en' }
 }
 

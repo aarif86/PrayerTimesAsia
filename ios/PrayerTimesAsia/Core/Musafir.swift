@@ -39,7 +39,8 @@ enum Musafir {
     }
 
     static func guidance(for status: Status, rules: Rules, naming: NamingStyle) -> (title: String, body: String) {
-        let n = naming.names
+        // Right-to-left names would scramble an English sentence, so use International there.
+        let n = (naming.isRightToLeft ? NamingStyle.international : naming).names
         let four = "\(n[.dhuhr]!), \(n[.asr]!) and \(n[.isha]!)"
         switch status {
         case .home:

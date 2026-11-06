@@ -25,6 +25,24 @@ class NamingAndSanadTest {
         assertEquals(NamingStyle.INDONESIAN, NamingStyle.personal(null, "in", "ID"))
     }
 
+    @Test fun phoneLanguageComesFirstInItsOwnScript() {
+        assertEquals(NamingStyle.ARABIC_SCRIPT, NamingStyle.personal(null, Locale("ar", "SA")))
+        assertEquals(NamingStyle.URDU, NamingStyle.personal("PK", Locale("ur", "PK")))
+        assertEquals(NamingStyle.BENGALI, NamingStyle.personal("BD", Locale("bn", "BD")))
+        assertEquals(NamingStyle.FRENCH, NamingStyle.personal("FR", Locale("fr", "FR")))
+        assertEquals(NamingStyle.TURKISH, NamingStyle.personal("SG", Locale("tr", "TR")))
+        assertEquals(NamingStyle.SOUTH_ASIAN, NamingStyle.personal("PK", Locale("en", "PK")))
+    }
+
+    @Test fun everyLanguageHasEveryName() {
+        for (style in NamingStyle.entries) {
+            for (p in Prayer.all) assertTrue("$style $p", style.names[p]?.isNotEmpty() == true)
+            assertEquals(12, style.hijriMonths.size)
+        }
+        assertEquals("الظهر", Prayer.DHUHR.name(NamingStyle.ARABIC_SCRIPT))
+        assertEquals("جمعہ", Prayer.DHUHR.name(NamingStyle.URDU, isFriday = true))
+    }
+
     @Test fun authoritySpellings() {
         assertEquals("Zohor", Prayer.DHUHR.name(NamingStyle.MALAY))       // MUIS / JAKIM
         assertEquals("Dzuhur", Prayer.DHUHR.name(NamingStyle.INDONESIAN)) // Kemenag

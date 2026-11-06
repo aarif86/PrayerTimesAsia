@@ -18,6 +18,7 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 - [ ] *(Optional)* Move the repo into a Nasar Pte Ltd GitHub organisation.
 - [ ] **Worldwide times, check the country list** - [docs/worldwide-times.md](docs/worldwide-times.md) lists whose times the app follows in each country. Please read it (and ideally the falak committee too) and tell Claude anything to change.
 - [ ] **London Unified Prayer Timetable** - free sign-up for an API key at londonprayertimes.com/api, then give it to Claude so London shows the exact timetable most London masjids follow.
+- [ ] **Check prayer names in each language** - the apps now show prayer names in Arabic, Urdu, Bangla and French too (picked from the phone's language, changeable in Settings → Prayer names). Ask a native speaker of each to look at the names and Hijri months in `web/src/core/prayer.ts` and tell Claude any fixes.
 - [ ] **Diyanet timetable account** *(later)* - a free account at awqatsalah.diyanet.gov.tr lets the app download Diyanet's exact tables for Türkiye and Turkish masjids in Europe, like MUIS and JAKIM today.
 
 ## Waiting on Claude (do when asked)

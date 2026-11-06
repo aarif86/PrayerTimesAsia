@@ -1,5 +1,5 @@
 import { masjidQuery } from '../core/masjidLink'
-import type { NamingStyle, Prayer } from '../core/prayer'
+import { NAMING_STYLES, type NamingStyle, type Prayer } from '../core/prayer'
 
 /**
  * A masjid screen's settings. They travel in the link's #hash (never sent to a
@@ -116,7 +116,7 @@ export function iqamahText(rule: IqamahRule | undefined): string {
 const clamp = (n: unknown, lo: number, hi: number, fallback: number): number =>
   typeof n === 'number' && Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : fallback
 
-const NAMING: readonly NamingStyle[] = ['arabic', 'malay', 'indonesian', 'southAsian', 'turkish']
+const NAMING: readonly NamingStyle[] = NAMING_STYLES
 
 /** Accepts anything (an old or hand-edited link) and returns a safe config. */
 export function sanitize(raw: unknown): ScreenConfig {
