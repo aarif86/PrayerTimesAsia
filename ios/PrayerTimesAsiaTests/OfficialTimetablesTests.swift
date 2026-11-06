@@ -91,6 +91,18 @@ final class NearbySearchTests: XCTestCase {
         XCTAssertTrue(q.contains("around:12000,1.5022,103.7766"), q)
         XCTAssertTrue(q.hasSuffix("out center tags;"), q)
     }
+
+    /// Driving on the highway: a saved answer from a nearby search is reused,
+    /// one from far away is not.
+    func testSavedOpenStreetMapAnswerIsReusedNearby() {
+        let pagoh = Coordinates(latitude: 2.1640, longitude: 102.7480)
+        let data = Data(#"{"elements":[]}"#.utf8)
+        OverpassCache.save(data, center: pagoh)
+        let fewKmOn = Coordinates(latitude: 2.1900, longitude: 102.7300)
+        XCTAssertEqual(OverpassCache.load(near: fewKmOn, within: NearbySearch.osmRefreshKm)?.data, data)
+        let kualaLumpur = Coordinates(latitude: 3.1390, longitude: 101.6869)
+        XCTAssertNil(OverpassCache.load(near: kualaLumpur, within: NearbySearch.osmRefreshKm))
+    }
 }
 
 @MainActor

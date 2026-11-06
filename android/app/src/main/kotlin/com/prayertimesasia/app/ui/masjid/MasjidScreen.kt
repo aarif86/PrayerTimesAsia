@@ -68,8 +68,12 @@ import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerSpace
 import com.prayertimesasia.core.PrayerSpaces
 import com.prayertimesasia.core.fmt
+import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.max
@@ -83,6 +87,38 @@ private enum class Kind(val label: String) { ALL("All"), MASJID("Masjid"), MUSOL
 object NearbyCache {
     var around: Coordinates? = null
     var spaces: List<PrayerSpace> = emptyList()
+
+    /**
+     * The search reaches 12 km around, so while driving the list is kept and
+     * only measured again from where you are, until you are this far on.
+     */
+    const val REFRESH_KM = 6.0
+
+    /** Same places, distances from [here], nearest first, within 15 km. */
+    fun measuredFrom(here: Coordinates): List<PrayerSpace> = spaces
+        .map { it.copy(distanceKm = Geo.distanceKm(here, it.coordinates)) }
+        .filter { it.distanceKm <= 15.0 }
+        .sortedBy { it.distanceKm }
+}
+
+/**
+ * Asks every OpenStreetMap server at once and takes the first good answer, so
+ * one busy server can't hold up the list. Gives up after 12 seconds.
+ */
+private suspend fun searchOpenStreetMap(c: Coordinates): List<PrayerSpace>? {
+    val query = PrayerSpaces.overpassQuery(c)
+    val first = CompletableDeferred<List<PrayerSpace>?>()
+    val left = AtomicInteger(PrayerSpaces.OVERPASS_URLS.size)
+    // Not tied to the screen: a slow server finishes in the background instead
+    // of holding the list, and its late answer is simply ignored.
+    PrayerSpaces.OVERPASS_URLS.forEach { url ->
+        CoroutineScope(Dispatchers.IO).launch {
+            val found = runCatching { PrayerSpaces.parseOverpass(Http.postForm(url, mapOf("data" to query), timeoutMs = 12_000), c) }.getOrNull()
+            if (found != null) first.complete(found)
+            else if (left.decrementAndGet() == 0) first.complete(null)
+        }
+    }
+    return withTimeoutOrNull(12_000) { first.await() }
 }
 
 /**
@@ -93,7 +129,7 @@ object NearbyCache {
 @Composable
 fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpace>? = null) {
     val place = state.resolver.activePlace
-    var spaces by remember { mutableStateOf(preset ?: NearbyCache.spaces) }
+    var spaces by remember { mutableStateOf(preset ?: place?.let { NearbyCache.measuredFrom(it.coordinates) } ?: NearbyCache.spaces) }
     var loading by remember { mutableStateOf(false) }
     var failed by remember { mutableStateOf(false) }
     var kind by remember { mutableStateOf(Kind.ALL) }
@@ -102,20 +138,19 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
         val c = place?.coordinates ?: return@LaunchedEffect
         if (preset != null || !state.sideEffects) return@LaunchedEffect
         val last = NearbyCache.around
-        if (last != null && Geo.distanceKm(last, c) < 0.5 && NearbyCache.spaces.isNotEmpty()) return@LaunchedEffect
+        if (last != null && NearbyCache.spaces.isNotEmpty()) {
+            // Show distances from here straight away.
+            spaces = NearbyCache.measuredFrom(c)
+            if (Geo.distanceKm(last, c) < NearbyCache.REFRESH_KM) return@LaunchedEffect
+        }
         loading = true
         failed = false
-        val found = withContext(Dispatchers.IO) {
-            val query = PrayerSpaces.overpassQuery(c)
-            PrayerSpaces.OVERPASS_URLS.firstNotNullOfOrNull { url ->
-                runCatching { PrayerSpaces.parseOverpass(Http.postForm(url, mapOf("data" to query), timeoutMs = 20_000), c) }.getOrNull()
-            }
-        }
+        val found = searchOpenStreetMap(c)
         loading = false
-        if (found == null) failed = true else {
-            spaces = found
+        if (found == null) failed = spaces.isEmpty() else {
             NearbyCache.around = c
             NearbyCache.spaces = found
+            spaces = found
         }
     }
     val visible = when (kind) {

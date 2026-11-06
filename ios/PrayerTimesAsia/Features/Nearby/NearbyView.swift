@@ -15,7 +15,7 @@ struct PrayerSpace: Identifiable, Hashable {
     let name: String
     let address: String
     let coordinate: CLLocationCoordinate2D
-    let distanceKm: Double
+    var distanceKm: Double
     let isMusollah: Bool
     let item: MKMapItem
 
@@ -27,9 +27,12 @@ struct PrayerSpace: Identifiable, Hashable {
 @Observable
 final class NearbySearch {
     private(set) var spaces: [PrayerSpace] = []
-    private(set) var isLoading = false
     private(set) var searchedAround: Coordinates?
     private(set) var failed = false
+    /// Apple Maps is still looking (the list waits only for this).
+    private(set) var isLoading = false
+    /// OpenStreetMap is still answering; its places join the list when it does.
+    private(set) var isAddingMore = false
 
     private static let queries = ["masjid", "mosque", "musolla", "surau", "prayer room"]
     nonisolated private static let musollahWords = ["musolla", "musalla", "musholla", "surau", "prayer room", "prayer space", "mushola", "prayer hall"]
@@ -37,56 +40,137 @@ final class NearbySearch {
                                           "https://overpass.private.coffee/api/interpreter",
                                           "https://maps.mail.ru/osm/tools/overpass/api/interpreter"]
 
-    func search(around center: Coordinates) async {
-        if let last = searchedAround, Geo.distanceKm(last, center) < 0.5, !spaces.isEmpty { return }
-        isLoading = true
-        failed = false
-        defer { isLoading = false }
-        let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
-                                        latitudinalMeters: 10_000, longitudinalMeters: 10_000)
-        // OpenStreetMap runs alongside the Apple searches.
-        async let osm = Self.searchOpenStreetMap(around: center)
-        var found: [String: PrayerSpace] = [:]
-        var anySucceeded = false
-        await withTaskGroup(of: [MKMapItem].self) { group in
-            for q in Self.queries {
-                group.addTask {
-                    let request = MKLocalSearch.Request()
-                    request.naturalLanguageQuery = q
-                    request.region = region
-                    request.resultTypes = .pointOfInterest
-                    return (try? await MKLocalSearch(request: request).start().mapItems) ?? []
-                }
-            }
-            for await items in group {
-                if !items.isEmpty { anySucceeded = true }
-                for item in items {
-                    let c = item.placemark.coordinate
-                    let name = item.name ?? "Prayer space"
-                    let key = "\(name.lowercased())|\((c.latitude * 2000).rounded())|\((c.longitude * 2000).rounded())"
-                    let km = Geo.distanceKm(center, Coordinates(latitude: c.latitude, longitude: c.longitude))
-                    guard km <= 15, found[key] == nil, Self.looksLikePrayerSpace(name) else { continue }
-                    let lower = name.lowercased()
-                    found[key] = PrayerSpace(
-                        id: key, name: name,
-                        address: [item.placemark.thoroughfare, item.placemark.locality].compactMap { $0 }.joined(separator: ", "),
-                        coordinate: c, distanceKm: km,
-                        isMusollah: Self.musollahWords.contains { lower.contains($0) },
-                        item: item)
-                }
+    /// Both sources search well past where you are (Apple about 10 km across,
+    /// OpenStreetMap 12 km around), so while you drive the list is kept from
+    /// what is already found and only searched again once you are this far on.
+    nonisolated static let appleRefreshKm = 4.0
+    nonisolated static let osmRefreshKm = 6.0
+    /// Give up on OpenStreetMap after this long; Apple's places are already showing.
+    nonisolated static let osmDeadline: Duration = .seconds(12)
+
+    private var here: Coordinates?
+    private var apple: [PrayerSpace] = []
+    private var osm: [PrayerSpace] = []
+    private var appleCenter: Coordinates?
+    private var osmCenter: Coordinates?
+    private var appleOK = false
+    private var osmOK = false
+    private var lastOSMTry: Date?
+    // Owned here, not by the screen, so a GPS update while driving can't
+    // cancel a search halfway and start it again from nothing.
+    private var appleTask: Task<Void, Never>?
+    private var osmTask: Task<Void, Never>?
+
+    /// Call whenever the place changes. Distances update straight away from what
+    /// is already found; a new search only starts once you've moved far enough.
+    func search(around center: Coordinates) {
+        here = center
+        searchedAround = center
+        rebuild()
+
+        if appleTask == nil, appleCenter.map({ Geo.distanceKm($0, center) >= Self.appleRefreshKm }) ?? true {
+            searchApple(around: center)
+        }
+        if osmTask == nil, osmCenter.map({ Geo.distanceKm($0, center) >= Self.osmRefreshKm }) ?? true {
+            if let saved = OverpassCache.load(near: center, within: Self.osmRefreshKm),
+               let parsed = Self.parseOverpass(saved.data, center: saved.center) {
+                osm = parsed
+                osmCenter = saved.center
+                osmOK = true
+                rebuild()
+            } else if lastOSMTry.map({ Date().timeIntervalSince($0) > 60 }) ?? true {
+                searchOpenStreetMap(around: center)
             }
         }
-        let fromOSM = await osm
-        if fromOSM != nil { anySucceeded = true }
-        var merged = Array(found.values)
+    }
+
+    private func searchApple(around center: Coordinates) {
+        isLoading = true
+        let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: center.latitude, longitude: center.longitude),
+                                        latitudinalMeters: 10_000, longitudinalMeters: 10_000)
+        appleTask = Task { [weak self] in
+            var found: [String: PrayerSpace] = [:]
+            var anySucceeded = false
+            await withTaskGroup(of: [MKMapItem].self) { group in
+                for q in Self.queries {
+                    group.addTask {
+                        let request = MKLocalSearch.Request()
+                        request.naturalLanguageQuery = q
+                        request.region = region
+                        request.resultTypes = .pointOfInterest
+                        return (try? await MKLocalSearch(request: request).start().mapItems) ?? []
+                    }
+                }
+                for await items in group {
+                    if !items.isEmpty { anySucceeded = true }
+                    for item in items {
+                        let c = item.placemark.coordinate
+                        let name = item.name ?? "Prayer space"
+                        let key = "\(name.lowercased())|\((c.latitude * 2000).rounded())|\((c.longitude * 2000).rounded())"
+                        guard found[key] == nil, Self.looksLikePrayerSpace(name) else { continue }
+                        let lower = name.lowercased()
+                        found[key] = PrayerSpace(
+                            id: key, name: name,
+                            address: [item.placemark.thoroughfare, item.placemark.locality].compactMap { $0 }.joined(separator: ", "),
+                            coordinate: c, distanceKm: 0,
+                            isMusollah: Self.musollahWords.contains { lower.contains($0) },
+                            item: item)
+                    }
+                    // First search here: show each answer as it comes rather than
+                    // waiting for all five. Later ones (you've driven on) swap in
+                    // at the end, so the list doesn't shrink and grow on the way.
+                    guard let self, self.appleCenter == nil else { continue }
+                    self.apple = Array(found.values)
+                    self.rebuild()
+                }
+            }
+            guard let self else { return }
+            self.apple = Array(found.values)
+            self.appleOK = anySucceeded
+            if anySucceeded { self.appleCenter = center }
+            self.isLoading = false
+            self.appleTask = nil
+            self.rebuild()
+            // Moved on a lot while searching? Catch up.
+            if anySucceeded, let now = self.here { self.search(around: now) }
+        }
+    }
+
+    private func searchOpenStreetMap(around center: Coordinates) {
+        isAddingMore = true
+        lastOSMTry = Date()
+        osmTask = Task { [weak self] in
+            let data = await Self.fetchOverpass(around: center)
+            guard let self else { return }
+            if let data, let parsed = Self.parseOverpass(data, center: center) {
+                OverpassCache.save(data, center: center)
+                self.osm = parsed
+                self.osmCenter = center
+                self.osmOK = true
+            }
+            self.isAddingMore = false
+            self.osmTask = nil
+            self.rebuild()
+            if data != nil, let now = self.here { self.search(around: now) }
+        }
+    }
+
+    /// Merges both sources and measures from where you are now.
+    private func rebuild() {
+        guard let here else { return }
+        func measured(_ s: PrayerSpace) -> PrayerSpace? {
+            var s = s
+            s.distanceKm = Geo.distanceKm(here, Coordinates(latitude: s.coordinate.latitude, longitude: s.coordinate.longitude))
+            return s.distanceKm <= 15 ? s : nil
+        }
+        var merged = apple.compactMap(measured)
         // The same masjid is often in both; keep Apple's (better directions)
         // and add OpenStreetMap places that aren't already pinned close by.
-        for space in fromOSM ?? [] where !merged.contains(where: { Self.metres($0.coordinate, space.coordinate) < 80 }) {
+        for space in osm.compactMap(measured) where !merged.contains(where: { Self.metres($0.coordinate, space.coordinate) < 80 }) {
             merged.append(space)
         }
         spaces = merged.sorted { $0.distanceKm < $1.distanceKm }
-        searchedAround = center
-        failed = !anySucceeded && spaces.isEmpty
+        failed = spaces.isEmpty && !appleOK && !osmOK && !isLoading && !isAddingMore
     }
 
     private nonisolated static func metres(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> Double {
@@ -102,27 +186,42 @@ final class NearbySearch {
         return "[out:json][timeout:20];(nwr[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"](around:\(radius),\(at)););out center tags;"
     }
 
-    /// Asks every mirror at once and takes the first answer, so one busy server
-    /// can't hold up the list. Only the search area is sent. Nil when none answer.
-    nonisolated static func searchOpenStreetMap(around center: Coordinates) async -> [PrayerSpace]? {
+    /// Asks every mirror at once and takes the first good answer, so one busy
+    /// server can't hold up the list. Only the search area is sent. Nil when
+    /// none answer within [osmDeadline].
+    nonisolated static func fetchOverpass(around center: Coordinates) async -> Data? {
         let query = overpassQuery(around: center)
-        return await withTaskGroup(of: [PrayerSpace]?.self) { group in
+        enum Answer: Sendable { case mirror(Data?), timeUp }
+        return await withTaskGroup(of: Answer.self) { group in
             for base in Self.overpassMirrors {
                 group.addTask {
                     var parts = URLComponents(string: base)
                     parts?.queryItems = [URLQueryItem(name: "data", value: query)]
-                    guard let url = parts?.url else { return nil }
-                    var request = URLRequest(url: url, timeoutInterval: 20)
+                    guard let url = parts?.url else { return .mirror(nil) }
+                    var request = URLRequest(url: url, timeoutInterval: 15)
                     request.setValue("PrayerTimesAsia iOS", forHTTPHeaderField: "User-Agent")
                     guard let answer = try? await URLSession.shared.data(for: request),
-                          (answer.1 as? HTTPURLResponse)?.statusCode == 200 else { return nil }
-                    return Self.parseOverpass(answer.0, center: center)
+                          (answer.1 as? HTTPURLResponse)?.statusCode == 200,
+                          Self.parseOverpass(answer.0, center: center) != nil else { return .mirror(nil) }
+                    return .mirror(answer.0)
                 }
             }
-            for await result in group {
-                if let result {
+            group.addTask {
+                try? await Task.sleep(for: Self.osmDeadline)
+                return .timeUp
+            }
+            var mirrorsLeft = Self.overpassMirrors.count
+            for await answer in group {
+                switch answer {
+                case .mirror(let data?):
                     group.cancelAll()
-                    return result
+                    return data
+                case .mirror(nil):
+                    mirrorsLeft -= 1
+                    if mirrorsLeft == 0 { group.cancelAll(); return nil }
+                case .timeUp:
+                    group.cancelAll()
+                    return nil
                 }
             }
             return nil
@@ -251,6 +350,17 @@ struct NearbyView: View {
                 MyMasjidRow()
                     .padding(.bottom, 8)
 
+                if search.isAddingMore && !search.spaces.isEmpty {
+                    HStack(spacing: 6) {
+                        ProgressView().controlSize(.mini)
+                        Text("Looking for more surau and musollah…")
+                    }
+                    .font(.caption).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal).padding(.bottom, 6)
+                    .transition(.opacity)
+                }
+
                 list
             }
             .background(SkyNow())
@@ -266,7 +376,7 @@ struct NearbyView: View {
             .task(id: model.activePlace?.coordinates) {
                 guard let c = model.activePlace?.coordinates else { return }
                 showYou(animated: false)
-                await search.search(around: c)
+                search.search(around: c)
             }
             .onChange(of: selected) { _, space in
                 if let space {
@@ -293,7 +403,7 @@ struct NearbyView: View {
         if model.activePlace == nil {
             ContentUnavailableView("Choose a place", systemImage: "location.slash",
                                    description: Text("Allow location or pick a city on the Today tab."))
-        } else if search.isLoading && search.spaces.isEmpty {
+        } else if (search.isLoading || search.isAddingMore) && search.spaces.isEmpty {
             ProgressView("Searching nearby…").frame(maxHeight: .infinity)
         } else if visible.isEmpty {
             ContentUnavailableView(search.failed ? "Couldn't search" : "Nothing listed nearby",
@@ -340,6 +450,62 @@ struct NearbyView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+        }
+    }
+}
+
+/// OpenStreetMap answers kept on the phone for a week, so coming back to the
+/// same area (home, work, the usual highway stops) shows its masjids at once
+/// without asking the busy Overpass servers again. Only the search area and
+/// the public answer are kept, nothing about you.
+enum OverpassCache {
+    private struct Entry: Codable {
+        var latitude: Double
+        var longitude: Double
+        var savedAt: Date
+        var data: Data
+    }
+
+    static let maxAge: TimeInterval = 7 * 24 * 3600
+    private static let maxEntries = 40
+
+    private static var folder: URL? {
+        guard let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return nil }
+        let url = caches.appendingPathComponent("overpass", isDirectory: true)
+        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    private static func entries() -> [(url: URL, entry: Entry)] {
+        guard let folder,
+              let files = try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) else { return [] }
+        return files.compactMap { url in
+            guard let raw = try? Data(contentsOf: url),
+                  let entry = try? JSONDecoder().decode(Entry.self, from: raw) else { return nil }
+            return (url, entry)
+        }
+    }
+
+    /// The freshest saved answer searched within [km] of here, if any.
+    static func load(near here: Coordinates, within km: Double) -> (data: Data, center: Coordinates)? {
+        let now = Date()
+        let usable = entries().filter { now.timeIntervalSince($0.entry.savedAt) < maxAge }
+            .map { (entry: $0.entry, center: Coordinates(latitude: $0.entry.latitude, longitude: $0.entry.longitude)) }
+            .filter { Geo.distanceKm($0.center, here) < km }
+            .min { Geo.distanceKm($0.center, here) < Geo.distanceKm($1.center, here) }
+        return usable.map { ($0.entry.data, $0.center) }
+    }
+
+    static func save(_ data: Data, center: Coordinates) {
+        guard let folder else { return }
+        let name = String(format: "%.3f_%.3f.json", center.latitude, center.longitude)
+        let entry = Entry(latitude: center.latitude, longitude: center.longitude, savedAt: Date(), data: data)
+        guard let raw = try? JSONEncoder().encode(entry) else { return }
+        try? raw.write(to: folder.appendingPathComponent(name), options: .atomic)
+        // Keep the folder small: drop old answers and the oldest beyond the limit.
+        let all = entries().sorted { $0.entry.savedAt > $1.entry.savedAt }
+        for (i, item) in all.enumerated() where i >= maxEntries || Date().timeIntervalSince(item.entry.savedAt) > maxAge {
+            try? FileManager.default.removeItem(at: item.url)
         }
     }
 }
