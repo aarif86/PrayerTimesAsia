@@ -16,7 +16,7 @@ enum CalendarFile {
         }
         let esc: (String) -> String = {
             $0.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: ",", with: "\\,")
-                .replacingOccurrences(of: ";", with: "\;").replacingOccurrences(of: "\n", with: "\\n")
+                .replacingOccurrences(of: ";", with: "\\;").replacingOccurrences(of: "\n", with: "\\n")
         }
         let now = Date.now
         var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Prayer Times Asia//iOS//EN", "CALSCALE:GREGORIAN",
