@@ -321,3 +321,17 @@
 .move-qr { width: min(260px, 70vw); aspect-ratio: 1; border-radius: 12px; background: #fff; }
 .move-paste { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 12px; border: 0; background: var(--fill); font-size: 15px; resize: vertical; word-break: break-all; }
 .move-list { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 4px; }
+
+/* Journey: travel bag badge, each prayer on its own line, and the distance answer */
+.journey-badge { width: 30px; height: 30px; border-radius: 50%; background: var(--fg); color: var(--fg); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.journey-badge svg { filter: invert(1); }
+.musafir-plan { margin: 6px 0 4px; }
+.musafir-plan .row { padding: 8px 0; align-items: flex-start; border-top: 1px solid color-mix(in srgb, var(--fg) 12%, transparent); }
+.musafir-plan .row:first-child { border-top: 0; }
+.distance-check { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; padding: 12px; border-radius: 14px; font-weight: 600; font-size: 15px;
+  background: color-mix(in srgb, var(--fg) 6%, transparent); animation: distance-check-in .35s ease; }
+.distance-check svg { flex: none; margin-top: 1px; }
+.distance-check.yes svg { color: #2e9e5b; }
+.distance-check.no svg { color: #e08a1e; }
+@keyframes distance-check-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .distance-check { animation: none; } }

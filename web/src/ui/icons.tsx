@@ -42,8 +42,13 @@ export const TabMasjid = ({ size = 24, class: c, style }: P) => svg(size, c, sty
   <circle cx="12" cy="2.6" r="0.5" fill="currentColor" />,
 ])
 
+/** A rolling travel bag: any journey, by road or air, and never mistaken for Airplane Mode. */
 export const TabJourney = ({ size = 24, class: c, style }: P) => svg(size, c, style, [
-  <path d="M12 2.4c.9 0 1.5 1 1.5 2.1v5.2l7.2 4.1v2l-7.2-2.1v4.1l2.1 1.6v1.6L12 20l-3.6 1v-1.6l2.1-1.6v-4.1l-7.2 2.1v-2l7.2-4.1V4.5c0-1.1.6-2.1 1.5-2.1z" />,
+  <rect x="5.8" y="7" width="12.4" height="12.2" rx="2.2" />,
+  <path d="M9.6 7V3.4h4.8V7" />,
+  <path d="M9.6 10v6.2M14.4 10v6.2" />,
+  <circle cx="8.9" cy="21" r="1" fill="currentColor" stroke="none" />,
+  <circle cx="15.1" cy="21" r="1" fill="currentColor" stroke="none" />,
 ])
 
 /** Filled gear for the Settings tab, like SF Symbols' gearshape.fill. */

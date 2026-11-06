@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.BrightnessMedium
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LightMode
@@ -68,6 +67,7 @@ import com.prayertimesasia.app.ui.components.CircleIconButton
 import com.prayertimesasia.app.ui.components.GlassCard
 import com.prayertimesasia.app.ui.components.outlinedCapsule
 import com.prayertimesasia.app.ui.components.quietClick
+import com.prayertimesasia.app.ui.theme.AppIcons
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.display
@@ -159,7 +159,7 @@ fun StreakChip(state: AppState, background: Color = Palette.primary.copy(alpha =
 
 @Composable
 fun MusafirButton(state: AppState, background: Color = Palette.accent.copy(alpha = 0.25f)) {
-    CircleIconButton(Icons.Filled.Flight, "Musafir: you may shorten and combine prayers", background = background) {
+    CircleIconButton(AppIcons.journey, "Musafir: you may shorten and combine prayers", background = background) {
         state.showJourney = true
     }
 }
@@ -328,7 +328,7 @@ fun MusafirChip(state: AppState) {
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Icon(Icons.Filled.Flight, null, Modifier.size(18.dp), tint = Palette.primary)
+        Icon(AppIcons.journey, null, Modifier.size(18.dp), tint = Palette.primary)
         Text("Musafir · you may shorten & combine", style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f), maxLines = 1)
         Icon(Icons.Filled.ChevronRight, null, Modifier.size(16.dp), tint = Palette.primary)
     }

@@ -122,6 +122,27 @@ class PrayerEngineTest {
         assertNull(Musafir.status(null, hanoi, 0, rules))
     }
 
+    @Test fun musafirDistanceChoiceChangesTheAnswer() {
+        val about85km = Coordinates(singapore.latitude + 0.7645, singapore.longitude)
+        val r81 = Musafir.Rules(AsrSchool.STANDARD, 81.0)
+        val r89 = Musafir.Rules(AsrSchool.STANDARD, 89.0)
+        val at81 = Musafir.status(singapore, about85km, 0, r81)!!
+        val at89 = Musafir.status(singapore, about85km, 0, r89)!!
+        assertTrue(at81.isTraveller)
+        assertTrue(at89 is Musafir.Status.Nearby)
+        assertTrue(Musafir.distanceCheck(at81, r81)!!.second.contains("more than 81 km"))
+        assertTrue(Musafir.distanceCheck(at89, r89)!!.second.contains("less than 89 km"))
+    }
+
+    @Test fun musafirPlanKeepsMaghribAtThree() {
+        val plan = Musafir.plan(Musafir.Rules(AsrSchool.STANDARD, 81.0), NamingStyle.MALAY)
+        assertEquals(listOf("2 rakaat", "2 rakaat", "2 rakaat", "3 rakaat", "2 rakaat"), plan.map { it.rakaat })
+        val maghrib = plan.first { it.prayer == Prayer.MAGHRIB }
+        assertEquals("No change", maghrib.change)
+        assertEquals("Can join with Isyak", maghrib.join)
+        assertEquals("Never joined", plan.first { it.prayer == Prayer.FAJR }.join)
+    }
+
     @Test fun hijriMonthNames() {
         // prayertime.sg: 21 Oct 2026 = 10 Jamadilawal 1448.
         val date = ZonedDateTime.of(2026, 10, 21, 12, 0, 0, 0, sgt).toInstant()
