@@ -133,6 +133,7 @@ fun TodayScreen(state: AppState, openPlaces: () -> Unit, openCalendar: () -> Uni
             TodayStyle.DIAL -> DialPage(f, setOffset, openPlaces, openCalendar, openSanad)
             TodayStyle.SUN_PATH -> SunPathPage(f, setOffset, openPlaces, openCalendar, openSanad)
             TodayStyle.BANDS -> BandsPage(f, setOffset, openPlaces, openCalendar, openSanad)
+            TodayStyle.SIMPLE -> SimplePage(state, day, f.current, f.next, openPlaces)
         }
         StyleToast(state)
     }
@@ -178,6 +179,7 @@ fun Modifier.daySwipe(offset: Int, onOffset: (Int) -> Unit): Modifier = pointerI
 @Composable
 private fun ColumnScope.Prompts(f: TodayFrame) {
     val p = f.state.prefs
+    if (f.isToday) TimeLeftBar(f.state)
     if (!p.notificationsEnabled && !p.alertsPromptDismissed) AlertsPrompt(f.state)
     if (!p.arrivalBannerDismissed) ArrivalCard(f.state)
 }

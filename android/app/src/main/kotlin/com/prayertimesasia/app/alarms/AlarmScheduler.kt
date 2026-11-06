@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.PrayerWindow
 import com.prayertimesasia.core.Resolver
 import com.prayertimesasia.core.SahurDay
 import com.prayertimesasia.core.WakeUpTiming
@@ -18,7 +19,7 @@ import java.time.Instant
  * phone restarts or the time zone changes. Nothing comes from a server.
  */
 object AlarmScheduler {
-    enum class Kind { PRAYER, EARLY, WAKE, REFRESH }
+    enum class Kind { PRAYER, EARLY, WAKE, REFRESH, NUDGE, JUMUAH }
 
     const val DEFAULT_REMINDER_MINUTES = 15
     val REMINDER_CHOICES = listOf(5, 10, 15, 20, 30, 45, 60)
@@ -26,8 +27,13 @@ object AlarmScheduler {
     /** Which sound a prayer time alert plays; the azan only when the recordings are in the app (see Azan). */
     enum class Sound { STANDARD, AZAN, AZAN_SUBUH }
 
+    /**
+     * [silent]: buzz only (quiet hours or "Buzz only"). [unlessPrayed]: a nudge that
+     * is dropped when it rings if that prayer has been ticked (or the day excused) by then.
+     */
     data class Alert(val id: String, val title: String, val body: String, val at: Instant, val kind: Kind,
-                     val sound: Sound = Sound.STANDARD)
+                     val sound: Sound = Sound.STANDARD, val silent: Boolean = false,
+                     val unlessPrayed: Pair<Prayer, Instant>? = null)
 
     /** What should ring in the next two days, soonest first. Pure, so it can be tested. */
     fun plan(r: Resolver, now: Instant): List<Alert> {
@@ -35,9 +41,35 @@ object AlarmScheduler {
         val p = r.prefs
         val here = if (place.isInAsia) "${place.name} ${place.profile.flag}" else place.name
         val out = mutableListOf<Alert>()
-        for (offset in 0..2) {
+        val nudges = p.trackerEnabled && p.windowNudge && p.trackerPausedSince == null
+        for (offset in -1..2) {
             val day = r.day(now, offset) ?: continue
             val key = "${day.year}-${day.month}-${day.day}"
+            if (nudges) {
+                r.day(now, offset + 1)?.let { next ->
+                    for (w in PrayerWindow.windowsOf(day, next)) {
+                        // Isyak is open until Subuh: a nudge then would only disturb sleep.
+                        if (w.prayer == Prayer.ISHA || w.prayer !in p.notifyPrayers) continue
+                        if (r.isPrayed(w.prayer, w.start) || r.isExcused(w.start)) continue
+                        val at = w.nudgeAt
+                        val name = r.prayerName(w.prayer, w.start)
+                        val left = (w.end.epochSecond - at.epochSecond) / 60
+                        out += Alert("$key-${w.prayer.raw}-nudge", "$name time ends in $left min",
+                            "$name is open until ${r.formatted(w.end)}. Tick it in the app once you have prayed.", at, Kind.NUDGE,
+                            silent = r.isSilent(at, w.prayer), unlessPrayed = w.prayer to w.start)
+                    }
+                }
+            }
+            if (offset < 0) continue
+            val jumuah = p.jumuahReminderMinutes
+            if (jumuah > 0 && r.isFriday(day.time(Prayer.DHUHR))) {
+                val start = day.jamaah[Prayer.DHUHR] ?: day.time(Prayer.DHUHR)
+                val at = start.minusSeconds(jumuah * 60L)
+                val name = Prayer.DHUHR.name(r.naming, true)
+                val where = if (day.jamaah[Prayer.DHUHR] != null) day.mosqueName?.let { " at $it" } ?: "" else ""
+                out += Alert("$key-jumuah", "$name in $jumuah min", "Time to get ready and leave for $name$where, ${r.formatted(start)}.",
+                    at, Kind.JUMUAH, silent = r.isSilent(at, Prayer.DHUHR))
+            }
             val early = p.reminderMinutesBefore
             if (p.notificationsEnabled || early > 0) {
                 for (prayer in Prayer.all.filter { it in p.notifyPrayers }) {
@@ -48,11 +80,13 @@ object AlarmScheduler {
                         // The heads-up before the prayer, on its own switch: for when a
                         // meeting or work would otherwise run past the time.
                         val title = if (prayer == Prayer.SUNRISE) "${Prayer.FAJR.name(r.naming)} ends in $early min" else "$name in $early min"
-                        out += Alert("$id-early", title, "$name at ${r.formatted(time)} · $here", time.minusSeconds(early * 60L), Kind.EARLY)
+                        val at = time.minusSeconds(early * 60L)
+                        out += Alert("$id-early", title, "$name at ${r.formatted(time)} · $here", at, Kind.EARLY, silent = r.isSilent(at, prayer))
                     }
                     if (!p.notificationsEnabled) continue
                     if (prayer == Prayer.SUNRISE) {
-                        out += Alert(id, "$name · ${r.formatted(time)}", "${Prayer.FAJR.name(r.naming)} has ended. $here", time, Kind.PRAYER)
+                        out += Alert(id, "$name · ${r.formatted(time)}", "${Prayer.FAJR.name(r.naming)} has ended. $here", time, Kind.PRAYER,
+                            silent = r.isSilent(time, prayer))
                         continue
                     }
                     val sound = when {
@@ -60,7 +94,8 @@ object AlarmScheduler {
                         prayer == Prayer.FAJR -> Sound.AZAN_SUBUH
                         else -> Sound.AZAN
                     }
-                    out += Alert(id, "$name · ${r.formatted(time)}", "It's time for $name in $here", time, Kind.PRAYER, sound)
+                    out += Alert(id, "$name · ${r.formatted(time)}", "It's time for $name in $here", time, Kind.PRAYER, sound,
+                        silent = r.isSilent(time, prayer))
                 }
             }
             out += wakeUps(r, day, key, place.name)
@@ -141,7 +176,8 @@ object AlarmScheduler {
         val intent = Intent(context, AlarmReceiver::class.java).setAction("com.prayertimesasia.app.ALERT")
         if (alert != null) {
             intent.putExtra("id", alert.id).putExtra("title", alert.title).putExtra("body", alert.body).putExtra("kind", alert.kind.name)
-                .putExtra("sound", alert.sound.name)
+                .putExtra("sound", alert.sound.name).putExtra("silent", alert.silent)
+            alert.unlessPrayed?.let { (prayer, start) -> intent.putExtra("unlessPrayed", prayer.raw).putExtra("unlessPrayedAt", start.toEpochMilli()) }
         }
         val flags = PendingIntent.FLAG_IMMUTABLE or (if (alert == null) PendingIntent.FLAG_NO_CREATE else PendingIntent.FLAG_UPDATE_CURRENT)
         return PendingIntent.getBroadcast(context, code, intent, flags)

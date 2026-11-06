@@ -57,6 +57,13 @@ export interface MovedSettings {
   prayedLog?: Record<string, Prayer[]>
   excusedDays?: string[]
   trackerPausedSince?: string | null
+  windowNudge?: boolean
+  quietHours?: boolean
+  quietFrom?: number
+  quietTo?: number
+  buzzOnly?: boolean
+  largeText?: boolean
+  jumuahReminderMinutes?: number
   /** The Subuh wake-up alarm and the earlier sahur alarm. */
   wakeUp?: string
   sahurAlarm?: string
@@ -68,6 +75,7 @@ const SIMPLE_KEYS = [
   'useGPS', 'methodOverrideID', 'asrOverride', 'namingOverride', 'use24Hour', 'hijriAdjustment', 'reminderMinutesBefore',
   'musafirEnabled', 'musafirThresholdKm', 'jakimZoneOverride', 'communityAuthority', 'appearance', 'todayStyle',
   'showOffers', 'showLocalNames', 'trackerEnabled', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
+  'windowNudge', 'quietHours', 'quietFrom', 'quietTo', 'buzzOnly', 'largeText', 'jumuahReminderMinutes',
 ] as const satisfies readonly (keyof Preferences & keyof MovedSettings)[]
 
 function movedPlace(p: Place): MovedPlace {
@@ -201,8 +209,9 @@ export function describeMoved(m: MovedSettings): string[] {
   if (m.trackerEnabled || days) lines.push(`Prayer tracker${days ? `, ${days} day${days === 1 ? '' : 's'} of history` : ''}`)
   if (m.methodOverrideID || m.asrOverride || m.jakimZoneOverride) lines.push('Your calculation choices')
   if (m.appearance || m.todayStyle || m.use24Hour || m.namingOverride) lines.push('Your look and prayer names')
-  if (m.notifyPrayers || m.reminderMinutesBefore) lines.push('Which prayers to alert')
+  if (m.notifyPrayers || m.reminderMinutesBefore || m.quietHours || m.buzzOnly || m.jumuahReminderMinutes) lines.push('Which prayers to alert, and how')
   if (m.wakeUp || m.sahurAlarm) lines.push('Your wake-up alarms')
+  if (m.largeText) lines.push('Bigger text')
   if (m.musafirEnabled) lines.push('Musafir features')
   return lines.length ? lines : ['The standard settings']
 }

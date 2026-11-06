@@ -44,7 +44,18 @@ struct TodayView: View {
             LivingSkyBackground(colors: sky)
             // Fill the screen when it all fits: the list stretches into the free
             // height so it breathes. Otherwise (small phones, Show more open) scroll.
-            if model.prefs.todayStyle == .sunPath {
+            if model.prefs.todayStyle == .simple {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        topBar(now)
+                        if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+                        SimpleTimes(now: now, day: day, current: current, next: next)
+                    }
+                    .padding(.horizontal, Theme.gutter)
+                    .padding(.bottom, 32)
+                }
+                .scrollIndicators(.hidden)
+            } else if model.prefs.todayStyle == .sunPath {
                 sunPathPage(now: now, day: day, shown: shown, current: current, next: next)
             } else if model.prefs.todayStyle == .bands {
                 ViewThatFits(in: .vertical) {
@@ -112,6 +123,7 @@ struct TodayView: View {
                       current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
         VStack(alignment: .leading, spacing: fill ? 12 : 12) {
             header(now: now, day: day, shown: shown, current: current, next: next)
+            TimeLeftBar(now: now)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             PrayerList(day: shown, now: now,
@@ -227,6 +239,7 @@ struct TodayView: View {
                       current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
         VStack(spacing: fill ? 14 : 12) {
             topBar(now)
+            TimeLeftBar(now: now)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             dateHeader(shown)
@@ -540,6 +553,7 @@ struct TodayView: View {
             // Room for the now-dot, which sits on the ring's edge.
             .padding(.bottom, 10)
             sunPlaceChip()
+            TimeLeftBar(now: now)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
@@ -583,6 +597,7 @@ struct TodayView: View {
                         .padding(.horizontal, -Theme.gutter)
                 }
                 sunPlaceChip()
+                TimeLeftBar(now: now)
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
                 if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }

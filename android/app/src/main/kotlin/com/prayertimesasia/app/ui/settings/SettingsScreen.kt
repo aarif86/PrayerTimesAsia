@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -84,6 +85,8 @@ import com.prayertimesasia.core.JakimZones
 import com.prayertimesasia.core.NamingStyle
 import com.prayertimesasia.core.Official
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.PrayerWindow
+import com.prayertimesasia.app.CalendarFile
 import com.prayertimesasia.core.TodayStyle
 import java.time.LocalDate
 
@@ -156,6 +159,12 @@ fun SettingsScreen(
                     source?.calendarFeed?.let { feed ->
                         LinkRow("Subscribe in a calendar app", Icons.Filled.Event) { openFeed(context, feed) }
                     }
+                    LinkRow("Add the next 30 days to a calendar", Icons.Filled.Event) {
+                        CalendarFile.share(context, state, Prayer.obligatory)
+                    }
+                    LinkRow("Only ${Prayer.DHUHR.name(r.naming)} and ${Prayer.ASR.name(r.naming)}, for a work calendar", Icons.Filled.Work) {
+                        CalendarFile.share(context, state, listOf(Prayer.DHUHR, Prayer.ASR))
+                    }
                 }
             }
             item {
@@ -167,8 +176,12 @@ fun SettingsScreen(
                 }
             }
             item {
-                Section("Tracker", "Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone.") {
+                val nudgeNote = if (p.trackerEnabled) " Nudge before time runs out sends one gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for ${Prayer.ISHA.name(r.naming)}, which stays open until ${Prayer.FAJR.name(r.naming)}. Never while paused." else ""
+                Section("Tracker", "Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone.$nudgeNote") {
                     SwitchRow("Prayer tracker", p.trackerEnabled) { on -> state.update { it.copy(trackerEnabled = on) } }
+                    if (p.trackerEnabled) {
+                        SwitchRow("Nudge before time runs out", p.windowNudge) { on -> state.update { it.copy(windowNudge = on) } }
+                    }
                 }
             }
             item {
@@ -184,6 +197,7 @@ fun SettingsScreen(
                     PickerRow("Prayer screen", p.todayStyle.label, TodayStyle.entries.map { it.label to it }, p.todayStyle) { s ->
                         state.update { it.copy(todayStyle = s) }
                     }
+                    SwitchRow("Bigger text", p.largeText) { on -> state.update { it.copy(largeText = on) } }
                     SwitchRow("24-hour time", p.use24Hour) { on -> state.update { it.copy(use24Hour = on) } }
                     StepperRow("Hijri date adjustment", if (p.hijriAdjustment == 0) "None" else String.format(java.util.Locale.ROOT, "%+d day", p.hijriAdjustment),
                         canDown = p.hijriAdjustment > -2, canUp = p.hijriAdjustment < 2,
@@ -216,6 +230,31 @@ fun SettingsScreen(
                             }
                         }
                         ExactAlarmRow(context)
+                    }
+                }
+            }
+            item {
+                Section("Quiet alerts", "For shift workers sleeping in the day, a baby asleep in the room, or simply a calm night. Alerts still come, but they only buzz. ${Prayer.FAJR.name(r.naming)} keeps its sound so it can wake you.") {
+                    SwitchRow("Buzz only, no sound", p.buzzOnly) { on -> state.update { it.copy(buzzOnly = on) } }
+                    SwitchRow("Quiet hours", p.quietHours) { on -> state.update { it.copy(quietHours = on) } }
+                    if (p.quietHours) {
+                        val halfHours = (0 until 1440 step 30).toList()
+                        PickerRow("From", r.clock(p.quietFrom), halfHours.map { r.clock(it) to it }, p.quietFrom) { m ->
+                            state.update { it.copy(quietFrom = m) }
+                        }
+                        PickerRow("Until", r.clock(p.quietTo), halfHours.map { r.clock(it) to it }, p.quietTo) { m ->
+                            state.update { it.copy(quietTo = m) }
+                        }
+                    }
+                }
+            }
+            item {
+                val friday = Prayer.DHUHR.name(r.naming, true)
+                val zohor = Prayer.DHUHR.name(r.naming)
+                Section(friday, "A reminder on Fridays to get ready and leave in time. It uses your masjid's own $friday time when you have set one in the Masjid tab, otherwise the start of $zohor. $friday is not required of women, travellers or the sick, who pray $zohor instead.") {
+                    PickerRow("Remind me to leave", if (p.jumuahReminderMinutes == 0) "Off" else "${p.jumuahReminderMinutes} min before",
+                        PrayerWindow.JUMUAH_REMINDER_CHOICES.map { (if (it == 0) "Off" else "$it min before") to it }, p.jumuahReminderMinutes) { m ->
+                        if (m > 0) state.enableJumuahReminder(m) else state.update { it.copy(jumuahReminderMinutes = 0) }
                     }
                 }
             }
