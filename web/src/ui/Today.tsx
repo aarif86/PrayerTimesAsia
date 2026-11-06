@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
   Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
-  CloudMoon, Contrast, Droplet, Flame, Pause, MapPin, MoonStar, Navigation, Palette, Plane, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
+  CloudMoon, Contrast, Droplet, Flame, Pause, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
@@ -18,6 +18,7 @@ import { fmtDate, openSheet, short, SourceBadge, Switch, TimeText } from './comm
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { featuredOffer, MakersCard } from './Makers'
 import { appBannerShownByBrowser, phoneAppOffer } from './pwa'
+import { TabJourney } from './icons'
 
 type Moment = { prayer: Prayer; time: number } | null
 
@@ -162,12 +163,12 @@ function StreakChip({ now }: { now: number }) {
   )
 }
 
-function PlaneButton({ now }: { now: number }) {
+function JourneyButton({ now }: { now: number }) {
   if (!store.prefs.musafirEnabled || store.musafirStatus(now)?.kind !== 'traveller') return null
   return (
     <button class="round-btn" style={{ background: 'color-mix(in srgb, var(--accent) 25%, transparent)' }}
       aria-label="Musafir: you may shorten and combine prayers" onClick={() => openSheet({ kind: 'journey' })}>
-      <Plane size={17} fill="currentColor" />
+      <TabJourney size={18} />
     </button>
   )
 }
@@ -184,7 +185,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
   }
   return (
     <>
-      <PlaneButton now={c.now} />
+      <JourneyButton now={c.now} />
       {store.prefs.trackerEnabled && <StreakChip now={c.now} />}
       <AppearanceButton c={c} />
       <StyleButton c={c} />
@@ -490,7 +491,7 @@ function MusafirChip({ now }: { now: number }) {
   if (!store.prefs.musafirEnabled || store.musafirStatus(now)?.kind !== 'traveller') return null
   return (
     <button class="musafir-chip" onClick={() => openSheet({ kind: 'journey' })}>
-      <Plane size={16} fill="currentColor" /><span style={{ flex: 1, textAlign: 'left' }}>Musafir · you may shorten &amp; combine</span><ChevronRight size={14} strokeWidth={3} />
+      <TabJourney size={17} /><span style={{ flex: 1, textAlign: 'left' }}>Musafir · you may shorten &amp; combine</span><ChevronRight size={14} strokeWidth={3} />
     </button>
   )
 }

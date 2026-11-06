@@ -142,6 +142,27 @@ final class PrayerEngineTests: XCTestCase {
         XCTAssertNil(Musafir.status(home: nil, current: hanoi, daysHere: 0, rules: rules))
     }
 
+    func testMusafirDistanceChoiceChangesTheAnswer() {
+        let about85km = Coordinates(latitude: singapore.latitude + 0.7645, longitude: singapore.longitude)
+        let r81 = Musafir.Rules(school: .standard, thresholdKm: 81)
+        let r89 = Musafir.Rules(school: .standard, thresholdKm: 89)
+        let at81 = Musafir.status(home: singapore, current: about85km, daysHere: 0, rules: r81)!
+        let at89 = Musafir.status(home: singapore, current: about85km, daysHere: 0, rules: r89)!
+        XCTAssertTrue(at81.isTraveller)
+        if case .nearby = at89 {} else { XCTFail("85 km is short of 89 km") }
+        XCTAssertTrue(Musafir.distanceCheck(for: at81, rules: r81)!.text.contains("more than 81 km"))
+        XCTAssertTrue(Musafir.distanceCheck(for: at89, rules: r89)!.text.contains("less than 89 km"))
+    }
+
+    func testMusafirPlanKeepsMaghribAtThree() {
+        let plan = Musafir.plan(rules: Musafir.Rules(school: .standard, thresholdKm: 81), naming: .malay)
+        XCTAssertEqual(plan.map(\.rakaat), ["2 rakaat", "2 rakaat", "2 rakaat", "3 rakaat", "2 rakaat"])
+        let maghrib = plan.first { $0.prayer == .maghrib }!
+        XCTAssertEqual(maghrib.change, "No change")
+        XCTAssertEqual(maghrib.join, "Can join with Isyak")
+        XCTAssertEqual(plan.first { $0.prayer == .fajr }!.join, "Never joined")
+    }
+
     func testHijriMonthNames() {
         // prayertime.sg: 21 Oct 2026 = 10 Jamadilawal 1448.
         var cal = Calendar(identifier: .gregorian)
