@@ -171,6 +171,7 @@ fun HeaderButtons(state: AppState, showMusafir: Boolean = true, background: Colo
         if (showMusafir && state.prefs.musafirEnabled && state.resolver.musafirStatus(state.now)?.isTraveller == true) {
             MusafirButton(state, if (background == Palette.primary.copy(alpha = 0.1f)) Palette.accent.copy(alpha = 0.25f) else background)
         }
+        WakeChip(state, background)
         if (state.prefs.trackerEnabled) StreakChip(state, background)
         AppearanceButton(state, background)
         StyleButton(state, background)

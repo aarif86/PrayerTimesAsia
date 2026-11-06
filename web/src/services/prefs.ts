@@ -1,6 +1,7 @@
 import type { MasjidLink } from '../core/masjidLink'
 import type { Place } from '../core/place'
 import { NAMING_STYLES, OBLIGATORY, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
+import { DEFAULT_SAHUR_DAYS, SAHUR_DAYS, SAHUR_TIMINGS, WAKE_UP_TIMINGS, type SahurDay, type SahurTiming, type WakeUpTiming } from '../core/wakeup'
 
 export type Appearance = 'system' | 'light' | 'dark'
 export const APPEARANCES: Appearance[] = ['system', 'light', 'dark']
@@ -49,6 +50,11 @@ export interface Preferences {
   excusedDays: string[]
   /** "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from then until it is ended counts as excused. */
   trackerPausedSince: string | null
+  /** The Subuh alarm; null = off. On the web it rings only while the app is open (or through the calendar file). */
+  wakeUp: WakeUpTiming | null
+  /** The earlier sahur alarm; null = off. Rings only on `sahurDays`. */
+  sahurAlarm: SahurTiming | null
+  sahurDays: SahurDay[]
   communityAuthority: string | null
   appearance: Appearance
   todayStyle: TodayStyle
@@ -88,6 +94,9 @@ export const DEFAULT_PREFS: Preferences = {
   prayedLog: {},
   excusedDays: [],
   trackerPausedSince: null,
+  wakeUp: null,
+  sahurAlarm: null,
+  sahurDays: [...DEFAULT_SAHUR_DAYS],
   communityAuthority: null,
   appearance: 'system',
   todayStyle: 'centre',
@@ -102,7 +111,7 @@ export const DEFAULT_PREFS: Preferences = {
 
 const NULLABLE = new Set<keyof Preferences>([
   'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'jakimZoneOverride',
-  'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince',
+  'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
 ])
 
 const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
@@ -110,6 +119,8 @@ const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,
+  wakeUp: WAKE_UP_TIMINGS,
+  sahurAlarm: SAHUR_TIMINGS,
 }
 
 /**
@@ -140,6 +151,7 @@ export function decodePreferences(raw: unknown): Preferences {
     if (Array.isArray(d)) {
       if (!Array.isArray(v)) continue
       if (key === 'savedPlaces') (out as unknown as Record<string, unknown>)[key] = v.filter(isPlace)
+      else if (key === 'sahurDays') (out as unknown as Record<string, unknown>)[key] = SAHUR_DAYS.filter((d) => v.includes(d))
       else (out as unknown as Record<string, unknown>)[key] = v
       continue
     }

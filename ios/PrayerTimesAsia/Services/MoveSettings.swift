@@ -48,6 +48,8 @@ struct MovedSettings: Codable, Equatable {
     var excusedDays: [String]?
     var trackerPausedSince: String?
     var wakeUp: WakeUpTiming?
+    var sahurAlarm: SahurTiming?
+    var sahurDays: [SahurDay]?
 
     static let version = 1
     static let prefix = "PTA1."
@@ -90,6 +92,8 @@ struct MovedSettings: Codable, Equatable {
         excusedDays = field(.excusedDays)
         trackerPausedSince = field(.trackerPausedSince)
         wakeUp = field(.wakeUp)
+        sahurAlarm = field(.sahurAlarm)
+        sahurDays = (try? c.decodeIfPresent([Lenient<SahurDay>].self, forKey: .sahurDays))?.map { $0.compactMap { $0.value } }
     }
 
     private struct Lenient<T: Decodable>: Decodable {
@@ -141,6 +145,8 @@ extension MovedSettings {
         excusedDays = p.excusedDays.isEmpty ? nil : p.excusedDays.sorted()
         trackerPausedSince = p.trackerPausedSince
         wakeUp = p.wakeUp
+        sahurAlarm = p.sahurAlarm
+        sahurDays = p.sahurDays == d.sahurDays ? nil : SahurDay.allCases.filter { p.sahurDays.contains($0) }
     }
 
     /// These preferences with the moved settings in place. Every moved setting
@@ -176,6 +182,8 @@ extension MovedSettings {
         out.excusedDays.formUnion(excusedDays ?? [])
         out.trackerPausedSince = trackerPausedSince.flatMap { $0.wholeMatch(of: #/\d{4}-\d{2}-\d{2}/#) != nil ? $0 : nil }
         out.wakeUp = wakeUp
+        out.sahurAlarm = sahurAlarm
+        out.sahurDays = sahurDays.map(Set.init) ?? d.sahurDays
         return out
     }
 
@@ -233,7 +241,7 @@ extension MovedSettings {
         if methodOverrideID != nil || asrOverride != nil || jakimZoneOverride != nil { lines.append("Your calculation choices") }
         if appearance != nil || todayStyle != nil || use24Hour != nil || namingOverride != nil { lines.append("Your look and prayer names") }
         if notifyPrayers != nil || reminderMinutesBefore != nil { lines.append("Which prayers to alert") }
-        if wakeUp != nil { lines.append("Your wake-up alarm") }
+        if wakeUp != nil || sahurAlarm != nil { lines.append("Your wake-up alarms") }
         if musafirEnabled == true { lines.append("Musafir features") }
         return lines.isEmpty ? ["The standard settings"] : lines
     }

@@ -35,14 +35,16 @@ struct TripStop: Codable, Hashable, Identifiable, Sendable {
 }
 
 /// When the Subuh wake-up alarm rings, relative to Subuh or Syuruk.
+/// Declared in the order of the night, so the list reads earliest first.
 enum WakeUpTiming: String, Codable, CaseIterable, Identifiable, Sendable {
-    case atFajr, fajrPlus15, sunriseMinus30, sunriseMinus15
+    case fajrMinus30, atFajr, fajrPlus15, sunriseMinus30, sunriseMinus15
 
     var id: String { rawValue }
 
     func label(_ naming: NamingStyle) -> String {
         let fajr = Prayer.fajr.name(naming), sunrise = Prayer.sunrise.name(naming)
         switch self {
+        case .fajrMinus30: return "30 min before \(fajr) for tahajjud"
         case .atFajr: return "At \(fajr)"
         case .fajrPlus15: return "15 min after \(fajr) begins"
         case .sunriseMinus30: return "30 min before \(sunrise)"
@@ -52,11 +54,72 @@ enum WakeUpTiming: String, Codable, CaseIterable, Identifiable, Sendable {
 
     func date(in day: PrayerDay) -> Date {
         switch self {
+        case .fajrMinus30: day.time(.fajr).addingTimeInterval(-30 * 60)
         case .atFajr: day.time(.fajr)
         case .fajrPlus15: day.time(.fajr).addingTimeInterval(15 * 60)
         case .sunriseMinus30: day.time(.sunrise).addingTimeInterval(-30 * 60)
         case .sunriseMinus15: day.time(.sunrise).addingTimeInterval(-15 * 60)
         }
+    }
+}
+
+/// The second, earlier alarm for sahur (or a longer qiyam), before Subuh.
+enum SahurTiming: String, Codable, CaseIterable, Identifiable, Sendable {
+    case fajrMinus60, fajrMinus90, fajrMinus120
+
+    var id: String { rawValue }
+    var minutes: Int {
+        switch self {
+        case .fajrMinus60: 60
+        case .fajrMinus90: 90
+        case .fajrMinus120: 120
+        }
+    }
+
+    func label(_ naming: NamingStyle) -> String {
+        let fajr = Prayer.fajr.name(naming)
+        switch self {
+        case .fajrMinus60: return "1 hour before \(fajr)"
+        case .fajrMinus90: return "1 hour 30 min before \(fajr)"
+        case .fajrMinus120: return "2 hours before \(fajr)"
+        }
+    }
+
+    func date(in day: PrayerDay) -> Date { day.time(.fajr).addingTimeInterval(Double(-minutes) * 60) }
+}
+
+/// Which mornings the sahur alarm rings: the days people usually fast.
+enum SahurDay: String, Codable, CaseIterable, Identifiable, Sendable {
+    case ramadan, monThu, whiteDays, everyDay
+
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .ramadan: "Ramadan"
+        case .monThu: "Mondays and Thursdays"
+        case .whiteDays: "White days (13, 14 and 15 of the Hijri month)"
+        case .everyDay: "Every day"
+        }
+    }
+
+    /// Does the sahur alarm ring before Subuh on this day?
+    static func rings(on day: PrayerDay, _ days: Set<SahurDay>, timeZone: TimeZone, hijriAdjustment: Int) -> Bool {
+        if days.contains(.everyDay) { return true }
+        if days.contains(.monThu) {
+            var cal = Calendar(identifier: .gregorian)
+            cal.timeZone = TimeZone(identifier: "UTC")!
+            if let date = cal.date(from: DateComponents(year: day.year, month: day.month, day: day.day)) {
+                let weekday = cal.component(.weekday, from: date)  // 1 = Sunday
+                if weekday == 2 || weekday == 5 { return true }
+            }
+        }
+        if days.contains(.ramadan) || days.contains(.whiteDays) {
+            let h = Hijri.date(day.time(.dhuhr), timeZone: timeZone, adjustment: hijriAdjustment)
+            if days.contains(.ramadan) && h.month == 9 { return true }
+            // Not on 13 Zulhijjah, a day of Tashreeq when fasting is not allowed.
+            if days.contains(.whiteDays) && (13...15).contains(h.day) && !(h.month == 12 && h.day == 13) { return true }
+        }
+        return false
     }
 }
 
@@ -124,6 +187,9 @@ struct Preferences: Codable, Equatable, Sendable {
 
     /// Subuh wake-up alarm; nil = off.
     var wakeUp: WakeUpTiming?
+    /// The earlier sahur alarm; nil = off. Rings only on `sahurDays`.
+    var sahurAlarm: SahurTiming?
+    var sahurDays: Set<SahurDay> = [.ramadan, .monThu]
 
     /// Whose Ramadan/Eid dates you follow; nil = the authority of your home country.
     var communityAuthority: String?
@@ -188,6 +254,8 @@ struct Preferences: Codable, Equatable, Sendable {
         excusedDays = v(.excusedDays, d.excusedDays)
         trackerPausedSince = v(.trackerPausedSince, d.trackerPausedSince)
         wakeUp = v(.wakeUp, d.wakeUp)
+        sahurAlarm = v(.sahurAlarm, d.sahurAlarm)
+        sahurDays = v(.sahurDays, d.sahurDays)
         communityAuthority = v(.communityAuthority, d.communityAuthority)
         appearance = v(.appearance, d.appearance)
         stylePick = v(.stylePick, d.stylePick)

@@ -65,6 +65,15 @@ const shots = [
   ['29-your-masjid-link', { style: 'list', appearance: 'dark', now: NIGHT, masjid: 'link' }],
   ['30-jamaah-countdown', { style: 'list', appearance: 'system', now: '2026-10-25T12:57:00+08:00', masjid: 'on' }],
   ['31-masjid-yours', { tab: 'masjid', appearance: 'dark', now: NIGHT, masjid: 'on' }],
+  ['32-wake-up', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
+    await p.click('button[aria-label^="Wake up for"]'); await p.waitForTimeout(400)
+    await p.click('text=30 min before Subuh for tahajjud'); await p.waitForTimeout(300); await p.click('text=1 hour 30 min before Subuh'); await p.waitForTimeout(300)
+    await p.evaluate(() => document.querySelector('.sheet')?.scrollTo(0, 0))
+  }],
+  ['33-wake-chip', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
+    await p.click('button[aria-label^="Wake up for"]'); await p.waitForTimeout(400)
+    await p.click('text=At Subuh'); await p.click('.sheet .done')
+  }],
   ['28-journey', { demo: 'travel', style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Musafir"]')],
 ]
 

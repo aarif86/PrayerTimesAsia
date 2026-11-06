@@ -85,7 +85,6 @@ import com.prayertimesasia.core.NamingStyle
 import com.prayertimesasia.core.Official
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.TodayStyle
-import com.prayertimesasia.core.WakeUpTiming
 import java.time.LocalDate
 
 @Composable
@@ -113,6 +112,17 @@ fun SettingsScreen(
                 Section("Location") {
                     ValueRow("Place", r.activePlace?.name ?: "Not set", onClick = openPlaces)
                     ValueRow("Country rules", if (r.profile.code.isEmpty()) r.profile.name else "${r.profile.flag} ${r.profile.name}")
+                }
+            }
+            item {
+                val fajr = Prayer.FAJR.name(r.naming)
+                val next = com.prayertimesasia.app.alarms.AlarmScheduler.nextWakeUp(r, state.now)
+                Section("Wake-up", "Also on the Prayer screen. Tap the alarm clock at the top.") {
+                    ValueRow("Wake up for $fajr", when {
+                        next != null -> "Next ${r.formatted(next.at)}"
+                        p.wakeUp != null || p.sahurAlarm != null -> "On"
+                        else -> "Off"
+                    }) { state.showWakeUp = true }
                 }
             }
             item {
@@ -154,17 +164,6 @@ fun SettingsScreen(
                         listOf<Pair<String, NamingStyle?>>("Automatic · ${r.personalNaming.language}" to null) + NamingStyle.entries.map { it.label to it },
                         p.namingOverride) { n -> state.update { it.copy(namingOverride = n) } }
                     SwitchRow("Show local names when travelling", p.showLocalNames) { on -> state.update { it.copy(showLocalNames = on) } }
-                }
-            }
-            item {
-                val fajr = Prayer.FAJR.name(r.naming)
-                Section("Wake-up", "An alarm-style alert that sounds even when the phone is on silent (where your phone allows it). Moves with $fajr every day and wherever you travel.") {
-                    PickerRow("$fajr wake-up", p.wakeUp?.label(r.naming) ?: "Off",
-                        listOf<Pair<String, WakeUpTiming?>>("Off" to null) + WakeUpTiming.entries.map { it.label(r.naming) to it },
-                        p.wakeUp) { w ->
-                        if (w != null) state.enableAlerts()
-                        state.update { it.copy(wakeUp = w) }
-                    }
                 }
             }
             item {

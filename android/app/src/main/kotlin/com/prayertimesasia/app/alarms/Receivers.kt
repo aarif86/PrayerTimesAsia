@@ -76,15 +76,27 @@ object Notifications {
                 else -> AZAN
             }
         }
-        val n = NotificationCompat.Builder(context, channel)
+        val wake = kind == AlarmScheduler.Kind.WAKE
+        val builder = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_stat_prayer)
             .setContentTitle(title)
             .setContentText(body)
             .setContentIntent(open)
             .setAutoCancel(true)
-            .setCategory(if (kind == AlarmScheduler.Kind.WAKE) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .build()
+            .setCategory(if (wake) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
+            .setPriority(if (wake) NotificationCompat.PRIORITY_MAX else NotificationCompat.PRIORITY_HIGH)
+        if (wake) {
+            // Keeps ringing like an alarm until "I'm up" is tapped or it is swiped away,
+            // and stops by itself after 10 minutes.
+            val done = PendingIntent.getBroadcast(context, id.hashCode(),
+                Intent(context, WakeDoneReceiver::class.java).putExtra("notification", id.hashCode()),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            builder.addAction(0, "I'm up", done)
+                .setTimeoutAfter(10 * 60 * 1000L)
+                .setOngoing(false)
+        }
+        val n = builder.build()
+        if (wake) n.flags = n.flags or android.app.Notification.FLAG_INSISTENT
         try {
             NotificationManagerCompat.from(context).notify(id.hashCode(), n)
         } catch (_: SecurityException) {
@@ -102,6 +114,13 @@ class AlarmReceiver : BroadcastReceiver() {
                 runCatching { AlarmScheduler.Sound.valueOf(intent.getStringExtra("sound") ?: "") }.getOrDefault(AlarmScheduler.Sound.STANDARD))
         }
         refresh(context, goAsync())
+    }
+}
+
+/** "I'm up" on the wake-up alarm: stops it ringing. */
+class WakeDoneReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        NotificationManagerCompat.from(context).cancel(intent.getIntExtra("notification", 0))
     }
 }
 

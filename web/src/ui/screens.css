@@ -335,3 +335,12 @@
 .distance-check.no svg { color: #e08a1e; }
 @keyframes distance-check-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .distance-check { animation: none; } }
+
+/* Wake up for Subuh */
+.wake-chip { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+.wake-hadith { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.wake-hadith .arabic { font-size: 22px; text-align: right; line-height: 1.7; margin: 0; }
+.wake-hadith .quote { font-style: italic; margin: 0; }
+.wake-hadith .caption { margin: 0; }
+.wake-hadith .next { font-weight: 600; margin: 4px 0 0; color: var(--accent); }
+.item.choice .choice-tick { color: var(--accent); flex: none; }

@@ -185,6 +185,37 @@ final class PrayerEngineTests: XCTestCase {
         XCTAssertEqual(WakeUpTiming.atFajr.date(in: day), day.time(.fajr))
         XCTAssertEqual(WakeUpTiming.sunriseMinus30.date(in: day), day.time(.sunrise).addingTimeInterval(-1800))
         XCTAssertEqual(WakeUpTiming.sunriseMinus15.label(.malay), "15 min before Syuruk")
+        XCTAssertEqual(WakeUpTiming.fajrMinus30.date(in: day), day.time(.fajr).addingTimeInterval(-1800))
+        XCTAssertEqual(WakeUpTiming.fajrMinus30.label(.malay), "30 min before Subuh for tahajjud")
+        XCTAssertEqual(SahurTiming.fajrMinus90.date(in: day), day.time(.fajr).addingTimeInterval(-5400))
+        XCTAssertEqual(SahurTiming.fajrMinus120.label(.malay), "2 hours before Subuh")
+    }
+
+    func testSahurDays() {
+        let tz = TimeZone(identifier: "Asia/Singapore")!
+        func day(_ y: Int, _ m: Int, _ d: Int) -> PrayerDay {
+            PrayerEngine.compute(year: y, month: m, day: d, at: singapore, method: .muis, asr: .standard)
+        }
+        let monThu: Set<SahurDay> = [.monThu]
+        XCTAssertTrue(SahurDay.rings(on: day(2026, 11, 9), monThu, timeZone: tz, hijriAdjustment: 0))   // Monday
+        XCTAssertTrue(SahurDay.rings(on: day(2026, 11, 12), monThu, timeZone: tz, hijriAdjustment: 0))  // Thursday
+        XCTAssertFalse(SahurDay.rings(on: day(2026, 11, 10), monThu, timeZone: tz, hijriAdjustment: 0)) // Tuesday
+        XCTAssertTrue(SahurDay.rings(on: day(2026, 11, 10), [.everyDay], timeZone: tz, hijriAdjustment: 0))
+        // Ramadan follows the Hijri date: find a day in Ramadan 1448 and one in Sha'ban.
+        var ramadan: PrayerDay?, shaban: PrayerDay?
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = tz
+        var date = cal.date(from: DateComponents(year: 2027, month: 1, day: 1))!
+        while ramadan == nil || shaban == nil {
+            let c = cal.dateComponents([.year, .month, .day], from: date)
+            let d = day(c.year!, c.month!, c.day!)
+            let h = Hijri.date(d.time(.dhuhr), timeZone: tz)
+            if h.month == 9 && h.day == 10 { ramadan = d }
+            if h.month == 8 && h.day == 20 { shaban = d }
+            date = cal.date(byAdding: .day, value: 1, to: date)!
+        }
+        XCTAssertTrue(SahurDay.rings(on: ramadan!, [.ramadan], timeZone: tz, hijriAdjustment: 0))
+        XCTAssertFalse(SahurDay.rings(on: shaban!, [.ramadan], timeZone: tz, hijriAdjustment: 0))
     }
 
     func testOldPreferencesStillDecode() throws {
@@ -196,6 +227,8 @@ final class PrayerEngineTests: XCTestCase {
         XCTAssertEqual(prefs.musafirThresholdKm, 89)
         XCTAssertFalse(prefs.trackerEnabled)
         XCTAssertNil(prefs.wakeUp)
+        XCTAssertNil(prefs.sahurAlarm)
+        XCTAssertEqual(prefs.sahurDays, [.ramadan, .monThu])
     }
 
     private func minutesOfDay(_ date: Date, in timeZone: TimeZone) -> Int {

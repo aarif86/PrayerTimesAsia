@@ -23,11 +23,13 @@ final class AppModel {
     /// Settings opens as a sheet from the gear on Today.
     /// Journey opens as a sheet (from Settings or the musafir chip).
     var showJourney = false
+    /// Wake up for Subuh (the alarm chip on the Prayer screen, or Settings).
+    var showWakeUp = false
     /// A masjid from a screen's QR code, waiting for the user to say yes.
     var pendingMasjid: MasjidLink?
 
     /// `settings` is not a tab; `-tab settings` opens the Settings sheet.
-    enum Tab: String, Hashable { case today, qibla, falak, nearby, journey, settings }
+    enum Tab: String, Hashable { case today, qibla, falak, nearby, journey, wakeup, settings }
 
     @ObservationIgnored private let geocoder = CLGeocoder()
     @ObservationIgnored private var lastGeocoded: CLLocation?
@@ -93,6 +95,11 @@ final class AppModel {
         p.appearance = args.contains("-light") ? .light : args.contains("-auto") ? .system : .dark
         p.todayStyle = args.contains("-dial") ? .dial : args.contains("-sunpath") ? .sunPath : args.contains("-centre") ? .centre : args.contains("-bands") ? .bands : args.contains("-sidedial") ? .list : .centre
         if args.contains("-masjid") { p.myMasjid = demoMasjid }
+        if args.contains("-wake") {
+            p.wakeUp = .fajrMinus30
+            p.sahurAlarm = .fajrMinus90
+            p.sahurDays = [.ramadan, .monThu]
+        }
         if args.contains("-demo-visitor") {
             // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
             p.home = Place(name: "Sydney", region: nil, countryCode: "AU", countryName: "Australia",
@@ -151,7 +158,7 @@ final class AppModel {
     func applyDemoTab() {
         let args = ProcessInfo.processInfo.arguments
         if let i = args.firstIndex(of: "-tab"), i + 1 < args.count, let tab = Tab(rawValue: args[i + 1]) {
-            if tab == .journey { showJourney = true } else { selectedTab = tab }
+            if tab == .journey { showJourney = true } else if tab == .wakeup { showWakeUp = true } else { selectedTab = tab }
         }
     }
 
@@ -575,18 +582,13 @@ final class AppModel {
         }
         // Subuh wake-up: a real alarm (AlarmKit, iOS 26+) where possible,
         // otherwise a notification.
-        var wakeUps: [(Date, String)] = []
-        if let timing = prefs.wakeUp {
-            for offset in 0..<7 {
-                guard let pd = day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
-                let fajr = Prayer.fajr.name(naming)
-                wakeUps.append((timing.date(in: pd), "Wake up for \(fajr) · ends \(formatted(pd.time(.sunrise)))"))
-            }
-        }
+        let wakeUps = wakeUpPlan(from: .now, days: 7).map { ($0.date, $0.title) }
         let notificationAlerts = alerts
         let notificationsOn = onTime || early > 0
+        // Demo screenshots never ask for alarm permission.
+        let isDemo = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") }
         Task {
-            let alarmsHandled = await WakeUpAlarm.schedule(wakeUps)
+            let alarmsHandled = isDemo ? true : await WakeUpAlarm.schedule(wakeUps)
             var all = notificationsOn ? notificationAlerts : []
             if !alarmsHandled {
                 all += wakeUps.map {
@@ -597,5 +599,44 @@ final class AppModel {
             NotificationScheduler.reschedule(enabled: !all.isEmpty, alerts: all)
         }
         WidgetBridge.publish(self)
+    }
+
+    /// One wake-up alarm: the Subuh alarm, or the earlier sahur alarm.
+    struct WakeUp: Equatable {
+        let date: Date
+        let title: String
+        let isSahur: Bool
+    }
+
+    /// The next wake-up or sahur alarm, looking a week ahead (the sahur alarm
+    /// may be days away). Stops at the first day that has one.
+    func nextWakeUp(after now: Date) -> WakeUp? {
+        guard prefs.wakeUp != nil || prefs.sahurAlarm != nil else { return nil }
+        for offset in 0..<8 {
+            if let first = wakeUpPlan(from: now, days: 1, startingAt: offset).first { return first }
+        }
+        return nil
+    }
+
+    /// The wake-up and sahur alarms for the next `days` days, soonest first.
+    func wakeUpPlan(from now: Date, days: Int, startingAt start: Int = 0) -> [WakeUp] {
+        guard prefs.wakeUp != nil || prefs.sahurAlarm != nil else { return [] }
+        let fajr = Prayer.fajr.name(naming)
+        var out: [WakeUp] = []
+        for offset in start..<(start + days) {
+            guard let pd = day(containing: now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
+            if let sahur = prefs.sahurAlarm,
+               SahurDay.rings(on: pd, prefs.sahurDays, timeZone: timeZone, hijriAdjustment: prefs.hijriAdjustment) {
+                out.append(WakeUp(date: sahur.date(in: pd), title: "Wake up for sahur · \(fajr) at \(formatted(pd.time(.fajr)))", isSahur: true))
+            }
+            if let timing = prefs.wakeUp {
+                let title = timing == .fajrMinus30
+                    ? "Wake up for tahajjud · \(fajr) at \(formatted(pd.time(.fajr)))"
+                    : "Wake up for \(fajr) · ends \(formatted(pd.time(.sunrise)))"
+                out.append(WakeUp(date: timing.date(in: pd), title: title, isSahur: false))
+            }
+        }
+        var seen = Set<Date>()
+        return out.filter { $0.date > now && seen.insert($0.date).inserted }.sorted { $0.date < $1.date }
     }
 }
