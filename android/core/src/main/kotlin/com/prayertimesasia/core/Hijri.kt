@@ -66,6 +66,7 @@ object Hijri {
     fun format(instant: Instant, zone: ZoneId, style: NamingStyle, adjustment: Int = 0): String {
         val h = date(instant, zone, adjustment)
         val name = style.hijriMonths[(h.month - 1).coerceIn(0, 11)]
-        return "${h.day} $name ${h.year}"
+        // Isolate a right-to-left month so the day and year stay either side of it.
+        return "${h.day} ${if (style.isRightToLeft) "\u2068$name\u2069" else name} ${h.year}"
     }
 }

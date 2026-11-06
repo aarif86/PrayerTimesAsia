@@ -1,6 +1,6 @@
 import type { MasjidLink } from '../core/masjidLink'
 import type { Place } from '../core/place'
-import { OBLIGATORY, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
+import { NAMING_STYLES, OBLIGATORY, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
 
 export type Appearance = 'system' | 'light' | 'dark'
 export const APPEARANCES: Appearance[] = ['system', 'light', 'dark']
@@ -109,7 +109,7 @@ const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   appearance: ['system', 'light', 'dark'],
   todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands'],
   asrOverride: ['standard', 'hanafi'],
-  namingOverride: ['arabic', 'malay', 'indonesian', 'southAsian', 'turkish'],
+  namingOverride: NAMING_STYLES,
 }
 
 /**

@@ -43,7 +43,8 @@ object Musafir {
     }
 
     fun guidance(status: Status, rules: Rules, naming: NamingStyle): Pair<String, String> {
-        val n = naming.names
+        // Right-to-left names would scramble an English sentence, so use International there.
+        val n = (if (naming.isRightToLeft) NamingStyle.INTERNATIONAL else naming).names
         val four = "${n[Prayer.DHUHR]}, ${n[Prayer.ASR]} and ${n[Prayer.ISHA]}"
         val km = rules.thresholdKm.toInt()
         return when (status) {

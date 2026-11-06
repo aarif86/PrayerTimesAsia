@@ -107,21 +107,32 @@ export function timeZoneForPlace(code: string | null | undefined, longitude: num
 }
 
 /**
- * Your names, when you haven't picked any: your home country's, else your
- * browser's language or region, else International.
+ * Your names, when you haven't picked any: your browser's language when we
+ * have names in it, else your home country's, else your region's, else
+ * International. Read from the device only, never from your IP address.
  */
 export function personalNaming(homeCountry: string | null | undefined, locale: string): NamingStyle {
-  // A home with its own spelling wins; an international one lets the browser's language decide.
-  const home = profileFor(homeCountry)
-  if (home && home.naming !== 'arabic') return home.naming
   const parts = locale.replace(/_/g, '-').split('-')
   const lang = parts[0]
   const region = parts.slice(1).find((s) => /^[A-Za-z]{2}$/.test(s))
+  const spoken = namingForLanguage(lang)
+  if (spoken) return spoken
+  // A home with its own spelling wins over an English browser.
+  const home = profileFor(homeCountry)
+  if (home && home.naming !== 'arabic') return home.naming
+  return profileFor(region)?.naming ?? 'arabic'
+}
+
+/** The names that go with a language code (ISO 639; old Android/Java code "in" is Indonesian). */
+export function namingForLanguage(lang: string | null | undefined): NamingStyle | null {
   switch (lang?.toLowerCase()) {
     case 'ms': return 'malay'
-    case 'id': return 'indonesian'
+    case 'id': case 'in': return 'indonesian'
     case 'tr': return 'turkish'
-    case 'ur': case 'bn': return 'southAsian'
+    case 'ar': return 'arabicScript'
+    case 'ur': return 'urdu'
+    case 'bn': return 'bengali'
+    case 'fr': return 'french'
+    default: return null
   }
-  return profileFor(region)?.naming ?? 'arabic'
 }

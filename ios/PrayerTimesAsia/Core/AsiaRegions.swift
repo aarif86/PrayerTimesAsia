@@ -102,18 +102,38 @@ enum AsiaRegions {
 }
 
 extension NamingStyle {
-    /// Your names, when you haven't picked any: your home country's, else your
-    /// phone's language or region, else International.
-    static func personal(homeCountry: String?, locale: Locale = .current) -> NamingStyle {
-        // A home with its own spelling wins; an international one lets the phone's language decide.
+    /// Your names, when you haven't picked any: your phone's language when we
+    /// have names in it, else your home country's, else your region's, else
+    /// International. Read from the phone only, never from your IP address.
+    static func personal(homeCountry: String?, locale: Locale = .deviceLanguage) -> NamingStyle {
+        if let spoken = forLanguage(locale.language.languageCode?.identifier) { return spoken }
+        // A home with its own spelling wins over an English phone.
         if let home = AsiaRegions.profile(for: homeCountry), home.naming != .international { return home.naming }
-        switch locale.language.languageCode?.identifier {
-        case "ms": return .malay
-        case "id": return .indonesian
-        case "tr": return .turkish
-        case "ur", "bn": return .southAsian
-        default: break
-        }
         return AsiaRegions.profile(for: locale.region?.identifier)?.naming ?? .international
+    }
+
+    /// The names that go with a language code (ISO 639).
+    static func forLanguage(_ code: String?) -> NamingStyle? {
+        switch code?.lowercased() {
+        case "ms": .malay
+        case "id", "in": .indonesian
+        case "tr": .turkish
+        case "ar": .arabicScript
+        case "ur": .urdu
+        case "bn": .bengali
+        case "fr": .french
+        default: nil
+        }
+    }
+}
+
+extension Locale {
+    /// The phone's own language with its region. `Locale.current` follows the
+    /// app's (English only) translations, so it would always say English.
+    static var deviceLanguage: Locale {
+        let first = Locale(identifier: Locale.preferredLanguages.first ?? "en")
+        let lang = first.language.languageCode?.identifier ?? "en"
+        guard let region = Locale.current.region?.identifier ?? first.region?.identifier else { return Locale(identifier: lang) }
+        return Locale(identifier: "\(lang)_\(region)")
     }
 }

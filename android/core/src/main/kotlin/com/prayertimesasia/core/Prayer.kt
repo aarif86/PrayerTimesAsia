@@ -44,7 +44,16 @@ enum class NamingStyle(val raw: String) {
     @SerialName("malay") MALAY("malay"),
     @SerialName("indonesian") INDONESIAN("indonesian"),
     @SerialName("southAsian") SOUTH_ASIAN("southAsian"),
-    @SerialName("turkish") TURKISH("turkish");
+    @SerialName("turkish") TURKISH("turkish"),
+    // The names in each language's own words and script. A native speaker
+    // should check each one before launch.
+    @SerialName("arabicScript") ARABIC_SCRIPT("arabicScript"),
+    @SerialName("urdu") URDU("urdu"),
+    @SerialName("bengali") BENGALI("bengali"),
+    @SerialName("french") FRENCH("french");
+
+    /** Written right to left. English sentences use International names instead. */
+    val isRightToLeft: Boolean get() = this == ARABIC_SCRIPT || this == URDU
 
     /** Short name, for "Subuh (Malay)" style captions. */
     val language: String
@@ -54,6 +63,10 @@ enum class NamingStyle(val raw: String) {
             INDONESIAN -> "Indonesian"
             SOUTH_ASIAN -> "South Asian"
             TURKISH -> "Turkish"
+            ARABIC_SCRIPT -> "Arabic"
+            URDU -> "Urdu"
+            BENGALI -> "Bangla"
+            FRENCH -> "French"
         }
 
     val label: String
@@ -63,6 +76,10 @@ enum class NamingStyle(val raw: String) {
             INDONESIAN -> "Indonesian (Subuh, Dzuhur, Ashar, Isya)"
             SOUTH_ASIAN -> "South Asian (Fajr, Zuhr, Asr, Isha)"
             TURKISH -> "Turkish (Sabah, Öğle, İkindi, Yatsı)"
+            ARABIC_SCRIPT -> "Arabic (الفجر، الظهر، العصر)"
+            URDU -> "Urdu (فجر، ظہر، عصر)"
+            BENGALI -> "Bangla (ফজর, যোহর, আসর)"
+            FRENCH -> "French (Fajr, Dhohr, Asr, Icha)"
         }
 
     /**
@@ -82,6 +99,14 @@ enum class NamingStyle(val raw: String) {
                 Prayer.ASR to "Asr", Prayer.MAGHRIB to "Maghrib", Prayer.ISHA to "Isha")
             TURKISH -> mapOf(Prayer.FAJR to "Sabah", Prayer.SUNRISE to "Güneş", Prayer.DHUHR to "Öğle",
                 Prayer.ASR to "İkindi", Prayer.MAGHRIB to "Akşam", Prayer.ISHA to "Yatsı")
+            ARABIC_SCRIPT -> mapOf(Prayer.FAJR to "الفجر", Prayer.SUNRISE to "الشروق", Prayer.DHUHR to "الظهر",
+                Prayer.ASR to "العصر", Prayer.MAGHRIB to "المغرب", Prayer.ISHA to "العشاء")
+            URDU -> mapOf(Prayer.FAJR to "فجر", Prayer.SUNRISE to "طلوع آفتاب", Prayer.DHUHR to "ظہر",
+                Prayer.ASR to "عصر", Prayer.MAGHRIB to "مغرب", Prayer.ISHA to "عشاء")
+            BENGALI -> mapOf(Prayer.FAJR to "ফজর", Prayer.SUNRISE to "সূর্যোদয়", Prayer.DHUHR to "যোহর",
+                Prayer.ASR to "আসর", Prayer.MAGHRIB to "মাগরিব", Prayer.ISHA to "এশা")
+            FRENCH -> mapOf(Prayer.FAJR to "Fajr", Prayer.SUNRISE to "Chourouq", Prayer.DHUHR to "Dhohr",
+                Prayer.ASR to "Asr", Prayer.MAGHRIB to "Maghrib", Prayer.ISHA to "Icha")
         }
 
     val friday: String
@@ -90,33 +115,55 @@ enum class NamingStyle(val raw: String) {
             INDONESIAN -> "Jumat"
             TURKISH -> "Cuma"
             INTERNATIONAL, SOUTH_ASIAN -> "Jumu'ah"
+            ARABIC_SCRIPT -> "الجمعة"
+            URDU -> "جمعہ"
+            BENGALI -> "জুমা"
+            FRENCH -> "Joumou'a"
         }
 
     val hijriMonths: List<String>
         get() = when (this) {
             MALAY, INDONESIAN -> listOf("Muharram", "Safar", "Rabiulawal", "Rabiulakhir", "Jamadilawal", "Jamadilakhir",
                 "Rejab", "Syaaban", "Ramadan", "Syawal", "Zulkaedah", "Zulhijjah")
-            INTERNATIONAL, SOUTH_ASIAN, TURKISH -> listOf("Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani",
+            INTERNATIONAL, SOUTH_ASIAN -> listOf("Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani",
                 "Jumada al-Ula", "Jumada al-Akhirah", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qa'dah", "Dhu al-Hijjah")
+            TURKISH -> listOf("Muharrem", "Safer", "Rebiülevvel", "Rebiülahir", "Cemaziyelevvel", "Cemaziyelahir",
+                "Recep", "Şaban", "Ramazan", "Şevval", "Zilkade", "Zilhicce")
+            ARABIC_SCRIPT -> listOf("محرم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة",
+                "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة")
+            URDU -> listOf("محرم", "صفر", "ربیع الاول", "ربیع الثانی", "جمادی الاول", "جمادی الثانی",
+                "رجب", "شعبان", "رمضان", "شوال", "ذوالقعدہ", "ذوالحجہ")
+            BENGALI -> listOf("মহররম", "সফর", "রবিউল আউয়াল", "রবিউস সানি", "জমাদিউল আউয়াল", "জমাদিউস সানি",
+                "রজব", "শাবান", "রমজান", "শাওয়াল", "জিলকদ", "জিলহজ")
+            FRENCH -> listOf("Mouharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani", "Joumada al-Oula", "Joumada al-Akhira",
+                "Rajab", "Chaabane", "Ramadan", "Chawwal", "Dhou al-Qida", "Dhou al-Hijja")
         }
 
     companion object {
         /**
-         * Your names, when you haven't picked any: your home country's, else your
-         * phone's language or region, else International.
+         * Your names, when you haven't picked any: your phone's language when we
+         * have names in it, else your home country's, else your region's, else
+         * International. Read from the phone only, never from your IP address.
          *
          * [language] is an ISO 639 code; Android still reports Indonesian as "in".
          */
         fun personal(homeCountry: String?, language: String?, region: String?): NamingStyle {
-            // A home with its own spelling wins; an international one lets the phone's language decide.
+            forLanguage(language)?.let { return it }
+            // A home with its own spelling wins over an English phone.
             AsiaRegions.profile(homeCountry)?.let { if (it.naming != INTERNATIONAL) return it.naming }
-            when (language?.lowercase()) {
-                "ms" -> return MALAY
-                "id", "in" -> return INDONESIAN
-                "tr" -> return TURKISH
-                "ur", "bn" -> return SOUTH_ASIAN
-            }
             return AsiaRegions.profile(region)?.naming ?: INTERNATIONAL
+        }
+
+        /** The names that go with a language code (ISO 639). */
+        fun forLanguage(language: String?): NamingStyle? = when (language?.lowercase()) {
+            "ms" -> MALAY
+            "id", "in" -> INDONESIAN
+            "tr" -> TURKISH
+            "ar" -> ARABIC_SCRIPT
+            "ur" -> URDU
+            "bn" -> BENGALI
+            "fr" -> FRENCH
+            else -> null
         }
 
         fun personal(homeCountry: String?, locale: java.util.Locale): NamingStyle =
