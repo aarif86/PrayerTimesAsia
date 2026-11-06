@@ -171,6 +171,26 @@ data class Preferences(
     val myMasjid: MasjidLink? = null,
     /** Anonymous usage counts (city and country, never coordinates). See the app's UsageCounter. */
     val shareUsage: Boolean = true,
+
+    // Ramadan and Syawal
+    /** For testers: pretend today is a day in Ramadan or Syawal. Never moved to another phone. */
+    val seasonPreview: SeasonPreview = SeasonPreview.OFF,
+    /** "Imsak in 10 minutes" in Ramadan. */
+    val imsakAlert: Boolean = true,
+    /** "Time to berbuka" at Maghrib in Ramadan. */
+    val berbukaAlert: Boolean = true,
+    /** The last ten nights: a gentle alert at the last third of the night. */
+    val qiyamAlert: Boolean = false,
+    /** A juz a day to finish the Quran in the month. */
+    val khatamPlan: Boolean = false,
+    /** "yyyy-MM-dd" → how that day's fast went. */
+    val fastLog: Map<String, FastMark> = emptyMap(),
+    /** Days Tarawih was prayed. */
+    val tarawihLog: Set<String> = emptySet(),
+    /** Days the day's juz was read. */
+    val quranLog: Set<String> = emptySet(),
+    /** Hijri years zakat fitrah was paid. */
+    val zakatPaid: Set<Int> = emptySet(),
 ) {
     fun encode(): String = CoreJson.encodeToString(serializer(), this)
 

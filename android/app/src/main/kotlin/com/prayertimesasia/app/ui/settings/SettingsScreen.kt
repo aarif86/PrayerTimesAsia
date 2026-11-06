@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.SwapHoriz
@@ -113,6 +114,19 @@ fun SettingsScreen(
                 Section("Location") {
                     ValueRow("Place", r.activePlace?.name ?: "Not set", onClick = openPlaces)
                     ValueRow("Country rules", if (r.profile.code.isEmpty()) r.profile.name else "${r.profile.flag} ${r.profile.name}")
+                }
+            }
+            item {
+                Section("Ramadan and Syawal",
+                    if (p.seasonPreview == com.prayertimesasia.core.SeasonPreview.OFF)
+                        "Ramadan mode turns on by itself on the day your local religious authority announces. Testers can pretend it's Ramadan or Raya with the switch above."
+                    else "Pretend mode is on. The app shows a pretend date, not today's. Turn it off before you rely on the times.") {
+                    LinkRow("Ramadan page", Icons.Filled.NightsStay) { state.showRamadan = true }
+                    PickerRow("Try Ramadan (for testers)", p.seasonPreview.label,
+                        com.prayertimesasia.core.SeasonPreview.entries.map { it.label to it }, p.seasonPreview) { v -> state.update { it.copy(seasonPreview = v) } }
+                    SwitchRow("Imsak alert", p.imsakAlert) { on -> state.setRamadanAlert(on) { q, v -> q.copy(imsakAlert = v) } }
+                    SwitchRow("Berbuka alert", p.berbukaAlert) { on -> state.setRamadanAlert(on) { q, v -> q.copy(berbukaAlert = v) } }
+                    SwitchRow("Qiyam in the last ten nights", p.qiyamAlert) { on -> state.setRamadanAlert(on) { q, v -> q.copy(qiyamAlert = v) } }
                 }
             }
             item {

@@ -180,6 +180,7 @@ private fun ColumnScope.Prompts(f: TodayFrame) {
     val p = f.state.prefs
     if (!p.notificationsEnabled && !p.alertsPromptDismissed) AlertsPrompt(f.state)
     if (!p.arrivalBannerDismissed) ArrivalCard(f.state)
+    if (f.offset == 0) SeasonCard(f.state, f.now)
 }
 
 @Composable
@@ -209,7 +210,7 @@ private fun FillOrScroll(
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val extra = contentPadding.calculateTopPadding() + contentPadding.calculateBottomPadding() + spacing * 2
         val avail = maxHeight - topH - bottomH - extra
-        val blessed = if (f.state.prefs.showMore) f.state.resolver.blessedTimes(f.shown).size else 0
+        val blessed = f.state.resolver.blessedTimes(f.shown).count { f.state.prefs.showMore || it.first == com.prayertimesasia.core.BlessedTime.IMSAK }
         // Six rows share what's left (the list's own padding and gaps come off first).
         val perRow = (avail - 16.dp - 6.dp * (5 + blessed) - 58.dp * blessed) / 6
         val rowHeight = if (perRow >= 60.dp) minOf(perRow, 92.dp) else null
@@ -332,7 +333,7 @@ private fun DialPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> 
 private fun HeroDialFor(f: TodayFrame, modifier: Modifier) {
     val state = f.state
     val r = state.resolver
-    val blessed = if (state.prefs.showMore) r.blessedTimes(f.shown) else emptyList()
+    val blessed = r.blessedTimes(f.shown).filter { state.prefs.showMore || it.first == com.prayertimesasia.core.BlessedTime.IMSAK }
     val marks = Prayer.all.map { p ->
         DialMark(p.raw, f.shown.time(p), extraLine = f.shown.jamaah[p] != null || f.shown.alternate[p] != null, tint = p.tint)
     } + blessed.map { DialMark(it.first.raw, it.second, minor = true) }
@@ -488,7 +489,7 @@ private fun BandsPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () ->
     val buttonBg = Color.White.copy(alpha = 0.12f)
     androidx.compose.runtime.CompositionLocalProvider(LocalSkyScheme provides LocalSkyScheme.current.copy(dark = true, softNight = false)) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
-            val blessed = if (state.prefs.showMore) state.resolver.blessedTimes(f.shown) else emptyList()
+            val blessed = state.resolver.blessedTimes(f.shown).filter { state.prefs.showMore || it.first == com.prayertimesasia.core.BlessedTime.IMSAK }
             val bandsNatural = 64.dp * 6 + 52.dp * blessed.size + 44.dp
             val fill = maxHeight - headerH - footerH >= bandsNatural
             Column(Modifier.fillMaxSize().then(if (fill) Modifier else Modifier.verticalScroll(rememberScrollState()))) {

@@ -165,6 +165,9 @@ fun PrayerTimesRoot(state: AppState) {
                     SkyTheme(state) { JourneyScreen(state) { state.showJourney = false } }
                 }
             }
+            if (state.showRamadan) {
+                AppSheet({ state.showRamadan = false }) { com.prayertimesasia.app.ui.today.RamadanSheetContent(state) }
+            }
             Overlays(state, overlay) { overlay = it }
             state.pendingMasjid?.let { link ->
                 AppSheet({ state.pendingMasjid = null }) { MasjidLinkSheetContent(state, link) }
