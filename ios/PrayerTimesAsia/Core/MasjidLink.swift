@@ -8,7 +8,8 @@ import Foundation
 ///
 /// n name · ll latitude,longitude · tz time zone · cc country (optional) ·
 /// i Subuh, Zohor, Asar, Maghrib, Isyak: minutes after azan ("10"), a fixed
-/// time ("13:15"), or empty · j Jumu'ah (khutbah) time (optional).
+/// time ("13:15"), or empty · j Jumu'ah (khutbah) time (optional) ·
+/// e Hari Raya prayer time (optional).
 struct MasjidLink: Codable, Hashable, Identifiable, Sendable {
     struct Rule: Codable, Hashable, Sendable {
         var after: Int?
@@ -23,6 +24,8 @@ struct MasjidLink: Codable, Hashable, Identifiable, Sendable {
     /// Prayer rawValue → rule.
     var jamaah: [String: Rule]
     var jumuah: String?
+    /// Hari Raya Aidilfitri prayer, "HH:mm".
+    var eid: String? = nil
 
     var id: String { "\(name)|\(lat)|\(lng)" }
     var coordinates: Coordinates { Coordinates(latitude: lat, longitude: lng) }
@@ -61,7 +64,7 @@ struct MasjidLink: Codable, Hashable, Identifiable, Sendable {
             }
         }
         let cc = q["cc"].flatMap { $0.range(of: "^[A-Za-z]{2}$", options: .regularExpression) != nil ? $0.uppercased() : nil }
-        return MasjidLink(name: name, lat: lat, lng: lng, tz: tz, cc: cc, jamaah: jamaah, jumuah: hhmm(q["j"] ?? ""))
+        return MasjidLink(name: name, lat: lat, lng: lng, tz: tz, cc: cc, jamaah: jamaah, jumuah: hhmm(q["j"] ?? ""), eid: hhmm(q["e"] ?? ""))
     }
 
     /// "9:05" → "09:05"; nil unless a valid 24-hour time.

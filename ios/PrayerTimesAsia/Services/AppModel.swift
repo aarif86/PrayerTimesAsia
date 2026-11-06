@@ -93,6 +93,18 @@ final class AppModel {
         p.appearance = args.contains("-light") ? .light : args.contains("-auto") ? .system : .dark
         p.todayStyle = args.contains("-dial") ? .dial : args.contains("-sunpath") ? .sunPath : args.contains("-centre") ? .centre : args.contains("-bands") ? .bands : args.contains("-sidedial") ? .list : .centre
         if args.contains("-masjid") { p.myMasjid = demoMasjid }
+        // -season ramadan (or sighting, lastTen, raya, syawal): the tester's Ramadan preview.
+        if let i = args.firstIndex(of: "-season"), i + 1 < args.count, let season = SeasonPreview(rawValue: args[i + 1]) {
+            p.seasonPreview = season
+            p.khatamPlan = season == .ramadan || season == .lastTen
+            let back = [SeasonPreview.ramadan: 11, .lastTen: 25, .raya: 30, .syawal: 37][season] ?? 0
+            for i in stride(from: 1, through: min(back, 30), by: 1) {
+                let c = cal.dateComponents([.year, .month, .day], from: Date.now.addingTimeInterval(Double(-i) * 86_400))
+                let key = String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
+                if season == .syawal && i < 7 { if i == 2 || i == 4 { p.fastLog[key] = .syawal }; continue }
+                p.fastLog[key] = [7, 8].contains(back - i + 1) ? .period : (back - i + 1) == 14 ? .travel : .fasted
+            }
+        }
         if args.contains("-demo-visitor") {
             // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
             p.home = Place(name: "Sydney", region: nil, countryCode: "AU", countryName: "Australia",
@@ -433,6 +445,10 @@ final class AppModel {
         a.prayedLog = [:]; b.prayedLog = [:]
         a.excusedDays = []; b.excusedDays = []
         a.trackerPausedSince = nil; b.trackerPausedSince = nil
+        a.fastLog = [:]; b.fastLog = [:]
+        a.tarawihLog = []; b.tarawihLog = []
+        a.quranLog = []; b.quranLog = []
+        a.zakatPaid = []; b.zakatPaid = []
         guard a != b else { return }
         refreshOfficialTimetable()
         scheduleNotifications()
@@ -442,7 +458,10 @@ final class AppModel {
         location.refresh()
         refreshOfficialTimetable()
         Task { await mosques.refreshIfStale() }
-        Task { await hijriCalendar.refreshIfStale() }
+        Task {
+            let h = hijri(of: .now)
+            await hijriCalendar.refreshIfStale(soon: (h.month == 8 || h.month == 9) && h.day >= 28)
+        }
         scheduleNotifications()
         countOpen()
     }
@@ -539,6 +558,152 @@ final class AppModel {
         scheduleNotifications()
     }
 
+    // MARK: Ramadan and Syawal
+
+    /// The local calendar day containing `date`.
+    func civil(_ date: Date) -> CivilDay { CivilDay(date, timeZone: timeZone) }
+
+    var isSeasonPreview: Bool { prefs.seasonPreview != .off }
+
+    /// Days the tester's "Try Ramadan" moves the calendar by (0 when off).
+    var seasonShift: Int {
+        let today = civil(.now)
+        if let cached = shiftCache, cached.key == "\(today.key)-\(prefs.seasonPreview.rawValue)" { return cached.shift }
+        let shift = Season.previewShift(today: today, preview: prefs.seasonPreview)
+        shiftCache = ("\(today.key)-\(prefs.seasonPreview.rawValue)", shift)
+        return shift
+    }
+    @ObservationIgnored private var shiftCache: (key: String, shift: Int)?
+
+    /// The Hijri date of a civil day as this community counts it (Core/Season.swift).
+    func hijri(of g: CivilDay) -> Hijri.HijriDate {
+        if isSeasonPreview { return Season.baseHijri(g.adding(seasonShift)) }
+        return Season.communityHijri(g, adjustment: prefs.hijriAdjustment, announcements: hijriCalendar.dataset.announcements, authority: communityAuthority)
+    }
+
+    func hijri(of date: Date) -> Hijri.HijriDate { hijri(of: civil(date)) }
+
+    func hijriLabel(_ date: Date) -> String {
+        let h = hijri(of: date)
+        let name = naming.hijriMonths[max(0, min(11, h.month - 1))]
+        let shown = naming.isRightToLeft ? "\u{2068}" + name + "\u{2069}" : name
+        return "\(h.day) \(shown) \(h.year)"
+    }
+
+    func isRamadanDay(_ date: Date) -> Bool { hijri(of: date).month == 9 }
+
+    func season(at date: Date) -> Season.Info {
+        let h = hijri(of: date)
+        var next: (event: HijriEvent, day: CivilDay, announced: Bool)?
+        if !isSeasonPreview, h.day >= 27, h.month == 8 || h.month == 9 {
+            let event: HijriEvent = h.month == 8 ? .ramadan : .syawal
+            if let d = Season.authorityDate(hijriCalendar.dataset.announcements, authority: communityAuthority, event: event, hijriYear: h.year),
+               civil(date).days(to: d.day) >= 0 {
+                next = (event, d.day, d.announced)
+            }
+        }
+        return Season.info(h, nextStart: next)
+    }
+
+    func day(of g: CivilDay) -> PrayerDay? { day(containing: g.noon(in: timeZone)) }
+
+    /// Imsak: 10 minutes before Subuh, as MUIS, JAKIM and Kemenag publish it.
+    func imsak(_ day: PrayerDay) -> Date { day.time(.fajr).addingTimeInterval(-600) }
+
+    enum FastingMomentKind { case imsak, berbuka }
+    /// In Ramadan, the moment to count down to: Imsak before dawn, Berbuka after it,
+    /// then tomorrow's Imsak (if tomorrow is a fast).
+    func fastingMoment(_ now: Date) -> (kind: FastingMomentKind, time: Date)? {
+        guard let today = day(containing: now) else { return nil }
+        if isRamadanDay(now) {
+            if now < imsak(today) { return (.imsak, imsak(today)) }
+            if now < today.time(.maghrib) { return (.berbuka, today.time(.maghrib)) }
+        }
+        if let tomorrow = day(containing: now.addingTimeInterval(86_400)), isRamadanDay(tomorrow.time(.dhuhr)) {
+            return (.imsak, imsak(tomorrow))
+        }
+        return nil
+    }
+
+    /// Every civil day of a Hijri month for this community, from the 1st.
+    func monthDays(hijriYear: Int, month: Int) -> [CivilDay] {
+        guard let est = Season.gregorian(hijriYear: hijriYear, month: month, day: 1) else { return [] }
+        let guess = est.adding(isSeasonPreview ? -seasonShift : 0)
+        var first: CivilDay?
+        for delta in [0, 1, -1, 2, -2, 3, -3] {
+            let d = guess.adding(delta), h = hijri(of: d)
+            if h.year == hijriYear && h.month == month && h.day == 1 { first = d; break }
+        }
+        guard let first else { return [] }
+        var out: [CivilDay] = []
+        for i in 0..<30 {
+            let d = first.adding(i)
+            if hijri(of: d).month != month { break }
+            out.append(d)
+        }
+        return out
+    }
+
+    struct FastSummary { var days: [CivilDay]; var fasted: Int; var missed: Int; var replaced: Int; var owed: Int; var syawal: Int }
+
+    /// This Ramadan's fasts: kept, missed and still to replace, and Syawal fasts.
+    func fastSummary(hijriYear: Int) -> FastSummary {
+        let days = monthDays(hijriYear: hijriYear, month: 9)
+        let today = civil(.now).key
+        var fasted = 0, missed = 0
+        for d in days where d.key <= today {
+            switch prefs.fastLog[d.key] {
+            case .fasted?: fasted += 1
+            case let m? where m.isMissed: missed += 1
+            default: break
+            }
+        }
+        let after = days.last?.key ?? today
+        let until = monthDays(hijriYear: hijriYear + 1, month: 9).first?.key ?? "9999"
+        let syawalDays = Set(monthDays(hijriYear: hijriYear, month: 10).map(\.key))
+        var replaced = 0, syawal = 0
+        for (k, m) in prefs.fastLog where k > after && k < until {
+            if m == .qadha { replaced += 1 }
+            if m == .syawal && syawalDays.contains(k) { syawal += 1 }
+        }
+        return FastSummary(days: days, fasted: fasted, missed: missed, replaced: replaced, owed: max(0, missed - replaced), syawal: syawal)
+    }
+
+    func setFast(_ key: String, _ mark: FastMark?) {
+        prefs.fastLog[key] = mark
+        if prefs.fastLog.count > 800, let oldest = prefs.fastLog.keys.min() { prefs.fastLog[oldest] = nil }
+    }
+
+    /// Raya prayer time at your masjid, when its screen has one.
+    var eidPrayer: String? { myMasjidHere?.eid }
+
+    /// Ramadan's own alerts: Imsak (10 minutes before), Berbuka at Maghrib, qiyam in the last ten nights.
+    private func ramadanAlerts(_ pd: PrayerDay, here: String, maghribAlertOn: Bool) -> [NotificationScheduler.Alert] {
+        var out: [NotificationScheduler.Alert] = []
+        let id = "\(pd.year)-\(pd.month)-\(pd.day)"
+        let s = season(at: pd.time(.dhuhr))
+        if s.phase == .ramadan {
+            if prefs.imsakAlert {
+                out.append(.init(id: id + "-imsak", title: "Imsak in 10 minutes · \(formatted(imsak(pd)))",
+                                 body: "Finish your sahur. Subuh at \(formatted(pd.time(.fajr))) · \(here)",
+                                 fireDate: imsak(pd).addingTimeInterval(-600)))
+            }
+            if prefs.berbukaAlert && !maghribAlertOn {
+                out.append(.init(id: id + "-berbuka", title: "Time to berbuka · \(formatted(pd.time(.maghrib)))",
+                                 body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu. Ramadan day \(s.ramadanDay ?? 0) · \(here)",
+                                 fireDate: pd.time(.maghrib)))
+            }
+        }
+        if prefs.qiyamAlert, s.lastTen, let night = s.nightTonight, let next = day(containing: pd.time(.dhuhr).addingTimeInterval(86_400)),
+           let place = activePlace,
+           let last = BlessedTime.compute(day: pd, nextDay: next, coordinates: place.coordinates, isRamadan: false).first(where: { $0.0 == .lastThird }) {
+            out.append(.init(id: id + "-qiyam", title: "Night \(night) · the last third has begun",
+                             body: s.oddNight ? "An odd night of the last ten. Seek Lailatul Qadr." : "One of the last ten nights of Ramadan.",
+                             fireDate: last.1))
+        }
+        return out
+    }
+
     // MARK: Notifications
 
     func scheduleNotifications() {
@@ -548,8 +713,11 @@ final class AppModel {
         let onTime = prefs.notificationsEnabled
         let here = place.isInAsia ? "\(place.name) \(place.profile.flag)" : place.name
         // iOS keeps at most 64 pending; alerts plus early reminders double the count.
+        let maghribAlertOn = onTime && prefs.notifyPrayers.contains(.maghrib)
+        var ramadan: [NotificationScheduler.Alert] = []
         for offset in 0..<(onTime && early > 0 ? 6 : 12) {
             guard let pd = day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
+            if offset < 6 { ramadan += ramadanAlerts(pd, here: here, maghribAlertOn: maghribAlertOn) }
             for prayer in Prayer.allCases where prefs.notifyPrayers.contains(prayer) {
                 let time = pd.time(prayer)
                 let name = prayer.name(naming, isFriday: isFriday(time))
@@ -568,6 +736,12 @@ final class AppModel {
                                         body: "\(Prayer.fajr.name(naming)) has ended. \(here)", fireDate: time))
                     continue
                 }
+                if prayer == .maghrib && isRamadanDay(time) {
+                    alerts.append(.init(id: id, title: "Time to berbuka · \(name) \(formatted(time))",
+                                        body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu · \(here)", fireDate: time,
+                                        sound: prefs.azanSound ? .azan : .standard))
+                    continue
+                }
                 alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
                                     body: "It's time for \(name) in \(here)", fireDate: time,
                                     sound: prefs.azanSound ? (prayer == .fajr ? .azanSubuh : .azan) : .standard))
@@ -583,8 +757,8 @@ final class AppModel {
                 wakeUps.append((timing.date(in: pd), "Wake up for \(fajr) · ends \(formatted(pd.time(.sunrise)))"))
             }
         }
-        let notificationAlerts = alerts
-        let notificationsOn = onTime || early > 0
+        let notificationAlerts = ramadan + alerts
+        let notificationsOn = onTime || early > 0 || !ramadan.isEmpty
         Task {
             let alarmsHandled = await WakeUpAlarm.schedule(wakeUps)
             var all = notificationsOn ? notificationAlerts : []

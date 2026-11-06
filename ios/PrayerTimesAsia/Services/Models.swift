@@ -150,6 +150,26 @@ struct Preferences: Codable, Equatable, Sendable {
     /// Anonymous usage counts (city and country, never coordinates). See UsageCounter.
     var shareUsage = true
 
+    // Ramadan and Syawal
+    /// For testers: pretend today is a day in Ramadan or Syawal. Never moved to another phone.
+    var seasonPreview: SeasonPreview = .off
+    /// "Imsak in 10 minutes" in Ramadan.
+    var imsakAlert = true
+    /// "Time to berbuka" at Maghrib in Ramadan.
+    var berbukaAlert = true
+    /// The last ten nights: a gentle alert at the last third of the night.
+    var qiyamAlert = false
+    /// A juz a day to finish the Quran in the month.
+    var khatamPlan = false
+    /// "yyyy-MM-dd" → how that day's fast went.
+    var fastLog: [String: FastMark] = [:]
+    /// Days Tarawih was prayed.
+    var tarawihLog: Set<String> = []
+    /// Days the day's juz was read.
+    var quranLog: Set<String> = []
+    /// Hijri years zakat fitrah was paid.
+    var zakatPaid: Set<Int> = []
+
     private static let key = "preferences.v1"
 
     init() {}
@@ -197,6 +217,15 @@ struct Preferences: Codable, Equatable, Sendable {
         alertsPromptDismissed = v(.alertsPromptDismissed, d.alertsPromptDismissed)
         myMasjid = v(.myMasjid, d.myMasjid)
         shareUsage = v(.shareUsage, d.shareUsage)
+        seasonPreview = v(.seasonPreview, d.seasonPreview)
+        imsakAlert = v(.imsakAlert, d.imsakAlert)
+        berbukaAlert = v(.berbukaAlert, d.berbukaAlert)
+        qiyamAlert = v(.qiyamAlert, d.qiyamAlert)
+        khatamPlan = v(.khatamPlan, d.khatamPlan)
+        fastLog = v(.fastLog, d.fastLog)
+        tarawihLog = v(.tarawihLog, d.tarawihLog)
+        quranLog = v(.quranLog, d.quranLog)
+        zakatPaid = v(.zakatPaid, d.zakatPaid)
     }
 
     static func load() -> Preferences {
