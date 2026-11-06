@@ -23,7 +23,7 @@ describe('Move my settings', () => {
     expect(prefs.savedPlaces[1].district).toBe('Kota Bandung')
     expect(prefs.todayStyle).toBe('bands')
     expect(prefs.notifyPrayers).toEqual(['fajr', 'maghrib', 'isha'])
-    const back = movedFrom(prefs, m.wakeUp)
+    const back = movedFrom(prefs)
     expect(back).toEqual(m)
     expect(await decodeMove(await encodeMove(back))).toEqual(m)
   })

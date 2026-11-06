@@ -51,6 +51,8 @@ data class MovedSettings(
     val excusedDays: List<String>? = null,
     val trackerPausedSince: String? = null,
     val wakeUp: WakeUpTiming? = null,
+    val sahurAlarm: SahurTiming? = null,
+    val sahurDays: List<String>? = null,
 ) {
     @Serializable
     data class MovedPlace(
@@ -113,6 +115,8 @@ data class MovedSettings(
             excusedDays = p.excusedDays + excusedDays.orEmpty(),
             trackerPausedSince = trackerPausedSince?.takeIf { DAY.matches(it) },
             wakeUp = wakeUp,
+            sahurAlarm = sahurAlarm,
+            sahurDays = sahurDays?.let { raw -> SahurDay.entries.filter { it.raw in raw }.toSet() } ?: d.sahurDays,
         )
     }
 
@@ -152,7 +156,7 @@ data class MovedSettings(
             if (methodOverrideID != null || asrOverride != null || jakimZoneOverride != null) add("Your calculation choices")
             if (appearance != null || todayStyle != null || use24Hour != null || namingOverride != null) add("Your look and prayer names")
             if (notifyPrayers != null || reminderMinutesBefore != null) add("Which prayers to alert")
-            if (wakeUp != null) add("Your wake-up alarm")
+            if (wakeUp != null || sahurAlarm != null) add("Your wake-up alarms")
             if (musafirEnabled == true) add("Musafir features")
         }.ifEmpty { listOf("The standard settings") }
 
@@ -206,6 +210,8 @@ data class MovedSettings(
                 excusedDays = p.excusedDays.takeIf { it.isNotEmpty() }?.sorted(),
                 trackerPausedSince = p.trackerPausedSince,
                 wakeUp = p.wakeUp,
+                sahurAlarm = p.sahurAlarm,
+                sahurDays = changed(p.sahurDays, d.sahurDays)?.let { set -> SahurDay.entries.filter { it in set }.map { it.raw } },
             )
         }
 

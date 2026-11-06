@@ -4,6 +4,8 @@ import com.prayertimesasia.app.alarms.AlarmScheduler
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.Preferences
 import com.prayertimesasia.core.Resolver
+import com.prayertimesasia.core.SahurDay
+import com.prayertimesasia.core.SahurTiming
 import com.prayertimesasia.core.WakeUpTiming
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -39,6 +41,22 @@ class AlarmPlanTest {
         assertEquals(today.time(Prayer.SUNRISE).minusSeconds(1800), wake.at)
         // Syuruk isn't a prayer: no alert unless chosen.
         assertTrue(plan.none { it.id.endsWith("-sunrise") })
+    }
+
+    @Test fun tahajjudAndSahurAlarms() {
+        // Demo night is Sunday 25 October 2026, 4:49 am: the sahur alarm (Mondays and Thursdays) rings before Monday's Subuh.
+        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, wakeUp = WakeUpTiming.FAJR_MINUS_30,
+            sahurAlarm = SahurTiming.FAJR_MINUS_120, sahurDays = setOf(SahurDay.MON_THU))
+        val r = Resolver(prefs, locale = Locale("en", "SG"))
+        val plan = AlarmScheduler.plan(r, now)
+        val monday = r.day(now, 1)!!
+        val sahur = plan.single { it.id.endsWith("-sahur") }
+        assertEquals(monday.time(Prayer.FAJR).minusSeconds(7200), sahur.at)
+        assertEquals("Wake up for sahur", sahur.title)
+        val tahajjud = plan.first { it.id.endsWith("-wake") }
+        assertEquals("Wake up for tahajjud", tahajjud.title)
+        assertEquals(AlarmScheduler.Kind.WAKE, sahur.kind)
+        assertEquals(sahur, AlarmScheduler.nextWakeUp(r, monday.time(Prayer.FAJR).minusSeconds(4 * 3600)))
     }
 
     @Test fun reminderBeforePrayerWorksOnItsOwn() {

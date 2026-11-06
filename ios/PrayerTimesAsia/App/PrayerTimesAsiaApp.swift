@@ -59,6 +59,7 @@ struct RootView: View {
             .tint(.primary)
             .onAppear { model.applyDemoTab() }
             .sheet(isPresented: $model.showJourney) { JourneyView() }
+            .sheet(isPresented: $model.showWakeUp) { WakeUpView() }
             .sheet(item: $model.pendingMasjid) { MasjidLinkSheet(link: $0) }
             .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-widget-preview"))) {
                 NavigationStack { WidgetPreviewView() }
