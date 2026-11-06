@@ -41,7 +41,7 @@ import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.display
 
 /**
- * The app is free and built fisabilillah by Nasar Pte Ltd. The only promotion
+ * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only promotion
  * in it is for the makers' own services - no ad networks, nothing tracked: each
  * card just opens the website, which has the WhatsApp contact.
  */
@@ -109,7 +109,7 @@ fun MakersCard(offer: MakersOffer, placement: String, compact: Boolean = false, 
 fun MakersSheetContent(placement: String) {
     Column(Modifier.fillMaxWidth().padding(Dims.gutter), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Built fisabilillah", style = display(26.sp, FontWeight.Bold), color = Palette.primary)
-        Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by the team at Nasar Pte Ltd.",
+        Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).",
             style = Txt.body, color = Palette.secondary)
         MakersOffer.entries.forEach { MakersCard(it, placement) }
         Spacer(Modifier.width(1.dp))

@@ -2,7 +2,7 @@ import { ArrowUpRight, Globe } from 'lucide-preact'
 import { Kaaba } from './icons'
 
 /**
- * The app is free and built fisabilillah by Nasar Pte Ltd. The only promotion in
+ * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only promotion in
  * it is for the makers' own services - no ad networks, nothing tracked: each
  * card just opens the website (Makers.swift).
  */
@@ -47,7 +47,7 @@ export function MakersAbout({ placement }: { placement: string }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '8px' }}>
       <h3 class="display" style={{ fontSize: '26px', fontWeight: 700, margin: 0 }}>Built fisabilillah</h3>
       <p class="secondary" style={{ margin: 0 }}>
-        Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by the team at Nasar Pte Ltd.
+        Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).
       </p>
       {OFFERS.map((o) => <MakersCard offer={o} placement={placement} />)}
     </div>

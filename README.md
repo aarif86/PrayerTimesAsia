@@ -1,7 +1,7 @@
 # Prayer Times Asia
 
 Prayer times and qibla for Muslims living and travelling across Asia: on iPhone,
-Android and the web. Free, built fisabilillah by Nasar Pte Ltd. No third-party ads,
+Android and the web. Free, built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). No third-party ads,
 no accounts, no tracking; location never leaves the device.
 
 ## What's where

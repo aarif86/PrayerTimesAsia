@@ -5,8 +5,8 @@
   <!-- Kept out of Google and other search engines until launch. At launch, delete this line in every page (search the repo for "until launch"). -->
   <meta name="robots" content="noindex, nofollow" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Prayer Times Asia: prayer times and qibla wherever you land</title>
-  <meta name="description" content="Free prayer times and qibla for Muslims living and travelling across Asia. Official MUIS and JAKIM timetables, works offline, no ads, no account, no tracking. On the web today, iPhone and Android in testing." />
+  <title>Prayer Times Asia | prayer times and qibla wherever you land</title>
+  <meta name="description" content="Built by Ustaz Aarif Raziff after a trip to Vietnam with no proper prayer app. Free prayer times and qibla, built in Asia and made for Muslims everywhere. Your local religious authority first, official timetables where they exist, works offline, no ads, no account, no tracking. On the web today, iPhone and Android in testing." />
   <meta name="theme-color" content="#0b0f2a" />
   <meta name="color-scheme" content="dark" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
@@ -16,8 +16,8 @@
        the custom domain is set: GitHub forwards it to prayertimes.asia. -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Prayer Times Asia" />
-  <meta property="og:title" content="Prayer Times Asia: know when to pray, wherever you land" />
-  <meta property="og:description" content="Free prayer times and qibla across Asia. Official MUIS and JAKIM timetables, works offline, no ads, no tracking." />
+  <meta property="og:title" content="Prayer Times Asia | know when to pray, wherever you land" />
+  <meta property="og:description" content="Free prayer times and qibla, built in Asia for Muslims everywhere. Your local authority first, works offline, no ads, no tracking." />
   <meta property="og:image" content="https://aarif86.github.io/PrayerTimesAsia/img/share.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -38,6 +38,7 @@
     })();
   </script>
 
+  <!-- Windows has no flag emoji: load just these flags from Google Fonts. -->
   <style>
     :root {
       --night: #0b0f2a;
@@ -63,7 +64,7 @@
       font-family: var(--font);
       font-size: 17px;
       line-height: 1.6;
-      overflow-x: hidden;
+      overflow-x: clip;
     }
     /* The night sky behind everything: a few soft glows and stars. */
     body::before {
@@ -105,7 +106,8 @@
     header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 62px; gap: 12px; }
     .brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 800; }
     .brand img { width: 34px; height: 34px; border-radius: 9px; }
-    nav.links { display: flex; gap: 22px; }
+    nav.links { display: flex; gap: 22px; white-space: nowrap; }
+    @media (max-width: 1080px) { nav.links { gap: 16px; font-size: 0.92rem; } }
     nav.links a { color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 600; }
     nav.links a:hover { color: var(--text); }
     @media (max-width: 820px) { nav.links { display: none; } }
@@ -124,6 +126,21 @@
     .btn small { display: block; font-weight: 600; font-size: 0.72rem; opacity: 0.75; line-height: 1.1; }
     .btn .two { text-align: left; line-height: 1.2; }
     .btn-sm { padding: 10px 16px; min-height: 40px; font-size: 0.92rem; }
+    .top-right { display: flex; align-items: center; gap: 10px; }
+    .brand, .btn-sm { white-space: nowrap; }
+    @media (max-width: 480px) { .top-right .btn-sm { display: none; } }
+    .lang { position: relative; }
+    .lang summary { list-style: none; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 8px 13px; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; transition: background .25s, border-color .25s; }
+    .lang summary::-webkit-details-marker { display: none; }
+    .lang summary:hover, .lang[open] summary { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
+    .lang .caret { opacity: 0.7; transition: transform .25s; }
+    .lang[open] .caret { transform: rotate(180deg); }
+    .lang .menu { position: absolute; inset-inline-end: 0; top: calc(100% + 8px); min-width: 190px; padding: 6px; border-radius: 16px; background: #141a3d; border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 18px 40px -12px #000c; display: grid; z-index: 60; animation: langIn .2s ease-out; }
+    .lang .menu a { padding: 9px 12px; border-radius: 10px; color: inherit; text-decoration: none; font-size: 0.95rem; opacity: 0.85; }
+    .lang .menu a:hover { background: rgba(255,255,255,0.08); opacity: 1; }
+    .lang .menu a[aria-current="page"] { background: rgba(242,182,90,0.16); color: var(--gold); opacity: 1; font-weight: 600; }
+    @keyframes langIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+    .app-lang { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
     .btns { display: flex; flex-wrap: wrap; gap: 12px; }
     .btn svg { width: 22px; height: 22px; flex: none; }
 
@@ -135,7 +152,7 @@
     .hero .note { font-size: 0.9rem; color: var(--muted); }
     .hero-phones { position: relative; height: 600px; }
     .hero-phones .phone { position: absolute; width: 260px; }
-    .hero-phones .phone.back { right: 0; top: 50px; transform: rotate(6deg); opacity: 0.9; }
+    .hero-phones .phone.back { right: 0; top: 50px; transform: rotate(6deg); }
     .hero-phones .phone.front { left: 10px; top: 0; transform: rotate(-4deg); z-index: 2; }
     @media (max-width: 900px) {
       .hero .wrap { grid-template-columns: 1fr; }
@@ -148,7 +165,12 @@
       border-radius: 38px; padding: 8px; background: #05071a;
       box-shadow: 0 0 0 1.5px #ffffff22, 0 30px 60px -20px #000c, 0 0 80px -20px #f39a4a44;
     }
-    .phone img { border-radius: 31px; width: 100%; height: auto; aspect-ratio: 603 / 1311; }
+    .phone img { display: block; border-radius: 31px; width: 100%; height: auto; aspect-ratio: 603 / 1311; }
+    /* Android: squarer corners, thin even bezel and a punch hole camera. */
+    .phone.android { border-radius: 28px; padding: 6px; background: #0a0b12; }
+    .phone.android img { border-radius: 22px; aspect-ratio: 603 / 1347; }
+    .feature .shot .phone.android { position: relative; }
+    .phone.android::before { content: ""; position: absolute; top: 13px; left: 50%; width: 11px; height: 11px; margin-left: -5.5px; border-radius: 50%; background: #000; box-shadow: 0 0 0 1.5px #1c1f2e; }
 
     /* Trust strip */
     .strip { padding: 22px 0; border-top: 1px solid var(--card-line); border-bottom: 1px solid var(--card-line); background: rgba(255,255,255,0.02); }
@@ -159,7 +181,7 @@
     /* Feature rows */
     .feature { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; padding: 40px 0; }
     .feature.flip .copy { order: 2; }
-    .feature .shot { display: flex; justify-content: center; gap: 18px; }
+    .feature .shot { display: flex; justify-content: center; align-items: flex-start; gap: 18px; }
     .feature .shot .phone { width: 250px; }
     .feature .shot .phone + .phone { margin-top: 50px; }
     .feature ul { padding-left: 1.1em; color: var(--muted); margin: 0; }
@@ -189,7 +211,9 @@
     .countries { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-top: 36px; }
     .countries .card h3 { display: flex; align-items: center; gap: 10px; }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    .chip { background: rgba(255,255,255,0.06); border: 1px solid var(--card-line); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; color: var(--text); }
+    /* Flag emoji for Windows, which has none. Flag characters only (unicode-range). Twemoji Country Flags, MIT and CC-BY 4.0, see fonts/. */
+    @font-face { font-family: "Twemoji Country Flags"; src: url("fonts/TwemojiCountryFlags.woff2") format("woff2"); unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E007F; font-display: swap; }
+    .chip { font-family: "Twemoji Country Flags", var(--font); background: rgba(255,255,255,0.06); border: 1px solid var(--card-line); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; color: var(--text); }
 
     /* Masjid partner band */
     .partner { background: linear-gradient(135deg, #1d2160, #2b1a4f 60%, #3d1f3f); border: 1px solid var(--card-line); border-radius: 30px;
@@ -226,11 +250,11 @@
     @media (max-width: 960px) { .promises .grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 600px) { .promises .grid { grid-template-columns: 1fr; } }
     .faq { max-width: 780px; margin: 30px auto 0; }
-    details { background: var(--card); border: 1px solid var(--card-line); border-radius: 16px; padding: 4px 20px; margin-bottom: 12px; }
-    summary { cursor: pointer; font-weight: 700; padding: 14px 0; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+    details:not(.lang) { background: var(--card); border: 1px solid var(--card-line); border-radius: 16px; padding: 4px 20px; margin-bottom: 12px; }
+    details:not(.lang) summary { cursor: pointer; font-weight: 700; padding: 14px 0; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
     summary::-webkit-details-marker { display: none; }
-    summary::after { content: "+"; color: var(--gold); font-size: 1.3rem; line-height: 1; }
-    details[open] summary::after { content: "–"; }
+    details:not(.lang) summary::after { content: "+"; color: var(--gold); font-size: 1.3rem; line-height: 1; }
+    details:not(.lang)[open] summary::after { content: "–"; }
     details p { color: var(--muted); }
 
     footer { border-top: 1px solid var(--card-line); padding: 36px 0 48px; color: var(--muted); font-size: 0.92rem; }
@@ -239,22 +263,181 @@
 
     :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 8px; }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn { transition: none; } }
+
+    /* ---------- Story sections ---------- */
+    .chapters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; position: relative; }
+    @media (max-width: 860px) { .chapters { grid-template-columns: 1fr; } }
+    .chapter { background: var(--card); border: 1px solid var(--card-line); border-radius: var(--radius); padding: 26px; }
+    .chapter p { color: var(--muted); margin: 0; }
+    .chapter .num { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; margin-bottom: 14px;
+      font-weight: 800; color: #1b1230; background: linear-gradient(135deg, var(--gold), var(--ember)); box-shadow: 0 0 24px -4px var(--ember); }
+    .letter { margin: 40px auto 0; max-width: 780px; padding: 36px 40px; border-radius: 28px; position: relative;
+      background: linear-gradient(160deg, #1d2160cc, #2b1a4fcc); border: 1px solid var(--card-line); }
+    .letter::before { content: "\201C"; position: absolute; top: -18px; left: 28px; font-size: 6rem; line-height: 1; color: var(--gold); opacity: .5; font-family: Georgia, serif; }
+    .letter blockquote { margin: 0; font-size: 1.12rem; }
+    .letter figcaption { margin-top: 10px; color: var(--gold); font-weight: 700; }
+    .letter .ars { margin: 4px 0 0; font-size: 0.9rem; color: var(--muted); }
+    .letter-row { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 28px; align-items: center; max-width: 1060px; margin: 44px auto 0; }
+    .letter-row .letter { margin: 0; max-width: none; }
+    .trip-photo { margin: 0; }
+    .trip-photo img { width: 100%; height: auto; display: block; border-radius: 24px; border: 1px solid var(--card-line); box-shadow: 0 30px 60px -30px rgba(0,0,0,.7); transform: rotate(-1.5deg); transition: transform .6s ease; }
+    .trip-photo:hover img { transform: rotate(0deg) scale(1.01); }
+    .trip-photo figcaption { margin-top: 12px; font-size: 0.9rem; color: var(--muted); text-align: center; }
+    .signed { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+    .signed img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); flex: none; }
+    .signed figcaption { margin-top: 0; }
+    @media (max-width: 860px) { .letter-row { grid-template-columns: 1fr; } .trip-photo { max-width: 420px; margin: 0 auto; } }
+        @media (max-width: 600px) { .letter { padding: 30px 22px; } }
+    #who .card h3 { margin-bottom: 8px; }
+    /* Small examples of the app on each "who it's for" card */
+    .tribute { margin: 14px 0 0; font-size: 0.85rem; color: var(--muted); font-style: italic; }
+    .ex { border-radius: 16px; padding: 12px 14px; margin: -4px 0 18px; font-size: 0.86rem; line-height: 1.35; color: var(--text);
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.10); box-shadow: 0 14px 30px -18px rgba(0,0,0,.8); transition: transform .4s ease; }
+    #who .card:hover .ex { transform: translateY(-3px); }
+    .ex .ex-sub { color: var(--muted); font-size: 0.8rem; }
+    .ex-main { font-weight: 700; }
+    .ex-note { display: flex; gap: 10px; align-items: flex-start; background: rgba(240,242,255,0.12); backdrop-filter: blur(8px); }
+    .ex-note img { width: 30px; height: 30px; border-radius: 8px; flex: none; }
+    .ex-note > div { flex: 1; }
+    .ex-top { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--muted); }
+    .ex-top b { font-weight: 600; letter-spacing: .02em; text-transform: uppercase; }
+    .ex-pill { margin-top: 8px; display: inline-block; background: rgba(242,182,90,.16); color: var(--gold); border-radius: 999px; padding: 4px 10px; font-size: 0.76rem; font-weight: 600; }
+    .ex-list { padding: 4px 14px; }
+    .ex-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .ex-row:last-child { border-bottom: 0; }
+    .ex-row b { color: var(--gold); font-weight: 600; white-space: nowrap; }
+    .ex-days, .ex-dots { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+    .ex-days span { font-size: 0.7rem; color: var(--muted); }
+    .ex-dots { margin: 6px 0 8px; justify-items: center; }
+    .ex-dots i { width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--ember)); }
+    .ex-dots i.p { background: repeating-linear-gradient(45deg, rgba(255,255,255,.25) 0 3px, rgba(255,255,255,.08) 3px 6px); }
+    .ex-cal { padding: 8px 10px; font-variant-numeric: tabular-nums; }
+    .ex-calh, .ex-calr { display: grid; grid-template-columns: 1.1fr repeat(4, 1fr); gap: 4px; padding: 4px 0; font-size: 0.76rem; text-align: center; }
+    .ex-calh { color: var(--gold); font-weight: 600; font-size: 0.7rem; }
+    .ex-calr span:first-child, .ex-calh span:first-child { text-align: left; color: var(--muted); }
+    .ex-calr + .ex-calr { border-top: 1px solid rgba(255,255,255,0.07); }
+    .ex-tv { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(160deg, #0d1436, #1a1446); border: 6px solid #05070f; border-radius: 12px; }
+    .ex-big { font-size: 1.7rem; font-weight: 800; letter-spacing: .02em; font-variant-numeric: tabular-nums; color: var(--gold); line-height: 1.1; }
+    .ex-qr { width: 58px; height: 58px; border-radius: 6px; flex: none; }
+    .ask-band { text-align: center; border-radius: 30px; padding: 56px 28px; border: 1px solid var(--card-line);
+      background: radial-gradient(70% 120% at 50% 0%, #f39a4a33, transparent 70%), linear-gradient(135deg, #1d2160, #2b1a4f 60%, #3d1f3f); }
+    .ask-band .lead { margin: 0 auto; }
+    .ask-band .btns { justify-content: center; margin-top: 26px; }
+
+    /* ---------- Motion ---------- */
+    /* Everything moves with transform and opacity only, so it stays smooth on phones.
+       Reveals only hide content once the script has run (html.js), and all of it
+       switches off for people who ask their device for less motion. */
+    .sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+    .sky .glow { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; will-change: transform; }
+    .sky .g1 { width: 46vmax; height: 46vmax; background: #2a2f78; top: -18vmax; right: -12vmax; animation: drift1 26s ease-in-out infinite alternate; }
+    .sky .g2 { width: 40vmax; height: 40vmax; background: #3a1f52; bottom: -16vmax; left: -14vmax; animation: drift2 32s ease-in-out infinite alternate; }
+    .sky .g3 { width: 24vmax; height: 24vmax; background: #f39a4a; opacity: .12; top: 30%; left: 40%; animation: drift3 38s ease-in-out infinite alternate; }
+    .sky .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; animation: twinkle var(--d, 4s) ease-in-out var(--delay, 0s) infinite; }
+    .sky .shoot { position: absolute; top: 12%; left: 70%; width: 120px; height: 1.5px; opacity: 0;
+      background: linear-gradient(90deg, #fff, transparent); transform: rotate(-20deg); animation: shoot 11s ease-in 3s infinite; }
+    @keyframes drift1 { to { transform: translate(-8vmax, 10vmax) scale(1.1); } }
+    @keyframes drift2 { to { transform: translate(10vmax, -8vmax) scale(1.15); } }
+    @keyframes drift3 { to { transform: translate(-14vmax, 12vmax) scale(.85); } }
+    @keyframes twinkle { 0%, 100% { opacity: .15; transform: scale(.8); } 50% { opacity: .9; transform: scale(1.2); } }
+    @keyframes shoot { 0% { opacity: 0; transform: translate(0, 0) rotate(-20deg); } 3% { opacity: 1; } 9% { opacity: 0; transform: translate(-340px, 124px) rotate(-20deg); } 100% { opacity: 0; } }
+
+    .hero h1 span { background-size: 200% auto; animation: shimmer 6s linear infinite; }
+    @keyframes shimmer { to { background-position: 200% center; } }
+    .hero-phones .phone.front { animation: floatA 7s ease-in-out infinite; }
+    .hero-phones .phone.back { animation: floatB 8s ease-in-out infinite; }
+    @keyframes floatA { 0%, 100% { transform: rotate(-4deg) translateY(0); } 50% { transform: rotate(-3deg) translateY(-14px); } }
+    @keyframes floatB { 0%, 100% { transform: rotate(6deg) translateY(0); } 50% { transform: rotate(7deg) translateY(12px); } }
+    .hero-phones .tilt { position: absolute; inset: 0; transition: transform .6s cubic-bezier(.2,.8,.2,1); will-change: transform; }
+
+    .js .intro { opacity: 0; transform: translateY(18px); animation: rise .9s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(var(--i, 0) * 110ms + 100ms); }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+    .js .reveal { opacity: 0; transform: translateY(28px) scale(.98); transition: opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1);
+      transition-delay: calc(var(--i, 0) * 90ms); }
+    .js .reveal.in { opacity: 1; transform: none; }
+    .js .feature.reveal .shot .phone { transform: translateY(40px) rotate(var(--r, 0deg)); transition: transform 1.1s cubic-bezier(.2,.8,.2,1) .15s; }
+    .js .feature.reveal .shot .phone + .phone { --r: 3deg; transition-delay: .3s; }
+    .js .feature.reveal.in .shot .phone { transform: rotate(0); }
+
+    .strip { overflow: hidden; }
+    .strip .wrap { max-width: none; padding: 0; }
+    .js .strip ul { flex-wrap: nowrap; justify-content: flex-start; width: max-content; animation: marquee 34s linear infinite; }
+    .strip:hover ul { animation-play-state: paused; }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+
+    .card, .chapter { transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s, box-shadow .35s; position: relative; overflow: hidden; }
+    .card::after, .chapter::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s;
+      background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), #f2c06322, transparent 70%); }
+    .card:hover, .chapter:hover { transform: translateY(-4px); border-color: #f2c06355; box-shadow: 0 20px 40px -24px #000; }
+    .card:hover::after, .chapter:hover::after { opacity: 1; }
+    .js .reveal.in.card:hover, .js .reveal.in.chapter:hover { transform: translateY(-4px); }
+
+    .btn-primary { position: relative; overflow: hidden; }
+    .btn-primary::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%;
+      background: linear-gradient(100deg, transparent, #ffffff88, transparent); transform: skewX(-20deg); animation: sheen 5s ease-in-out 2s infinite; }
+    @keyframes sheen { 0%, 70% { left: -60%; } 100% { left: 130%; } }
+
+    header.top { transition: background .4s, box-shadow .4s; }
+    header.top.scrolled { background: rgba(11, 15, 42, 0.9); box-shadow: 0 10px 30px -18px #000; }
+    .progress { position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 20; transform-origin: 0 50%; transform: scaleX(0);
+      background: linear-gradient(90deg, var(--gold), var(--ember), var(--rose)); }
+
+    .tv-row div.on { animation: pulse 2.4s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 #f39a4a00; } 50% { box-shadow: 0 0 18px 2px #f39a4a66; } }
+    .tv-now b { font-variant-numeric: tabular-nums; }
+    .chapter .num { animation: glowNum 3s ease-in-out infinite; }
+    .chapter:nth-child(2) .num { animation-delay: 1s; } .chapter:nth-child(3) .num { animation-delay: 2s; }
+    @keyframes glowNum { 0%, 100% { box-shadow: 0 0 14px -6px var(--ember); } 50% { box-shadow: 0 0 30px 0 var(--ember); } }
+    details:not(.lang) { transition: background .3s, border-color .3s; }
+    details:not(.lang)[open] { background: rgba(255,255,255,0.07); border-color: #f2c06344; }
+    details[open] p { animation: rise .5s cubic-bezier(.2,.8,.2,1); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .js .intro, .js .reveal, .js .feature.reveal .shot .phone { opacity: 1; transform: none; }
+      .js .strip ul { flex-wrap: wrap; justify-content: center; width: auto; }
+    }
   </style>
+<script>
+  // First visit to the English page: open the page in the visitor's own language if we have it.
+  // Uses only the language their phone or computer is set to, nothing is sent anywhere.
+  // A language picked from the menu is remembered and always wins.
+  (function () {
+    if (document.documentElement.lang !== 'en' || /[?&]lang=en\b/.test(location.search)) return;
+    var have = ['ms', 'id', 'ar', 'ur', 'bn', 'tr', 'fr'], pick = null;
+    try { pick = localStorage.getItem('pta-lang'); } catch (e) {}
+    if (!pick) {
+      if (/bot|crawl|spider|slurp|facebookexternalhit|whatsapp|telegram|preview/i.test(navigator.userAgent)) return;
+      var prefs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en'];
+      for (var i = 0; i < prefs.length; i++) {
+        var code = String(prefs[i]).toLowerCase().split('-')[0];
+        if (code === 'in') code = 'id';
+        if (code === 'en') break;
+        if (have.indexOf(code) >= 0) { pick = code; break; }
+      }
+    }
+    if (pick && pick !== 'en' && have.indexOf(pick) >= 0) location.replace(pick + '/' + location.hash);
+  })();
+</script>
 </head>
 <body>
+<div class="sky" aria-hidden="true"><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div><div class="shoot"></div></div>
+<div class="progress" aria-hidden="true"></div>
 
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#top"><img src="img/icon-192.png" alt="" width="34" height="34" />Prayer Times Asia</a>
     <nav class="links" aria-label="Sections">
+      <a href="#story">Our story</a>
       <a href="#features">Features</a>
       <a href="#countries">Countries</a>
-      <a href="#coming">Coming next</a>
       <a href="#masjid">For masjids</a>
-      <a href="#promises">Our promises</a>
       <a href="#faq">Questions</a>
     </nav>
-    <a class="btn btn-primary btn-sm" href="app/">Open the app</a>
+    <div class="top-right">
+      <details class="lang"><summary aria-label="Language"><!--notr--><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="cur">EN</span><svg class="caret" viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><!--/notr--></summary><!--notr--><div class="menu"><a href="./" hreflang="en" aria-current="page">English</a><a href="ms/" hreflang="ms" lang="ms">Bahasa Melayu</a><a href="id/" hreflang="id" lang="id">Bahasa Indonesia</a><a href="ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a><a href="ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a><a href="bn/" hreflang="bn" lang="bn">বাংলা</a><a href="tr/" hreflang="tr" lang="tr">Türkçe</a><a href="fr/" hreflang="fr" lang="fr">Français</a></div><!--/notr--></details>
+      <a class="btn btn-primary btn-sm" href="app/">Open the app</a>
+    </div>
   </div>
 </header>
 
@@ -263,9 +446,9 @@
   <section class="hero">
     <div class="wrap">
       <div>
-        <span class="eyebrow">Free · No ads · No account</span>
-        <h1>Know when to pray, <span>wherever you land</span> in Asia.</h1>
-        <p class="lead">Prayer times and qibla for Muslims living and travelling across Asia. Official MUIS and JAKIM timetables at home, the right local method the moment you cross a border, and it keeps working with no signal.</p>
+        <span class="eyebrow">By Ustaz Aarif Raziff · Free fisabilillah</span>
+        <h1>A prayer app with <span>nothing to sell you.</span></h1>
+        <p class="lead">When Ustaz Aarif landed in Vietnam, he couldn't find a proper prayer app. So he asked himself, why not build one? Built in Asia, made for every Muslim. Times follow your local religious authority first, official timetables where they exist, no ads, no subscriptions, and your exact location stays on your phone.</p>
         <div class="btns">
           <a class="btn btn-primary" href="app/">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
@@ -276,10 +459,10 @@
             <span class="two">iPhone and Android<small>Join the test</small></span>
           </a>
         </div>
-        <p class="note">Built fisabilillah in Singapore by Nasar Pte Ltd.</p>
+        <p class="note"><a href="#story">Read the story</a> · Built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd)</p>
       </div>
       <div class="hero-phones" aria-hidden="true">
-        <div class="phone back"><img src="img/today-light.webp" alt="" width="603" height="1311" /></div>
+        <div class="phone android back"><img src="img/android-dial.webp" alt="" width="603" height="1347" /></div>
         <div class="phone front"><img src="img/today.webp" alt="" width="603" height="1311" /></div>
       </div>
     </div>
@@ -288,38 +471,160 @@
   <div class="strip">
     <div class="wrap">
       <ul>
-        <li>Official MUIS &amp; JAKIM timetables</li>
+        <li>Follows your local religious authority</li>
+        <li>Official timetables where they exist</li>
+        <li>143 countries</li>
         <li>Works offline</li>
         <li>Switches country for you</li>
-        <li>Location stays on your phone</li>
+        <li>Exact location stays on your phone</li>
         <li>Free, no ads</li>
       </ul>
     </div>
   </div>
+
+  <section id="story" class="story">
+    <div class="wrap">
+      <div class="center">
+        <span class="eyebrow">Our story</span>
+        <h2>It started with a trip to Vietnam.</h2>
+      </div>
+      <div class="chapters">
+        <div class="chapter">
+          <span class="num">1</span>
+          <h3>He landed with no proper prayer app</h3>
+          <p>Ustaz Aarif studied at Al&#8209;Azhar and is recognised by the Islamic Religious Council of Singapore (MUIS). In Vietnam he looked for a prayer app he could trust. The big ones show ads around your salah and make you pay for things that used to be free. Even the best one he found wasn't made for Asia.</p>
+        </div>
+        <div class="chapter">
+          <span class="num">2</span>
+          <h3>Back home, he decided to build one</h3>
+          <p>Not a business, and never something to sell later. Just a prayer app, built fisabilillah in the hope that it becomes sadaqah jariah. It knows how each country sets its prayer times, from Singapore and Malaysia to Vietnam and Japan.</p>
+        </div>
+        <div class="chapter">
+          <span class="num">3</span>
+          <h3>And promised to keep it that way</h3>
+          <p>Free forever. No ads, no sign up, your information stays with you, and anyone can see how it works. <a href="#promises">Read the four promises</a>.</p>
+        </div>
+      </div>
+
+      <div class="letter-row">
+      <figure class="trip-photo">
+        <img src="img/vietnam-masjid.webp" alt="The gate and minaret of Saigon Central Mosque, between the city's glass towers" loading="lazy" width="800" height="800" />
+        <figcaption>Saigon Central Mosque on Dong Du street, on the trip that started it all.</figcaption>
+      </figure>
+      <figure class="letter">
+        <blockquote>
+          <p>Assalamualaikum.</p>
+          <p>When I landed in Vietnam, I couldn't find a proper prayer app. The ones I found were full of ads or asked for a subscription.</p>
+          <p>To me, prayer times and the qibla are what every Muslim needs, wherever they are. Putting them behind a paywall just isn't right.</p>
+          <p>Falak has served us for centuries, and it still does. Today we have better tools to take it further, so why not use them, and keep them free for everyone? A beautiful design is just a bonus.</p>
+          <p>I was born in Singapore, so I built it for Asia first, my home. But the same rule applies everywhere, your local religious authority comes first, and it works all over the world.</p>
+          <p>It's free and it will stay free. If it helps you, make du'a for us, and share it with someone who prays.</p>
+        </blockquote>
+        <div class="signed">
+          <img src="img/ustaz-aarif.webp" alt="Ustaz Aarif Raziff" width="64" height="64" loading="lazy" />
+          <div>
+            <figcaption>Ustaz Aarif Raziff, founder of Prayer Times Asia</figcaption>
+            <p class="ars">Studied Islamic law (fiqh) at Al&#8209;Azhar University in Cairo. Recognised as a religious teacher by the Islamic Religious Council of Singapore (MUIS). <a href="https://www.muis.gov.sg/education/asatizah-development/asatizah-recognition-scheme/ars-directory/" target="_blank" rel="noopener">See the MUIS list</a> or <a href="https://aarif.sg/" target="_blank" rel="noopener">read more about him</a>.</p>
+          </div>
+        </div>
+      </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="built" class="built">
+    <div class="wrap">
+      <div class="center">
+        <span class="eyebrow">Getting the times right</span>
+        <h2>Every prayer time checked, every day of the year.</h2>
+        <p class="lead">A prayer app is only as good as its times. So we use the official times first, and check everything else against them.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 .9-4.5 4.3 1 6.3L12 16.6 6.5 19.5l1-6.3L3 8.9 9 8z"/></svg></div>
+          <h3>Your local religious authority first</h3>
+          <p>In Singapore, Malaysia and Indonesia the app shows the MUIS, JAKIM and Kemenag times exactly as they are. Everywhere else it follows your local religious authority.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
+          <h3>Tested every day</h3>
+          <p>When the app works out the times itself, we check them against the official times for every day of the year. If in doubt, it leans a little later, so you never pray too early.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
+          <h3>Open for anyone to check</h3>
+          <p>We are asking falak experts to check our work, and anyone can see exactly how each time is worked out.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="who">
+    <div class="wrap">
+      <div class="center">
+        <span class="eyebrow">Who it's for</span>
+        <h2>For everyone who prays, wherever life takes them.</h2>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="ex ex-note" aria-hidden="true"><img src="img/icon-192.png" alt="" /><div><div class="ex-top"><b>Prayer Times Asia</b><span>now</span></div><div class="ex-main">Asar in 15 minutes</div><div class="ex-sub">4.11 pm at Raffles Place</div></div></div>
+          <h3>The worker between meetings</h3>
+          <p>A gentle reminder before Zohor and Asar, and the next prayer right on your home screen, so a busy day never makes you miss salah.</p>
+        </div>
+        <div class="card">
+          <div class="ex ex-card" aria-hidden="true"><div class="ex-main">✈️ Welcome to Bangkok</div><div class="ex-sub">Times now follow Thailand.</div><div class="ex-pill">1,430 km from home · You can qasar and jamak</div></div>
+          <h3>The traveller</h3>
+          <p>Land in Bangkok or Tokyo and the times already match the local masjid. It also tells you how far you are from home and whether you can shorten and combine your prayers.</p>
+        </div>
+        <div class="card">
+          <div class="ex ex-list" aria-hidden="true"><div class="ex-row"><span>🕌 Musollah, Level 3</span><b>250 m</b></div><div class="ex-row"><span>🕌 Masjid Al&#8209;Falah</span><b>1.2 km</b></div><div class="ex-row ex-qibla"><span>🧭 Qibla</span><b>293°</b></div></div>
+          <h3>The student abroad</h3>
+          <p>Far from a masjid, it finds the nearest musollah or prayer room, shows the qibla and still works with no signal.</p>
+        </div>
+        <div class="card">
+          <div class="ex ex-track" aria-hidden="true"><div class="ex-days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div><div class="ex-dots"><i></i><i></i><i class="p"></i><i class="p"></i><i class="p"></i><i></i><i></i></div><div class="ex-sub">Paused for 3 days · Record kept</div></div>
+          <h3>The sister</h3>
+          <p>Keep track of your prayers, with a pause for haid or illness so your record isn't broken. It stays on your phone and is never sent anywhere.</p>
+        </div>
+        <div class="card">
+          <div class="ex ex-cal" aria-hidden="true"><div class="ex-calh"><span></span><span>Subuh</span><span>Zohor</span><span>Asar</span><span>Maghrib</span></div><div class="ex-calr"><span>Fri 6</span><span>5.28</span><span>12.50</span><span>4.11</span><span>6.52</span></div><div class="ex-calr"><span>Sat 7</span><span>5.27</span><span>12.50</span><span>4.11</span><span>6.52</span></div><div class="ex-calr"><span>Sun 8</span><span>5.27</span><span>12.50</span><span>4.12</span><span>6.53</span></div></div>
+          <h3>The family at home</h3>
+          <p>Times on every phone in the house, and a printable monthly calendar for the fridge or the surau wall.</p>
+        </div>
+        <div class="card">
+          <div class="ex ex-tv" aria-hidden="true"><div><div class="ex-sub">Asar iqamah in</div><div class="ex-big">08:24</div><div class="ex-sub">Azan 4.11 · Iqamah 4.21</div></div><svg class="ex-qr" viewBox="-1 -1 27 27" aria-hidden="true"><rect x="-1" y="-1" width="27" height="27" fill="#fff"/><path d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM13 0h1v1h-1zM14 0h1v1h-1zM18 0h1v1h-1zM19 0h1v1h-1zM20 0h1v1h-1zM21 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM10 1h1v1h-1zM12 1h1v1h-1zM13 1h1v1h-1zM16 1h1v1h-1zM18 1h1v1h-1zM24 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM9 2h1v1h-1zM11 2h1v1h-1zM13 2h1v1h-1zM14 2h1v1h-1zM15 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM21 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM9 3h1v1h-1zM11 3h1v1h-1zM13 3h1v1h-1zM15 3h1v1h-1zM16 3h1v1h-1zM18 3h1v1h-1zM20 3h1v1h-1zM21 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM12 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM18 5h1v1h-1zM24 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM19 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM9 7h1v1h-1zM12 7h1v1h-1zM13 7h1v1h-1zM0 8h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM11 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM0 9h1v1h-1zM2 9h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM7 9h1v1h-1zM9 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM13 9h1v1h-1zM14 9h1v1h-1zM15 9h1v1h-1zM17 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM9 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM13 10h1v1h-1zM15 10h1v1h-1zM17 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM24 10h1v1h-1zM0 11h1v1h-1zM2 11h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM7 11h1v1h-1zM9 11h1v1h-1zM17 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM23 11h1v1h-1zM24 11h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1zM11 12h1v1h-1zM15 12h1v1h-1zM18 12h1v1h-1zM24 12h1v1h-1zM0 13h1v1h-1zM5 13h1v1h-1zM7 13h1v1h-1zM10 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM20 13h1v1h-1zM23 13h1v1h-1zM0 14h1v1h-1zM1 14h1v1h-1zM2 14h1v1h-1zM3 14h1v1h-1zM6 14h1v1h-1zM7 14h1v1h-1zM8 14h1v1h-1zM13 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM18 14h1v1h-1zM20 14h1v1h-1zM21 14h1v1h-1zM22 14h1v1h-1zM23 14h1v1h-1zM24 14h1v1h-1zM0 15h1v1h-1zM2 15h1v1h-1zM4 15h1v1h-1zM5 15h1v1h-1zM8 15h1v1h-1zM12 15h1v1h-1zM15 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM19 15h1v1h-1zM21 15h1v1h-1zM22 15h1v1h-1zM24 15h1v1h-1zM0 16h1v1h-1zM3 16h1v1h-1zM6 16h1v1h-1zM7 16h1v1h-1zM8 16h1v1h-1zM10 16h1v1h-1zM11 16h1v1h-1zM12 16h1v1h-1zM13 16h1v1h-1zM15 16h1v1h-1zM16 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM19 16h1v1h-1zM20 16h1v1h-1zM22 16h1v1h-1zM23 16h1v1h-1zM8 17h1v1h-1zM11 17h1v1h-1zM14 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM0 18h1v1h-1zM1 18h1v1h-1zM2 18h1v1h-1zM3 18h1v1h-1zM4 18h1v1h-1zM5 18h1v1h-1zM6 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM12 18h1v1h-1zM14 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM20 18h1v1h-1zM24 18h1v1h-1zM0 19h1v1h-1zM6 19h1v1h-1zM8 19h1v1h-1zM11 19h1v1h-1zM13 19h1v1h-1zM15 19h1v1h-1zM16 19h1v1h-1zM20 19h1v1h-1zM24 19h1v1h-1zM0 20h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM8 20h1v1h-1zM9 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM12 20h1v1h-1zM14 20h1v1h-1zM15 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM18 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM0 21h1v1h-1zM2 21h1v1h-1zM3 21h1v1h-1zM4 21h1v1h-1zM6 21h1v1h-1zM8 21h1v1h-1zM10 21h1v1h-1zM12 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM16 21h1v1h-1zM17 21h1v1h-1zM18 21h1v1h-1zM23 21h1v1h-1zM24 21h1v1h-1zM0 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM6 22h1v1h-1zM10 22h1v1h-1zM11 22h1v1h-1zM14 22h1v1h-1zM20 22h1v1h-1zM21 22h1v1h-1zM22 22h1v1h-1zM23 22h1v1h-1zM24 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM10 23h1v1h-1zM11 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM17 23h1v1h-1zM19 23h1v1h-1zM20 23h1v1h-1zM22 23h1v1h-1zM23 23h1v1h-1zM24 23h1v1h-1zM0 24h1v1h-1zM1 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM11 24h1v1h-1zM12 24h1v1h-1zM16 24h1v1h-1zM18 24h1v1h-1zM21 24h1v1h-1zM24 24h1v1h-1z" fill="#0b0f2a"/></svg></div>
+          <h3>The masjid committee</h3>
+          <p>A free prayer times screen for the masjid TV with azan and iqamah times, and a QR code so jamaah can take your times home.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section id="features">
     <div class="wrap">
       <div class="center">
         <span class="eyebrow">What it does</span>
         <h2>Everything you need for salah, nothing you don't.</h2>
-        <p class="lead">Made for people who live in one country and travel to the next, and tested against the official timetables every day of the year.</p>
+        <p class="lead">Made for people who live in one country and travel to another, and checked against the official times every day of the year.</p>
       </div>
 
       <div class="feature">
         <div class="copy">
           <span class="tag live">Prayer times</span>
           <h3>The times you trust, at a glance</h3>
-          <p class="muted">A live dial counts down to the next prayer, with the whole day underneath. Pick the look you like: a centre dial, a side dial, a sun path or bright colour bands, in light or dark.</p>
+          <p class="muted">A clock counts down to the next prayer, with all of today's times below it. Choose the look you like, in light or dark.</p>
           <ul>
-            <li>Singapore uses the official MUIS timetable, Malaysia the official JAKIM e-Solat table for your zone</li>
-            <li>Alerts when each prayer begins, Jumaat on Fridays</li>
-            <li>Hijri date, Dhuha and the blessed night times</li>
-            <li>Home Screen and Lock Screen widgets on iPhone and Android</li>
+            <li>Singapore uses the official MUIS times, Malaysia uses JAKIM for your zone, and Indonesia uses Kemenag for your area</li>
+            <li>Prayer names in the way you say them, Subuh or Fajr, Zohor or Dhuhr</li>
+            <li>A reminder when each prayer time starts, and Jumaat on Fridays</li>
+            <li>Hijri date, Dhuha and the special night times</li>
+            <li>Prayer times on your home screen and lock screen, on iPhone and Android</li>
           </ul>
+          <p class="tribute">The Colour Bands look is our tribute to prayertime.sg &amp; my, the Singapore app many of us grew up with.</p>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/today.webp" alt="The Prayer screen: a dial counting down to Isyak, and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone"><img src="img/bands.webp" alt="The Colour Bands style: each prayer time on its own bright band" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone"><img src="img/today.webp" alt="The Prayer screen, a dial counting down to Isyak, and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-bands.webp" alt="The Colour Bands style, each prayer time on its own bright band" loading="lazy" width="603" height="1347" /></div>
         </div>
       </div>
 
@@ -327,16 +632,17 @@
         <div class="copy">
           <span class="tag live">Travel</span>
           <h3>Land in a new country, the times are already right</h3>
-          <p class="muted">Most prayer apps use one setting for everyone. Prayer Times Asia knows how each country works out its prayer times and switches the moment you arrive, with a short welcome card that tells you what changed.</p>
+          <p class="muted">This is the problem that started it all, on a trip to Vietnam.</p>
+          <p class="muted">Most prayer apps use one setting for everyone. Prayer Times Asia knows how each country sets its prayer times. It changes over as soon as you arrive, and shows a short note telling you what changed.</p>
           <ul>
-            <li>Musafir guidance: how far you are from home, and whether you may shorten (qasar) and combine (jamak)</li>
-            <li>Shafi'i and Hanafi distances and days</li>
-            <li>Worked out on your phone, so no data roaming is needed</li>
+            <li>For travellers, it shows how far you are from home, and whether you can shorten (qasar) and combine (jamak) your prayers</li>
+            <li>Follows the Shafi'i or Hanafi rules on distance and days</li>
+            <li>Works on your phone without internet, so no roaming needed</li>
           </ul>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/travel.webp" alt="Arriving in Hanoi: a welcome card explains the app switched to the Southeast Asia method" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone"><img src="img/journey.webp" alt="Journey: 2,195 km from home, you may shorten and combine prayers" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone"><img src="img/travel.webp" alt="Arriving in Hanoi, a welcome card explains the app switched to the Southeast Asia method" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-journey.webp" alt="Journey, 2,195 km from home, you may shorten and combine prayers" loading="lazy" width="603" height="1347" /></div>
         </div>
       </div>
 
@@ -344,16 +650,16 @@
         <div class="copy">
           <span class="tag live">Qibla &amp; Falak</span>
           <h3>Face the Kaabah in one glance</h3>
-          <p class="muted">A calm compass that turns green and taps your hand when you face the qibla. Falak tools read the time and the qibla from the sun and its shadow, the way the muwaqqit did, with no signal needed.</p>
+          <p class="muted">A simple compass that turns green and vibrates when you face the qibla. You can also find the time and the qibla from the sun and its shadow, the traditional way, with no signal needed.</p>
           <ul>
-            <li>Bearing and distance to Makkah</li>
-            <li>Qibla Day countdown, for checking with the sun</li>
-            <li>Shadow and sun readings, now with a falak committee member for review</li>
+            <li>Direction and distance to Makkah</li>
+            <li>Countdown to the days when the sun is right above the Kaabah, so you can check the qibla yourself</li>
+            <li>Read the time from your shadow and the sun, like in the old days</li>
           </ul>
         </div>
         <div class="shot">
           <div class="phone"><img src="img/qibla.webp" alt="The qibla compass showing Aligned, facing 293 degrees" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone"><img src="img/falak.webp" alt="Falak: the shadow right now and the days to the next Qibla Day" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-falak.webp" alt="Falak, the shadow right now and the days to the next Qibla Day" loading="lazy" width="603" height="1347" /></div>
         </div>
       </div>
 
@@ -361,10 +667,10 @@
         <div class="copy">
           <span class="tag live">Masjid</span>
           <h3>Find a masjid or musollah nearby</h3>
-          <p class="muted">See masjids, musollahs and prayer rooms around you on a map and in a list, with how far each one is. Handy in a new city, or in a mall at Asar.</p>
+          <p class="muted">See masjids, musollahs and prayer rooms near you on a map, with how far each one is. Handy in a new city, or in a mall at Asar.</p>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/masjid.webp" alt="A map and list of masjids and musollahs near Pasir Ris" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-masjid.webp" alt="A map and list of masjids and musollahs near Pasir Ris" loading="lazy" width="603" height="1347" /></div>
           <div class="phone"><img src="img/widget.webp" alt="The big Home Screen widget with today's prayer times" loading="lazy" width="603" height="1311" /></div>
         </div>
       </div>
@@ -375,19 +681,24 @@
     <div class="wrap">
       <div class="center">
         <span class="eyebrow">Where it works</span>
-        <h2>Exact at home. Ready on the road.</h2>
-        <p class="lead">Each country uses its own method, Asr school and prayer names, so the times match what the local masjid announces.</p>
+        <h2>Asia first. Now worldwide.</h2>
+        <p class="lead">143 countries. Where there is a religious authority, the app follows it, so the times match your local masjid. Where there isn't one, it uses the method most masjids there use, and tells you which. <a href="sources.html">See every country and its source</a>.</p>
       </div>
       <div class="countries">
         <div class="card">
           <h3>Official timetables</h3>
-          <p>Downloaded once a year and kept on your phone.</p>
-          <div class="chips"><span class="chip">🇸🇬 Singapore · MUIS</span><span class="chip">🇲🇾 Malaysia · JAKIM, by zone</span><span class="chip">🇮🇩 Indonesia · Kemenag method</span></div>
+          <p>Saved on your phone once a year.</p>
+          <div class="chips"><span class="chip">🇸🇬 Singapore · MUIS</span><span class="chip">🇲🇾 Malaysia · JAKIM, by zone</span><span class="chip">🇮🇩 Indonesia · Kemenag, by area</span></div>
         </div>
         <div class="card">
-          <h3>Local method, worked out on your phone</h3>
-          <p>No connection needed.</p>
-          <div class="chips"><span class="chip">🇧🇳 Brunei</span><span class="chip">🇹🇭 Thailand</span><span class="chip">🇻🇳 Vietnam</span><span class="chip">🇵🇭 Philippines</span><span class="chip">🇯🇵 Japan</span><span class="chip">🇰🇷 Korea</span><span class="chip">🇮🇳 India</span><span class="chip">🇹🇷 Türkiye</span><span class="chip">The Gulf</span><span class="chip">and the rest of Asia</span></div>
+          <h3>Follows the local authority</h3>
+          <p>Works on your phone without internet.</p>
+          <div class="chips"><span class="chip">🇸🇦 Saudi Arabia · Umm al&#8209;Qura</span><span class="chip">🇹🇷 Türkiye · Diyanet</span><span class="chip">🇦🇪 UAE</span><span class="chip">🇶🇦 Qatar</span><span class="chip">🇰🇼 Kuwait</span><span class="chip">🇯🇴 Jordan</span><span class="chip">🇪🇬 Egypt</span><span class="chip">🇲🇦 Morocco</span><span class="chip">🇷🇺 Russia</span><span class="chip">and more</span></div>
+        </div>
+        <div class="card">
+          <h3>Where there's no national authority</h3>
+          <p>Uses what most masjids there use, and the app tells you which.</p>
+          <div class="chips"><span class="chip">🇻🇳 Vietnam, 🇹🇭 Thailand, 🇯🇵 Japan and the rest of Asia</span><span class="chip">🇬🇧 UK · Moonsighting Committee</span><span class="chip">🇺🇸 USA and 🇨🇦 Canada · ISNA</span><span class="chip">🇪🇺 Europe · Muslim World League</span></div>
         </div>
       </div>
     </div>
@@ -398,20 +709,20 @@
       <div class="center">
         <span class="eyebrow">Where it's going</span>
         <h2>On your phone today. On every screen next.</h2>
-        <p class="lead">The same accurate times, wherever you look: on your wrist, your desk, your TV, and the screen at your masjid.</p>
+        <p class="lead">The same correct times wherever you look, on your watch, your computer, your TV and the screen at your masjid.</p>
       </div>
       <div class="grid">
         <div class="card">
           <span class="tag live">Live</span>
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></div>
           <h3>Web app</h3>
-          <p>Works in any browser on any phone or computer. Add it to your Home Screen and it opens like an app, even offline.</p>
+          <p>Works on any phone or computer. Add it to your home screen and it opens like an app, even without internet.</p>
         </div>
         <div class="card">
           <span class="tag beta">Testing now</span>
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div>
           <h3>iPhone and Android</h3>
-          <p>Widgets, a Lock Screen countdown and prayer alerts. In testing now, coming to the App Store and Google Play.</p>
+          <p>Prayer times on your home screen and lock screen, and prayer reminders. Being tested now, coming soon to the App Store and Google Play.</p>
         </div>
         <div class="card">
           <span class="tag plan">Planned</span>
@@ -423,7 +734,7 @@
           <span class="tag plan">Planned</span>
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
           <h3>Mac and Windows</h3>
-          <p>A quiet countdown in your menu bar or taskbar, so a busy workday never runs past Zohor or Asar.</p>
+          <p>A small countdown at the top or bottom of your screen, so a busy workday never makes you miss Zohor or Asar.</p>
         </div>
         <div class="card">
           <span class="tag plan">Planned</span>
@@ -432,10 +743,10 @@
           <p>Today's times on the big screen for the whole family, on Apple TV, Android TV and Google TV.</p>
         </div>
         <div class="card">
-          <span class="tag plan">Planned</span>
+          <span class="tag live">Live</span>
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c-2 2-4 3.5-4 6h8c0-2.5-2-4-4-6zM4 22V12h16v10M9 22v-5a3 3 0 0 1 6 0v5M2 22h20"/></svg></div>
           <h3>Masjid display screens</h3>
-          <p>A clear full-screen timetable for the masjid TV: azan and iqamah times, Jumu'ah and announcements, set up by the masjid.</p>
+          <p>A clear prayer times screen for the masjid TV with azan and iqamah times, Jumaat and announcements. The masjid sets it up. <a href="app/screen/#setup">Set one up</a>.</p>
         </div>
       </div>
     </div>
@@ -447,11 +758,11 @@
         <div>
           <span class="eyebrow">For masjids and imams</span>
           <h2>Help us get it right for your community.</h2>
-          <p class="muted">We want to work with imams and masjid committees across Asia so the app reflects how your community really prays. If you look after a masjid or musollah, we would love to hear from you.</p>
+          <p class="muted">We want to work with imams and masjid committees everywhere, so the app matches how your community prays. If you look after a masjid or musollah, we would love to hear from you.</p>
           <ul>
-            <li>Check our times against your local timetable and tell us where they differ</li>
+            <li>Compare our times with your masjid's and tell us if they are different</li>
             <li>Share your iqamah and Jumu'ah times so nearby jamaah can find them</li>
-            <li>Try the free masjid display screen on the TV in your masjid</li>
+            <li>Try the <a href="app/screen/#setup">free masjid display screen</a> on the TV in your masjid</li>
             <li>Tell us what your jamaah need, in your language</li>
           </ul>
           <div class="btns" style="margin-top: 24px">
@@ -462,14 +773,14 @@
           <div class="tv">
             <div class="tv-in">
               <div class="tv-head"><span>Your masjid · Singapore</span><span>Friday 30 October · 18 Jamadilawal 1448</span></div>
-              <div class="tv-now"><span>Next: Asar · iqamah in</span><b>00:12:40</b></div>
+              <div class="tv-now"><span>Asar iqamah in</span><b>00:12:40</b></div>
               <div class="tv-row">
                 <div>Subuh<b>5:28</b></div><div>Syuruk<b>6:47</b></div><div>Zohor<b>12:50</b></div>
                 <div class="on">Asar<b>4:08</b></div><div>Maghrib<b>6:51</b></div><div>Isyak<b>8:02</b></div>
               </div>
             </div>
           </div>
-          <p class="muted center" style="font-size: 0.85rem; margin-top: 12px">An early idea of the masjid display screen.</p>
+          <p class="muted center" style="font-size: 0.85rem; margin-top: 12px">The free masjid display screen. <a href="app/screen/#setup">Try it on your TV</a>.</p>
         </div>
       </div>
     </div>
@@ -480,7 +791,7 @@
       <div class="center">
         <span class="eyebrow">Try it</span>
         <h2>Start in under a minute.</h2>
-        <p class="lead">It's free, with nothing to sign up for. Tell us what you think: every change so far started as someone's suggestion.</p>
+        <p class="lead">It's free, with nothing to sign up for. Tell us what you think. We read every suggestion.</p>
       </div>
       <div class="steps">
         <div class="card">
@@ -507,7 +818,7 @@
       <div class="center">
         <span class="eyebrow">Our promises</span>
         <h2>Built fisabilillah. Kept that way.</h2>
-        <p class="lead">Prayer Times Asia is not for sale. These four promises hold for the apps, the website and the masjid screen.</p>
+        <p class="lead">Prayer Times Asia is not for sale. We make these four promises for the app, the website and the masjid screen.</p>
       </div>
       <div class="grid">
         <div class="card">
@@ -518,17 +829,17 @@
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg></div>
           <h3>No ads</h3>
-          <p>Not in the apps, not on the masjid screen, not in notifications or the azan.</p>
+          <p>Not in the app, not on the masjid screen, not in reminders or the azan. The only extra is a small card for our own services, which you can turn off.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
           <h3>Your data stays yours</h3>
-          <p>No account, and your location stays on your phone. Nothing personal is ever sold or shared.</p>
+          <p>No sign up, and your exact location stays on your phone. We never sell or share anything about you.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
-          <h3>Always open source</h3>
-          <p>Anyone can check how it works. <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/NOTICE.md">Copies must stay open too</a>.</p>
+          <h3>Open for anyone to see</h3>
+          <p>Anyone can see exactly how it is made. <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/NOTICE.md">Copies must stay open too</a>.</p>
         </div>
       </div>
     </div>
@@ -543,32 +854,54 @@
       <div class="faq">
         <details>
           <summary>Is it really free?</summary>
-          <p>Yes. Prayer Times Asia is built fisabilillah by Nasar Pte Ltd. There are no third-party ads, no subscriptions and no in-app purchases.</p>
+          <p>Yes. Ustaz Aarif Raziff builds it fisabilillah. His company, <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd), pays the costs, and we earn our living from other work, never from this app. There are no ads from others, no subscriptions and nothing to buy. The only thing you'll see is a small card for our own services, and you can turn it off.</p>
         </details>
         <details>
           <summary>Could the app be sold one day?</summary>
-          <p>No. It is not for sale, and it will never carry ads or sell data. The code is open under a licence that keeps every copy open, and only the official app may use the Prayer Times Asia name. Masjids, organisations and well-wishers who want to help can sponsor running costs or work with us: write to <a href="mailto:salam@prayertimes.asia?subject=Supporting%20Prayer%20Times%20Asia">salam@prayertimes.asia</a>.</p>
+          <p>No. It is not for sale, and it will never show ads or sell your information. Anyone can see how it is made, any copy must stay open the same way, and only the official app can use the Prayer Times Asia name.</p>
         </details>
         <details>
           <summary>How accurate are the times?</summary>
-          <p>In Singapore and Malaysia the app uses the official MUIS and JAKIM timetables. When it has to work them out itself (offline, or in other countries), it uses each country's own method, checked against the official tables for every day of the year and set to err on the safe side, never before the prayer has begun.</p>
+          <p>In Singapore, Malaysia and Indonesia the app uses the official MUIS, JAKIM and Kemenag times, and we check our own working against them every day of the year. In other countries it follows the local religious authority, like Umm al&#8209;Qura in Saudi Arabia or Diyanet in Türkiye. Where there isn't one, it uses what most masjids there use. If in doubt, a time leans a little later, never before the prayer has started. <a href="sources.html">See every country and its source</a>.</p>
+        </details>
+        <details>
+          <summary>I don't live in Asia. Will it work for me?</summary>
+          <p>Yes. It was built in Asia, but it now works in 143 countries. In London it uses the Moonsighting Committee times, in North America ISNA, in Makkah Umm al&#8209;Qura and in Istanbul Diyanet. The app always tells you whose times it is using, and you can change it in Settings.</p>
         </details>
         <details>
           <summary>Does it need the internet?</summary>
-          <p>Only now and then. The year's timetable is kept on your phone, and everywhere else the times are worked out on the phone itself, so it keeps working on a plane, abroad or with no signal.</p>
+          <p>Only once in a while. The times are saved on your phone, so it still works on a plane, overseas or with no signal.</p>
         </details>
         <details>
           <summary>What happens to my location?</summary>
-          <p>It stays on your phone. There is no account and no tracking across other apps. The app only asks the official sources for your year's timetable (by zone, never your exact spot). To know where people use it, the app sends anonymous counts with just the city and country, and you can turn them off in Settings. <a href="privacy.html">Full privacy details</a>.</p>
+          <p>It stays on your phone. There is no sign up and no tracking. To get your official times, the app only shares your zone, never your exact spot. To know where people use it, the app counts users by city and country only, without knowing who you are, and you can turn this off in Settings. <a href="privacy.html">Full privacy details</a>.</p>
         </details>
         <details>
           <summary>Is the musafir guidance a fatwa?</summary>
-          <p>No. Jamak and qasar guidance is general information to help you plan. When unsure, follow your local religious authority.</p>
+          <p>No. It is general guidance to help you plan, not a fatwa. Shortening (qasar) and combining (jamak) prayers when travelling is an ease given by Allah, in Surah an&#8209;Nisa, verse 101. Ibn Abbas said the Prophet ﷺ combined Zohor with Asar, and Maghrib with Isyak, when travelling (Sahih al&#8209;Bukhari). Scholars differ on the details, like how far and for how many days, so if unsure, follow your local religious authority.</p>
+        </details>
+        <details>
+          <summary>Whose Hijri date and Ramadan start does it follow?</summary>
+          <p>Your home country's religious authority, so MUIS in Singapore, the official announcement in Malaysia and Kemenag in Indonesia. Tap the Hijri date to choose another, or move it by a day in Settings if your community is different.</p>
         </details>
         <details>
           <summary>My masjid's times are different. What should I do?</summary>
-          <p>Please tell us. Send the masjid's name and a photo of its timetable to <a href="mailto:salam@prayertimes.asia?subject=Times%20differ">salam@prayertimes.asia</a>, or use "Help verify times" inside the app.</p>
+          <p>Your local religious authority and your masjid come first, so follow them. Then please tell us. Send the masjid's name and a photo of its timetable to <a href="mailto:salam@prayertimes.asia?subject=Times%20differ">salam@prayertimes.asia</a>, or use "Help verify times" inside the app.</p>
         </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="ask">
+    <div class="wrap">
+      <div class="ask-band reveal">
+        <span class="eyebrow">Our only ask</span>
+        <h2>If it helps you pray on time, make du'a for everyone who built it.</h2>
+        <p class="lead">And share it with one person who prays. That is how a free app reaches everyone, one friend, one family chat and one masjid at a time.</p>
+        <div class="btns">
+          <a class="btn btn-primary" href="app/">Open the app</a>
+          <a class="btn btn-ghost" href="https://wa.me/?text=A%20free%20prayer%20app%20made%20by%20Ustaz%20Aarif%2C%20no%20ads%20https%3A%2F%2Fprayertimes.asia" target="_blank" rel="noopener">Share on WhatsApp</a>
+        </div>
       </div>
     </div>
   </section>
@@ -579,11 +912,12 @@
   <div class="wrap">
     <div>
       <strong style="color: var(--text)">Prayer Times Asia</strong><br />
-      Built fisabilillah by Nasar Pte Ltd, Singapore.
+      Built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd).
     </div>
     <div>
       <a href="app/">Web app</a> ·
       <a href="privacy.html">Privacy</a> ·
+      <a href="press.html">Press</a> ·
       <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/website/changelog.md">What's new</a> ·
       <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md">Design a new look</a> ·
       <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>
@@ -591,5 +925,111 @@
   </div>
 </footer>
 
+
+<script>
+  // Motion, added only when the browser can run it. With no script, or with
+  // "reduce motion" turned on, the page shows everything at once and stays still.
+  (function () {
+    var root = document.documentElement;
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    root.classList.add('js');
+
+    // Stars that twinkle at their own pace.
+    var sky = document.querySelector('.sky');
+    for (var i = 0; i < 70; i++) {
+      var st = document.createElement('i');
+      st.className = 'star';
+      st.style.left = Math.random() * 100 + '%';
+      st.style.top = Math.random() * 100 + '%';
+      st.style.setProperty('--d', (3 + Math.random() * 5).toFixed(1) + 's');
+      st.style.setProperty('--delay', (-Math.random() * 8).toFixed(1) + 's');
+      if (Math.random() < 0.2) { st.style.width = st.style.height = '3px'; }
+      sky.appendChild(st);
+    }
+
+    // The hero comes in line by line.
+    // Language menu closes when you tap elsewhere or press Escape.
+    var langMenu = document.querySelector('.lang');
+    if (langMenu) {
+      document.addEventListener('click', function (e) { if (!langMenu.contains(e.target)) langMenu.open = false; });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') langMenu.open = false; });
+    }
+    // Remember a language picked from the menu, so we never switch it again.
+    document.querySelectorAll('.lang .menu a').forEach(function (a) {
+      a.addEventListener('click', function () { try { localStorage.setItem('pta-lang', a.getAttribute('hreflang')); } catch (e) {} });
+    });
+    var intro = document.querySelectorAll('.hero .eyebrow, .hero h1, .hero .lead, .hero .btns, .hero .note');
+    intro.forEach(function (el, n) { el.classList.add('intro'); el.style.setProperty('--i', n); });
+
+    // The trust strip loops: repeat its items once so the scroll is seamless.
+    var list = document.querySelector('.strip ul');
+    if (list && !still) list.innerHTML += list.innerHTML.replace(/<li>/g, '<li aria-hidden="true">');
+
+    // Sections rise into view as you scroll, a little after each other.
+    var groups = ['main section .center', '.chapter', '.trip-photo', '.letter', '.feature', '.grid > .card', '.countries > .card',
+      '.steps > .card', '.partner', '.faq details', '.ask-band'];
+    var items = document.querySelectorAll(groups.join(','));
+    items.forEach(function (el) {
+      el.classList.add('reveal');
+      var sibs = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+      el.style.setProperty('--i', Math.min(sibs, 5));
+    });
+    if ('IntersectionObserver' in window && !still) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+      items.forEach(function (el) { io.observe(el); });
+    } else {
+      items.forEach(function (el) { el.classList.add('in'); });
+    }
+
+    // A soft light follows the pointer across cards.
+    document.addEventListener('pointermove', function (e) {
+      var c = e.target.closest && e.target.closest('.card, .chapter');
+      if (!c) return;
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    }, { passive: true });
+
+    // Header settles, a thin progress line fills, and the hero phones lean with the scroll and the pointer.
+    var header = document.querySelector('header.top');
+    var bar = document.querySelector('.progress');
+    var phones = document.querySelector('.hero-phones');
+    var tilt = null;
+    if (phones && !still) {
+      tilt = document.createElement('div');
+      tilt.className = 'tilt';
+      while (phones.firstChild) tilt.appendChild(phones.firstChild);
+      phones.appendChild(tilt);
+    }
+    var px = 0, py = 0, ticking = false;
+    function frame() {
+      ticking = false;
+      var y = window.scrollY;
+      header.classList.toggle('scrolled', y > 10);
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
+      if (tilt) tilt.style.transform = 'translate3d(' + (px * 14) + 'px,' + (y * -0.08 + py * 10) + 'px,0) rotate(' + (px * 2) + 'deg)';
+    }
+    function ask() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+    window.addEventListener('scroll', ask, { passive: true });
+    window.addEventListener('pointermove', function (e) {
+      px = e.clientX / window.innerWidth - 0.5; py = e.clientY / window.innerHeight - 0.5; ask();
+    }, { passive: true });
+    frame();
+
+    // The masjid screen preview counts down for real.
+    var clock = document.querySelector('.tv-now b');
+    if (clock) {
+      var left = 12 * 60 + 40;
+      setInterval(function () {
+        left = left > 0 ? left - 1 : 15 * 60;
+        var m = Math.floor(left / 60), s = left % 60;
+        clock.textContent = '00:' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+      }, 1000);
+    }
+  })();
+</script>
 </body>
 </html>

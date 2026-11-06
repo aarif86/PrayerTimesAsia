@@ -209,7 +209,7 @@ struct SettingsView: View {
                 } header: {
                     Text("From the makers").id("makers")
                 } footer: {
-                    Text("Prayer Times Asia is free and built fisabilillah by Nasar Pte Ltd. The only offers you will see are our own - no ad networks, nothing tracked.")
+                    Text("Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own - no ad networks, nothing tracked.")
                 }
 
                 Section {

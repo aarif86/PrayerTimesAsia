@@ -201,7 +201,7 @@ export function SettingsScreen() {
         <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (map tiles and Overpass), which see the area you look at.</div>
       </Group>
 
-      <Group id="makers" title="From the makers" foot="Prayer Times Asia is free and built fisabilillah by Nasar Pte Ltd. The only offers you will see are our own - no ad networks, nothing tracked.">
+      <Group id="makers" title="From the makers" foot="Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own - no ad networks, nothing tracked.">
         <div class="makers-list">{OFFERS.map((o) => <MakersCard offer={o} placement="settings" />)}</div>
         <ToggleItem label="Show offers on Prayer and Masjid" on={p.showOffers} onChange={(v) => store.update((x) => { x.showOffers = v })} />
       </Group>

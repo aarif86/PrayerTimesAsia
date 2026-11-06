@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The app is free and built fisabilillah by Nasar Pte Ltd. The only promotion
+/// The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only promotion
 /// in it is for the makers' own services - no ad networks, nothing tracked:
 /// each card just opens the website, which has the WhatsApp contact.
 enum MakersOffer: String, CaseIterable, Identifiable {
@@ -98,7 +98,7 @@ struct MakersSheet: View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Built fisabilillah").font(Theme.display(26, .bold))
-                Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by the team at Nasar Pte Ltd.")
+                Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).")
                     .foregroundStyle(.secondary)
                 ForEach(MakersOffer.allCases) { offer in
                     MakersCard(offer: offer, placement: placement)

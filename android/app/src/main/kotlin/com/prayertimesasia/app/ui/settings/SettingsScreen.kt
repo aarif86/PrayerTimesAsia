@@ -241,7 +241,7 @@ fun SettingsScreen(
                 }
             }
             item {
-                Section("From the makers", "Prayer Times Asia is free and built fisabilillah by Nasar Pte Ltd. The only offers you will see are our own - no ad networks, nothing tracked.") {
+                Section("From the makers", "Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own - no ad networks, nothing tracked.") {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         MakersOffer.entries.forEach { MakersCard(it, "settings") }
                     }
