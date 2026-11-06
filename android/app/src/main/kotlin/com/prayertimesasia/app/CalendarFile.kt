@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter
 object CalendarFile {
     private val STAMP = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC)
 
-    private fun esc(s: String) = s.replace("\\", "\\\\").replace(",", "\\,").replace(";", "\;").replace("\n", "\\n")
+    private fun esc(s: String) = s.replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
 
     fun make(state: AppState, prayers: List<Prayer>, days: Int = 30): String? {
         val r = state.resolver
