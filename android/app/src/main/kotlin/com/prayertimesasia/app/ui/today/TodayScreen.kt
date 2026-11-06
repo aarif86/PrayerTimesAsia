@@ -278,6 +278,7 @@ private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 StyleButton(f.state)
                 AppearanceButton(f.state)
+                WakeChip(f.state)
                 if (f.state.prefs.trackerEnabled) StreakChip(f.state)
             }
         }

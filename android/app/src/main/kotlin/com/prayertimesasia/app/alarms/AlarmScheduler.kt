@@ -9,7 +9,9 @@ import com.prayertimesasia.core.BlessedTime
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.Resolver
+import com.prayertimesasia.core.SahurDay
 import com.prayertimesasia.core.Season
+import com.prayertimesasia.core.WakeUpTiming
 import java.time.Instant
 
 /**
@@ -69,10 +71,7 @@ object AlarmScheduler {
                 }
             }
             out += ramadanAlerts(r, day, key, here, maghribAlertOn = p.notificationsEnabled && Prayer.MAGHRIB in p.notifyPrayers)
-            p.wakeUp?.let { w ->
-                val fajr = Prayer.FAJR.name(r.naming)
-                out += Alert("$key-wake", "Wake up for $fajr", "$fajr ends at ${r.formatted(day.time(Prayer.SUNRISE))} · ${place.name}", w.date(day), Kind.WAKE)
-            }
+            out += wakeUps(r, day, key, place.name)
         }
         // Widgets move on at each prayer even with alerts off.
         r.next(now)?.let { (_, t) -> out += Alert("refresh", "", "", t, Kind.REFRESH) }
@@ -107,6 +106,37 @@ object AlarmScheduler {
         return out
     }
 
+    /** The Subuh wake-up and the sahur alarm on one day, as they ring. */
+    private fun wakeUps(r: Resolver, day: com.prayertimesasia.core.PrayerDay, key: String, placeName: String): List<Alert> {
+        val p = r.prefs
+        val fajr = Prayer.FAJR.name(r.naming)
+        val out = mutableListOf<Alert>()
+        p.sahurAlarm?.let { s ->
+            if (SahurDay.rings(day, p.sahurDays, r.zone, p.hijriAdjustment)) {
+                out += Alert("$key-sahur", "Wake up for sahur", "$fajr at ${r.formatted(day.time(Prayer.FAJR))} · $placeName", s.date(day), Kind.WAKE)
+            }
+        }
+        p.wakeUp?.let { w ->
+            out += if (w == WakeUpTiming.FAJR_MINUS_30) {
+                Alert("$key-wake", "Wake up for tahajjud", "$fajr at ${r.formatted(day.time(Prayer.FAJR))} · $placeName", w.date(day), Kind.WAKE)
+            } else {
+                Alert("$key-wake", "Wake up for $fajr", "$fajr ends at ${r.formatted(day.time(Prayer.SUNRISE))} · $placeName", w.date(day), Kind.WAKE)
+            }
+        }
+        return out
+    }
+
+    /** The next wake-up or sahur alarm, looking a week ahead (the sahur alarm may be days away). */
+    fun nextWakeUp(r: Resolver, now: Instant): Alert? {
+        if (r.prefs.wakeUp == null && r.prefs.sahurAlarm == null) return null
+        val place = r.activePlace ?: return null
+        for (offset in 0..7) {
+            val day = r.day(now, offset) ?: continue
+            wakeUps(r, day, "${day.year}-${day.month}-${day.day}", place.name).filter { it.at > now }.minByOrNull { it.at }?.let { return it }
+        }
+        return null
+    }
+
     private const val PREFS = "alarms"
     private const val KEY = "scheduled"
 
@@ -126,6 +156,9 @@ object AlarmScheduler {
             try {
                 when {
                     a.kind == Kind.REFRESH -> am.set(AlarmManager.RTC, t, pi)
+                    // A wake-up is a real alarm: the clock icon shows in the status bar and
+                    // battery saving never holds it back.
+                    a.kind == Kind.WAKE && exact -> am.setAlarmClock(AlarmManager.AlarmClockInfo(t, openApp(context)), pi)
                     exact -> am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, pi)
                     else -> am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, pi)
                 }
@@ -135,6 +168,10 @@ object AlarmScheduler {
         }
         sp.edit().putStringSet(KEY, codes.map { it.toString() }.toSet()).apply()
     }
+
+    private fun openApp(context: Context): PendingIntent =
+        PendingIntent.getActivity(context, 1, Intent(context, com.prayertimesasia.app.MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
     private fun pending(context: Context, code: Int, alert: Alert?): PendingIntent? {
         val intent = Intent(context, AlarmReceiver::class.java).setAction("com.prayertimesasia.app.ALERT")

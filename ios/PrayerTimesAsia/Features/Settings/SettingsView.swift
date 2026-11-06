@@ -22,6 +22,11 @@ struct SettingsView: View {
         }
     }
 
+    private var wakeUpSummary: String {
+        guard model.prefs.wakeUp != nil || model.prefs.sahurAlarm != nil else { return "Off" }
+        return model.nextWakeUp(after: .now).map { "Next \(model.formatted($0.date))" } ?? "On"
+    }
+
     var body: some View {
         @Bindable var model = model
         NavigationStack {
@@ -50,6 +55,21 @@ struct SettingsView: View {
                     Text(model.prefs.seasonPreview == .off
                          ? "Ramadan mode turns on by itself on the day your local religious authority announces. Testers can pretend it's Ramadan or Raya with the switch above."
                          : "Pretend mode is on. The app shows a pretend date, not today's. Turn it off before you rely on the times.")
+                }
+
+                Section {
+                    Button { model.showWakeUp = true } label: {
+                        LabeledContent {
+                            Text(wakeUpSummary)
+                        } label: {
+                            Label("Wake up for \(Prayer.fajr.name(model.naming))", systemImage: "alarm.fill")
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                } header: {
+                    Text("Wake-up")
+                } footer: {
+                    Text("Also on the Prayer screen. Tap the alarm clock at the top.")
                 }
 
                 Section {
@@ -106,24 +126,6 @@ struct SettingsView: View {
                     Text("Prayer names")
                 } footer: {
                     Text("Your names stay the same wherever you are: Automatic uses your home country's words, or your phone's language. When you travel somewhere that uses different words, the local name appears small underneath - \"Fajr\" with \"Subuh here\" in Kuala Lumpur - so the masjid's signs make sense. Spellings follow each authority's own timetable.")
-                }
-
-                Section {
-                    Picker("\(Prayer.fajr.name(model.naming)) wake-up", selection: Binding(
-                        get: { model.prefs.wakeUp },
-                        set: { timing in
-                            Task {
-                                if timing != nil { _ = await NotificationScheduler.requestPermission() }
-                                model.prefs.wakeUp = timing
-                            }
-                        })) {
-                        Text("Off").tag(WakeUpTiming?.none)
-                        ForEach(WakeUpTiming.allCases) { Text($0.label(model.naming)).tag(WakeUpTiming?.some($0)) }
-                    }
-                } header: {
-                    Text("Wake-up")
-                } footer: {
-                    Text("A real alarm that rings even in Silent mode (iOS 26 and later; earlier versions get a notification). Moves with \(Prayer.fajr.name(model.naming)) every day and wherever you travel.")
                 }
 
                 Section {

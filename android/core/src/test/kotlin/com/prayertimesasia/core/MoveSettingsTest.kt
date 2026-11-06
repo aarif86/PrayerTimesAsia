@@ -57,6 +57,19 @@ class MoveSettingsTest {
         assertEquals(moved, MovedSettings.fromCode(back.code))
     }
 
+    @Test fun sahurAlarmMoves() {
+        val prefs = Preferences(wakeUp = WakeUpTiming.FAJR_MINUS_30, sahurAlarm = SahurTiming.FAJR_MINUS_90,
+            sahurDays = setOf(SahurDay.MON_THU, SahurDay.WHITE_DAYS))
+        val moved = MovedSettings.from(prefs)
+        assertEquals(listOf("monThu", "whiteDays"), moved.sahurDays)
+        val back = MovedSettings.fromCode(moved.code)!!.appliedTo(Preferences())
+        assertEquals(WakeUpTiming.FAJR_MINUS_30, back.wakeUp)
+        assertEquals(SahurTiming.FAJR_MINUS_90, back.sahurAlarm)
+        assertEquals(setOf(SahurDay.MON_THU, SahurDay.WHITE_DAYS), back.sahurDays)
+        // The default days are left out of the code.
+        assertEquals(null, MovedSettings.from(Preferences(sahurAlarm = SahurTiming.FAJR_MINUS_60)).sahurDays)
+    }
+
     @Test fun freshInstallIsEmpty() {
         assertEquals(cases[0].settings, MovedSettings.from(Preferences()))
         assertEquals(MovedSettings(), MovedSettings.fromCode(MovedSettings().code))

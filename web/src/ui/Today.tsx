@@ -13,6 +13,7 @@ import { alertSupport, requestPermission } from '../services/notifications'
 import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '../services/prefs'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
+import { WakeChip } from './WakeUp'
 import { fmtDate, openSheet, short, SourceBadge, Switch, TimeText } from './common'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { featuredOffer, MakersCard } from './Makers'
@@ -179,6 +180,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
       <div class="controls-col">
         <StyleButton c={c} />
         <AppearanceButton c={c} />
+        <WakeChip now={c.now} open={() => openSheet({ kind: 'wakeup' })} />
         {store.prefs.trackerEnabled && <StreakChip now={c.now} />}
       </div>
     )
@@ -186,6 +188,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
   return (
     <>
       <JourneyButton now={c.now} />
+      <WakeChip now={c.now} open={() => openSheet({ kind: 'wakeup' })} />
       {store.prefs.trackerEnabled && <StreakChip now={c.now} />}
       <AppearanceButton c={c} />
       <StyleButton c={c} />

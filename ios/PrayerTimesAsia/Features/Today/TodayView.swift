@@ -160,6 +160,7 @@ struct TodayView: View {
                         .buttonStyle(.plain)
                         .accessibilityLabel("Musafir: you may shorten and combine prayers")
                     }
+                    wakeChip(now)
                     if model.prefs.trackerEnabled { streakChip(now) }
                     appearanceButton
                     styleButton
@@ -278,7 +279,8 @@ struct TodayView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Musafir: you may shorten and combine prayers")
             }
-            if model.prefs.trackerEnabled { streakChip(now) }
+            wakeChip(now)
+                    if model.prefs.trackerEnabled { streakChip(now) }
             appearanceButton
             styleButton
         }
@@ -428,6 +430,7 @@ struct TodayView: View {
                         .buttonStyle(.plain)
                         .accessibilityLabel("Musafir: you may shorten and combine prayers")
                     }
+                    wakeChip(now)
                     if model.prefs.trackerEnabled { streakChip(now) }
                     appearanceButton
                     styleButton
@@ -533,6 +536,7 @@ struct TodayView: View {
                 VStack(spacing: 8) {
                     styleButton
                     appearanceButton
+                    wakeChip(now)
                     if model.prefs.trackerEnabled { streakChip(now) }
                 }
                 .padding(.top, 4)
@@ -616,7 +620,8 @@ struct TodayView: View {
                 sunStatus(current: current, next: next, now: now)
             }
             Spacer(minLength: 0)
-            if model.prefs.trackerEnabled { streakChip(now) }
+            wakeChip(now)
+                    if model.prefs.trackerEnabled { streakChip(now) }
             appearanceButton
             styleButton
         }
@@ -792,6 +797,29 @@ struct TodayView: View {
         f.unitsStyle = .full
         f.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
         return f.string(from: max(60, seconds)) ?? ""
+    }
+
+    /// The alarm clock: Wake up for Subuh, one tap from the Prayer screen.
+    /// Shows the next alarm's time when one is set.
+    private func wakeChip(_ now: Date) -> some View {
+        let next = model.nextWakeUp(after: now)
+        let fajr = Prayer.fajr.name(model.naming)
+        return Button { model.showWakeUp = true } label: {
+            HStack(spacing: 4) {
+                Image(systemName: next == nil ? "alarm" : "alarm.fill")
+                if let next {
+                    Text(model.formatted(next.date).replacingOccurrences(of: " AM", with: "").replacingOccurrences(of: " PM", with: ""))
+                        .monospacedDigit()
+                }
+            }
+            .font(.subheadline.weight(.semibold))
+            .padding(.horizontal, next == nil ? 0 : 10)
+            .frame(minWidth: 34, minHeight: 34)
+            .background(next == nil ? Color.primary.opacity(0.1) : Theme.sunArc.opacity(0.3), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(next.map { "Wake up alarm at \(model.formatted($0.date))" } ?? "Wake up for \(fajr): set an alarm")
+        .accessibilityHint("Alarms for \(fajr), tahajjud and sahur.")
     }
 
     private func streakChip(_ now: Date) -> some View {

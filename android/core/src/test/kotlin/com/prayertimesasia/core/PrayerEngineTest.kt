@@ -179,6 +179,34 @@ class PrayerEngineTest {
         assertEquals(day.time(Prayer.FAJR), WakeUpTiming.AT_FAJR.date(day))
         assertEquals(day.time(Prayer.SUNRISE).minusSeconds(1800), WakeUpTiming.SUNRISE_MINUS_30.date(day))
         assertEquals("15 min before Syuruk", WakeUpTiming.SUNRISE_MINUS_15.label(NamingStyle.MALAY))
+        assertEquals(day.time(Prayer.FAJR).minusSeconds(1800), WakeUpTiming.FAJR_MINUS_30.date(day))
+        assertEquals("30 min before Subuh for tahajjud", WakeUpTiming.FAJR_MINUS_30.label(NamingStyle.MALAY))
+        assertEquals(day.time(Prayer.FAJR).minusSeconds(5400), SahurTiming.FAJR_MINUS_90.date(day))
+        assertEquals("2 hours before Subuh", SahurTiming.FAJR_MINUS_120.label(NamingStyle.MALAY))
+    }
+
+    @Test fun sahurDays() {
+        val zone = java.time.ZoneId.of("Asia/Singapore")
+        fun day(d: java.time.LocalDate) = PrayerEngine.compute(d.year, d.monthValue, d.dayOfMonth, singapore, CalculationMethod.MUIS, AsrSchool.STANDARD)
+        val monday = day(java.time.LocalDate.of(2026, 11, 9))
+        val tuesday = day(java.time.LocalDate.of(2026, 11, 10))
+        val thursday = day(java.time.LocalDate.of(2026, 11, 12))
+        val monThu = setOf(SahurDay.MON_THU)
+        assertTrue(SahurDay.rings(monday, monThu, zone, 0))
+        assertTrue(SahurDay.rings(thursday, monThu, zone, 0))
+        assertTrue(!SahurDay.rings(tuesday, monThu, zone, 0))
+        assertTrue(SahurDay.rings(tuesday, setOf(SahurDay.EVERY_DAY), zone, 0))
+        // Ramadan follows the Hijri date (and the user's adjustment).
+        val ramadan10 = Hijri.toLocalDate(1448, 9, 10)!!
+        val inRamadan = day(ramadan10)
+        assertTrue(SahurDay.rings(inRamadan, setOf(SahurDay.RAMADAN), zone, 0))
+        val shaban = day(Hijri.toLocalDate(1448, 8, 20)!!)
+        assertTrue(!SahurDay.rings(shaban, setOf(SahurDay.RAMADAN), zone, 0))
+        // White days: 13, 14, 15 of the month, but not 13 Zulhijjah (Tashreeq).
+        assertTrue(SahurDay.rings(day(Hijri.toLocalDate(1448, 6, 14)!!), setOf(SahurDay.WHITE_DAYS), zone, 0))
+        assertTrue(!SahurDay.rings(day(Hijri.toLocalDate(1448, 6, 16)!!), setOf(SahurDay.WHITE_DAYS), zone, 0))
+        assertTrue(!SahurDay.rings(day(Hijri.toLocalDate(1448, 12, 13)!!), setOf(SahurDay.WHITE_DAYS), zone, 0))
+        assertTrue(SahurDay.rings(day(Hijri.toLocalDate(1448, 12, 14)!!), setOf(SahurDay.WHITE_DAYS), zone, 0))
     }
 
     @Test fun oldPreferencesStillDecode() {
@@ -189,6 +217,8 @@ class PrayerEngineTest {
         assertEquals(89.0, prefs.musafirThresholdKm, 0.0)
         assertTrue(!prefs.trackerEnabled)
         assertNull(prefs.wakeUp)
+        assertNull(prefs.sahurAlarm)
+        assertEquals(SahurDay.DEFAULT, prefs.sahurDays)
         // Round trip.
         assertEquals(prefs, Preferences.decode(prefs.encode()))
         // Garbage gives defaults rather than a crash.

@@ -69,6 +69,8 @@ class AppState(
     var showJourney by mutableStateOf(false)
     var showTracker by mutableStateOf(false)
     var showRamadan by mutableStateOf(false)
+    /** Wake up for Subuh (the alarm clock on the Prayer screen, or Settings). */
+    var showWakeUp by mutableStateOf(false)
     /** A masjid from a screen's QR code, waiting for the user to say yes. */
     var pendingMasjid by mutableStateOf<MasjidLink?>(null)
     var locationRequested by mutableStateOf(false)
@@ -258,6 +260,22 @@ class AppState(
             val granted = permissions?.notifications() ?: true
             if (!granted) return@launch
             update { it.copy(reminderMinutesBefore = minutes) }
+        }
+    }
+
+    /** The Subuh alarm: asks for notification permission first (the alarm rings as one). */
+    fun setWakeUp(timing: com.prayertimesasia.core.WakeUpTiming) {
+        scope.launch {
+            permissions?.notifications()
+            update { it.copy(wakeUp = timing) }
+        }
+    }
+
+    /** The earlier sahur alarm, as [setWakeUp]. */
+    fun setSahurAlarm(timing: com.prayertimesasia.core.SahurTiming) {
+        scope.launch {
+            permissions?.notifications()
+            update { it.copy(sahurAlarm = timing) }
         }
     }
 

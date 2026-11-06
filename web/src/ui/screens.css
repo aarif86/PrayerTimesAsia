@@ -393,3 +393,11 @@
 .syawal-count .big { font-size: 28px; font-weight: 700; }
 .inline-input { flex: 1; min-width: 0; text-align: right; background: transparent; border: 0; color: inherit; font: inherit; }
 @media (prefers-reduced-motion: reduce) { .season-card { animation: none; } }
+/* Wake up for Subuh */
+.wake-chip { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+.wake-hadith { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.wake-hadith .arabic { font-size: 22px; text-align: right; line-height: 1.7; margin: 0; }
+.wake-hadith .quote { font-style: italic; margin: 0; }
+.wake-hadith .caption { margin: 0; }
+.wake-hadith .next { font-weight: 600; margin: 4px 0 0; color: var(--accent); }
+.item.choice .choice-tick { color: var(--accent); flex: none; }

@@ -48,6 +48,10 @@
             android:exported="false" />
 
         <receiver
+            android:name=".alarms.WakeDoneReceiver"
+            android:exported="false" />
+
+        <receiver
             android:name=".alarms.BootReceiver"
             android:exported="true">
             <intent-filter>

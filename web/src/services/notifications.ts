@@ -3,6 +3,7 @@ import { PRAYERS, type Prayer } from '../core/prayer'
 import { flag } from '../core/regions'
 import type { PrayerDay } from '../core/engine'
 import { zoned } from '../core/tz'
+import { sahurRings, sahurTime, wakeUpTime } from '../core/wakeup'
 import { playAzan } from './azan'
 import { store } from './store'
 
@@ -45,6 +46,7 @@ export function upcomingAlerts(now: number): Alert[] {
   const early = prefs.reminderMinutesBefore
   const onTime = prefs.notificationsEnabled
   if (!place) return []
+  const wake = wakeUps(now, 2).map((w) => ({ id: w.id, title: w.title, body: w.body, at: w.at }))
   const here = isInAsia(place) ? `${place.name} ${flag(placeProfile(place).code)}` : place.name
   const out: Alert[] = []
   for (let offset = 0; offset < 2; offset++) {
@@ -77,7 +79,45 @@ export function upcomingAlerts(now: number): Alert[] {
       out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}`, at: time, prayer })
     }
   }
-  return out.filter((a) => a.at > now).sort((a, b) => a.at - b.at)
+  return [...out, ...wake].filter((a) => a.at > now).sort((a, b) => a.at - b.at)
+}
+
+export interface WakeUp { id: string; title: string; body: string; at: number; sahur: boolean }
+
+/** The Subuh alarm and the sahur alarm for the next `days` days, soonest first (the same plan as the apps). */
+export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
+  const place = store.activePlace
+  const p = store.prefs
+  if (!place || (!p.wakeUp && !p.sahurAlarm)) return []
+  const fajr = store.name('fajr')
+  const out: WakeUp[] = []
+  for (let offset = start; offset < start + days; offset++) {
+    const day = store.day(now + offset * 86_400_000)
+    if (!day) continue
+    const key = `${day.year}-${day.month}-${day.day}`
+    if (p.sahurAlarm && sahurRings(day, p.sahurDays, place.timeZoneID, p.hijriAdjustment)) {
+      out.push({ id: `${key}-sahur`, title: 'Wake up for sahur', body: `${fajr} at ${store.formatted(day.times.fajr)} · ${place.name}`, at: sahurTime(p.sahurAlarm, day), sahur: true })
+    }
+    if (p.wakeUp) {
+      const tahajjud = p.wakeUp === 'fajrMinus30'
+      out.push({
+        id: `${key}-wake`, title: tahajjud ? 'Wake up for tahajjud' : `Wake up for ${fajr}`,
+        body: tahajjud ? `${fajr} at ${store.formatted(day.times.fajr)} · ${place.name}` : `${fajr} ends at ${store.formatted(day.times.sunrise)} · ${place.name}`,
+        at: wakeUpTime(p.wakeUp, day), sahur: false,
+      })
+    }
+  }
+  return out.filter((w) => w.at > now).sort((a, b) => a.at - b.at)
+}
+
+/** The next alarm, looking a week ahead (the sahur alarm may be days away). */
+export function nextWakeUp(now: number): WakeUp | null {
+  if (!store.prefs.wakeUp && !store.prefs.sahurAlarm) return null
+  for (let offset = 0; offset < 8; offset++) {
+    const first = wakeUps(now, 1, offset)[0]
+    if (first) return first
+  }
+  return null
 }
 
 /**
@@ -133,7 +173,7 @@ export function scheduleAlerts(): void {
 }
 
 export async function show(title: string, body: string, tag: string): Promise<void> {
-  const options: NotificationOptions = { body, tag, requireInteraction: tag.endsWith('-early'), icon: `${import.meta.env.BASE_URL}icons/icon-192.png`, badge: `${import.meta.env.BASE_URL}icons/badge-96.png` }
+  const options: NotificationOptions = { body, tag, requireInteraction: tag.endsWith('-early') || tag.endsWith('-wake') || tag.endsWith('-sahur'), icon: `${import.meta.env.BASE_URL}icons/icon-192.png`, badge: `${import.meta.env.BASE_URL}icons/badge-96.png` }
   try {
     const reg = await navigator.serviceWorker?.getRegistration()
     if (reg) { await reg.showNotification(title, options); return }
@@ -192,6 +232,44 @@ export function buildICS(days = 30, prayers: Prayer[] = ['fajr', 'dhuhr', 'asr',
   }
   lines.push('END:VCALENDAR')
   return lines.join('\r\n') + '\r\n'
+}
+
+/**
+ * The next `days` days of wake-up alarms as calendar events, each with an alarm
+ * at its time. A phone's calendar rings these even when the browser is closed,
+ * so this is how the web app gives a real wake-up.
+ */
+export function buildWakeICS(days = 30): string | null {
+  const place = store.activePlace
+  if (!place) return null
+  const now = store.now()
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Prayer Times Asia//Web//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+    `X-WR-CALNAME:${esc(`Wake up for ${store.name('fajr')} · ${place.name}`)}`]
+  for (const w of wakeUps(now, days)) {
+    lines.push('BEGIN:VEVENT', `UID:web-${w.id}-${place.coordinates.latitude.toFixed(3)}@prayertimes.asia`,
+      `DTSTAMP:${stamp(now)}`, `DTSTART:${stamp(w.at)}`, 'DURATION:PT10M', `SUMMARY:${esc(w.title)}`,
+      `DESCRIPTION:${esc(w.body)}`, 'TRANSP:TRANSPARENT',
+      'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${esc(w.title)}`, 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT')
+  }
+  lines.push('END:VCALENDAR')
+  return lines.join('\r\n') + '\r\n'
+}
+
+export function downloadWakeICS(): void {
+  const text = buildWakeICS()
+  if (!text) return
+  save(text, `wake-up-${(store.activePlace?.name ?? 'here').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.ics`)
+}
+
+function save(text: string, name: string): void {
+  const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = name
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000)
 }
 
 export function downloadICS(): void {

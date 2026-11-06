@@ -1,12 +1,12 @@
 import { azanAvailable } from '../services/azan'
 import { useEffect, useState } from 'preact/hooks'
-import { ArrowDownToLine, ArrowRightLeft, MoonStar, BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
+import { AlarmClock, ArrowDownToLine, ArrowRightLeft, MoonStar, BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
 import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, type NamingStyle, type Prayer } from '../core/prayer'
 import { flag, profileMethod } from '../core/regions'
-import { alertSupport, downloadICS, permission, requestPermission, testAlert } from '../services/notifications'
+import { alertSupport, downloadICS, nextWakeUp, permission, requestPermission, testAlert } from '../services/notifications'
 import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
 import { store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
@@ -61,6 +61,8 @@ export function SettingsScreen() {
     else openSheet({ kind: 'alerts-help' })
   }
   const reminderOn = p.reminderMinutesBefore > 0 && perm === 'granted'
+  const nextWake = nextWakeUp(s.now())
+  const wakeValue = nextWake ? `Next ${s.formatted(nextWake.at)}` : p.wakeUp || p.sahurAlarm ? 'On' : 'Off'
 
   const timetable = !source ? 'Calculated on this device'
     : s.hasTable() ? `Official · downloaded${s.tableVia() === 'feed' ? ' (feed)' : ''}` : 'Official · will download when online'
@@ -89,6 +91,13 @@ export function SettingsScreen() {
         <ToggleItem label="Imsak alert" sub="10 minutes before Imsak, in Ramadan" on={p.imsakAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.imsakAlert = v }) }} />
         <ToggleItem label="Berbuka alert" sub="At Maghrib, in Ramadan" on={p.berbukaAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.berbukaAlert = v }) }} />
         <ToggleItem label="Qiyam reminder" sub="The last third of the last ten nights" on={p.qiyamAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.qiyamAlert = v }) }} />
+      </Group>
+
+      <Group title="Wake-up" foot="Also on the Prayer screen. Tap the alarm clock at the top.">
+        <button class="item" onClick={() => openSheet({ kind: 'wakeup' })}>
+          <AlarmClock size={20} /><span class="label">Wake up for {s.name('fajr')}</span>
+          <span class="value">{wakeValue}</span><ChevronRight size={16} class="secondary" />
+        </button>
       </Group>
 
       <Group title="Travel" foot="Jamak and qasar guidance, combined prayer windows and a log of where you've prayed. We'll ask when you land in another country.">

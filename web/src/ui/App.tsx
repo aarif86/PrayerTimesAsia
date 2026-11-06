@@ -17,6 +17,7 @@ import { SKY, skyAt } from './sky'
 import { TodayScreen } from './Today'
 import { RamadanSheet } from './Ramadan'
 import { TrackerSheet } from './Tracker'
+import { WakeUpSheet } from './WakeUp'
 
 const MasjidScreen = lazy(() => import('./Masjid'))
 
@@ -117,6 +118,7 @@ export function App() {
       {sheet?.kind === 'journey' && <JourneySheet />}
       {sheet?.kind === 'tracker' && <TrackerSheet />}
       {sheet?.kind === 'ramadan' && <RamadanSheet />}
+      {sheet?.kind === 'wakeup' && <WakeUpSheet />}
       {sheet?.kind === 'level' && <LevelSheet />}
       {sheet?.kind === 'ar' && <ARScreen />}
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}
