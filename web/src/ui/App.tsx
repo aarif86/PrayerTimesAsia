@@ -15,6 +15,7 @@ import { SettingsScreen, VERSION } from './Settings'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
 import { SKY, skyAt } from './sky'
 import { TodayScreen } from './Today'
+import { RamadanSheet } from './Ramadan'
 import { TrackerSheet } from './Tracker'
 
 const MasjidScreen = lazy(() => import('./Masjid'))
@@ -63,9 +64,11 @@ export function App() {
     // Counted a few seconds in, so the GPS place has usually arrived.
     const count = () => setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000)
     count()
-    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); scheduleAlerts(); count() } }
+    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); void s.refreshData(); scheduleAlerts(); count() } }
+    // On moon sighting nights the announcement can arrive while the app is open.
+    const poll = setInterval(() => { void s.refreshData() }, 10 * 60_000)
     document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
+    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll) }
   }, [])
 
   // Re-arm the next prayer alert whenever anything changes.
@@ -113,6 +116,7 @@ export function App() {
       {sheet?.kind === 'makers' && <MakersSheet placement={sheet.placement} />}
       {sheet?.kind === 'journey' && <JourneySheet />}
       {sheet?.kind === 'tracker' && <TrackerSheet />}
+      {sheet?.kind === 'ramadan' && <RamadanSheet />}
       {sheet?.kind === 'level' && <LevelSheet />}
       {sheet?.kind === 'ar' && <ARScreen />}
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}

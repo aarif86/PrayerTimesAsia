@@ -187,3 +187,16 @@ button.link { background: none; border: 0; padding: 0; color: var(--night); text
   .preview { padding: 0; display: block; }
   .preview .paper { zoom: 1; box-shadow: none; margin: 0; }
 }
+
+/* Kids' fasting chart */
+.sheet-fasting { padding: 11mm 12mm 9mm; }
+.fast-stars { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2.4mm; margin-top: 5mm; }
+.fast-stars.six { margin-top: 2mm; }
+.fs-cell { border: .35mm solid var(--rule); border-radius: 3mm; padding: 1.6mm 1mm 2mm; display: flex; flex-direction: column; align-items: center; gap: .6mm; position: relative; }
+.fs-cell.last-ten { background: var(--friday); }
+.fs-num { position: absolute; top: 1.2mm; left: 2mm; font-family: var(--font-display); font-weight: 800; font-size: 10pt; }
+.fs-star { width: 17mm; height: 17mm; fill: none; stroke: var(--ink); stroke-width: .9; stroke-linejoin: round; margin-top: 2mm; }
+.fs-cell.syawal .fs-star { width: 14mm; height: 14mm; }
+.fs-date { font-size: 8.5pt; font-weight: 700; }
+.fs-times { font-size: 6.5pt; color: var(--ink2); text-align: center; }
+.fs-syawal { font-family: var(--font-display); font-size: 13pt; margin: 6mm 0 0; }

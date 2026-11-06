@@ -1,5 +1,7 @@
 import type { MasjidLink } from '../core/masjidLink'
 import type { Place } from '../core/place'
+import type { FastMark } from '../core/ramadanContent'
+import { SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { NAMING_STYLES, OBLIGATORY, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
 
 export type Appearance = 'system' | 'light' | 'dark'
@@ -61,6 +63,25 @@ export interface Preferences {
   myMasjid: MasjidLink | null
   /** Anonymous usage counts (city and country, never coordinates). See services/usage.ts. */
   shareUsage: boolean
+  // Ramadan and Syawal
+  /** For testers: pretend today is a day in Ramadan or Syawal. Never moved to another phone. */
+  seasonPreview: SeasonPreview
+  /** "Imsak in 10 minutes" in Ramadan. */
+  imsakAlert: boolean
+  /** "Time to berbuka" at Maghrib in Ramadan. */
+  berbukaAlert: boolean
+  /** The last ten nights: a gentle alert at the last third of the night. */
+  qiyamAlert: boolean
+  /** Ramadan screen: a juz a day to finish the Quran in the month. */
+  khatamPlan: boolean
+  /** "yyyy-MM-dd" to how that day's fast went (fasted, a reason it was missed, a replaced or Syawal fast). */
+  fastLog: Record<string, FastMark>
+  /** Days Tarawih was prayed. */
+  tarawihLog: string[]
+  /** Days the day's juz was read. */
+  quranLog: string[]
+  /** Hijri years zakat fitrah was paid. */
+  zakatPaid: number[]
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -98,6 +119,15 @@ export const DEFAULT_PREFS: Preferences = {
   appPromptDismissed: false,
   myMasjid: null,
   shareUsage: true,
+  seasonPreview: 'off',
+  imsakAlert: true,
+  berbukaAlert: true,
+  qiyamAlert: false,
+  khatamPlan: false,
+  fastLog: {},
+  tarawihLog: [],
+  quranLog: [],
+  zakatPaid: [],
 }
 
 const NULLABLE = new Set<keyof Preferences>([
@@ -110,6 +140,7 @@ const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,
+  seasonPreview: SEASON_PREVIEWS,
 }
 
 /**

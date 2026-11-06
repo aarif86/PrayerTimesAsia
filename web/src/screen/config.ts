@@ -1,4 +1,5 @@
 import { masjidQuery } from '../core/masjidLink'
+import { SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { NAMING_STYLES, type NamingStyle, type Prayer } from '../core/prayer'
 
 /**
@@ -58,6 +59,23 @@ export interface ScreenConfig {
   jumuahDimMinutes: number
   /** Let Prayer Times Asia count this screen (masjid name, city, look; see services/usage.ts). */
   report: boolean
+  /** Ramadan and Raya at this masjid. */
+  ramadan: RamadanSettings
+}
+
+export interface RamadanSettings {
+  /** Extra minutes before Isyak iqamah in Ramadan (when the iqamah is "minutes after azan"). */
+  ishaExtra: number
+  /** Show "Tarawih after Isyak" (or at a time) in Ramadan. */
+  tarawih: boolean
+  /** Tarawih starts at, "HH:mm"; empty means straight after Isyak. */
+  tarawihAt: string | null
+  /** Qiyamullail in the last ten nights, "HH:mm" (after midnight is the same night). */
+  qiyamAt: string | null
+  /** Hari Raya Aidilfitri prayer, "HH:mm". */
+  eidAt: string | null
+  /** For trying the screen before Ramadan: pretend today is a Ramadan or Raya day. */
+  preview: SeasonPreview
 }
 
 export const DEFAULT_CONFIG: ScreenConfig = {
@@ -79,6 +97,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   dimMinutes: 10,
   jumuahDimMinutes: 40,
   report: true,
+  ramadan: { ishaExtra: 0, tarawih: true, tarawihAt: null, qiyamAt: null, eidAt: null, preview: 'off' },
 }
 
 /** Shown in the setup preview until the committee chooses the masjid's location. */
@@ -158,6 +177,15 @@ export function sanitize(raw: unknown): ScreenConfig {
   out.jumuahDimMinutes = clamp(r.jumuahDimMinutes, 0, 90, DEFAULT_CONFIG.jumuahDimMinutes)
   // Links made before this setting existed count, like new ones.
   out.report = r.report !== false
+  const rm = (r.ramadan && typeof r.ramadan === 'object' ? r.ramadan : {}) as Record<string, unknown>
+  out.ramadan = {
+    ishaExtra: clamp(rm.ishaExtra, 0, 60, 0),
+    tarawih: rm.tarawih !== false,
+    tarawihAt: isHHMM(rm.tarawihAt) ? rm.tarawihAt : null,
+    qiyamAt: isHHMM(rm.qiyamAt) ? rm.qiyamAt : null,
+    eidAt: isHHMM(rm.eidAt) ? rm.eidAt : null,
+    preview: SEASON_PREVIEWS.includes(rm.preview as SeasonPreview) ? rm.preview as SeasonPreview : 'off',
+  }
   return out
 }
 
@@ -192,6 +220,6 @@ export function masjidAppLink(c: ScreenConfig, at: string = location.href): stri
   const app = new URL('../', at.split('#')[0])
   return `${app.origin}${app.pathname}#${masjidQuery({
     name: c.name || c.place.name, lat: c.place.lat, lng: c.place.lng, tz: c.place.tz, cc: c.place.cc,
-    jamaah: c.iqamah, jumuah: c.jumuah,
+    jamaah: c.iqamah, jumuah: c.jumuah, eid: c.ramadan.eidAt,
   })}`
 }

@@ -2,7 +2,7 @@ import { useMemo } from 'preact/hooks'
 import qrcode from 'qrcode-generator'
 import { rowFor } from '../services/officialTables'
 import { PRAYERS, type Prayer } from '../core/prayer'
-import { formatHijri } from '../core/hijri'
+import { formatHijriDate } from '../core/hijri'
 import { HeroDial, SunPath, type DialMark } from '../ui/Dials'
 import { LivingSky } from '../ui/LivingSky'
 import { skyAt } from '../ui/sky'
@@ -40,7 +40,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
           <h1>{c.name || c.place.name}</h1>
           {c.name && <p>{c.place.name}</p>}
         </div>
-        <p class="scr-date">{gregorianDate(now, tz, c.lang)}<br />{formatHijri(now, tz, hijriStyle, c.hijriAdj)}</p>
+        <p class="scr-date">{gregorianDate(now, tz, c.lang)}<br />{formatHijriDate(today.hijri, hijriStyle)}</p>
       </header>
 
       {c.look === 'dial' && <Dial sd={sd} now={now} config={c} label={label} focus={focus} isToday={isToday} />}
@@ -74,9 +74,11 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
         })}
       </ol>
 
+      <RamadanRibbon sd={today} now={now} config={c} />
+
       <footer class={`scr-foot${c.showQr ? ' with-qr' : ''}`}>
         {c.showQr && <QrCard config={c} caption={w.scan} />}
-        <Notice notices={c.notices} now={now} />
+        <Notice notices={today.raya && (today.eid == null || now < today.eid) ? [w.takbir, ...c.notices] : c.notices} now={now} />
         <p class="scr-brand">
           <span class="scr-pill"><b class={`scr-grade g-${sd.day.grade}`}>{sd.day.grade}</b>{sd.source}</span>
           <span><b>prayertimes.asia</b></span>
@@ -168,6 +170,19 @@ function Hero({ phase, now, config: c, label }: { phase: Phase; now: number; con
     )
   }
   if (phase.kind === 'prayer') return <section class="scr-hero" />
+  const eid = phase.day.eid
+  if (eid != null && now < eid && eid <= phase.at) {
+    const sec = String(Math.floor(now / 1000) % 60).padStart(2, '0')
+    return (
+      <section class="scr-hero">
+        <p class="scr-big scr-clockbig">{clock.time}<span class="scr-sec">{sec}</span>{clock.suffix && <small>{clock.suffix}</small>}</p>
+        <p class="scr-next" style={{ '--tint': 'var(--t-sunrise)' }}>
+          <span class="scr-next-name">{w.eid}</span>
+          <span class="scr-in">{w.inTag(shortLeft(eid - now))}</span>
+        </p>
+      </section>
+    )
+  }
   const next = phase.next
   const sec = String(Math.floor(now / 1000) % 60).padStart(2, '0')
   return (
@@ -179,6 +194,24 @@ function Hero({ phase, now, config: c, label }: { phase: Phase; now: number; con
       </p>
     </section>
   )
+}
+
+/** Ramadan nights and Raya morning, in one line under the times. */
+function RamadanRibbon({ sd, now, config: c }: { sd: NonNullable<ReturnType<typeof screenDay>>; now: number; config: ScreenConfig }) {
+  const w = WORDS[c.lang]
+  const tz = c.place!.tz
+  const parts: preact.ComponentChildren[] = []
+  if (sd.raya) {
+    parts.push(<b>{w.raya}</b>)
+    if (sd.eid != null) parts.push(<span>{w.eid} <Time ms={sd.eid} tz={tz} h24={c.h24} small /></span>)
+  } else {
+    if (sd.ramadan) parts.push(<b>{w.ramadanDay(sd.hijri.day)}</b>)
+    if (sd.tarawih) parts.push(<span>{w.tarawih} {sd.tarawih.at != null ? <Time ms={sd.tarawih.at} tz={tz} h24={c.h24} small /> : w.afterIsha}</span>)
+    if (sd.qiyam != null && now < sd.qiyam + 3_600_000) parts.push(<span>{w.qiyam} <Time ms={sd.qiyam} tz={tz} h24={c.h24} small /></span>)
+    else if (sd.tarawih && sd.hijri.month === 9 && sd.hijri.day >= 20) parts.push(<span>{w.lastTen}</span>)
+  }
+  if (!parts.length) return null
+  return <p class="scr-ramadan">{parts.map((x, i) => <>{i > 0 && <i class="scr-dotsep">·</i>}{x}</>)}</p>
 }
 
 function Time({ ms, tz, h24, small = false }: { ms: number; tz: string; h24: boolean; small?: boolean }) {

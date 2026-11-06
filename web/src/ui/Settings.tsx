@@ -1,6 +1,6 @@
 import { azanAvailable } from '../services/azan'
 import { useEffect, useState } from 'preact/hooks'
-import { ArrowDownToLine, ArrowRightLeft, BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
+import { ArrowDownToLine, ArrowRightLeft, MoonStar, BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
@@ -13,6 +13,8 @@ import { openSheet, SelectItem, ToggleItem } from './common'
 import { MakersCard, OFFERS } from './Makers'
 import { TabJourney } from './icons'
 import { canInstall, install, isStandalone, phoneAppOffer } from './pwa'
+import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
+import { daysToRamadan } from './Ramadan'
 
 export const VERSION = '1.0.0 (web)'
 
@@ -72,6 +74,21 @@ export function SettingsScreen() {
           <span class="label">Place</span><span class="value">{place?.name ?? 'Not set'}</span><ChevronRight size={16} class="secondary" />
         </button>
         <div class="item"><span class="label">Country rules</span><span class="value">{s.profile.code ? `${flag(s.profile.code)} ${s.profile.name}` : s.profile.name}</span></div>
+      </Group>
+
+      <Group title="Ramadan and Syawal" foot={<>
+        Ramadan mode turns on by itself on the first day your authority announces, and Syawal follows on Raya. {(() => { const d = daysToRamadan(s.now()); return d != null && d > 0 && !s.isSeasonPreview ? `About ${d} days to Ramadan.` : '' })()}
+        {' '}Try Ramadan lets testers see every part of it now. It only changes this {s.demo ? 'demo' : 'browser'}, and the real dates come back when you turn it off.
+      </>}>
+        <button class="item" onClick={() => openSheet({ kind: 'ramadan' })}>
+          <MoonStar size={20} /><span class="label">Ramadan page<span class="sub">Imsak and Berbuka, your fasts, doa, zakat fitrah, the last ten nights</span></span><ChevronRight size={16} class="secondary" />
+        </button>
+        <SelectItem label="Try Ramadan (for testers)" value={p.seasonPreview}
+          options={SEASON_PREVIEWS.map((v) => ({ value: v, label: SEASON_PREVIEW_LABEL[v] }))}
+          onChange={(v) => store.update((x) => { x.seasonPreview = v as SeasonPreview })} />
+        <ToggleItem label="Imsak alert" sub="10 minutes before Imsak, in Ramadan" on={p.imsakAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.imsakAlert = v }) }} />
+        <ToggleItem label="Berbuka alert" sub="At Maghrib, in Ramadan" on={p.berbukaAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.berbukaAlert = v }) }} />
+        <ToggleItem label="Qiyam reminder" sub="The last third of the last ten nights" on={p.qiyamAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.qiyamAlert = v }) }} />
       </Group>
 
       <Group title="Travel" foot="Jamak and qasar guidance, combined prayer windows and a log of where you've prayed. We'll ask when you land in another country.">

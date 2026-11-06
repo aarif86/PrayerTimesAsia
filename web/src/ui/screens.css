@@ -335,3 +335,61 @@
 .distance-check.no svg { color: #e08a1e; }
 @keyframes distance-check-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .distance-check { animation: none; } }
+
+/* Ramadan and Syawal */
+.season-card { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border-radius: 20px; margin: 8px 0; text-align: left; color: inherit;
+  background: linear-gradient(135deg, color-mix(in srgb, #3a2a7a 38%, var(--glass)), color-mix(in srgb, #f3c969 14%, var(--glass)));
+  border: 1px solid color-mix(in srgb, #f3c969 30%, transparent); animation: season-in .5s ease both; }
+@keyframes season-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.season-card.ramadan { flex-direction: column; align-items: stretch; gap: 8px; }
+.season-card.raya { background: linear-gradient(135deg, color-mix(in srgb, #1f6b4f 45%, var(--glass)), color-mix(in srgb, #f3c969 18%, var(--glass))); }
+.season-icon { color: var(--gold); flex: none; }
+.season-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.season-title { font-weight: 700; font-size: 16px; }
+.season-sub { font-size: 13px; opacity: 0.8; line-height: 1.35; }
+.season-main { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; color: inherit; }
+.season-day { display: flex; flex-direction: column; align-items: center; min-width: 58px; padding: 4px 8px; border-radius: 14px; background: color-mix(in srgb, #f3c969 18%, transparent); color: var(--gold); }
+.season-day .big { font-size: 28px; font-weight: 700; line-height: 1.05; color: var(--fg); }
+.season-card .caps, .ramadan-today .caps, .raya-today .caps { font-size: 11px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; }
+.season-count { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.season-count .count { font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--gold); }
+.season-count .count.small { font-size: 17px; color: inherit; }
+.season-count .at { font-size: 13px; display: inline-flex; gap: 4px; align-items: baseline; }
+.season-note { display: flex; gap: 6px; align-items: center; margin: 0; font-size: 13px; opacity: 0.9; }
+.season-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 999px; font-size: 14px; font-weight: 600; color: inherit;
+  background: color-mix(in srgb, var(--fg) 9%, transparent); transition: background .2s ease, transform .15s ease; }
+.chip:active { transform: scale(.96); }
+.chip.on { background: color-mix(in srgb, var(--green) 85%, transparent); color: #fff; }
+.chip.on.missed { background: color-mix(in srgb, #e06c8a 40%, transparent); color: inherit; }
+.chip.small { font-size: 13px; padding: 6px 10px; }
+.preview-tag { position: absolute; top: -7px; right: 12px; font-size: 10px; font-weight: 800; letter-spacing: .6px; padding: 2px 7px; border-radius: 999px; background: #f3c969; color: #1b1410; }
+.preview-banner { margin: 10px 16px 0; padding: 10px 12px; border-radius: 12px; font-size: 13px; background: color-mix(in srgb, #f3c969 22%, transparent); }
+.ramadan-today .rt-times { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.ramadan-today .rt-times > div { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; border-radius: 14px; background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.ramadan-today .rt-times > div.gold { background: color-mix(in srgb, #f3c969 20%, transparent); }
+.ramadan-today .rt-times .time { font-size: clamp(22px, 7vw, 34px) !important; }
+.rt-count { text-align: center; font-size: 17px; font-weight: 700; color: var(--gold); margin: 10px 0 4px; }
+.fast-today { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.fast-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.fast-day { position: relative; aspect-ratio: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: inherit;
+  background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.fast-day.odd { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #f3c969 70%, transparent); }
+.fast-day.fasted { background: var(--green); color: #fff; }
+.fast-day.missed { background: color-mix(in srgb, #e06c8a 30%, transparent); }
+.fast-day.qadha { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.fast-day.is-today { outline: 2px solid var(--accent); outline-offset: 1px; }
+.fast-day[disabled] { opacity: .4; }
+.fast-reason { position: absolute; bottom: 2px; right: 5px; font-size: 10px; font-weight: 800; opacity: .8; }
+.odd-nights { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0; }
+.odd-night { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; border-radius: 12px; background: color-mix(in srgb, #3a2a7a 30%, transparent); }
+.odd-night .big { font-size: 22px; font-weight: 700; }
+.odd-night.tonight { background: color-mix(in srgb, #f3c969 35%, transparent); }
+.doa-body { padding: 4px 16px 14px 48px; }
+.doa-body p { margin: 6px 0; line-height: 1.5; }
+.doa-body .arabic { font-size: 24px; line-height: 1.9; text-align: right; font-family: 'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', serif; }
+.doa-body .rumi { font-style: italic; opacity: .9; }
+.syawal-count { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; }
+.syawal-count .big { font-size: 28px; font-weight: 700; }
+.inline-input { flex: 1; min-width: 0; text-align: right; background: transparent; border: 0; color: inherit; font: inherit; }
+@media (prefers-reduced-motion: reduce) { .season-card { animation: none; } }

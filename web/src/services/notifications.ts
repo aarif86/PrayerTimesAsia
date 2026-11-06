@@ -1,6 +1,7 @@
 import { isInAsia, placeProfile } from '../core/place'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { flag } from '../core/regions'
+import type { PrayerDay } from '../core/engine'
 import { zoned } from '../core/tz'
 import { playAzan } from './azan'
 import { store } from './store'
@@ -43,12 +44,14 @@ export function upcomingAlerts(now: number): Alert[] {
   const prefs = store.prefs
   const early = prefs.reminderMinutesBefore
   const onTime = prefs.notificationsEnabled
-  if (!place || (!onTime && early <= 0)) return []
+  if (!place) return []
   const here = isInAsia(place) ? `${place.name} ${flag(placeProfile(place).code)}` : place.name
   const out: Alert[] = []
   for (let offset = 0; offset < 2; offset++) {
     const day = store.day(now + offset * 86_400_000)
     if (!day) continue
+    out.push(...ramadanAlerts(day, here))
+    if (!onTime && early <= 0) continue
     for (const prayer of PRAYERS) {
       if (!prefs.notifyPrayers.includes(prayer)) continue
       const time = day.times[prayer]
@@ -67,10 +70,43 @@ export function upcomingAlerts(now: number): Alert[] {
         out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended. ${here}`, at: time })
         continue
       }
+      if (prayer === 'maghrib' && store.isRamadanDay(time)) {
+        out.push({ id, title: `Time to berbuka · ${name} ${store.formatted(time)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu · ${here}`, at: time, prayer })
+        continue
+      }
       out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}`, at: time, prayer })
     }
   }
   return out.filter((a) => a.at > now).sort((a, b) => a.at - b.at)
+}
+
+/**
+ * Ramadan's own alerts, on their own switches: Imsak (10 minutes before, to
+ * finish sahur), Berbuka at Maghrib, and qiyam at the last third of the last ten nights.
+ */
+export function ramadanAlerts(day: PrayerDay, here: string): Alert[] {
+  const prefs = store.prefs
+  const out: Alert[] = []
+  const id = `${day.year}-${day.month}-${day.day}`
+  const season = store.season(day.times.dhuhr)
+  if (season.phase === 'ramadan') {
+    const imsak = store.imsak(day)
+    if (prefs.imsakAlert) {
+      out.push({ id: `${id}-imsak`, title: `Imsak in 10 minutes · ${store.formatted(imsak)}`, body: `Finish your sahur. Subuh at ${store.formatted(day.times.fajr)} · ${here}`, at: imsak - 10 * 60_000 })
+    }
+    // When the Maghrib alert is on it says this itself, so one alert, not two.
+    const maghribAlert = prefs.notificationsEnabled && prefs.notifyPrayers.includes('maghrib')
+    if (prefs.berbukaAlert && !maghribAlert) {
+      out.push({ id: `${id}-berbuka`, title: `Time to berbuka · ${store.formatted(day.times.maghrib)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu. Ramadan day ${season.ramadanDay} · ${here}`, at: day.times.maghrib })
+    }
+  }
+  if (prefs.qiyamAlert && season.lastTen && season.nightTonight) {
+    const last = store.blessed(day).find(([b]) => b === 'lastThird')
+    if (last) {
+      out.push({ id: `${id}-qiyam`, title: `Night ${season.nightTonight} · the last third has begun`, body: season.oddNight ? 'An odd night of the last ten. Seek Lailatul Qadr.' : 'One of the last ten nights of Ramadan.', at: last[1] })
+    }
+  }
+  return out
 }
 
 let timer: ReturnType<typeof setTimeout> | null = null

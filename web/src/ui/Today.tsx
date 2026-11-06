@@ -5,7 +5,6 @@ import {
 } from 'lucide-preact'
 import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
-import { formatHijri } from '../core/hijri'
 import { parameterSummary } from '../core/methods'
 import { isInAsia, placeProfile } from '../core/place'
 import { isObligatory, PRAYERS, type Prayer } from '../core/prayer'
@@ -19,6 +18,7 @@ import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { featuredOffer, MakersCard } from './Makers'
 import { appBannerShownByBrowser, phoneAppOffer } from './pwa'
 import { TabJourney } from './icons'
+import { SeasonCard } from './Ramadan'
 
 type Moment = { prayer: Prayer; time: number } | null
 
@@ -331,7 +331,13 @@ function useSwipe(c: Ctx) {
 }
 
 function hijri(ms: number) {
-  return formatHijri(ms, store.timeZone, store.naming, store.prefs.hijriAdjustment)
+  return store.hijriLabel(ms)
+}
+
+/** Show more adds every blessed time; in Ramadan, Imsak is always shown. */
+function visibleBlessed(c: Ctx, day: PrayerDay): [BlessedTime, number][] {
+  const all = store.blessed(day)
+  return c.showMore ? all : all.filter(([b]) => b === 'imsak')
 }
 
 function dateTap(c: Ctx) {
@@ -345,7 +351,7 @@ type Entry = { kind: 'prayer'; p: Prayer; t: number } | { kind: 'blessed'; b: Bl
 
 function entries(c: Ctx, day: PrayerDay): Entry[] {
   const list: Entry[] = PRAYERS.map((p) => ({ kind: 'prayer', p, t: day.times[p] }))
-  if (c.showMore) for (const [b, t] of store.blessed(day)) list.push({ kind: 'blessed', b, t })
+  for (const [b, t] of visibleBlessed(c, day)) list.push({ kind: 'blessed', b, t })
   return list.sort((a, b) => a.t - b.t)
 }
 
@@ -464,6 +470,7 @@ function ClassicPage({ c }: { c: Ctx }) {
       </div>
       <TopPrompt />
       <ArrivalCard />
+      {c.offset === 0 && <SeasonCard now={c.now} />}
       <PrayerList c={c} fill />
       <ShowMoreButton c={c} />
       <Offer c={c} />
@@ -506,6 +513,7 @@ function CentrePage({ c }: { c: Ctx }) {
       <SunPlaceChip offset={c.offset} />
       <TopPrompt />
       <ArrivalCard />
+      {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={c.now} />
       <DayNavigator c={c} />
       <PrayerList c={c} fill />
@@ -539,7 +547,7 @@ function DialPage({ c }: { c: Ctx }) {
   const isToday = c.offset === 0
   const nextDay = store.nextDay(shown)
   const nextFajr = nextDay?.times.fajr ?? shown.times.fajr + 86_400_000
-  const blessed = c.showMore ? store.blessed(shown) : []
+  const blessed = visibleBlessed(c, shown)
   const marks: DialMark[] = [
     ...PRAYERS.map((p) => ({ id: p, date: shown.times[p], extraLine: shown.jamaah[p] != null || shown.alternate[p] != null, tint: tint(p) })),
     ...blessed.map(([b, t]) => ({ id: b, date: t, minor: true })),
@@ -552,6 +560,7 @@ function DialPage({ c }: { c: Ctx }) {
       <div class="top-bar"><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
       <TopPrompt />
       <ArrivalCard />
+      {c.offset === 0 && <SeasonCard now={c.now} />}
       <button class="date-header" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? 'Ramadan and Eid dates with their sources' : 'Back to today'}>
         <span class="caps-day accent">{dayLabel(c.offset)}</span>
         <span class="date-big display">{fmtDate(shown.times.dhuhr, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
@@ -660,6 +669,7 @@ function SunPathPage({ c }: { c: Ctx }) {
       <SunPlaceChip offset={c.offset} />
       <TopPrompt />
       <ArrivalCard />
+      {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={now} />
       <DayNavigator c={c} />
       <PrayerList c={c} fill={false} />
@@ -680,7 +690,7 @@ const BAND: Record<Prayer, string> = {
 function BandsPage({ c }: { c: Ctx }) {
   const { now, shown, current, next, offset } = c
   const swipe = useSwipe(c)
-  const blessed = c.showMore ? store.blessed(shown) : []
+  const blessed = visibleBlessed(c, shown)
   return (
     <div class="today-page bands-page">
       <div class="bands-top page">
@@ -694,6 +704,7 @@ function BandsPage({ c }: { c: Ctx }) {
         )}
         <TopPrompt />
         <ArrivalCard />
+      {c.offset === 0 && <SeasonCard now={c.now} />}
       </div>
       <div class="bands-date">
         <button aria-label="Previous day" onClick={() => c.setOffset(offset - 1)}><ChevronLeft size={20} strokeWidth={2.6} /></button>
