@@ -40,32 +40,40 @@ data class TripStop(
 
 /** When the Subuh wake-up alarm rings, relative to Subuh or Syuruk. In the order of the night. */
 @Serializable
-enum class WakeUpTiming {
-    @SerialName("fajrMinus30") FAJR_MINUS_30,
-    @SerialName("atFajr") AT_FAJR,
-    @SerialName("fajrPlus15") FAJR_PLUS_15,
-    @SerialName("sunriseMinus30") SUNRISE_MINUS_30,
-    @SerialName("sunriseMinus15") SUNRISE_MINUS_15;
+enum class WakeUpTiming(val part: Part, private val minutes: Int) {
+    @SerialName("fajrMinus30") FAJR_MINUS_30(Part.BEFORE_FAJR, -30),
+    @SerialName("atFajr") AT_FAJR(Part.FROM_FAJR, 0),
+    @SerialName("fajrPlus5") FAJR_PLUS_5(Part.FROM_FAJR, 5),
+    @SerialName("fajrPlus10") FAJR_PLUS_10(Part.FROM_FAJR, 10),
+    @SerialName("fajrPlus15") FAJR_PLUS_15(Part.FROM_FAJR, 15),
+    @SerialName("fajrPlus30") FAJR_PLUS_30(Part.FROM_FAJR, 30),
+    @SerialName("sunriseMinus60") SUNRISE_MINUS_60(Part.BEFORE_SUNRISE, 60),
+    @SerialName("sunriseMinus45") SUNRISE_MINUS_45(Part.BEFORE_SUNRISE, 45),
+    @SerialName("sunriseMinus30") SUNRISE_MINUS_30(Part.BEFORE_SUNRISE, 30),
+    @SerialName("sunriseMinus15") SUNRISE_MINUS_15(Part.BEFORE_SUNRISE, 15);
+
+    /** The heading each choice sits under in the list. */
+    enum class Part { BEFORE_FAJR, FROM_FAJR, BEFORE_SUNRISE }
 
     fun label(naming: NamingStyle): String {
         val fajr = Prayer.FAJR.name(naming)
         val sunrise = Prayer.SUNRISE.name(naming)
-        return when (this) {
-            FAJR_MINUS_30 -> "30 min before $fajr for tahajjud"
-            AT_FAJR -> "At $fajr"
-            FAJR_PLUS_15 -> "15 min after $fajr begins"
-            SUNRISE_MINUS_30 -> "30 min before $sunrise"
-            SUNRISE_MINUS_15 -> "15 min before $sunrise"
+        return when {
+            this == FAJR_MINUS_30 -> "30 min before $fajr for tahajjud"
+            this == AT_FAJR -> "At $fajr"
+            this == SUNRISE_MINUS_60 -> "1 hour before $sunrise"
+            part == Part.BEFORE_SUNRISE -> "$minutes min before $sunrise"
+            else -> "$minutes min after $fajr begins"
         }
     }
 
-    fun date(day: PrayerDay): java.time.Instant = when (this) {
-        FAJR_MINUS_30 -> day.time(Prayer.FAJR).minusSeconds(30 * 60)
-        AT_FAJR -> day.time(Prayer.FAJR)
-        FAJR_PLUS_15 -> day.time(Prayer.FAJR).plusSeconds(15 * 60)
-        SUNRISE_MINUS_30 -> day.time(Prayer.SUNRISE).minusSeconds(30 * 60)
-        SUNRISE_MINUS_15 -> day.time(Prayer.SUNRISE).minusSeconds(15 * 60)
-    }
+    fun date(day: PrayerDay): java.time.Instant =
+        if (part == Part.BEFORE_SUNRISE) {
+            // Where Subuh to Syuruk is short, never ring before Subuh has begun.
+            maxOf(day.time(Prayer.FAJR), day.time(Prayer.SUNRISE).minusSeconds(minutes * 60L))
+        } else {
+            day.time(Prayer.FAJR).plusSeconds(minutes * 60L)
+        }
 }
 
 /** The second, earlier alarm for sahur (or a longer night prayer), before Subuh. */

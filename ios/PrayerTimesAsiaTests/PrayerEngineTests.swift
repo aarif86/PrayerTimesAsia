@@ -187,6 +187,12 @@ final class PrayerEngineTests: XCTestCase {
         XCTAssertEqual(WakeUpTiming.sunriseMinus15.label(.malay), "15 min before Syuruk")
         XCTAssertEqual(WakeUpTiming.fajrMinus30.date(in: day), day.time(.fajr).addingTimeInterval(-1800))
         XCTAssertEqual(WakeUpTiming.fajrMinus30.label(.malay), "30 min before Subuh for tahajjud")
+        XCTAssertEqual(WakeUpTiming.fajrPlus5.date(in: day), day.time(.fajr).addingTimeInterval(300))
+        XCTAssertEqual(WakeUpTiming.fajrPlus5.label(.malay), "5 min after Subuh begins")
+        XCTAssertEqual(WakeUpTiming.sunriseMinus60.label(.malay), "1 hour before Syuruk")
+        XCTAssertEqual(WakeUpTiming.sunriseMinus45.date(in: day), day.time(.sunrise).addingTimeInterval(-2700))
+        // Never before Subuh: in Singapore Subuh to Syuruk is about 75 min, so 1 hour before Syuruk is after Subuh.
+        XCTAssertGreaterThanOrEqual(WakeUpTiming.sunriseMinus60.date(in: day), day.time(.fajr))
         XCTAssertEqual(SahurTiming.fajrMinus90.date(in: day), day.time(.fajr).addingTimeInterval(-5400))
         XCTAssertEqual(SahurTiming.fajrMinus120.label(.malay), "2 hours before Subuh")
     }

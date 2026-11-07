@@ -9,8 +9,31 @@ import { prayerName, type NamingStyle } from './prayer'
  */
 
 /** When the Subuh alarm rings, in the order of the night. */
-export type WakeUpTiming = 'fajrMinus30' | 'atFajr' | 'fajrPlus15' | 'sunriseMinus30' | 'sunriseMinus15'
-export const WAKE_UP_TIMINGS: readonly WakeUpTiming[] = ['fajrMinus30', 'atFajr', 'fajrPlus15', 'sunriseMinus30', 'sunriseMinus15']
+export type WakeUpTiming =
+  | 'fajrMinus30'
+  | 'atFajr' | 'fajrPlus5' | 'fajrPlus10' | 'fajrPlus15' | 'fajrPlus30'
+  | 'sunriseMinus60' | 'sunriseMinus45' | 'sunriseMinus30' | 'sunriseMinus15'
+export const WAKE_UP_TIMINGS: readonly WakeUpTiming[] = [
+  'fajrMinus30', 'atFajr', 'fajrPlus5', 'fajrPlus10', 'fajrPlus15', 'fajrPlus30',
+  'sunriseMinus60', 'sunriseMinus45', 'sunriseMinus30', 'sunriseMinus15',
+]
+
+/** The heading each choice sits under in the list. */
+export type WakePart = 'beforeFajr' | 'fromFajr' | 'beforeSunrise'
+export const WAKE_PARTS: readonly WakePart[] = ['beforeFajr', 'fromFajr', 'beforeSunrise']
+const WAKE: Record<WakeUpTiming, { part: WakePart; minutes: number }> = {
+  fajrMinus30: { part: 'beforeFajr', minutes: -30 },
+  atFajr: { part: 'fromFajr', minutes: 0 },
+  fajrPlus5: { part: 'fromFajr', minutes: 5 },
+  fajrPlus10: { part: 'fromFajr', minutes: 10 },
+  fajrPlus15: { part: 'fromFajr', minutes: 15 },
+  fajrPlus30: { part: 'fromFajr', minutes: 30 },
+  sunriseMinus60: { part: 'beforeSunrise', minutes: 60 },
+  sunriseMinus45: { part: 'beforeSunrise', minutes: 45 },
+  sunriseMinus30: { part: 'beforeSunrise', minutes: 30 },
+  sunriseMinus15: { part: 'beforeSunrise', minutes: 15 },
+}
+export const wakePart = (t: WakeUpTiming): WakePart => WAKE[t].part
 
 /** The second, earlier alarm for sahur (or a longer night prayer). */
 export type SahurTiming = 'fajrMinus60' | 'fajrMinus90' | 'fajrMinus120'
@@ -31,24 +54,18 @@ export const SAHUR_DAY_LABEL: Record<SahurDay, string> = {
 export function wakeUpLabel(t: WakeUpTiming, naming: NamingStyle): string {
   const fajr = prayerName('fajr', naming)
   const sunrise = prayerName('sunrise', naming)
-  switch (t) {
-    case 'fajrMinus30': return `30 min before ${fajr} for tahajjud`
-    case 'atFajr': return `At ${fajr}`
-    case 'fajrPlus15': return `15 min after ${fajr} begins`
-    case 'sunriseMinus30': return `30 min before ${sunrise}`
-    case 'sunriseMinus15': return `15 min before ${sunrise}`
-  }
+  const { part, minutes } = WAKE[t]
+  if (t === 'fajrMinus30') return `30 min before ${fajr} for tahajjud`
+  if (t === 'atFajr') return `At ${fajr}`
+  if (t === 'sunriseMinus60') return `1 hour before ${sunrise}`
+  return part === 'beforeSunrise' ? `${minutes} min before ${sunrise}` : `${minutes} min after ${fajr} begins`
 }
 
 export function wakeUpTime(t: WakeUpTiming, day: PrayerDay): number {
-  const m = 60_000
-  switch (t) {
-    case 'fajrMinus30': return day.times.fajr - 30 * m
-    case 'atFajr': return day.times.fajr
-    case 'fajrPlus15': return day.times.fajr + 15 * m
-    case 'sunriseMinus30': return day.times.sunrise - 30 * m
-    case 'sunriseMinus15': return day.times.sunrise - 15 * m
-  }
+  const { part, minutes } = WAKE[t]
+  // Where Subuh to Syuruk is short, never ring before Subuh has begun.
+  if (part === 'beforeSunrise') return Math.max(day.times.fajr, day.times.sunrise - minutes * 60_000)
+  return day.times.fajr + minutes * 60_000
 }
 
 export function sahurLabel(t: SahurTiming, naming: NamingStyle): string {

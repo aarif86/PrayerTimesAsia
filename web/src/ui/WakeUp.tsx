@@ -1,7 +1,7 @@
 import { AlarmClock, AlarmClockCheck, Check, Download, Smartphone } from 'lucide-preact'
 import type { PrayerDay } from '../core/engine'
 import {
-  SAHUR_DAY_LABEL, SAHUR_DAYS, SAHUR_TIMINGS, sahurLabel, sahurTime, WAKE_UP_TIMINGS, wakeUpLabel, wakeUpTime,
+  SAHUR_DAY_LABEL, SAHUR_DAYS, SAHUR_TIMINGS, sahurLabel, sahurTime, WAKE_PARTS, WAKE_UP_TIMINGS, wakePart, wakeUpLabel, wakeUpTime,
   type SahurTiming, type WakeUpTiming,
 } from '../core/wakeup'
 import { alertSupport, downloadWakeICS, nextWakeUp, requestPermission } from '../services/notifications'
@@ -80,16 +80,18 @@ export function WakeUpSheet() {
         {next && <p class="next">Next alarm {whenText(now, next.at)} {s.formatted(next.at)}{next.sahur ? ' for sahur' : ''}</p>}
       </div>
 
-      <section>
-        <h2 class="group-title">{fajr} alarm</h2>
-        <div class="group">
-          <Choice label="Off" on={!p.wakeUp} pick={() => setWake(null)} />
-          {WAKE_UP_TIMINGS.map((t) => (
-            <Choice label={wakeUpLabel(t, s.naming)} detail={soon(now, (d) => wakeUpTime(t, d))} on={p.wakeUp === t} pick={() => setWake(t)} />
-          ))}
-        </div>
-        <p class="group-foot">Rings every morning and moves with {fajr} wherever you are.</p>
-      </section>
+      {WAKE_PARTS.map((part) => (
+        <section>
+          <h2 class="group-title">{part === 'beforeFajr' ? `${fajr} alarm` : part === 'fromFajr' ? `From ${fajr}` : `Before ${s.name('sunrise')}`}</h2>
+          <div class="group">
+            {part === 'beforeFajr' && <Choice label="Off" on={!p.wakeUp} pick={() => setWake(null)} />}
+            {WAKE_UP_TIMINGS.filter((t) => wakePart(t) === part).map((t) => (
+              <Choice label={wakeUpLabel(t, s.naming)} detail={soon(now, (d) => wakeUpTime(t, d))} on={p.wakeUp === t} pick={() => setWake(t)} />
+            ))}
+          </div>
+          {part === 'beforeSunrise' && <p class="group-foot">Rings every morning and moves with {fajr} wherever you are.</p>}
+        </section>
+      ))}
 
       <section>
         <h2 class="group-title">Sahur alarm</h2>

@@ -30,13 +30,19 @@ struct WakeUpView: View {
 
                 Section {
                     choice("Off", selected: model.prefs.wakeUp == nil) { setWakeUp(nil) }
-                    ForEach(WakeUpTiming.allCases) { timing in
-                        choice(timing.label(model.naming), detail: timeToday(timing.date), selected: model.prefs.wakeUp == timing) {
-                            setWakeUp(timing)
-                        }
-                    }
+                    wakeChoices(.beforeFajr)
                 } header: {
                     Text("\(fajr) alarm")
+                }
+                Section {
+                    wakeChoices(.fromFajr)
+                } header: {
+                    Text("From \(fajr)")
+                }
+                Section {
+                    wakeChoices(.beforeSunrise)
+                } header: {
+                    Text("Before \(Prayer.sunrise.name(model.naming))")
                 } footer: {
                     Text("Rings every morning and moves with \(fajr) wherever you are.")
                 }
@@ -90,6 +96,14 @@ struct WakeUpView: View {
             return "A real alarm that rings even in Silent mode and Focus, like the Clock app."
         }
         return "On this iPhone the alarm comes as a notification. From iOS 26 it rings like a real alarm, even in Silent mode."
+    }
+
+    private func wakeChoices(_ group: WakeUpTiming.Part) -> some View {
+        ForEach(WakeUpTiming.allCases.filter { $0.group == group }) { timing in
+            choice(timing.label(model.naming), detail: timeToday(timing.date), selected: model.prefs.wakeUp == timing) {
+                setWakeUp(timing)
+            }
+        }
     }
 
     private func choice(_ title: String, detail: String? = nil, selected: Bool, action: @escaping () -> Void) -> some View {

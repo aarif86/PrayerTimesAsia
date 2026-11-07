@@ -37,29 +37,55 @@ struct TripStop: Codable, Hashable, Identifiable, Sendable {
 /// When the Subuh wake-up alarm rings, relative to Subuh or Syuruk.
 /// Declared in the order of the night, so the list reads earliest first.
 enum WakeUpTiming: String, Codable, CaseIterable, Identifiable, Sendable {
-    case fajrMinus30, atFajr, fajrPlus15, sunriseMinus30, sunriseMinus15
+    case fajrMinus30
+    case atFajr, fajrPlus5, fajrPlus10, fajrPlus15, fajrPlus30
+    case sunriseMinus60, sunriseMinus45, sunriseMinus30, sunriseMinus15
 
     var id: String { rawValue }
+
+    /// The heading each choice sits under in the list.
+    enum Part: CaseIterable { case beforeFajr, fromFajr, beforeSunrise }
+    var group: Part {
+        switch self {
+        case .fajrMinus30: .beforeFajr
+        case .atFajr, .fajrPlus5, .fajrPlus10, .fajrPlus15, .fajrPlus30: .fromFajr
+        case .sunriseMinus60, .sunriseMinus45, .sunriseMinus30, .sunriseMinus15: .beforeSunrise
+        }
+    }
+
+    /// Minutes from Subuh (or before Syuruk for the Syuruk group).
+    private var minutes: Int {
+        switch self {
+        case .fajrMinus30: -30
+        case .atFajr: 0
+        case .fajrPlus5: 5
+        case .fajrPlus10: 10
+        case .fajrPlus15: 15
+        case .fajrPlus30: 30
+        case .sunriseMinus60: 60
+        case .sunriseMinus45: 45
+        case .sunriseMinus30: 30
+        case .sunriseMinus15: 15
+        }
+    }
 
     func label(_ naming: NamingStyle) -> String {
         let fajr = Prayer.fajr.name(naming), sunrise = Prayer.sunrise.name(naming)
         switch self {
         case .fajrMinus30: return "30 min before \(fajr) for tahajjud"
         case .atFajr: return "At \(fajr)"
-        case .fajrPlus15: return "15 min after \(fajr) begins"
-        case .sunriseMinus30: return "30 min before \(sunrise)"
-        case .sunriseMinus15: return "15 min before \(sunrise)"
+        case .sunriseMinus60: return "1 hour before \(sunrise)"
+        default:
+            return group == .beforeSunrise ? "\(minutes) min before \(sunrise)" : "\(minutes) min after \(fajr) begins"
         }
     }
 
     func date(in day: PrayerDay) -> Date {
-        switch self {
-        case .fajrMinus30: day.time(.fajr).addingTimeInterval(-30 * 60)
-        case .atFajr: day.time(.fajr)
-        case .fajrPlus15: day.time(.fajr).addingTimeInterval(15 * 60)
-        case .sunriseMinus30: day.time(.sunrise).addingTimeInterval(-30 * 60)
-        case .sunriseMinus15: day.time(.sunrise).addingTimeInterval(-15 * 60)
+        if group == .beforeSunrise {
+            // Where Subuh to Syuruk is short, never ring before Subuh has begun.
+            return max(day.time(.fajr), day.time(.sunrise).addingTimeInterval(Double(-minutes) * 60))
         }
+        return day.time(.fajr).addingTimeInterval(Double(minutes) * 60)
     }
 }
 
