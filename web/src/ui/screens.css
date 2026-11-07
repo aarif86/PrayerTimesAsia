@@ -418,6 +418,11 @@
 .simple-name { flex: 1; min-width: 0; font-size: 28px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .simple-time { font-size: 28px; font-weight: 600; white-space: nowrap; }
 .simple-tick { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--fg2); flex: none; }
+.simple-more { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin: 14px 0 4px; padding: 16px; border-radius: 20px; background: var(--fill); font-size: 22px; font-weight: 700; color: var(--accent); }
+.simple-row.blessed { min-height: 64px; border-left: 5px solid color-mix(in srgb, var(--fg) 25%, transparent); }
+.simple-row.blessed .simple-name, .simple-row.blessed .simple-time { font-size: 24px; }
+.simple-row.blessed .simple-name { white-space: normal; }
+.simple-note { display: block; font-size: 16px; font-weight: 500; color: var(--fg2); white-space: normal; }
 .simple-date { text-align: center; margin-top: 18px; font-size: 18px; color: var(--fg2); }
 
 /* Bigger text: everything scales together, so layouts keep their shape. */

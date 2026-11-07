@@ -37,6 +37,8 @@ struct SimpleTimes: View {
     let day: PrayerDay
     let current: (prayer: Prayer, time: Date)?
     let next: (prayer: Prayer, time: Date)?
+    /// Shared with the other looks' Show more.
+    @AppStorage("today.showMore") private var showMore = false
 
     var body: some View {
         VStack(spacing: 18) {
@@ -64,9 +66,51 @@ struct SimpleTimes: View {
             VStack(spacing: 10) {
                 ForEach(Prayer.allCases, id: \.self) { prayer in row(prayer) }
             }
+            Button {
+                withAnimation(.snappy) { showMore.toggle() }
+            } label: {
+                HStack(spacing: 8) {
+                    Text(showMore ? "Show less" : "Show more times")
+                    Image(systemName: showMore ? "chevron.up" : "chevron.down")
+                }
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(Theme.accent)
+                .frame(maxWidth: .infinity, minHeight: 56)
+                .background(Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(showMore ? "Show less" : "Show more times: Dhuha and the blessed times of the night")
+            if showMore {
+                VStack(spacing: 10) {
+                    ForEach(blessed(), id: \.0) { item in blessedRow(item.0, item.1) }
+                }
+                .transition(.opacity)
+            }
         }
         // Already big: don't let the phone's largest text sizes squeeze the rows.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+    }
+
+    private func blessed() -> [(BlessedTime, Date)] {
+        guard let place = model.activePlace,
+              let nextDay = model.day(containing: day.time(.dhuhr).addingTimeInterval(86_400)) else { return [] }
+        return BlessedTime.compute(day: day, nextDay: nextDay, coordinates: place.coordinates, isRamadan: model.isRamadanDay(day.time(.dhuhr)))
+    }
+
+    private func blessedRow(_ b: BlessedTime, _ time: Date) -> some View {
+        HStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(b.name(model.naming)).font(.system(size: 24, weight: .bold)).fixedSize(horizontal: false, vertical: true)
+                Text(b.note).font(.system(size: 16, weight: .medium)).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 8)
+            Text(model.formatted(time)).font(.system(size: 24, weight: .semibold).monospacedDigit()).lineLimit(1).fixedSize()
+        }
+        .padding(.horizontal, 20).padding(.vertical, 12)
+        .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
+        .background(Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .opacity(time <= now ? 0.6 : 1)
+        .accessibilityElement(children: .combine)
     }
 
     private func row(_ prayer: Prayer) -> some View {
