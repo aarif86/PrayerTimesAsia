@@ -68,6 +68,7 @@ class AppState(
     var selectedTab by mutableStateOf(Tab.PRAYER)
     var showJourney by mutableStateOf(false)
     var showTracker by mutableStateOf(false)
+    var showRamadan by mutableStateOf(false)
     /** Wake up for Subuh (the alarm clock on the Prayer screen, or Settings). */
     var showWakeUp by mutableStateOf(false)
     /** A masjid from a screen's QR code, waiting for the user to say yes. */
@@ -79,7 +80,8 @@ class AppState(
 
     /** The rules and times for right now. Cheap to build; read it fresh each time. */
     val resolver: Resolver
-        get() = Resolver(prefs, gpsPlace, { s, y, m, d -> official.times(s, y, m, d) }, directories.mosques, locale)
+        get() = Resolver(prefs, gpsPlace, { s, y, m, d -> official.times(s, y, m, d) }, directories.mosques, locale,
+            announcements = directories.calendar.announcements)
 
     fun tick() {
         if (fixedNow == null) now = Instant.now()
@@ -98,8 +100,10 @@ class AppState(
         if (!sideEffects) return
         store?.save(prefs)
         // Ticking a prayer in the tracker shouldn't reschedule every alarm.
-        val a = prefs.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false)
-        val b = old.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false)
+        val a = prefs.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false,
+            fastLog = emptyMap(), tarawihLog = emptySet(), quranLog = emptySet(), zakatPaid = emptySet())
+        val b = old.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false,
+            fastLog = emptyMap(), tarawihLog = emptySet(), quranLog = emptySet(), zakatPaid = emptySet())
         if (a == b) return
         refreshOfficialTimetable()
         rescheduleAlerts()
@@ -218,6 +222,27 @@ class AppState(
         p.copy(excusedDays = if (key in p.excusedDays) p.excusedDays - key else p.excusedDays + key)
     }
 
+    // MARK: Ramadan
+
+    /** Marks how a day's fast went; null clears it. Keeps about two years. */
+    fun setFast(key: String, mark: com.prayertimesasia.core.FastMark?) = update { p ->
+        var log = if (mark == null) p.fastLog - key else p.fastLog + (key to mark)
+        if (log.size > 800) log = log - log.keys.min()
+        p.copy(fastLog = log)
+    }
+
+    fun toggleTarawih(key: String) = update { p -> p.copy(tarawihLog = if (key in p.tarawihLog) p.tarawihLog - key else p.tarawihLog + key) }
+    fun toggleJuz(key: String) = update { p -> p.copy(quranLog = if (key in p.quranLog) p.quranLog - key else p.quranLog + key) }
+
+    /** A Ramadan alert switch: asks for notification permission when turned on. */
+    fun setRamadanAlert(on: Boolean, apply: (Preferences, Boolean) -> Preferences) {
+        if (!on) { update { apply(it, false) }; return }
+        scope.launch {
+            val granted = permissions?.notifications() ?: true
+            update { apply(it, granted) }
+        }
+    }
+
     // MARK: Alerts
 
     /** Asks for notification permission when needed, then turns alerts on for [prayers]. */
@@ -298,7 +323,11 @@ class AppState(
         if (!sideEffects) return
         refreshLocation()
         refreshOfficialTimetable()
-        scope.launch { directories.refreshIfStale() }
+        val h = resolver.hijriOf(now)
+        scope.launch {
+            directories.refreshIfStale(soon = (h.month == 8 || h.month == 9) && h.day >= 28)
+            rescheduleAlerts()
+        }
         rescheduleAlerts()
         countOpen()
     }

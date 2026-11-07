@@ -3,11 +3,26 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
+    @State private var showRamadan = false
     @Environment(\.dismiss) private var dismiss
     /// A main tab (no Done button) rather than a sheet.
     var isTab = false
     /// Every half hour of the day, in minutes past midnight.
     static let halfHours = Array(stride(from: 0, to: 1440, by: 30))
+
+    /// A Ramadan alert switch that asks for notification permission when turned on.
+    private func ramadanAlert(_ title: String, _ detail: String, _ key: WritableKeyPath<Preferences, Bool>) -> some View {
+        Toggle(isOn: Binding(
+            get: { model.prefs[keyPath: key] },
+            set: { on in
+                Task {
+                    if on { model.prefs[keyPath: key] = await NotificationScheduler.requestPermission() }
+                    else { model.prefs[keyPath: key] = false }
+                }
+            })) {
+            VStack(alignment: .leading) { Text(title); Text(detail).font(.caption).foregroundStyle(.secondary) }
+        }
+    }
 
     private var wakeUpSummary: String {
         guard model.prefs.wakeUp != nil || model.prefs.sahurAlarm != nil else { return "Off" }
@@ -24,6 +39,24 @@ struct SettingsView: View {
                         LabeledContent("Place", value: model.activePlace?.name ?? "Not set")
                     }
                     LabeledContent("Country rules", value: model.profile.code.isEmpty ? model.profile.name : "\(model.profile.flag) \(model.profile.name)")
+                }
+
+                Section {
+                    Button { showRamadan = true } label: {
+                        Label("Ramadan page", systemImage: "moon.stars")
+                    }
+                    Picker("Try Ramadan (for testers)", selection: $model.prefs.seasonPreview) {
+                        ForEach(SeasonPreview.allCases) { p in Text(p.label).tag(p) }
+                    }
+                    ramadanAlert("Imsak alert", "10 minutes before Imsak, to finish sahur", \.imsakAlert)
+                    ramadanAlert("Berbuka alert", "At Maghrib, with the doa", \.berbukaAlert)
+                    ramadanAlert("Qiyam in the last ten nights", "At the last third of the night", \.qiyamAlert)
+                } header: {
+                    Text("Ramadan and Syawal")
+                } footer: {
+                    Text(model.prefs.seasonPreview == .off
+                         ? "Ramadan mode turns on by itself on the day your local religious authority announces. Testers can pretend it's Ramadan or Raya with the switch above."
+                         : "Pretend mode is on. The app shows a pretend date, not today's. Turn it off before you rely on the times.")
                 }
 
                 Section {
@@ -286,6 +319,7 @@ struct SettingsView: View {
             .background(SkyNow())
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
+            .sheet(isPresented: $showRamadan) { RamadanView() }
             .toolbar {
                 if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             }

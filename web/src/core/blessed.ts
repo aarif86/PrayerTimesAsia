@@ -17,7 +17,7 @@ export const BLESSED_SHORT: Record<BlessedTime, string> = {
 }
 
 export const BLESSED_NOTE: Record<BlessedTime, string> = {
-  imsak: '10 minutes before Subuh - stop eating for the fast',
+  imsak: '10 minutes before Subuh. Finish sahur by now',
   dhuha: "Sun a spear's length up (about 4½°)",
   midnight: 'Halfway from Maghrib to Subuh',
   lastThird: 'Best time for tahajjud and dua',

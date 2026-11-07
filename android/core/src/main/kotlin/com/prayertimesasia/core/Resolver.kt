@@ -24,6 +24,8 @@ class Resolver(
     /** The phone's language and region, for your names when you haven't chosen. */
     private val locale: java.util.Locale = java.util.Locale.getDefault(),
     private val systemZone: ZoneId = ZoneId.systemDefault(),
+    /** Ramadan and Eid announcements from data/calendar.json. */
+    val announcements: List<CalendarAnnouncement> = emptyList(),
 ) {
     val activePlace: Place? get() = if (prefs.useGPS) gpsPlace ?: prefs.manualPlace else prefs.manualPlace
 
@@ -225,11 +227,68 @@ class Resolver(
     fun blessedTimes(shown: PrayerDay): List<Pair<BlessedTime, Instant>> {
         val place = activePlace ?: return emptyList()
         val nextDay = day(shown.time(Prayer.DHUHR).plusSeconds(86_400)) ?: return emptyList()
-        val ramadan = Hijri.isRamadan(shown.time(Prayer.DHUHR), zone, prefs.hijriAdjustment)
-        return BlessedTime.compute(shown, nextDay, place.coordinates, ramadan)
+        return BlessedTime.compute(shown, nextDay, place.coordinates, isRamadanDay(shown.time(Prayer.DHUHR)))
     }
 
-    fun hijri(instant: Instant): String = Hijri.format(instant, zone, naming, prefs.hijriAdjustment)
+    fun hijri(instant: Instant): String {
+        val h = hijriOf(instant)
+        val name = naming.hijriMonths[(h.month - 1).coerceIn(0, 11)]
+        return "${h.day} ${if (naming.isRightToLeft) "\u2068$name\u2069" else name} ${h.year}"
+    }
+
+    // MARK: Ramadan and Syawal (core Season.kt)
+
+    fun civil(instant: Instant): LocalDate = instant.atZone(zone).toLocalDate()
+
+    val isSeasonPreview: Boolean get() = prefs.seasonPreview != SeasonPreview.OFF
+
+    /** Days the tester's "Try Ramadan" moves the calendar by (0 when off). */
+    val seasonShift: Int by lazy { Season.previewShift(LocalDate.now(zone), prefs.seasonPreview) }
+
+    /** The Hijri date of a civil day as this community counts it. */
+    fun hijriOf(g: LocalDate): Hijri.HijriDate =
+        if (isSeasonPreview) Season.baseHijri(g.plusDays(seasonShift.toLong()))
+        else Season.communityHijri(g, prefs.hijriAdjustment, announcements, communityAuthority)
+
+    fun hijriOf(instant: Instant): Hijri.HijriDate = hijriOf(civil(instant))
+
+    fun isRamadanDay(instant: Instant): Boolean = hijriOf(instant).month == 9
+
+    fun season(at: Instant): Season.Info {
+        val h = hijriOf(at)
+        var next: Season.NextStart? = null
+        if (!isSeasonPreview && h.day >= 27 && (h.month == 8 || h.month == 9)) {
+            val event = if (h.month == 8) HijriEvent.RAMADAN else HijriEvent.SYAWAL
+            Season.authorityDate(announcements, communityAuthority, event, h.year)?.let { (d, announced) ->
+                if (!d.isBefore(civil(at))) next = Season.NextStart(event, d, announced)
+            }
+        }
+        return Season.info(h, next)
+    }
+
+    fun dayOf(g: LocalDate): PrayerDay? = day(g.atTime(12, 0).atZone(zone).toInstant())
+
+    /** Imsak: 10 minutes before Subuh, as MUIS, JAKIM and Kemenag publish it. */
+    fun imsak(day: PrayerDay): Instant = day.time(Prayer.FAJR).minusSeconds(600)
+
+    enum class FastingKind { IMSAK, BERBUKA }
+
+    /** In Ramadan, the moment to count down to: Imsak before dawn, Berbuka after it, then tomorrow's Imsak. */
+    fun fastingMoment(now: Instant): Pair<FastingKind, Instant>? {
+        val today = day(now) ?: return null
+        if (isRamadanDay(now)) {
+            if (now < imsak(today)) return FastingKind.IMSAK to imsak(today)
+            if (now < today.time(Prayer.MAGHRIB)) return FastingKind.BERBUKA to today.time(Prayer.MAGHRIB)
+        }
+        val tomorrow = day(now.plusSeconds(86_400)) ?: return null
+        return if (isRamadanDay(tomorrow.time(Prayer.DHUHR))) FastingKind.IMSAK to imsak(tomorrow) else null
+    }
+
+    fun monthDays(hijriYear: Int, month: Int): List<LocalDate> =
+        Season.monthDays(hijriYear, month, if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
+
+    fun fastSummary(hijriYear: Int, today: LocalDate): Season.FastSummary =
+        Season.fastSummary(hijriYear, today, prefs.fastLog, if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
 
     companion object {
         /** Prayers where [other] differs from [day] by more than 2 minutes. */

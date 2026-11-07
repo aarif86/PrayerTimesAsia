@@ -126,6 +126,7 @@ struct TodayView: View {
             TimeLeftBar(now: now)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            if dayOffset == 0 { SeasonCard(now: now) }
             PrayerList(day: shown, now: now,
                        current: dayOffset == 0 ? current?.prayer : nil,
                        next: dayOffset == 0 ? next : nil,
@@ -217,7 +218,7 @@ struct TodayView: View {
                     Text(label).font(.caption2.weight(.heavy)).tracking(0.5).foregroundStyle(Theme.accent)
                     Text(f.string(from: date)).font(.headline)
                     HStack(spacing: 3) {
-                        Text(Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment))
+                        Text(model.hijriLabel(date))
                             .lineLimit(1).minimumScaleFactor(0.75)
                         Image(systemName: "calendar")
                     }
@@ -242,6 +243,7 @@ struct TodayView: View {
             TimeLeftBar(now: now)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            if dayOffset == 0 { SeasonCard(now: now) }
             dateHeader(shown)
             dial(now: now, shown: shown, current: current, next: next)
                 .padding(.horizontal, 8 - Theme.gutter)
@@ -326,10 +328,11 @@ struct TodayView: View {
     }
 
     private func blessedTimes(_ shown: PrayerDay) -> [(BlessedTime, Date)] {
-        guard showMore, let place = model.activePlace,
+        guard let place = model.activePlace,
               let nextDay = model.day(containing: shown.time(.dhuhr).addingTimeInterval(86_400)) else { return [] }
-        let ramadan = Hijri.isRamadan(shown.time(.dhuhr), timeZone: model.timeZone, adjustment: model.prefs.hijriAdjustment)
-        return BlessedTime.compute(day: shown, nextDay: nextDay, coordinates: place.coordinates, isRamadan: ramadan)
+        let all = BlessedTime.compute(day: shown, nextDay: nextDay, coordinates: place.coordinates, isRamadan: model.isRamadanDay(shown.time(.dhuhr)))
+        // In Ramadan, Imsak is always shown.
+        return showMore ? all : all.filter { $0.0 == .imsak }
     }
 
     /// "TODAY", the date and the Hijri date above the dial; tap for the calendar,
@@ -352,7 +355,7 @@ struct TodayView: View {
                 Text(label).font(.caption.weight(.heavy)).tracking(0.8).foregroundStyle(Theme.accent)
                 Text(f.string(from: date)).font(Theme.display(26, .bold))
                 HStack(spacing: 4) {
-                    Text(Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment))
+                    Text(model.hijriLabel(date))
                     Image(systemName: dayOffset == 0 ? "calendar" : "arrow.uturn.backward")
                 }
                 .font(.subheadline).foregroundStyle(.secondary)
@@ -454,6 +457,7 @@ struct TodayView: View {
                 }
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+                if dayOffset == 0 { SeasonCard(now: now) }
             }
             .padding(.horizontal, Theme.gutter)
             .padding(.top, 4).padding(.bottom, 12)
@@ -500,7 +504,7 @@ struct TodayView: View {
         let f = DateFormatter()
         f.timeZone = model.timeZone
         f.dateFormat = "d MMM yyyy"
-        let hijri = Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment)
+        let hijri = model.hijriLabel(date)
         return HStack(spacing: 4) {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
                 Image(systemName: "chevron.left").frame(width: 36, height: 40)
@@ -556,6 +560,7 @@ struct TodayView: View {
             TimeLeftBar(now: now)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            if dayOffset == 0 { SeasonCard(now: now) }
             if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
             sunDayNavigator(shown)
             PrayerList(day: shown, now: now,
@@ -600,6 +605,7 @@ struct TodayView: View {
                 TimeLeftBar(now: now)
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+                if dayOffset == 0 { SeasonCard(now: now) }
                 if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
                 sunDayNavigator(shown)
                 PrayerList(day: shown, now: now,
@@ -693,7 +699,7 @@ struct TodayView: View {
         let f = DateFormatter()
         f.timeZone = model.timeZone
         f.dateFormat = "EEEE d MMMM"
-        let hijri = Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment)
+        let hijri = model.hijriLabel(date)
         return HStack {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
                 Image(systemName: "chevron.left").frame(width: 40, height: 40).opacity(0.6)
@@ -926,10 +932,10 @@ private struct PrayerList: View {
 
     private var entries: [Entry] {
         var list = Prayer.allCases.map { Entry.prayer($0, day.time($0)) }
-        if showMore, let place = model.activePlace,
+        if let place = model.activePlace,
            let nextDay = model.day(containing: day.time(.dhuhr).addingTimeInterval(86_400)) {
-            let ramadan = Hijri.isRamadan(day.time(.dhuhr), timeZone: model.timeZone, adjustment: model.prefs.hijriAdjustment)
-            list += BlessedTime.compute(day: day, nextDay: nextDay, coordinates: place.coordinates, isRamadan: ramadan)
+            list += BlessedTime.compute(day: day, nextDay: nextDay, coordinates: place.coordinates, isRamadan: model.isRamadanDay(day.time(.dhuhr)))
+                .filter { showMore || $0.0 == .imsak }
                 .map { Entry.blessed($0.0, $0.1) }
         }
         return list.sorted { $0.time < $1.time }

@@ -90,7 +90,8 @@ sealed class Entry(val time: Instant) {
 fun entries(state: AppState, day: PrayerDay, showMore: Boolean): List<Entry> {
     val list = mutableListOf<Entry>()
     Prayer.all.forEach { list += Entry.P(it, day.time(it)) }
-    if (showMore) state.resolver.blessedTimes(day).forEach { list += Entry.B(it.first, it.second) }
+    // In Ramadan, Imsak is always shown.
+    state.resolver.blessedTimes(day).filter { showMore || it.first == BlessedTime.IMSAK }.forEach { list += Entry.B(it.first, it.second) }
     return list.sortedBy { it.time }
 }
 

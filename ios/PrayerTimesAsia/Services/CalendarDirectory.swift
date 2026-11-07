@@ -27,9 +27,10 @@ final class CalendarDirectory {
         dataset.announcements.filter { $0.event == event && $0.hijriYear == hijriYear }
     }
 
-    func refreshIfStale() async {
+    /// `soon`: around a moon sighting night, look every 10 minutes instead of every three hours.
+    func refreshIfStale(soon: Bool = false) async {
         let last = UserDefaults.standard.object(forKey: Self.refreshedKey) as? Date ?? .distantPast
-        guard Date.now.timeIntervalSince(last) > 3 * 3600 else { return }
+        guard Date.now.timeIntervalSince(last) > (soon ? 600 : 3 * 3600) else { return }
         var request = URLRequest(url: Self.url, timeoutInterval: 20)
         request.setValue("PrayerTimesAsia/1.0 (iOS)", forHTTPHeaderField: "User-Agent")
         guard let result = try? await URLSession.shared.data(for: request),

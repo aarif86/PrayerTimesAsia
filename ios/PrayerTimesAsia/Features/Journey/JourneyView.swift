@@ -15,6 +15,7 @@ struct JourneyView: View {
                         Text("Journey").font(Theme.display(34, .bold)).padding(.top, 8)
                         statusCard
                         if model.musafirStatus?.isTraveller == true, model.asrSchool != .hanafi { combinedCard }
+                        if model.musafirStatus?.isTraveller == true, model.isRamadanDay(.now) { fastingCard }
                         homeCard
                         rulesCard
                         if !model.prefs.trip.isEmpty { tripCard }
@@ -91,6 +92,18 @@ struct JourneyView: View {
             }
         }
         .accessibilityElement(children: .contain)
+    }
+
+    private var fastingCard: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("FASTING ON THIS JOURNEY").font(.caption.weight(.heavy)).opacity(0.7)
+                Text("As a traveller you may choose not to fast today and replace it after Ramadan. If fasting is easy for you, fasting is better. The day counts as travel only if you left home before Subuh.")
+                    .font(.footnote)
+                Text("Mark it on the Ramadan page so the app counts the day to replace.").font(.footnote).opacity(0.8)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     /// Today's combined (jamak) windows from the times on the Today screen.

@@ -38,7 +38,10 @@ export function isRamadan(ms: number, tz: string, adjustment = 0): boolean {
 }
 
 export function formatHijri(ms: number, tz: string, style: NamingStyle, adjustment = 0): string {
-  const h = hijriDate(ms, tz, adjustment)
+  return formatHijriDate(hijriDate(ms, tz, adjustment), style)
+}
+
+export function formatHijriDate(h: HijriDate, style: NamingStyle): string {
   const name = hijriMonths(style)[Math.max(0, Math.min(11, h.month - 1))]
   // Isolate a right-to-left month so the day and year stay either side of it.
   return `${h.day} ${isRightToLeft(style) ? `\u2068${name}\u2069` : name} ${h.year}`

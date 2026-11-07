@@ -1,6 +1,7 @@
 import { isInAsia, placeProfile } from '../core/place'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { flag } from '../core/regions'
+import type { PrayerDay } from '../core/engine'
 import { zoned } from '../core/tz'
 import { sahurRings, sahurTime, wakeUpTime } from '../core/wakeup'
 import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
@@ -69,7 +70,6 @@ export function upcomingAlerts(now: number): Alert[] {
   const wake = wakeUps(now, 2).map((w) => ({ id: w.id, title: w.title, body: w.body, at: w.at }))
   const nudges = prefs.trackerEnabled && prefs.windowNudge && !store.trackerPaused
   const jumuah = prefs.jumuahReminderMinutes
-  if (!onTime && early <= 0 && !nudges && jumuah <= 0) return wake
   const tz = place.timeZoneID
   const here = isInAsia(place) ? `${place.name} ${flag(placeProfile(place).code)}` : place.name
   const out: Alert[] = []
@@ -93,6 +93,7 @@ export function upcomingAlerts(now: number): Alert[] {
       }
     }
     if (offset < 0) continue
+    out.push(...ramadanAlerts(day, here))
     if (jumuah > 0 && store.isFriday(day.times.dhuhr)) {
       const start = day.jamaah.dhuhr ?? day.times.dhuhr
       const at = start - jumuah * 60_000
@@ -102,6 +103,7 @@ export function upcomingAlerts(now: number): Alert[] {
         body: `Time to get ready and leave for ${store.name('dhuhr', day.times.dhuhr)}${where}, ${store.formatted(start)}.`, at, silent: isSilent(at, 'dhuhr', tz),
       })
     }
+    if (!onTime && early <= 0) continue
     for (const prayer of PRAYERS) {
       if (!prefs.notifyPrayers.includes(prayer)) continue
       const time = day.times[prayer]
@@ -119,6 +121,10 @@ export function upcomingAlerts(now: number): Alert[] {
       if (!onTime) continue
       if (prayer === 'sunrise') {
         out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended. ${here}`, at: time, silent })
+        continue
+      }
+      if (prayer === 'maghrib' && store.isRamadanDay(time)) {
+        out.push({ id, title: `Time to berbuka · ${name} ${store.formatted(time)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu · ${here}`, at: time, prayer, silent })
         continue
       }
       out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}`, at: time, prayer, silent })
@@ -163,6 +169,35 @@ export function nextWakeUp(now: number): WakeUp | null {
     if (first) return first
   }
   return null
+}
+
+/**
+ * Ramadan's own alerts, on their own switches: Imsak (10 minutes before, to
+ * finish sahur), Berbuka at Maghrib, and qiyam at the last third of the last ten nights.
+ */
+export function ramadanAlerts(day: PrayerDay, here: string): Alert[] {
+  const prefs = store.prefs
+  const out: Alert[] = []
+  const id = `${day.year}-${day.month}-${day.day}`
+  const season = store.season(day.times.dhuhr)
+  if (season.phase === 'ramadan') {
+    const imsak = store.imsak(day)
+    if (prefs.imsakAlert) {
+      out.push({ id: `${id}-imsak`, title: `Imsak in 10 minutes · ${store.formatted(imsak)}`, body: `Finish your sahur. Subuh at ${store.formatted(day.times.fajr)} · ${here}`, at: imsak - 10 * 60_000, silent: isSilent(imsak - 10 * 60_000, 'fajr', store.activePlace?.timeZoneID ?? 'UTC') })
+    }
+    // When the Maghrib alert is on it says this itself, so one alert, not two.
+    const maghribAlert = prefs.notificationsEnabled && prefs.notifyPrayers.includes('maghrib')
+    if (prefs.berbukaAlert && !maghribAlert) {
+      out.push({ id: `${id}-berbuka`, title: `Time to berbuka · ${store.formatted(day.times.maghrib)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu. Ramadan day ${season.ramadanDay} · ${here}`, at: day.times.maghrib, silent: isSilent(day.times.maghrib, 'maghrib', store.activePlace?.timeZoneID ?? 'UTC') })
+    }
+  }
+  if (prefs.qiyamAlert && season.lastTen && season.nightTonight) {
+    const last = store.blessed(day).find(([b]) => b === 'lastThird')
+    if (last) {
+      out.push({ id: `${id}-qiyam`, title: `Night ${season.nightTonight} · the last third has begun`, body: season.oddNight ? 'An odd night of the last ten. Seek Lailatul Qadr.' : 'One of the last ten nights of Ramadan.', at: last[1], silent: isSilent(last[1], 'isha', store.activePlace?.timeZoneID ?? 'UTC') })
+    }
+  }
+  return out
 }
 
 let timer: ReturnType<typeof setTimeout> | null = null

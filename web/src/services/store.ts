@@ -4,7 +4,9 @@ import { defaultAuthority, type CalendarAnnouncement, type CalendarDataset, type
 import { computeFor, ordered, type PrayerDay } from '../core/engine'
 import { openWindow, type PrayerWindow } from '../core/window'
 import { distanceKm, KAABA } from '../core/geo'
-import { isRamadan } from '../core/hijri'
+import { formatHijriDate, gregorianFromHijri, type HijriDate } from '../core/hijri'
+import { MISSED, type FastMark } from '../core/ramadanContent'
+import { addDays, authorityDate, baseHijri, civilKey, communityHijri, daysApart, parseCivil, previewShift, seasonFor, type CivilDay, type Season } from '../core/season'
 import { masjidProfile, MY_MASJID_RADIUS_KM, parseMasjidLink, type MasjidLink } from '../core/masjidLink'
 import { methodWithId, type CalculationMethod } from '../core/methods'
 import { musafirStatus, type MusafirRules, type MusafirStatus } from '../core/musafir'
@@ -16,6 +18,7 @@ import {
   disagreements, jamaahTimes, mosqueAsr, mosqueMethod, mosqueNear, type MosqueDataset, type MosqueProfile,
 } from '../core/sources'
 import { dayKey, daysBetween, deviceTimeZone, ymdKey, zoned, zonedTime } from '../core/tz'
+export { parseCivil, civilKey }
 import { CITIES, nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
 import { DEFAULT_PREFS, loadPreferences, savePreferences, TODAY_STYLES, type Preferences, type TodayStyle } from './prefs'
@@ -316,8 +319,142 @@ class AppStore {
     const place = this.activePlace
     const nextDay = this.nextDay(day)
     if (!place || !nextDay) return []
-    const ramadan = isRamadan(day.times.dhuhr, this.timeZone, this.prefs.hijriAdjustment)
-    return computeBlessed(day, nextDay, place.coordinates, ramadan)
+    return computeBlessed(day, nextDay, place.coordinates, this.isRamadanDay(day.times.dhuhr))
+  }
+
+  // MARK: Ramadan and Syawal
+
+  /** The local calendar day containing `ms`. */
+  civil(ms: number): CivilDay {
+    const z = zoned(ms, this.timeZone)
+    return { year: z.year, month: z.month, day: z.day }
+  }
+
+  /** Days the tester's "Try Ramadan" moves the calendar by (0 when off). */
+  get seasonShift(): number {
+    return previewShift(this.civil(this.now()), this.prefs.seasonPreview)
+  }
+
+  get isSeasonPreview(): boolean { return this.prefs.seasonPreview !== 'off' }
+
+  /** The Hijri date of a civil day as this community counts it (see core/season.ts). */
+  hijriOfCivil(g: CivilDay): HijriDate {
+    if (this.isSeasonPreview) return baseHijri(addDays(g, this.seasonShift))
+    return communityHijri(g, this.prefs.hijriAdjustment, this.calendar.announcements, this.communityAuthority)
+  }
+
+  hijriOf(ms: number): HijriDate { return this.hijriOfCivil(this.civil(ms)) }
+
+  hijriLabel(ms: number): string { return formatHijriDate(this.hijriOf(ms), this.naming) }
+
+  isRamadanDay(ms: number): boolean { return this.hijriOf(ms).month === 9 }
+
+  season(ms: number): Season {
+    const h = this.hijriOf(ms)
+    let nextStart: Season['nextStart'] = null
+    const event = h.month === 8 ? '1_ramadan' : h.month === 9 ? '1_syawal' : null
+    if (event && h.day >= 27 && !this.isSeasonPreview) {
+      const d = authorityDate(this.calendar.announcements, this.communityAuthority, event, h.year)
+      if (d && daysApart(this.civil(ms), d.day) >= 0) nextStart = { event, ...d }
+    }
+    return seasonFor(h, nextStart)
+  }
+
+  /** The civil day `days` after the one containing `ms`. */
+  civilAfter(ms: number, days: number): CivilDay { return addDays(this.civil(ms), days) }
+
+  /** A civil day's prayer times (noon of that day). */
+  dayOfCivil(g: CivilDay): PrayerDay | null {
+    return this.day(zonedTime(g.year, g.month, g.day, 12, 0, 0, this.timeZone))
+  }
+
+  /** Imsak: 10 minutes before Subuh, as MUIS, JAKIM and Kemenag publish it. */
+  imsak(day: PrayerDay): number { return day.times.fajr - 10 * 60_000 }
+
+  /**
+   * In Ramadan, the moment to count down to: Imsak before dawn, Berbuka after it.
+   * After Maghrib it points at tomorrow's Imsak (if tomorrow is a fast).
+   */
+  fastingMoment(now: number): { kind: 'imsak' | 'berbuka'; time: number } | null {
+    const today = this.day(now)
+    if (!today) return null
+    if (this.isRamadanDay(now)) {
+      const imsak = this.imsak(today)
+      if (now < imsak) return { kind: 'imsak', time: imsak }
+      if (now < today.times.maghrib) return { kind: 'berbuka', time: today.times.maghrib }
+    }
+    const tomorrow = this.day(now + 86_400_000)
+    if (tomorrow && this.isRamadanDay(tomorrow.times.dhuhr)) return { kind: 'imsak', time: this.imsak(tomorrow) }
+    return null
+  }
+
+  // Fasting log, kept on this device only.
+
+  fastMark(key: string): FastMark | null { return this.prefs.fastLog[key] ?? null }
+
+  setFast(key: string, mark: FastMark | null): void {
+    this.update((p) => {
+      if (mark) p.fastLog[key] = mark; else delete p.fastLog[key]
+      const keys = Object.keys(p.fastLog).sort()
+      if (keys.length > 800) delete p.fastLog[keys[0]]
+    })
+  }
+
+  toggleDay(list: 'tarawihLog' | 'quranLog', key: string): void {
+    this.update((p) => { p[list] = p[list].includes(key) ? p[list].filter((k) => k !== key) : [...p[list], key].sort().slice(-400) })
+  }
+
+  /** Every civil day of a Hijri month for this community, from the 1st. */
+  monthDays(year: number, month: number): CivilDay[] {
+    const est = gregorianFromHijri(year, month, 1)
+    if (!est) return []
+    const guess = addDays(est, this.isSeasonPreview ? -this.seasonShift : 0)
+    let first: CivilDay | null = null
+    for (const delta of [0, 1, -1, 2, -2, 3, -3]) {
+      const d = addDays(guess, delta)
+      const h = this.hijriOfCivil(d)
+      if (h.year === year && h.month === month && h.day === 1) { first = d; break }
+    }
+    if (!first) return []
+    const out: CivilDay[] = []
+    for (let i = 0; i < 30; i++) {
+      const d = addDays(first, i)
+      if (this.hijriOfCivil(d).month !== month) break
+      out.push(d)
+    }
+    return out
+  }
+
+  /** This Ramadan's fasts: how many kept, missed (by reason) and still to replace. */
+  fastSummary(hijriYear: number, now = this.now()): { days: CivilDay[]; fasted: number; missed: number; replaced: number; owed: number; syawal: number } {
+    const days = this.monthDays(hijriYear, 9)
+    const todayKey = civilKey(this.civil(now))
+    let fasted = 0, missed = 0
+    for (const d of days) {
+      const k = civilKey(d)
+      if (k > todayKey) break
+      const m = this.prefs.fastLog[k]
+      if (m === 'fasted') fasted++
+      else if (m && MISSED.includes(m)) missed++
+    }
+    const last = days[days.length - 1]
+    const after = last ? civilKey(last) : todayKey
+    // Replaced fasts and Syawal fasts are counted after this Ramadan, until the next one.
+    const nextStart = this.monthDays(hijriYear + 1, 9)[0]
+    const until = nextStart ? civilKey(nextStart) : '9999'
+    let replaced = 0, syawal = 0
+    const syawalDays = new Set(this.monthDays(hijriYear, 10).map(civilKey))
+    for (const [k, m] of Object.entries(this.prefs.fastLog)) {
+      if (k <= after || k >= until) continue
+      if (m === 'qadha') replaced++
+      if (m === 'syawal' && syawalDays.has(k)) syawal++
+    }
+    return { days, fasted, missed, replaced, owed: Math.max(0, missed - replaced), syawal }
+  }
+
+  /** Raya prayer time at your masjid, when its screen has one. */
+  get eidPrayer(): string | null {
+    return this.myMasjidHere?.eid ?? null
   }
 
   formatted(ms: number): string {
@@ -529,7 +666,10 @@ class AppStore {
         } catch { /* keep the cached copy */ }
       }
     }
-    if (stale('ptasia.calendar.at', 3 * 3_600_000)) {
+    // Around moon sighting nights, look for the announcement every 10 minutes.
+    const h = this.hijriOf(this.now())
+    const sighting = (h.month === 8 || h.month === 9) && h.day >= 28
+    if (stale('ptasia.calendar.at', sighting ? 10 * 60_000 : 3 * 3_600_000)) {
       const r = await fetchOK(`${DATA_BASE}calendar.json`)
       if (r) {
         try {
@@ -614,6 +754,21 @@ function demoPreferences(demo: Demo): Preferences {
     }
     p.prayedLog[dayKey(now, 'Asia/Singapore')] = OBLIGATORY.slice(0, 1)
     if (tracker === 'paused') p.trackerPausedSince = dayKey(now - 2 * 86_400_000, 'Asia/Singapore')
+  }
+  // ?season=ramadan (or sighting, lastTen, raya, syawal): the tester's Ramadan preview, with some fasts marked.
+  const season = q.get('season') as Exclude<Preferences['seasonPreview'], 'off'> | null
+  if (season && ['sighting', 'ramadan', 'lastTen', 'raya', 'syawal'].includes(season)) {
+    p.seasonPreview = season
+    const marks: FastMark[] = ['fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'period', 'period', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'travel', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted', 'fasted']
+    const back = { sighting: 0, ramadan: 11, lastTen: 25, raya: 30, syawal: 37 }[season]
+    for (let i = 1; i <= back && i <= 30; i++) {
+      const k = dayKey(now - i * 86_400_000, 'Asia/Singapore')
+      const m = marks[(back - i) % marks.length]
+      if (season === 'syawal' && i < 7) { if (i === 2 || i === 4) p.fastLog[k] = 'syawal'; continue }
+      p.fastLog[k] = m
+    }
+    p.tarawihLog = [dayKey(now - 86_400_000, 'Asia/Singapore')]
+    p.khatamPlan = season === 'ramadan' || season === 'lastTen'
   }
   const appearance = q.get('appearance')
   p.appearance = appearance === 'light' || appearance === 'dark' || appearance === 'system' ? appearance : 'dark'

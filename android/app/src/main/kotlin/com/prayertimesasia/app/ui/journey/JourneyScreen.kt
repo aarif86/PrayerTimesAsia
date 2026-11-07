@@ -104,6 +104,16 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                         color = Palette.primary.copy(alpha = 0.85f))
                 }
             }
+            if (status?.isTraveller == true && r.isRamadanDay(now)) {
+                GlassCard {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("FASTING ON THIS JOURNEY", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Palette.primary.copy(alpha = 0.7f))
+                        Text("As a traveller you may choose not to fast today and replace it after Ramadan. If fasting is easy for you, fasting is better. The day counts as travel only if you left home before Subuh.",
+                            style = Txt.footnote, color = Palette.primary)
+                        Text("Mark it on the Ramadan page so the app counts the day to replace.", style = Txt.footnote, color = Palette.primary.copy(alpha = 0.8f))
+                    }
+                }
+            }
             val today = r.day(now)
             val tomorrow = r.day(now, 1)
             if (status?.isTraveller == true && r.asrSchool != AsrSchool.HANAFI && today != null && tomorrow != null) {

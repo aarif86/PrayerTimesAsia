@@ -16,6 +16,7 @@ import type { MosqueProfile } from './sources'
  * i  Subuh, Zohor, Asar, Maghrib, Isyak: minutes after the azan ("10"),
  *    a fixed time ("13:15"), or empty when the masjid didn't set one
  * j  Jumu'ah (khutbah) time, optional
+ * e  Hari Raya prayer time, optional (set in Ramadan, so the phone can show it on Raya morning)
  */
 export interface MasjidLink {
   name: string
@@ -25,6 +26,8 @@ export interface MasjidLink {
   cc: string | null
   jamaah: Partial<Record<(typeof OBLIGATORY)[number], { after?: number; fixed?: string }>>
   jumuah: string | null
+  /** Hari Raya Aidilfitri prayer time, "HH:mm". */
+  eid?: string | null
 }
 
 /** A masjid that's yours covers your home area, a little wider than the 3 km of a published profile. */
@@ -48,6 +51,7 @@ export function masjidQuery(m: MasjidLink): string {
     return r?.fixed ?? (r?.after != null ? String(r.after) : '')
   }).join(',')])
   if (m.jumuah) q.push(['j', m.jumuah])
+  if (m.eid) q.push(['e', m.eid])
   return `masjid?${q.map(([k, v]) => `${k}=${enc(v)}`).join('&')}`
 }
 
@@ -70,11 +74,13 @@ export function parseMasjidLink(text: string): MasjidLink | null {
     else if (HHMM.test(v)) jamaah[p] = { fixed: pad(v) }
   })
   const j = q.get('j') ?? ''
+  const e = q.get('e') ?? ''
   return {
     name, lat: ll[0], lng: ll[1], tz,
     cc: cc && /^[A-Za-z]{2}$/.test(cc) ? cc.toUpperCase() : null,
     jamaah,
     jumuah: HHMM.test(j) ? pad(j) : null,
+    ...(HHMM.test(e) ? { eid: pad(e) } : {}),
   }
 }
 

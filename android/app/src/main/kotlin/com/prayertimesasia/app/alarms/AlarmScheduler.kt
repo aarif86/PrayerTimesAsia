@@ -5,10 +5,13 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.prayertimesasia.core.BlessedTime
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.PrayerWindow
 import com.prayertimesasia.core.Resolver
 import com.prayertimesasia.core.SahurDay
+import com.prayertimesasia.core.Season
 import com.prayertimesasia.core.WakeUpTiming
 import java.time.Instant
 
@@ -94,15 +97,49 @@ object AlarmScheduler {
                         prayer == Prayer.FAJR -> Sound.AZAN_SUBUH
                         else -> Sound.AZAN
                     }
+                    if (prayer == Prayer.MAGHRIB && r.isRamadanDay(time)) {
+                        out += Alert(id, "Time to berbuka · $name ${r.formatted(time)}", "$BERBUKA_DOA · $here", time, Kind.PRAYER, sound,
+                            silent = r.isSilent(time, prayer))
+                        continue
+                    }
                     out += Alert(id, "$name · ${r.formatted(time)}", "It's time for $name in $here", time, Kind.PRAYER, sound,
                         silent = r.isSilent(time, prayer))
                 }
             }
+            out += ramadanAlerts(r, day, key, here, maghribAlertOn = p.notificationsEnabled && Prayer.MAGHRIB in p.notifyPrayers)
             out += wakeUps(r, day, key, place.name)
         }
         // Widgets move on at each prayer even with alerts off.
         r.next(now)?.let { (_, t) -> out += Alert("refresh", "", "", t, Kind.REFRESH) }
         return out.filter { it.at > now }.sortedBy { it.at }.take(48)
+    }
+
+    private const val BERBUKA_DOA = "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu"
+
+    /** Ramadan's own alerts: Imsak (10 minutes before), Berbuka at Maghrib, qiyam in the last ten nights. */
+    private fun ramadanAlerts(r: Resolver, day: PrayerDay, key: String, here: String, maghribAlertOn: Boolean): List<Alert> {
+        val p = r.prefs
+        val out = mutableListOf<Alert>()
+        val s = r.season(day.time(Prayer.DHUHR))
+        if (s.phase == Season.Phase.RAMADAN) {
+            val imsak = r.imsak(day)
+            if (p.imsakAlert) {
+                out += Alert("$key-imsak", "Imsak in 10 minutes · ${r.formatted(imsak)}",
+                    "Finish your sahur. Subuh at ${r.formatted(day.time(Prayer.FAJR))} · $here", imsak.minusSeconds(600), Kind.PRAYER, silent = r.isSilent(imsak, Prayer.FAJR))
+            }
+            if (p.berbukaAlert && !maghribAlertOn) {
+                out += Alert("$key-berbuka", "Time to berbuka · ${r.formatted(day.time(Prayer.MAGHRIB))}",
+                    "$BERBUKA_DOA. Ramadan day ${s.ramadanDay ?: 0} · $here", day.time(Prayer.MAGHRIB), Kind.PRAYER, silent = r.isSilent(day.time(Prayer.MAGHRIB), Prayer.MAGHRIB))
+            }
+        }
+        val night = s.nightTonight
+        if (p.qiyamAlert && s.lastTen && night != null) {
+            r.blessedTimes(day).firstOrNull { it.first == BlessedTime.LAST_THIRD }?.let { (_, t) ->
+                out += Alert("$key-qiyam", "Night $night · the last third has begun",
+                    if (s.oddNight) "An odd night of the last ten. Seek Lailatul Qadr." else "One of the last ten nights of Ramadan.", t, Kind.PRAYER, silent = r.isSilent(t, Prayer.ISHA))
+            }
+        }
+        return out
     }
 
     /** The Subuh wake-up and the sahur alarm on one day, as they ring. */

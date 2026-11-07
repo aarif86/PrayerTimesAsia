@@ -29,7 +29,8 @@ class Directories(context: Context) {
         return if (f.isFile) runCatching { decode(f.readText()) }.getOrNull() else null
     }
 
-    suspend fun refreshIfStale(): Unit = withContext(Dispatchers.IO) {
+    /** [soon]: around a moon sighting night, look every 10 minutes instead of every three hours. */
+    suspend fun refreshIfStale(soon: Boolean = false): Unit = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
         if (now - sp.getLong("mosques", 0) > 86_400_000L) {
             runCatching {
@@ -41,7 +42,7 @@ class Directories(context: Context) {
             }
         }
         // Announcements come the night before, so check every three hours.
-        if (now - sp.getLong("calendar", 0) > 3 * 3_600_000L) {
+        if (now - sp.getLong("calendar", 0) > (if (soon) 600_000L else 3 * 3_600_000L)) {
             runCatching {
                 val text = Http.get(CALENDAR_URL, 20_000)
                 val fresh = CalendarDataset.decode(text)

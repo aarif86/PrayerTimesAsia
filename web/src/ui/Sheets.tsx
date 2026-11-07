@@ -17,7 +17,7 @@ import { searchCities } from '../services/cities'
 import { alertSupport } from '../services/notifications'
 import { fetchOK } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
-import { closeSheet, fmtDate, GRADE_TINT, Segmented, Sheet } from './common'
+import { closeSheet, fmtDate, GRADE_TINT, Segmented, Sheet, openSheet } from './common'
 import { TabJourney } from './icons'
 import { MakersAbout } from './Makers'
 import { canInstall, install, isIOS } from './pwa'
@@ -291,6 +291,13 @@ export function JourneySheet() {
           <><div style={{ fontSize: '22px', fontWeight: 700 }}>Set your home</div><p style={{ opacity: 0.85 }}>Tell us where home is and we'll work out when you count as a traveller.</p></>
         )}
       </div>
+      {status?.kind === 'traveller' && s.isRamadanDay(now) && (
+        <div class="glass card" style={{ marginTop: '16px' }}>
+          <div class="caps" style={{ opacity: 0.7 }}>Fasting on this journey</div>
+          <p class="footnote" style={{ opacity: 0.9, margin: '8px 0 0' }}>As a traveller you may choose not to fast, and replace the day after Ramadan. If fasting is easy, fasting is better. The day counts as travel when you left home before Subuh. Mark it on your Ramadan page so it is counted for you. Ask your local religious authority when unsure.</p>
+          <button class="pill-btn" style={{ marginTop: '10px' }} onClick={() => openSheet({ kind: 'ramadan' })}>Open Ramadan</button>
+        </div>
+      )}
       {status?.kind === 'traveller' && s.asrSchool !== 'hanafi' && today && tomorrow && (
         <div class="glass card" style={{ marginTop: '16px' }}>
           <div class="row"><span class="caps" style={{ opacity: 0.7 }}>Combined windows today</span><span class="spacer" /><span class="caption" style={{ opacity: 0.6, fontWeight: 600 }}>Pending shariah review</span></div>

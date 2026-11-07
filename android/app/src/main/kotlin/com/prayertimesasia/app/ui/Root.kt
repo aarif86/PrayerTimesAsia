@@ -175,6 +175,9 @@ private fun RootContent(state: AppState) {
                     SkyTheme(state) { JourneyScreen(state) { state.showJourney = false } }
                 }
             }
+            if (state.showRamadan) {
+                AppSheet({ state.showRamadan = false }) { com.prayertimesasia.app.ui.today.RamadanSheetContent(state) }
+            }
             Overlays(state, overlay) { overlay = it }
             if (state.showTracker) {
                 AppSheet({ state.showTracker = false }) { TrackerSheetContent(state) }
