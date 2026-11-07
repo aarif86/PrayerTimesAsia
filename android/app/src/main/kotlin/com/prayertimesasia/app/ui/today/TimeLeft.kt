@@ -17,6 +17,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.ui.draw.alpha
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -123,6 +126,34 @@ fun SimplePage(state: AppState, day: PrayerDay, current: Pair<Prayer, Instant>?,
                         Icon(if (prayed) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked, null, Modifier.size(30.dp),
                             tint = if (prayed) Palette.accent else Palette.secondary)
                     }
+                }
+            }
+        }
+        val more = state.prefs.showMore
+        val moreShape = RoundedCornerShape(20.dp)
+        Row(
+            Modifier.fillMaxWidth().padding(top = 6.dp).heightIn(min = 56.dp).clip(moreShape)
+                .background(Palette.primary.copy(alpha = 0.07f), moreShape)
+                .clickable { state.update { it.copy(showMore = !it.showMore) } }
+                .semantics { contentDescription = if (more) "Show less" else "Show more times: Dhuha and the blessed times of the night" },
+            horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(if (more) "Show less" else "Show more times", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Palette.accent)
+            Icon(if (more) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown, null, Modifier.size(26.dp), tint = Palette.accent)
+        }
+        if (more) {
+            r.blessedTimes(day).forEach { (b, t) ->
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 64.dp).alpha(if (t <= now) 0.6f else 1f).clip(moreShape)
+                        .background(Palette.primary.copy(alpha = 0.07f), moreShape).padding(horizontal = 18.dp, vertical = 10.dp)
+                        .semantics(mergeDescendants = true) {},
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(b.name(r.naming), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Palette.primary)
+                        Text(b.note, fontSize = 16.sp, color = Palette.secondary)
+                    }
+                    Text(r.formatted(t), fontSize = 24.sp, fontWeight = FontWeight.SemiBold, color = Palette.primary, maxLines = 1)
                 }
             }
         }

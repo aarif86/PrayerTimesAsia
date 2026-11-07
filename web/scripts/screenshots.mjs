@@ -83,6 +83,7 @@ const shots = [
   }],
   ['34-time-left-subuh', { style: 'sunpath', appearance: 'system', now: '2026-10-25T06:45:00+08:00', tracker: 'on' }],
   ['35-simple-day', { style: 'simple', appearance: 'system', now: DAY, tracker: 'on' }],
+  ['35b-simple-more', { style: 'simple', appearance: 'dark', now: DAY }, async (p) => { await p.click('.simple-more'); await p.waitForTimeout(300); await p.evaluate(() => document.querySelector('.simple-more')?.scrollIntoView()) }],
   ['36-simple-night-large', { style: 'simple', appearance: 'dark', now: '2026-10-25T22:10:00+08:00', large: '1' }],
   ['37-settings-quiet', { tab: 'settings', appearance: 'dark', now: NIGHT }, (p) => p.evaluate(() => document.querySelector('h2.group-title:nth-of-type(n)') && [...document.querySelectorAll('h2.group-title')].find((h) => h.textContent === 'Quiet alerts')?.scrollIntoView())],
   ['28-journey', { demo: 'travel', style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Musafir"]')],

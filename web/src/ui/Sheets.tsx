@@ -78,8 +78,8 @@ export function PlacesSheet() {
     <Sheet title="Location" full>
       <label class="search-box">
         <Search size={17} class="secondary" />
-        <input type="search" placeholder="City or place" value={query} autoFocus={!s.demo}
-          onInput={(e) => setQuery((e.target as HTMLInputElement).value)} aria-label="City or place" />
+        <input type="search" placeholder="City or country" value={query} autoFocus={!s.demo}
+          onInput={(e) => setQuery((e.target as HTMLInputElement).value)} aria-label="City or country" />
       </label>
       {!query ? (
         <>
@@ -87,8 +87,8 @@ export function PlacesSheet() {
             <button class="item" onClick={() => { store.useGPS(); closeSheet() }}>
               <Navigation size={18} fill="currentColor" />
               <span class="label">Current location{s.gpsPlace && <span class="sub">{s.gpsPlace.name}</span>}
-                {s.gpsStatus === 'denied' && <span class="sub">Location is blocked for this site in your browser settings.</span>}</span>
-              {s.prefs.useGPS && <span class="value">On</span>}
+                {s.gpsStatus === 'denied' && <span class="sub">Turned off for this site. Allow location in your browser's site settings, or search below.</span>}</span>
+              {s.gpsStatus === 'denied' ? <span class="value">Off</span> : s.prefs.useGPS && <span class="value">On</span>}
             </button>
           </div>
           {s.prefs.savedPlaces.length > 0 && (
@@ -97,7 +97,7 @@ export function PlacesSheet() {
               <div class="group">{s.prefs.savedPlaces.map((p) => row(p, true))}</div>
             </>
           )}
-          <p class="group-foot">Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated in your browser, so they keep working offline. Your location never leaves this device.</p>
+          <p class="group-foot">Type a city like Hanoi or London, or a country like Malaysia to see its cities. Times are calculated in your browser, so they keep working offline. Your location never leaves this device.</p>
         </>
       ) : (
         <>

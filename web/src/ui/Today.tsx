@@ -543,6 +543,20 @@ function SimplePage({ c }: { c: Ctx }) {
           )
         })}
       </div>
+      <button class="simple-more" onClick={() => c.setShowMore(!c.showMore)} aria-expanded={c.showMore}>
+        {c.showMore ? 'Show less' : 'Show more times'}
+        {c.showMore ? <ChevronUp size={22} strokeWidth={2.6} /> : <ChevronDown size={22} strokeWidth={2.6} />}
+      </button>
+      {c.showMore && (
+        <div class="simple-list">
+          {store.blessed(day).map(([b, t]) => (
+            <div class="simple-row blessed" style={{ opacity: t <= now ? 0.6 : 1 }}>
+              <span class="simple-name">{BLESSED_NAME[b]}<span class="simple-note">{BLESSED_NOTE[b]}</span></span>
+              <span class="simple-time mono">{store.formatted(t)}</span>
+            </div>
+          ))}
+        </div>
+      )}
       <div class="simple-date">{fmtDate(day.times.dhuhr, { weekday: 'long', day: 'numeric', month: 'long' })} · {hijri(day.times.dhuhr)}</div>
     </div>
   )
