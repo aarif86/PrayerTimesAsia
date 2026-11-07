@@ -66,13 +66,20 @@ const shots = [
   ['30-jamaah-countdown', { style: 'list', appearance: 'system', now: '2026-10-25T12:57:00+08:00', masjid: 'on' }],
   ['31-masjid-yours', { tab: 'masjid', appearance: 'dark', now: NIGHT, masjid: 'on' }],
   ['32-wake-up', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
-    await p.click('button[aria-label^="Wake up for"]'); await p.waitForTimeout(400)
+    await p.click('button[aria-label^="Prayer alarms"]'); await p.waitForTimeout(400)
     await p.click('text=5 min after Subuh begins'); await p.waitForTimeout(300)
     await p.evaluate(() => document.querySelector('.sheet')?.scrollTo(0, 360))
   }],
   ['33-wake-chip', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
-    await p.click('button[aria-label^="Wake up for"]'); await p.waitForTimeout(400)
+    await p.click('button[aria-label^="Prayer alarms"]'); await p.waitForTimeout(400)
     await p.click('text=At Subuh'); await p.click('.sheet .done')
+  }],
+  ['38-prayer-alarms', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
+    await p.click('button[aria-label^="Prayer alarms"]'); await p.waitForTimeout(400)
+    await p.selectOption('select[aria-label="Asar alarm"]', 'plus10')
+    await p.selectOption('select[aria-label="Isyak alarm"]', 'atStart')
+    await p.click('text=Gentle chime'); await p.waitForTimeout(300)
+    await p.evaluate(() => [...document.querySelectorAll('.sheet h2.group-title')].find((h) => h.textContent === 'Other prayers')?.scrollIntoView())
   }],
   ['34-time-left-subuh', { style: 'sunpath', appearance: 'system', now: '2026-10-25T06:45:00+08:00', tracker: 'on' }],
   ['35-simple-day', { style: 'simple', appearance: 'system', now: DAY, tracker: 'on' }],

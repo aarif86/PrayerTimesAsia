@@ -41,6 +41,19 @@ final class MoveSettingsTests: XCTestCase {
         XCTAssertEqual(MovedSettings(code: back.code), moved)
     }
 
+    func testPrayerAlarmsMove() {
+        var here = Preferences()
+        here.asrAlarm = .plus10
+        here.alarmSound = .bells
+        let moved = MovedSettings(here)
+        XCTAssertEqual(moved.asrAlarm, .plus10)
+        XCTAssertEqual(moved.alarmSound, .bells)
+        let back = MovedSettings(code: moved.code)?.applied(to: Preferences())
+        XCTAssertEqual(back?.asrAlarm, .plus10)
+        XCTAssertEqual(back?.alarmSound, .bells)
+        XCTAssertNil(MovedSettings(Preferences()).alarmSound)
+    }
+
     func testFreshInstallIsEmpty() throws {
         XCTAssertEqual(MovedSettings(Preferences()), try fixture().cases[0].settings)
     }

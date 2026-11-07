@@ -843,7 +843,7 @@ struct TodayView: View {
         return f.string(from: max(60, seconds)) ?? ""
     }
 
-    /// The alarm clock: Wake up for Subuh, one tap from the Prayer screen.
+    /// The alarm clock: prayer alarms (Subuh first), one tap from the Prayer screen.
     /// Shows the next alarm's time when one is set.
     private func wakeChip(_ now: Date) -> some View {
         let next = model.nextWakeUp(after: now)
@@ -862,8 +862,8 @@ struct TodayView: View {
             .background(next == nil ? Color.primary.opacity(0.1) : Theme.sunArc.opacity(0.3), in: Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(next.map { "Wake up alarm at \(model.formatted($0.date))" } ?? "Wake up for \(fajr): set an alarm")
-        .accessibilityHint("Alarms for \(fajr), tahajjud and sahur.")
+        .accessibilityLabel(next.map { "Next alarm at \(model.formatted($0.date))" } ?? "Prayer alarms, wake up for \(fajr): set an alarm")
+        .accessibilityHint("Alarms for \(fajr), sahur and every prayer, and the alarm sound.")
     }
 
     private func streakChip(_ now: Date) -> some View {

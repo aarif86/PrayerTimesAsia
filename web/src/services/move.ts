@@ -68,6 +68,12 @@ export interface MovedSettings {
   wakeUp?: string
   sahurAlarm?: string
   sahurDays?: string[]
+  /** Alarms for the other prayers and the alarm sound. */
+  dhuhrAlarm?: string
+  asrAlarm?: string
+  maghribAlarm?: string
+  ishaAlarm?: string
+  alarmSound?: string
 }
 
 /** The plain settings, with the travel-mode memory and one-off prompts left behind. */
@@ -75,6 +81,7 @@ const SIMPLE_KEYS = [
   'useGPS', 'methodOverrideID', 'asrOverride', 'namingOverride', 'use24Hour', 'hijriAdjustment', 'reminderMinutesBefore',
   'musafirEnabled', 'musafirThresholdKm', 'jakimZoneOverride', 'communityAuthority', 'appearance', 'todayStyle',
   'showOffers', 'showLocalNames', 'trackerEnabled', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
+  'dhuhrAlarm', 'asrAlarm', 'maghribAlarm', 'ishaAlarm', 'alarmSound',
   'windowNudge', 'quietHours', 'quietFrom', 'quietTo', 'buzzOnly', 'largeText', 'jumuahReminderMinutes',
 ] as const satisfies readonly (keyof Preferences & keyof MovedSettings)[]
 

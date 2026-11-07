@@ -53,6 +53,11 @@ data class MovedSettings(
     val wakeUp: WakeUpTiming? = null,
     val sahurAlarm: SahurTiming? = null,
     val sahurDays: List<String>? = null,
+    val dhuhrAlarm: PrayerAlarmTiming? = null,
+    val asrAlarm: PrayerAlarmTiming? = null,
+    val maghribAlarm: PrayerAlarmTiming? = null,
+    val ishaAlarm: PrayerAlarmTiming? = null,
+    val alarmSound: AlarmSound? = null,
     val windowNudge: Boolean? = null,
     val quietHours: Boolean? = null,
     val quietFrom: Int? = null,
@@ -124,6 +129,13 @@ data class MovedSettings(
             wakeUp = wakeUp,
             sahurAlarm = sahurAlarm,
             sahurDays = sahurDays?.let { raw -> SahurDay.entries.filter { it.raw in raw }.toSet() } ?: d.sahurDays,
+            dhuhrAlarm = dhuhrAlarm,
+            asrAlarm = asrAlarm,
+            maghribAlarm = maghribAlarm,
+            ishaAlarm = ishaAlarm?.takeIf { it != PrayerAlarmTiming.END_MINUS_30 },
+            alarmSound = alarmSound ?: d.alarmSound,
+            // The picked ringtone lives on this phone only; another phone's "From my phone" plays Classic until one is picked.
+            alarmRingtone = p.alarmRingtone,
             windowNudge = windowNudge ?: d.windowNudge,
             quietHours = quietHours ?: d.quietHours,
             quietFrom = quietFrom?.takeIf { it in 0 until 1440 } ?: d.quietFrom,
@@ -170,7 +182,9 @@ data class MovedSettings(
             if (methodOverrideID != null || asrOverride != null || jakimZoneOverride != null) add("Your calculation choices")
             if (appearance != null || todayStyle != null || use24Hour != null || namingOverride != null) add("Your look and prayer names")
             if (notifyPrayers != null || reminderMinutesBefore != null || quietHours != null || buzzOnly != null || jumuahReminderMinutes != null) add("Which prayers to alert, and how")
-            if (wakeUp != null || sahurAlarm != null) add("Your wake-up alarms")
+            if (wakeUp != null || sahurAlarm != null || dhuhrAlarm != null || asrAlarm != null || maghribAlarm != null || ishaAlarm != null) {
+                add("Your prayer alarms")
+            }
             if (largeText == true) add("Bigger text")
             if (musafirEnabled == true) add("Musafir features")
         }.ifEmpty { listOf("The standard settings") }
@@ -227,6 +241,11 @@ data class MovedSettings(
                 wakeUp = p.wakeUp,
                 sahurAlarm = p.sahurAlarm,
                 sahurDays = changed(p.sahurDays, d.sahurDays)?.let { set -> SahurDay.entries.filter { it in set }.map { it.raw } },
+                dhuhrAlarm = p.dhuhrAlarm,
+                asrAlarm = p.asrAlarm,
+                maghribAlarm = p.maghribAlarm,
+                ishaAlarm = p.ishaAlarm,
+                alarmSound = changed(p.alarmSound, d.alarmSound),
                 windowNudge = changed(p.windowNudge, d.windowNudge),
                 quietHours = changed(p.quietHours, d.quietHours),
                 quietFrom = changed(p.quietFrom, d.quietFrom),

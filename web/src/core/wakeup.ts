@@ -96,3 +96,42 @@ export function sahurRings(day: PrayerDay, days: readonly SahurDay[], tz: string
   }
   return false
 }
+
+/**
+ * Alarms for the other four prayers, for heavy sleepers, a nap before Asar,
+ * or someone who keeps putting a prayer off. Subuh has its own list above.
+ */
+export type AlarmPrayer = 'dhuhr' | 'asr' | 'maghrib' | 'isha'
+export const ALARM_PRAYERS: readonly AlarmPrayer[] = ['dhuhr', 'asr', 'maghrib', 'isha']
+/** The preference that holds each prayer's alarm. */
+export const ALARM_KEY = { dhuhr: 'dhuhrAlarm', asr: 'asrAlarm', maghrib: 'maghribAlarm', isha: 'ishaAlarm' } as const
+
+export type PrayerAlarmTiming = 'atStart' | 'plus5' | 'plus10' | 'plus15' | 'plus30' | 'endMinus30'
+export const PRAYER_ALARM_TIMINGS: readonly PrayerAlarmTiming[] = ['atStart', 'plus5', 'plus10', 'plus15', 'plus30', 'endMinus30']
+const ALARM_MINUTES: Record<Exclude<PrayerAlarmTiming, 'endMinus30'>, number> = { atStart: 0, plus5: 5, plus10: 10, plus15: 15, plus30: 30 }
+
+/** The choices for one prayer. Isyak is open until Subuh, so it has no "before it ends". */
+export function prayerAlarmChoices(prayer: AlarmPrayer): PrayerAlarmTiming[] {
+  return PRAYER_ALARM_TIMINGS.filter((t) => !(prayer === 'isha' && t === 'endMinus30'))
+}
+
+/** Short, as it sits in the row beside the prayer's name. */
+export function prayerAlarmLabel(t: PrayerAlarmTiming): string {
+  if (t === 'atStart') return 'On time'
+  if (t === 'endMinus30') return '30 min before it ends'
+  return `${ALARM_MINUTES[t]} min after`
+}
+
+/** When the alarm rings, given the prayer's start and end (the next prayer). */
+export function prayerAlarmTime(t: PrayerAlarmTiming, start: number, end: number): number {
+  // A short window (Maghrib far north): never before the prayer has begun.
+  if (t === 'endMinus30') return Math.max(start, end - 30 * 60_000)
+  return start + ALARM_MINUTES[t] * 60_000
+}
+
+/** The sound every alarm plays. "phone" (a ringtone picked on Android) plays Classic elsewhere. */
+export type AlarmSound = 'classic' | 'chime' | 'bells' | 'beeps' | 'phone'
+export const ALARM_SOUNDS: readonly AlarmSound[] = ['classic', 'chime', 'bells', 'beeps', 'phone']
+export const ALARM_SOUND_LABEL: Record<AlarmSound, string> = {
+  classic: 'Classic alarm', chime: 'Gentle chime', bells: 'Rising bells', beeps: 'Soft beeps', phone: 'From my phone',
+}

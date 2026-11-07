@@ -132,12 +132,11 @@ fun SettingsScreen(
                 }
             }
             item {
-                val fajr = Prayer.FAJR.name(r.naming)
                 val next = com.prayertimesasia.app.alarms.AlarmScheduler.nextWakeUp(r, state.now)
-                Section("Wake-up", "Also on the Prayer screen. Tap the alarm clock at the top.") {
-                    ValueRow("Wake up for $fajr", when {
+                Section("Alarms", "Also on the Prayer screen. Tap the alarm clock at the top.") {
+                    ValueRow("Prayer alarms", when {
                         next != null -> "Next ${r.formatted(next.at)}"
-                        p.wakeUp != null || p.sahurAlarm != null -> "On"
+                        p.anyAlarm -> "On"
                         else -> "Off"
                     }) { state.showWakeUp = true }
                 }

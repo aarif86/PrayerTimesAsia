@@ -190,6 +190,34 @@ class PrayerEngineTest {
         assertEquals("2 hours before Subuh", SahurTiming.FAJR_MINUS_120.label(NamingStyle.MALAY))
     }
 
+    @Test fun prayerAlarmTimings() {
+        val day = PrayerEngine.compute(2026, 10, 21, singapore, CalculationMethod.MUIS, AsrSchool.STANDARD)
+        val asr = day.time(Prayer.ASR)
+        val maghrib = day.time(Prayer.MAGHRIB)
+        assertEquals(asr, PrayerAlarmTiming.AT_START.date(asr, maghrib))
+        assertEquals(asr.plusSeconds(600), PrayerAlarmTiming.PLUS_10.date(asr, maghrib))
+        assertEquals(maghrib.minusSeconds(1800), PrayerAlarmTiming.END_MINUS_30.date(asr, maghrib))
+        // A very short window never rings before the prayer begins.
+        assertEquals(maghrib, PrayerAlarmTiming.END_MINUS_30.date(maghrib, maghrib.plusSeconds(1200)))
+        assertEquals(day.time(Prayer.ASR), PrayerAlarmTiming.end(Prayer.DHUHR, day))
+        assertEquals("5 min after", PrayerAlarmTiming.PLUS_5.label)
+        assertEquals("30 min before it ends", PrayerAlarmTiming.END_MINUS_30.label)
+        // Isyak is open until Subuh, so it has no "before it ends".
+        assertTrue(PrayerAlarmTiming.END_MINUS_30 !in PrayerAlarmTiming.choices(Prayer.ISHA))
+        assertTrue(PrayerAlarmTiming.END_MINUS_30 in PrayerAlarmTiming.choices(Prayer.ASR))
+        val p = Preferences().withAlarm(Prayer.ASR, PrayerAlarmTiming.AT_START).withAlarm(Prayer.ISHA, PrayerAlarmTiming.END_MINUS_30)
+        assertTrue(p.anyAlarm)
+        assertTrue(p.alarmAtStart(Prayer.ASR))
+        assertEquals(null, p.ishaAlarm)
+        assertTrue(!Preferences().anyAlarm)
+        // Saved and read back; an unknown value falls back.
+        val back = Preferences.decode(p.copy(alarmSound = AlarmSound.BELLS).encode())
+        assertEquals(PrayerAlarmTiming.AT_START, back.asrAlarm)
+        assertEquals(AlarmSound.BELLS, back.alarmSound)
+        assertEquals(AlarmSound.CLASSIC, Preferences.decode("""{"alarmSound":"trumpet"}""").alarmSound)
+        assertEquals(null, Preferences.decode("""{"ishaAlarm":"endMinus30"}""").ishaAlarm)
+    }
+
     @Test fun sahurDays() {
         val zone = java.time.ZoneId.of("Asia/Singapore")
         fun day(d: java.time.LocalDate) = PrayerEngine.compute(d.year, d.monthValue, d.dayOfMonth, singapore, CalculationMethod.MUIS, AsrSchool.STANDARD)
