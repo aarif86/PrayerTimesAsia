@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.HourglassBottom
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -45,60 +44,40 @@ import com.prayertimesasia.core.secondsSince
 import java.time.Instant
 
 /**
- * "Zohor is open until 4:08 PM · 2h 33m left". Busy people ask how long they
- * still have, not only when the next prayer starts. Nothing between sunrise
- * and Zohor, when no prayer is due. Same wording as the web and iPhone.
+ * The one countdown on the Prayer screen. While a prayer is open (and not yet
+ * ticked) it says how long is left to pray it: "19m left to pray". Every
+ * prayer's time ends when the next one starts (Subuh at Syuruk), so this is
+ * the same moment as the next prayer, said the way busy people ask it.
+ * Between Syuruk and Zohor, or once ticked, it counts to the next prayer.
+ * Same wording as the web and iPhone.
  */
-class TimeLeftText(val line: String, val left: String?, val urgent: Boolean, val done: Boolean) {
-    companion object {
-        fun of(state: AppState, now: Instant): TimeLeftText? {
-            val r = state.resolver
-            val w = r.window(now) ?: return null
-            val name = r.prayerName(w.prayer, w.start)
-            val done = state.prefs.trackerEnabled && r.isPrayed(w.prayer, w.start)
-            val left = "${TimeFormat.short(w.end.secondsSince(now))} left"
-            return when {
-                done -> TimeLeftText("$name prayed. Alhamdulillah.", null, false, true)
-                w.prayer == Prayer.ISHA ->
-                    TimeLeftText("$name is open until ${Prayer.FAJR.name(r.naming)} at ${r.formatted(w.end)}.", left, false, false)
-                else -> TimeLeftText("$name is open until ${r.formatted(w.end)}.", left, now >= w.nudgeAt, false)
-            }
-        }
-    }
-}
+class Countdown(val count: String, val label: String, val urgent: Boolean, val done: Boolean) {
+    val text: String get() = "$count $label"
 
-@Composable
-fun TimeLeftBar(state: AppState) {
-    val t = TimeLeftText.of(state, state.now) ?: return
-    val shape = RoundedCornerShape(14.dp)
-    Row(
-        Modifier.fillMaxWidth().clip(shape)
-            .background(if (t.urgent) Palette.accent.copy(alpha = 0.18f) else Palette.primary.copy(alpha = 0.07f), shape)
-            .padding(horizontal = 14.dp, vertical = 9.dp)
-            .semantics(mergeDescendants = true) {},
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Icon(if (t.done) Icons.Filled.CheckCircle else Icons.Filled.HourglassBottom, null, Modifier.size(16.dp),
-            tint = if (t.urgent) Palette.accent else Palette.secondary)
-        Text(t.line, style = Txt.subheadline, color = if (t.done) Palette.secondary else Palette.primary, modifier = Modifier.weight(1f))
-        t.left?.let {
-            Text(it, style = Txt.subheadlineSemibold.copy(fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"),
-                color = if (t.urgent) Palette.accent else Palette.primary, maxLines = 1)
+    companion object {
+        fun of(state: AppState, now: Instant, next: Pair<Prayer, Instant>): Countdown {
+            val r = state.resolver
+            val w = r.window(now)
+            val done = w != null && state.prefs.trackerEnabled && r.isPrayed(w.prayer, w.start)
+            return if (w != null && !done) {
+                Countdown(TimeFormat.short(w.end.secondsSince(now)), "left to pray", w.prayer != Prayer.ISHA && now >= w.nudgeAt, false)
+            } else {
+                Countdown(TimeFormat.short(next.second.secondsSince(now)), "until ${r.prayerName(next.first, next.second)}", false, done)
+            }
         }
     }
 }
 
 /**
  * Big and Simple: for older eyes and anyone who wants only the times. The
- * prayer now, how long is left, the next prayer, and the five times in big
+ * prayer now, how long is left to pray it, and the five times in big
  * rows. Tap a row to tick it when the tracker is on. Nothing else.
  */
 @Composable
 fun SimplePage(state: AppState, day: PrayerDay, current: Pair<Prayer, Instant>?, next: Pair<Prayer, Instant>?, openPlaces: () -> Unit) {
     val r = state.resolver
     val now = state.now
-    val t = TimeLeftText.of(state, now)
+    val t = next?.let { Countdown.of(state, now, it) }
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = Dims.gutter, end = Dims.gutter, top = 4.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -111,18 +90,16 @@ fun SimplePage(state: AppState, day: PrayerDay, current: Pair<Prayer, Instant>?,
         if (!state.prefs.notificationsEnabled && !state.prefs.alertsPromptDismissed) AlertsPrompt(state)
         Column(Modifier.fillMaxWidth().padding(vertical = 14.dp), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            if (current != null && current.first != Prayer.SUNRISE && t != null) {
-                Text(r.prayerName(current.first, current.second), style = display(52.sp, FontWeight.ExtraBold), color = current.first.textTint,
-                    maxLines = 1)
+            if (current != null) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(r.prayerName(current.first, current.second), style = display(52.sp, FontWeight.ExtraBold), color = current.first.textTint,
+                        maxLines = 1)
+                    if (t?.done == true) Icon(Icons.Filled.CheckCircle, "Prayed", Modifier.size(34.dp), tint = Palette.accent)
+                }
             }
             if (t != null) {
-                Text(t.line, style = Txt.title2.copy(fontWeight = FontWeight.SemiBold), textAlign = TextAlign.Center,
+                Text(t.text, style = Txt.largeTitle.copy(fontFeatureSettings = "tnum"), textAlign = TextAlign.Center,
                     color = if (t.urgent) Palette.accent else Palette.primary)
-                t.left?.let { Text(it, style = Txt.largeTitle.copy(fontFeatureSettings = "tnum"), color = Palette.primary) }
-            }
-            if (next != null) {
-                Text("Next is ${r.prayerName(next.first, next.second)} at ${r.formatted(next.second)}, in ${TimeFormat.short(next.second.secondsSince(now))}",
-                    style = Txt.title3.copy(fontWeight = FontWeight.Normal), color = Palette.secondary, textAlign = TextAlign.Center)
             }
         }
         Prayer.all.forEach { prayer ->

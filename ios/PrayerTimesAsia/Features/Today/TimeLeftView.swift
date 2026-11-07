@@ -1,60 +1,35 @@
 import SwiftUI
 
-/// "Zohor is open until 4:08 PM · 2h 33m left". Busy people ask how long they
-/// still have, not only when the next prayer starts. Nothing between sunrise
-/// and Zohor, when no prayer is due. Same wording as the web app.
-struct TimeLeftText {
-    let line: String
-    let left: String?
+/// The one countdown on the Prayer screen. While a prayer is open (and not
+/// yet ticked) it says how long is left to pray it: "19m left to pray". Every
+/// prayer's time ends when the next one starts (Subuh at Syuruk), so this is
+/// the same moment as the next prayer, said the way busy people ask it.
+/// Between Syuruk and Zohor, or once ticked, it counts to the next prayer.
+/// Same wording as the web app and Android.
+struct PrayerCountdown {
+    let count: String
+    let label: String
     let urgent: Bool
     let done: Bool
+    var text: String { "\(count) \(label)" }
 
-    @MainActor init?(now: Date, model: AppModel) {
-        guard let w = model.window(at: now) else { return nil }
-        let name = w.prayer.name(model.naming, isFriday: model.isFriday(w.start))
-        let fajr = Prayer.fajr.name(model.naming)
-        done = model.prefs.trackerEnabled && model.isPrayed(w.prayer, on: w.start)
-        urgent = !done && w.prayer != .isha && now >= w.nudgeAt
-        if done {
-            line = "\(name) prayed. Alhamdulillah."; left = nil
-        } else if w.prayer == .isha {
-            line = "\(name) is open until \(fajr) at \(model.formatted(w.end))."
-            left = "\(TodayView.short(w.end.timeIntervalSince(now))) left"
+    @MainActor init(now: Date, next: (prayer: Prayer, time: Date), model: AppModel) {
+        let w = model.window(at: now)
+        done = w.map { model.prefs.trackerEnabled && model.isPrayed($0.prayer, on: $0.start) } ?? false
+        if let w, !done {
+            count = TodayView.short(w.end.timeIntervalSince(now))
+            label = "left to pray"
+            urgent = w.prayer != .isha && now >= w.nudgeAt
         } else {
-            line = "\(name) is open until \(model.formatted(w.end))."
-            left = "\(TodayView.short(w.end.timeIntervalSince(now))) left"
-        }
-    }
-}
-
-struct TimeLeftBar: View {
-    @Environment(AppModel.self) private var model
-    let now: Date
-
-    var body: some View {
-        if let t = TimeLeftText(now: now, model: model) {
-            HStack(spacing: 8) {
-                Image(systemName: t.done ? "checkmark.circle.fill" : "hourglass")
-                    .foregroundStyle(t.urgent ? Theme.accent : .secondary)
-                Text(t.line).frame(maxWidth: .infinity, alignment: .leading)
-                if let left = t.left {
-                    Text(left).font(.subheadline.weight(.bold).monospacedDigit())
-                        .foregroundStyle(t.urgent ? Theme.accent : .primary)
-                        .fixedSize()
-                }
-            }
-            .font(.subheadline.weight(.medium))
-            .foregroundStyle(t.done ? .secondary : .primary)
-            .padding(.horizontal, 14).padding(.vertical, 9)
-            .background(t.urgent ? Theme.accent.opacity(0.18) : Color.primary.opacity(0.07),
-                        in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .accessibilityElement(children: .combine)
+            count = TodayView.short(next.time.timeIntervalSince(now))
+            label = "until \(next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))"
+            urgent = false
         }
     }
 }
 
 /// Big and Simple: for older eyes and anyone who wants only the times. The
-/// prayer now, how long is left, the next prayer, and the five times in big
+/// prayer now, how long is left to pray it, and the five times in big
 /// rows. Tap a row to tick it when the tracker is on. Nothing else.
 struct SimpleTimes: View {
     @Environment(AppModel.self) private var model
@@ -64,23 +39,24 @@ struct SimpleTimes: View {
     let next: (prayer: Prayer, time: Date)?
 
     var body: some View {
-        let t = TimeLeftText(now: now, model: model)
         VStack(spacing: 18) {
             VStack(spacing: 6) {
-                if let current, current.prayer != .sunrise, t != nil {
-                    Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
-                        .font(.system(size: 56, weight: .heavy, design: .rounded))
-                        .foregroundStyle(current.prayer.textTint)
-                        .minimumScaleFactor(0.6).lineLimit(1)
-                }
-                if let t {
-                    Text(t.line).font(.title2.weight(.semibold)).multilineTextAlignment(.center)
-                        .foregroundStyle(t.urgent ? Theme.accent : .primary)
-                    if let left = t.left { Text(left).font(.largeTitle.weight(.bold).monospacedDigit()) }
+                if let current {
+                    HStack(spacing: 10) {
+                        Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
+                            .font(.system(size: 56, weight: .heavy, design: .rounded))
+                            .foregroundStyle(current.prayer.textTint)
+                            .minimumScaleFactor(0.6).lineLimit(1)
+                        if let next, PrayerCountdown(now: now, next: next, model: model).done {
+                            Image(systemName: "checkmark.circle.fill").font(.system(size: 34)).foregroundStyle(Theme.accent)
+                        }
+                    }
                 }
                 if let next {
-                    Text("Next is **\(next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))** at **\(model.formatted(next.time))**, in \(TodayView.short(next.time.timeIntervalSince(now)))")
-                        .font(.title3).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    let t = PrayerCountdown(now: now, next: next, model: model)
+                    Text(t.text).font(.largeTitle.weight(.bold).monospacedDigit())
+                        .foregroundStyle(t.urgent ? Theme.accent : .primary)
+                        .multilineTextAlignment(.center)
                 }
             }
             .frame(maxWidth: .infinity)
