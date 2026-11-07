@@ -155,8 +155,8 @@ struct TodayView: View {
                 DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
                         currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
                         currentPrayer: current.prayer,
-                        countdown: Countdown(now: now, next: next, model: model).count,
-                        label: Countdown(now: now, next: next, model: model).label)
+                        countdown: PrayerCountdown(now: now, next: next, model: model).count,
+                        label: PrayerCountdown(now: now, next: next, model: model).label)
                     .frame(width: 172, height: 172)
             }
             VStack(alignment: .leading, spacing: 10) {
@@ -376,11 +376,11 @@ struct TodayView: View {
                     .foregroundStyle(current.prayer.tint)
                 Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
                     .font(Theme.display(size * 0.085, .bold))
-                Text(Countdown(now: now, next: next, model: model).count)
+                Text(PrayerCountdown(now: now, next: next, model: model).count)
                     .font(Theme.display(size * 0.066, .semibold)).monospacedDigit()
                     .foregroundStyle(Theme.accent)
                     .contentTransition(.numericText(countsDown: true))
-                Text(Countdown(now: now, next: next, model: model).label)
+                Text(PrayerCountdown(now: now, next: next, model: model).label)
                     .font(.system(size: size * 0.034, weight: .medium))
                     .foregroundStyle(.secondary)
             }
@@ -447,7 +447,7 @@ struct TodayView: View {
                     styleButton
                 }
                 if let current, let next, dayOffset == 0 {
-                    Text("\(current.prayer.name(model.naming, isFriday: model.isFriday(current.time))) now · \(Countdown(now: now, next: next, model: model).text)")
+                    Text("\(current.prayer.name(model.naming, isFriday: model.isFriday(current.time))) now · \(PrayerCountdown(now: now, next: next, model: model).text)")
                         .font(.subheadline.weight(.semibold)).monospacedDigit()
                         .foregroundStyle(.white.opacity(0.75))
                         .contentTransition(.numericText(countsDown: true))
@@ -538,8 +538,8 @@ struct TodayView: View {
                     DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
                             currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
                             currentPrayer: current.prayer,
-                            countdown: Countdown(now: now, next: next, model: model).count,
-                            label: Countdown(now: now, next: next, model: model).label)
+                            countdown: PrayerCountdown(now: now, next: next, model: model).count,
+                            label: PrayerCountdown(now: now, next: next, model: model).label)
                         .frame(width: 148, height: 148)
                         .frame(maxWidth: .infinity)
                 }
@@ -673,7 +673,7 @@ struct TodayView: View {
         let currentName = current.prayer.name(model.naming, isFriday: model.isFriday(current.time))
         let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
         let remaining = next.time.timeIntervalSince(now)
-        let count = Countdown(now: now, next: next, model: model)
+        let count = PrayerCountdown(now: now, next: next, model: model)
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Circle().fill(current.prayer.tint).frame(width: 9, height: 9)

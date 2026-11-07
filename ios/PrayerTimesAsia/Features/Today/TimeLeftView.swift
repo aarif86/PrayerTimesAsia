@@ -6,7 +6,7 @@ import SwiftUI
 /// the same moment as the next prayer, said the way busy people ask it.
 /// Between Syuruk and Zohor, or once ticked, it counts to the next prayer.
 /// Same wording as the web app and Android.
-struct Countdown {
+struct PrayerCountdown {
     let count: String
     let label: String
     let urgent: Bool
@@ -47,13 +47,13 @@ struct SimpleTimes: View {
                             .font(.system(size: 56, weight: .heavy, design: .rounded))
                             .foregroundStyle(current.prayer.tint)
                             .minimumScaleFactor(0.6).lineLimit(1)
-                        if let next, Countdown(now: now, next: next, model: model).done {
+                        if let next, PrayerCountdown(now: now, next: next, model: model).done {
                             Image(systemName: "checkmark.circle.fill").font(.system(size: 34)).foregroundStyle(Theme.accent)
                         }
                     }
                 }
                 if let next {
-                    let t = Countdown(now: now, next: next, model: model)
+                    let t = PrayerCountdown(now: now, next: next, model: model)
                     Text(t.text).font(.largeTitle.weight(.bold).monospacedDigit())
                         .foregroundStyle(t.urgent ? Theme.accent : .primary)
                         .multilineTextAlignment(.center)
