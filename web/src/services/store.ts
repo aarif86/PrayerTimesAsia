@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks'
 import { computeBlessed, type BlessedTime } from '../core/blessed'
 import { defaultAuthority, type CalendarAnnouncement, type CalendarDataset, type HijriEvent } from '../core/calendarSanad'
 import { computeFor, ordered, type PrayerDay } from '../core/engine'
+import { openWindow, type PrayerWindow } from '../core/window'
 import { distanceKm, KAABA } from '../core/geo'
 import { formatHijriDate, gregorianFromHijri, type HijriDate } from '../core/hijri'
 import { MISSED, type FastMark } from '../core/ramadanContent'
@@ -20,7 +21,7 @@ import { dayKey, daysBetween, deviceTimeZone, ymdKey, zoned, zonedTime } from '.
 export { parseCivil, civilKey }
 import { CITIES, nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
-import { DEFAULT_PREFS, loadPreferences, savePreferences, type Preferences, type TodayStyle } from './prefs'
+import { DEFAULT_PREFS, loadPreferences, savePreferences, TODAY_STYLES, type Preferences, type TodayStyle } from './prefs'
 import { fetchOK, readJSON, readString, writeJSON, writeString } from './storage'
 import { countAppOpen } from './usage'
 
@@ -306,6 +307,14 @@ class AppStore {
     return yesterday ? { prayer: 'isha', time: yesterday.times.isha } : null
   }
 
+  /** The prayer open now and when its time runs out; null between sunrise and Zohor. */
+  window(now: number): PrayerWindow | null {
+    const today = this.day(now)
+    const yesterday = this.day(now - 86_400_000)
+    const tomorrow = this.day(now + 86_400_000)
+    return today && yesterday && tomorrow ? openWindow(now, yesterday, today, tomorrow) : null
+  }
+
   blessed(day: PrayerDay): [BlessedTime, number][] {
     const place = this.activePlace
     const nextDay = this.nextDay(day)
@@ -451,6 +460,13 @@ class AppStore {
   formatted(ms: number): string {
     const p = this.timeParts(ms)
     return p.suffix ? `${p.time} ${p.suffix}` : p.time
+  }
+
+  /** A time of day given as minutes past midnight, "11:00 PM" or "23:00". */
+  clock(minutes: number): string {
+    const h = Math.floor(minutes / 60) % 24, m = String(minutes % 60).padStart(2, '0')
+    if (this.prefs.use24Hour) return `${String(h).padStart(2, '0')}:${m}`
+    return `${h % 12 === 0 ? 12 : h % 12}:${m} ${h < 12 ? 'AM' : 'PM'}`
   }
 
   /** "5:29" and "AM" separately, so the suffix can be set smaller on the same line. */
@@ -757,10 +773,11 @@ function demoPreferences(demo: Demo): Preferences {
   const appearance = q.get('appearance')
   p.appearance = appearance === 'light' || appearance === 'dark' || appearance === 'system' ? appearance : 'dark'
   const style = q.get('style') as TodayStyle | null
-  if (style && ['list', 'centre', 'dial', 'sunPath', 'bands'].includes(style)) p.todayStyle = style
+  if (style && TODAY_STYLES.includes(style)) p.todayStyle = style
   if (q.get('alerts') === 'on') { p.notificationsEnabled = true; p.alertsPromptDismissed = true }
   p.appPromptDismissed = q.get('appprompt') !== 'on'
   if (q.get('masjid') === 'on') p.myMasjid = DEMO_MASJID
+  if (q.get('large') === '1') p.largeText = true
   if (demo.variant === 'visitor') {
     p.home = { id: 'demo-sydney', name: 'Sydney', countryCode: 'AU', countryName: 'Australia', timeZoneID: 'Australia/Sydney', coordinates: { latitude: -33.8688, longitude: 151.2093 } }
     p.manualPlace = { id: 'demo-kl', name: 'Kuala Lumpur', countryCode: 'MY', countryName: 'Malaysia', timeZoneID: 'Asia/Kuala_Lumpur', coordinates: { latitude: 3.139, longitude: 101.6869 } }

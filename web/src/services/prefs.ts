@@ -12,10 +12,10 @@ export const APPEARANCE_LABEL: Record<Appearance, string> = {
 }
 
 /** How the Prayer screen shows the day (same order as the iOS TodayStyle). */
-export type TodayStyle = 'list' | 'centre' | 'dial' | 'sunPath' | 'bands'
-export const TODAY_STYLES: TodayStyle[] = ['centre', 'list', 'dial', 'sunPath', 'bands']
+export type TodayStyle = 'list' | 'centre' | 'dial' | 'sunPath' | 'bands' | 'simple'
+export const TODAY_STYLES: TodayStyle[] = ['centre', 'list', 'dial', 'sunPath', 'bands', 'simple']
 export const TODAY_STYLE_LABEL: Record<TodayStyle, string> = {
-  list: 'Side Dial', centre: 'Centre Dial', dial: 'Day Dial', sunPath: 'Sun Path', bands: 'Colour Bands',
+  list: 'Side Dial', centre: 'Centre Dial', dial: 'Day Dial', sunPath: 'Sun Path', bands: 'Colour Bands', simple: 'Big and Simple',
 }
 
 export interface TripStop { countryCode: string; countryName: string; placeName: string; arrived: number }
@@ -88,6 +88,18 @@ export interface Preferences {
   quranLog: string[]
   /** Hijri years zakat fitrah was paid. */
   zakatPaid: number[]
+  /** Tracker users: one nudge before a prayer's time runs out, if it isn't ticked. */
+  windowNudge: boolean
+  /** Alerts go silent (buzz only) between these minutes past midnight; Subuh still rings. */
+  quietHours: boolean
+  quietFrom: number
+  quietTo: number
+  /** Every alert buzzes only, never a sound. */
+  buzzOnly: boolean
+  /** Bigger text everywhere, for older eyes. */
+  largeText: boolean
+  /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
+  jumuahReminderMinutes: number
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -137,6 +149,13 @@ export const DEFAULT_PREFS: Preferences = {
   tarawihLog: [],
   quranLog: [],
   zakatPaid: [],
+  windowNudge: true,
+  quietHours: false,
+  quietFrom: 23 * 60,
+  quietTo: 6 * 60,
+  buzzOnly: false,
+  largeText: false,
+  jumuahReminderMinutes: 0,
 }
 
 const NULLABLE = new Set<keyof Preferences>([
@@ -146,7 +165,7 @@ const NULLABLE = new Set<keyof Preferences>([
 
 const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   appearance: ['system', 'light', 'dark'],
-  todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands'],
+  todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands', 'simple'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,
   seasonPreview: SEASON_PREVIEWS,
@@ -189,6 +208,9 @@ export function decodePreferences(raw: unknown): Preferences {
     if (typeof d === 'object') { if (typeof v === 'object' && !Array.isArray(v)) (out as unknown as Record<string, unknown>)[key] = v; continue }
     if (typeof v === typeof d) (out as unknown as Record<string, unknown>)[key] = v
   }
+  // Minutes past midnight must be a real time of day.
+  for (const k of ['quietFrom', 'quietTo'] as const) if (!Number.isInteger(out[k]) || out[k] < 0 || out[k] >= 1440) out[k] = DEFAULT_PREFS[k]
+  if (!JUMUAH_REMINDER_CHOICES.includes(out.jumuahReminderMinutes)) out.jumuahReminderMinutes = 0
   return out
 }
 
@@ -222,3 +244,6 @@ export function savePreferences(p: Preferences): void {
 /** "Reminder before prayer": on at 15 minutes, any of these to choose from. */
 export const DEFAULT_REMINDER_MINUTES = 15
 export const REMINDER_CHOICES = [5, 10, 15, 20, 30, 45, 60]
+
+/** "Leave for Jumaat": how long before the khutbah. 0 is off. */
+export const JUMUAH_REMINDER_CHOICES = [0, 20, 30, 45, 60, 90]

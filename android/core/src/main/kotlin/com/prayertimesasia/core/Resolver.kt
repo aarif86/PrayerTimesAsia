@@ -154,6 +154,34 @@ class Resolver(
         return day(local.atTime(LocalTime.NOON).atZone(zone).toInstant())
     }
 
+    /** The prayer open now and when its time runs out; null between sunrise and Zohor. */
+    fun window(now: Instant): PrayerWindow? {
+        val today = day(now, 0) ?: return null
+        val yesterday = day(now, -1) ?: return null
+        val tomorrow = day(now, 1) ?: return null
+        return PrayerWindow.open(now, yesterday, today, tomorrow)
+    }
+
+    /** Minutes past local midnight at the active place. */
+    fun minuteOfDay(instant: Instant): Int = instant.atZone(zone).let { it.hour * 60 + it.minute }
+
+    fun inQuietHours(instant: Instant): Boolean = PrayerWindow.inQuietHours(minuteOfDay(instant), prefs.quietFrom, prefs.quietTo)
+
+    /** Quiet hours and "Buzz only". Subuh always keeps its sound: it is a wake up. */
+    fun isSilent(instant: Instant, prayer: Prayer): Boolean = when {
+        prefs.buzzOnly -> true
+        prayer == Prayer.FAJR -> false
+        else -> prefs.quietHours && inQuietHours(instant)
+    }
+
+    /** A time of day given as minutes past midnight, "11:00 PM" or "23:00". */
+    fun clock(minutes: Int): String {
+        val h = (minutes / 60) % 24
+        val m = "%02d".format(minutes % 60)
+        if (prefs.use24Hour) return "%02d:%s".format(h, m)
+        return "${if (h % 12 == 0) 12 else h % 12}:$m ${if (h < 12) "AM" else "PM"}"
+    }
+
     fun isFriday(instant: Instant): Boolean = instant.atZone(zone).dayOfWeek == DayOfWeek.FRIDAY
 
     fun formatted(instant: Instant): String = TimeFormat.formatted(instant, zone, prefs.use24Hour)

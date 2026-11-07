@@ -141,7 +141,9 @@ enum class TodayStyle {
     /** The sun's arc across the top, the current prayer small at the top left, then the list. */
     @SerialName("sunPath") SUN_PATH,
     /** Each prayer a full-width band of colour, like the classic Singapore timetable. */
-    @SerialName("bands") BANDS;
+    @SerialName("bands") BANDS,
+    /** Big and Simple: the prayer now, the time left, and five big rows. For older eyes. */
+    @SerialName("simple") SIMPLE;
 
     val label: String
         get() = when (this) {
@@ -150,6 +152,7 @@ enum class TodayStyle {
             DIAL -> "Day Dial"
             SUN_PATH -> "Sun Path"
             BANDS -> "Colour Bands"
+            SIMPLE -> "Big and Simple"
         }
 }
 
@@ -245,11 +248,30 @@ data class Preferences(
     val quranLog: Set<String> = emptySet(),
     /** Hijri years zakat fitrah was paid. */
     val zakatPaid: Set<Int> = emptySet(),
+    /** Tracker users: one nudge before a prayer's time runs out, if it isn't ticked. */
+    val windowNudge: Boolean = true,
+    /** Alerts only buzz between these minutes past midnight; Subuh keeps its sound. */
+    val quietHours: Boolean = false,
+    val quietFrom: Int = 23 * 60,
+    val quietTo: Int = 6 * 60,
+    /** Every alert buzzes only, never a sound. */
+    val buzzOnly: Boolean = false,
+    /** Bigger text everywhere, for older eyes. */
+    val largeText: Boolean = false,
+    /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
+    val jumuahReminderMinutes: Int = 0,
 ) {
     fun encode(): String = CoreJson.encodeToString(serializer(), this)
 
     companion object {
         fun decode(text: String?): Preferences =
-            text?.let { runCatching { CoreJson.decodeFromString(serializer(), it) }.getOrNull() } ?: Preferences()
+            (text?.let { runCatching { CoreJson.decodeFromString(serializer(), it) }.getOrNull() } ?: Preferences()).sane()
+
+        /** Times of day must be real ones and the Jumaat reminder one of the choices. */
+        private fun Preferences.sane(): Preferences = copy(
+            quietFrom = quietFrom.takeIf { it in 0 until 1440 } ?: 23 * 60,
+            quietTo = quietTo.takeIf { it in 0 until 1440 } ?: 6 * 60,
+            jumuahReminderMinutes = jumuahReminderMinutes.takeIf { it in PrayerWindow.JUMUAH_REMINDER_CHOICES } ?: 0,
+        )
     }
 }

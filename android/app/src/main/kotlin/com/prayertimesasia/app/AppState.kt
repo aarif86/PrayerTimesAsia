@@ -279,6 +279,15 @@ class AppState(
         }
     }
 
+    /** "Leave for Jumaat": asks for notification permission, then reminds [minutes] before Jumaat on Fridays. */
+    fun enableJumuahReminder(minutes: Int) {
+        scope.launch {
+            val granted = permissions?.notifications() ?: true
+            if (!granted) return@launch
+            update { it.copy(jumuahReminderMinutes = minutes) }
+        }
+    }
+
     fun toggleNotify(prayer: Prayer) {
         if (!prefs.notificationsEnabled) {
             enableAlerts(setOf(prayer))

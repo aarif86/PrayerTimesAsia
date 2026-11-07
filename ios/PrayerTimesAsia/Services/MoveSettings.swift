@@ -50,6 +50,13 @@ struct MovedSettings: Codable, Equatable {
     var wakeUp: WakeUpTiming?
     var sahurAlarm: SahurTiming?
     var sahurDays: [SahurDay]?
+    var windowNudge: Bool?
+    var quietHours: Bool?
+    var quietFrom: Int?
+    var quietTo: Int?
+    var buzzOnly: Bool?
+    var largeText: Bool?
+    var jumuahReminderMinutes: Int?
 
     static let version = 1
     static let prefix = "PTA1."
@@ -94,6 +101,13 @@ struct MovedSettings: Codable, Equatable {
         wakeUp = field(.wakeUp)
         sahurAlarm = field(.sahurAlarm)
         sahurDays = (try? c.decodeIfPresent([Lenient<SahurDay>].self, forKey: .sahurDays))?.map { $0.compactMap { $0.value } }
+        windowNudge = field(.windowNudge)
+        quietHours = field(.quietHours)
+        quietFrom = field(.quietFrom)
+        quietTo = field(.quietTo)
+        buzzOnly = field(.buzzOnly)
+        largeText = field(.largeText)
+        jumuahReminderMinutes = field(.jumuahReminderMinutes)
     }
 
     private struct Lenient<T: Decodable>: Decodable {
@@ -147,6 +161,13 @@ extension MovedSettings {
         wakeUp = p.wakeUp
         sahurAlarm = p.sahurAlarm
         sahurDays = p.sahurDays == d.sahurDays ? nil : SahurDay.allCases.filter { p.sahurDays.contains($0) }
+        windowNudge = changed(p.windowNudge, d.windowNudge)
+        quietHours = changed(p.quietHours, d.quietHours)
+        quietFrom = changed(p.quietFrom, d.quietFrom)
+        quietTo = changed(p.quietTo, d.quietTo)
+        buzzOnly = changed(p.buzzOnly, d.buzzOnly)
+        largeText = changed(p.largeText, d.largeText)
+        jumuahReminderMinutes = changed(p.jumuahReminderMinutes, d.jumuahReminderMinutes)
     }
 
     /// These preferences with the moved settings in place. Every moved setting
@@ -184,6 +205,13 @@ extension MovedSettings {
         out.wakeUp = wakeUp
         out.sahurAlarm = sahurAlarm
         out.sahurDays = sahurDays.map(Set.init) ?? d.sahurDays
+        out.windowNudge = windowNudge ?? d.windowNudge
+        out.quietHours = quietHours ?? d.quietHours
+        out.quietFrom = quietFrom.flatMap { (0..<1440).contains($0) ? $0 : nil } ?? d.quietFrom
+        out.quietTo = quietTo.flatMap { (0..<1440).contains($0) ? $0 : nil } ?? d.quietTo
+        out.buzzOnly = buzzOnly ?? d.buzzOnly
+        out.largeText = largeText ?? d.largeText
+        out.jumuahReminderMinutes = jumuahReminderMinutes.flatMap { Preferences.jumuahReminderChoices.contains($0) ? $0 : nil } ?? 0
         return out
     }
 
@@ -240,8 +268,11 @@ extension MovedSettings {
         }
         if methodOverrideID != nil || asrOverride != nil || jakimZoneOverride != nil { lines.append("Your calculation choices") }
         if appearance != nil || todayStyle != nil || use24Hour != nil || namingOverride != nil { lines.append("Your look and prayer names") }
-        if notifyPrayers != nil || reminderMinutesBefore != nil { lines.append("Which prayers to alert") }
+        if notifyPrayers != nil || reminderMinutesBefore != nil || quietHours != nil || buzzOnly != nil || jumuahReminderMinutes != nil {
+            lines.append("Which prayers to alert, and how")
+        }
         if wakeUp != nil || sahurAlarm != nil { lines.append("Your wake-up alarms") }
+        if largeText == true { lines.append("Bigger text") }
         if musafirEnabled == true { lines.append("Musafir features") }
         return lines.isEmpty ? ["The standard settings"] : lines
     }

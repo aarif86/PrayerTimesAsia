@@ -10,6 +10,8 @@ struct PrayerTimesAsiaApp: App {
             RootView()
                 .environment(model)
                 .preferredColorScheme(model.colorScheme)
+                // "Bigger text": at least the phone's extra large size, more if the phone asks for more.
+                .modifier(LargeTextModifier(on: model.prefs.largeText))
                 .environment(\.softNight, model.prefs.appearance == .system)
                 .task {
                     while !Task.isCancelled {
@@ -68,5 +70,15 @@ struct RootView: View {
             OnboardingView()
                 .environment(\.colorScheme, .dark)
         }
+    }
+}
+
+/// "Bigger text" in Settings, for older eyes, without going into the phone's settings.
+private struct LargeTextModifier: ViewModifier {
+    let on: Bool
+    @Environment(\.dynamicTypeSize) private var phone
+
+    func body(content: Content) -> some View {
+        if on { content.dynamicTypeSize(max(phone, .xxxLarge)) } else { content }
     }
 }

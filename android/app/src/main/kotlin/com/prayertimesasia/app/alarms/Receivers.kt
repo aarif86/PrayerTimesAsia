@@ -18,6 +18,8 @@ import com.prayertimesasia.app.MainActivity
 import com.prayertimesasia.app.PrayerApp
 import com.prayertimesasia.app.R
 import com.prayertimesasia.app.widget.WidgetUpdater
+import com.prayertimesasia.core.Prayer
+import java.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,6 +32,8 @@ object Notifications {
     /** Prayer time alerts with the azan. Android fixes a channel's sound when it is created, so each recording has its own. */
     const val AZAN = "prayer-azan"
     const val AZAN_SUBUH = "prayer-azan-subuh"
+    /** Buzz only: quiet hours and "Buzz only". A channel's sound can't change, so silence has its own. */
+    const val QUIET = "prayer-quiet"
 
     fun createChannels(context: Context) {
         if (Build.VERSION.SDK_INT < 26) return
@@ -51,6 +55,11 @@ object Notifications {
                 setSound(Azan.uri(context, subuh = true) ?: uri, Azan.attributes)
             })
         }
+        nm.createNotificationChannel(NotificationChannel(QUIET, "Quiet alerts (buzz only)", NotificationManager.IMPORTANCE_HIGH).apply {
+            description = "Prayer alerts during your quiet hours, or all of them with Buzz only on. They vibrate, with no sound."
+            setSound(null, null)
+            enableVibration(true)
+        })
         nm.createNotificationChannel(NotificationChannel(WAKE, "Subuh wake-up", NotificationManager.IMPORTANCE_HIGH).apply {
             description = "Rings like an alarm before Subuh ends."
             setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
@@ -63,18 +72,13 @@ object Notifications {
         Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
     fun post(context: Context, id: String, title: String, body: String, kind: AlarmScheduler.Kind,
-             sound: AlarmScheduler.Sound = AlarmScheduler.Sound.STANDARD) {
+             sound: AlarmScheduler.Sound = AlarmScheduler.Sound.STANDARD, silent: Boolean = false) {
         if (!canPost(context)) return
         val open = PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        val channel = when (kind) {
-            AlarmScheduler.Kind.EARLY -> REMINDER
-            AlarmScheduler.Kind.WAKE -> WAKE
-            else -> when {
-                sound == AlarmScheduler.Sound.STANDARD || !Azan.isAvailable(context) -> PRAYER
-                sound == AlarmScheduler.Sound.AZAN_SUBUH -> AZAN_SUBUH
-                else -> AZAN
-            }
+        val channel = when {
+            silent && kind != AlarmScheduler.Kind.WAKE -> QUIET
+            else -> channelFor(kind, sound, context)
         }
         val wake = kind == AlarmScheduler.Kind.WAKE
         val builder = NotificationCompat.Builder(context, channel)
@@ -102,16 +106,35 @@ object Notifications {
         } catch (_: SecurityException) {
         }
     }
+
+    private fun channelFor(kind: AlarmScheduler.Kind, sound: AlarmScheduler.Sound, context: Context): String =
+        when (kind) {
+            AlarmScheduler.Kind.EARLY, AlarmScheduler.Kind.NUDGE, AlarmScheduler.Kind.JUMUAH -> REMINDER
+            AlarmScheduler.Kind.WAKE -> WAKE
+            else -> when {
+                sound == AlarmScheduler.Sound.STANDARD || !Azan.isAvailable(context) -> PRAYER
+                sound == AlarmScheduler.Sound.AZAN_SUBUH -> AZAN_SUBUH
+                else -> AZAN
+            }
+        }
 }
 
 /** Rings an alert, then plans the next ones and moves the widgets on. */
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val kind = runCatching { AlarmScheduler.Kind.valueOf(intent.getStringExtra("kind") ?: "") }.getOrNull()
-        if (kind != null && kind != AlarmScheduler.Kind.REFRESH) {
+        // A nudge for a prayer ticked (or a day excused) since it was planned stays quiet.
+        val done = intent.getStringExtra("unlessPrayed")?.let { raw ->
+            val state = (context.applicationContext as? PrayerApp)?.state ?: return@let false
+            val prayer = Prayer.entries.firstOrNull { it.raw == raw } ?: return@let false
+            val at = Instant.ofEpochMilli(intent.getLongExtra("unlessPrayedAt", 0))
+            state.resolver.isPrayed(prayer, at) || state.resolver.isExcused(at) || state.prefs.trackerPausedSince != null
+        } ?: false
+        if (kind != null && kind != AlarmScheduler.Kind.REFRESH && !done) {
             Notifications.post(context, intent.getStringExtra("id") ?: "alert", intent.getStringExtra("title") ?: "",
                 intent.getStringExtra("body") ?: "", kind,
-                runCatching { AlarmScheduler.Sound.valueOf(intent.getStringExtra("sound") ?: "") }.getOrDefault(AlarmScheduler.Sound.STANDARD))
+                runCatching { AlarmScheduler.Sound.valueOf(intent.getStringExtra("sound") ?: "") }.getOrDefault(AlarmScheduler.Sound.STANDARD),
+                intent.getBooleanExtra("silent", false))
         }
         refresh(context, goAsync())
     }
