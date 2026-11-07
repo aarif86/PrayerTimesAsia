@@ -74,7 +74,6 @@ import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerDay
-import com.prayertimesasia.core.TimeFormat
 import com.prayertimesasia.core.TodayStyle
 import com.prayertimesasia.core.secondsSince
 import kotlinx.coroutines.delay
@@ -179,7 +178,6 @@ fun Modifier.daySwipe(offset: Int, onOffset: (Int) -> Unit): Modifier = pointerI
 @Composable
 private fun ColumnScope.Prompts(f: TodayFrame) {
     val p = f.state.prefs
-    if (f.isToday) TimeLeftBar(f.state)
     if (!p.notificationsEnabled && !p.alertsPromptDismissed) AlertsPrompt(f.state)
     if (!p.arrivalBannerDismissed) ArrivalCard(f.state)
     if (f.offset == 0) SeasonCard(f.state, f.now)
@@ -247,7 +245,7 @@ private fun ClassicPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
             val nxt = f.next
             if (cur != null && nxt != null) {
                 DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.first, cur.second), cur.first,
-                    TimeFormat.short(nxt.second.secondsSince(f.now)), f.name(nxt.first, nxt.second), 172.dp)
+                    Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 172.dp)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) { HeaderButtons(f.state) }
@@ -273,7 +271,7 @@ private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -
             val nxt = f.next
             if (cur != null && nxt != null) {
                 DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.first, cur.second), cur.first,
-                    TimeFormat.short(nxt.second.secondsSince(f.now)), f.name(nxt.first, nxt.second), 148.dp,
+                    Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 148.dp,
                     Modifier.align(Alignment.Center))
             }
             Column(Modifier.align(Alignment.TopEnd).padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -427,9 +425,10 @@ private fun DialCentre(f: TodayFrame, size: Dp) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy((size.value * 0.006f).dp)) {
             Text("NOW", fontSize = (size.value * 0.028f).sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.6.sp, color = cur.first.tint)
             Text(f.name(cur.first, cur.second), style = display((size.value * 0.085f).sp, FontWeight.Bold), color = Palette.primary, maxLines = 1)
-            Text(TimeFormat.short(nxt.second.secondsSince(f.now)), style = display((size.value * 0.066f).sp, FontWeight.SemiBold),
+            val count = Countdown.of(f.state, f.now, nxt)
+            Text(count.count, style = display((size.value * 0.066f).sp, FontWeight.SemiBold),
                 color = Palette.accent, maxLines = 1)
-            Text("until ${f.name(nxt.first, nxt.second)}", fontSize = (size.value * 0.034f).sp, fontWeight = FontWeight.Medium,
+            Text(count.label, fontSize = (size.value * 0.034f).sp, fontWeight = FontWeight.Medium,
                 color = Palette.secondary, maxLines = 1)
         }
     } else {
@@ -456,11 +455,10 @@ private fun SunPathPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
                         Box(Modifier.size(9.dp).clip(CircleShape).background(cur.first.tint))
                         Text(f.name(cur.first, cur.second), style = display(30.sp, FontWeight.Bold), color = Palette.primary)
                     }
-                    val left = TimeFormat.short(nxt.second.secondsSince(f.now))
-                    val nextName = f.name(nxt.first, nxt.second)
+                    val count = Countdown.of(state, f.now, nxt)
                     Text(
-                        if (nxt.first == Prayer.SUNRISE) "$left until $nextName - ${Prayer.FAJR.name(state.resolver.naming)} ends" else "$left until $nextName",
-                        style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary,
+                        count.text,
+                        style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = if (count.urgent) Palette.accent else Palette.primary,
                         modifier = Modifier.clip(CircleShape).background(Palette.primary.copy(alpha = 0.1f)).padding(horizontal = 12.dp, vertical = 6.dp),
                     )
                 }
@@ -509,7 +507,7 @@ private fun BandsPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () ->
                     val cur = f.current
                     val nxt = f.next
                     if (cur != null && nxt != null && f.isToday) {
-                        Text("${f.name(cur.first, cur.second)} now · ${TimeFormat.short(nxt.second.secondsSince(f.now))} until ${f.name(nxt.first, nxt.second)}",
+                        Text("${f.name(cur.first, cur.second)} now · ${Countdown.of(f.state, f.now, nxt).text}",
                             style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Color.White.copy(alpha = 0.75f))
                     }
                     Prompts(f)
