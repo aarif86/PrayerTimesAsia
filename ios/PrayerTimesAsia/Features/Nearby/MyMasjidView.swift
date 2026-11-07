@@ -31,7 +31,7 @@ struct MasjidLinkSheet: View {
             List {
                 Section {
                     VStack(spacing: 8) {
-                        Image(systemName: "moon.stars.fill").font(.title).foregroundStyle(Theme.accent)
+                        Image(systemName: "moon.stars.fill").font(.title).foregroundStyle(Theme.accentText)
                         Text(link.name).font(.headline).multilineTextAlignment(.center)
                         Text("Add it as your masjid and its iqamah times show on your Prayer screen whenever you're nearby.")
                             .font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
@@ -78,7 +78,7 @@ struct MyMasjidRow: View {
     var body: some View {
         if let m = model.prefs.myMasjid {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "moon.stars.fill").foregroundStyle(Theme.accent).frame(width: 24)
+                Image(systemName: "moon.stars.fill").foregroundStyle(Theme.accentText).frame(width: 24)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("YOUR MASJID").font(.caption2.weight(.bold)).foregroundStyle(.secondary)
                     Text(m.name).font(.body.weight(.semibold))

@@ -291,7 +291,7 @@ private fun CreditsContent() {
                 Column(Modifier.padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(title, style = Txt.subheadlineSemibold, color = Palette.primary)
                     Text(detail, style = Txt.footnote, color = Palette.secondary)
-                    Text(url.removePrefix("https://"), style = Txt.footnote, color = Palette.accent,
+                    Text(url.removePrefix("https://"), style = Txt.footnote, color = Palette.accentText,
                         modifier = Modifier.clickable { runCatching { uri.openUri(url) } })
                 }
             }

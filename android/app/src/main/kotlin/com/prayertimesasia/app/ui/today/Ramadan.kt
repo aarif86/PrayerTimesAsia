@@ -511,7 +511,7 @@ private fun LinkLine(title: String, detail: String?, icon: ImageVector? = null, 
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         if (icon != null) Icon(icon, null, Modifier.size(20.dp), tint = Palette.primary)
         Column(Modifier.weight(1f)) {
-            Text(title, style = Txt.body, color = Palette.accent)
+            Text(title, style = Txt.body, color = Palette.accentText)
             if (detail != null) Text(detail, style = Txt.caption, color = Palette.secondary)
         }
         Icon(Icons.Filled.ChevronRight, null, Modifier.size(18.dp), tint = Palette.secondary)

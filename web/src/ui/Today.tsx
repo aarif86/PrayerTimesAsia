@@ -533,7 +533,7 @@ function SimplePage({ c }: { c: Ctx }) {
     <div class="today-page page simple-page">
       <div class="row" style={{ gap: '8px', paddingTop: '8px' }}><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
       <div class="simple-now">
-        {current && isObligatory(current.prayer) && t && <div class="simple-big display" style={{ color: tint(current.prayer) }}>{store.name(current.prayer, current.time)}</div>}
+        {current && isObligatory(current.prayer) && t && <div class="simple-big display tint-text" style={{ '--tint': tint(current.prayer) }}>{store.name(current.prayer, current.time)}</div>}
         {t && <div class={`simple-line ${t.urgent ? 'accent' : ''}`}>{t.line}</div>}
         {t?.left && <div class="simple-left mono">{t.left}</div>}
         {next && <div class="simple-next">Next is <b>{nextName}</b> at <b>{store.formatted(next.time)}</b>, in {short(next.time - now)}</div>}
@@ -665,7 +665,7 @@ function DialPage({ c }: { c: Ctx }) {
             if (!cur || !c.next) return <MoonStar size={sz * 0.08} style={{ opacity: 0.5 }} />
             return (
               <div class="hero-centre">
-                <div style={{ fontSize: `${sz * 0.028}px`, fontWeight: 800, letterSpacing: '0.6px', color: tint(cur.prayer) }}>NOW</div>
+                <div class="tint-text" style={{ fontSize: `${sz * 0.028}px`, fontWeight: 800, letterSpacing: '0.6px', '--tint': tint(cur.prayer) }}>NOW</div>
                 <div class="display" style={{ fontSize: `${sz * 0.085}px`, fontWeight: 700, lineHeight: 1.1 }}>{store.name(cur.prayer, cur.time)}</div>
                 <div class="display accent mono" style={{ fontSize: `${sz * 0.066}px`, fontWeight: 600 }}>{short(c.next.time - c.now)}</div>
                 <div class="secondary" style={{ fontSize: `${sz * 0.034}px`, fontWeight: 500 }}>until {store.name(c.next.prayer, c.next.time)}</div>

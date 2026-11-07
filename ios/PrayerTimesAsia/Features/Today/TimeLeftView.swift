@@ -70,7 +70,7 @@ struct SimpleTimes: View {
                 if let current, current.prayer != .sunrise, t != nil {
                     Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
                         .font(.system(size: 56, weight: .heavy, design: .rounded))
-                        .foregroundStyle(current.prayer.tint)
+                        .foregroundStyle(current.prayer.textTint)
                         .minimumScaleFactor(0.6).lineLimit(1)
                 }
                 if let t {

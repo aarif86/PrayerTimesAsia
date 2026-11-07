@@ -58,6 +58,7 @@ import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Rounded
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.display
+import com.prayertimesasia.app.ui.theme.textTint
 import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.BlessedTime
 import com.prayertimesasia.core.Prayer
@@ -168,10 +169,10 @@ private fun PrayerRow(
                     if (prayed) Icon(Icons.Filled.CheckCircle, "Prayed", Modifier.size(16.dp), tint = Palette.success)
                 }
                 if (isCurrent) {
-                    Text("NOW", style = Txt.caption2Heavy, color = prayer.tint)
+                    Text("NOW", style = Txt.caption2Heavy, color = prayer.textTint)
                 } else if (isNext && next != null) {
                     Text("in ${TimeFormat.short(next.second.secondsSince(now))}", style = Txt.captionSemibold.copy(fontFeatureSettings = "tnum"),
-                        color = prayer.tint)
+                        color = prayer.textTint)
                 }
                 day.jamaah[prayer]?.let {
                     Text(jamaahLine(r, day, prayer, it, now), style = Txt.caption.copy(fontWeight = FontWeight.Medium), color = Palette.primary.copy(alpha = 0.75f))

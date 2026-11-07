@@ -197,7 +197,7 @@ fun SanadSheetContent(state: AppState, day: PrayerDay) {
             SectionHeader("Help verify times here")
             Text("Send a mosque timetable photo, tell us which method mosques here use, or report an adhan time you heard.",
                 style = Txt.subheadline, color = Palette.primary)
-            Text("How to contribute", style = Txt.subheadlineSemibold, color = Palette.accent,
+            Text("How to contribute", style = Txt.subheadlineSemibold, color = Palette.accentText,
                 modifier = Modifier.padding(vertical = 10.dp).clickable {
                     runCatching { uri.openUri("https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md") }
                 })
@@ -269,7 +269,7 @@ private fun CalendarRow(title: String, date: String, detail: String, status: Cal
         Column(Modifier.weight(1f)) {
             Text(title, style = if (highlight) Txt.subheadlineSemibold.copy(fontWeight = FontWeight.Bold) else Txt.subheadlineSemibold, color = Palette.primary)
             Text(detail, style = Txt.caption, color = Palette.secondary)
-            if (link != null) Text("Source", style = Txt.caption, color = Palette.accent, modifier = Modifier.clickable { link() })
+            if (link != null) Text("Source", style = Txt.caption, color = Palette.accentText, modifier = Modifier.clickable { link() })
         }
         Column(horizontalAlignment = Alignment.End) {
             Text(date, style = Txt.subheadlineSemibold, color = Palette.primary)

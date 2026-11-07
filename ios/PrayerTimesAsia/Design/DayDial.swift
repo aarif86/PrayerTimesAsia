@@ -89,7 +89,7 @@ struct DayDial: View {
                 }
                 // Sun at noon, moon at midnight, as quiet markers inside the ring
                 Image(systemName: "sun.max.fill").font(.system(size: size * 0.07))
-                    .foregroundStyle(Theme.sunArc).offset(y: -size * 0.3)
+                    .foregroundStyle(Theme.accentText).offset(y: -size * 0.3)
                 Image(systemName: "moon.fill").font(.system(size: size * 0.06))
                     .foregroundStyle(Color.primary.opacity(0.35)).offset(y: size * 0.3)
                 VStack(spacing: 1) {
@@ -98,7 +98,7 @@ struct DayDial: View {
                         .lineLimit(1).minimumScaleFactor(0.6)
                     Text(countdown)
                         .font(Theme.display(size * 0.1, .semibold)).monospacedDigit()
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(Theme.accentText)
                         .contentTransition(.numericText(countsDown: true))
                     Text("until \(nextName)")
                         .font(.system(size: size * 0.065, weight: .medium))

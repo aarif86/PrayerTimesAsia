@@ -36,6 +36,7 @@ import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.display
+import com.prayertimesasia.app.ui.theme.textTint
 import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerDay
@@ -111,7 +112,7 @@ fun SimplePage(state: AppState, day: PrayerDay, current: Pair<Prayer, Instant>?,
         Column(Modifier.fillMaxWidth().padding(vertical = 14.dp), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             if (current != null && current.first != Prayer.SUNRISE && t != null) {
-                Text(r.prayerName(current.first, current.second), style = display(52.sp, FontWeight.ExtraBold), color = current.first.tint,
+                Text(r.prayerName(current.first, current.second), style = display(52.sp, FontWeight.ExtraBold), color = current.first.textTint,
                     maxLines = 1)
             }
             if (t != null) {

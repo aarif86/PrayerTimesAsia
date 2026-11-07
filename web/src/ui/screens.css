@@ -434,3 +434,10 @@
 html[data-large-text] #app { zoom: 1.2; }
 /* Big and Simple is already sized for older eyes; zooming it again would squeeze the rows. */
 html[data-large-text] .today.style-simple { zoom: 0.8334; }
+
+/* Prayer colours as words: on light skies the pale tints are deepened (same hue)
+   so "NOW", the current prayer's name and "in 5m" read at about 5 to 1. */
+.tint-text { color: var(--tint); }
+:root[data-theme="light"] :is(.now-tag, .in-tag, .dial-mark.current .dm-name, .tint-text):not([data-theme-local] *) {
+  color: color-mix(in srgb, var(--tint) 48%, #000);
+}

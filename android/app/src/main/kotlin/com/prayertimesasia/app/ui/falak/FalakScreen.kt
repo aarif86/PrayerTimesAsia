@@ -360,7 +360,7 @@ private fun ShadowStickCard(state: AppState, place: Place) {
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Measured at", style = Txt.subheadline, color = Palette.primary, modifier = Modifier.weight(1f))
-                Text(r.formatted(measuredAt), style = Txt.subheadlineSemibold, color = Palette.accent, modifier = Modifier.clickable {
+                Text(r.formatted(measuredAt), style = Txt.subheadlineSemibold, color = Palette.accentText, modifier = Modifier.clickable {
                     val z = measuredAt.atZone(r.zone)
                     TimePickerDialog(context, { _, h, m ->
                         measuredAt = z.withHour(h).withMinute(m).withSecond(0).toInstant()

@@ -51,7 +51,7 @@
   --glass: rgba(255, 255, 255, 0.46);
   --glass-strong: rgba(255, 255, 255, 0.78);
   --sheet: rgba(246, 246, 250, 0.95);
-  --accent: rgb(232, 140, 87);
+  --accent: rgb(178, 84, 31);
   --gold: rgb(184, 128, 10);
   --green: rgb(36, 168, 70);
   --grade-d: rgba(0, 0, 0, 0.55);
@@ -60,7 +60,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme]) { --fg: #111114; --fg2: rgba(40, 40, 46, 0.78); --fill: rgba(0, 0, 0, 0.07); --glass: rgba(255, 255, 255, 0.46); --accent: rgb(232, 140, 87); color-scheme: light; }
+  :root:not([data-theme]) { --fg: #111114; --fg2: rgba(40, 40, 46, 0.78); --fill: rgba(0, 0, 0, 0.07); --glass: rgba(255, 255, 255, 0.46); --accent: rgb(178, 84, 31); color-scheme: light; }
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }

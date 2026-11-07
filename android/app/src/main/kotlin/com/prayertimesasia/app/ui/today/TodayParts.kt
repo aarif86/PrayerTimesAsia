@@ -268,7 +268,7 @@ fun DateBlock(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) ->
         Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(22.dp, 40.dp).quietClick { onOffset(offset - 1) },
             tint = Palette.primary.copy(alpha = 0.6f))
         Column(Modifier.weight(1f).quietClick { if (offset == 0) onCalendar() else onOffset(0) }) {
-            Text(dayLabel(offset), style = Txt.caption2Heavy.copy(letterSpacing = 0.5.sp), color = Palette.accent)
+            Text(dayLabel(offset), style = Txt.caption2Heavy.copy(letterSpacing = 0.5.sp), color = Palette.accentText)
             Text(dateText(state, shown, "EEE d MMM"), style = Txt.headline, color = Palette.primary, maxLines = 1)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(r.hijri(shown.time(com.prayertimesasia.core.Prayer.DHUHR)), style = Txt.caption, color = Palette.secondary, maxLines = 1)
@@ -287,7 +287,7 @@ fun DateHeader(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) -
         Modifier.fillMaxWidth().quietClick { if (offset == 0) onCalendar() else onOffset(0) },
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        Text(dayLabel(offset), style = Txt.captionSemibold.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = 0.8.sp), color = Palette.accent)
+        Text(dayLabel(offset), style = Txt.captionSemibold.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = 0.8.sp), color = Palette.accentText)
         Text(dateText(state, shown, "EEEE d MMMM"), style = display(26.sp, FontWeight.Bold), color = Palette.primary, maxLines = 1)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(state.resolver.hijri(shown.time(com.prayertimesasia.core.Prayer.DHUHR)), style = Txt.subheadline, color = Palette.secondary)

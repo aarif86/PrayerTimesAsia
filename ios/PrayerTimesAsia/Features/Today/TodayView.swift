@@ -215,7 +215,7 @@ struct TodayView: View {
             .accessibilityLabel("Previous day")
             Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(label).font(.caption2.weight(.heavy)).tracking(0.5).foregroundStyle(Theme.accent)
+                    Text(label).font(.caption2.weight(.heavy)).tracking(0.5).foregroundStyle(Theme.accentText)
                     Text(f.string(from: date)).font(.headline)
                     HStack(spacing: 3) {
                         Text(model.hijriLabel(date))
@@ -352,7 +352,7 @@ struct TodayView: View {
             if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } }
         } label: {
             VStack(spacing: 3) {
-                Text(label).font(.caption.weight(.heavy)).tracking(0.8).foregroundStyle(Theme.accent)
+                Text(label).font(.caption.weight(.heavy)).tracking(0.8).foregroundStyle(Theme.accentText)
                 Text(f.string(from: date)).font(Theme.display(26, .bold))
                 HStack(spacing: 4) {
                     Text(model.hijriLabel(date))
@@ -375,12 +375,12 @@ struct TodayView: View {
         if let current, let next {
             VStack(spacing: size * 0.006) {
                 Text("NOW").font(.system(size: size * 0.028, weight: .heavy)).tracking(0.6)
-                    .foregroundStyle(current.prayer.tint)
+                    .foregroundStyle(current.prayer.textTint)
                 Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
                     .font(Theme.display(size * 0.085, .bold))
                 Text(Self.short(next.time.timeIntervalSince(now)))
                     .font(Theme.display(size * 0.066, .semibold)).monospacedDigit()
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.accentText)
                     .contentTransition(.numericText(countsDown: true))
                 Text("until \(next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))")
                     .font(.system(size: size * 0.034, weight: .medium))
@@ -864,7 +864,7 @@ struct TodayView: View {
     /// One tap to be told when each prayer begins (all five, at the exact time).
     private var alertsPrompt: some View {
         HStack(spacing: 10) {
-            Image(systemName: "bell.badge.fill").foregroundStyle(Theme.sunArc)
+            Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText)
             Text("Get an alert when each prayer begins").font(.subheadline.weight(.semibold))
                 .lineLimit(2).minimumScaleFactor(0.85)
             Spacer(minLength: 4)
@@ -988,11 +988,11 @@ private struct PrayerList: View {
                     }
                 }
                 if isCurrent {
-                    Text("NOW").font(.caption2.weight(.heavy)).foregroundStyle(prayer.tint)
+                    Text("NOW").font(.caption2.weight(.heavy)).foregroundStyle(prayer.textTint)
                 } else if isNext, let next {
                     Text("in \(TodayView.short(next.time.timeIntervalSince(now)))")
                         .font(.caption.weight(.semibold)).monospacedDigit()
-                        .foregroundStyle(prayer.tint)
+                        .foregroundStyle(prayer.textTint)
                 }
                 if let jamaah = day.jamaah[prayer] {
                     Text(TodayView.jamaahText(jamaah, for: prayer, on: day, now: now, model: model)).font(.caption.weight(.medium)).opacity(0.75)
@@ -1115,7 +1115,7 @@ private struct PrayerMark: View {
                 HStack(spacing: 3) {
                     Text(name)
                         .font(.system(size: size * 0.034, weight: isCurrent ? .bold : .semibold))
-                        .foregroundStyle(isCurrent ? prayer.tint : Color.primary.opacity(0.75))
+                        .foregroundStyle(isCurrent ? prayer.textTint : Color.primary.opacity(0.75))
                     if prayed {
                         Image(systemName: "checkmark.circle.fill").font(.system(size: size * 0.03)).foregroundStyle(.green)
                     } else if model.prefs.notificationsEnabled && !notifying && prayer.isObligatory {

@@ -61,7 +61,7 @@ struct FalakView: View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 8) {
                 Image(systemName: symbol).font(.title2.weight(.semibold))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.accentText)
                     .frame(height: 32)
                 Text(title).font(.headline)
                 Text(subtitle).font(.caption).opacity(0.75)
@@ -77,7 +77,7 @@ struct FalakView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
                 Image("Tab-falak").resizable().frame(width: 38, height: 38)
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.accentText)
                     .accessibilityHidden(true)
                 Text("Falak").font(Theme.display(34, .bold)).accessibilityAddTraits(.isHeader)
             }
