@@ -3,9 +3,10 @@ import { PRAYERS, type Prayer } from '../core/prayer'
 import { flag } from '../core/regions'
 import type { PrayerDay } from '../core/engine'
 import { zoned } from '../core/tz'
-import { sahurRings, sahurTime, wakeUpTime } from '../core/wakeup'
+import { ALARM_KEY, ALARM_PRAYERS, prayerAlarmTime, sahurRings, sahurTime, wakeUpTime, type AlarmPrayer } from '../core/wakeup'
 import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
 import { playAzan } from './azan'
+import { playAlarm } from './alarmSound'
 import { store } from './store'
 
 /**
@@ -119,6 +120,8 @@ export function upcomingAlerts(now: number): Alert[] {
         })
       }
       if (!onTime) continue
+      // An alarm at the same minute rings instead, so it doesn't sound twice.
+      if (alarmAtStart(prayer)) continue
       if (prayer === 'sunrise') {
         out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended. ${here}`, at: time, silent })
         continue
@@ -133,13 +136,24 @@ export function upcomingAlerts(now: number): Alert[] {
   return [...out, ...wake].filter((a) => a.at > now).sort((a, b) => a.at - b.at)
 }
 
-export interface WakeUp { id: string; title: string; body: string; at: number; sahur: boolean }
+export interface WakeUp { id: string; title: string; body: string; at: number; sahur: boolean; prayer?: AlarmPrayer }
 
-/** The Subuh alarm and the sahur alarm for the next `days` days, soonest first (the same plan as the apps). */
+/** Is any alarm on: Subuh, sahur or one of the other prayers? */
+export function anyAlarm(p = store.prefs): boolean {
+  return !!(p.wakeUp || p.sahurAlarm || ALARM_PRAYERS.some((x) => p[ALARM_KEY[x]]))
+}
+
+/** Does this prayer have an alarm at the very start, which stands in for its alert? */
+export function alarmAtStart(prayer: string, p = store.prefs): boolean {
+  if (prayer === 'fajr') return p.wakeUp === 'atFajr'
+  return (ALARM_PRAYERS as readonly string[]).includes(prayer) && p[ALARM_KEY[prayer as AlarmPrayer]] === 'atStart'
+}
+
+/** Every alarm (Subuh, sahur and the other prayers) for the next `days` days, soonest first (the same plan as the apps). */
 export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
   const place = store.activePlace
   const p = store.prefs
-  if (!place || (!p.wakeUp && !p.sahurAlarm)) return []
+  if (!place || !anyAlarm(p)) return []
   const fajr = store.name('fajr')
   const out: WakeUp[] = []
   for (let offset = start; offset < start + days; offset++) {
@@ -157,13 +171,27 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
         at: wakeUpTime(p.wakeUp, day), sahur: false,
       })
     }
+    const ends: Record<AlarmPrayer, number> = { dhuhr: day.times.asr, asr: day.times.maghrib, maghrib: day.times.isha, isha: day.times.isha }
+    for (const prayer of ALARM_PRAYERS) {
+      const t = p[ALARM_KEY[prayer]]
+      if (!t) continue
+      const begins = day.times[prayer]
+      const name = store.name(prayer, begins)
+      const end = ends[prayer]
+      out.push({
+        id: `${key}-${prayer}-alarm`,
+        title: t === 'endMinus30' ? `${name} ends in 30 min` : `Time for ${name}`,
+        body: prayer === 'isha' ? `${name} began at ${store.formatted(begins)} · ${place.name}` : `${name} is open until ${store.formatted(end)} · ${place.name}`,
+        at: prayerAlarmTime(t, begins, end), sahur: false, prayer,
+      })
+    }
   }
   return out.filter((w) => w.at > now).sort((a, b) => a.at - b.at)
 }
 
 /** The next alarm, looking a week ahead (the sahur alarm may be days away). */
 export function nextWakeUp(now: number): WakeUp | null {
-  if (!store.prefs.wakeUp && !store.prefs.sahurAlarm) return null
+  if (!anyAlarm()) return null
   for (let offset = 0; offset < 8; offset++) {
     const first = wakeUps(now, 1, offset)[0]
     if (first) return first
@@ -200,6 +228,8 @@ export function ramadanAlerts(day: PrayerDay, here: string): Alert[] {
   return out
 }
 
+const isAlarm = (id: string): boolean => id.endsWith('-wake') || id.endsWith('-sahur') || id.endsWith('-alarm')
+
 let timer: ReturnType<typeof setTimeout> | null = null
 const fired = new Set<string>()
 
@@ -219,7 +249,8 @@ export function scheduleAlerts(): void {
       const done = next.unlessPrayed && (store.isPrayed(next.unlessPrayed.prayer, next.unlessPrayed.at) || store.isExcused(next.unlessPrayed.at))
       if (!done) {
         void show(next.title, next.body, next.id, next.silent)
-        if (next.prayer && store.prefs.azanSound && !next.silent) playAzan(next.prayer === 'fajr')
+        if (isAlarm(next.id)) playAlarm(store.prefs.alarmSound)
+        else if (next.prayer && store.prefs.azanSound && !next.silent) playAzan(next.prayer === 'fajr')
       }
     }
     scheduleAlerts()
@@ -227,7 +258,7 @@ export function scheduleAlerts(): void {
 }
 
 export async function show(title: string, body: string, tag: string, silent = false): Promise<void> {
-  const options: NotificationOptions = { body, tag, silent, requireInteraction: tag.endsWith('-early') || tag.endsWith('-wake') || tag.endsWith('-sahur'), icon: `${import.meta.env.BASE_URL}icons/icon-192.png`, badge: `${import.meta.env.BASE_URL}icons/badge-96.png` }
+  const options: NotificationOptions = { body, tag, silent, requireInteraction: tag.endsWith('-early') || isAlarm(tag), icon: `${import.meta.env.BASE_URL}icons/icon-192.png`, badge: `${import.meta.env.BASE_URL}icons/badge-96.png` }
   try {
     const reg = await navigator.serviceWorker?.getRegistration()
     if (reg) { await reg.showNotification(title, options); return }
@@ -298,7 +329,7 @@ export function buildWakeICS(days = 30): string | null {
   if (!place) return null
   const now = store.now()
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Prayer Times Asia//Web//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
-    `X-WR-CALNAME:${esc(`Wake up for ${store.name('fajr')} · ${place.name}`)}`]
+    `X-WR-CALNAME:${esc(`Prayer alarms · ${place.name}`)}`]
   for (const w of wakeUps(now, days)) {
     lines.push('BEGIN:VEVENT', `UID:web-${w.id}-${place.coordinates.latitude.toFixed(3)}@prayertimes.asia`,
       `DTSTAMP:${stamp(now)}`, `DTSTART:${stamp(w.at)}`, 'DURATION:PT10M', `SUMMARY:${esc(w.title)}`,
@@ -312,7 +343,7 @@ export function buildWakeICS(days = 30): string | null {
 export function downloadWakeICS(): void {
   const text = buildWakeICS()
   if (!text) return
-  save(text, `wake-up-${(store.activePlace?.name ?? 'here').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.ics`)
+  save(text, `prayer-alarms-${(store.activePlace?.name ?? 'here').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.ics`)
 }
 
 function save(text: string, name: string): void {

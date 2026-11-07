@@ -624,6 +624,7 @@ class AppStore {
         const firstEver = p.lastCountryCode == null
         p.lastCountryCode = code
         p.arrivedAt = this.now()
+        p.musafirChipDismissed = false
         p.arrivalBannerDismissed = firstEver
         p.trip = [{ countryCode: code, countryName: place.countryName ?? code, placeName: place.name, arrived: this.now() }, ...p.trip].slice(0, 30)
       }
@@ -794,6 +795,7 @@ function demoPreferences(demo: Demo): Preferences {
     p.lastCountryCode = 'VN'
     p.musafirEnabled = true
     p.arrivedAt = now
+    p.musafirChipDismissed = false
     p.arrivalBannerDismissed = false
     p.trip = [
       { countryCode: 'VN', countryName: 'Vietnam', placeName: 'Hoàn Kiếm', arrived: now },
@@ -807,6 +809,7 @@ function demoPreferences(demo: Demo): Preferences {
     p.lastCountryCode = city.countryCode ?? null
     p.musafirEnabled = true
     p.arrivedAt = now
+    p.musafirChipDismissed = false
     p.arrivalBannerDismissed = false
   }
   return p

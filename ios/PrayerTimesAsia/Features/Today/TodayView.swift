@@ -164,7 +164,7 @@ struct TodayView: View {
                     Spacer(minLength: 0)
                     if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                         Button { model.showJourney = true } label: {
-                            Image(systemName: "suitcase.rolling.fill").font(.subheadline.weight(.semibold))
+                            Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
                                 .frame(width: 34, height: 34)
                                 .background(Theme.accent.opacity(0.25), in: Circle())
                         }
@@ -283,7 +283,7 @@ struct TodayView: View {
             Spacer(minLength: 0)
             if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                 Button { model.showJourney = true } label: {
-                    Image(systemName: "suitcase.rolling.fill").font(.subheadline.weight(.semibold))
+                    Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
                         .frame(width: 34, height: 34)
                         .background(Theme.accent.opacity(0.25), in: Circle())
                 }
@@ -435,7 +435,7 @@ struct TodayView: View {
                     Spacer(minLength: 0)
                     if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                         Button { model.showJourney = true } label: {
-                            Image(systemName: "suitcase.rolling.fill").font(.subheadline.weight(.semibold))
+                            Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
                                 .frame(width: 34, height: 34).background(Color.white.opacity(0.12), in: Circle())
                         }
                         .buttonStyle(.plain)
@@ -544,6 +544,7 @@ struct TodayView: View {
                         .frame(maxWidth: .infinity)
                 }
                 VStack(spacing: 8) {
+                    sunJourneyButton
                     styleButton
                     appearanceButton
                     wakeChip(now)
@@ -557,7 +558,7 @@ struct TodayView: View {
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             if dayOffset == 0 { SeasonCard(now: now) }
-            if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
+            if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
             sunDayNavigator(shown)
             PrayerList(day: shown, now: now,
                        current: dayOffset == 0 ? current?.prayer : nil,
@@ -601,7 +602,7 @@ struct TodayView: View {
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
                 if dayOffset == 0 { SeasonCard(now: now) }
-                if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
+                if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
                 sunDayNavigator(shown)
                 PrayerList(day: shown, now: now,
                            current: dayOffset == 0 ? current?.prayer : nil,
@@ -630,6 +631,7 @@ struct TodayView: View {
                 sunStatus(current: current, next: next, now: now)
             }
             Spacer(minLength: 0)
+            sunJourneyButton
             wakeChip(now)
                     if model.prefs.trackerEnabled { streakChip(now) }
             appearanceButton
@@ -726,20 +728,50 @@ struct TodayView: View {
         .buttonStyle(.plain)
     }
 
+    /// Shown when a trip starts. Closing it tucks it away as the luggage button with the others.
     private func sunMusafirChip(_ status: Musafir.Status) -> some View {
-        Button { model.showJourney = true } label: {
-            HStack {
-                Image(systemName: "suitcase.rolling.fill")
-                Text("Musafir · you may shorten & combine").lineLimit(1)
-                Spacer(minLength: 4)
-                Image(systemName: "chevron.right").font(.caption.weight(.bold))
+        HStack(spacing: 4) {
+            Button { model.showJourney = true } label: {
+                HStack {
+                    Image("Tab-journey").resizable().scaledToFit().frame(width: 17, height: 17)
+                    Text("Musafir. You may shorten and join").lineLimit(1)
+                    Spacer(minLength: 4)
+                    Image(systemName: "chevron.right").font(.caption.weight(.bold))
+                }
+                .contentShape(Rectangle())
             }
-            .font(.subheadline.weight(.semibold))
-            .padding(.horizontal, 16).padding(.vertical, 12)
-            .background(Color.primary.opacity(0.12), in: Capsule())
+            .buttonStyle(.plain)
+            Button {
+                withAnimation(.snappy) { model.prefs.musafirChipDismissed = true }
+            } label: {
+                Image(systemName: "xmark").font(.caption.weight(.bold))
+                    .frame(width: 28, height: 28)
+                    .background(Color.primary.opacity(0.1), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Hide, keep the luggage button at the top")
         }
-        .buttonStyle(.plain)
+        .font(.subheadline.weight(.semibold))
+        .padding(.leading, 16).padding(.trailing, 8).padding(.vertical, 8)
+        .background(Color.primary.opacity(0.12), in: Capsule())
+        .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
+
+    /// The luggage button that takes the Musafir line's place once it's closed.
+    @ViewBuilder
+    private var sunJourneyButton: some View {
+        if model.prefs.musafirEnabled, model.prefs.musafirChipDismissed, model.musafirStatus?.isTraveller == true {
+            Button { model.showJourney = true } label: {
+                Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
+                    .frame(width: 34, height: 34)
+                    .background(Theme.accent.opacity(0.25), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Musafir: you may shorten and combine prayers")
+            .transition(.scale.combined(with: .opacity))
+        }
+    }
+
     /// Automatic (follows the sky) → Light → Dark, one tap each. Hidden on Colour
     /// Bands, which keeps its own fixed colours, so the button would do nothing there.
     @ViewBuilder private var appearanceButton: some View {
@@ -816,7 +848,7 @@ struct TodayView: View {
         return f.string(from: max(60, seconds)) ?? ""
     }
 
-    /// The alarm clock: Wake up for Subuh, one tap from the Prayer screen.
+    /// The alarm clock: prayer alarms (Subuh first), one tap from the Prayer screen.
     /// Shows the next alarm's time when one is set.
     private func wakeChip(_ now: Date) -> some View {
         let next = model.nextWakeUp(after: now)
@@ -835,8 +867,8 @@ struct TodayView: View {
             .background(next == nil ? Color.primary.opacity(0.1) : Theme.sunArc.opacity(0.3), in: Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(next.map { "Wake up alarm at \(model.formatted($0.date))" } ?? "Wake up for \(fajr): set an alarm")
-        .accessibilityHint("Alarms for \(fajr), tahajjud and sahur.")
+        .accessibilityLabel(next.map { "Next alarm at \(model.formatted($0.date))" } ?? "Prayer alarms, wake up for \(fajr): set an alarm")
+        .accessibilityHint("Alarms for \(fajr), sahur and every prayer, and the alarm sound.")
     }
 
     private func streakChip(_ now: Date) -> some View {

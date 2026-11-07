@@ -10,7 +10,7 @@ import UserNotifications
 /// Until the recordings are added the switch stays hidden and alerts use the
 /// phone's own sound.
 enum Azan {
-    enum Sound: Sendable { case standard, azan, azanSubuh }
+    enum Sound: Sendable { case standard, azan, azanSubuh, alarm(AlarmSound) }
 
     static let fileName = "azan.caf"
     static let subuhFileName = "azan-subuh.caf"
@@ -23,6 +23,10 @@ enum Azan {
             return .default
         case .azan:
             return has(fileName) ? UNNotificationSound(named: UNNotificationSoundName(fileName)) : .default
+        case .alarm(let sound):
+            // Older iPhones without AlarmKit: the chosen alarm tone as the alert sound.
+            guard let file = sound.fileName, has(file) else { return .default }
+            return UNNotificationSound(named: UNNotificationSoundName(file))
         case .azanSubuh:
             // No separate Subuh recording? The ordinary azan is the next best thing.
             if has(subuhFileName) { return UNNotificationSound(named: UNNotificationSoundName(subuhFileName)) }

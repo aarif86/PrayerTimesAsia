@@ -1,17 +1,18 @@
 import Foundation
 import SwiftUI
 #if canImport(AlarmKit)
+import ActivityKit
 import AlarmKit
 #endif
 
-/// Subuh wake-up as a real alarm: on iOS 26+ AlarmKit rings through Silent
+/// Prayer alarms (Subuh, sahur and the other prayers) as real alarms: on iOS 26+ AlarmKit rings through Silent
 /// mode and Focus like the Clock app. Earlier iOS (or if the user declines)
 /// falls back to a notification - `schedule` returns false in that case.
 enum WakeUpAlarm {
     private static let idsKey = "wakeUp.alarmIDs"
 
     @MainActor
-    static func schedule(_ alarms: [(Date, String)]) async -> Bool {
+    static func schedule(_ alarms: [(Date, String)], sound: AlarmSound = .classic) async -> Bool {
         #if canImport(AlarmKit)
         if #available(iOS 26.0, *) {
             let manager = AlarmManager.shared
@@ -26,11 +27,18 @@ enum WakeUpAlarm {
             for (date, title) in alarms where date > .now {
                 let id = UUID()
                 let stop = AlarmButton(text: "Done", textColor: .white, systemImageName: "checkmark")
-                let alert = AlarmPresentation.Alert(title: LocalizedStringResource("\(title)"), stopButton: stop)
-                let attributes = AlarmAttributes<WakeUpMetadata>(presentation: AlarmPresentation(alert: alert),
+                // Snooze: rings again in 5 minutes, as often as it is pressed.
+                let snooze = AlarmButton(text: "Snooze 5 min", textColor: .white, systemImageName: "zzz")
+                let alert = AlarmPresentation.Alert(title: LocalizedStringResource("\(title)"), stopButton: stop,
+                                                    secondaryButton: snooze, secondaryButtonBehavior: .countdown)
+                let countdown = AlarmPresentation.Countdown(title: "Snoozed. Rings again in 5 min")
+                let attributes = AlarmAttributes<WakeUpMetadata>(presentation: AlarmPresentation(alert: alert, countdown: countdown),
                                                                  tintColor: Color(red: 1, green: 0.62, blue: 0.4))
-                let configuration = AlarmManager.AlarmConfiguration<WakeUpMetadata>.alarm(
-                    schedule: .fixed(date), attributes: attributes)
+                // Classic is the phone's own alarm sound; the others are our tones in Resources/.
+                let tone: AlertConfiguration.AlertSound = sound.fileName.map { .named($0) } ?? .default
+                let configuration = AlarmManager.AlarmConfiguration<WakeUpMetadata>(
+                    countdownDuration: Alarm.CountdownDuration(preAlert: nil, postAlert: 5 * 60),
+                    schedule: .fixed(date), attributes: attributes, sound: tone)
                 if (try? await manager.schedule(id: id, configuration: configuration)) != nil {
                     ids.append(id.uuidString)
                 }
@@ -53,7 +61,3 @@ enum WakeUpAlarm {
     #endif
 }
 
-#if canImport(AlarmKit)
-@available(iOS 26.0, *)
-struct WakeUpMetadata: AlarmMetadata {}
-#endif

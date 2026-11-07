@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -18,6 +19,7 @@ import com.prayertimesasia.app.MainActivity
 import com.prayertimesasia.app.PrayerApp
 import com.prayertimesasia.app.R
 import com.prayertimesasia.app.widget.WidgetUpdater
+import com.prayertimesasia.core.AlarmSound
 import com.prayertimesasia.core.Prayer
 import java.time.Instant
 import kotlinx.coroutines.CoroutineScope
@@ -60,12 +62,64 @@ object Notifications {
             setSound(null, null)
             enableVibration(true)
         })
-        nm.createNotificationChannel(NotificationChannel(WAKE, "Subuh wake-up", NotificationManager.IMPORTANCE_HIGH).apply {
-            description = "Rings like an alarm before Subuh ends."
-            setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
-                AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
+        nm.createNotificationChannel(alarmChannel(WAKE, "Prayer alarms",
+            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)))
+        // Android fixes a channel's sound when it is made, so each alarm sound has its own.
+        for (sound in listOf(AlarmSound.CHIME, AlarmSound.BELLS, AlarmSound.BEEPS)) {
+            nm.createNotificationChannel(alarmChannel("$WAKE-${sound.raw}", "Prayer alarms (${sound.label})", rawUri(context, sound)))
+        }
+    }
+
+    private val alarmAttributes: AudioAttributes =
+        AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
+
+    @androidx.annotation.RequiresApi(26)
+    private fun alarmChannel(id: String, name: String, sound: Uri?): NotificationChannel =
+        NotificationChannel(id, name, NotificationManager.IMPORTANCE_HIGH).apply {
+            description = "Rings like an alarm until you tap I'm up."
+            setSound(sound, alarmAttributes)
             enableVibration(true)
-        })
+        }
+
+    /** One of our own alarm tones in res/raw. */
+    fun rawUri(context: Context, sound: AlarmSound): Uri? {
+        val res = when (sound) {
+            AlarmSound.CHIME -> R.raw.alarm_chime
+            AlarmSound.BELLS -> R.raw.alarm_bells
+            AlarmSound.BEEPS -> R.raw.alarm_beeps
+            else -> return null
+        }
+        return Uri.parse("android.resource://${context.packageName}/$res")
+    }
+
+    /** The sound an alarm plays now: the chosen tone, a ringtone from the phone, or the phone's alarm sound. */
+    fun alarmUri(context: Context, sound: AlarmSound, ringtone: String?): Uri? = when (sound) {
+        AlarmSound.PHONE -> ringtone?.let(Uri::parse) ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        AlarmSound.CLASSIC -> RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        else -> rawUri(context, sound)
+    }
+
+    /**
+     * The channel for the chosen alarm sound. A ringtone picked from the phone
+     * gets its own channel, made when first needed (older ones are removed).
+     */
+    private fun wakeChannel(context: Context): String {
+        val prefs = (context.applicationContext as? PrayerApp)?.state?.prefs ?: return WAKE
+        return when (prefs.alarmSound) {
+            AlarmSound.CLASSIC -> WAKE
+            AlarmSound.PHONE -> {
+                val ringtone = prefs.alarmRingtone ?: return WAKE
+                if (Build.VERSION.SDK_INT < 26) return WAKE
+                val id = "$WAKE-phone-${Integer.toHexString(ringtone.hashCode())}"
+                val nm = context.getSystemService(NotificationManager::class.java) ?: return WAKE
+                nm.notificationChannels.filter { it.id.startsWith("$WAKE-phone-") && it.id != id }.forEach { nm.deleteNotificationChannel(it.id) }
+                if (nm.getNotificationChannel(id) == null) {
+                    nm.createNotificationChannel(alarmChannel(id, "Prayer alarms (your ringtone)", Uri.parse(ringtone)))
+                }
+                id
+            }
+            else -> "$WAKE-${prefs.alarmSound.raw}"
+        }
     }
 
     fun canPost(context: Context): Boolean =
@@ -95,6 +149,13 @@ object Notifications {
             val done = PendingIntent.getBroadcast(context, id.hashCode(),
                 Intent(context, WakeDoneReceiver::class.java).putExtra("notification", id.hashCode()),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            // Snooze: rings again in 5 minutes, as often as it is pressed.
+            val base = id.removeSuffix(AlarmScheduler.SNOOZE_SUFFIX)
+            val snooze = PendingIntent.getBroadcast(context, (base + AlarmScheduler.SNOOZE_SUFFIX).hashCode(),
+                Intent(context, SnoozeReceiver::class.java).putExtra("notification", id.hashCode())
+                    .putExtra("id", base).putExtra("title", title).putExtra("body", body),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            builder.addAction(0, "Snooze 5 min", snooze)
             builder.addAction(0, "I'm up", done)
                 .setTimeoutAfter(10 * 60 * 1000L)
                 .setOngoing(false)
@@ -110,7 +171,7 @@ object Notifications {
     private fun channelFor(kind: AlarmScheduler.Kind, sound: AlarmScheduler.Sound, context: Context): String =
         when (kind) {
             AlarmScheduler.Kind.EARLY, AlarmScheduler.Kind.NUDGE, AlarmScheduler.Kind.JUMUAH -> REMINDER
-            AlarmScheduler.Kind.WAKE -> WAKE
+            AlarmScheduler.Kind.WAKE -> wakeChannel(context)
             else -> when {
                 sound == AlarmScheduler.Sound.STANDARD || !Azan.isAvailable(context) -> PRAYER
                 sound == AlarmScheduler.Sound.AZAN_SUBUH -> AZAN_SUBUH
@@ -140,10 +201,19 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 }
 
-/** "I'm up" on the wake-up alarm: stops it ringing. */
+/** "I'm up" on an alarm: stops it ringing. */
 class WakeDoneReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         NotificationManagerCompat.from(context).cancel(intent.getIntExtra("notification", 0))
+    }
+}
+
+/** "Snooze 5 min" on an alarm: stops it ringing and rings it again in 5 minutes. */
+class SnoozeReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        NotificationManagerCompat.from(context).cancel(intent.getIntExtra("notification", 0))
+        AlarmScheduler.snooze(context, intent.getStringExtra("id") ?: "alarm",
+            intent.getStringExtra("title") ?: "", intent.getStringExtra("body") ?: "")
     }
 }
 

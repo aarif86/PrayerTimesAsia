@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import com.prayertimesasia.core.BlessedTime
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.PrayerAlarmTiming
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.PrayerWindow
 import com.prayertimesasia.core.Resolver
@@ -87,6 +88,8 @@ object AlarmScheduler {
                         out += Alert("$id-early", title, "$name at ${r.formatted(time)} · $here", at, Kind.EARLY, silent = r.isSilent(at, prayer))
                     }
                     if (!p.notificationsEnabled) continue
+                    // An alarm at the same minute rings instead, so it doesn't sound twice.
+                    if (p.alarmAtStart(prayer)) continue
                     if (prayer == Prayer.SUNRISE) {
                         out += Alert(id, "$name · ${r.formatted(time)}", "${Prayer.FAJR.name(r.naming)} has ended. $here", time, Kind.PRAYER,
                             silent = r.isSilent(time, prayer))
@@ -142,7 +145,7 @@ object AlarmScheduler {
         return out
     }
 
-    /** The Subuh wake-up and the sahur alarm on one day, as they ring. */
+    /** Every alarm on one day (Subuh, sahur and the other prayers), as they ring. */
     private fun wakeUps(r: Resolver, day: com.prayertimesasia.core.PrayerDay, key: String, placeName: String): List<Alert> {
         val p = r.prefs
         val fajr = Prayer.FAJR.name(r.naming)
@@ -159,12 +162,21 @@ object AlarmScheduler {
                 Alert("$key-wake", "Wake up for $fajr", "$fajr ends at ${r.formatted(day.time(Prayer.SUNRISE))} · $placeName", w.date(day), Kind.WAKE)
             }
         }
+        for (prayer in PrayerAlarmTiming.prayers) {
+            val t = p.alarm(prayer) ?: continue
+            val start = day.time(prayer)
+            val end = PrayerAlarmTiming.end(prayer, day)
+            val name = r.prayerName(prayer, start)
+            val title = if (t == PrayerAlarmTiming.END_MINUS_30) "$name ends in 30 min" else "Time for $name"
+            val body = if (prayer == Prayer.ISHA) "$name began at ${r.formatted(start)} · $placeName" else "$name is open until ${r.formatted(end)} · $placeName"
+            out += Alert("$key-${prayer.raw}-alarm", title, body, t.date(start, end), Kind.WAKE)
+        }
         return out
     }
 
-    /** The next wake-up or sahur alarm, looking a week ahead (the sahur alarm may be days away). */
+    /** The next alarm, looking a week ahead (the sahur alarm may be days away). */
     fun nextWakeUp(r: Resolver, now: Instant): Alert? {
-        if (r.prefs.wakeUp == null && r.prefs.sahurAlarm == null) return null
+        if (!r.prefs.anyAlarm) return null
         val place = r.activePlace ?: return null
         for (offset in 0..7) {
             val day = r.day(now, offset) ?: continue
@@ -203,6 +215,27 @@ object AlarmScheduler {
             }
         }
         sp.edit().putStringSet(KEY, codes.map { it.toString() }.toSet()).apply()
+    }
+
+    const val SNOOZE_SUFFIX = "-snooze"
+    const val SNOOZE_MINUTES = 5L
+
+    /**
+     * Rings this alarm again in [SNOOZE_MINUTES]. It is kept apart from the
+     * planned alarms, so re-planning never cancels it.
+     */
+    fun snooze(context: Context, id: String, title: String, body: String, now: Instant = Instant.now()) {
+        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager? ?: return
+        val alert = Alert(id + SNOOZE_SUFFIX, title, body, now.plusSeconds(SNOOZE_MINUTES * 60), Kind.WAKE)
+        val pi = pending(context, alert.id.hashCode(), alert) ?: return
+        val t = alert.at.toEpochMilli()
+        val exact = Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms()
+        try {
+            if (exact) am.setAlarmClock(AlarmManager.AlarmClockInfo(t, openApp(context)), pi)
+            else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, pi)
+        } catch (_: SecurityException) {
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, pi)
+        }
     }
 
     private fun openApp(context: Context): PendingIntent =

@@ -111,6 +111,9 @@ final class AppModel {
             p.wakeUp = .fajrMinus30
             p.sahurAlarm = .fajrMinus90
             p.sahurDays = [.ramadan, .monThu]
+            p.asrAlarm = .plus10
+            p.ishaAlarm = .atStart
+            p.alarmSound = .chime
         }
         if args.contains("-demo-visitor") {
             // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
@@ -135,6 +138,7 @@ final class AppModel {
             p.lastCountryCode = "VN"
             p.musafirEnabled = true
             p.arrivedAt = .now
+            p.musafirChipDismissed = false
             p.arrivalBannerDismissed = false
             p.trip = [TripStop(countryCode: "VN", countryName: "Vietnam", placeName: "Hoàn Kiếm", arrived: .now),
                       TripStop(countryCode: "SG", countryName: "Singapore", placeName: "Pasir Ris",
@@ -593,6 +597,7 @@ final class AppModel {
             let isFirstEver = p.lastCountryCode == nil
             p.lastCountryCode = code
             p.arrivedAt = .now
+            p.musafirChipDismissed = false
             p.arrivalBannerDismissed = isFirstEver
             p.trip.insert(TripStop(countryCode: code, countryName: place.countryName ?? code,
                                    placeName: place.name, arrived: .now), at: 0)
@@ -814,6 +819,8 @@ final class AppModel {
                                         fireDate: at, silent: isSilent(at, prayer: prayer)))
                 }
                 guard onTime else { continue }
+                // An alarm at the same minute rings instead, so it doesn't sound twice.
+                if prefs.alarmAtStart(prayer) { continue }
                 if prayer == .sunrise {
                     alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
                                         body: "\(Prayer.fajr.name(naming)) has ended. \(here)", fireDate: time, silent: silent))
@@ -832,18 +839,23 @@ final class AppModel {
         }
         // Subuh wake-up: a real alarm (AlarmKit, iOS 26+) where possible,
         // otherwise a notification.
-        let wakeUps = wakeUpPlan(from: .now, days: 7).map { ($0.date, $0.title) }
+        // Subuh and sahur a week ahead (sahur may be days away); the other
+        // prayers' alarms three days ahead, which the app refreshes on every open.
+        let plan = wakeUpPlan(from: .now, days: 7)
+        let soon = Date.now.addingTimeInterval(3 * 86_400)
+        let wakeUps = plan.filter { $0.prayer == nil || $0.date < soon }.map { ($0.date, $0.title) }
+        let sound = prefs.alarmSound
         let notificationAlerts = ramadan + alerts
         let notificationsOn = onTime || early > 0 || nudges || jumuah > 0 || !ramadan.isEmpty
         // Demo screenshots never ask for alarm permission.
         let isDemo = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") }
         Task {
-            let alarmsHandled = isDemo ? true : await WakeUpAlarm.schedule(wakeUps)
+            let alarmsHandled = isDemo ? true : await WakeUpAlarm.schedule(wakeUps, sound: sound)
             var all = notificationsOn ? notificationAlerts : []
             if !alarmsHandled {
                 all += wakeUps.map {
                     NotificationScheduler.Alert(id: "wake-\(Int($0.0.timeIntervalSince1970))", title: $0.1,
-                                                body: place.name, fireDate: $0.0)
+                                                body: place.name, fireDate: $0.0, sound: .alarm(sound))
                 }
             }
             NotificationScheduler.reschedule(enabled: !all.isEmpty, alerts: all)
@@ -851,17 +863,19 @@ final class AppModel {
         WidgetBridge.publish(self)
     }
 
-    /// One wake-up alarm: the Subuh alarm, or the earlier sahur alarm.
+    /// One alarm: the Subuh alarm, the earlier sahur alarm, or another prayer's.
     struct WakeUp: Equatable {
         let date: Date
         let title: String
         let isSahur: Bool
+        /// The prayer, for the other four prayers' alarms.
+        var prayer: Prayer? = nil
     }
 
     /// The next wake-up or sahur alarm, looking a week ahead (the sahur alarm
     /// may be days away). Stops at the first day that has one.
     func nextWakeUp(after now: Date) -> WakeUp? {
-        guard prefs.wakeUp != nil || prefs.sahurAlarm != nil else { return nil }
+        guard prefs.anyAlarm else { return nil }
         for offset in 0..<8 {
             if let first = wakeUpPlan(from: now, days: 1, startingAt: offset).first { return first }
         }
@@ -870,7 +884,7 @@ final class AppModel {
 
     /// The wake-up and sahur alarms for the next `days` days, soonest first.
     func wakeUpPlan(from now: Date, days: Int, startingAt start: Int = 0) -> [WakeUp] {
-        guard prefs.wakeUp != nil || prefs.sahurAlarm != nil else { return [] }
+        guard prefs.anyAlarm else { return [] }
         let fajr = Prayer.fajr.name(naming)
         var out: [WakeUp] = []
         for offset in start..<(start + days) {
@@ -884,6 +898,16 @@ final class AppModel {
                     ? "Wake up for tahajjud · \(fajr) at \(formatted(pd.time(.fajr)))"
                     : "Wake up for \(fajr) · ends \(formatted(pd.time(.sunrise)))"
                 out.append(WakeUp(date: timing.date(in: pd), title: title, isSahur: false))
+            }
+            for prayer in PrayerAlarmTiming.prayers {
+                guard let timing = prefs.alarm(for: prayer) else { continue }
+                let start = pd.time(prayer)
+                let end = PrayerAlarmTiming.end(of: prayer, in: pd)
+                let name = prayer.name(naming, isFriday: isFriday(start))
+                let title = timing == .endMinus30
+                    ? "\(name) ends in 30 min · \(formatted(end))"
+                    : prayer == .isha ? "Time for \(name) · \(formatted(start))" : "Time for \(name) · open until \(formatted(end))"
+                out.append(WakeUp(date: timing.date(start: start, end: end), title: title, isSahur: false, prayer: prayer))
             }
         }
         var seen = Set<Date>()

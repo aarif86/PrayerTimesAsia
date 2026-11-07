@@ -50,6 +50,11 @@ struct MovedSettings: Codable, Equatable {
     var wakeUp: WakeUpTiming?
     var sahurAlarm: SahurTiming?
     var sahurDays: [SahurDay]?
+    var dhuhrAlarm: PrayerAlarmTiming?
+    var asrAlarm: PrayerAlarmTiming?
+    var maghribAlarm: PrayerAlarmTiming?
+    var ishaAlarm: PrayerAlarmTiming?
+    var alarmSound: AlarmSound?
     var windowNudge: Bool?
     var quietHours: Bool?
     var quietFrom: Int?
@@ -101,6 +106,11 @@ struct MovedSettings: Codable, Equatable {
         wakeUp = field(.wakeUp)
         sahurAlarm = field(.sahurAlarm)
         sahurDays = (try? c.decodeIfPresent([Lenient<SahurDay>].self, forKey: .sahurDays))?.map { $0.compactMap { $0.value } }
+        dhuhrAlarm = field(.dhuhrAlarm)
+        asrAlarm = field(.asrAlarm)
+        maghribAlarm = field(.maghribAlarm)
+        ishaAlarm = field(.ishaAlarm)
+        alarmSound = field(.alarmSound)
         windowNudge = field(.windowNudge)
         quietHours = field(.quietHours)
         quietFrom = field(.quietFrom)
@@ -161,6 +171,11 @@ extension MovedSettings {
         wakeUp = p.wakeUp
         sahurAlarm = p.sahurAlarm
         sahurDays = p.sahurDays == d.sahurDays ? nil : SahurDay.allCases.filter { p.sahurDays.contains($0) }
+        dhuhrAlarm = p.dhuhrAlarm
+        asrAlarm = p.asrAlarm
+        maghribAlarm = p.maghribAlarm
+        ishaAlarm = p.ishaAlarm
+        alarmSound = changed(p.alarmSound, d.alarmSound)
         windowNudge = changed(p.windowNudge, d.windowNudge)
         quietHours = changed(p.quietHours, d.quietHours)
         quietFrom = changed(p.quietFrom, d.quietFrom)
@@ -205,6 +220,11 @@ extension MovedSettings {
         out.wakeUp = wakeUp
         out.sahurAlarm = sahurAlarm
         out.sahurDays = sahurDays.map(Set.init) ?? d.sahurDays
+        out.dhuhrAlarm = dhuhrAlarm
+        out.asrAlarm = asrAlarm
+        out.maghribAlarm = maghribAlarm
+        out.ishaAlarm = ishaAlarm == .endMinus30 ? nil : ishaAlarm
+        out.alarmSound = alarmSound ?? d.alarmSound
         out.windowNudge = windowNudge ?? d.windowNudge
         out.quietHours = quietHours ?? d.quietHours
         out.quietFrom = quietFrom.flatMap { (0..<1440).contains($0) ? $0 : nil } ?? d.quietFrom
@@ -271,7 +291,9 @@ extension MovedSettings {
         if notifyPrayers != nil || reminderMinutesBefore != nil || quietHours != nil || buzzOnly != nil || jumuahReminderMinutes != nil {
             lines.append("Which prayers to alert, and how")
         }
-        if wakeUp != nil || sahurAlarm != nil { lines.append("Your wake-up alarms") }
+        if wakeUp != nil || sahurAlarm != nil || dhuhrAlarm != nil || asrAlarm != nil || maghribAlarm != nil || ishaAlarm != nil {
+            lines.append("Your prayer alarms")
+        }
         if largeText == true { lines.append("Bigger text") }
         if musafirEnabled == true { lines.append("Musafir features") }
         return lines.isEmpty ? ["The standard settings"] : lines

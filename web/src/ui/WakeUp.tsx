@@ -1,10 +1,12 @@
-import { AlarmClock, AlarmClockCheck, Check, Download, Smartphone } from 'lucide-preact'
+import { AlarmClock, AlarmClockCheck, Check, Download, Play, Smartphone } from 'lucide-preact'
 import type { PrayerDay } from '../core/engine'
 import {
+  ALARM_KEY, ALARM_PRAYERS, ALARM_SOUND_LABEL, ALARM_SOUNDS, prayerAlarmChoices, prayerAlarmLabel, prayerAlarmTime,
   SAHUR_DAY_LABEL, SAHUR_DAYS, SAHUR_TIMINGS, sahurLabel, sahurTime, WAKE_PARTS, WAKE_UP_TIMINGS, wakePart, wakeUpLabel, wakeUpTime,
-  type SahurTiming, type WakeUpTiming,
+  type AlarmPrayer, type AlarmSound, type PrayerAlarmTiming, type SahurTiming, type WakeUpTiming,
 } from '../core/wakeup'
-import { alertSupport, downloadWakeICS, nextWakeUp, requestPermission } from '../services/notifications'
+import { previewAlarm } from '../services/alarmSound'
+import { alertSupport, anyAlarm, downloadWakeICS, nextWakeUp, requestPermission } from '../services/notifications'
 import { store, useNow, useStore } from '../services/store'
 import { Sheet, ToggleItem } from './common'
 import { phoneAppOffer } from './pwa'
@@ -15,7 +17,7 @@ export function WakeChip({ now, open }: { now: number; open: () => void }) {
   const fajr = store.name('fajr')
   if (!next) {
     return (
-      <button class="round-btn" onClick={open} aria-label={`Wake up for ${fajr}: set an alarm`}>
+      <button class="round-btn" onClick={open} aria-label={`Prayer alarms, wake up for ${fajr}: set an alarm`}>
         <AlarmClock size={18} />
       </button>
     )
@@ -48,7 +50,8 @@ function whenText(now: number, at: number): string {
 }
 
 /**
- * Wake up for Subuh: the Subuh alarm and the earlier sahur alarm.
+ * Prayer alarms: Subuh first (with the earlier sahur alarm), then the other
+ * four prayers, and the sound they all play.
  * "Allahumma barik li ummati fi bukuriha" (Abu Dawud, Tirmidhi).
  */
 export function WakeUpSheet() {
@@ -62,6 +65,14 @@ export function WakeUpSheet() {
   const ask = async () => { if (alertSupport() === 'supported') await requestPermission() }
   const setWake = (t: WakeUpTiming | null) => { store.update((x) => { x.wakeUp = t }); if (t) void ask() }
   const setSahur = (t: SahurTiming | null) => { store.update((x) => { x.sahurAlarm = t }); if (t) void ask() }
+  const setPrayer = (prayer: AlarmPrayer, t: PrayerAlarmTiming | null) => { store.update((x) => { x[ALARM_KEY[prayer]] = t }); if (t) void ask() }
+  const setSound = (sound: AlarmSound) => { store.update((x) => { x.alarmSound = sound }); previewAlarm(sound) }
+  /** When a prayer's alarm would next ring. */
+  const prayerSoon = (prayer: AlarmPrayer, t: PrayerAlarmTiming) => soon(now, (d) => {
+    const end = { dhuhr: d.times.asr, asr: d.times.maghrib, maghrib: d.times.isha, isha: d.times.isha }[prayer]
+    return prayerAlarmTime(t, d.times[prayer], end)
+  })
+  const nextFor = next ? (next.sahur ? ' for sahur' : next.prayer ? ` for ${s.name(next.prayer, next.at)}` : '') : ''
 
   const Choice = ({ label, detail, on, pick }: { label: string; detail?: string | null; on: boolean; pick: () => void }) => (
     <button class="item choice" onClick={pick} aria-pressed={on}>
@@ -72,12 +83,12 @@ export function WakeUpSheet() {
   )
 
   return (
-    <Sheet title={`Wake up for ${fajr}`} full>
+    <Sheet title="Prayer alarms" full>
       <div class="glass card wake-hadith">
         <p class="arabic" dir="rtl" lang="ar">اللَّهُمَّ بَارِكْ لِأُمَّتِي فِي بُكُورِهَا</p>
         <p class="quote">“O Allah, bless my ummah in their early mornings.”</p>
         <p class="caption secondary">The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi</p>
-        {next && <p class="next">Next alarm {whenText(now, next.at)} {s.formatted(next.at)}{next.sahur ? ' for sahur' : ''}</p>}
+        {next && <p class="next">Next alarm {whenText(now, next.at)} {s.formatted(next.at)}{nextFor}</p>}
       </div>
 
       {WAKE_PARTS.map((part) => (
@@ -126,7 +137,45 @@ export function WakeUpSheet() {
         </section>
       )}
 
-      {(p.wakeUp || p.sahurAlarm) && (
+      <section>
+        <h2 class="group-title">Other prayers</h2>
+        <div class="group">
+          {ALARM_PRAYERS.map((prayer) => {
+            const name = s.name(prayer)
+            const value = p[ALARM_KEY[prayer]]
+            return (
+              <label class="item">
+                <span class="label">{name}{value && <span class="sub mono">{prayerSoon(prayer, value)}</span>}</span>
+                <select class="inline-select" value={value ?? 'off'} aria-label={`${name} alarm`}
+                  onChange={(e) => { const v = (e.target as HTMLSelectElement).value; setPrayer(prayer, v === 'off' ? null : (v as PrayerAlarmTiming)) }}>
+                  <option value="off">Off</option>
+                  {prayerAlarmChoices(prayer).map((t) => <option value={t}>{prayerAlarmLabel(t)}</option>)}
+                </select>
+              </label>
+            )
+          })}
+        </div>
+        <p class="group-foot">An alarm rings loudly until you stop it. If it rings at the very start of a prayer, it takes the place of that prayer's alert.</p>
+      </section>
+
+      <section>
+        <h2 class="group-title">Alarm sound</h2>
+        <div class="group">
+          {ALARM_SOUNDS.filter((x) => x !== 'phone').map((sound) => {
+            const on = (p.alarmSound === 'phone' ? 'classic' : p.alarmSound) === sound
+            return (
+              <button class="item choice" onClick={() => setSound(sound)} aria-pressed={on} aria-label={`${ALARM_SOUND_LABEL[sound]}, tap to hear it`}>
+                <Play size={14} class="secondary" />
+                <span class="label">{ALARM_SOUND_LABEL[sound]}</span>
+                <Check size={18} class="choice-tick" style={{ opacity: on ? 1 : 0 }} />
+              </button>
+            )
+          })}
+        </div>
+        <p class="group-foot">Tap a sound to hear it. Every alarm plays this sound. The azan will join the list once the recordings are ready.</p>
+      </section>
+
+      {anyAlarm(p) && (
         <section>
           <div class="group">
             <button class="item" onClick={downloadWakeICS}>

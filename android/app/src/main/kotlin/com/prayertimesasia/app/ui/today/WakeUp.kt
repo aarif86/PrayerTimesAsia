@@ -17,9 +17,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.AlarmOn
 import androidx.compose.material.icons.filled.Check
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.PlayCircleOutline
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +49,10 @@ import com.prayertimesasia.app.ui.settings.Section
 import com.prayertimesasia.app.ui.settings.SwitchRow
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
+import com.prayertimesasia.app.alarms.Notifications
+import com.prayertimesasia.core.AlarmSound
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.PrayerAlarmTiming
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.SahurDay
 import com.prayertimesasia.core.SahurTiming
@@ -55,7 +71,7 @@ fun WakeChip(state: AppState, background: Color = Palette.primary.copy(alpha = 0
             .background(if (next == null) background else Palette.sunArc.copy(alpha = 0.3f), CircleShape)
             .clickable { state.showWakeUp = true }
             .padding(horizontal = if (next == null) 0.dp else 10.dp)
-            .semantics { contentDescription = next?.let { "Wake up alarm at ${state.resolver.formatted(it.at)}" } ?: "Wake up for $fajr: set an alarm" },
+            .semantics { contentDescription = next?.let { "Next alarm at ${state.resolver.formatted(it.at)}" } ?: "Prayer alarms, wake up for $fajr: set an alarm" },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
     ) {
@@ -67,7 +83,11 @@ fun WakeChip(state: AppState, background: Color = Palette.primary.copy(alpha = 0
     }
 }
 
-/** Wake up for Subuh: the Subuh alarm and the earlier sahur alarm. "Allahumma barik li ummati fi bukuriha" (Abu Dawud, Tirmidhi). */
+/**
+ * Prayer alarms: Subuh first (with the earlier sahur alarm), then the other four
+ * prayers and the sound they all play.
+ * "Allahumma barik li ummati fi bukuriha" (Abu Dawud, Tirmidhi).
+ */
 @Composable
 fun WakeUpSheetContent(state: AppState) {
     val r = state.resolver
@@ -75,13 +95,19 @@ fun WakeUpSheetContent(state: AppState) {
     val fajr = Prayer.FAJR.name(r.naming)
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
         Column(Modifier.padding(horizontal = 32.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Wake up for $fajr", style = Txt.title3, color = Palette.primary)
+            Text("Prayer alarms", style = Txt.title3, color = Palette.primary)
             Text("اللَّهُمَّ بَارِكْ لِأُمَّتِي فِي بُكُورِهَا", style = Txt.title3.copy(textDirection = TextDirection.Rtl),
                 color = Palette.primary, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
             Text("“O Allah, bless my ummah in their early mornings.”", style = Txt.body.copy(fontStyle = FontStyle.Italic), color = Palette.primary)
             Text("The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi", style = Txt.footnote, color = Palette.secondary)
             AlarmScheduler.nextWakeUp(r, state.now)?.let { next ->
-                Text("Next alarm ${whenText(state, next.at)} ${r.formatted(next.at)}${if (next.id.endsWith("sahur")) " for sahur" else ""}",
+                val forPrayer = Prayer.entries.firstOrNull { next.id.endsWith("-${it.raw}-alarm") }
+                val what = when {
+                    next.id.endsWith("sahur") -> " for sahur"
+                    forPrayer != null -> " for ${r.prayerName(forPrayer, next.at)}"
+                    else -> ""
+                }
+                Text("Next alarm ${whenText(state, next.at)} ${r.formatted(next.at)}$what",
                     style = Txt.subheadlineSemibold, color = Palette.sunArc, modifier = Modifier.padding(top = 4.dp))
             }
         }
@@ -121,9 +147,126 @@ fun WakeUpSheetContent(state: AppState) {
             }
         }
 
+        Section("Other prayers", "An alarm rings loudly until you stop it. If it rings at the very start of a prayer, it takes the place of that prayer's alert.") {
+            PrayerAlarmTiming.prayers.forEach { prayer -> PrayerAlarmRow(state, prayer) }
+        }
+
+        AlarmSoundSection(state)
+
         Text("Rings like an alarm, even when the phone is on silent, and keeps ringing until you tap I'm up. " +
+            "Tap Snooze 5 min to hear it again in 5 minutes. " +
             "If it stays quiet, allow Alarms and reminders for this app in your phone's settings.",
             style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp))
+    }
+}
+
+/** One prayer's alarm as a menu: Off, on time, minutes after, or before it ends. */
+@Composable
+private fun PrayerAlarmRow(state: AppState, prayer: Prayer) {
+    val r = state.resolver
+    val name = prayer.name(r.naming)
+    val current = state.prefs.alarm(prayer)
+    var open by remember { mutableStateOf(false) }
+    Box {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable { open = true }.padding(horizontal = 16.dp, vertical = 10.dp)
+                .semantics { contentDescription = "$name alarm, ${current?.label ?: "Off"}" },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(name, style = Txt.body, color = Palette.primary)
+                if (current != null) {
+                    timeSoon(state) { current.date(it.time(prayer), PrayerAlarmTiming.end(prayer, it)) }?.let {
+                        Text(it, style = Txt.footnote.copy(fontFeatureSettings = "tnum"), color = Palette.secondary)
+                    }
+                }
+            }
+            Text(current?.label ?: "Off", style = Txt.body, color = if (current != null) Palette.sunArc else Palette.secondary)
+            Icon(Icons.Filled.ArrowDropDown, null, Modifier.size(20.dp), tint = Palette.secondary)
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            DropdownMenuItem(text = { Text("Off") }, onClick = { open = false; state.setPrayerAlarm(prayer, null) })
+            PrayerAlarmTiming.choices(prayer).forEach { t ->
+                DropdownMenuItem(text = { Text(t.label) }, onClick = { open = false; state.setPrayerAlarm(prayer, t) })
+            }
+        }
+    }
+}
+
+/** The sound every alarm plays, each heard for a few seconds when tapped, or a ringtone from the phone. */
+@Composable
+private fun AlarmSoundSection(state: AppState) {
+    val context = LocalContext.current
+    val p = state.prefs
+    val preview = remember { AlarmPreview() }
+    DisposableEffect(Unit) { onDispose { preview.stop() } }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        @Suppress("DEPRECATION")
+        val uri = result.data?.getParcelableExtra<android.net.Uri>(android.media.RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+        if (uri != null) state.update { it.copy(alarmSound = AlarmSound.PHONE, alarmRingtone = uri.toString()) }
+    }
+    val ringtoneName = p.alarmRingtone?.let { raw ->
+        runCatching { android.media.RingtoneManager.getRingtone(context, android.net.Uri.parse(raw))?.getTitle(context) }.getOrNull()
+    }
+    Section("Alarm sound", "Tap a sound to hear it. Every alarm plays this sound. The azan will join the list once the recordings are ready.") {
+        listOf(AlarmSound.CLASSIC, AlarmSound.CHIME, AlarmSound.BELLS, AlarmSound.BEEPS).forEach { sound ->
+            SoundRow(sound.label, null, p.alarmSound == sound) {
+                state.update { it.copy(alarmSound = sound) }
+                preview.play(context, Notifications.alarmUri(context, sound, null))
+            }
+        }
+        SoundRow(AlarmSound.PHONE.label, ringtoneName ?: "Pick a ringtone", p.alarmSound == AlarmSound.PHONE) {
+            val intent = android.content.Intent(android.media.RingtoneManager.ACTION_RINGTONE_PICKER)
+                .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TYPE, android.media.RingtoneManager.TYPE_ALARM or android.media.RingtoneManager.TYPE_RINGTONE)
+                .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+                .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TITLE, "Alarm sound")
+            p.alarmRingtone?.let { intent.putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, android.net.Uri.parse(it)) }
+            preview.stop()
+            runCatching { picker.launch(intent) }
+        }
+    }
+}
+
+@Composable
+private fun SoundRow(label: String, detail: String?, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 10.dp)
+            .semantics { contentDescription = "$label${if (selected) ", selected" else ""}, tap to hear it" },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Icon(Icons.Filled.PlayCircleOutline, null, Modifier.size(20.dp), tint = Palette.secondary)
+        Column(Modifier.weight(1f)) {
+            Text(label, style = Txt.body, color = Palette.primary)
+            if (detail != null) Text(detail, style = Txt.footnote, color = Palette.secondary)
+        }
+        Icon(Icons.Filled.Check, null, Modifier.size(20.dp), tint = if (selected) Palette.sunArc else Color.Transparent)
+    }
+}
+
+/** A few seconds of an alarm sound, played as an alarm so it is heard on silent too. */
+private class AlarmPreview {
+    private var ringtone: android.media.Ringtone? = null
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+
+    fun play(context: android.content.Context, uri: android.net.Uri?) {
+        stop()
+        uri ?: return
+        val r = runCatching { android.media.RingtoneManager.getRingtone(context, uri) }.getOrNull() ?: return
+        r.audioAttributes = android.media.AudioAttributes.Builder()
+            .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
+        runCatching { r.play() }
+        ringtone = r
+        handler.postDelayed({ if (ringtone === r) stop() }, 5000)
+    }
+
+    fun stop() {
+        handler.removeCallbacksAndMessages(null)
+        runCatching { ringtone?.stop() }
+        ringtone = null
     }
 }
 

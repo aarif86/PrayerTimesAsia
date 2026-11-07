@@ -1,7 +1,10 @@
+import AudioToolbox
+import AVFoundation
 import SwiftUI
 
-/// Wake up for Subuh: the Subuh alarm and the earlier sahur alarm, opened from
-/// the alarm chip on the Prayer screen (and from Settings).
+/// Prayer alarms: Subuh first (with the earlier sahur alarm), then the other
+/// four prayers and the sound they all play. Opened from the alarm chip on the
+/// Prayer screen (and from Settings).
 /// "Allahumma barik li ummati fi bukuriha" (Abu Dawud, Tirmidhi).
 struct WakeUpView: View {
     @Environment(AppModel.self) private var model
@@ -79,21 +82,59 @@ struct WakeUpView: View {
                 }
 
                 Section {
+                    ForEach(PrayerAlarmTiming.prayers) { prayer in
+                        prayerPicker(prayer)
+                    }
+                } header: {
+                    Text("Other prayers")
+                } footer: {
+                    Text("An alarm rings loudly until you stop it. If it rings at the very start of a prayer, it takes the place of that prayer's alert.")
+                }
+
+                Section {
+                    ForEach(AlarmSound.choices) { sound in
+                        let on = (model.prefs.alarmSound == .phone ? .classic : model.prefs.alarmSound) == sound
+                        Button {
+                            model.prefs.alarmSound = sound
+                            AlarmPreview.play(sound)
+                        } label: {
+                            HStack {
+                                Image(systemName: "play.circle").foregroundStyle(.secondary)
+                                Text(sound.label).foregroundStyle(.primary)
+                                Spacer()
+                                Image(systemName: "checkmark").font(.body.weight(.semibold))
+                                    .foregroundStyle(Theme.sunArc)
+                                    .opacity(on ? 1 : 0)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Plays the sound")
+                        .accessibilityAddTraits(on ? .isSelected : [])
+                    }
+                } header: {
+                    Text("Alarm sound")
+                } footer: {
+                    Text("Tap a sound to hear it. Every alarm plays this sound. Classic is your iPhone's own alarm. The azan will join the list once the recordings are ready.")
+                }
+
+                Section {
                     Text(alarmNote)
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle("Wake up for \(fajr)")
+            .navigationTitle("Prayer alarms")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
+            .onDisappear { AlarmPreview.stop() }
         }
     }
 
     private var alarmNote: String {
         if #available(iOS 26.0, *) {
-            return "A real alarm that rings even in Silent mode and Focus, like the Clock app."
+            return "A real alarm that rings even in Silent mode and Focus, like the Clock app. Tap Done to stop it, or Snooze 5 min to hear it again in 5 minutes."
         }
         return "On this iPhone the alarm comes as a notification. From iOS 26 it rings like a real alarm, even in Silent mode."
     }
@@ -142,7 +183,36 @@ struct WakeUpView: View {
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "EEEE"
         let when = cal.isDateInToday(w.date) ? "Today" : cal.isDateInTomorrow(w.date) ? "Tomorrow" : f.string(from: w.date)
-        return "\(when) \(model.formatted(w.date))\(w.isSahur ? " for sahur" : "")"
+        let what = w.isSahur ? " for sahur" : w.prayer.map { " for \($0.name(model.naming, isFriday: model.isFriday(w.date)))" } ?? ""
+        return "\(when) \(model.formatted(w.date))\(what)"
+    }
+
+    /// One prayer's alarm, as a menu: Off, on time, minutes after, or before it ends.
+    private func prayerPicker(_ prayer: Prayer) -> some View {
+        let name = prayer.name(model.naming)
+        let current = model.prefs.alarm(for: prayer)
+        return Picker(selection: Binding(
+            get: { current },
+            set: { timing in
+                Task {
+                    if timing != nil { _ = await NotificationScheduler.requestPermission() }
+                    withAnimation { model.prefs.setAlarm(timing, for: prayer) }
+                }
+            })) {
+            Text("Off").tag(PrayerAlarmTiming?.none)
+            ForEach(PrayerAlarmTiming.choices(for: prayer)) { timing in
+                Text(timing.label).tag(PrayerAlarmTiming?.some(timing))
+            }
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name)
+                if let current, let t = timeToday({ current.date(start: $0.time(prayer), end: PrayerAlarmTiming.end(of: prayer, in: $0)) }) {
+                    Text(t).font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                }
+            }
+        }
+        .pickerStyle(.menu)
+        .accessibilityLabel("\(name) alarm")
     }
 
     private func setWakeUp(_ timing: WakeUpTiming?) {
@@ -157,5 +227,36 @@ struct WakeUpView: View {
             if timing != nil { _ = await NotificationScheduler.requestPermission() }
             withAnimation { model.prefs.sahurAlarm = timing }
         }
+    }
+}
+
+/// A few seconds of an alarm sound, to hear it before choosing. Plays even in
+/// Silent mode, like the alarm itself will.
+@MainActor
+enum AlarmPreview {
+    private static var player: AVAudioPlayer?
+
+    static func play(_ sound: AlarmSound) {
+        stop()
+        guard let file = sound.fileName,
+              let url = Bundle.main.url(forResource: (file as NSString).deletingPathExtension, withExtension: "caf") else {
+            // Classic is the iPhone's own alarm, which apps can't play; a short system alert stands in.
+            AudioServicesPlayAlertSound(SystemSoundID(1005))
+            return
+        }
+        try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.duckOthers])
+        try? AVAudioSession.sharedInstance().setActive(true)
+        player = try? AVAudioPlayer(contentsOf: url)
+        player?.play()
+        let current = player
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            if player === current { stop() }
+        }
+    }
+
+    static func stop() {
+        player?.stop()
+        player = nil
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 }

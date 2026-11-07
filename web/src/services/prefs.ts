@@ -3,7 +3,10 @@ import type { Place } from '../core/place'
 import type { FastMark } from '../core/ramadanContent'
 import { SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { NAMING_STYLES, OBLIGATORY, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
-import { DEFAULT_SAHUR_DAYS, SAHUR_DAYS, SAHUR_TIMINGS, WAKE_UP_TIMINGS, type SahurDay, type SahurTiming, type WakeUpTiming } from '../core/wakeup'
+import {
+  ALARM_SOUNDS, DEFAULT_SAHUR_DAYS, PRAYER_ALARM_TIMINGS, SAHUR_DAYS, SAHUR_TIMINGS, WAKE_UP_TIMINGS,
+  type AlarmSound, type PrayerAlarmTiming, type SahurDay, type SahurTiming, type WakeUpTiming,
+} from '../core/wakeup'
 
 export type Appearance = 'system' | 'light' | 'dark'
 export const APPEARANCES: Appearance[] = ['system', 'light', 'dark']
@@ -46,6 +49,8 @@ export interface Preferences {
   lastCountryCode: string | null
   arrivedAt: number | null
   arrivalBannerDismissed: boolean
+  /** The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival. */
+  musafirChipDismissed: boolean
   trip: TripStop[]
   trackerEnabled: boolean
   prayedLog: Record<string, Prayer[]>
@@ -57,6 +62,12 @@ export interface Preferences {
   /** The earlier sahur alarm; null = off. Rings only on `sahurDays`. */
   sahurAlarm: SahurTiming | null
   sahurDays: SahurDay[]
+  /** Alarms for the other prayers (null = off), and the sound every alarm plays. */
+  dhuhrAlarm: PrayerAlarmTiming | null
+  asrAlarm: PrayerAlarmTiming | null
+  maghribAlarm: PrayerAlarmTiming | null
+  ishaAlarm: PrayerAlarmTiming | null
+  alarmSound: AlarmSound
   communityAuthority: string | null
   appearance: Appearance
   todayStyle: TodayStyle
@@ -122,6 +133,7 @@ export const DEFAULT_PREFS: Preferences = {
   lastCountryCode: null,
   arrivedAt: null,
   arrivalBannerDismissed: true,
+  musafirChipDismissed: false,
   trip: [],
   trackerEnabled: false,
   prayedLog: {},
@@ -130,6 +142,11 @@ export const DEFAULT_PREFS: Preferences = {
   wakeUp: null,
   sahurAlarm: null,
   sahurDays: [...DEFAULT_SAHUR_DAYS],
+  dhuhrAlarm: null,
+  asrAlarm: null,
+  maghribAlarm: null,
+  ishaAlarm: null,
+  alarmSound: 'classic',
   communityAuthority: null,
   appearance: 'system',
   todayStyle: 'centre',
@@ -161,6 +178,7 @@ export const DEFAULT_PREFS: Preferences = {
 const NULLABLE = new Set<keyof Preferences>([
   'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'jakimZoneOverride',
   'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
+  'dhuhrAlarm', 'asrAlarm', 'maghribAlarm', 'ishaAlarm',
 ])
 
 const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
@@ -171,6 +189,11 @@ const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   seasonPreview: SEASON_PREVIEWS,
   wakeUp: WAKE_UP_TIMINGS,
   sahurAlarm: SAHUR_TIMINGS,
+  dhuhrAlarm: PRAYER_ALARM_TIMINGS,
+  asrAlarm: PRAYER_ALARM_TIMINGS,
+  maghribAlarm: PRAYER_ALARM_TIMINGS,
+  ishaAlarm: PRAYER_ALARM_TIMINGS,
+  alarmSound: ALARM_SOUNDS,
 }
 
 /**
@@ -211,6 +234,8 @@ export function decodePreferences(raw: unknown): Preferences {
   // Minutes past midnight must be a real time of day.
   for (const k of ['quietFrom', 'quietTo'] as const) if (!Number.isInteger(out[k]) || out[k] < 0 || out[k] >= 1440) out[k] = DEFAULT_PREFS[k]
   if (!JUMUAH_REMINDER_CHOICES.includes(out.jumuahReminderMinutes)) out.jumuahReminderMinutes = 0
+  // Isyak is open until Subuh: it has no "before it ends" alarm.
+  if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
   return out
 }
 

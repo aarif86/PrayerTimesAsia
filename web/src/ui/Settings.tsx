@@ -6,7 +6,7 @@ import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
 import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, prayerName, type NamingStyle, type Prayer } from '../core/prayer'
 import { flag, profileMethod } from '../core/regions'
-import { alertSupport, downloadICS, nextWakeUp, permission, requestPermission, testAlert, WORK_PRAYERS } from '../services/notifications'
+import { alertSupport, downloadICS, anyAlarm, nextWakeUp, permission, requestPermission, testAlert, WORK_PRAYERS } from '../services/notifications'
 import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, JUMUAH_REMINDER_CHOICES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
 import { store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
@@ -67,7 +67,7 @@ export function SettingsScreen() {
   }
   const reminderOn = p.reminderMinutesBefore > 0 && perm === 'granted'
   const nextWake = nextWakeUp(s.now())
-  const wakeValue = nextWake ? `Next ${s.formatted(nextWake.at)}` : p.wakeUp || p.sahurAlarm ? 'On' : 'Off'
+  const wakeValue = nextWake ? `Next ${s.formatted(nextWake.at)}` : anyAlarm(p) ? 'On' : 'Off'
   const friday = prayerName('dhuhr', s.naming, true)
 
   const setJumuah = async (minutes: number) => {
@@ -107,7 +107,7 @@ export function SettingsScreen() {
 
       <Group title="Wake-up" foot="Also on the Prayer screen. Tap the alarm clock at the top.">
         <button class="item" onClick={() => openSheet({ kind: 'wakeup' })}>
-          <AlarmClock size={20} /><span class="label">Wake up for {s.name('fajr')}</span>
+          <AlarmClock size={20} /><span class="label">Prayer alarms</span>
           <span class="value">{wakeValue}</span><ChevronRight size={16} class="secondary" />
         </button>
       </Group>

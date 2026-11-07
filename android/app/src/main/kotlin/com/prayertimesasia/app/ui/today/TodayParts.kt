@@ -326,16 +326,25 @@ fun DayNavigator(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int)
     }
 }
 
+/** Shown when a trip starts. Closing it tucks it away as the luggage button with the others. */
 @Composable
 fun MusafirChip(state: AppState) {
     Row(
-        Modifier.fillMaxWidth().clip(CircleShape).background(Palette.primary.copy(alpha = 0.12f)).clickable { state.showJourney = true }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Modifier.fillMaxWidth().clip(CircleShape).background(Palette.primary.copy(alpha = 0.12f)),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(AppIcons.journey, null, Modifier.size(18.dp), tint = Palette.primary)
-        Text("Musafir · you may shorten & combine", style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f), maxLines = 1)
-        Icon(Icons.Filled.ChevronRight, null, Modifier.size(16.dp), tint = Palette.primary)
+        Row(
+            Modifier.weight(1f).clickable { state.showJourney = true }.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(AppIcons.journey, null, Modifier.size(18.dp), tint = Palette.primary)
+            Text("Musafir. You may shorten and join", style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f), maxLines = 1)
+            Icon(Icons.Filled.ChevronRight, null, Modifier.size(16.dp), tint = Palette.primary)
+        }
+        Icon(Icons.Filled.Close, "Hide, keep the luggage button at the top",
+            Modifier.padding(end = 8.dp).size(30.dp).clip(CircleShape).background(Palette.primary.copy(alpha = 0.1f))
+                .clickable { state.update { it.copy(musafirChipDismissed = true) } }.padding(7.dp),
+            tint = Palette.primary)
     }
 }
 

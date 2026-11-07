@@ -190,7 +190,7 @@ class AppState(
                 val firstEver = p.lastCountryCode == null
                 val stop = TripStop(countryCode = code, countryName = place.countryName ?: code, placeName = place.name,
                     arrived = System.currentTimeMillis())
-                p = p.copy(lastCountryCode = code, arrivedAt = System.currentTimeMillis(),
+                p = p.copy(lastCountryCode = code, arrivedAt = System.currentTimeMillis(), musafirChipDismissed = false,
                     arrivalBannerDismissed = firstEver, trip = (listOf(stop) + p.trip).take(30))
             }
             p
@@ -276,6 +276,14 @@ class AppState(
         scope.launch {
             permissions?.notifications()
             update { it.copy(sahurAlarm = timing) }
+        }
+    }
+
+    /** An alarm for one of the other four prayers, as [setWakeUp]; null turns it off. */
+    fun setPrayerAlarm(prayer: com.prayertimesasia.core.Prayer, timing: com.prayertimesasia.core.PrayerAlarmTiming?) {
+        scope.launch {
+            if (timing != null) permissions?.notifications()
+            update { it.withAlarm(prayer, timing) }
         }
     }
 

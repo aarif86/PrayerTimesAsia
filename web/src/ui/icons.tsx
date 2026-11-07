@@ -42,14 +42,12 @@ export const TabMasjid = ({ size = 24, class: c, style }: P) => svg(size, c, sty
   <circle cx="12" cy="2.6" r="0.5" fill="currentColor" />,
 ])
 
-/** A rolling travel bag: any journey, by road or air, and never mistaken for Airplane Mode. */
-export const TabJourney = ({ size = 24, class: c, style }: P) => svg(size, c, style, [
-  <rect x="5.8" y="7" width="12.4" height="12.2" rx="2.2" />,
-  <path d="M9.6 7V3.4h4.8V7" />,
-  <path d="M9.6 10v6.2M14.4 10v6.2" />,
-  <circle cx="8.9" cy="21" r="1" fill="currentColor" stroke="none" />,
-  <circle cx="15.1" cy="21" r="1" fill="currentColor" stroke="none" />,
-])
+/** Google's own Material "luggage" icon (Apache 2.0), so it reads as travel and never as Airplane Mode. */
+export const TabJourney = ({ size = 24, class: c, style }: P) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" class={c} style={style} aria-hidden="true">
+    <path fill="currentColor" d="M17 6h-2V3c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v3H7c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2 0 .55.45 1 1 1s1-.45 1-1h6c0 .55.45 1 1 1s1-.45 1-1c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM9.5 18H8V9h1.5v9zm3.25 0h-1.5V9h1.5v9zm.75-12h-3V3.5h3V6zM16 18h-1.5V9H16v9z" />
+  </svg>
+)
 
 /** Filled gear for the Settings tab, like SF Symbols' gearshape.fill. */
 export const TabSettings = ({ size = 24, class: c, style }: P) => (

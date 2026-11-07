@@ -170,8 +170,10 @@ function StreakChip({ now }: { now: number }) {
   )
 }
 
-function JourneyButton({ now }: { now: number }) {
+/** The luggage button. On pages with the big Musafir line it only shows once that line is closed. */
+function JourneyButton({ now, withChip = false }: { now: number; withChip?: boolean }) {
   if (!store.prefs.musafirEnabled || store.musafirStatus(now)?.kind !== 'traveller') return null
+  if (withChip && !store.prefs.musafirChipDismissed) return null
   return (
     <button class="round-btn" style={{ background: 'color-mix(in srgb, var(--accent) 25%, transparent)' }}
       aria-label="Musafir: you may shorten and combine prayers" onClick={() => openSheet({ kind: 'journey' })}>
@@ -184,6 +186,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
   if (order === 'column') {
     return (
       <div class="controls-col">
+        <JourneyButton now={c.now} withChip />
         <StyleButton c={c} />
         <AppearanceButton c={c} />
         <WakeChip now={c.now} open={() => openSheet({ kind: 'wakeup' })} />
@@ -544,6 +547,20 @@ function SimplePage({ c }: { c: Ctx }) {
           )
         })}
       </div>
+      <button class="simple-more" onClick={() => c.setShowMore(!c.showMore)} aria-expanded={c.showMore}>
+        {c.showMore ? 'Show less' : 'Show more times'}
+        {c.showMore ? <ChevronUp size={22} strokeWidth={2.6} /> : <ChevronDown size={22} strokeWidth={2.6} />}
+      </button>
+      {c.showMore && (
+        <div class="simple-list">
+          {store.blessed(day).map(([b, t]) => (
+            <div class="simple-row blessed" style={{ opacity: t <= now ? 0.6 : 1 }}>
+              <span class="simple-name">{BLESSED_NAME[b]}<span class="simple-note">{BLESSED_NOTE[b]}</span></span>
+              <span class="simple-time mono">{store.formatted(t)}</span>
+            </div>
+          ))}
+        </div>
+      )}
       <div class="simple-date">{fmtDate(day.times.dhuhr, { weekday: 'long', day: 'numeric', month: 'long' })} · {hijri(day.times.dhuhr)}</div>
     </div>
   )
@@ -565,12 +582,17 @@ function DayNavigator({ c }: { c: Ctx }) {
   )
 }
 
+/** Shown when a trip starts. Closing it tucks it away as the luggage button with the others. */
 function MusafirChip({ now }: { now: number }) {
-  if (!store.prefs.musafirEnabled || store.musafirStatus(now)?.kind !== 'traveller') return null
+  if (!store.prefs.musafirEnabled || store.prefs.musafirChipDismissed || store.musafirStatus(now)?.kind !== 'traveller') return null
   return (
-    <button class="musafir-chip" onClick={() => openSheet({ kind: 'journey' })}>
-      <TabJourney size={17} /><span style={{ flex: 1, textAlign: 'left' }}>Musafir · you may shorten &amp; combine</span><ChevronRight size={14} strokeWidth={3} />
-    </button>
+    <div class="musafir-chip">
+      <button class="musafir-chip-open" onClick={() => openSheet({ kind: 'journey' })}>
+        <TabJourney size={17} /><span style={{ flex: 1, textAlign: 'left' }}>Musafir. You may shorten and join</span><ChevronRight size={14} strokeWidth={3} />
+      </button>
+      <button class="musafir-chip-close" aria-label="Hide, keep the luggage button at the top"
+        onClick={() => store.update((p) => { p.musafirChipDismissed = true })}><X size={14} strokeWidth={3} /></button>
+    </div>
   )
 }
 
@@ -728,6 +750,7 @@ function SunPathPage({ c }: { c: Ctx }) {
           </div>
         )}
         <span class="spacer" />
+        <JourneyButton now={now} withChip />
         {store.prefs.trackerEnabled && <StreakChip now={now} />}
         <AppearanceButton c={c} />
         <StyleButton c={c} />

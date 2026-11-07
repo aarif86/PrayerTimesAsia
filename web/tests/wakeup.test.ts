@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { compute } from '../src/core/engine'
 import { gregorianFromHijri } from '../src/core/hijri'
 import { methodWithId } from '../src/core/methods'
-import { sahurLabel, sahurRings, sahurTime, wakeUpLabel, wakeUpTime } from '../src/core/wakeup'
+import { prayerAlarmChoices, prayerAlarmLabel, prayerAlarmTime, sahurLabel, sahurRings, sahurTime, wakeUpLabel, wakeUpTime } from '../src/core/wakeup'
 import { applyMoved, decodeMove, encodeMove, movedFrom } from '../src/services/move'
 import { decodePreferences, DEFAULT_PREFS } from '../src/services/prefs'
 
@@ -56,5 +56,34 @@ describe('Wake up for Subuh', () => {
     expect(back.sahurDays).toEqual(['monThu', 'whiteDays'])
     // The default days stay out of the code.
     expect(movedFrom({ ...structuredClone(DEFAULT_PREFS), sahurAlarm: 'fajrMinus60' }).sahurDays).toBeUndefined()
+  })
+
+  it('alarms for the other prayers count from the start, or back from the end', () => {
+    const d = day(2026, 10, 21)
+    const t = d.times
+    expect(prayerAlarmTime('atStart', t.asr, t.maghrib)).toBe(t.asr)
+    expect(prayerAlarmTime('plus10', t.asr, t.maghrib)).toBe(t.asr + 10 * 60_000)
+    expect(prayerAlarmTime('endMinus30', t.asr, t.maghrib)).toBe(t.maghrib - 30 * 60_000)
+    // A very short window never rings before the prayer begins.
+    expect(prayerAlarmTime('endMinus30', t.maghrib, t.maghrib + 20 * 60_000)).toBe(t.maghrib)
+    expect(prayerAlarmLabel('plus5')).toBe('5 min after')
+    expect(prayerAlarmLabel('endMinus30')).toBe('30 min before it ends')
+    expect(prayerAlarmLabel('atStart')).toBe('On time')
+    // Isyak is open until Subuh, so it has no "before it ends".
+    expect(prayerAlarmChoices('isha')).not.toContain('endMinus30')
+    expect(prayerAlarmChoices('asr')).toContain('endMinus30')
+  })
+
+  it('keeps the other prayer alarms and the sound, and moves them too', async () => {
+    const p = decodePreferences({ asrAlarm: 'plus10', ishaAlarm: 'endMinus30', maghribAlarm: 'nope', alarmSound: 'bells' })
+    expect(p.asrAlarm).toBe('plus10')
+    expect(p.ishaAlarm).toBeNull()
+    expect(p.maghribAlarm).toBeNull()
+    expect(p.alarmSound).toBe('bells')
+    expect(decodePreferences({ alarmSound: 'trumpet' }).alarmSound).toBe('classic')
+    const back = applyMoved(structuredClone(DEFAULT_PREFS), (await decodeMove(await encodeMove(movedFrom(p))))!)
+    expect(back.asrAlarm).toBe('plus10')
+    expect(back.alarmSound).toBe('bells')
+    expect(movedFrom(DEFAULT_PREFS).alarmSound).toBeUndefined()
   })
 })
