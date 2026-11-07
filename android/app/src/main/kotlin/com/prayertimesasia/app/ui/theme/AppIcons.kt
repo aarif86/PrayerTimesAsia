@@ -1,5 +1,7 @@
 package com.prayertimesasia.app.ui.theme
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Luggage
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
@@ -8,7 +10,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.dp
 
-/** The iOS app's own line icons (design/icons in the iOS repo): prayer mat, compass, telescope, masjid, travel bag. */
+/** The iOS app's own line icons (design/icons in the iOS repo): prayer mat, compass, telescope, masjid, and Google's luggage icon for Journey. */
 object AppIcons {
     private fun rect(x: Float, y: Float, w: Float, h: Float, r: Float): String =
         "M${x + r},$y H${x + w - r} A$r,$r 0 0 1 ${x + w},${y + r} V${y + h - r} A$r,$r 0 0 1 ${x + w - r},${y + h} " +
@@ -72,14 +74,6 @@ object AppIcons {
             .build()
     }
 
-    /** A rolling travel bag: any journey, by road or air, and never mistaken for Airplane Mode. */
-    val journey: ImageVector by lazy {
-        B("journey")
-            .stroke(rect(5.8f, 7f, 12.4f, 12.2f, 2.2f))
-            .stroke("M9.6 7V3.4h4.8V7")
-            .stroke("M9.6 10v6.2M14.4 10v6.2")
-            .fill(circle(8.9f, 21f, 1f))
-            .fill(circle(15.1f, 21f, 1f))
-            .build()
-    }
+    /** Google's own Material "luggage" icon, so it reads as travel and never as Airplane Mode. */
+    val journey: ImageVector get() = Icons.Filled.Luggage
 }

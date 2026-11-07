@@ -165,7 +165,7 @@ struct TodayView: View {
                     Spacer(minLength: 0)
                     if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                         Button { model.showJourney = true } label: {
-                            Image(systemName: "suitcase.rolling.fill").font(.subheadline.weight(.semibold))
+                            Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
                                 .frame(width: 34, height: 34)
                                 .background(Theme.accent.opacity(0.25), in: Circle())
                         }
@@ -285,7 +285,7 @@ struct TodayView: View {
             Spacer(minLength: 0)
             if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                 Button { model.showJourney = true } label: {
-                    Image(systemName: "suitcase.rolling.fill").font(.subheadline.weight(.semibold))
+                    Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
                         .frame(width: 34, height: 34)
                         .background(Theme.accent.opacity(0.25), in: Circle())
                 }
@@ -437,7 +437,7 @@ struct TodayView: View {
                     Spacer(minLength: 0)
                     if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                         Button { model.showJourney = true } label: {
-                            Image(systemName: "suitcase.rolling.fill").font(.subheadline.weight(.semibold))
+                            Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
                                 .frame(width: 34, height: 34).background(Color.white.opacity(0.12), in: Circle())
                         }
                         .buttonStyle(.plain)
@@ -732,7 +732,7 @@ struct TodayView: View {
     private func sunMusafirChip(_ status: Musafir.Status) -> some View {
         Button { model.showJourney = true } label: {
             HStack {
-                Image(systemName: "suitcase.rolling.fill")
+                Image("Tab-journey").resizable().scaledToFit().frame(width: 17, height: 17)
                 Text("Musafir · you may shorten & combine").lineLimit(1)
                 Spacer(minLength: 4)
                 Image(systemName: "chevron.right").font(.caption.weight(.bold))

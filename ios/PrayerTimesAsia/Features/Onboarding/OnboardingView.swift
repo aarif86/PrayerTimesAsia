@@ -22,7 +22,7 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     feature("globe.asia.australia.fill", "Every country's own method",
                             "MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia - and sensible defaults everywhere else.")
-                    feature("suitcase.rolling.fill", "Built for travel",
+                    feature("Tab-journey", "Built for travel",
                             "Switches when you land, works offline, and tells you when you can shorten and combine prayers.")
                     feature("location.north.line.fill", "Qibla in one glance",
                             "A calm compass that lights up when you're facing the Kaaba.")
@@ -66,7 +66,12 @@ struct OnboardingView: View {
 
     private func feature(_ icon: String, _ title: String, _ detail: String) -> some View {
         HStack(alignment: .top, spacing: 14) {
-            Image(systemName: icon).font(.title3).frame(width: 30)
+            Group {
+                // "Tab-journey" is an asset (Google's luggage icon), the rest are SF Symbols.
+                if icon == "Tab-journey" { Image(icon).resizable().scaledToFit().frame(width: 22, height: 22) }
+                else { Image(systemName: icon).font(.title3) }
+            }
+            .frame(width: 30)
             VStack(alignment: .leading, spacing: 3) {
                 Text(title).font(.headline)
                 Text(detail).font(.subheadline).opacity(0.85).fixedSize(horizontal: false, vertical: true)
