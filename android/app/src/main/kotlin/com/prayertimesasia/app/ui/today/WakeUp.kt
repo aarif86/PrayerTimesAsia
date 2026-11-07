@@ -86,11 +86,17 @@ fun WakeUpSheetContent(state: AppState) {
             }
         }
 
-        Section("$fajr alarm", "Rings every morning and moves with $fajr wherever you are.") {
+        @Composable
+        fun choices(part: WakeUpTiming.Part) = WakeUpTiming.entries.filter { it.part == part }.forEach { t ->
+            ChoiceRow(t.label(r.naming), timeSoon(state) { t.date(it) }, p.wakeUp == t) { state.setWakeUp(t) }
+        }
+        Section("$fajr alarm") {
             ChoiceRow("Off", null, p.wakeUp == null) { state.update { it.copy(wakeUp = null) } }
-            WakeUpTiming.entries.forEach { t ->
-                ChoiceRow(t.label(r.naming), timeSoon(state) { t.date(it) }, p.wakeUp == t) { state.setWakeUp(t) }
-            }
+            choices(WakeUpTiming.Part.BEFORE_FAJR)
+        }
+        Section("From $fajr") { choices(WakeUpTiming.Part.FROM_FAJR) }
+        Section("Before ${Prayer.SUNRISE.name(r.naming)}", "Rings every morning and moves with $fajr wherever you are.") {
+            choices(WakeUpTiming.Part.BEFORE_SUNRISE)
         }
 
         Section("Sahur alarm", "An earlier alarm to eat sahur before a fast, or for a longer night prayer.") {

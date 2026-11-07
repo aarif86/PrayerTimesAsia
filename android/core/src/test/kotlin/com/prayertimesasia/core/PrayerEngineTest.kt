@@ -181,6 +181,11 @@ class PrayerEngineTest {
         assertEquals("15 min before Syuruk", WakeUpTiming.SUNRISE_MINUS_15.label(NamingStyle.MALAY))
         assertEquals(day.time(Prayer.FAJR).minusSeconds(1800), WakeUpTiming.FAJR_MINUS_30.date(day))
         assertEquals("30 min before Subuh for tahajjud", WakeUpTiming.FAJR_MINUS_30.label(NamingStyle.MALAY))
+        assertEquals(day.time(Prayer.FAJR).plusSeconds(300), WakeUpTiming.FAJR_PLUS_5.date(day))
+        assertEquals("5 min after Subuh begins", WakeUpTiming.FAJR_PLUS_5.label(NamingStyle.MALAY))
+        assertEquals("1 hour before Syuruk", WakeUpTiming.SUNRISE_MINUS_60.label(NamingStyle.MALAY))
+        assertEquals(day.time(Prayer.SUNRISE).minusSeconds(2700), WakeUpTiming.SUNRISE_MINUS_45.date(day))
+        assertTrue(WakeUpTiming.SUNRISE_MINUS_60.date(day) >= day.time(Prayer.FAJR))
         assertEquals(day.time(Prayer.FAJR).minusSeconds(5400), SahurTiming.FAJR_MINUS_90.date(day))
         assertEquals("2 hours before Subuh", SahurTiming.FAJR_MINUS_120.label(NamingStyle.MALAY))
     }

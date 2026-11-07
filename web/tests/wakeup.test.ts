@@ -18,6 +18,12 @@ describe('Wake up for Subuh', () => {
     expect(wakeUpTime('sunriseMinus15', d)).toBe(d.times.sunrise - 15 * 60_000)
     expect(sahurTime('fajrMinus90', d)).toBe(d.times.fajr - 90 * 60_000)
     expect(wakeUpLabel('fajrMinus30', 'malay')).toBe('30 min before Subuh for tahajjud')
+    expect(wakeUpTime('fajrPlus5', d)).toBe(d.times.fajr + 5 * 60_000)
+    expect(wakeUpLabel('fajrPlus5', 'malay')).toBe('5 min after Subuh begins')
+    expect(wakeUpLabel('sunriseMinus60', 'malay')).toBe('1 hour before Syuruk')
+    expect(wakeUpTime('sunriseMinus45', d)).toBe(d.times.sunrise - 45 * 60_000)
+    // Never before Subuh, even where Subuh to Syuruk is short.
+    expect(wakeUpTime('sunriseMinus60', { ...d, times: { ...d.times, sunrise: d.times.fajr + 40 * 60_000 } })).toBe(d.times.fajr)
     expect(sahurLabel('fajrMinus120', 'malay')).toBe('2 hours before Subuh')
   })
 
