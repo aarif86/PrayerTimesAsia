@@ -51,7 +51,7 @@ private val peach = rgb(0.97, 0.74, 0.56)
 @Composable
 fun TimetableCardPreview(m: WidgetModel, size: Dp = 340.dp) {
     val shape = RoundedCornerShape(24.dp)
-    val sky = SkyColors.at(m.now, m.day)
+    val sky = SkyColors.at(m.now, m.day).readable
     Box(
         Modifier.size(size).clip(shape).background(
             if (m.style == TodayStyle.BANDS) Brush.verticalGradient(listOf(BandsPalette.header, BandsPalette.header))

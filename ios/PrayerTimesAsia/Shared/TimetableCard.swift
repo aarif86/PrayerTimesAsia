@@ -208,10 +208,10 @@ struct TimetableCard: View {
 
     /// The sky behind the card, for the widget container and the preview.
     static func sky(_ snapshot: WidgetSnapshot?, at date: Date) -> some View {
-        let colors = snapshot?.day(containing: date).map { SkyColors.at(date, day: $0) } ?? .night
+        let colors = (snapshot?.day(containing: date).map { SkyColors.at(date, day: $0) } ?? .night).readable
         return ZStack {
             LinearGradient(colors: [colors.top.color, colors.bottom.color], startPoint: .top, endPoint: .bottom)
-            RadialGradient(colors: [colors.glow.color.opacity(0.3), .clear],
+            RadialGradient(colors: [colors.glow.color.opacity(0.2), .clear],
                            center: UnitPoint(x: 0.5, y: 1.1), startRadius: 4, endRadius: 260)
         }
     }

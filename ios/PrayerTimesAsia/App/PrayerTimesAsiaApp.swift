@@ -10,6 +10,9 @@ struct PrayerTimesAsiaApp: App {
             RootView()
                 .environment(model)
                 .preferredColorScheme(model.colorScheme)
+                // Grey notes a step stronger than the system's, so footnotes, place
+                // names and distances stay easy to read on the sky in every look.
+                .foregroundStyle(Color.primary, Color.primary.opacity(0.82), Color.primary.opacity(0.62))
                 // "Bigger text": at least the phone's extra large size, more if the phone asks for more.
                 .modifier(LargeTextModifier(on: model.prefs.largeText))
                 .environment(\.softNight, model.prefs.appearance == .system)

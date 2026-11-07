@@ -19,6 +19,26 @@ struct RGB: Equatable {
     }
 
     var color: Color { Color(red: r, green: g, blue: b) }
+
+    /// How bright the colour looks to the eye (WCAG relative luminance, 0...1).
+    var luminance: Double {
+        0.2126 * Self.linear(r) + 0.7152 * Self.linear(g) + 0.0722 * Self.linear(b)
+    }
+
+    /// The same colour, made deeper until it is no brighter than `limit`.
+    /// Keeps the hue: a peach sunrise stays peach, only richer.
+    func dimmed(to limit: Double) -> RGB {
+        let l = luminance
+        guard l > limit, l > 0 else { return self }
+        let k = limit / l
+        return RGB(r: Self.gamma(Self.linear(r) * k), g: Self.gamma(Self.linear(g) * k), b: Self.gamma(Self.linear(b) * k))
+    }
+
+    private static func linear(_ v: Double) -> Double { v <= 0.04045 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4) }
+    private static func gamma(_ v: Double) -> Double {
+        let v = min(1, max(0, v))
+        return v <= 0.0031308 ? v * 12.92 : 1.055 * pow(v, 1 / 2.4) - 0.055
+    }
 }
 
 struct SkyColors: Equatable {
@@ -37,6 +57,17 @@ struct SkyColors: Equatable {
     /// twilight - dim and restful, lighter than full Dark.
     var softNight: SkyColors {
         SkyColors(top: top.mix(RGB(0x5C6190), 0.42), bottom: bottom.mix(RGB(0x8483B0), 0.4), glow: glow)
+    }
+
+    /// Brightest the sky may be under white text. At 0.07 white text reads at
+    /// about 9 to 1 and grey notes at 4.5 to 1 or better, all day long.
+    static let readableLimit = 0.07
+
+    /// Dark looks and widgets put white text on the sky. By day the real sky is
+    /// too bright for that, so the bright parts are deepened (same colours, richer).
+    /// Night skies are already darker than the limit and stay exactly as they are.
+    var readable: SkyColors {
+        SkyColors(top: top.dimmed(to: Self.readableLimit), bottom: bottom.dimmed(to: Self.readableLimit), glow: glow)
     }
 
     static func mix(_ a: SkyColors, _ b: SkyColors, _ t: Double) -> SkyColors {
@@ -125,7 +156,7 @@ struct LivingSkyBackground: View {
     @Environment(\.softNight) private var softNight
 
     var body: some View {
-        let colors = scheme == .light ? self.colors.daylight : (softNight ? self.colors.softNight : self.colors)
+        let colors = scheme == .light ? self.colors.daylight : (softNight ? self.colors.softNight : self.colors).readable
         ZStack {
             LinearGradient(colors: [colors.top.color, colors.bottom.color], startPoint: .top, endPoint: .bottom)
             if scheme == .dark {
@@ -134,7 +165,8 @@ struct LivingSkyBackground: View {
                 BrightSkyLayer(isDay: self.colors.darkness < 0.5, glow: colors.glow.color)
             }
             // Soft horizon glow - the one atmospheric touch; no particles, no noise.
-            RadialGradient(colors: [colors.glow.color.opacity(0.35), .clear],
+            // Softer in the dark looks so it does not wash out text near the bottom.
+            RadialGradient(colors: [colors.glow.color.opacity(scheme == .light ? 0.35 : 0.2), .clear],
                            center: UnitPoint(x: 0.5, y: 1.05), startRadius: 10, endRadius: 420)
         }
         .ignoresSafeArea()

@@ -25,8 +25,8 @@
 
 :root, :root[data-theme="dark"] {
   --fg: #fff;
-  --fg2: rgba(235, 235, 245, 0.62);
-  --fg3: rgba(235, 235, 245, 0.35);
+  --fg2: rgba(235, 235, 245, 0.82);
+  --fg3: rgba(235, 235, 245, 0.55);
   --fill: rgba(255, 255, 255, 0.10);
   --fill2: rgba(255, 255, 255, 0.06);
   --stroke: rgba(255, 255, 255, 0.12);
@@ -43,8 +43,8 @@
 
 :root[data-theme="light"] {
   --fg: #111114;
-  --fg2: rgba(60, 60, 67, 0.66);
-  --fg3: rgba(60, 60, 67, 0.36);
+  --fg2: rgba(40, 40, 46, 0.78);
+  --fg3: rgba(60, 60, 67, 0.55);
   --fill: rgba(0, 0, 0, 0.07);
   --fill2: rgba(0, 0, 0, 0.04);
   --stroke: rgba(0, 0, 0, 0.08);
@@ -60,7 +60,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme]) { --fg: #111114; --fg2: rgba(60, 60, 67, 0.66); --fill: rgba(0, 0, 0, 0.07); --glass: rgba(255, 255, 255, 0.46); --accent: rgb(232, 140, 87); color-scheme: light; }
+  :root:not([data-theme]) { --fg: #111114; --fg2: rgba(40, 40, 46, 0.78); --fill: rgba(0, 0, 0, 0.07); --glass: rgba(255, 255, 255, 0.46); --accent: rgb(232, 140, 87); color-scheme: light; }
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }

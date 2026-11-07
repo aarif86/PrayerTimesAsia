@@ -78,12 +78,12 @@ struct NextPrayerView: View {
     var body: some View {
         Group {
             if let s = entry.snapshot, let next = s.next(after: entry.date) {
-                let sky = s.day(containing: entry.date).map { SkyColors.at(entry.date, day: $0) } ?? .night
+                let sky = (s.day(containing: entry.date).map { SkyColors.at(entry.date, day: $0) } ?? .night).readable
                 content(s, next: next)
                     .containerBackground(for: .widget) {
                         ZStack {
                             LinearGradient(colors: [sky.top.color, sky.bottom.color], startPoint: .top, endPoint: .bottom)
-                            RadialGradient(colors: [sky.glow.color.opacity(0.35), .clear],
+                            RadialGradient(colors: [sky.glow.color.opacity(0.2), .clear],
                                            center: UnitPoint(x: 0.5, y: 1.1), startRadius: 4, endRadius: 200)
                         }
                     }

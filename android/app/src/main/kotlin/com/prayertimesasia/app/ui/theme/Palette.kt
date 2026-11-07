@@ -43,7 +43,8 @@ object Palette {
 
     /** SwiftUI's `.primary`: white on dark skies, near-black on light ones. */
     val primary: Color @Composable @ReadOnlyComposable get() = if (LocalSkyScheme.current.dark) Color.White else Color(0xFF111114)
-    val secondary: Color @Composable @ReadOnlyComposable get() = primary.copy(alpha = 0.6f)
+    /** Grey notes: a step stronger than iOS's system grey so they read on the sky in every look. */
+    val secondary: Color @Composable @ReadOnlyComposable get() = primary.copy(alpha = if (LocalSkyScheme.current.dark) 0.82f else 0.72f)
 
     /** Frosted card fill on the sky (stands in for iOS's ultra-thin material). */
     val material: Color @Composable @ReadOnlyComposable
