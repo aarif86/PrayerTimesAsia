@@ -51,9 +51,10 @@ export function App() {
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = scheme
+    document.documentElement.toggleAttribute('data-large-text', s.prefs.largeText)
     const meta = document.querySelector('meta[name="theme-color"]')
     meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
-  }, [scheme, bands])
+  }, [scheme, bands, s.prefs.largeText])
 
   useEffect(() => {
     const moved = takeMoveFromLink()

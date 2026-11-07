@@ -3,6 +3,7 @@ import { PRAYERS, type Prayer } from '../core/prayer'
 import { flag } from '../core/regions'
 import { zoned } from '../core/tz'
 import { sahurRings, sahurTime, wakeUpTime } from '../core/wakeup'
+import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
 import { playAzan } from './azan'
 import { store } from './store'
 
@@ -36,7 +37,27 @@ export async function requestPermission(): Promise<boolean> {
   try { return (await Notification.requestPermission()) === 'granted' } catch { return false }
 }
 
-interface Alert { id: string; title: string; body: string; at: number; prayer?: Prayer }
+interface Alert {
+  id: string; title: string; body: string; at: number; prayer?: Prayer
+  /** Buzz only: quiet hours or the "buzz only" switch. */
+  silent?: boolean
+  /** A nudge that is dropped if the prayer is ticked before it fires. */
+  unlessPrayed?: { prayer: Prayer; at: number }
+}
+
+/** Minutes past local midnight. */
+function minuteOfDay(ms: number, tz: string): number {
+  const z = zoned(ms, tz)
+  return z.hour * 60 + z.minute
+}
+
+/** Quiet hours and "buzz only": Subuh always keeps its sound, it is a wake up. */
+export function isSilent(at: number, prayer: Prayer | undefined, tz: string): boolean {
+  const prefs = store.prefs
+  if (prefs.buzzOnly) return true
+  if (prayer === 'fajr') return false
+  return prefs.quietHours && inQuietHours(minuteOfDay(at, tz), prefs.quietFrom, prefs.quietTo)
+}
 
 /** The alerts for the next two days, as the iOS scheduler builds them. */
 export function upcomingAlerts(now: number): Alert[] {
@@ -46,31 +67,61 @@ export function upcomingAlerts(now: number): Alert[] {
   const onTime = prefs.notificationsEnabled
   if (!place) return []
   const wake = wakeUps(now, 2).map((w) => ({ id: w.id, title: w.title, body: w.body, at: w.at }))
-  if (!onTime && early <= 0) return wake
+  const nudges = prefs.trackerEnabled && prefs.windowNudge && !store.trackerPaused
+  const jumuah = prefs.jumuahReminderMinutes
+  if (!onTime && early <= 0 && !nudges && jumuah <= 0) return wake
+  const tz = place.timeZoneID
   const here = isInAsia(place) ? `${place.name} ${flag(placeProfile(place).code)}` : place.name
   const out: Alert[] = []
-  for (let offset = 0; offset < 2; offset++) {
+  for (let offset = -1; offset < 2; offset++) {
     const day = store.day(now + offset * 86_400_000)
+    const nextDay = store.day(now + (offset + 1) * 86_400_000)
     if (!day) continue
+    if (nudges && nextDay) {
+      for (const w of windowsOf(day, nextDay)) {
+        if (!prefs.notifyPrayers.includes(w.prayer)) continue
+        if (w.prayer === 'isha') continue // open until Subuh: a nudge then would only disturb sleep
+        const at = nudgeAt(w)
+        const name = store.name(w.prayer, w.start)
+        const left = Math.round((w.end - at) / 60_000)
+        out.push({
+          id: `${day.year}-${day.month}-${day.day}-${w.prayer}-nudge`,
+          title: `${name} time ends in ${left} min`,
+          body: `${name} is open until ${store.formatted(w.end)}. Tick it in the app once you have prayed.`,
+          at, silent: isSilent(at, w.prayer, tz), unlessPrayed: { prayer: w.prayer, at: w.start },
+        })
+      }
+    }
+    if (offset < 0) continue
+    if (jumuah > 0 && store.isFriday(day.times.dhuhr)) {
+      const start = day.jamaah.dhuhr ?? day.times.dhuhr
+      const at = start - jumuah * 60_000
+      const where = day.jamaah.dhuhr && day.mosqueName ? ` at ${day.mosqueName}` : ''
+      out.push({
+        id: `${day.year}-${day.month}-${day.day}-jumuah`, title: `${store.name('dhuhr', day.times.dhuhr)} in ${jumuah} min`,
+        body: `Time to get ready and leave for ${store.name('dhuhr', day.times.dhuhr)}${where}, ${store.formatted(start)}.`, at, silent: isSilent(at, 'dhuhr', tz),
+      })
+    }
     for (const prayer of PRAYERS) {
       if (!prefs.notifyPrayers.includes(prayer)) continue
       const time = day.times[prayer]
       const name = store.name(prayer, time)
       const id = `${day.year}-${day.month}-${day.day}-${prayer}`
+      const silent = isSilent(time, prayer, tz)
       if (early > 0) {
         // The heads-up before the prayer, on its own switch: for when a meeting
         // or work would otherwise run past the time.
         out.push({
           id: `${id}-early`, title: prayer === 'sunrise' ? `${store.name('fajr')} ends in ${early} min` : `${name} in ${early} min`,
-          body: `${name} at ${store.formatted(time)} · ${here}`, at: time - early * 60_000,
+          body: `${name} at ${store.formatted(time)} · ${here}`, at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
         })
       }
       if (!onTime) continue
       if (prayer === 'sunrise') {
-        out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended. ${here}`, at: time })
+        out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended. ${here}`, at: time, silent })
         continue
       }
-      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}`, at: time, prayer })
+      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}`, at: time, prayer, silent })
     }
   }
   return [...out, ...wake].filter((a) => a.at > now).sort((a, b) => a.at - b.at)
@@ -130,15 +181,18 @@ export function scheduleAlerts(): void {
     const t = Date.now()
     if (t >= next.at && t - next.at < 60_000 && !fired.has(next.id)) {
       fired.add(next.id)
-      void show(next.title, next.body, next.id)
-      if (next.prayer && store.prefs.azanSound) playAzan(next.prayer === 'fajr')
+      const done = next.unlessPrayed && (store.isPrayed(next.unlessPrayed.prayer, next.unlessPrayed.at) || store.isExcused(next.unlessPrayed.at))
+      if (!done) {
+        void show(next.title, next.body, next.id, next.silent)
+        if (next.prayer && store.prefs.azanSound && !next.silent) playAzan(next.prayer === 'fajr')
+      }
     }
     scheduleAlerts()
   }, Math.max(0, wait))
 }
 
-export async function show(title: string, body: string, tag: string): Promise<void> {
-  const options: NotificationOptions = { body, tag, requireInteraction: tag.endsWith('-early') || tag.endsWith('-wake') || tag.endsWith('-sahur'), icon: `${import.meta.env.BASE_URL}icons/icon-192.png`, badge: `${import.meta.env.BASE_URL}icons/badge-96.png` }
+export async function show(title: string, body: string, tag: string, silent = false): Promise<void> {
+  const options: NotificationOptions = { body, tag, silent, requireInteraction: tag.endsWith('-early') || tag.endsWith('-wake') || tag.endsWith('-sahur'), icon: `${import.meta.env.BASE_URL}icons/icon-192.png`, badge: `${import.meta.env.BASE_URL}icons/badge-96.png` }
   try {
     const reg = await navigator.serviceWorker?.getRegistration()
     if (reg) { await reg.showNotification(title, options); return }
@@ -237,13 +291,16 @@ function save(text: string, name: string): void {
   setTimeout(() => URL.revokeObjectURL(a.href), 5000)
 }
 
-export function downloadICS(): void {
-  const text = buildICS()
+/** The two prayers that fall in office or school hours. */
+export const WORK_PRAYERS: Prayer[] = ['dhuhr', 'asr']
+
+export function downloadICS(prayers?: Prayer[]): void {
+  const text = buildICS(30, prayers)
   if (!text) return
   const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `prayer-times-${(store.activePlace?.name ?? 'here').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.ics`
+  a.download = `prayer-times-${prayers ? 'work-' : ''}${(store.activePlace?.name ?? 'here').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.ics`
   document.body.appendChild(a)
   a.click()
   a.remove()

@@ -216,6 +216,20 @@ struct Preferences: Codable, Equatable, Sendable {
     /// Anonymous usage counts (city and country, never coordinates). See UsageCounter.
     var shareUsage = true
 
+    /// Tracker users: one nudge before a prayer's time runs out, if it isn't ticked.
+    var windowNudge = true
+    /// Alerts only buzz between these minutes past midnight; Subuh keeps its sound.
+    var quietHours = false
+    var quietFrom = 23 * 60
+    var quietTo = 6 * 60
+    /// Every alert buzzes only, never a sound.
+    var buzzOnly = false
+    /// Bigger text everywhere, for older eyes.
+    var largeText = false
+    /// Fridays: a reminder this many minutes before Jumaat (0 = off).
+    var jumuahReminderMinutes = 0
+    static let jumuahReminderChoices = [0, 20, 30, 45, 60, 90]
+
     private static let key = "preferences.v1"
 
     init() {}
@@ -265,6 +279,16 @@ struct Preferences: Codable, Equatable, Sendable {
         alertsPromptDismissed = v(.alertsPromptDismissed, d.alertsPromptDismissed)
         myMasjid = v(.myMasjid, d.myMasjid)
         shareUsage = v(.shareUsage, d.shareUsage)
+        windowNudge = v(.windowNudge, d.windowNudge)
+        quietHours = v(.quietHours, d.quietHours)
+        quietFrom = v(.quietFrom, d.quietFrom)
+        quietTo = v(.quietTo, d.quietTo)
+        if !(0..<1440).contains(quietFrom) { quietFrom = d.quietFrom }
+        if !(0..<1440).contains(quietTo) { quietTo = d.quietTo }
+        buzzOnly = v(.buzzOnly, d.buzzOnly)
+        largeText = v(.largeText, d.largeText)
+        jumuahReminderMinutes = v(.jumuahReminderMinutes, d.jumuahReminderMinutes)
+        if !Self.jumuahReminderChoices.contains(jumuahReminderMinutes) { jumuahReminderMinutes = 0 }
     }
 
     static func load() -> Preferences {

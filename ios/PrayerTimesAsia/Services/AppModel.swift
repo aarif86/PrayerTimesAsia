@@ -326,6 +326,40 @@ final class AppModel {
         return f.string(from: date)
     }
 
+    /// The prayer open now and when its time runs out; nil between sunrise and Zohor.
+    func window(at now: Date) -> PrayerWindow? {
+        guard let today = day(containing: now),
+              let yesterday = day(containing: now.addingTimeInterval(-86_400)),
+              let tomorrow = day(containing: now.addingTimeInterval(86_400)) else { return nil }
+        return PrayerWindow.open(at: now, yesterday: yesterday, today: today, tomorrow: tomorrow)
+    }
+
+    /// A time of day given as minutes past midnight, "11:00 PM" or "23:00".
+    func clock(_ minutes: Int) -> String {
+        let h = (minutes / 60) % 24, m = String(format: "%02d", minutes % 60)
+        if prefs.use24Hour { return String(format: "%02d", h) + ":" + m }
+        return "\(h % 12 == 0 ? 12 : h % 12):\(m) \(h < 12 ? "AM" : "PM")"
+    }
+
+    /// Minutes past local midnight at the active place.
+    private func minuteOfDay(_ date: Date) -> Int {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        let c = cal.dateComponents([.hour, .minute], from: date)
+        return c.hour! * 60 + c.minute!
+    }
+
+    func inQuietHours(_ date: Date) -> Bool {
+        PrayerWindow.inQuietHours(minuteOfDay(date), from: prefs.quietFrom, to: prefs.quietTo)
+    }
+
+    /// Quiet hours and "Buzz only". Subuh always keeps its sound: it is a wake up.
+    func isSilent(_ date: Date, prayer: Prayer) -> Bool {
+        if prefs.buzzOnly { return true }
+        if prayer == .fajr { return false }
+        return prefs.quietHours && inQuietHours(date)
+    }
+
     /// "5:29" and "AM" separately, so the suffix can be set smaller on the same
     /// line and never wraps on its own. No suffix in 24-hour mode.
     func timeParts(_ date: Date) -> (time: String, suffix: String?) {
@@ -440,7 +474,11 @@ final class AppModel {
         a.prayedLog = [:]; b.prayedLog = [:]
         a.excusedDays = []; b.excusedDays = []
         a.trackerPausedSince = nil; b.trackerPausedSince = nil
-        guard a != b else { return }
+        guard a != b else {
+            // ...unless a nudge is waiting on that tick (or the pause) to be dropped.
+            if prefs.trackerEnabled && prefs.windowNudge { scheduleNotifications() }
+            return
+        }
         refreshOfficialTimetable()
         scheduleNotifications()
     }
@@ -553,38 +591,70 @@ final class AppModel {
         var alerts: [NotificationScheduler.Alert] = []
         let early = prefs.reminderMinutesBefore
         let onTime = prefs.notificationsEnabled
+        let nudges = prefs.trackerEnabled && prefs.windowNudge && !trackerPaused
+        let jumuah = prefs.jumuahReminderMinutes
         let here = place.isInAsia ? "\(place.name) \(place.profile.flag)" : place.name
-        // iOS keeps at most 64 pending; alerts plus early reminders double the count.
-        for offset in 0..<(onTime && early > 0 ? 6 : 12) {
+        // iOS keeps at most 64 pending, so fewer days when there are more alerts a day.
+        let perDay = (onTime ? 6 : 0) + (early > 0 ? 6 : 0) + (nudges ? 4 : 0) + (jumuah > 0 ? 1 : 0)
+        let days = max(2, min(12, 60 / max(perDay, 1)))
+        for offset in -1..<days {
             guard let pd = day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
+            if nudges, let next = day(containing: pd.time(.dhuhr).addingTimeInterval(86_400)) {
+                for w in PrayerWindow.windows(of: pd, next: next) where prefs.notifyPrayers.contains(w.prayer) {
+                    // Already ticked or excused: no nudge (ticking reschedules).
+                    if isPrayed(w.prayer, on: w.start) || isExcused(w.start) { continue }
+                    // Open until Subuh: a nudge then would only disturb sleep.
+                    if w.prayer == .isha { continue }
+                    let at = w.nudgeAt
+                    let name = w.prayer.name(naming, isFriday: isFriday(w.start))
+                    let left = Int((w.end.timeIntervalSince(at) / 60).rounded())
+                    alerts.append(.init(
+                        id: "\(pd.year)-\(pd.month)-\(pd.day)-\(w.prayer.rawValue)-nudge",
+                        title: "\(name) time ends in \(left) min",
+                        body: "\(name) is open until \(formatted(w.end)). Tick it in the app once you have prayed.",
+                        fireDate: at, silent: isSilent(at, prayer: w.prayer)))
+                }
+            }
+            guard offset >= 0 else { continue }
+            if jumuah > 0 && isFriday(pd.time(.dhuhr)) {
+                let start = pd.jamaah[.dhuhr] ?? pd.time(.dhuhr)
+                let at = start.addingTimeInterval(Double(-jumuah) * 60)
+                let name = Prayer.dhuhr.name(naming, isFriday: true)
+                let where_ = pd.jamaah[.dhuhr] != nil ? pd.mosqueName.map { " at \($0)" } ?? "" : ""
+                alerts.append(.init(id: "\(pd.year)-\(pd.month)-\(pd.day)-jumuah", title: "\(name) in \(jumuah) min",
+                                    body: "Time to get ready and leave for \(name)\(where_), \(formatted(start)).",
+                                    fireDate: at, silent: isSilent(at, prayer: .dhuhr)))
+            }
             for prayer in Prayer.allCases where prefs.notifyPrayers.contains(prayer) {
                 let time = pd.time(prayer)
                 let name = prayer.name(naming, isFriday: isFriday(time))
                 let id = "\(pd.year)-\(pd.month)-\(pd.day)-\(prayer.rawValue)"
+                let silent = isSilent(time, prayer: prayer)
                 if early > 0 {
                     // The heads-up before the prayer, on its own switch: for when a
                     // meeting or work would otherwise run past the time.
                     let title = prayer == .sunrise ? "\(Prayer.fajr.name(naming)) ends in \(early) min" : "\(name) in \(early) min"
+                    let at = time.addingTimeInterval(Double(-early) * 60)
                     alerts.append(.init(id: id + "-early", title: title,
                                         body: "\(name) at \(formatted(time)) · \(here)",
-                                        fireDate: time.addingTimeInterval(Double(-early) * 60)))
+                                        fireDate: at, silent: isSilent(at, prayer: prayer)))
                 }
                 guard onTime else { continue }
                 if prayer == .sunrise {
                     alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
-                                        body: "\(Prayer.fajr.name(naming)) has ended. \(here)", fireDate: time))
+                                        body: "\(Prayer.fajr.name(naming)) has ended. \(here)", fireDate: time, silent: silent))
                     continue
                 }
                 alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
                                     body: "It's time for \(name) in \(here)", fireDate: time,
-                                    sound: prefs.azanSound ? (prayer == .fajr ? .azanSubuh : .azan) : .standard))
+                                    sound: prefs.azanSound ? (prayer == .fajr ? .azanSubuh : .azan) : .standard, silent: silent))
             }
         }
         // Subuh wake-up: a real alarm (AlarmKit, iOS 26+) where possible,
         // otherwise a notification.
         let wakeUps = wakeUpPlan(from: .now, days: 7).map { ($0.date, $0.title) }
         let notificationAlerts = alerts
-        let notificationsOn = onTime || early > 0
+        let notificationsOn = onTime || early > 0 || nudges || jumuah > 0
         // Demo screenshots never ask for alarm permission.
         let isDemo = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") }
         Task {

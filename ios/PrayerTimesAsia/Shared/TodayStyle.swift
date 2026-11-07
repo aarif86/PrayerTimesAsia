@@ -14,6 +14,8 @@ enum TodayStyle: String, Codable, CaseIterable, Identifiable, Sendable {
     case sunPath
     /// Each prayer a full-width band of colour, like the classic Singapore timetable.
     case bands
+    /// Big and Simple: the prayer now, the time left, and five big rows. For older eyes.
+    case simple
     var id: String { rawValue }
     var label: String {
         switch self {
@@ -22,6 +24,7 @@ enum TodayStyle: String, Codable, CaseIterable, Identifiable, Sendable {
         case .dial: "Day Dial"
         case .sunPath: "Sun Path"
         case .bands: "Colour Bands"
+        case .simple: "Big and Simple"
         }
     }
 }

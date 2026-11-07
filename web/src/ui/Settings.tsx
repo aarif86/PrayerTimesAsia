@@ -1,13 +1,13 @@
 import { azanAvailable } from '../services/azan'
 import { useEffect, useState } from 'preact/hooks'
-import { AlarmClock, ArrowDownToLine, ArrowRightLeft, BellRing, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
+import { AlarmClock, ArrowDownToLine, ArrowRightLeft, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
-import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, type NamingStyle, type Prayer } from '../core/prayer'
+import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, prayerName, type NamingStyle, type Prayer } from '../core/prayer'
 import { flag, profileMethod } from '../core/regions'
-import { alertSupport, downloadICS, nextWakeUp, permission, requestPermission, testAlert } from '../services/notifications'
-import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
+import { alertSupport, downloadICS, nextWakeUp, permission, requestPermission, testAlert, WORK_PRAYERS } from '../services/notifications'
+import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, JUMUAH_REMINDER_CHOICES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
 import { store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
 import { MakersCard, OFFERS } from './Makers'
@@ -15,6 +15,11 @@ import { TabJourney } from './icons'
 import { canInstall, install, isStandalone, phoneAppOffer } from './pwa'
 
 export const VERSION = '1.0.0 (web)'
+
+/** Every half hour of the day, in minutes past midnight. */
+const HALF_HOURS = Array.from({ length: 48 }, (_, i) => i * 30)
+
+
 
 function Group({ title, children, foot, id }: { title?: string; children: preact.ComponentChildren; foot?: preact.ComponentChildren; id?: string }) {
   return (
@@ -61,6 +66,13 @@ export function SettingsScreen() {
   const reminderOn = p.reminderMinutesBefore > 0 && perm === 'granted'
   const nextWake = nextWakeUp(s.now())
   const wakeValue = nextWake ? `Next ${s.formatted(nextWake.at)}` : p.wakeUp || p.sahurAlarm ? 'On' : 'Off'
+  const friday = prayerName('dhuhr', s.naming, true)
+
+  const setJumuah = async (minutes: number) => {
+    if (minutes > 0 && support === 'supported' && !(await requestPermission())) { setPerm(permission()); openSheet({ kind: 'alerts-help' }); return }
+    setPerm(permission())
+    store.update((x) => { x.jumuahReminderMinutes = minutes })
+  }
 
   const timetable = !source ? 'Calculated on this device'
     : s.hasTable() ? `Official · downloaded${s.tableVia() === 'feed' ? ' (feed)' : ''}` : 'Official · will download when online'
@@ -108,8 +120,11 @@ export function SettingsScreen() {
             <CalendarPlus size={20} /><span class="label">Subscribe in Calendar<span class="sub">The official {source?.kind === 'muis' ? 'MUIS' : 'JAKIM'} times as a calendar feed</span></span>
           </a>
         )}
-        <button class="item" onClick={downloadICS}>
+        <button class="item" onClick={() => downloadICS()}>
           <Download size={20} /><span class="label">Add the next 30 days to a calendar<span class="sub">An .ics file with an alert at every prayer, for {place?.name ?? 'your place'}</span></span>
+        </button>
+        <button class="item" onClick={() => downloadICS(WORK_PRAYERS)}>
+          <Briefcase size={20} /><span class="label">Only {s.name('dhuhr')} and {s.name('asr')}, for a work calendar<span class="sub">So meetings and classes don't land on prayer time. Add it to Outlook or Google Calendar at work.</span></span>
         </button>
         <a class="item" href="print/">
           <Printer size={20} /><span class="label">Print a prayer calendar<span class="sub">A monthly or Ramadan timetable, a sticker calendar or a kids' prayer tracker</span></span>
@@ -125,6 +140,10 @@ export function SettingsScreen() {
 
       <Group title="Tracker" foot="Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only in this browser.">
         <ToggleItem label="Prayer tracker" on={p.trackerEnabled} onChange={(v) => store.update((x) => { x.trackerEnabled = v })} />
+        {p.trackerEnabled && (
+          <ToggleItem label="Nudge before time runs out" on={p.windowNudge} onChange={(v) => store.update((x) => { x.windowNudge = v })}
+            sub={`One gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for ${s.name('isha')}, which stays open until ${s.name('fajr')}. Never while paused.`} />
+        )}
       </Group>
 
       <Group title="Display">
@@ -132,6 +151,8 @@ export function SettingsScreen() {
           onChange={(v) => store.update((x) => { x.appearance = v as Appearance })} />
         <SelectItem label="Prayer screen" value={p.todayStyle} options={TODAY_STYLES.map((t) => ({ value: t, label: TODAY_STYLE_LABEL[t] }))}
           onChange={(v) => store.update((x) => { x.todayStyle = v as TodayStyle })} />
+        <ToggleItem label="Bigger text" on={p.largeText} onChange={(v) => store.update((x) => { x.largeText = v })}
+          sub="Makes every word and time larger. For the clearest screen, pick Big and Simple as the Prayer screen too." />
         <ToggleItem label="24-hour time" on={p.use24Hour} onChange={(v) => store.update((x) => { x.use24Hour = v })} />
         <div class="item">
           <span class="label">Hijri date adjustment</span>
@@ -167,6 +188,25 @@ export function SettingsScreen() {
             <button class="item" onClick={testAlert}><BellRing size={20} /><span class="label">Send a test alert</span></button>
           </>
         )}
+      </Group>
+
+      <Group title="Quiet alerts" foot={`For shift workers sleeping in the day, a baby asleep in the room, or simply a calm night. Alerts still come, but they only buzz. ${s.name('fajr')} keeps its sound so it can wake you.`}>
+        <ToggleItem label="Buzz only, no sound" on={p.buzzOnly} onChange={(v) => store.update((x) => { x.buzzOnly = v })} />
+        <ToggleItem label="Quiet hours" on={p.quietHours} onChange={(v) => store.update((x) => { x.quietHours = v })} />
+        {p.quietHours && (
+          <>
+            <SelectItem label="From" value={String(p.quietFrom)} options={HALF_HOURS.map((m) => ({ value: String(m), label: s.clock(m) }))}
+              onChange={(v) => store.update((x) => { x.quietFrom = parseInt(v, 10) })} />
+            <SelectItem label="Until" value={String(p.quietTo)} options={HALF_HOURS.map((m) => ({ value: String(m), label: s.clock(m) }))}
+              onChange={(v) => store.update((x) => { x.quietTo = parseInt(v, 10) })} />
+          </>
+        )}
+      </Group>
+
+      <Group title={friday} foot={`A reminder on Fridays to get ready and leave in time. It uses your masjid's own ${friday} time when you have set one in the Masjid tab, otherwise the start of ${s.name('dhuhr')}. ${friday} is not required of women, travellers or the sick, who pray ${s.name('dhuhr')} instead.`}>
+        <SelectItem label="Remind me to leave" value={String(p.jumuahReminderMinutes)}
+          options={JUMUAH_REMINDER_CHOICES.map((m) => ({ value: String(m), label: m === 0 ? 'Off' : `${m} min before` }))}
+          onChange={(v) => void setJumuah(parseInt(v, 10))} />
       </Group>
 
       <Group title="Moving to another phone" foot="Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. It works between the web, iPhone and Android.">
