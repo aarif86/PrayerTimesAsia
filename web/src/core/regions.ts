@@ -1,86 +1,38 @@
-import { METHODS, methodWithId, type CalculationMethod } from './methods'
-import type { AsrSchool, NamingStyle } from './prayer'
+import { METHODS, methodWithId, withHighLatitude, type CalculationMethod } from './methods'
+import type { NamingStyle } from './prayer'
+
+import { COUNTRY_ROWS, TZ_COUNTRY, WORLD_CITIES, type CountryRow, type TimesSource } from './countries'
 
 /**
- * What the app does by default in each Asian country: which authority's method,
- * which Asr school, and how prayer names are spelled. The heart of travel mode.
+ * What the app does by default in each country: whose times it follows, which
+ * method, which Asr school, and how prayer names are spelled. The heart of
+ * travel mode. The table itself lives in data/countries.json (one copy for all
+ * three apps), so edit that and run tools/gen_countries.py.
+ *
+ * The owner's rule: the local official or state religious authority first
+ * (its timetable, else its own method); a standard method only where no
+ * authority's times can be used, and then the app says so.
  */
-export interface CountryProfile {
-  code: string
-  name: string
-  methodID: string
-  asr: AsrSchool
-  naming: NamingStyle
-}
+export type CountryProfile = CountryRow
+export type { TimesSource }
 
-export const profileMethod = (p: CountryProfile): CalculationMethod => methodWithId(p.methodID) ?? METHODS.mwl
+/** The country's method, with the country's own rule for short summer nights. */
+export const profileMethod = (p: CountryProfile): CalculationMethod =>
+  withHighLatitude(methodWithId(p.methodID) ?? METHODS.mwl, p.highLatitude)
+
+/**
+ * A method the person picked in Settings, used in this country: keeps the
+ * method's own high-latitude rule, else takes the country's.
+ */
+export const methodHere = (m: CalculationMethod, p: CountryProfile): CalculationMethod =>
+  m.highLatitude === 'fallback' ? withHighLatitude(m, p.highLatitude) : m
 
 export function flag(code: string): string {
   if (!code) return ''
   return String.fromCodePoint(...code.toUpperCase().split('').map((c) => 127397 + c.charCodeAt(0)))
 }
 
-const p = (code: string, name: string, methodID: string, asr: AsrSchool = 'standard', naming: NamingStyle = 'arabic'): CountryProfile =>
-  ({ code, name, methodID, asr, naming })
-
-export const PROFILES: CountryProfile[] = [
-  // Southeast Asia
-  p('SG', 'Singapore', 'muis', 'standard', 'malay'),
-  p('MY', 'Malaysia', 'jakim', 'standard', 'malay'),
-  p('BN', 'Brunei', 'sea', 'standard', 'malay'),
-  p('ID', 'Indonesia', 'kemenag', 'standard', 'indonesian'),
-  p('TH', 'Thailand', 'sea'),
-  p('VN', 'Vietnam', 'sea'),
-  p('KH', 'Cambodia', 'sea'),
-  p('LA', 'Laos', 'sea'),
-  p('MM', 'Myanmar', 'sea'),
-  p('PH', 'Philippines', 'sea'),
-  p('TL', 'Timor-Leste', 'sea'),
-  // East Asia
-  p('JP', 'Japan', 'mwl'),
-  p('KR', 'South Korea', 'mwl'),
-  p('KP', 'North Korea', 'mwl'),
-  p('CN', 'China', 'mwl', 'hanafi'),
-  p('TW', 'Taiwan', 'mwl'),
-  p('HK', 'Hong Kong', 'mwl'),
-  p('MO', 'Macau', 'mwl'),
-  p('MN', 'Mongolia', 'mwl', 'hanafi'),
-  // South Asia
-  p('IN', 'India', 'karachi', 'hanafi', 'southAsian'),
-  p('PK', 'Pakistan', 'karachi', 'hanafi', 'southAsian'),
-  p('BD', 'Bangladesh', 'karachi', 'hanafi', 'southAsian'),
-  p('AF', 'Afghanistan', 'karachi', 'hanafi', 'southAsian'),
-  p('NP', 'Nepal', 'karachi', 'hanafi', 'southAsian'),
-  p('BT', 'Bhutan', 'karachi', 'hanafi', 'southAsian'),
-  p('LK', 'Sri Lanka', 'karachi', 'standard', 'southAsian'),
-  p('MV', 'Maldives', 'karachi', 'standard', 'southAsian'),
-  // Central Asia
-  p('KZ', 'Kazakhstan', 'mwl', 'hanafi'),
-  p('UZ', 'Uzbekistan', 'mwl', 'hanafi'),
-  p('KG', 'Kyrgyzstan', 'mwl', 'hanafi'),
-  p('TJ', 'Tajikistan', 'mwl', 'hanafi'),
-  p('TM', 'Turkmenistan', 'mwl', 'hanafi'),
-  // West Asia
-  p('SA', 'Saudi Arabia', 'ummalqura'),
-  p('AE', 'United Arab Emirates', 'dubai'),
-  p('QA', 'Qatar', 'qatar'),
-  p('KW', 'Kuwait', 'kuwait'),
-  p('BH', 'Bahrain', 'ummalqura'),
-  p('OM', 'Oman', 'mwl'),
-  p('YE', 'Yemen', 'mwl'),
-  p('JO', 'Jordan', 'mwl'),
-  p('PS', 'Palestine', 'mwl'),
-  p('IL', 'Israel', 'mwl'),
-  p('LB', 'Lebanon', 'mwl'),
-  p('SY', 'Syria', 'egyptian'),
-  p('IQ', 'Iraq', 'mwl'),
-  p('IR', 'Iran', 'tehran'),
-  p('TR', 'Türkiye', 'diyanet', 'hanafi', 'turkish'),
-  p('AZ', 'Azerbaijan', 'mwl'),
-  p('GE', 'Georgia', 'mwl'),
-  p('AM', 'Armenia', 'mwl'),
-  p('CY', 'Cyprus', 'diyanet', 'hanafi', 'turkish'),
-]
+export const PROFILES: CountryProfile[] = COUNTRY_ROWS
 
 const BY_CODE = new Map(PROFILES.map((x) => [x.code, x]))
 
@@ -88,25 +40,28 @@ export function profileFor(code: string | null | undefined): CountryProfile | un
   return code ? BY_CODE.get(code.toUpperCase()) : undefined
 }
 
-/** Used outside Asia: still works, with the international default. */
-export const FALLBACK_PROFILE: CountryProfile = { code: '', name: 'Outside Asia', methodID: 'mwl', asr: 'standard', naming: 'arabic' }
+/** Somewhere not in the table: still works, with the international method. */
+export const FALLBACK_PROFILE: CountryProfile = {
+  code: '', name: 'Worldwide', methodID: 'mwl', asr: 'standard', naming: 'arabic', source: 'standard', highLatitude: 'angle',
+}
 
-const TZ_COUNTRY: Record<string, string> = {
-  'Asia/Singapore': 'SG', 'Asia/Kuala_Lumpur': 'MY', 'Asia/Kuching': 'MY', 'Asia/Brunei': 'BN',
-  'Asia/Jakarta': 'ID', 'Asia/Pontianak': 'ID', 'Asia/Makassar': 'ID', 'Asia/Jayapura': 'ID',
-  'Asia/Bangkok': 'TH', 'Asia/Ho_Chi_Minh': 'VN', 'Asia/Saigon': 'VN', 'Asia/Phnom_Penh': 'KH',
-  'Asia/Vientiane': 'LA', 'Asia/Yangon': 'MM', 'Asia/Rangoon': 'MM', 'Asia/Manila': 'PH', 'Asia/Dili': 'TL',
-  'Asia/Tokyo': 'JP', 'Asia/Seoul': 'KR', 'Asia/Pyongyang': 'KP', 'Asia/Shanghai': 'CN', 'Asia/Urumqi': 'CN',
-  'Asia/Taipei': 'TW', 'Asia/Hong_Kong': 'HK', 'Asia/Macau': 'MO', 'Asia/Ulaanbaatar': 'MN',
-  'Asia/Kolkata': 'IN', 'Asia/Calcutta': 'IN', 'Asia/Karachi': 'PK', 'Asia/Dhaka': 'BD', 'Asia/Kabul': 'AF',
-  'Asia/Kathmandu': 'NP', 'Asia/Thimphu': 'BT', 'Asia/Colombo': 'LK', 'Indian/Maldives': 'MV',
-  'Asia/Almaty': 'KZ', 'Asia/Tashkent': 'UZ', 'Asia/Samarkand': 'UZ', 'Asia/Bishkek': 'KG',
-  'Asia/Dushanbe': 'TJ', 'Asia/Ashgabat': 'TM',
-  'Asia/Riyadh': 'SA', 'Asia/Dubai': 'AE', 'Asia/Qatar': 'QA', 'Asia/Kuwait': 'KW', 'Asia/Bahrain': 'BH',
-  'Asia/Muscat': 'OM', 'Asia/Aden': 'YE', 'Asia/Amman': 'JO', 'Asia/Gaza': 'PS', 'Asia/Hebron': 'PS',
-  'Asia/Jerusalem': 'IL', 'Asia/Beirut': 'LB', 'Asia/Damascus': 'SY', 'Asia/Baghdad': 'IQ',
-  'Asia/Tehran': 'IR', 'Europe/Istanbul': 'TR', 'Asia/Baku': 'AZ', 'Asia/Tbilisi': 'GE',
-  'Asia/Yerevan': 'AM', 'Asia/Nicosia': 'CY',
+/**
+ * Where this place's times come from, in plain words: the authority, or the
+ * standard method and why. `pinned` when the person chose a method in Settings.
+ */
+export function sourceSummary(p: CountryProfile, method: CalculationMethod, pinned: boolean, short = false): string {
+  if (short) {
+    if (pinned) return `You chose ${method.name} in Settings.`
+    if (p.source === 'table') return `Official timetable from ${p.authority}.`
+    if (p.source === 'authority') return `Follows ${p.authority}.`
+    return `No official timetable here, so the app uses ${method.name}. Your local masjid may differ by a few minutes.`
+  }
+  if (pinned) return `You chose ${method.name} in Settings. Automatic would follow ${p.source === 'standard' ? 'the method most used here' : p.authority ?? 'the local authority'}.`
+  switch (p.source) {
+    case 'table': return `Official timetable from ${p.authority}. When it can't be downloaded, the app works it out with the same method.`
+    case 'authority': return `Follows ${p.authority}, worked out on your phone with their method so it works offline.${p.note ? ` ${p.note}` : ''}`
+    case 'standard': return `${p.note ?? `No official timetable the app can use here yet, so it uses ${method.name}, a standard method.`} Your local masjid may differ by a few minutes. You can choose another method in Settings, or send us your masjid's timetable.`
+  }
 }
 
 /** Offline country guess from a time zone. */
@@ -136,24 +91,48 @@ export function timeZoneForPlace(code: string | null | undefined, longitude: num
   if (c === 'IN') return 'Asia/Kolkata'
   if (c === 'MM') return 'Asia/Yangon'
   if (c === 'PS') return 'Asia/Hebron'
+  if (!c) return undefined
+  // Elsewhere, a country with several zones: the zone of the listed city nearest in longitude.
+  const zones = new Set(Object.keys(TZ_COUNTRY).filter((k) => TZ_COUNTRY[k] === c))
+  if (zones.size > 1) {
+    let best: string | undefined, bestDiff = Infinity
+    for (const [, , cc, , lng, tz] of WORLD_CITIES) {
+      if (cc !== c) continue
+      const d = Math.abs(lng - longitude)
+      if (d < bestDiff) { best = tz; bestDiff = d }
+    }
+    if (best) return best
+  }
   return timeZoneForCountry(c)
 }
 
 /**
- * Your names, when you haven't picked any: your home country's, else your
- * browser's language or region, else International.
+ * Your names, when you haven't picked any: your browser's language when we
+ * have names in it, else your home country's, else your region's, else
+ * International. Read from the device only, never from your IP address.
  */
 export function personalNaming(homeCountry: string | null | undefined, locale: string): NamingStyle {
-  const home = profileFor(homeCountry)
-  if (home) return home.naming
   const parts = locale.replace(/_/g, '-').split('-')
   const lang = parts[0]
   const region = parts.slice(1).find((s) => /^[A-Za-z]{2}$/.test(s))
+  const spoken = namingForLanguage(lang)
+  if (spoken) return spoken
+  // A home with its own spelling wins over an English browser.
+  const home = profileFor(homeCountry)
+  if (home && home.naming !== 'arabic') return home.naming
+  return profileFor(region)?.naming ?? 'arabic'
+}
+
+/** The names that go with a language code (ISO 639; old Android/Java code "in" is Indonesian). */
+export function namingForLanguage(lang: string | null | undefined): NamingStyle | null {
   switch (lang?.toLowerCase()) {
     case 'ms': return 'malay'
-    case 'id': return 'indonesian'
+    case 'id': case 'in': return 'indonesian'
     case 'tr': return 'turkish'
-    case 'ur': case 'bn': return 'southAsian'
+    case 'ar': return 'arabicScript'
+    case 'ur': return 'urdu'
+    case 'bn': return 'bengali'
+    case 'fr': return 'french'
+    default: return null
   }
-  return profileFor(region)?.naming ?? 'arabic'
 }

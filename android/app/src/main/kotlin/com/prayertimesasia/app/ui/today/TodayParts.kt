@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.BrightnessMedium
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LightMode
@@ -37,6 +36,7 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material.icons.filled.Opacity
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -67,6 +67,7 @@ import com.prayertimesasia.app.ui.components.CircleIconButton
 import com.prayertimesasia.app.ui.components.GlassCard
 import com.prayertimesasia.app.ui.components.outlinedCapsule
 import com.prayertimesasia.app.ui.components.quietClick
+import com.prayertimesasia.app.ui.theme.AppIcons
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.display
@@ -138,33 +139,27 @@ fun StyleButton(state: AppState, background: Color = Palette.primary.copy(alpha 
     }
 }
 
-/** The tracker's streak; tap to mark today as excused (haid, illness) so it carries on. */
+/** The tracker's streak; tap to open the tracker (pause, month view). */
 @Composable
 fun StreakChip(state: AppState, background: Color = Palette.primary.copy(alpha = 0.1f)) {
     val r = state.resolver
     val excused = r.isExcused(state.now)
-    var menu by remember { mutableStateOf(false) }
-    Box {
-        Row(
-            Modifier.clip(CircleShape).background(background, CircleShape).clickable { menu = true }
-                .padding(horizontal = 10.dp, vertical = 8.dp)
-                .semantics { contentDescription = "Streak ${r.streak(state.now)} days${if (excused) ", excused today" else ""}" },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Icon(if (excused) Icons.Filled.Opacity else Icons.Filled.Whatshot, null, Modifier.size(16.dp), tint = Palette.primary)
-            Text("${r.streak(state.now)}", style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
-        }
-        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            DropdownMenuItem(text = { Text(if (excused) "Not excused today" else "Excused today") },
-                onClick = { menu = false; state.toggleExcused(state.now) })
-        }
+    val paused = state.prefs.trackerPausedSince != null
+    Row(
+        Modifier.clip(CircleShape).background(background, CircleShape).clickable { state.showTracker = true }
+            .padding(horizontal = 10.dp, vertical = 8.dp)
+            .semantics { contentDescription = "Prayer tracker: streak ${r.streak(state.now)} days${if (paused) ", paused" else if (excused) ", excused today" else ""}" },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(if (paused) Icons.Filled.Pause else if (excused) Icons.Filled.Opacity else Icons.Filled.Whatshot, null, Modifier.size(16.dp), tint = Palette.primary)
+        Text("${r.streak(state.now)}", style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
     }
 }
 
 @Composable
 fun MusafirButton(state: AppState, background: Color = Palette.accent.copy(alpha = 0.25f)) {
-    CircleIconButton(Icons.Filled.Flight, "Musafir: you may shorten and combine prayers", background = background) {
+    CircleIconButton(AppIcons.journey, "Musafir: you may shorten and combine prayers", background = background) {
         state.showJourney = true
     }
 }
@@ -176,6 +171,7 @@ fun HeaderButtons(state: AppState, showMusafir: Boolean = true, background: Colo
         if (showMusafir && state.prefs.musafirEnabled && state.resolver.musafirStatus(state.now)?.isTraveller == true) {
             MusafirButton(state, if (background == Palette.primary.copy(alpha = 0.1f)) Palette.accent.copy(alpha = 0.25f) else background)
         }
+        WakeChip(state, background)
         if (state.prefs.trackerEnabled) StreakChip(state, background)
         AppearanceButton(state, background)
         StyleButton(state, background)
@@ -333,7 +329,7 @@ fun MusafirChip(state: AppState) {
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Icon(Icons.Filled.Flight, null, Modifier.size(18.dp), tint = Palette.primary)
+        Icon(AppIcons.journey, null, Modifier.size(18.dp), tint = Palette.primary)
         Text("Musafir · you may shorten & combine", style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f), maxLines = 1)
         Icon(Icons.Filled.ChevronRight, null, Modifier.size(16.dp), tint = Palette.primary)
     }
@@ -350,12 +346,13 @@ fun ArrivalCard(state: AppState) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(profile.flag.ifEmpty { "🌏" }, fontSize = 34.sp)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(if (profile.code.isEmpty()) "Outside Asia" else "Welcome to ${profile.name}", style = Txt.headline, color = Palette.primary)
+                Text(if (profile.code.isEmpty()) "Welcome" else "Welcome to ${profile.name}", style = Txt.headline, color = Palette.primary)
                 Text(
                     if (r.isMethodAutomatic) "Switched to ${r.method.name} (${r.method.parameterSummary}), local time. Works offline."
                     else "Local time applied. You've pinned ${r.method.shortName} in Settings.",
                     style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f),
                 )
+                Text(r.sourceShort, style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
             }
             Icon(Icons.Filled.Close, "Dismiss", Modifier.size(28.dp).clip(CircleShape)
                 .clickable { state.update { it.copy(arrivalBannerDismissed = true) } }.padding(6.dp), tint = Palette.primary)

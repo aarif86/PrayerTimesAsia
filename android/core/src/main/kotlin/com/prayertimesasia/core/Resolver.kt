@@ -24,14 +24,21 @@ class Resolver(
     /** The phone's language and region, for your names when you haven't chosen. */
     private val locale: java.util.Locale = java.util.Locale.getDefault(),
     private val systemZone: ZoneId = ZoneId.systemDefault(),
+    /** Ramadan and Eid announcements from data/calendar.json. */
+    val announcements: List<CalendarAnnouncement> = emptyList(),
 ) {
     val activePlace: Place? get() = if (prefs.useGPS) gpsPlace ?: prefs.manualPlace else prefs.manualPlace
 
     val profile: CountryProfile get() = activePlace?.profile ?: AsiaRegions.fallback
 
-    val method: CalculationMethod get() = CalculationMethod.withId(prefs.methodOverrideId) ?: profile.method
+    val method: CalculationMethod
+        get() = CalculationMethod.withId(prefs.methodOverrideId)?.let(profile::here) ?: profile.method
 
     val isMethodAutomatic: Boolean get() = prefs.methodOverrideId == null
+    /** Whose times these are, in plain words (official timetable, the authority's method, or a standard one). */
+    val sourceSummary: String get() = profile.sourceSummary(method, pinned = !isMethodAutomatic)
+    /** The same in one sentence or two, for the welcome card. */
+    val sourceShort: String get() = profile.sourceSummary(method, pinned = !isMethodAutomatic, short = true)
     val asrSchool: AsrSchool get() = prefs.asrOverride ?: profile.asr
 
     /** Your prayer names - from your home or your phone, not from where you are. */
@@ -147,6 +154,34 @@ class Resolver(
         return day(local.atTime(LocalTime.NOON).atZone(zone).toInstant())
     }
 
+    /** The prayer open now and when its time runs out; null between sunrise and Zohor. */
+    fun window(now: Instant): PrayerWindow? {
+        val today = day(now, 0) ?: return null
+        val yesterday = day(now, -1) ?: return null
+        val tomorrow = day(now, 1) ?: return null
+        return PrayerWindow.open(now, yesterday, today, tomorrow)
+    }
+
+    /** Minutes past local midnight at the active place. */
+    fun minuteOfDay(instant: Instant): Int = instant.atZone(zone).let { it.hour * 60 + it.minute }
+
+    fun inQuietHours(instant: Instant): Boolean = PrayerWindow.inQuietHours(minuteOfDay(instant), prefs.quietFrom, prefs.quietTo)
+
+    /** Quiet hours and "Buzz only". Subuh always keeps its sound: it is a wake up. */
+    fun isSilent(instant: Instant, prayer: Prayer): Boolean = when {
+        prefs.buzzOnly -> true
+        prayer == Prayer.FAJR -> false
+        else -> prefs.quietHours && inQuietHours(instant)
+    }
+
+    /** A time of day given as minutes past midnight, "11:00 PM" or "23:00". */
+    fun clock(minutes: Int): String {
+        val h = (minutes / 60) % 24
+        val m = "%02d".format(minutes % 60)
+        if (prefs.use24Hour) return "%02d:%s".format(h, m)
+        return "${if (h % 12 == 0) 12 else h % 12}:$m ${if (h < 12) "AM" else "PM"}"
+    }
+
     fun isFriday(instant: Instant): Boolean = instant.atZone(zone).dayOfWeek == DayOfWeek.FRIDAY
 
     fun formatted(instant: Instant): String = TimeFormat.formatted(instant, zone, prefs.use24Hour)
@@ -158,7 +193,18 @@ class Resolver(
     fun dayKey(instant: Instant): String = instant.atZone(zone).toLocalDate().toString()
 
     fun isPrayed(prayer: Prayer, on: Instant): Boolean = prefs.prayedLog[dayKey(on)]?.contains(prayer) ?: false
-    fun isExcused(on: Instant): Boolean = dayKey(on) in prefs.excusedDays
+    fun isExcused(on: Instant): Boolean = isExcused(dayKey(on), dayKey(on))
+
+    /** Marked excused on its own, or inside a pause (from the day it began up to [today]). */
+    fun isExcused(key: String, today: String): Boolean {
+        if (key in prefs.excusedDays) return true
+        val since = prefs.trackerPausedSince ?: return false
+        return key >= since && key <= today
+    }
+
+    /** How a day went: prayers ticked (of the five) and whether it was excused. */
+    fun trackerDay(key: String, today: String): Pair<Int, Boolean> =
+        (prefs.prayedLog[key].orEmpty().count { it in Prayer.obligatory }) to isExcused(key, today)
 
     /**
      * Consecutive days with all five prayers marked (or excused). Today counts
@@ -167,9 +213,10 @@ class Resolver(
     fun streak(now: Instant): Int {
         var count = 0
         var date: LocalDate = now.atZone(zone).toLocalDate()
+        val today = date.toString()
         for (i in 0 until 400) {
             val key = date.toString()
-            val complete = key in prefs.excusedDays || (prefs.prayedLog[key]?.size ?: 0) >= Prayer.obligatory.size
+            val complete = isExcused(key, today) || (prefs.prayedLog[key]?.size ?: 0) >= Prayer.obligatory.size
             if (complete) count++ else if (i > 0) break
             date = date.minusDays(1)
         }
@@ -180,11 +227,68 @@ class Resolver(
     fun blessedTimes(shown: PrayerDay): List<Pair<BlessedTime, Instant>> {
         val place = activePlace ?: return emptyList()
         val nextDay = day(shown.time(Prayer.DHUHR).plusSeconds(86_400)) ?: return emptyList()
-        val ramadan = Hijri.isRamadan(shown.time(Prayer.DHUHR), zone, prefs.hijriAdjustment)
-        return BlessedTime.compute(shown, nextDay, place.coordinates, ramadan)
+        return BlessedTime.compute(shown, nextDay, place.coordinates, isRamadanDay(shown.time(Prayer.DHUHR)))
     }
 
-    fun hijri(instant: Instant): String = Hijri.format(instant, zone, naming, prefs.hijriAdjustment)
+    fun hijri(instant: Instant): String {
+        val h = hijriOf(instant)
+        val name = naming.hijriMonths[(h.month - 1).coerceIn(0, 11)]
+        return "${h.day} ${if (naming.isRightToLeft) "\u2068$name\u2069" else name} ${h.year}"
+    }
+
+    // MARK: Ramadan and Syawal (core Season.kt)
+
+    fun civil(instant: Instant): LocalDate = instant.atZone(zone).toLocalDate()
+
+    val isSeasonPreview: Boolean get() = prefs.seasonPreview != SeasonPreview.OFF
+
+    /** Days the tester's "Try Ramadan" moves the calendar by (0 when off). */
+    val seasonShift: Int by lazy { Season.previewShift(LocalDate.now(zone), prefs.seasonPreview) }
+
+    /** The Hijri date of a civil day as this community counts it. */
+    fun hijriOf(g: LocalDate): Hijri.HijriDate =
+        if (isSeasonPreview) Season.baseHijri(g.plusDays(seasonShift.toLong()))
+        else Season.communityHijri(g, prefs.hijriAdjustment, announcements, communityAuthority)
+
+    fun hijriOf(instant: Instant): Hijri.HijriDate = hijriOf(civil(instant))
+
+    fun isRamadanDay(instant: Instant): Boolean = hijriOf(instant).month == 9
+
+    fun season(at: Instant): Season.Info {
+        val h = hijriOf(at)
+        var next: Season.NextStart? = null
+        if (!isSeasonPreview && h.day >= 27 && (h.month == 8 || h.month == 9)) {
+            val event = if (h.month == 8) HijriEvent.RAMADAN else HijriEvent.SYAWAL
+            Season.authorityDate(announcements, communityAuthority, event, h.year)?.let { (d, announced) ->
+                if (!d.isBefore(civil(at))) next = Season.NextStart(event, d, announced)
+            }
+        }
+        return Season.info(h, next)
+    }
+
+    fun dayOf(g: LocalDate): PrayerDay? = day(g.atTime(12, 0).atZone(zone).toInstant())
+
+    /** Imsak: 10 minutes before Subuh, as MUIS, JAKIM and Kemenag publish it. */
+    fun imsak(day: PrayerDay): Instant = day.time(Prayer.FAJR).minusSeconds(600)
+
+    enum class FastingKind { IMSAK, BERBUKA }
+
+    /** In Ramadan, the moment to count down to: Imsak before dawn, Berbuka after it, then tomorrow's Imsak. */
+    fun fastingMoment(now: Instant): Pair<FastingKind, Instant>? {
+        val today = day(now) ?: return null
+        if (isRamadanDay(now)) {
+            if (now < imsak(today)) return FastingKind.IMSAK to imsak(today)
+            if (now < today.time(Prayer.MAGHRIB)) return FastingKind.BERBUKA to today.time(Prayer.MAGHRIB)
+        }
+        val tomorrow = day(now.plusSeconds(86_400)) ?: return null
+        return if (isRamadanDay(tomorrow.time(Prayer.DHUHR))) FastingKind.IMSAK to imsak(tomorrow) else null
+    }
+
+    fun monthDays(hijriYear: Int, month: Int): List<LocalDate> =
+        Season.monthDays(hijriYear, month, if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
+
+    fun fastSummary(hijriYear: Int, today: LocalDate): Season.FastSummary =
+        Season.fastSummary(hijriYear, today, prefs.fastLog, if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
 
     companion object {
         /** Prayers where [other] differs from [day] by more than 2 minutes. */
@@ -204,4 +308,10 @@ class Resolver(
             return out
         }
     }
+}
+
+/** Every "yyyy-MM-dd" from [from] to [to], both included (at most a year). */
+fun trackerDays(from: String, to: String): List<String> {
+    val start = runCatching { LocalDate.parse(from) }.getOrNull() ?: return emptyList()
+    return (0L until 366L).map { start.plusDays(it).toString() }.takeWhile { it <= to }
 }

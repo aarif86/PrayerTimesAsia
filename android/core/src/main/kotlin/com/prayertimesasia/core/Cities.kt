@@ -117,11 +117,7 @@ object Cities {
         City("Tbilisi", null, "GE", 41.7151, 44.8271, "Asia/Tbilisi"),
         City("Yerevan", null, "AM", 40.1792, 44.4991, "Asia/Yerevan"),
         City("Nicosia", null, "CY", 35.1856, 33.3823, "Asia/Nicosia"),
-        City("London", null, "GB", 51.5074, -0.1278, "Europe/London"),
-        City("Sydney", null, "AU", -33.8688, 151.2093, "Australia/Sydney"),
-        City("Melbourne", null, "AU", -37.8136, 144.9631, "Australia/Melbourne"),
-        City("Perth", null, "AU", -31.9505, 115.8605, "Australia/Perth"),
-    )
+    ) + Countries.worldCities
 
     /**
      * The time zone for a point in [country]: the zone of the nearest listed city

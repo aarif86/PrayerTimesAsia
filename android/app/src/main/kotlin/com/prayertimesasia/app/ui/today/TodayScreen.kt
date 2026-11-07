@@ -74,7 +74,6 @@ import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerDay
-import com.prayertimesasia.core.TimeFormat
 import com.prayertimesasia.core.TodayStyle
 import com.prayertimesasia.core.secondsSince
 import kotlinx.coroutines.delay
@@ -133,6 +132,7 @@ fun TodayScreen(state: AppState, openPlaces: () -> Unit, openCalendar: () -> Uni
             TodayStyle.DIAL -> DialPage(f, setOffset, openPlaces, openCalendar, openSanad)
             TodayStyle.SUN_PATH -> SunPathPage(f, setOffset, openPlaces, openCalendar, openSanad)
             TodayStyle.BANDS -> BandsPage(f, setOffset, openPlaces, openCalendar, openSanad)
+            TodayStyle.SIMPLE -> SimplePage(state, day, f.current, f.next, openPlaces)
         }
         StyleToast(state)
     }
@@ -180,6 +180,7 @@ private fun ColumnScope.Prompts(f: TodayFrame) {
     val p = f.state.prefs
     if (!p.notificationsEnabled && !p.alertsPromptDismissed) AlertsPrompt(f.state)
     if (!p.arrivalBannerDismissed) ArrivalCard(f.state)
+    if (f.offset == 0) SeasonCard(f.state, f.now)
 }
 
 @Composable
@@ -209,7 +210,7 @@ private fun FillOrScroll(
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val extra = contentPadding.calculateTopPadding() + contentPadding.calculateBottomPadding() + spacing * 2
         val avail = maxHeight - topH - bottomH - extra
-        val blessed = if (f.state.prefs.showMore) f.state.resolver.blessedTimes(f.shown).size else 0
+        val blessed = f.state.resolver.blessedTimes(f.shown).count { f.state.prefs.showMore || it.first == com.prayertimesasia.core.BlessedTime.IMSAK }
         // Six rows share what's left (the list's own padding and gaps come off first).
         val perRow = (avail - 16.dp - 6.dp * (5 + blessed) - 58.dp * blessed) / 6
         val rowHeight = if (perRow >= 60.dp) minOf(perRow, 92.dp) else null
@@ -244,7 +245,7 @@ private fun ClassicPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
             val nxt = f.next
             if (cur != null && nxt != null) {
                 DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.first, cur.second), cur.first,
-                    TimeFormat.short(nxt.second.secondsSince(f.now)), f.name(nxt.first, nxt.second), 172.dp)
+                    Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 172.dp)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) { HeaderButtons(f.state) }
@@ -270,13 +271,14 @@ private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -
             val nxt = f.next
             if (cur != null && nxt != null) {
                 DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.first, cur.second), cur.first,
-                    TimeFormat.short(nxt.second.secondsSince(f.now)), f.name(nxt.first, nxt.second), 148.dp,
+                    Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 148.dp,
                     Modifier.align(Alignment.Center))
             }
             Column(Modifier.align(Alignment.TopEnd).padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 StyleButton(f.state)
                 AppearanceButton(f.state)
+                WakeChip(f.state)
                 if (f.state.prefs.trackerEnabled) StreakChip(f.state)
             }
         }
@@ -332,7 +334,7 @@ private fun DialPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> 
 private fun HeroDialFor(f: TodayFrame, modifier: Modifier) {
     val state = f.state
     val r = state.resolver
-    val blessed = if (state.prefs.showMore) r.blessedTimes(f.shown) else emptyList()
+    val blessed = r.blessedTimes(f.shown).filter { state.prefs.showMore || it.first == com.prayertimesasia.core.BlessedTime.IMSAK }
     val marks = Prayer.all.map { p ->
         DialMark(p.raw, f.shown.time(p), extraLine = f.shown.jamaah[p] != null || f.shown.alternate[p] != null, tint = p.tint)
     } + blessed.map { DialMark(it.first.raw, it.second, minor = true) }
@@ -423,9 +425,10 @@ private fun DialCentre(f: TodayFrame, size: Dp) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy((size.value * 0.006f).dp)) {
             Text("NOW", fontSize = (size.value * 0.028f).sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.6.sp, color = cur.first.tint)
             Text(f.name(cur.first, cur.second), style = display((size.value * 0.085f).sp, FontWeight.Bold), color = Palette.primary, maxLines = 1)
-            Text(TimeFormat.short(nxt.second.secondsSince(f.now)), style = display((size.value * 0.066f).sp, FontWeight.SemiBold),
+            val count = Countdown.of(f.state, f.now, nxt)
+            Text(count.count, style = display((size.value * 0.066f).sp, FontWeight.SemiBold),
                 color = Palette.accent, maxLines = 1)
-            Text("until ${f.name(nxt.first, nxt.second)}", fontSize = (size.value * 0.034f).sp, fontWeight = FontWeight.Medium,
+            Text(count.label, fontSize = (size.value * 0.034f).sp, fontWeight = FontWeight.Medium,
                 color = Palette.secondary, maxLines = 1)
         }
     } else {
@@ -452,11 +455,10 @@ private fun SunPathPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
                         Box(Modifier.size(9.dp).clip(CircleShape).background(cur.first.tint))
                         Text(f.name(cur.first, cur.second), style = display(30.sp, FontWeight.Bold), color = Palette.primary)
                     }
-                    val left = TimeFormat.short(nxt.second.secondsSince(f.now))
-                    val nextName = f.name(nxt.first, nxt.second)
+                    val count = Countdown.of(state, f.now, nxt)
                     Text(
-                        if (nxt.first == Prayer.SUNRISE) "$left until $nextName - ${Prayer.FAJR.name(state.resolver.naming)} ends" else "$left until $nextName",
-                        style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary,
+                        count.text,
+                        style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = if (count.urgent) Palette.accent else Palette.primary,
                         modifier = Modifier.clip(CircleShape).background(Palette.primary.copy(alpha = 0.1f)).padding(horizontal = 12.dp, vertical = 6.dp),
                     )
                 }
@@ -488,7 +490,7 @@ private fun BandsPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () ->
     val buttonBg = Color.White.copy(alpha = 0.12f)
     androidx.compose.runtime.CompositionLocalProvider(LocalSkyScheme provides LocalSkyScheme.current.copy(dark = true, softNight = false)) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
-            val blessed = if (state.prefs.showMore) state.resolver.blessedTimes(f.shown) else emptyList()
+            val blessed = state.resolver.blessedTimes(f.shown).filter { state.prefs.showMore || it.first == com.prayertimesasia.core.BlessedTime.IMSAK }
             val bandsNatural = 64.dp * 6 + 52.dp * blessed.size + 44.dp
             val fill = maxHeight - headerH - footerH >= bandsNatural
             Column(Modifier.fillMaxSize().then(if (fill) Modifier else Modifier.verticalScroll(rememberScrollState()))) {
@@ -505,7 +507,7 @@ private fun BandsPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () ->
                     val cur = f.current
                     val nxt = f.next
                     if (cur != null && nxt != null && f.isToday) {
-                        Text("${f.name(cur.first, cur.second)} now · ${TimeFormat.short(nxt.second.secondsSince(f.now))} until ${f.name(nxt.first, nxt.second)}",
+                        Text("${f.name(cur.first, cur.second)} now · ${Countdown.of(f.state, f.now, nxt).text}",
                             style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Color.White.copy(alpha = 0.75f))
                     }
                     Prompts(f)

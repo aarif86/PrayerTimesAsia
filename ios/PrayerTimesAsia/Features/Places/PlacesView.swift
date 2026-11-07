@@ -82,7 +82,7 @@ struct PlacesView: View {
                         }
                     }
                     Section {
-                        Text("Search any city in Asia - Hanoi, Osaka, Seoul, Istanbul. Times are calculated on your phone, so they keep working offline.")
+                        Text("Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated on your phone, so they keep working offline.")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                 } else {

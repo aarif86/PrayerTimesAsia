@@ -15,6 +15,7 @@ struct JourneyView: View {
                         Text("Journey").font(Theme.display(34, .bold)).padding(.top, 8)
                         statusCard
                         if model.musafirStatus?.isTraveller == true, model.asrSchool != .hanafi { combinedCard }
+                        if model.musafirStatus?.isTraveller == true, model.isRamadanDay(.now) { fastingCard }
                         homeCard
                         rulesCard
                         if !model.prefs.trip.isEmpty { tripCard }
@@ -38,8 +39,15 @@ struct JourneyView: View {
                 let g = Musafir.guidance(for: status, rules: model.musafirRules, naming: model.naming)
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 10) {
-                        Image(systemName: status.isTraveller ? "airplane.circle.fill" : "house.circle.fill")
-                            .font(.system(size: 30))
+                        Group {
+                            if status.isTraveller {
+                                Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
+                                    .foregroundStyle(.background).frame(width: 30, height: 30)
+                                    .background(Circle().fill(.primary))
+                            } else {
+                                Image(systemName: "house.circle.fill").font(.system(size: 30))
+                            }
+                        }
                         Text(g.title).font(.title2.weight(.bold))
                     }
                     if let km = distance(status) {
@@ -48,6 +56,7 @@ struct JourneyView: View {
                         + Text("  from home").font(.headline)
                     }
                     Text(g.body).font(.body).opacity(0.9).fixedSize(horizontal: false, vertical: true)
+                    if status.isTraveller { planTable }
                     if model.prefs.arrivedAt != nil, status.isTraveller || isSettled(status) {
                         Text("Day \(model.daysHere + 1) in \(model.profile.name.isEmpty ? "this place" : model.profile.name)")
                             .font(.subheadline.weight(.semibold)).opacity(0.8)
@@ -60,6 +69,40 @@ struct JourneyView: View {
                         .opacity(0.85)
                 }
             }
+        }
+    }
+
+    /// Each prayer on its own line: how many rakaat, and what it joins with.
+    private var planTable: some View {
+        VStack(spacing: 0) {
+            ForEach(Musafir.plan(rules: model.musafirRules, naming: model.naming)) { row in
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(row.name).font(.headline)
+                        Text(row.join).font(.footnote).opacity(0.75)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(row.rakaat).font(.headline).monospacedDigit()
+                        Text(row.change).font(.footnote).opacity(0.75)
+                    }
+                }
+                .padding(.vertical, 8)
+                if row.prayer != .isha { Divider().opacity(0.5) }
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private var fastingCard: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("FASTING ON THIS JOURNEY").font(.caption.weight(.heavy)).opacity(0.7)
+                Text("As a traveller you may choose not to fast today and replace it after Ramadan. If fasting is easy for you, fasting is better. The day counts as travel only if you left home before Subuh.")
+                    .font(.footnote)
+                Text("Mark it on the Ramadan page so the app counts the day to replace.").font(.footnote).opacity(0.8)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -76,7 +119,7 @@ struct JourneyView: View {
                     }
                     window(.dhuhr, .asr, from: today.time(.dhuhr), to: today.time(.maghrib))
                     window(.maghrib, .isha, from: today.time(.maghrib), to: tomorrow.time(.fajr))
-                    Text("Jamak taqdim prays both in the first prayer's time; jamak ta'khir prays both in the second's. \(Prayer.fajr.name(model.naming)) is never combined.")
+                    Text("Jamak taqdim means praying both in the first prayer's time. Jamak ta'khir means praying both in the second prayer's time. \(Prayer.fajr.name(model.naming)) is never joined.")
                         .font(.footnote).opacity(0.85)
                 }
             }
@@ -119,16 +162,33 @@ struct JourneyView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("TRAVEL DISTANCE").font(.caption.weight(.heavy)).opacity(0.7)
                 if model.asrSchool == .hanafi {
-                    Text("Hanafi: about 78 km, stays up to 15 days. Prayers are shortened but not combined.")
+                    Text("In the Hanafi school the travel distance is about 78 km, for stays of up to 15 days. Prayers are shortened but not joined.")
                         .font(.subheadline)
                 } else {
-                    Picker("Distance", selection: $model.prefs.musafirThresholdKm) {
+                    Picker("Distance", selection: $model.prefs.musafirThresholdKm.animation(.spring(duration: 0.35))) {
                         Text("81 km (2 marhalah)").tag(81.0)
                         Text("89 km").tag(89.0)
                     }
                     .pickerStyle(.segmented)
-                    Text("Shafi'i: stays of up to 3 days, not counting the days you arrive and leave.")
+                    .sensoryFeedback(.selection, trigger: model.prefs.musafirThresholdKm)
+                    Text("Most of Southeast Asia uses 81 km, which is two marhalah. Some scholars use 89 km. Pick the one your local religious authority uses.")
                         .font(.subheadline).opacity(0.85)
+                    Text("In the Shafi'i school this holds for stays of up to 3 days, not counting the day you arrive and the day you leave.")
+                        .font(.subheadline).opacity(0.85)
+                }
+                if let status = model.musafirStatus, let check = Musafir.distanceCheck(for: status, rules: model.musafirRules) {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: check.counts ? "checkmark.circle.fill" : "xmark.circle.fill")
+                            .foregroundStyle(check.counts ? Color.green : Color.orange)
+                        Text(check.text).font(.subheadline.weight(.semibold))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .contentTransition(.numericText())
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 14).fill(.primary.opacity(0.06)))
+                    .id(model.prefs.musafirThresholdKm)
+                    .transition(.opacity.combined(with: .scale(scale: 0.97)))
                 }
             }
         }

@@ -1,0 +1,125 @@
+name: Release to Google Play
+
+# Manual-only, like "Release to TestFlight". Builds the signed Android App Bundle
+# (.aab) that Google Play needs and, once the Play upload secret is set, sends it
+# to the chosen testing track. Steps: android/README.md → "Google Play releases".
+#
+# Repo secrets:
+#   ANDROID_UPLOAD_KEYSTORE_BASE64, ANDROID_UPLOAD_KEYSTORE_PASSWORD,
+#   ANDROID_UPLOAD_KEY_ALIAS, ANDROID_UPLOAD_KEY_PASSWORD   (needed)
+#   PLAY_SERVICE_ACCOUNT_JSON                               (optional: without it the
+#     .aab is only offered for download, to upload by hand in Play Console)
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Which Play track to send it to"
+        type: choice
+        options: [internal, alpha, production]
+        default: internal
+      status:
+        description: "draft = you press Release in Play Console yourself (needed until the app's first release is live)"
+        type: choice
+        options: [draft, completed]
+        default: draft
+
+concurrency:
+  group: play-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check signing secrets are set
+        env:
+          S1: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          S2: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          S3: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          S4: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          names=(ANDROID_UPLOAD_KEYSTORE_BASE64 ANDROID_UPLOAD_KEYSTORE_PASSWORD ANDROID_UPLOAD_KEY_ALIAS ANDROID_UPLOAD_KEY_PASSWORD)
+          missing=""
+          for i in 1 2 3 4; do
+            v="S$i"
+            if [ -z "${!v}" ]; then missing="$missing ${names[$((i-1))]}"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing signing secrets:$missing - see android/README.md 'Google Play releases'."
+            exit 1
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Core tests
+        run: ./gradlew :core:test
+
+      - name: Build the signed App Bundle
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          # Starts well above any number used by hand, and always goes up.
+          VERSION_CODE: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          export UPLOAD_KEYSTORE_PATH="$RUNNER_TEMP/upload.jks"
+          echo -n "$KEYSTORE_BASE64" | base64 -d > "$UPLOAD_KEYSTORE_PATH"
+          ./gradlew :app:bundleRelease
+          rm -f "$UPLOAD_KEYSTORE_PATH"
+          f=app/build/outputs/bundle/release/app-release.aab
+          mv "$f" "app/build/outputs/bundle/release/prayer-times-asia-${{ github.run_number }}.aab"
+
+      - name: Offer the .aab for download
+        id: upload-aab
+        uses: actions/upload-artifact@v4
+        with:
+          name: prayer-times-asia-play-bundle
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
+      - name: Check for the Play upload secret
+        id: play
+        env:
+          JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: if [ -n "$JSON" ]; then echo "ready=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Send to Google Play
+        if: steps.play.outputs.ready == 'true'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.prayertimesasia.app
+          releaseFiles: android/app/build/outputs/bundle/release/*.aab
+          track: ${{ inputs.track }}
+          status: ${{ inputs.status }}
+
+      - name: Say what happened
+        if: always()
+        env:
+          URL: ${{ steps.upload-aab.outputs.artifact-url }}
+          SENT: ${{ steps.play.outputs.ready }}
+        run: |
+          {
+            echo "## Google Play build ${{ github.run_number }}"
+            echo
+            if [ -n "$URL" ]; then echo "[Download the .aab]($URL) (a zip with the .aab inside)."; fi
+            if [ "$SENT" = "true" ]; then
+              echo "Sent to the **${{ inputs.track }}** track as **${{ inputs.status }}**. Finish in Play Console → Test and release."
+            else
+              echo "Not sent to Play (no PLAY_SERVICE_ACCOUNT_JSON secret yet): upload the .aab by hand in Play Console."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -2,8 +2,8 @@
    rounded display type, prayer tints - sized from the screen itself (--u = 1% of a 16:9 height). */
 
 :root {
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter Variable", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --font-display: ui-rounded, "SF Pro Rounded", "Nunito Variable", -apple-system, system-ui, sans-serif;
+  --font: "Twemoji Country Flags", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter Variable", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-display: "Twemoji Country Flags", ui-rounded, "SF Pro Rounded", "Nunito Variable", -apple-system, system-ui, sans-serif;
   --arabic: "Geeza Pro", "Noto Naskh Arabic", "Noto Sans Arabic", "Segoe UI", "Arial", sans-serif;
   --bg: #0b0f2a;
   --t-fajr: rgb(128, 156, 224);
@@ -412,3 +412,11 @@ select option { background-color: #161a36; color: #fff; }
 .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 8.2); }
 .scr-grid.no-iq .scr-cell .scr-t small { font-size: 0.34em; margin-left: 0.12em; }
 .portrait .scr-grid.no-iq .scr-cell .scr-t { font-size: calc(var(--u) * 10); }
+
+/* Ramadan nights and Raya morning */
+.scr-ramadan { margin: calc(var(--u) * 1.2) 0 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: calc(var(--u) * 1.2);
+  font-size: calc(var(--u) * 2.6); font-weight: 600; color: var(--fg); position: relative; }
+.scr-ramadan b { color: var(--t-sunrise, #f3c969); font-weight: 800; }
+.scr-ramadan .scr-dotsep { font-style: normal; opacity: 0.5; }
+.scr-ramadan .scr-t-small { font-size: 1em; }
+.scr-look-dial .scr-ramadan { position: relative; z-index: 2; }

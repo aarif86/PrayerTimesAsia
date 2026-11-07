@@ -4,7 +4,7 @@ import { compute, ordered, type Coordinates } from '../src/core/engine'
 import { distanceKm, KAABA, qiblaBearing } from '../src/core/geo'
 import { formatHijri, hijriDate } from '../src/core/hijri'
 import { ALL_METHODS, METHODS, methodWithId } from '../src/core/methods'
-import { musafirStatus } from '../src/core/musafir'
+import { musafirDistanceCheck, musafirPlan, musafirStatus } from '../src/core/musafir'
 import { PRAYERS } from '../src/core/prayer'
 import { countryForTimeZone, flag, PROFILES, profileFor, profileMethod } from '../src/core/regions'
 import { zoned, zonedTime } from '../src/core/tz'
@@ -108,6 +108,26 @@ describe('Musafir', () => {
     expect(musafirStatus(singapore, hanoi, 1, rules)?.kind).toBe('traveller')
     expect(musafirStatus(singapore, hanoi, 5, rules)?.kind).toBe('settled')
     expect(musafirStatus(null, hanoi, 0, rules)).toBeNull()
+  })
+
+  it('the 81 km and 89 km choice changes the answer for a trip in between', () => {
+    const about85km = { latitude: singapore.latitude + 0.7645, longitude: singapore.longitude }
+    const at81 = musafirStatus(singapore, about85km, 0, { school: 'standard', thresholdKm: 81 })!
+    const at89 = musafirStatus(singapore, about85km, 0, { school: 'standard', thresholdKm: 89 })!
+    expect(at81.kind).toBe('traveller')
+    expect(at89.kind).toBe('nearby')
+    expect(musafirDistanceCheck(at81, { school: 'standard', thresholdKm: 81 })?.text).toContain('more than 81 km')
+    expect(musafirDistanceCheck(at89, { school: 'standard', thresholdKm: 89 })?.text).toContain('less than 89 km')
+  })
+
+  it('spells out each prayer so Maghrib is never left out', () => {
+    const plan = musafirPlan({ school: 'standard', thresholdKm: 81 }, 'malay')
+    expect(plan.map((r) => r.rakaat)).toEqual(['2 rakaat', '2 rakaat', '2 rakaat', '3 rakaat', '2 rakaat'])
+    const maghrib = plan.find((r) => r.prayer === 'maghrib')!
+    expect(maghrib.change).toBe('No change')
+    expect(maghrib.join).toBe('Can join with Isyak')
+    expect(plan.find((r) => r.prayer === 'fajr')!.join).toBe('Never joined')
+    expect(musafirPlan({ school: 'hanafi', thresholdKm: 78 }, 'malay').every((r) => r.prayer === 'fajr' || r.join === 'Not joined')).toBe(true)
   })
 })
 

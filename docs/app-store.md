@@ -19,6 +19,48 @@ waktu solat,azan,adhan,kiblat,qiblat,muis,jakim,salah,solat,namaz,masjid,musolla
 (Apple already indexes the name and subtitle, so "prayer", "times", "qibla" and
 "Asia" are deliberately not repeated.)
 
+## Extra listing languages: Malay and Indonesian (search words)
+
+Add these in App Store Connect → App Information / the version page → the
+language menu at the top right → **Malay** and **Indonesian**. Each extra
+language brings its own 100 keyword characters, so people searching in Malay or
+Indonesian find the app even before the app itself is translated. Name,
+description and screenshots can stay English for now (paste the English
+description); only the subtitle, keywords and promotional text change.
+
+Words already in the name or subtitle are not repeated. Indonesians mostly
+write "sholat" or "salat" and "adzan", Malaysians and Singaporeans "solat" and
+"azan", so each list uses its own spellings.
+
+### Malay (ms)
+
+| Field | Value | Limit |
+|---|---|---|
+| Subtitle | Waktu solat & kiblat di Asia | 28 / 30 |
+| Promotional text | Waktu solat & kiblat di Asia. Waktu rasmi MUIS & JAKIM, tanpa iklan, luar talian. | 80 / 170 |
+
+Keywords (98 / 100):
+
+```
+azan,jakim,muis,e-solat,surau,masjid,musolla,imsak,subuh,maghrib,takwim,hijrah,qasar,jamak,musafir
+```
+
+### Indonesian (id)
+
+| Field | Value | Limit |
+|---|---|---|
+| Subtitle | Jadwal sholat & arah kiblat | 27 / 30 |
+| Promotional text | Jadwal sholat & kiblat. Waktu resmi Kemenag, tanpa iklan, bisa offline. | 71 / 170 |
+
+Keywords (98 / 100):
+
+```
+jadwal salat,sholat,shalat,adzan,azan,kemenag,imsakiyah,imsak,masjid,musala,ramadhan,puasa,hijriah
+```
+
+Both lists should be read once by a native speaker before going live (the
+wording, not the meaning, is what to check).
+
 ## Promotional text (125 / 170)
 
 Land anywhere in Asia and know when to pray and which way to face. Official MUIS and JAKIM timetables, works offline, no ads.
@@ -82,14 +124,41 @@ once the domain is set up).
 
 ## Screenshots
 
-From the CI `screenshots` branch (6.9" iPhone): 1 Today (Singapore), 2 Today
-(just landed in Hanoi, welcome card), 3 Journey (musafir), 4 Qibla, 6 Masjid.
-Suggested captions:
+Apple needs two sets because the app also runs on iPad: 6.9" iPhone
+(1320 × 2868) and 13" iPad (2064 × 2752). Captioned, ready to drag in:
+`design/store/app-store/iphone-*.png` and `ipad-*.png`.
+
+To redo them: Actions → **Store screenshots** → Run workflow (takes the raw
+shots on a Pro Max and an iPad Pro 13" simulator and puts them on the
+`store-screenshots-raw` branch), then
+`python3 tools/store_frames.py iphone RAW_DIR design/store/app-store` (and `ipad`).
+
+Captions, in order:
 1. "Know when to pray, wherever you land"
 2. "Switches the moment you arrive"
 3. "Jamak & qasar, worked out for you"
 4. "Face the Kaaba in one glance"
 5. "Find a masjid or musollah nearby"
+6. "Qibla Day and the shadow stick"
+7. "A sky that follows the sun"
+
+## App Review Information
+
+Sign-in required: **No**. Contact: Aarif Raziff, phone and email.
+
+Notes (paste as is):
+
+```
+Prayer Times Asia shows the five daily Muslim prayer times and the qibla (direction of Makkah) for Asia. It is free, has no account, no ads and no in-app purchases.
+
+Location: the app asks for location while in use, to pick the official timetable for the user's country and zone (MUIS in Singapore, JAKIM in Malaysia) and to point the qibla compass. Times are worked out or looked up on the device; exact coordinates are never sent anywhere. If location is declined, the user can pick a city from the list.
+
+To see travel mode without travelling: Prayer tab → tap the place name → pick a city in Vietnam or Japan. A welcome card explains how the times changed, and the Journey tab shows the traveller (musafir) rules.
+
+Notifications are optional prayer alerts the user turns on.
+
+The app is open source (GNU AGPL 3.0), published by NASAR PTE. LTD.
+```
 
 ## What to test (TestFlight notes)
 

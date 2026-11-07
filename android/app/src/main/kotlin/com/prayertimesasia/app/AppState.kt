@@ -17,6 +17,7 @@ import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.trackerDays
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.Preferences
 import com.prayertimesasia.core.Resolver
@@ -66,6 +67,10 @@ class AppState(
     var now by mutableStateOf(fixedNow ?: Instant.now())
     var selectedTab by mutableStateOf(Tab.PRAYER)
     var showJourney by mutableStateOf(false)
+    var showTracker by mutableStateOf(false)
+    var showRamadan by mutableStateOf(false)
+    /** Wake up for Subuh (the alarm clock on the Prayer screen, or Settings). */
+    var showWakeUp by mutableStateOf(false)
     /** A masjid from a screen's QR code, waiting for the user to say yes. */
     var pendingMasjid by mutableStateOf<MasjidLink?>(null)
     var locationRequested by mutableStateOf(false)
@@ -75,7 +80,8 @@ class AppState(
 
     /** The rules and times for right now. Cheap to build; read it fresh each time. */
     val resolver: Resolver
-        get() = Resolver(prefs, gpsPlace, { s, y, m, d -> official.times(s, y, m, d) }, directories.mosques, locale)
+        get() = Resolver(prefs, gpsPlace, { s, y, m, d -> official.times(s, y, m, d) }, directories.mosques, locale,
+            announcements = directories.calendar.announcements)
 
     fun tick() {
         if (fixedNow == null) now = Instant.now()
@@ -94,8 +100,10 @@ class AppState(
         if (!sideEffects) return
         store?.save(prefs)
         // Ticking a prayer in the tracker shouldn't reschedule every alarm.
-        val a = prefs.copy(prayedLog = emptyMap(), excusedDays = emptySet(), showMore = false)
-        val b = old.copy(prayedLog = emptyMap(), excusedDays = emptySet(), showMore = false)
+        val a = prefs.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false,
+            fastLog = emptyMap(), tarawihLog = emptySet(), quranLog = emptySet(), zakatPaid = emptySet())
+        val b = old.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false,
+            fastLog = emptyMap(), tarawihLog = emptySet(), quranLog = emptySet(), zakatPaid = emptySet())
         if (a == b) return
         refreshOfficialTimetable()
         rescheduleAlerts()
@@ -200,9 +208,39 @@ class AppState(
         p.copy(prayedLog = log)
     }
 
+    /** Pause for haid, nifas or illness: today and every day until it's ended count as excused, so the streak waits. */
+    fun pauseTracker(on: Instant) = update { it.copy(trackerPausedSince = resolver.dayKey(on)) }
+
+    /** End the pause: the paused days are kept as excused days, today included. */
+    fun endTrackerPause(on: Instant) = update { p ->
+        val since = p.trackerPausedSince ?: return@update p
+        p.copy(excusedDays = p.excusedDays + trackerDays(since, resolver.dayKey(on)), trackerPausedSince = null)
+    }
+
     fun toggleExcused(on: Instant) = update { p ->
         val key = resolver.dayKey(on)
         p.copy(excusedDays = if (key in p.excusedDays) p.excusedDays - key else p.excusedDays + key)
+    }
+
+    // MARK: Ramadan
+
+    /** Marks how a day's fast went; null clears it. Keeps about two years. */
+    fun setFast(key: String, mark: com.prayertimesasia.core.FastMark?) = update { p ->
+        var log = if (mark == null) p.fastLog - key else p.fastLog + (key to mark)
+        if (log.size > 800) log = log - log.keys.min()
+        p.copy(fastLog = log)
+    }
+
+    fun toggleTarawih(key: String) = update { p -> p.copy(tarawihLog = if (key in p.tarawihLog) p.tarawihLog - key else p.tarawihLog + key) }
+    fun toggleJuz(key: String) = update { p -> p.copy(quranLog = if (key in p.quranLog) p.quranLog - key else p.quranLog + key) }
+
+    /** A Ramadan alert switch: asks for notification permission when turned on. */
+    fun setRamadanAlert(on: Boolean, apply: (Preferences, Boolean) -> Preferences) {
+        if (!on) { update { apply(it, false) }; return }
+        scope.launch {
+            val granted = permissions?.notifications() ?: true
+            update { apply(it, granted) }
+        }
     }
 
     // MARK: Alerts
@@ -213,6 +251,40 @@ class AppState(
             val granted = permissions?.notifications() ?: true
             if (!granted) return@launch
             update { it.copy(notificationsEnabled = true, notifyPrayers = prayers ?: it.notifyPrayers) }
+        }
+    }
+
+    /** "Reminder before prayer": asks for notification permission, then rings [minutes] before each chosen prayer. */
+    fun enableReminder(minutes: Int = AlarmScheduler.DEFAULT_REMINDER_MINUTES) {
+        scope.launch {
+            val granted = permissions?.notifications() ?: true
+            if (!granted) return@launch
+            update { it.copy(reminderMinutesBefore = minutes) }
+        }
+    }
+
+    /** The Subuh alarm: asks for notification permission first (the alarm rings as one). */
+    fun setWakeUp(timing: com.prayertimesasia.core.WakeUpTiming) {
+        scope.launch {
+            permissions?.notifications()
+            update { it.copy(wakeUp = timing) }
+        }
+    }
+
+    /** The earlier sahur alarm, as [setWakeUp]. */
+    fun setSahurAlarm(timing: com.prayertimesasia.core.SahurTiming) {
+        scope.launch {
+            permissions?.notifications()
+            update { it.copy(sahurAlarm = timing) }
+        }
+    }
+
+    /** "Leave for Jumaat": asks for notification permission, then reminds [minutes] before Jumaat on Fridays. */
+    fun enableJumuahReminder(minutes: Int) {
+        scope.launch {
+            val granted = permissions?.notifications() ?: true
+            if (!granted) return@launch
+            update { it.copy(jumuahReminderMinutes = minutes) }
         }
     }
 
@@ -251,7 +323,11 @@ class AppState(
         if (!sideEffects) return
         refreshLocation()
         refreshOfficialTimetable()
-        scope.launch { directories.refreshIfStale() }
+        val h = resolver.hijriOf(now)
+        scope.launch {
+            directories.refreshIfStale(soon = (h.month == 8 || h.month == 9) && h.day >= 28)
+            rescheduleAlerts()
+        }
         rescheduleAlerts()
         countOpen()
     }

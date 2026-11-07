@@ -37,6 +37,12 @@ enum NamingStyle: String, CaseIterable, Codable, Identifiable, Sendable {
     /// rawValue "arabic" is kept so saved preferences still decode.
     case international = "arabic"
     case malay, indonesian, southAsian, turkish
+    /// The names in each language's own words and script. A native speaker
+    /// should check each one before launch.
+    case arabicScript, urdu, bengali, french
+
+    /// Written right to left. English sentences use International names instead.
+    var isRightToLeft: Bool { self == .arabicScript || self == .urdu }
 
     var id: String { rawValue }
 
@@ -48,6 +54,10 @@ enum NamingStyle: String, CaseIterable, Codable, Identifiable, Sendable {
         case .indonesian: "Indonesian"
         case .southAsian: "South Asian"
         case .turkish: "Turkish"
+        case .arabicScript: "Arabic"
+        case .urdu: "Urdu"
+        case .bengali: "Bangla"
+        case .french: "French"
         }
     }
 
@@ -58,6 +68,10 @@ enum NamingStyle: String, CaseIterable, Codable, Identifiable, Sendable {
         case .indonesian: "Indonesian (Subuh, Dzuhur, Ashar, Isya)"
         case .southAsian: "South Asian (Fajr, Zuhr, Asr, Isha)"
         case .turkish: "Turkish (Sabah, Öğle, İkindi, Yatsı)"
+        case .arabicScript: "Arabic (الفجر، الظهر، العصر)"
+        case .urdu: "Urdu (فجر، ظہر، عصر)"
+        case .bengali: "Bangla (ফজর, যোহর, আসর)"
+        case .french: "French (Fajr, Dhohr, Asr, Icha)"
         }
     }
 
@@ -76,6 +90,14 @@ enum NamingStyle: String, CaseIterable, Codable, Identifiable, Sendable {
             [.fajr: "Fajr", .sunrise: "Sunrise", .dhuhr: "Zuhr", .asr: "Asr", .maghrib: "Maghrib", .isha: "Isha"]
         case .turkish:
             [.fajr: "Sabah", .sunrise: "Güneş", .dhuhr: "Öğle", .asr: "İkindi", .maghrib: "Akşam", .isha: "Yatsı"]
+        case .arabicScript:
+            [.fajr: "الفجر", .sunrise: "الشروق", .dhuhr: "الظهر", .asr: "العصر", .maghrib: "المغرب", .isha: "العشاء"]
+        case .urdu:
+            [.fajr: "فجر", .sunrise: "طلوع آفتاب", .dhuhr: "ظہر", .asr: "عصر", .maghrib: "مغرب", .isha: "عشاء"]
+        case .bengali:
+            [.fajr: "ফজর", .sunrise: "সূর্যোদয়", .dhuhr: "যোহর", .asr: "আসর", .maghrib: "মাগরিব", .isha: "এশা"]
+        case .french:
+            [.fajr: "Fajr", .sunrise: "Chourouq", .dhuhr: "Dhohr", .asr: "Asr", .maghrib: "Maghrib", .isha: "Icha"]
         }
     }
 
@@ -85,6 +107,10 @@ enum NamingStyle: String, CaseIterable, Codable, Identifiable, Sendable {
         case .indonesian: "Jumat"
         case .turkish: "Cuma"
         case .international, .southAsian: "Jumu'ah"
+        case .arabicScript: "الجمعة"
+        case .urdu: "جمعہ"
+        case .bengali: "জুমা"
+        case .french: "Joumou'a"
         }
     }
 
@@ -93,9 +119,24 @@ enum NamingStyle: String, CaseIterable, Codable, Identifiable, Sendable {
         case .malay, .indonesian:
             ["Muharram", "Safar", "Rabiulawal", "Rabiulakhir", "Jamadilawal", "Jamadilakhir",
              "Rejab", "Syaaban", "Ramadan", "Syawal", "Zulkaedah", "Zulhijjah"]
-        case .international, .southAsian, .turkish:
+        case .international, .southAsian:
             ["Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani", "Jumada al-Ula", "Jumada al-Akhirah",
              "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qa'dah", "Dhu al-Hijjah"]
+        case .turkish:
+            ["Muharrem", "Safer", "Rebiülevvel", "Rebiülahir", "Cemaziyelevvel", "Cemaziyelahir",
+             "Recep", "Şaban", "Ramazan", "Şevval", "Zilkade", "Zilhicce"]
+        case .arabicScript:
+            ["محرم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة",
+             "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"]
+        case .urdu:
+            ["محرم", "صفر", "ربیع الاول", "ربیع الثانی", "جمادی الاول", "جمادی الثانی",
+             "رجب", "شعبان", "رمضان", "شوال", "ذوالقعدہ", "ذوالحجہ"]
+        case .bengali:
+            ["মহররম", "সফর", "রবিউল আউয়াল", "রবিউস সানি", "জমাদিউল আউয়াল", "জমাদিউস সানি",
+             "রজব", "শাবান", "রমজান", "শাওয়াল", "জিলকদ", "জিলহজ"]
+        case .french:
+            ["Mouharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani", "Joumada al-Oula", "Joumada al-Akhira",
+             "Rajab", "Chaabane", "Ramadan", "Chawwal", "Dhou al-Qida", "Dhou al-Hijja"]
         }
     }
 }

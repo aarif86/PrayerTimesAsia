@@ -85,13 +85,15 @@ enum PrayerEngine {
         if let interval = (isRamadan ? method.ramadanIshaInterval : nil) ?? method.ishaInterval {
             t[.isha] = t[.maghrib]! + interval / 60
         }
-        // High-latitude safety net ("one-seventh of the night") for days when the
-        // sun never reaches the twilight angle. Never triggers in tropical Asia.
-        let fajrSevenths = t[.sunrise]! - night / 7
-        if angleTime(method.fajrAngle, t[.fajr]! / 24, morning: true) == nil { t[.fajr] = fajrSevenths }
-        if method.ishaAngle != nil, angleTime(method.ishaAngle!, t[.isha]! / 24, morning: false) == nil {
-            t[.isha] = sunset + night / 7
-        }
+        // Short summer nights far from the equator (see HighLatitudeRule).
+        // Never changes anything in tropical Asia.
+        let fajrReached = angleTime(method.fajrAngle, t[.fajr]! / 24, morning: true) != nil
+        let ishaReached = method.ishaAngle.map { angleTime($0, t[.isha]! / 24, morning: false) != nil } ?? true
+        let adjusted = highLatitude(method: method, latitude: lat, year: year, month: month, day: day,
+                                    sunrise: t[.sunrise]!, sunset: sunset, night: night,
+                                    fajr: fajrReached ? t[.fajr]! : nil, isha: ishaReached ? t[.isha]! : nil)
+        t[.fajr] = adjusted.fajr
+        if method.ishaAngle != nil { t[.isha] = adjusted.isha }
 
         let midnightUTC = Astro.utcMidnight(year: year, month: month, day: day)
         var times: [Prayer: Date] = [:]
@@ -103,6 +105,67 @@ enum PrayerEngine {
             times[prayer] = midnightUTC.addingTimeInterval(minutes * 60)
         }
         return PrayerDay(year: year, month: month, day: day, times: times)
+    }
+
+    /// Fajr and Isha (hours, local mean time) on nights when twilight barely
+    /// ends. `fajr` / `isha` are nil when the sun never reaches the angle.
+    /// Same as highLatitude() in the web engine.
+    static func highLatitude(method: CalculationMethod, latitude lat: Double, year: Int, month: Int, day: Int,
+                             sunrise: Double, sunset: Double, night: Double,
+                             fajr: Double?, isha: Double?) -> (fajr: Double, isha: Double) {
+        switch method.highLatitude {
+        case .moonsighting:
+            var fajr = fajr, isha = isha
+            // Above 55° the committee starts from one seventh of the night, then the same seasonal limits.
+            if abs(lat) >= 55 { fajr = sunrise - night / 7; isha = sunset + night / 7 }
+            let doy = dayOfYear(year, month, day)
+            let safeFajr = sunrise - seasonalMinutes(lat, year, doy, morning) / 60
+            let safeIsha = sunset + seasonalMinutes(lat, year, doy, evening) / 60
+            return (fajr.map { safeFajr > $0 ? safeFajr : $0 } ?? safeFajr,
+                    isha.map { safeIsha < $0 ? safeIsha : $0 } ?? safeIsha)
+        case .fallback:
+            return (fajr ?? sunrise - night / 7, isha ?? sunset + night / 7)
+        case .angle, .seventh, .middle:
+            func portion(_ angle: Double) -> Double {
+                switch method.highLatitude {
+                case .middle: return night / 2
+                case .seventh: return night / 7
+                default: return angle / 60 * night
+                }
+            }
+            let fajrCap = sunrise - portion(method.fajrAngle)
+            let ishaCap = sunset + portion(method.ishaAngle ?? method.fajrAngle)
+            return (fajr.map { $0 < fajrCap ? fajrCap : $0 } ?? fajrCap,
+                    isha.map { $0 > ishaCap ? ishaCap : $0 } ?? ishaCap)
+        }
+    }
+
+    private static func dayOfYear(_ year: Int, _ month: Int, _ day: Int) -> Int {
+        let a = Astro.utcMidnight(year: year, month: month, day: day)
+        let b = Astro.utcMidnight(year: year, month: 1, day: 1)
+        return Int((a.timeIntervalSince(b) / 86_400).rounded()) + 1
+    }
+
+    // Moonsighting Committee (Khalid Shaukat): minutes before sunrise / after sunset
+    // at four points of the year, scaled by latitude, joined by straight lines.
+    private static let morning: [Double] = [28.65, 19.44, 32.74, 48.10]
+    private static let evening: [Double] = [25.60, 2.050, -9.21, 6.14]
+
+    private static func seasonalMinutes(_ lat: Double, _ year: Int, _ doy: Int, _ k: [Double]) -> Double {
+        let v = k.map { 75 + $0 / 55 * abs(lat) }
+        let (a, b, c, d) = (v[0], v[1], v[2], v[3])
+        let leap = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+        let days = leap ? 366 : 365
+        var dyy = lat >= 0 ? doy + 10 : doy - (leap ? 173 : 172)
+        if dyy >= days { dyy -= days }
+        if dyy < 0 { dyy += days }
+        let x = Double(dyy)
+        if dyy < 91 { return a + (b - a) / 91 * x }
+        if dyy < 137 { return b + (c - b) / 46 * (x - 91) }
+        if dyy < 183 { return c + (d - c) / 46 * (x - 137) }
+        if dyy < 229 { return d + (c - d) / 46 * (x - 183) }
+        if dyy < 275 { return c + (b - c) / 46 * (x - 229) }
+        return b + (a - b) / 91 * (x - 275)
     }
 
     /// Convenience: the prayer day for the local calendar date containing `date` in `timeZone`.

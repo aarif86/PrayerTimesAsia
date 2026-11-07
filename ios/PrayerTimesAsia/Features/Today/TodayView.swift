@@ -6,6 +6,7 @@ struct TodayView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
     @State private var showCalendar = false
+    @State private var showTracker = false
     /// Days away from today shown in the list (‹ › and swipe); 0 = today.
     @State private var dayOffset = 0
     /// Show the blessed times (Dhuha, middle and last third of the night).
@@ -24,6 +25,7 @@ struct TodayView: View {
         }
         .sheet(isPresented: $showPlaces) { PlacesView() }
         .sheet(isPresented: $showCalendar) { CalendarSanadView() }
+        .sheet(isPresented: $showTracker) { TrackerView() }
         .onAppear {
             // Demo screenshots: Show more only when asked, never carried over from a previous run.
             let args = ProcessInfo.processInfo.arguments
@@ -42,7 +44,18 @@ struct TodayView: View {
             LivingSkyBackground(colors: sky)
             // Fill the screen when it all fits: the list stretches into the free
             // height so it breathes. Otherwise (small phones, Show more open) scroll.
-            if model.prefs.todayStyle == .sunPath {
+            if model.prefs.todayStyle == .simple {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        topBar(now)
+                        if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+                        SimpleTimes(now: now, day: day, current: current, next: next)
+                    }
+                    .padding(.horizontal, Theme.gutter)
+                    .padding(.bottom, 32)
+                }
+                .scrollIndicators(.hidden)
+            } else if model.prefs.todayStyle == .sunPath {
                 sunPathPage(now: now, day: day, shown: shown, current: current, next: next)
             } else if model.prefs.todayStyle == .bands {
                 ViewThatFits(in: .vertical) {
@@ -112,6 +125,7 @@ struct TodayView: View {
             header(now: now, day: day, shown: shown, current: current, next: next)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            if dayOffset == 0 { SeasonCard(now: now) }
             PrayerList(day: shown, now: now,
                        current: dayOffset == 0 ? current?.prayer : nil,
                        next: dayOffset == 0 ? next : nil,
@@ -141,8 +155,8 @@ struct TodayView: View {
                 DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
                         currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
                         currentPrayer: current.prayer,
-                        countdown: Self.short(next.time.timeIntervalSince(now)),
-                        nextName: next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))
+                        countdown: PrayerCountdown(now: now, next: next, model: model).count,
+                        label: PrayerCountdown(now: now, next: next, model: model).label)
                     .frame(width: 172, height: 172)
             }
             VStack(alignment: .leading, spacing: 10) {
@@ -150,13 +164,14 @@ struct TodayView: View {
                     Spacer(minLength: 0)
                     if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                         Button { model.showJourney = true } label: {
-                            Image(systemName: "airplane").font(.subheadline.weight(.semibold))
+                            Image(systemName: "suitcase.rolling.fill").font(.subheadline.weight(.semibold))
                                 .frame(width: 34, height: 34)
                                 .background(Theme.accent.opacity(0.25), in: Circle())
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("Musafir: you may shorten and combine prayers")
                     }
+                    wakeChip(now)
                     if model.prefs.trackerEnabled { streakChip(now) }
                     appearanceButton
                     styleButton
@@ -202,7 +217,7 @@ struct TodayView: View {
                     Text(label).font(.caption2.weight(.heavy)).tracking(0.5).foregroundStyle(Theme.accent)
                     Text(f.string(from: date)).font(.headline)
                     HStack(spacing: 3) {
-                        Text(Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment))
+                        Text(model.hijriLabel(date))
                             .lineLimit(1).minimumScaleFactor(0.75)
                         Image(systemName: "calendar")
                     }
@@ -226,6 +241,7 @@ struct TodayView: View {
             topBar(now)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            if dayOffset == 0 { SeasonCard(now: now) }
             dateHeader(shown)
             dial(now: now, shown: shown, current: current, next: next)
                 .padding(.horizontal, 8 - Theme.gutter)
@@ -267,14 +283,15 @@ struct TodayView: View {
             Spacer(minLength: 0)
             if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                 Button { model.showJourney = true } label: {
-                    Image(systemName: "airplane").font(.subheadline.weight(.semibold))
+                    Image(systemName: "suitcase.rolling.fill").font(.subheadline.weight(.semibold))
                         .frame(width: 34, height: 34)
                         .background(Theme.accent.opacity(0.25), in: Circle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Musafir: you may shorten and combine prayers")
             }
-            if model.prefs.trackerEnabled { streakChip(now) }
+            wakeChip(now)
+                    if model.prefs.trackerEnabled { streakChip(now) }
             appearanceButton
             styleButton
         }
@@ -309,10 +326,11 @@ struct TodayView: View {
     }
 
     private func blessedTimes(_ shown: PrayerDay) -> [(BlessedTime, Date)] {
-        guard showMore, let place = model.activePlace,
+        guard let place = model.activePlace,
               let nextDay = model.day(containing: shown.time(.dhuhr).addingTimeInterval(86_400)) else { return [] }
-        let ramadan = Hijri.isRamadan(shown.time(.dhuhr), timeZone: model.timeZone, adjustment: model.prefs.hijriAdjustment)
-        return BlessedTime.compute(day: shown, nextDay: nextDay, coordinates: place.coordinates, isRamadan: ramadan)
+        let all = BlessedTime.compute(day: shown, nextDay: nextDay, coordinates: place.coordinates, isRamadan: model.isRamadanDay(shown.time(.dhuhr)))
+        // In Ramadan, Imsak is always shown.
+        return showMore ? all : all.filter { $0.0 == .imsak }
     }
 
     /// "TODAY", the date and the Hijri date above the dial; tap for the calendar,
@@ -335,7 +353,7 @@ struct TodayView: View {
                 Text(label).font(.caption.weight(.heavy)).tracking(0.8).foregroundStyle(Theme.accent)
                 Text(f.string(from: date)).font(Theme.display(26, .bold))
                 HStack(spacing: 4) {
-                    Text(Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment))
+                    Text(model.hijriLabel(date))
                     Image(systemName: dayOffset == 0 ? "calendar" : "arrow.uturn.backward")
                 }
                 .font(.subheadline).foregroundStyle(.secondary)
@@ -358,11 +376,11 @@ struct TodayView: View {
                     .foregroundStyle(current.prayer.tint)
                 Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
                     .font(Theme.display(size * 0.085, .bold))
-                Text(Self.short(next.time.timeIntervalSince(now)))
+                Text(PrayerCountdown(now: now, next: next, model: model).count)
                     .font(Theme.display(size * 0.066, .semibold)).monospacedDigit()
                     .foregroundStyle(Theme.accent)
                     .contentTransition(.numericText(countsDown: true))
-                Text("until \(next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))")
+                Text(PrayerCountdown(now: now, next: next, model: model).label)
                     .font(.system(size: size * 0.034, weight: .medium))
                     .foregroundStyle(.secondary)
             }
@@ -417,25 +435,26 @@ struct TodayView: View {
                     Spacer(minLength: 0)
                     if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                         Button { model.showJourney = true } label: {
-                            Image(systemName: "airplane").font(.subheadline.weight(.semibold))
+                            Image(systemName: "suitcase.rolling.fill").font(.subheadline.weight(.semibold))
                                 .frame(width: 34, height: 34).background(Color.white.opacity(0.12), in: Circle())
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("Musafir: you may shorten and combine prayers")
                     }
+                    wakeChip(now)
                     if model.prefs.trackerEnabled { streakChip(now) }
                     appearanceButton
                     styleButton
                 }
                 if let current, let next, dayOffset == 0 {
-                    let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
-                    Text("\(current.prayer.name(model.naming, isFriday: model.isFriday(current.time))) now · \(Self.short(next.time.timeIntervalSince(now))) until \(nextName)")
+                    Text("\(current.prayer.name(model.naming, isFriday: model.isFriday(current.time))) now · \(PrayerCountdown(now: now, next: next, model: model).text)")
                         .font(.subheadline.weight(.semibold)).monospacedDigit()
                         .foregroundStyle(.white.opacity(0.75))
                         .contentTransition(.numericText(countsDown: true))
                 }
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+                if dayOffset == 0 { SeasonCard(now: now) }
             }
             .padding(.horizontal, Theme.gutter)
             .padding(.top, 4).padding(.bottom, 12)
@@ -482,7 +501,7 @@ struct TodayView: View {
         let f = DateFormatter()
         f.timeZone = model.timeZone
         f.dateFormat = "d MMM yyyy"
-        let hijri = Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment)
+        let hijri = model.hijriLabel(date)
         return HStack(spacing: 4) {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
                 Image(systemName: "chevron.left").frame(width: 36, height: 40)
@@ -519,14 +538,15 @@ struct TodayView: View {
                     DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
                             currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
                             currentPrayer: current.prayer,
-                            countdown: Self.short(next.time.timeIntervalSince(now)),
-                            nextName: next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))
+                            countdown: PrayerCountdown(now: now, next: next, model: model).count,
+                            label: PrayerCountdown(now: now, next: next, model: model).label)
                         .frame(width: 148, height: 148)
                         .frame(maxWidth: .infinity)
                 }
                 VStack(spacing: 8) {
                     styleButton
                     appearanceButton
+                    wakeChip(now)
                     if model.prefs.trackerEnabled { streakChip(now) }
                 }
                 .padding(.top, 4)
@@ -536,6 +556,7 @@ struct TodayView: View {
             sunPlaceChip()
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            if dayOffset == 0 { SeasonCard(now: now) }
             if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
             sunDayNavigator(shown)
             PrayerList(day: shown, now: now,
@@ -579,6 +600,7 @@ struct TodayView: View {
                 sunPlaceChip()
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+                if dayOffset == 0 { SeasonCard(now: now) }
                 if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
                 sunDayNavigator(shown)
                 PrayerList(day: shown, now: now,
@@ -608,7 +630,8 @@ struct TodayView: View {
                 sunStatus(current: current, next: next, now: now)
             }
             Spacer(minLength: 0)
-            if model.prefs.trackerEnabled { streakChip(now) }
+            wakeChip(now)
+                    if model.prefs.trackerEnabled { streakChip(now) }
             appearanceButton
             styleButton
         }
@@ -650,13 +673,15 @@ struct TodayView: View {
         let currentName = current.prayer.name(model.naming, isFriday: model.isFriday(current.time))
         let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
         let remaining = next.time.timeIntervalSince(now)
+        let count = PrayerCountdown(now: now, next: next, model: model)
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Circle().fill(current.prayer.tint).frame(width: 9, height: 9)
                 Text(currentName).font(Theme.display(30, .bold))
             }
-            Text(next.prayer == .sunrise ? "\(Self.short(remaining)) until \(nextName) - \(Prayer.fajr.name(model.naming)) ends" : "\(Self.short(remaining)) until \(nextName)")
+            Text(count.text)
                 .font(.subheadline.weight(.semibold))
+                .foregroundStyle(count.urgent ? Theme.accent : .primary)
                 .monospacedDigit()
                 .contentTransition(.numericText(countsDown: true))
                 .padding(.horizontal, 12).padding(.vertical, 6)
@@ -671,7 +696,7 @@ struct TodayView: View {
         let f = DateFormatter()
         f.timeZone = model.timeZone
         f.dateFormat = "EEEE d MMMM"
-        let hijri = Hijri.format(date, timeZone: model.timeZone, style: model.naming, adjustment: model.prefs.hijriAdjustment)
+        let hijri = model.hijriLabel(date)
         return HStack {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
                 Image(systemName: "chevron.left").frame(width: 40, height: 40).opacity(0.6)
@@ -704,7 +729,7 @@ struct TodayView: View {
     private func sunMusafirChip(_ status: Musafir.Status) -> some View {
         Button { model.showJourney = true } label: {
             HStack {
-                Image(systemName: "airplane")
+                Image(systemName: "suitcase.rolling.fill")
                 Text("Musafir · you may shorten & combine").lineLimit(1)
                 Spacer(minLength: 4)
                 Image(systemName: "chevron.right").font(.caption.weight(.bold))
@@ -786,25 +811,44 @@ struct TodayView: View {
         return f.string(from: max(60, seconds)) ?? ""
     }
 
+    /// The alarm clock: Wake up for Subuh, one tap from the Prayer screen.
+    /// Shows the next alarm's time when one is set.
+    private func wakeChip(_ now: Date) -> some View {
+        let next = model.nextWakeUp(after: now)
+        let fajr = Prayer.fajr.name(model.naming)
+        return Button { model.showWakeUp = true } label: {
+            HStack(spacing: 4) {
+                Image(systemName: next == nil ? "alarm" : "alarm.fill")
+                if let next {
+                    Text(model.formatted(next.date).replacingOccurrences(of: " AM", with: "").replacingOccurrences(of: " PM", with: ""))
+                        .monospacedDigit()
+                }
+            }
+            .font(.subheadline.weight(.semibold))
+            .padding(.horizontal, next == nil ? 0 : 10)
+            .frame(minWidth: 34, minHeight: 34)
+            .background(next == nil ? Color.primary.opacity(0.1) : Theme.sunArc.opacity(0.3), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(next.map { "Wake up alarm at \(model.formatted($0.date))" } ?? "Wake up for \(fajr): set an alarm")
+        .accessibilityHint("Alarms for \(fajr), tahajjud and sahur.")
+    }
+
     private func streakChip(_ now: Date) -> some View {
         let excused = model.isExcused(now)
-        return Menu {
-            Button {
-                model.toggleExcused(now)
-            } label: {
-                Label(excused ? "Not excused today" : "Excused today", systemImage: excused ? "xmark.circle" : "drop.fill")
-            }
-        } label: {
+        let paused = model.trackerPaused
+        return Button { showTracker = true } label: {
             HStack(spacing: 4) {
-                Image(systemName: excused ? "drop.fill" : "flame.fill")
+                Image(systemName: paused ? "pause.fill" : excused ? "drop.fill" : "flame.fill")
                 Text("\(model.streak)").monospacedDigit()
             }
             .font(.subheadline.weight(.semibold))
             .padding(.horizontal, 10).padding(.vertical, 8)
             .background(Color.primary.opacity(0.1), in: Capsule())
         }
-        .accessibilityLabel("Streak \(model.streak) days\(excused ? ", excused today" : "")")
-        .accessibilityHint("Mark today as excused - for example during haid or illness - so your streak continues.")
+        .buttonStyle(.plain)
+        .accessibilityLabel("Prayer tracker: streak \(model.streak) days\(paused ? ", paused" : excused ? ", excused today" : "")")
+        .accessibilityHint("Opens the tracker: pause it for haid or illness, and see each month.")
     }
 
     // MARK: Day
@@ -885,10 +929,10 @@ private struct PrayerList: View {
 
     private var entries: [Entry] {
         var list = Prayer.allCases.map { Entry.prayer($0, day.time($0)) }
-        if showMore, let place = model.activePlace,
+        if let place = model.activePlace,
            let nextDay = model.day(containing: day.time(.dhuhr).addingTimeInterval(86_400)) {
-            let ramadan = Hijri.isRamadan(day.time(.dhuhr), timeZone: model.timeZone, adjustment: model.prefs.hijriAdjustment)
-            list += BlessedTime.compute(day: day, nextDay: nextDay, coordinates: place.coordinates, isRamadan: ramadan)
+            list += BlessedTime.compute(day: day, nextDay: nextDay, coordinates: place.coordinates, isRamadan: model.isRamadanDay(day.time(.dhuhr)))
+                .filter { showMore || $0.0 == .imsak }
                 .map { Entry.blessed($0.0, $0.1) }
         }
         return list.sorted { $0.time < $1.time }
@@ -1294,13 +1338,17 @@ private struct ArrivalCard: View {
                 HStack(alignment: .top, spacing: 12) {
                     Text(profile.flag.isEmpty ? "🌏" : profile.flag).font(.system(size: 34))
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(profile.code.isEmpty ? "Outside Asia" : "Welcome to \(profile.name)")
+                        Text(profile.code.isEmpty ? "Welcome" : "Welcome to \(profile.name)")
                             .font(.headline)
                         Text(model.isMethodAutomatic
                              ? "Switched to \(model.method.name) (\(model.method.parameterSummary)), local time. Works offline."
                              : "Local time applied. You've pinned \(model.method.shortName) in Settings.")
                             .font(.subheadline)
                             .opacity(0.85)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(model.sourceShort)
+                            .font(.caption)
+                            .opacity(0.75)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 0)

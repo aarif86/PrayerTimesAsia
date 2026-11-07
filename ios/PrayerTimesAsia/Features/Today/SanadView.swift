@@ -178,11 +178,11 @@ struct SanadSheet: View {
         case .official where day.officialSource != nil:
             return "Downloaded once a year from the authority and kept on your phone, so it works offline."
         case .official:
-            return "\(model.method.parameterSummary). This is the authority's own published method."
+            return "\(model.method.parameterSummary). \(model.sourceSummary)"
         case .masjid, .community:
             return model.nearbyMosque.flatMap { $0.method?.note } ?? day.grade.explanation
         case .calculated, .falak:
-            return "\(model.method.parameterSummary) · \(model.asrSchool == .hanafi ? "Hanafi" : "Shafi'i") Asr. \(model.method.note)"
+            return "\(model.method.parameterSummary) · \(model.asrSchool == .hanafi ? "Hanafi" : "Shafi'i") Asr. \(model.sourceSummary) \(model.method.note)"
         }
     }
 }

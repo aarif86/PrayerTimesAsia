@@ -91,6 +91,37 @@ final class NearbySearchTests: XCTestCase {
         XCTAssertTrue(q.contains("around:12000,1.5022,103.7766"), q)
         XCTAssertTrue(q.hasSuffix("out center tags;"), q)
     }
+
+    /// Driving on the highway: a saved answer from a nearby search is reused,
+    /// one from far away is not.
+    func testSavedOpenStreetMapAnswerIsReusedNearby() {
+        let pagoh = Coordinates(latitude: 2.1640, longitude: 102.7480)
+        let data = Data(#"{"elements":[]}"#.utf8)
+        OverpassCache.save(data, center: pagoh)
+        let fewKmOn = Coordinates(latitude: 2.1900, longitude: 102.7300)
+        XCTAssertEqual(OverpassCache.load(near: fewKmOn, within: NearbySearch.osmRefreshKm)?.data, data)
+        let kualaLumpur = Coordinates(latitude: 3.1390, longitude: 101.6869)
+        XCTAssertNil(OverpassCache.load(near: kualaLumpur, within: NearbySearch.osmRefreshKm))
+    }
+
+    /// The weekly ready-made list: which squares an area needs, and reading them.
+    func testReadyMadeMasjidList() {
+        // Kuala Lumpur sits inside one square; a point near 1° N 104° E touches four.
+        XCTAssertEqual(MasjidList.tiles(around: Coordinates(latitude: 3.1390, longitude: 101.6869)), ["3_101"])
+        XCTAssertEqual(Set(MasjidList.tiles(around: Coordinates(latitude: 1.0500, longitude: 103.9500))),
+                       ["0_103", "0_104", "1_103", "1_104"])
+        // Fiji, across the date line.
+        XCTAssertEqual(Set(MasjidList.tiles(around: Coordinates(latitude: -16.5, longitude: 179.95))), ["-17_179", "-17_-180"])
+        let json = #"{"tile":"3_101","updated":"2026-11-07","places":[["n1",3.14,101.69,"Masjid Negara","",0],["w2",3.15,101.7,"","Jalan Ampang",1]]}"#
+        let places = MasjidList.parse(Data(json.utf8)) ?? []
+        XCTAssertEqual(places.map(\.name), ["Masjid Negara", "Musollah"])
+        XCTAssertEqual(places.map(\.isMusollah), [false, true])
+        XCTAssertEqual(places.last?.address, "Jalan Ampang")
+        XCTAssertNil(MasjidList.parse(Data("oops".utf8)))
+        let index = MasjidList.parseIndex(Data(#"{"updated":"2026-11-07","countries":{"MY":{"places":2}},"tiles":["3_101"]}"#.utf8))
+        XCTAssertEqual(index?.tiles, ["3_101"])
+        XCTAssertEqual(index?.countries, ["MY"])
+    }
 }
 
 @MainActor

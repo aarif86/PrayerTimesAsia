@@ -10,13 +10,19 @@ export const OBLIGATORY: readonly Prayer[] = ['fajr', 'dhuhr', 'asr', 'maghrib',
 export const isObligatory = (p: Prayer): boolean => p !== 'sunrise'
 
 /**
- * How prayer names are spelled. The app uses *your* words (from your home, or
- * your browser) wherever you are, and shows the local word when you travel.
- * The value 'arabic' is kept for International so old saved choices decode.
+ * How prayer names are spelled. The app uses *your* words (from your phone's
+ * language, your home, or your browser) wherever you are, and shows the local
+ * word when you travel. The value 'arabic' is kept for International so old
+ * saved choices decode; 'arabicScript' is the names written in Arabic.
+ * New languages need a native speaker's check before launch.
  */
-export type NamingStyle = 'arabic' | 'malay' | 'indonesian' | 'southAsian' | 'turkish'
+export type NamingStyle =
+  | 'arabic' | 'malay' | 'indonesian' | 'southAsian' | 'turkish'
+  | 'arabicScript' | 'urdu' | 'bengali' | 'french'
 
-export const NAMING_STYLES: readonly NamingStyle[] = ['arabic', 'malay', 'indonesian', 'southAsian', 'turkish']
+export const NAMING_STYLES: readonly NamingStyle[] = [
+  'arabic', 'malay', 'indonesian', 'southAsian', 'turkish', 'arabicScript', 'urdu', 'bengali', 'french',
+]
 
 export const NAMING_LANGUAGE: Record<NamingStyle, string> = {
   arabic: 'International',
@@ -24,6 +30,10 @@ export const NAMING_LANGUAGE: Record<NamingStyle, string> = {
   indonesian: 'Indonesian',
   southAsian: 'South Asian',
   turkish: 'Turkish',
+  arabicScript: 'Arabic',
+  urdu: 'Urdu',
+  bengali: 'Bangla',
+  french: 'French',
 }
 
 export const NAMING_LABEL: Record<NamingStyle, string> = {
@@ -32,7 +42,14 @@ export const NAMING_LABEL: Record<NamingStyle, string> = {
   indonesian: 'Indonesian (Subuh, Dzuhur, Ashar, Isya)',
   southAsian: 'South Asian (Fajr, Zuhr, Asr, Isha)',
   turkish: 'Turkish (Sabah, Öğle, İkindi, Yatsı)',
+  arabicScript: 'Arabic (الفجر، الظهر، العصر)',
+  urdu: 'Urdu (فجر، ظہر، عصر)',
+  bengali: 'Bangla (ফজর, যোহর, আসর)',
+  french: 'French (Fajr, Dhohr, Asr, Icha)',
 }
+
+/** Names written right to left. English sentences use International names instead. */
+export const isRightToLeft = (s: NamingStyle): boolean => s === 'arabicScript' || s === 'urdu'
 
 /** Spellings follow each authority's own timetable. */
 export const NAMES: Record<NamingStyle, Record<Prayer, string>> = {
@@ -41,10 +58,15 @@ export const NAMES: Record<NamingStyle, Record<Prayer, string>> = {
   indonesian: { fajr: 'Subuh', sunrise: 'Terbit', dhuhr: 'Dzuhur', asr: 'Ashar', maghrib: 'Maghrib', isha: 'Isya' },
   southAsian: { fajr: 'Fajr', sunrise: 'Sunrise', dhuhr: 'Zuhr', asr: 'Asr', maghrib: 'Maghrib', isha: 'Isha' },
   turkish: { fajr: 'Sabah', sunrise: 'Güneş', dhuhr: 'Öğle', asr: 'İkindi', maghrib: 'Akşam', isha: 'Yatsı' },
+  arabicScript: { fajr: 'الفجر', sunrise: 'الشروق', dhuhr: 'الظهر', asr: 'العصر', maghrib: 'المغرب', isha: 'العشاء' },
+  urdu: { fajr: 'فجر', sunrise: 'طلوع آفتاب', dhuhr: 'ظہر', asr: 'عصر', maghrib: 'مغرب', isha: 'عشاء' },
+  bengali: { fajr: 'ফজর', sunrise: 'সূর্যোদয়', dhuhr: 'যোহর', asr: 'আসর', maghrib: 'মাগরিব', isha: 'এশা' },
+  french: { fajr: 'Fajr', sunrise: 'Chourouq', dhuhr: 'Dhohr', asr: 'Asr', maghrib: 'Maghrib', isha: 'Icha' },
 }
 
 const FRIDAY: Record<NamingStyle, string> = {
   malay: 'Jumaat', indonesian: 'Jumat', turkish: 'Cuma', arabic: "Jumu'ah", southAsian: "Jumu'ah",
+  arabicScript: 'الجمعة', urdu: 'جمعہ', bengali: 'জুমা', french: 'Joumou\'a',
 }
 
 export function prayerName(p: Prayer, style: NamingStyle, isFriday = false): string {
@@ -52,12 +74,29 @@ export function prayerName(p: Prayer, style: NamingStyle, isFriday = false): str
   return NAMES[style][p]
 }
 
+const HIJRI_MONTHS: Record<'malay' | 'international' | 'turkish' | 'arabicScript' | 'urdu' | 'bengali' | 'french', string[]> = {
+  malay: ['Muharram', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jamadilawal', 'Jamadilakhir',
+    'Rejab', 'Syaaban', 'Ramadan', 'Syawal', 'Zulkaedah', 'Zulhijjah'],
+  international: ['Muharram', 'Safar', 'Rabi al-Awwal', 'Rabi al-Thani', 'Jumada al-Ula', 'Jumada al-Akhirah',
+    'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhu al-Qa'dah", 'Dhu al-Hijjah'],
+  turkish: ['Muharrem', 'Safer', 'Rebiülevvel', 'Rebiülahir', 'Cemaziyelevvel', 'Cemaziyelahir',
+    'Recep', 'Şaban', 'Ramazan', 'Şevval', 'Zilkade', 'Zilhicce'],
+  arabicScript: ['محرم', 'صفر', 'ربيع الأول', 'ربيع الآخر', 'جمادى الأولى', 'جمادى الآخرة',
+    'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'],
+  urdu: ['محرم', 'صفر', 'ربیع الاول', 'ربیع الثانی', 'جمادی الاول', 'جمادی الثانی',
+    'رجب', 'شعبان', 'رمضان', 'شوال', 'ذوالقعدہ', 'ذوالحجہ'],
+  bengali: ['মহররম', 'সফর', 'রবিউল আউয়াল', 'রবিউস সানি', 'জমাদিউল আউয়াল', 'জমাদিউস সানি',
+    'রজব', 'শাবান', 'রমজান', 'শাওয়াল', 'জিলকদ', 'জিলহজ'],
+  french: ['Mouharram', 'Safar', 'Rabi al-Awwal', 'Rabi al-Thani', 'Joumada al-Oula', 'Joumada al-Akhira',
+    'Rajab', 'Chaabane', 'Ramadan', 'Chawwal', 'Dhou al-Qida', 'Dhou al-Hijja'],
+}
+
 export function hijriMonths(style: NamingStyle): string[] {
-  return style === 'malay' || style === 'indonesian'
-    ? ['Muharram', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jamadilawal', 'Jamadilakhir',
-      'Rejab', 'Syaaban', 'Ramadan', 'Syawal', 'Zulkaedah', 'Zulhijjah']
-    : ['Muharram', 'Safar', 'Rabi al-Awwal', 'Rabi al-Thani', 'Jumada al-Ula', 'Jumada al-Akhirah',
-      'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhu al-Qa'dah", 'Dhu al-Hijjah']
+  switch (style) {
+    case 'malay': case 'indonesian': return HIJRI_MONTHS.malay
+    case 'turkish': case 'arabicScript': case 'urdu': case 'bengali': case 'french': return HIJRI_MONTHS[style]
+    default: return HIJRI_MONTHS.international
+  }
 }
 
 /** Shafi'i/Maliki/Hanbali (shadow = object) or Hanafi (shadow = twice the object). */

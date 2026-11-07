@@ -15,6 +15,9 @@ import { SettingsScreen, VERSION } from './Settings'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
 import { SKY, skyAt } from './sky'
 import { TodayScreen } from './Today'
+import { RamadanSheet } from './Ramadan'
+import { TrackerSheet } from './Tracker'
+import { WakeUpSheet } from './WakeUp'
 
 const MasjidScreen = lazy(() => import('./Masjid'))
 
@@ -49,9 +52,10 @@ export function App() {
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = scheme
+    document.documentElement.toggleAttribute('data-large-text', s.prefs.largeText)
     const meta = document.querySelector('meta[name="theme-color"]')
     meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
-  }, [scheme, bands])
+  }, [scheme, bands, s.prefs.largeText])
 
   useEffect(() => {
     const moved = takeMoveFromLink()
@@ -62,9 +66,11 @@ export function App() {
     // Counted a few seconds in, so the GPS place has usually arrived.
     const count = () => setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000)
     count()
-    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); scheduleAlerts(); count() } }
+    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); void s.refreshData(); scheduleAlerts(); count() } }
+    // On moon sighting nights the announcement can arrive while the app is open.
+    const poll = setInterval(() => { void s.refreshData() }, 10 * 60_000)
     document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
+    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll) }
   }, [])
 
   // Re-arm the next prayer alert whenever anything changes.
@@ -94,6 +100,8 @@ export function App() {
           {s.tab === 'settings' && <SettingsScreen />}
         </main>
       </div>
+      {/* Big screens have room beside the app: a way back to the website. */}
+      <a class="site-link" href="../">&larr; prayertimes.asia</a>
       <nav class="tabbar" role="tablist" aria-label="Sections">
         {TABS.map((t) => {
           const Icon = TAB_ICON[t]
@@ -109,6 +117,9 @@ export function App() {
       {sheet?.kind === 'calendar' && <CalendarSheet />}
       {sheet?.kind === 'makers' && <MakersSheet placement={sheet.placement} />}
       {sheet?.kind === 'journey' && <JourneySheet />}
+      {sheet?.kind === 'tracker' && <TrackerSheet />}
+      {sheet?.kind === 'ramadan' && <RamadanSheet />}
+      {sheet?.kind === 'wakeup' && <WakeUpSheet />}
       {sheet?.kind === 'level' && <LevelSheet />}
       {sheet?.kind === 'ar' && <ARScreen />}
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}
@@ -128,7 +139,7 @@ function Onboarding() {
         <div class="spacer" />
         <div>
           <h1 class="display onb-title">Prayer Times<br />Asia</h1>
-          <p class="onb-lead">Wherever you land in Asia, know when to pray and which way to face.</p>
+          <p class="onb-lead">Wherever you land, know when to pray and which way to face.</p>
         </div>
         <div class="onb-features">
           <Feature icon={<Globe2 size={24} />} title="Every country's own method" detail="MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia - and sensible defaults everywhere else." />

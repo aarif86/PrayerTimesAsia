@@ -59,10 +59,11 @@ install; a missing key means the default. `"v": 1` is always there.
 | `todayStyle` | `centre`, `list`, `dial`, `sunPath`, `bands` |
 | `hijriAdjustment` | -2 to 2 |
 | `notifyPrayers` | list of `fajr`, `sunrise`, `dhuhr`, `asr`, `maghrib`, `isha` |
-| `reminderMinutesBefore` | minutes |
+| `reminderMinutesBefore` | minutes before each prayer for "Reminder before prayer" (0 = off) |
 | `musafirThresholdKm` | km |
 | `prayedLog` | `{"yyyy-MM-dd": [prayers]}` |
 | `excusedDays` | list of `yyyy-MM-dd` |
+| `trackerPausedSince` | `yyyy-MM-dd` the tracker was paused (haid, nifas, illness); every day from then until the pause ends counts as excused |
 | `wakeUp` | `atFajr`, `fajrPlus15`, `sunriseMinus30`, `sunriseMinus15` (phones only; the web keeps it if present) |
 
 A place is `{name, region?, countryCode?, countryName?, timeZoneID, lat, lon, district?}`.

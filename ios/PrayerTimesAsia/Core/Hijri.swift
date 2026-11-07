@@ -20,6 +20,8 @@ enum Hijri {
     static func format(_ date: Date, timeZone: TimeZone, style: NamingStyle, adjustment: Int = 0) -> String {
         let h = self.date(date, timeZone: timeZone, adjustment: adjustment)
         let name = style.hijriMonths[max(0, min(11, h.month - 1))]
-        return "\(h.day) \(name) \(h.year)"
+        // Isolate a right-to-left month so the day and year stay either side of it.
+        let shown = style.isRightToLeft ? "\u{2068}" + name + "\u{2069}" : name
+        return "\(h.day) \(shown) \(h.year)"
     }
 }

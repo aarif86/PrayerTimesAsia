@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import {
-  BadgeCheck, Building2, Check, Globe, House, Navigation, Plane, Search, Share, SquarePlus, Trash2, Users, Sigma, SunDim,
+  BadgeCheck, Building2, Check, Globe, House, Navigation, CircleCheck, CircleX, Search, Share, SquarePlus, Trash2, Users, Sigma, SunDim,
 } from 'lucide-preact'
 import {
   announcementDate, AUTHORITIES, authorityName, basisLabel, eventTitle, expectedDate, upcomingEvents,
 } from '../core/calendarSanad'
 import type { PrayerDay } from '../core/engine'
 import { parameterSummary } from '../core/methods'
-import { musafirGuidance } from '../core/musafir'
+import { musafirDistanceCheck, musafirGuidance, musafirPlan } from '../core/musafir'
 import { isInAsia, isNear, placeProfile, placeSubtitle, type Place } from '../core/place'
 import { OBLIGATORY } from '../core/prayer'
 import { flag, profileFor, timeZoneForPlace } from '../core/regions'
@@ -17,7 +17,8 @@ import { searchCities } from '../services/cities'
 import { alertSupport } from '../services/notifications'
 import { fetchOK } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
-import { closeSheet, fmtDate, GRADE_TINT, Segmented, Sheet } from './common'
+import { closeSheet, fmtDate, GRADE_TINT, Segmented, Sheet, openSheet } from './common'
+import { TabJourney } from './icons'
 import { MakersAbout } from './Makers'
 import { canInstall, install, isIOS } from './pwa'
 
@@ -96,7 +97,7 @@ export function PlacesSheet() {
               <div class="group">{s.prefs.savedPlaces.map((p) => row(p, true))}</div>
             </>
           )}
-          <p class="group-foot">Search any city in Asia - Hanoi, Osaka, Seoul, Istanbul. Times are calculated in your browser, so they keep working offline. Your location never leaves this device.</p>
+          <p class="group-foot">Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated in your browser, so they keep working offline. Your location never leaves this device.</p>
         </>
       ) : (
         <>
@@ -135,12 +136,12 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
       : 'Downloaded once a year from the authority and kept in this browser, so it works offline.'
     if (day.sunriseCalculated) detail += ` ${s.name('sunrise')} is not in the feed, so it is calculated (never later than the official time).`
   } else if (day.grade === 'A') {
-    detail = `${parameterSummary(s.method)}. This is the authority's own published method.`
+    detail = `${parameterSummary(s.method)}. ${s.sourceSummary}`
   } else if (day.grade === 'B' || day.grade === 'C') {
     const m = s.nearbyMosque
     detail = (m && mosqueMethod(m)?.note) ?? GRADE_EXPLANATION[day.grade]
   } else {
-    detail = `${parameterSummary(s.method)} · ${s.asrSchool === 'hanafi' ? 'Hanafi' : "Shafi'i"} Asr. ${s.method.note}`
+    detail = `${parameterSummary(s.method)} · ${s.asrSchool === 'hanafi' ? 'Hanafi' : "Shafi'i"} Asr. ${s.sourceSummary} ${s.method.note}`
   }
   const alternates = OBLIGATORY.filter((p) => day.alternate[p] != null)
   const jamaah = OBLIGATORY.filter((p) => day.jamaah[p] != null)
@@ -271,21 +272,38 @@ export function JourneySheet() {
       <div class="glass card" style={{ marginTop: '10px' }}>
         {g && status ? (
           <>
-            <div class="row" style={{ gap: '10px' }}>{status.kind === 'traveller' ? <Plane size={28} fill="currentColor" /> : <House size={28} />}<span style={{ fontSize: '22px', fontWeight: 700 }}>{g.title}</span></div>
+            <div class="row" style={{ gap: '10px' }}>{status.kind === 'traveller' ? <span class="journey-badge"><TabJourney size={18} /></span> : <House size={28} />}<span style={{ fontSize: '22px', fontWeight: 700 }}>{g.title}</span></div>
             {km != null && <div style={{ margin: '8px 0' }}><span class="display mono" style={{ fontSize: '48px', fontWeight: 600 }}>{Math.round(km).toLocaleString('en')} km</span><span class="headline">  from home</span></div>}
             <p style={{ margin: '6px 0', opacity: 0.9 }}>{g.body}</p>
+            {status.kind === 'traveller' && (
+              <div class="musafir-plan">
+                {musafirPlan(rules, s.naming).map((r) => (
+                  <div class="row" key={r.prayer}>
+                    <div style={{ flex: 1 }}><div class="headline">{r.name}</div><div class="footnote" style={{ opacity: 0.75 }}>{r.join}</div></div>
+                    <div style={{ textAlign: 'right' }}><div class="headline mono">{r.rakaat}</div><div class="footnote" style={{ opacity: 0.75 }}>{r.change}</div></div>
+                  </div>
+                ))}
+              </div>
+            )}
             {s.prefs.arrivedAt != null && (status.kind === 'traveller' || status.kind === 'settled') && <div class="subhead" style={{ fontWeight: 600, opacity: 0.8 }}>Day {s.daysHere(now) + 1} in {s.profile.name || 'this place'}</div>}
           </>
         ) : (
           <><div style={{ fontSize: '22px', fontWeight: 700 }}>Set your home</div><p style={{ opacity: 0.85 }}>Tell us where home is and we'll work out when you count as a traveller.</p></>
         )}
       </div>
+      {status?.kind === 'traveller' && s.isRamadanDay(now) && (
+        <div class="glass card" style={{ marginTop: '16px' }}>
+          <div class="caps" style={{ opacity: 0.7 }}>Fasting on this journey</div>
+          <p class="footnote" style={{ opacity: 0.9, margin: '8px 0 0' }}>As a traveller you may choose not to fast, and replace the day after Ramadan. If fasting is easy, fasting is better. The day counts as travel when you left home before Subuh. Mark it on your Ramadan page so it is counted for you. Ask your local religious authority when unsure.</p>
+          <button class="pill-btn" style={{ marginTop: '10px' }} onClick={() => openSheet({ kind: 'ramadan' })}>Open Ramadan</button>
+        </div>
+      )}
       {status?.kind === 'traveller' && s.asrSchool !== 'hanafi' && today && tomorrow && (
         <div class="glass card" style={{ marginTop: '16px' }}>
           <div class="row"><span class="caps" style={{ opacity: 0.7 }}>Combined windows today</span><span class="spacer" /><span class="caption" style={{ opacity: 0.6, fontWeight: 600 }}>Pending shariah review</span></div>
           <div class="row headline" style={{ marginTop: '10px' }}><span>{s.name('dhuhr')} + {s.name('asr')}</span><span class="spacer" /><span class="mono">{s.formatted(today.times.dhuhr)} – {s.formatted(today.times.maghrib)}</span></div>
           <div class="row headline" style={{ marginTop: '6px' }}><span>{s.name('maghrib')} + {s.name('isha')}</span><span class="spacer" /><span class="mono">{s.formatted(today.times.maghrib)} – {s.formatted(tomorrow.times.fajr)}</span></div>
-          <p class="footnote" style={{ opacity: 0.85 }}>Jamak taqdim prays both in the first prayer's time; jamak ta'khir prays both in the second's. {s.name('fajr')} is never combined.</p>
+          <p class="footnote" style={{ opacity: 0.85 }}>Jamak taqdim means praying both in the first prayer's time. Jamak ta'khir means praying both in the second prayer's time. {s.name('fajr')} is never joined.</p>
         </div>
       )}
       <div class="glass card row" style={{ marginTop: '16px' }}>
@@ -299,12 +317,22 @@ export function JourneySheet() {
       <div class="glass card" style={{ marginTop: '16px' }}>
         <div class="caps" style={{ opacity: 0.7, marginBottom: '10px' }}>Travel distance</div>
         {s.asrSchool === 'hanafi'
-          ? <div class="subhead">Hanafi: about 78 km, stays up to 15 days. Prayers are shortened but not combined.</div>
+          ? <div class="subhead">In the Hanafi school the travel distance is about 78 km, for stays of up to 15 days. Prayers are shortened but not joined.</div>
           : <>
             <Segmented value={s.prefs.musafirThresholdKm} onChange={(v) => store.update((x) => { x.musafirThresholdKm = v })}
               options={[{ value: 81, label: '81 km (2 marhalah)' }, { value: 89, label: '89 km' }]} />
-            <div class="subhead" style={{ opacity: 0.85, marginTop: '10px' }}>Shafi'i: stays of up to 3 days, not counting the days you arrive and leave.</div>
+            <div class="subhead" style={{ opacity: 0.85, marginTop: '10px' }}>Most of Southeast Asia uses 81 km, which is two marhalah. Some scholars use 89 km. Pick the one your local religious authority uses.</div>
+            <div class="subhead" style={{ opacity: 0.85, marginTop: '8px' }}>In the Shafi'i school this holds for stays of up to 3 days, not counting the day you arrive and the day you leave.</div>
           </>}
+        {status && (() => {
+          const c = musafirDistanceCheck(status, rules)
+          // Keyed on the chosen distance so switching 81 km and 89 km replays the fade and the answer visibly refreshes.
+          return c && (
+            <div key={rules.thresholdKm} class={`distance-check ${c.counts ? 'yes' : 'no'}`}>
+              {c.counts ? <CircleCheck size={20} /> : <CircleX size={20} />}<span>{c.text}</span>
+            </div>
+          )
+        })()}
       </div>
       {s.prefs.trip.length > 0 && (
         <div class="glass card" style={{ marginTop: '16px' }}>

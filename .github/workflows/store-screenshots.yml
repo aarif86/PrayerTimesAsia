@@ -1,0 +1,93 @@
+name: Store screenshots
+
+# Takes the App Store screenshots at the two sizes Apple asks for: 6.9" iPhone
+# (Pro Max) and 13" iPad. Raw shots go to the `store-screenshots-raw` branch;
+# tools/store_frames.py then adds the captions (docs/app-store.md → Screenshots).
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['.github/workflows/store-screenshots.yml']
+
+concurrency:
+  group: store-screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  capture:
+    runs-on: macos-26
+    permissions:
+      contents: write   # only to publish the store-screenshots-raw branch
+    defaults:
+      run:
+        working-directory: ios
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - run: brew install xcodegen && xcodegen generate
+
+      - name: Build for Simulator
+        run: |
+          xcodebuild build \
+            -project PrayerTimesAsia.xcodeproj \
+            -scheme PrayerTimesAsia \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Capture on iPhone Pro Max and iPad Pro 13"
+        run: |
+          set -euo pipefail
+          APP=$(find build/dd/Build/Products -name 'PrayerTimesAsia.app' -path '*iphonesimulator*' | head -n1)
+          mkdir -p shots
+          capture() { # $1 = device-name pattern, $2 = file prefix
+            local prefix=$2
+            UDID=$(xcrun simctl list devices available -j | jq -r --arg p "$1" '
+              [.devices | to_entries[] | .value[] | select(.isAvailable and (.name | test($p)))][-1].udid')
+            if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then xcrun simctl list devices available; exit 1; fi
+            xcrun simctl list devices -j | jq -r --arg u "$UDID" '.devices[][] | select(.udid == $u) | "Using \(.name)"'
+            xcrun simctl boot "$UDID" || true
+            xcrun simctl bootstatus "$UDID" -b
+            xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
+            xcrun simctl install "$UDID" "$APP"
+            shot() { # $1 = file name, rest = launch arguments
+              local name=$1; shift
+              xcrun simctl terminate "$UDID" com.prayertimesasia.app || true
+              xcrun simctl launch "$UDID" com.prayertimesasia.app "$@"
+              sleep "${WAIT:-8}"
+              xcrun simctl io "$UDID" screenshot "shots/$prefix-$name.png"
+            }
+            shot 1-today      -demo -tab today -sidedial
+            shot 2-landed     -demo-travel -tab today
+            shot 3-journey    -demo-travel -tab journey
+            shot 4-qibla      -demo -tab qibla -aligned
+            WAIT=25 shot 5-masjid -demo -tab nearby   # map and search need longer
+            shot 6-falak      -demo -tab falak
+            shot 7-today-day  -demo-makkah -tab today -light
+            xcrun simctl shutdown "$UDID" || true
+          }
+          capture 'iPhone.*Pro Max' iphone
+          capture 'iPad Pro.*13' ipad
+          ls -l shots
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store-screenshots-raw
+          path: ios/shots/
+
+      - name: Publish the store-screenshots-raw branch
+        if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          set -euo pipefail
+          cd shots
+          git init -q -b store-screenshots-raw
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Store screenshots for ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" store-screenshots-raw

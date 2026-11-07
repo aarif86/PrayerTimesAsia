@@ -38,30 +38,89 @@ data class TripStop(
     val arrived: Long,
 )
 
-/** When the Subuh wake-up alarm rings, relative to Subuh or Syuruk. */
+/** When the Subuh wake-up alarm rings, relative to Subuh or Syuruk. In the order of the night. */
 @Serializable
-enum class WakeUpTiming {
-    @SerialName("atFajr") AT_FAJR,
-    @SerialName("fajrPlus15") FAJR_PLUS_15,
-    @SerialName("sunriseMinus30") SUNRISE_MINUS_30,
-    @SerialName("sunriseMinus15") SUNRISE_MINUS_15;
+enum class WakeUpTiming(val part: Part, private val minutes: Int) {
+    @SerialName("fajrMinus30") FAJR_MINUS_30(Part.BEFORE_FAJR, -30),
+    @SerialName("atFajr") AT_FAJR(Part.FROM_FAJR, 0),
+    @SerialName("fajrPlus5") FAJR_PLUS_5(Part.FROM_FAJR, 5),
+    @SerialName("fajrPlus10") FAJR_PLUS_10(Part.FROM_FAJR, 10),
+    @SerialName("fajrPlus15") FAJR_PLUS_15(Part.FROM_FAJR, 15),
+    @SerialName("fajrPlus30") FAJR_PLUS_30(Part.FROM_FAJR, 30),
+    @SerialName("sunriseMinus60") SUNRISE_MINUS_60(Part.BEFORE_SUNRISE, 60),
+    @SerialName("sunriseMinus45") SUNRISE_MINUS_45(Part.BEFORE_SUNRISE, 45),
+    @SerialName("sunriseMinus30") SUNRISE_MINUS_30(Part.BEFORE_SUNRISE, 30),
+    @SerialName("sunriseMinus15") SUNRISE_MINUS_15(Part.BEFORE_SUNRISE, 15);
+
+    /** The heading each choice sits under in the list. */
+    enum class Part { BEFORE_FAJR, FROM_FAJR, BEFORE_SUNRISE }
 
     fun label(naming: NamingStyle): String {
         val fajr = Prayer.FAJR.name(naming)
         val sunrise = Prayer.SUNRISE.name(naming)
-        return when (this) {
-            AT_FAJR -> "At $fajr"
-            FAJR_PLUS_15 -> "15 min after $fajr begins"
-            SUNRISE_MINUS_30 -> "30 min before $sunrise"
-            SUNRISE_MINUS_15 -> "15 min before $sunrise"
+        return when {
+            this == FAJR_MINUS_30 -> "30 min before $fajr for tahajjud"
+            this == AT_FAJR -> "At $fajr"
+            this == SUNRISE_MINUS_60 -> "1 hour before $sunrise"
+            part == Part.BEFORE_SUNRISE -> "$minutes min before $sunrise"
+            else -> "$minutes min after $fajr begins"
         }
     }
 
-    fun date(day: PrayerDay): java.time.Instant = when (this) {
-        AT_FAJR -> day.time(Prayer.FAJR)
-        FAJR_PLUS_15 -> day.time(Prayer.FAJR).plusSeconds(15 * 60)
-        SUNRISE_MINUS_30 -> day.time(Prayer.SUNRISE).minusSeconds(30 * 60)
-        SUNRISE_MINUS_15 -> day.time(Prayer.SUNRISE).minusSeconds(15 * 60)
+    fun date(day: PrayerDay): java.time.Instant =
+        if (part == Part.BEFORE_SUNRISE) {
+            // Where Subuh to Syuruk is short, never ring before Subuh has begun.
+            maxOf(day.time(Prayer.FAJR), day.time(Prayer.SUNRISE).minusSeconds(minutes * 60L))
+        } else {
+            day.time(Prayer.FAJR).plusSeconds(minutes * 60L)
+        }
+}
+
+/** The second, earlier alarm for sahur (or a longer night prayer), before Subuh. */
+@Serializable
+enum class SahurTiming(val minutes: Int) {
+    @SerialName("fajrMinus60") FAJR_MINUS_60(60),
+    @SerialName("fajrMinus90") FAJR_MINUS_90(90),
+    @SerialName("fajrMinus120") FAJR_MINUS_120(120);
+
+    fun label(naming: NamingStyle): String {
+        val fajr = Prayer.FAJR.name(naming)
+        return when (this) {
+            FAJR_MINUS_60 -> "1 hour before $fajr"
+            FAJR_MINUS_90 -> "1 hour 30 min before $fajr"
+            FAJR_MINUS_120 -> "2 hours before $fajr"
+        }
+    }
+
+    fun date(day: PrayerDay): java.time.Instant = day.time(Prayer.FAJR).minusSeconds(minutes * 60L)
+}
+
+/** Which mornings the sahur alarm rings: the days people usually fast. */
+@Serializable
+enum class SahurDay(val raw: String, val label: String) {
+    @SerialName("ramadan") RAMADAN("ramadan", "Ramadan"),
+    @SerialName("monThu") MON_THU("monThu", "Mondays and Thursdays"),
+    @SerialName("whiteDays") WHITE_DAYS("whiteDays", "White days (13, 14 and 15 of the Hijri month)"),
+    @SerialName("everyDay") EVERY_DAY("everyDay", "Every day");
+
+    companion object {
+        val DEFAULT: Set<SahurDay> = setOf(RAMADAN, MON_THU)
+
+        /** Does the sahur alarm ring before Subuh on this day? */
+        fun rings(day: PrayerDay, days: Set<SahurDay>, zone: java.time.ZoneId, hijriAdjustment: Int): Boolean {
+            if (EVERY_DAY in days) return true
+            if (MON_THU in days) {
+                val weekday = java.time.LocalDate.of(day.year, day.month, day.day).dayOfWeek
+                if (weekday == java.time.DayOfWeek.MONDAY || weekday == java.time.DayOfWeek.THURSDAY) return true
+            }
+            if (RAMADAN in days || WHITE_DAYS in days) {
+                val h = Hijri.date(day.time(Prayer.DHUHR), zone, hijriAdjustment)
+                if (RAMADAN in days && h.month == 9) return true
+                // Not on 13 Zulhijjah, a day of Tashreeq when fasting is not allowed.
+                if (WHITE_DAYS in days && h.day in 13..15 && !(h.month == 12 && h.day == 13)) return true
+            }
+            return false
+        }
     }
 }
 
@@ -90,7 +149,9 @@ enum class TodayStyle {
     /** The sun's arc across the top, the current prayer small at the top left, then the list. */
     @SerialName("sunPath") SUN_PATH,
     /** Each prayer a full-width band of colour, like the classic Singapore timetable. */
-    @SerialName("bands") BANDS;
+    @SerialName("bands") BANDS,
+    /** Big and Simple: the prayer now, the time left, and five big rows. For older eyes. */
+    @SerialName("simple") SIMPLE;
 
     val label: String
         get() = when (this) {
@@ -99,6 +160,7 @@ enum class TodayStyle {
             DIAL -> "Day Dial"
             SUN_PATH -> "Sun Path"
             BANDS -> "Colour Bands"
+            SIMPLE -> "Big and Simple"
         }
 }
 
@@ -123,7 +185,10 @@ data class Preferences(
 
     val notificationsEnabled: Boolean = false,
     val notifyPrayers: Set<Prayer> = Prayer.obligatory.toSet(),
+    /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
     val reminderMinutesBefore: Int = 0,
+    /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings. */
+    val azanSound: Boolean = true,
 
     val musafirThresholdKm: Double = 81.0,
     /** Pinned JAKIM zone; null = nearest to where you are. */
@@ -142,9 +207,14 @@ data class Preferences(
     val prayedLog: Map<String, Set<Prayer>> = emptyMap(),
     /** Days excused (haid, illness, ...): they keep the streak alive. */
     val excusedDays: Set<String> = emptySet(),
+    /** "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from then until the pause ends counts as excused. */
+    val trackerPausedSince: String? = null,
 
     /** Subuh wake-up alarm; null = off. */
     val wakeUp: WakeUpTiming? = null,
+    /** The earlier sahur alarm; null = off. Rings only on [sahurDays]. */
+    val sahurAlarm: SahurTiming? = null,
+    val sahurDays: Set<SahurDay> = SahurDay.DEFAULT,
     /** Whose Ramadan/Eid dates you follow; null = the authority of your home country. */
     val communityAuthority: String? = null,
 
@@ -166,11 +236,50 @@ data class Preferences(
     val myMasjid: MasjidLink? = null,
     /** Anonymous usage counts (city and country, never coordinates). See the app's UsageCounter. */
     val shareUsage: Boolean = true,
+
+    // Ramadan and Syawal
+    /** For testers: pretend today is a day in Ramadan or Syawal. Never moved to another phone. */
+    val seasonPreview: SeasonPreview = SeasonPreview.OFF,
+    /** "Imsak in 10 minutes" in Ramadan. */
+    val imsakAlert: Boolean = true,
+    /** "Time to berbuka" at Maghrib in Ramadan. */
+    val berbukaAlert: Boolean = true,
+    /** The last ten nights: a gentle alert at the last third of the night. */
+    val qiyamAlert: Boolean = false,
+    /** A juz a day to finish the Quran in the month. */
+    val khatamPlan: Boolean = false,
+    /** "yyyy-MM-dd" → how that day's fast went. */
+    val fastLog: Map<String, FastMark> = emptyMap(),
+    /** Days Tarawih was prayed. */
+    val tarawihLog: Set<String> = emptySet(),
+    /** Days the day's juz was read. */
+    val quranLog: Set<String> = emptySet(),
+    /** Hijri years zakat fitrah was paid. */
+    val zakatPaid: Set<Int> = emptySet(),
+    /** Tracker users: one nudge before a prayer's time runs out, if it isn't ticked. */
+    val windowNudge: Boolean = true,
+    /** Alerts only buzz between these minutes past midnight; Subuh keeps its sound. */
+    val quietHours: Boolean = false,
+    val quietFrom: Int = 23 * 60,
+    val quietTo: Int = 6 * 60,
+    /** Every alert buzzes only, never a sound. */
+    val buzzOnly: Boolean = false,
+    /** Bigger text everywhere, for older eyes. */
+    val largeText: Boolean = false,
+    /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
+    val jumuahReminderMinutes: Int = 0,
 ) {
     fun encode(): String = CoreJson.encodeToString(serializer(), this)
 
     companion object {
         fun decode(text: String?): Preferences =
-            text?.let { runCatching { CoreJson.decodeFromString(serializer(), it) }.getOrNull() } ?: Preferences()
+            (text?.let { runCatching { CoreJson.decodeFromString(serializer(), it) }.getOrNull() } ?: Preferences()).sane()
+
+        /** Times of day must be real ones and the Jumaat reminder one of the choices. */
+        private fun Preferences.sane(): Preferences = copy(
+            quietFrom = quietFrom.takeIf { it in 0 until 1440 } ?: 23 * 60,
+            quietTo = quietTo.takeIf { it in 0 until 1440 } ?: 6 * 60,
+            jumuahReminderMinutes = jumuahReminderMinutes.takeIf { it in PrayerWindow.JUMUAH_REMINDER_CHOICES } ?: 0,
+        )
     }
 }

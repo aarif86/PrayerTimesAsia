@@ -27,6 +27,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -72,6 +74,8 @@ import com.prayertimesasia.app.ui.theme.Rounded
 import com.prayertimesasia.app.ui.theme.SkyScheme
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.today.AppSheet
+import com.prayertimesasia.app.ui.today.TrackerSheetContent
+import com.prayertimesasia.app.ui.today.WakeUpSheetContent
 import com.prayertimesasia.app.ui.today.CalendarSheetContent
 import com.prayertimesasia.app.ui.today.PlacesSheetContent
 import com.prayertimesasia.app.ui.today.SanadSheetContent
@@ -130,6 +134,16 @@ fun SkyTheme(state: AppState, forceDark: Boolean = false, content: @Composable (
 
 @Composable
 fun PrayerTimesRoot(state: AppState) {
+    // "Bigger text" in Settings: everything a fifth larger, on top of the phone's own text size.
+    val density = LocalDensity.current
+    val scale = if (state.prefs.largeText) 1.2f else 1f
+    CompositionLocalProvider(LocalDensity provides Density(density.density, density.fontScale * scale)) {
+        RootContent(state)
+    }
+}
+
+@Composable
+private fun RootContent(state: AppState) {
     LaunchedEffect(state.fixedNow) {
         if (state.fixedNow != null) return@LaunchedEffect
         while (true) {
@@ -161,7 +175,16 @@ fun PrayerTimesRoot(state: AppState) {
                     SkyTheme(state) { JourneyScreen(state) { state.showJourney = false } }
                 }
             }
+            if (state.showRamadan) {
+                AppSheet({ state.showRamadan = false }) { com.prayertimesasia.app.ui.today.RamadanSheetContent(state) }
+            }
             Overlays(state, overlay) { overlay = it }
+            if (state.showTracker) {
+                AppSheet({ state.showTracker = false }) { TrackerSheetContent(state) }
+            }
+            if (state.showWakeUp) {
+                AppSheet({ state.showWakeUp = false }) { WakeUpSheetContent(state) }
+            }
             state.pendingMasjid?.let { link ->
                 AppSheet({ state.pendingMasjid = null }) { MasjidLinkSheetContent(state, link) }
             }

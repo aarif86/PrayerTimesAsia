@@ -35,28 +35,117 @@ struct TripStop: Codable, Hashable, Identifiable, Sendable {
 }
 
 /// When the Subuh wake-up alarm rings, relative to Subuh or Syuruk.
+/// Declared in the order of the night, so the list reads earliest first.
 enum WakeUpTiming: String, Codable, CaseIterable, Identifiable, Sendable {
-    case atFajr, fajrPlus15, sunriseMinus30, sunriseMinus15
+    case fajrMinus30
+    case atFajr, fajrPlus5, fajrPlus10, fajrPlus15, fajrPlus30
+    case sunriseMinus60, sunriseMinus45, sunriseMinus30, sunriseMinus15
 
     var id: String { rawValue }
+
+    /// The heading each choice sits under in the list.
+    enum Part: CaseIterable { case beforeFajr, fromFajr, beforeSunrise }
+    var group: Part {
+        switch self {
+        case .fajrMinus30: .beforeFajr
+        case .atFajr, .fajrPlus5, .fajrPlus10, .fajrPlus15, .fajrPlus30: .fromFajr
+        case .sunriseMinus60, .sunriseMinus45, .sunriseMinus30, .sunriseMinus15: .beforeSunrise
+        }
+    }
+
+    /// Minutes from Subuh (or before Syuruk for the Syuruk group).
+    private var minutes: Int {
+        switch self {
+        case .fajrMinus30: -30
+        case .atFajr: 0
+        case .fajrPlus5: 5
+        case .fajrPlus10: 10
+        case .fajrPlus15: 15
+        case .fajrPlus30: 30
+        case .sunriseMinus60: 60
+        case .sunriseMinus45: 45
+        case .sunriseMinus30: 30
+        case .sunriseMinus15: 15
+        }
+    }
 
     func label(_ naming: NamingStyle) -> String {
         let fajr = Prayer.fajr.name(naming), sunrise = Prayer.sunrise.name(naming)
         switch self {
+        case .fajrMinus30: return "30 min before \(fajr) for tahajjud"
         case .atFajr: return "At \(fajr)"
-        case .fajrPlus15: return "15 min after \(fajr) begins"
-        case .sunriseMinus30: return "30 min before \(sunrise)"
-        case .sunriseMinus15: return "15 min before \(sunrise)"
+        case .sunriseMinus60: return "1 hour before \(sunrise)"
+        default:
+            return group == .beforeSunrise ? "\(minutes) min before \(sunrise)" : "\(minutes) min after \(fajr) begins"
         }
     }
 
     func date(in day: PrayerDay) -> Date {
-        switch self {
-        case .atFajr: day.time(.fajr)
-        case .fajrPlus15: day.time(.fajr).addingTimeInterval(15 * 60)
-        case .sunriseMinus30: day.time(.sunrise).addingTimeInterval(-30 * 60)
-        case .sunriseMinus15: day.time(.sunrise).addingTimeInterval(-15 * 60)
+        if group == .beforeSunrise {
+            // Where Subuh to Syuruk is short, never ring before Subuh has begun.
+            return max(day.time(.fajr), day.time(.sunrise).addingTimeInterval(Double(-minutes) * 60))
         }
+        return day.time(.fajr).addingTimeInterval(Double(minutes) * 60)
+    }
+}
+
+/// The second, earlier alarm for sahur (or a longer qiyam), before Subuh.
+enum SahurTiming: String, Codable, CaseIterable, Identifiable, Sendable {
+    case fajrMinus60, fajrMinus90, fajrMinus120
+
+    var id: String { rawValue }
+    var minutes: Int {
+        switch self {
+        case .fajrMinus60: 60
+        case .fajrMinus90: 90
+        case .fajrMinus120: 120
+        }
+    }
+
+    func label(_ naming: NamingStyle) -> String {
+        let fajr = Prayer.fajr.name(naming)
+        switch self {
+        case .fajrMinus60: return "1 hour before \(fajr)"
+        case .fajrMinus90: return "1 hour 30 min before \(fajr)"
+        case .fajrMinus120: return "2 hours before \(fajr)"
+        }
+    }
+
+    func date(in day: PrayerDay) -> Date { day.time(.fajr).addingTimeInterval(Double(-minutes) * 60) }
+}
+
+/// Which mornings the sahur alarm rings: the days people usually fast.
+enum SahurDay: String, Codable, CaseIterable, Identifiable, Sendable {
+    case ramadan, monThu, whiteDays, everyDay
+
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .ramadan: "Ramadan"
+        case .monThu: "Mondays and Thursdays"
+        case .whiteDays: "White days (13, 14 and 15 of the Hijri month)"
+        case .everyDay: "Every day"
+        }
+    }
+
+    /// Does the sahur alarm ring before Subuh on this day?
+    static func rings(on day: PrayerDay, _ days: Set<SahurDay>, timeZone: TimeZone, hijriAdjustment: Int) -> Bool {
+        if days.contains(.everyDay) { return true }
+        if days.contains(.monThu) {
+            var cal = Calendar(identifier: .gregorian)
+            cal.timeZone = TimeZone(identifier: "UTC")!
+            if let date = cal.date(from: DateComponents(year: day.year, month: day.month, day: day.day)) {
+                let weekday = cal.component(.weekday, from: date)  // 1 = Sunday
+                if weekday == 2 || weekday == 5 { return true }
+            }
+        }
+        if days.contains(.ramadan) || days.contains(.whiteDays) {
+            let h = Hijri.date(day.time(.dhuhr), timeZone: timeZone, adjustment: hijriAdjustment)
+            if days.contains(.ramadan) && h.month == 9 { return true }
+            // Not on 13 Zulhijjah, a day of Tashreeq when fasting is not allowed.
+            if days.contains(.whiteDays) && (13...15).contains(h.day) && !(h.month == 12 && h.day == 13) { return true }
+        }
+        return false
     }
 }
 
@@ -90,7 +179,14 @@ struct Preferences: Codable, Equatable, Sendable {
 
     var notificationsEnabled = false
     var notifyPrayers: Set<Prayer> = Set(Prayer.obligatory)
+    /// Minutes before each chosen prayer for the "Reminder before prayer"
+    /// heads-up; 0 = off. Separate from the alert at the prayer time itself.
     var reminderMinutesBefore = 0
+    static let defaultReminderMinutes = 15
+    static let reminderChoices = [5, 10, 15, 20, 30, 45, 60]
+    /// Prayer time alerts play the azan (a Subuh azan at Subuh) instead of the
+    /// phone's alert sound, when the app has the recordings (see Azan.swift).
+    var azanSound = true
 
     var musafirThresholdKm: Double = 81
     /// Pinned JAKIM zone; nil = nearest to where you are.
@@ -111,9 +207,15 @@ struct Preferences: Codable, Equatable, Sendable {
     var prayedLog: [String: Set<Prayer>] = [:]
     /// Days excused (haid, illness, ...): they keep the streak alive.
     var excusedDays: Set<String> = []
+    /// "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from
+    /// then until the pause ends counts as excused. nil = not paused.
+    var trackerPausedSince: String?
 
     /// Subuh wake-up alarm; nil = off.
     var wakeUp: WakeUpTiming?
+    /// The earlier sahur alarm; nil = off. Rings only on `sahurDays`.
+    var sahurAlarm: SahurTiming?
+    var sahurDays: Set<SahurDay> = [.ramadan, .monThu]
 
     /// Whose Ramadan/Eid dates you follow; nil = the authority of your home country.
     var communityAuthority: String?
@@ -140,6 +242,39 @@ struct Preferences: Codable, Equatable, Sendable {
     /// Anonymous usage counts (city and country, never coordinates). See UsageCounter.
     var shareUsage = true
 
+    // Ramadan and Syawal
+    /// For testers: pretend today is a day in Ramadan or Syawal. Never moved to another phone.
+    var seasonPreview: SeasonPreview = .off
+    /// "Imsak in 10 minutes" in Ramadan.
+    var imsakAlert = true
+    /// "Time to berbuka" at Maghrib in Ramadan.
+    var berbukaAlert = true
+    /// The last ten nights: a gentle alert at the last third of the night.
+    var qiyamAlert = false
+    /// A juz a day to finish the Quran in the month.
+    var khatamPlan = false
+    /// "yyyy-MM-dd" → how that day's fast went.
+    var fastLog: [String: FastMark] = [:]
+    /// Days Tarawih was prayed.
+    var tarawihLog: Set<String> = []
+    /// Days the day's juz was read.
+    var quranLog: Set<String> = []
+    /// Hijri years zakat fitrah was paid.
+    var zakatPaid: Set<Int> = []
+    /// Tracker users: one nudge before a prayer's time runs out, if it isn't ticked.
+    var windowNudge = true
+    /// Alerts only buzz between these minutes past midnight; Subuh keeps its sound.
+    var quietHours = false
+    var quietFrom = 23 * 60
+    var quietTo = 6 * 60
+    /// Every alert buzzes only, never a sound.
+    var buzzOnly = false
+    /// Bigger text everywhere, for older eyes.
+    var largeText = false
+    /// Fridays: a reminder this many minutes before Jumaat (0 = off).
+    var jumuahReminderMinutes = 0
+    static let jumuahReminderChoices = [0, 20, 30, 45, 60, 90]
+
     private static let key = "preferences.v1"
 
     init() {}
@@ -165,6 +300,7 @@ struct Preferences: Codable, Equatable, Sendable {
         notificationsEnabled = v(.notificationsEnabled, d.notificationsEnabled)
         notifyPrayers = v(.notifyPrayers, d.notifyPrayers)
         reminderMinutesBefore = v(.reminderMinutesBefore, d.reminderMinutesBefore)
+        azanSound = v(.azanSound, d.azanSound)
         musafirThresholdKm = v(.musafirThresholdKm, d.musafirThresholdKm)
         jakimZoneOverride = v(.jakimZoneOverride, d.jakimZoneOverride)
         lastCountryCode = v(.lastCountryCode, d.lastCountryCode)
@@ -175,7 +311,10 @@ struct Preferences: Codable, Equatable, Sendable {
         trackerEnabled = v(.trackerEnabled, d.trackerEnabled)
         prayedLog = v(.prayedLog, d.prayedLog)
         excusedDays = v(.excusedDays, d.excusedDays)
+        trackerPausedSince = v(.trackerPausedSince, d.trackerPausedSince)
         wakeUp = v(.wakeUp, d.wakeUp)
+        sahurAlarm = v(.sahurAlarm, d.sahurAlarm)
+        sahurDays = v(.sahurDays, d.sahurDays)
         communityAuthority = v(.communityAuthority, d.communityAuthority)
         appearance = v(.appearance, d.appearance)
         stylePick = v(.stylePick, d.stylePick)
@@ -185,6 +324,25 @@ struct Preferences: Codable, Equatable, Sendable {
         alertsPromptDismissed = v(.alertsPromptDismissed, d.alertsPromptDismissed)
         myMasjid = v(.myMasjid, d.myMasjid)
         shareUsage = v(.shareUsage, d.shareUsage)
+        seasonPreview = v(.seasonPreview, d.seasonPreview)
+        imsakAlert = v(.imsakAlert, d.imsakAlert)
+        berbukaAlert = v(.berbukaAlert, d.berbukaAlert)
+        qiyamAlert = v(.qiyamAlert, d.qiyamAlert)
+        khatamPlan = v(.khatamPlan, d.khatamPlan)
+        fastLog = v(.fastLog, d.fastLog)
+        tarawihLog = v(.tarawihLog, d.tarawihLog)
+        quranLog = v(.quranLog, d.quranLog)
+        zakatPaid = v(.zakatPaid, d.zakatPaid)
+        windowNudge = v(.windowNudge, d.windowNudge)
+        quietHours = v(.quietHours, d.quietHours)
+        quietFrom = v(.quietFrom, d.quietFrom)
+        quietTo = v(.quietTo, d.quietTo)
+        if !(0..<1440).contains(quietFrom) { quietFrom = d.quietFrom }
+        if !(0..<1440).contains(quietTo) { quietTo = d.quietTo }
+        buzzOnly = v(.buzzOnly, d.buzzOnly)
+        largeText = v(.largeText, d.largeText)
+        jumuahReminderMinutes = v(.jumuahReminderMinutes, d.jumuahReminderMinutes)
+        if !Self.jumuahReminderChoices.contains(jumuahReminderMinutes) { jumuahReminderMinutes = 0 }
     }
 
     static func load() -> Preferences {

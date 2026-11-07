@@ -30,7 +30,9 @@ import com.prayertimesasia.core.Coordinates
 import com.prayertimesasia.core.Geo
 import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.PrayerSpace
+import com.prayertimesasia.core.SahurTiming
 import com.prayertimesasia.core.TodayStyle
+import com.prayertimesasia.core.WakeUpTiming
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -140,6 +142,13 @@ class ScreenshotTest {
     }
 
     @Test fun settings() = shoot("10-settings", d(TodayStyle.LIST, tab = Tab.SETTINGS))
+    @Test fun wake_up() = shoot("10c-wake-up", d(TodayStyle.CENTRE)) { s ->
+        s.update { it.copy(wakeUp = WakeUpTiming.FAJR_MINUS_30, sahurAlarm = SahurTiming.FAJR_MINUS_90) }
+        s.showWakeUp = true
+    }
+    @Test fun wake_chip() = shoot("02c-today-centre-wake-chip", d(TodayStyle.CENTRE)) { s ->
+        s.update { it.copy(wakeUp = WakeUpTiming.AT_FAJR) }
+    }
     @Test fun settings_makers() = shootScreen("10b-settings-makers", d(TodayStyle.LIST, tab = Tab.SETTINGS)) { s ->
         SettingsScreen(s, {}, {}, {}, rememberLazyListState(initialFirstVisibleItemIndex = 12))
     }

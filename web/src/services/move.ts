@@ -1,5 +1,6 @@
 import { newPlaceId, type Place } from '../core/place'
 import { PRAYERS, type Prayer } from '../core/prayer'
+import { SAHUR_DAYS } from '../core/wakeup'
 import { decodePreferences, DEFAULT_PREFS, type Preferences } from './prefs'
 
 /**
@@ -55,15 +56,26 @@ export interface MovedSettings {
   trackerEnabled?: boolean
   prayedLog?: Record<string, Prayer[]>
   excusedDays?: string[]
-  /** The Subuh wake-up alarm (iPhone and Android only); kept so a web stop on the way doesn't lose it. */
+  trackerPausedSince?: string | null
+  windowNudge?: boolean
+  quietHours?: boolean
+  quietFrom?: number
+  quietTo?: number
+  buzzOnly?: boolean
+  largeText?: boolean
+  jumuahReminderMinutes?: number
+  /** The Subuh wake-up alarm and the earlier sahur alarm. */
   wakeUp?: string
+  sahurAlarm?: string
+  sahurDays?: string[]
 }
 
 /** The plain settings, with the travel-mode memory and one-off prompts left behind. */
 const SIMPLE_KEYS = [
   'useGPS', 'methodOverrideID', 'asrOverride', 'namingOverride', 'use24Hour', 'hijriAdjustment', 'reminderMinutesBefore',
   'musafirEnabled', 'musafirThresholdKm', 'jakimZoneOverride', 'communityAuthority', 'appearance', 'todayStyle',
-  'showOffers', 'showLocalNames', 'trackerEnabled',
+  'showOffers', 'showLocalNames', 'trackerEnabled', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
+  'windowNudge', 'quietHours', 'quietFrom', 'quietTo', 'buzzOnly', 'largeText', 'jumuahReminderMinutes',
 ] as const satisfies readonly (keyof Preferences & keyof MovedSettings)[]
 
 function movedPlace(p: Place): MovedPlace {
@@ -83,7 +95,7 @@ function place(m: MovedPlace): Place {
 }
 
 /** What to put in the code: only the settings that differ from a fresh install. */
-export function movedFrom(p: Preferences, wakeUp?: string | null): MovedSettings {
+export function movedFrom(p: Preferences): MovedSettings {
   const out: MovedSettings = { v: MOVE_VERSION }
   const o = out as unknown as Record<string, unknown>
   for (const k of SIMPLE_KEYS) if (p[k] !== DEFAULT_PREFS[k] && p[k] != null) o[k] = p[k]
@@ -95,7 +107,8 @@ export function movedFrom(p: Preferences, wakeUp?: string | null): MovedSettings
   const log = Object.fromEntries(Object.entries(p.prayedLog).filter(([, v]) => v.length).sort(([a], [b]) => a.localeCompare(b)))
   if (Object.keys(log).length) out.prayedLog = log
   if (p.excusedDays.length) out.excusedDays = [...p.excusedDays].sort()
-  if (wakeUp) out.wakeUp = wakeUp
+  const sahurDays = SAHUR_DAYS.filter((d) => p.sahurDays.includes(d))
+  if (sahurDays.join() !== SAHUR_DAYS.filter((d) => DEFAULT_PREFS.sahurDays.includes(d)).join()) out.sahurDays = sahurDays
   return out
 }
 
@@ -114,6 +127,7 @@ export function applyMoved(p: Preferences, m: MovedSettings): Preferences {
   raw.home = okPlace(m.home) ? place(m.home) : null
   raw.manualPlace = okPlace(m.manualPlace) ? place(m.manualPlace) : null
   raw.savedPlaces = Array.isArray(m.savedPlaces) ? m.savedPlaces.filter(okPlace).map(place) : []
+  raw.sahurDays = Array.isArray(m.sahurDays) ? SAHUR_DAYS.filter((d) => m.sahurDays!.includes(d)) : [...DEFAULT_PREFS.sahurDays]
   raw.notifyPrayers = Array.isArray(m.notifyPrayers) ? PRAYERS.filter((x) => m.notifyPrayers!.includes(x)) : [...DEFAULT_PREFS.notifyPrayers]
   const log: Record<string, Prayer[]> = structuredClone(p.prayedLog)
   if (m.prayedLog && typeof m.prayedLog === 'object') {
@@ -195,7 +209,9 @@ export function describeMoved(m: MovedSettings): string[] {
   if (m.trackerEnabled || days) lines.push(`Prayer tracker${days ? `, ${days} day${days === 1 ? '' : 's'} of history` : ''}`)
   if (m.methodOverrideID || m.asrOverride || m.jakimZoneOverride) lines.push('Your calculation choices')
   if (m.appearance || m.todayStyle || m.use24Hour || m.namingOverride) lines.push('Your look and prayer names')
-  if (m.notifyPrayers || m.reminderMinutesBefore) lines.push('Which prayers to alert')
+  if (m.notifyPrayers || m.reminderMinutesBefore || m.quietHours || m.buzzOnly || m.jumuahReminderMinutes) lines.push('Which prayers to alert, and how')
+  if (m.wakeUp || m.sahurAlarm) lines.push('Your wake-up alarms')
+  if (m.largeText) lines.push('Bigger text')
   if (m.musafirEnabled) lines.push('Musafir features')
   return lines.length ? lines : ['The standard settings']
 }
