@@ -196,6 +196,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var lastCountryCode: String?
     var arrivedAt: Date?
     var arrivalBannerDismissed = true
+    /// The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival.
+    var musafirChipDismissed = false
     var trip: [TripStop] = []
 
     /// Keep a Live Activity countdown to the next prayer on the Lock Screen.
@@ -306,6 +308,7 @@ struct Preferences: Codable, Equatable, Sendable {
         lastCountryCode = v(.lastCountryCode, d.lastCountryCode)
         arrivedAt = v(.arrivedAt, d.arrivedAt)
         arrivalBannerDismissed = v(.arrivalBannerDismissed, d.arrivalBannerDismissed)
+        musafirChipDismissed = v(.musafirChipDismissed, d.musafirChipDismissed)
         trip = v(.trip, d.trip)
         liveActivityEnabled = v(.liveActivityEnabled, d.liveActivityEnabled)
         trackerEnabled = v(.trackerEnabled, d.trackerEnabled)

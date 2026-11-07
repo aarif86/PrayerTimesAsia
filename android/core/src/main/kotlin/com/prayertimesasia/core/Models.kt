@@ -199,6 +199,8 @@ data class Preferences(
     /** Epoch milliseconds. */
     val arrivedAt: Long? = null,
     val arrivalBannerDismissed: Boolean = true,
+    /** The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival. */
+    val musafirChipDismissed: Boolean = false,
     val trip: List<TripStop> = emptyList(),
 
     // Prayer tracker (opt-in)

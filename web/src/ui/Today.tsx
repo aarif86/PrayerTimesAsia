@@ -166,8 +166,10 @@ function StreakChip({ now }: { now: number }) {
   )
 }
 
-function JourneyButton({ now }: { now: number }) {
+/** The luggage button. On pages with the big Musafir line it only shows once that line is closed. */
+function JourneyButton({ now, withChip = false }: { now: number; withChip?: boolean }) {
   if (!store.prefs.musafirEnabled || store.musafirStatus(now)?.kind !== 'traveller') return null
+  if (withChip && !store.prefs.musafirChipDismissed) return null
   return (
     <button class="round-btn" style={{ background: 'color-mix(in srgb, var(--accent) 25%, transparent)' }}
       aria-label="Musafir: you may shorten and combine prayers" onClick={() => openSheet({ kind: 'journey' })}>
@@ -180,6 +182,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
   if (order === 'column') {
     return (
       <div class="controls-col">
+        <JourneyButton now={c.now} withChip />
         <StyleButton c={c} />
         <AppearanceButton c={c} />
         <WakeChip now={c.now} open={() => openSheet({ kind: 'wakeup' })} />
@@ -572,12 +575,17 @@ function DayNavigator({ c }: { c: Ctx }) {
   )
 }
 
+/** Shown when a trip starts. Closing it tucks it away as the luggage button with the others. */
 function MusafirChip({ now }: { now: number }) {
-  if (!store.prefs.musafirEnabled || store.musafirStatus(now)?.kind !== 'traveller') return null
+  if (!store.prefs.musafirEnabled || store.prefs.musafirChipDismissed || store.musafirStatus(now)?.kind !== 'traveller') return null
   return (
-    <button class="musafir-chip" onClick={() => openSheet({ kind: 'journey' })}>
-      <TabJourney size={17} /><span style={{ flex: 1, textAlign: 'left' }}>Musafir · you may shorten &amp; combine</span><ChevronRight size={14} strokeWidth={3} />
-    </button>
+    <div class="musafir-chip">
+      <button class="musafir-chip-open" onClick={() => openSheet({ kind: 'journey' })}>
+        <TabJourney size={17} /><span style={{ flex: 1, textAlign: 'left' }}>Musafir. You may shorten and join</span><ChevronRight size={14} strokeWidth={3} />
+      </button>
+      <button class="musafir-chip-close" aria-label="Hide, keep the luggage button at the top"
+        onClick={() => store.update((p) => { p.musafirChipDismissed = true })}><X size={14} strokeWidth={3} /></button>
+    </div>
   )
 }
 
@@ -739,6 +747,7 @@ function SunPathPage({ c }: { c: Ctx }) {
           </div>
         )}
         <span class="spacer" />
+        <JourneyButton now={now} withChip />
         {store.prefs.trackerEnabled && <StreakChip now={now} />}
         <AppearanceButton c={c} />
         <StyleButton c={c} />
