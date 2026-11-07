@@ -32,6 +32,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -39,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prayertimesasia.app.AppState
 import com.prayertimesasia.app.data.Http
+import com.prayertimesasia.app.data.MasjidListStore
 import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.theme.LivingSkyBackground
 import com.prayertimesasia.app.ui.theme.Palette
@@ -64,12 +67,18 @@ import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.Coordinates
 import com.prayertimesasia.core.Geo
+import com.prayertimesasia.core.MasjidLists
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerSpace
 import com.prayertimesasia.core.PrayerSpaces
 import com.prayertimesasia.core.fmt
+import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.max
@@ -83,6 +92,38 @@ private enum class Kind(val label: String) { ALL("All"), MASJID("Masjid"), MUSOL
 object NearbyCache {
     var around: Coordinates? = null
     var spaces: List<PrayerSpace> = emptyList()
+
+    /**
+     * The search reaches 12 km around, so while driving the list is kept and
+     * only measured again from where you are, until you are this far on.
+     */
+    const val REFRESH_KM = 6.0
+
+    /** Same places, distances from [here], nearest first, within 15 km. */
+    fun measuredFrom(here: Coordinates): List<PrayerSpace> = spaces
+        .map { it.copy(distanceKm = Geo.distanceKm(here, it.coordinates)) }
+        .filter { it.distanceKm <= 15.0 }
+        .sortedBy { it.distanceKm }
+}
+
+/**
+ * Asks every OpenStreetMap server at once and takes the first good answer, so
+ * one busy server can't hold up the list. Gives up after 12 seconds.
+ */
+private suspend fun searchOpenStreetMap(c: Coordinates): List<PrayerSpace>? {
+    val query = PrayerSpaces.overpassQuery(c)
+    val first = CompletableDeferred<List<PrayerSpace>?>()
+    val left = AtomicInteger(PrayerSpaces.OVERPASS_URLS.size)
+    // Not tied to the screen: a slow server finishes in the background instead
+    // of holding the list, and its late answer is simply ignored.
+    PrayerSpaces.OVERPASS_URLS.forEach { url ->
+        CoroutineScope(Dispatchers.IO).launch {
+            val found = runCatching { PrayerSpaces.parseOverpass(Http.postForm(url, mapOf("data" to query), timeoutMs = 12_000), c) }.getOrNull()
+            if (found != null) first.complete(found)
+            else if (left.decrementAndGet() == 0) first.complete(null)
+        }
+    }
+    return withTimeoutOrNull(12_000) { first.await() }
 }
 
 /**
@@ -93,29 +134,62 @@ object NearbyCache {
 @Composable
 fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpace>? = null) {
     val place = state.resolver.activePlace
-    var spaces by remember { mutableStateOf(preset ?: NearbyCache.spaces) }
+    var spaces by remember { mutableStateOf(preset ?: place?.let { NearbyCache.measuredFrom(it.coordinates) } ?: NearbyCache.spaces) }
     var loading by remember { mutableStateOf(false) }
     var failed by remember { mutableStateOf(false) }
     var kind by remember { mutableStateOf(Kind.ALL) }
     var selected by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(place?.coordinates) {
+    val context = LocalContext.current
+    var attempt by remember { mutableIntStateOf(0) }
+    var handled by remember { mutableIntStateOf(0) }
+    LaunchedEffect(place?.coordinates, attempt) {
         val c = place?.coordinates ?: return@LaunchedEffect
         if (preset != null || !state.sideEffects) return@LaunchedEffect
+        // Refresh or Try again pressed (not just a move).
+        val forced = attempt != handled
+        handled = attempt
+        // The weekly ready-made list (squares around you), no live search.
+        val country = place?.countryCode
+        val app = context.applicationContext
+        if (withContext(Dispatchers.IO) { MasjidListStore.mayCover(app, country) }) {
+            val ready = if (forced) null else withContext(Dispatchers.IO) { MasjidListStore.places(app, c, country) }
+            if (ready != null) {
+                spaces = ready
+                failed = false
+                if (!MasjidListStore.isFresh(app, c)) {
+                    // Weekly refresh in the background; the next move picks it up.
+                    CoroutineScope(Dispatchers.IO).launch { MasjidListStore.download(app, c, country) }
+                }
+                return@LaunchedEffect
+            }
+            loading = true
+            failed = false
+            val fetched = withContext(Dispatchers.IO) {
+                if (forced) MasjidListStore.forget(app, c)
+                MasjidListStore.download(app, c, country)
+                MasjidListStore.places(app, c, country)
+            }
+            loading = false
+            if (fetched != null) {
+                spaces = fetched
+                return@LaunchedEffect
+            }
+            // No list here and none from before: fall back to the live search.
+        }
         val last = NearbyCache.around
-        if (last != null && Geo.distanceKm(last, c) < 0.5 && NearbyCache.spaces.isNotEmpty()) return@LaunchedEffect
+        if (last != null && NearbyCache.spaces.isNotEmpty()) {
+            // Show distances from here straight away.
+            spaces = NearbyCache.measuredFrom(c)
+            if (!forced && Geo.distanceKm(last, c) < NearbyCache.REFRESH_KM) return@LaunchedEffect
+        }
         loading = true
         failed = false
-        val found = withContext(Dispatchers.IO) {
-            val query = PrayerSpaces.overpassQuery(c)
-            PrayerSpaces.OVERPASS_URLS.firstNotNullOfOrNull { url ->
-                runCatching { PrayerSpaces.parseOverpass(Http.postForm(url, mapOf("data" to query), timeoutMs = 20_000), c) }.getOrNull()
-            }
-        }
+        val found = searchOpenStreetMap(c)
         loading = false
-        if (found == null) failed = true else {
-            spaces = found
+        if (found == null) failed = spaces.isEmpty() else {
             NearbyCache.around = c
             NearbyCache.spaces = found
+            spaces = found
         }
     }
     val visible = when (kind) {
@@ -160,6 +234,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                     if (failed) "Couldn't search" else "Nothing listed nearby",
                     if (failed) "Searching needs an internet connection."
                     else "OpenStreetMap has no ${if (kind == Kind.MUSOLLAH) "musollah" else "masjid"} listed within 15 km. Use the Qibla tab to pray where you are.",
+                    onRetry = if (failed) ({ attempt += 1 }) else null,
                 )
                 else -> LazyColumn(Modifier.fillMaxSize()) {
                     items(visible, key = { it.id }) { space ->
@@ -167,8 +242,11 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                         HorizontalDivider(Modifier.padding(start = 56.dp), color = Palette.primary.copy(alpha = 0.1f))
                     }
                     item {
-                        Text("Places from OpenStreetMap (© OpenStreetMap contributors). Only the search area is sent.",
+                        Text("Places from OpenStreetMap (© OpenStreetMap contributors), kept on your phone and updated weekly. Only the area is sent.",
                             style = Txt.caption, color = Palette.secondary, modifier = Modifier.padding(Dims.gutter))
+                        OutlinedButton(onClick = { attempt += 1 }, modifier = Modifier.padding(horizontal = Dims.gutter)) {
+                            Text("Refresh list")
+                        }
                         Spacer(Modifier.height(24.dp))
                     }
                 }
@@ -178,11 +256,12 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
 }
 
 @Composable
-private fun Empty(title: String, body: String) {
+private fun Empty(title: String, body: String, onRetry: (() -> Unit)? = null) {
     Column(Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Icon(Icons.Filled.Brightness2, null, Modifier.size(36.dp), tint = Palette.secondary)
         Text(title, style = Txt.headline, color = Palette.primary)
         Text(body, style = Txt.subheadline, color = Palette.secondary, textAlign = TextAlign.Center)
+        if (onRetry != null) OutlinedButton(onClick = onRetry) { Text("Try again") }
     }
 }
 
