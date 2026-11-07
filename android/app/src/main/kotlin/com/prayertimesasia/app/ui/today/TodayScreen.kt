@@ -276,6 +276,9 @@ private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -
             }
             Column(Modifier.align(Alignment.TopEnd).padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally) {
+                if (f.state.prefs.musafirEnabled && f.state.prefs.musafirChipDismissed && f.state.resolver.musafirStatus(f.now)?.isTraveller == true) {
+                    MusafirButton(f.state)
+                }
                 StyleButton(f.state)
                 AppearanceButton(f.state)
                 WakeChip(f.state)
@@ -284,7 +287,7 @@ private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -
         }
         DayPlaceChip(f.state, f.offset, openPlaces)
         Prompts(f)
-        if (f.state.prefs.musafirEnabled && f.state.resolver.musafirStatus(f.now)?.isTraveller == true) MusafirChip(f.state)
+        if (f.state.prefs.musafirEnabled && !f.state.prefs.musafirChipDismissed && f.state.resolver.musafirStatus(f.now)?.isTraveller == true) MusafirChip(f.state)
         DayNavigator(f.state, f.shown, f.offset, setOffset, openCalendar)
     }, bottom = {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -465,12 +468,12 @@ private fun SunPathPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
             } else {
                 Spacer(Modifier.weight(1f))
             }
-            HeaderButtons(state, showMusafir = false)
+            HeaderButtons(state, showMusafir = state.prefs.musafirChipDismissed)
         }
         SunPath(f.now, f.day, state.resolver.zone, Palette.sunArc, Modifier.bleed(Dims.gutter).height(96.dp))
         Box(Modifier.offset(y = (-6).dp)) { DayPlaceChip(state, f.offset, openPlaces) }
         Prompts(f)
-        if (state.prefs.musafirEnabled && state.resolver.musafirStatus(f.now)?.isTraveller == true) MusafirChip(state)
+        if (state.prefs.musafirEnabled && !state.prefs.musafirChipDismissed && state.resolver.musafirStatus(f.now)?.isTraveller == true) MusafirChip(state)
         DayNavigator(state, f.shown, f.offset, setOffset, openCalendar)
         PrayerList(state, f.shown, f.now, f.currentPrayer, f.nextForList, state.prefs.showMore, null, Modifier.daySwipe(f.offset, setOffset))
         ShowMoreButton(state, Modifier.fillMaxWidth())

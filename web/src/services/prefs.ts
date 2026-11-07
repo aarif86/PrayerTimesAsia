@@ -46,6 +46,8 @@ export interface Preferences {
   lastCountryCode: string | null
   arrivedAt: number | null
   arrivalBannerDismissed: boolean
+  /** The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival. */
+  musafirChipDismissed: boolean
   trip: TripStop[]
   trackerEnabled: boolean
   prayedLog: Record<string, Prayer[]>
@@ -122,6 +124,7 @@ export const DEFAULT_PREFS: Preferences = {
   lastCountryCode: null,
   arrivedAt: null,
   arrivalBannerDismissed: true,
+  musafirChipDismissed: false,
   trip: [],
   trackerEnabled: false,
   prayedLog: {},

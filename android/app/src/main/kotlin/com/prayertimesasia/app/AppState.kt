@@ -190,7 +190,7 @@ class AppState(
                 val firstEver = p.lastCountryCode == null
                 val stop = TripStop(countryCode = code, countryName = place.countryName ?: code, placeName = place.name,
                     arrived = System.currentTimeMillis())
-                p = p.copy(lastCountryCode = code, arrivedAt = System.currentTimeMillis(),
+                p = p.copy(lastCountryCode = code, arrivedAt = System.currentTimeMillis(), musafirChipDismissed = false,
                     arrivalBannerDismissed = firstEver, trip = (listOf(stop) + p.trip).take(30))
             }
             p

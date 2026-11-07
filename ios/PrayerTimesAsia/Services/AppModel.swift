@@ -135,6 +135,7 @@ final class AppModel {
             p.lastCountryCode = "VN"
             p.musafirEnabled = true
             p.arrivedAt = .now
+            p.musafirChipDismissed = false
             p.arrivalBannerDismissed = false
             p.trip = [TripStop(countryCode: "VN", countryName: "Vietnam", placeName: "Hoàn Kiếm", arrived: .now),
                       TripStop(countryCode: "SG", countryName: "Singapore", placeName: "Pasir Ris",
@@ -593,6 +594,7 @@ final class AppModel {
             let isFirstEver = p.lastCountryCode == nil
             p.lastCountryCode = code
             p.arrivedAt = .now
+            p.musafirChipDismissed = false
             p.arrivalBannerDismissed = isFirstEver
             p.trip.insert(TripStop(countryCode: code, countryName: place.countryName ?? code,
                                    placeName: place.name, arrived: .now), at: 0)
