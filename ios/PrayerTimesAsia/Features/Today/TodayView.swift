@@ -743,8 +743,13 @@ struct TodayView: View {
         }
         .buttonStyle(.plain)
     }
-    /// Automatic (follows the sky) → Light → Dark, one tap each.
-    private var appearanceButton: some View {
+    /// Automatic (follows the sky) → Light → Dark, one tap each. Hidden on Colour
+    /// Bands, which keeps its own fixed colours, so the button would do nothing there.
+    @ViewBuilder private var appearanceButton: some View {
+        if model.prefs.todayStyle != .bands { appearanceToggle }
+    }
+
+    private var appearanceToggle: some View {
         let symbol = switch model.prefs.appearance {
         case .system: "circle.lefthalf.filled"
         case .light: "sun.max.fill"

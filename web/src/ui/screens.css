@@ -132,7 +132,7 @@
 
 /* Colour Bands - always on a dark timetable, like the classic Singapore one */
 .bands-backdrop { position: fixed; inset: 0; z-index: 0; background: rgb(43, 43, 43); }
-.bands-page { color: #fff; gap: 0; --fg: #fff; --fg2: rgba(235, 235, 245, 0.62); --fill: rgba(255, 255, 255, 0.12); --accent: rgb(247, 189, 143);
+.bands-page { color: #fff; gap: 0; --fg: #fff; --fg2: rgba(235, 235, 245, 0.82); --fill: rgba(255, 255, 255, 0.12); --accent: rgb(247, 189, 143);
   --glass: rgba(60, 60, 60, 0.6); --stroke: rgba(255, 255, 255, 0.1); --grade-d: rgba(255, 255, 255, 0.75); }
 .bands-top { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; padding-bottom: 12px; }
 .bands-place { display: inline-flex; align-items: center; gap: 5px; font-size: 20px; font-weight: 700; min-width: 0; }

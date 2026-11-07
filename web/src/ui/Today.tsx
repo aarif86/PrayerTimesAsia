@@ -95,9 +95,13 @@ interface Ctx {
 
 // ---------- Buttons ----------
 
-/** Automatic (follows the sky) → Light → Dark, one tap each. */
+/**
+ * Automatic (follows the sky) → Light → Dark, one tap each. Hidden on Colour Bands,
+ * which keeps its own fixed colours, so the button would do nothing there.
+ */
 function AppearanceButton({ c }: { c: Ctx }) {
   const a = store.prefs.appearance
+  if (store.prefs.todayStyle === 'bands') return null
   const Icon = a === 'system' ? Contrast : a === 'light' ? Sun : Moon
   return (
     <button class="round-btn" aria-label={`Appearance: ${APPEARANCE_LABEL[a]}. Switches between Automatic, Light and Dark.`}

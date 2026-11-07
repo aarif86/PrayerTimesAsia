@@ -88,9 +88,13 @@ internal fun dayLabel(offset: Int): String = when (offset) {
 internal fun dateText(state: AppState, day: PrayerDay, pattern: String): String =
     DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH).format(day.date)
 
-/** Automatic (follows the sky) → Light → Dark, one tap each. */
+/**
+ * Automatic (follows the sky) → Light → Dark, one tap each. Hidden on Colour Bands,
+ * which keeps its own fixed colours, so the button would do nothing there.
+ */
 @Composable
 fun AppearanceButton(state: AppState, background: Color = Palette.primary.copy(alpha = 0.1f)) {
+    if (state.prefs.todayStyle == TodayStyle.BANDS) return
     val haptics = LocalHapticFeedback.current
     val icon = when (state.prefs.appearance) {
         Appearance.SYSTEM -> Icons.Filled.BrightnessMedium
