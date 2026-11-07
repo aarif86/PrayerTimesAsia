@@ -12,7 +12,9 @@ import { readJSON } from '../services/storage'
 import { configFromHash, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, type ScreenConfig, type ScreenLanguage, type ScreenPlace } from '../screen/config'
 import { officialSourceForScreen } from '../screen/model'
 import { monthDays, optionsFromHash, PRINT_WORDS, printHash, ramadanDays, shortHash, configFromShortHash, SHEETS, type PrintOptions, type SheetKind } from './model'
-import { MonthSheet, RamadanSheet, StickerSheet, TrackerSheet } from './Sheets'
+import { FastingSheet, MonthSheet, RamadanSheet, StickerSheet, TrackerSheet } from './Sheets'
+import { defaultAuthority, type CalendarDataset } from '../core/calendarSanad'
+import { communityHijri } from '../core/season'
 import './print.css'
 
 /**
@@ -46,7 +48,19 @@ function initialConfig(): ScreenConfig {
   return { ...DEFAULT_CONFIG }
 }
 
-const SHEET_ICON: Record<SheetKind, string> = { month: '▦', ramadan: '☾', stickers: '✂', tracker: '★' }
+const SHEET_ICON: Record<SheetKind, string> = { month: '▦', ramadan: '☾', stickers: '✂', tracker: '★', fasting: '✦' }
+
+/** Ramadan as the community counts it: the app's saved announcements and the authority for the place's country. */
+function communityHijriFor(c: ScreenConfig) {
+  const cal = readJSON<CalendarDataset>('ptasia.calendar')
+  const chosen = readJSON<{ communityAuthority?: string | null }>('ptasia.preferences.v1')?.communityAuthority
+  const authority = chosen ?? defaultAuthority(c.place?.cc ?? '') ?? null
+  const tz = c.place?.tz ?? 'UTC'
+  return (ms: number) => {
+    const z = zoned(ms, tz)
+    return communityHijri({ year: z.year, month: z.month, day: z.day }, c.hijriAdj, cal?.announcements ?? [], authority)
+  }
+}
 
 function App() {
   const [c, setC] = useState<ScreenConfig>(initialConfig)
@@ -60,7 +74,7 @@ function App() {
 
   const days = useMemo(() => {
     if (!c.place) return []
-    return o.sheet === 'ramadan' ? ramadanDays(c, now, rowFor) : monthDays(c, o.year, o.month, rowFor)
+    return o.sheet === 'ramadan' || o.sheet === 'fasting' ? ramadanDays(c, now, rowFor, communityHijriFor(c)) : monthDays(c, o.year, o.month, rowFor)
   }, [c, o, tables])
 
   // Ramadan can fall in the next year: fetch every year the sheet touches.
@@ -110,7 +124,7 @@ function App() {
     return () => ro.disconnect()
   }, [])
 
-  const Sheet = { month: MonthSheet, ramadan: RamadanSheet, stickers: StickerSheet, tracker: TrackerSheet }[o.sheet]
+  const Sheet = { month: MonthSheet, ramadan: RamadanSheet, stickers: StickerSheet, tracker: TrackerSheet, fasting: FastingSheet }[o.sheet]
 
   return (
     <div class="print-page">
@@ -133,7 +147,7 @@ function App() {
           <p class="muted small">{w.sheetHint[o.sheet]}</p>
         </fieldset>
 
-        {o.sheet !== 'ramadan' && (
+        {o.sheet !== 'ramadan' && o.sheet !== 'fasting' && (
           <fieldset>
             <legend>Month</legend>
             <div class="month-picker">

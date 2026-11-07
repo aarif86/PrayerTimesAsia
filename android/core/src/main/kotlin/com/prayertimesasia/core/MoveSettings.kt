@@ -51,6 +51,15 @@ data class MovedSettings(
     val excusedDays: List<String>? = null,
     val trackerPausedSince: String? = null,
     val wakeUp: WakeUpTiming? = null,
+    val sahurAlarm: SahurTiming? = null,
+    val sahurDays: List<String>? = null,
+    val windowNudge: Boolean? = null,
+    val quietHours: Boolean? = null,
+    val quietFrom: Int? = null,
+    val quietTo: Int? = null,
+    val buzzOnly: Boolean? = null,
+    val largeText: Boolean? = null,
+    val jumuahReminderMinutes: Int? = null,
 ) {
     @Serializable
     data class MovedPlace(
@@ -113,6 +122,15 @@ data class MovedSettings(
             excusedDays = p.excusedDays + excusedDays.orEmpty(),
             trackerPausedSince = trackerPausedSince?.takeIf { DAY.matches(it) },
             wakeUp = wakeUp,
+            sahurAlarm = sahurAlarm,
+            sahurDays = sahurDays?.let { raw -> SahurDay.entries.filter { it.raw in raw }.toSet() } ?: d.sahurDays,
+            windowNudge = windowNudge ?: d.windowNudge,
+            quietHours = quietHours ?: d.quietHours,
+            quietFrom = quietFrom?.takeIf { it in 0 until 1440 } ?: d.quietFrom,
+            quietTo = quietTo?.takeIf { it in 0 until 1440 } ?: d.quietTo,
+            buzzOnly = buzzOnly ?: d.buzzOnly,
+            largeText = largeText ?: d.largeText,
+            jumuahReminderMinutes = jumuahReminderMinutes?.takeIf { it in PrayerWindow.JUMUAH_REMINDER_CHOICES } ?: 0,
         )
     }
 
@@ -151,8 +169,9 @@ data class MovedSettings(
             if (trackerEnabled == true || days > 0) add("Prayer tracker" + if (days > 0) ", $days day${if (days == 1) "" else "s"} of history" else "")
             if (methodOverrideID != null || asrOverride != null || jakimZoneOverride != null) add("Your calculation choices")
             if (appearance != null || todayStyle != null || use24Hour != null || namingOverride != null) add("Your look and prayer names")
-            if (notifyPrayers != null || reminderMinutesBefore != null) add("Which prayers to alert")
-            if (wakeUp != null) add("Your wake-up alarm")
+            if (notifyPrayers != null || reminderMinutesBefore != null || quietHours != null || buzzOnly != null || jumuahReminderMinutes != null) add("Which prayers to alert, and how")
+            if (wakeUp != null || sahurAlarm != null) add("Your wake-up alarms")
+            if (largeText == true) add("Bigger text")
             if (musafirEnabled == true) add("Musafir features")
         }.ifEmpty { listOf("The standard settings") }
 
@@ -206,6 +225,15 @@ data class MovedSettings(
                 excusedDays = p.excusedDays.takeIf { it.isNotEmpty() }?.sorted(),
                 trackerPausedSince = p.trackerPausedSince,
                 wakeUp = p.wakeUp,
+                sahurAlarm = p.sahurAlarm,
+                sahurDays = changed(p.sahurDays, d.sahurDays)?.let { set -> SahurDay.entries.filter { it in set }.map { it.raw } },
+                windowNudge = changed(p.windowNudge, d.windowNudge),
+                quietHours = changed(p.quietHours, d.quietHours),
+                quietFrom = changed(p.quietFrom, d.quietFrom),
+                quietTo = changed(p.quietTo, d.quietTo),
+                buzzOnly = changed(p.buzzOnly, d.buzzOnly),
+                largeText = changed(p.largeText, d.largeText),
+                jumuahReminderMinutes = changed(p.jumuahReminderMinutes, d.jumuahReminderMinutes),
             )
         }
 

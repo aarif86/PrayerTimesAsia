@@ -1,6 +1,9 @@
 import type { MasjidLink } from '../core/masjidLink'
 import type { Place } from '../core/place'
+import type { FastMark } from '../core/ramadanContent'
+import { SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { NAMING_STYLES, OBLIGATORY, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
+import { DEFAULT_SAHUR_DAYS, SAHUR_DAYS, SAHUR_TIMINGS, WAKE_UP_TIMINGS, type SahurDay, type SahurTiming, type WakeUpTiming } from '../core/wakeup'
 
 export type Appearance = 'system' | 'light' | 'dark'
 export const APPEARANCES: Appearance[] = ['system', 'light', 'dark']
@@ -9,10 +12,10 @@ export const APPEARANCE_LABEL: Record<Appearance, string> = {
 }
 
 /** How the Prayer screen shows the day (same order as the iOS TodayStyle). */
-export type TodayStyle = 'list' | 'centre' | 'dial' | 'sunPath' | 'bands'
-export const TODAY_STYLES: TodayStyle[] = ['centre', 'list', 'dial', 'sunPath', 'bands']
+export type TodayStyle = 'list' | 'centre' | 'dial' | 'sunPath' | 'bands' | 'simple'
+export const TODAY_STYLES: TodayStyle[] = ['centre', 'list', 'dial', 'sunPath', 'bands', 'simple']
 export const TODAY_STYLE_LABEL: Record<TodayStyle, string> = {
-  list: 'Side Dial', centre: 'Centre Dial', dial: 'Day Dial', sunPath: 'Sun Path', bands: 'Colour Bands',
+  list: 'Side Dial', centre: 'Centre Dial', dial: 'Day Dial', sunPath: 'Sun Path', bands: 'Colour Bands', simple: 'Big and Simple',
 }
 
 export interface TripStop { countryCode: string; countryName: string; placeName: string; arrived: number }
@@ -49,6 +52,11 @@ export interface Preferences {
   excusedDays: string[]
   /** "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from then until it is ended counts as excused. */
   trackerPausedSince: string | null
+  /** The Subuh alarm; null = off. On the web it rings only while the app is open (or through the calendar file). */
+  wakeUp: WakeUpTiming | null
+  /** The earlier sahur alarm; null = off. Rings only on `sahurDays`. */
+  sahurAlarm: SahurTiming | null
+  sahurDays: SahurDay[]
   communityAuthority: string | null
   appearance: Appearance
   todayStyle: TodayStyle
@@ -61,6 +69,37 @@ export interface Preferences {
   myMasjid: MasjidLink | null
   /** Anonymous usage counts (city and country, never coordinates). See services/usage.ts. */
   shareUsage: boolean
+  // Ramadan and Syawal
+  /** For testers: pretend today is a day in Ramadan or Syawal. Never moved to another phone. */
+  seasonPreview: SeasonPreview
+  /** "Imsak in 10 minutes" in Ramadan. */
+  imsakAlert: boolean
+  /** "Time to berbuka" at Maghrib in Ramadan. */
+  berbukaAlert: boolean
+  /** The last ten nights: a gentle alert at the last third of the night. */
+  qiyamAlert: boolean
+  /** Ramadan screen: a juz a day to finish the Quran in the month. */
+  khatamPlan: boolean
+  /** "yyyy-MM-dd" to how that day's fast went (fasted, a reason it was missed, a replaced or Syawal fast). */
+  fastLog: Record<string, FastMark>
+  /** Days Tarawih was prayed. */
+  tarawihLog: string[]
+  /** Days the day's juz was read. */
+  quranLog: string[]
+  /** Hijri years zakat fitrah was paid. */
+  zakatPaid: number[]
+  /** Tracker users: one nudge before a prayer's time runs out, if it isn't ticked. */
+  windowNudge: boolean
+  /** Alerts go silent (buzz only) between these minutes past midnight; Subuh still rings. */
+  quietHours: boolean
+  quietFrom: number
+  quietTo: number
+  /** Every alert buzzes only, never a sound. */
+  buzzOnly: boolean
+  /** Bigger text everywhere, for older eyes. */
+  largeText: boolean
+  /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
+  jumuahReminderMinutes: number
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -88,6 +127,9 @@ export const DEFAULT_PREFS: Preferences = {
   prayedLog: {},
   excusedDays: [],
   trackerPausedSince: null,
+  wakeUp: null,
+  sahurAlarm: null,
+  sahurDays: [...DEFAULT_SAHUR_DAYS],
   communityAuthority: null,
   appearance: 'system',
   todayStyle: 'centre',
@@ -98,18 +140,37 @@ export const DEFAULT_PREFS: Preferences = {
   appPromptDismissed: false,
   myMasjid: null,
   shareUsage: true,
+  seasonPreview: 'off',
+  imsakAlert: true,
+  berbukaAlert: true,
+  qiyamAlert: false,
+  khatamPlan: false,
+  fastLog: {},
+  tarawihLog: [],
+  quranLog: [],
+  zakatPaid: [],
+  windowNudge: true,
+  quietHours: false,
+  quietFrom: 23 * 60,
+  quietTo: 6 * 60,
+  buzzOnly: false,
+  largeText: false,
+  jumuahReminderMinutes: 0,
 }
 
 const NULLABLE = new Set<keyof Preferences>([
   'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'jakimZoneOverride',
-  'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince',
+  'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
 ])
 
 const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   appearance: ['system', 'light', 'dark'],
-  todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands'],
+  todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands', 'simple'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,
+  seasonPreview: SEASON_PREVIEWS,
+  wakeUp: WAKE_UP_TIMINGS,
+  sahurAlarm: SAHUR_TIMINGS,
 }
 
 /**
@@ -140,12 +201,16 @@ export function decodePreferences(raw: unknown): Preferences {
     if (Array.isArray(d)) {
       if (!Array.isArray(v)) continue
       if (key === 'savedPlaces') (out as unknown as Record<string, unknown>)[key] = v.filter(isPlace)
+      else if (key === 'sahurDays') (out as unknown as Record<string, unknown>)[key] = SAHUR_DAYS.filter((d) => v.includes(d))
       else (out as unknown as Record<string, unknown>)[key] = v
       continue
     }
     if (typeof d === 'object') { if (typeof v === 'object' && !Array.isArray(v)) (out as unknown as Record<string, unknown>)[key] = v; continue }
     if (typeof v === typeof d) (out as unknown as Record<string, unknown>)[key] = v
   }
+  // Minutes past midnight must be a real time of day.
+  for (const k of ['quietFrom', 'quietTo'] as const) if (!Number.isInteger(out[k]) || out[k] < 0 || out[k] >= 1440) out[k] = DEFAULT_PREFS[k]
+  if (!JUMUAH_REMINDER_CHOICES.includes(out.jumuahReminderMinutes)) out.jumuahReminderMinutes = 0
   return out
 }
 
@@ -179,3 +244,6 @@ export function savePreferences(p: Preferences): void {
 /** "Reminder before prayer": on at 15 minutes, any of these to choose from. */
 export const DEFAULT_REMINDER_MINUTES = 15
 export const REMINDER_CHOICES = [5, 10, 15, 20, 30, 45, 60]
+
+/** "Leave for Jumaat": how long before the khutbah. 0 is off. */
+export const JUMUAH_REMINDER_CHOICES = [0, 20, 30, 45, 60, 90]

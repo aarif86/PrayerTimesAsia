@@ -10,6 +10,8 @@ enum NotificationScheduler {
         let body: String
         let fireDate: Date
         var sound: Azan.Sound = .standard
+        /// Buzz only: quiet hours or the "Buzz only" switch.
+        var silent = false
     }
 
     static func requestPermission() async -> Bool {
@@ -25,7 +27,7 @@ enum NotificationScheduler {
             let content = UNMutableNotificationContent()
             content.title = alert.title
             content.body = alert.body
-            content.sound = Azan.notificationSound(alert.sound)
+            content.sound = alert.silent ? nil : Azan.notificationSound(alert.sound)
             // Time Sensitive: rings through Focus (Work, Do Not Disturb...) so a
             // reminder isn't lost in a meeting. iOS honours it once the app's
             // Time Sensitive Notifications capability is on (see PENDING.md);

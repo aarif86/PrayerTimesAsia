@@ -116,6 +116,8 @@ jobs:
           for t in today qibla falak nearby settings; do shot -demo -auto -tab $t; sleep 4; xcrun simctl io "$UDID" screenshot screenshots/9-auto-$t.png; done
           shot -demo -tab nearby; sleep 8; xcrun simctl io "$UDID" screenshot screenshots/6-masjid.png
           shot -demo -tab settings;       xcrun simctl io "$UDID" screenshot screenshots/5-settings.png
+          shot -demo -tab wakeup -wake;   xcrun simctl io "$UDID" screenshot screenshots/5b-wake-up.png
+          shot -demo -tab today -centre -wake; xcrun simctl io "$UDID" screenshot screenshots/5c-today-wake-chip.png
           shot -demo -tab settings -settings-end; xcrun simctl io "$UDID" screenshot screenshots/5b-settings-makers.png
 
       - name: Upload screenshots

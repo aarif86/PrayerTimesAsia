@@ -273,3 +273,46 @@ export function TrackerSheet({ c, o, days, qrLink }: SheetProps) {
     </article>
   )
 }
+
+// MARK: Kids' fasting chart
+
+export function FastingSheet({ c, days, qrLink }: SheetProps) {
+  const w = PRINT_WORDS[c.lang]
+  const tz = c.place!.tz
+  const year = days[0]?.hijri.year ?? ''
+  return (
+    <article class="paper sheet-fasting">
+      <header class="tracker-head">
+        <div>
+          <h1>{w.myFasts} {year}</h1>
+          <p>{w.colourStar}</p>
+        </div>
+        <div class="name-line">{w.name}: <span /></div>
+      </header>
+      <div class="fast-stars">
+        {days.map((d, k) => (
+          <div key={k} class={`fs-cell${k >= 20 ? ' last-ten' : ''}`}>
+            <span class="fs-num">{k + 1}</span>
+            <svg class="fs-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.5.8-4.8 4.5 1.2 6.5L12 17.3l-5.8 3.1 1.2-6.5L2.6 9.4l6.5-.8z" /></svg>
+            <span class="fs-date">{d.day} {w.months[d.month - 1].slice(0, 3)}</span>
+            <span class="fs-times">{w.imsak} {clock(d.times.imsak ?? d.times.day.times.fajr - 600_000, tz, c.h24)} · {w.iftar} {clock(d.times.day.times.maghrib, tz, c.h24)}</span>
+          </div>
+        ))}
+      </div>
+      <h2 class="fs-syawal">{w.syawalSix}</h2>
+      <div class="fast-stars six">
+        {Array.from({ length: 6 }, (_, k) => (
+          <div key={k} class="fs-cell syawal">
+            <span class="fs-num">{k + 1}</span>
+            <svg class="fs-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.5.8-4.8 4.5 1.2 6.5L12 17.3l-5.8 3.1 1.2-6.5L2.6 9.4l6.5-.8z" /></svg>
+          </div>
+        ))}
+      </div>
+      <footer class="tracker-foot">
+        <div class="score"><span>{w.fastsKept}</span><b>____ / {days.length + 6}</b></div>
+        <div class="score wide"><span>{w.reward}</span><b /></div>
+        <Brand c={c} qrLink={qrLink} />
+      </footer>
+    </article>
+  )
+}

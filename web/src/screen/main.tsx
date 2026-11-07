@@ -11,7 +11,9 @@ import { registerServiceWorker } from '../ui/pwa'
 import { configFromHash, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, type ScreenConfig } from './config'
 import { Display } from './Display'
 import { Frame } from './Frame'
-import { officialSourceForScreen, WORDS } from './model'
+import { officialSourceForScreen, setScreenAnnouncements, setScreenClock, WORDS } from './model'
+import type { CalendarDataset } from '../core/calendarSanad'
+import { fetchOK } from '../services/storage'
 import { Setup } from './Setup'
 import './screen.css'
 
@@ -21,6 +23,23 @@ const SCREEN_VERSION = '1.0.0'
 /** Screenshot mode: ?demo (an example masjid) and ?now=2026-10-26T16:30:00%2B08:00 (a fixed clock). */
 const query = new URLSearchParams(location.search)
 const fixedNow = (() => { const t = Date.parse(query.get('now') ?? ''); return Number.isNaN(t) ? null : t })()
+if (fixedNow != null) setScreenClock(() => fixedNow)
+
+/** Ramadan and Raya announcements: the saved copy at once, then the latest every 15 minutes (moon sighting nights). */
+const CALENDAR_URL = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/main/data/calendar.json'
+setScreenAnnouncements(readJSON<CalendarDataset>('ptasia.calendar')?.announcements ?? [])
+async function refreshAnnouncements(): Promise<boolean> {
+  if (query.has('demo')) return false
+  const r = await fetchOK(CALENDAR_URL)
+  if (!r) return false
+  try {
+    const data = (await r.json()) as CalendarDataset
+    if (!Array.isArray(data.announcements)) return false
+    writeJSON('ptasia.calendar', data)
+    setScreenAnnouncements(data.announcements)
+    return true
+  } catch { return false }
+}
 
 export const DEMO_CONFIG: ScreenConfig = {
   ...DEFAULT_CONFIG,
@@ -32,7 +51,12 @@ export const DEMO_CONFIG: ScreenConfig = {
 
 function initialConfig(): ScreenConfig | null {
   // ?demo&look=day&lang=ms for screenshots of each variation.
-  if (query.has('demo')) return sanitize({ ...DEMO_CONFIG, look: query.get('look'), lang: query.get('lang') ?? 'en', names: query.get('names') ?? DEMO_CONFIG.names })
+  if (query.has('demo')) {
+    return sanitize({ ...DEMO_CONFIG, look: query.get('look'), lang: query.get('lang') ?? 'en', names: query.get('names') ?? DEMO_CONFIG.names,
+      // ?season=ramadan|lastTen|raya: the committee's Ramadan preview, with typical settings.
+      showIqamah: query.has('iqamah'),
+      ramadan: { ishaExtra: 5, tarawih: true, tarawihAt: null, qiyamAt: '03:30', eidAt: '08:00', preview: query.get('season') ?? 'off' } })
+  }
   const fromLink = configFromHash(location.hash)
   if (fromLink) { writeJSON(STORAGE, fromLink); return fromLink }
   const saved = readJSON<unknown>(STORAGE)
@@ -88,6 +112,13 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
     const id = setInterval(fetchTables, 6 * 3_600_000)
     return () => clearInterval(id)
   }, [config])
+
+  useEffect(() => {
+    const get = () => { void refreshAnnouncements().then((changed) => { if (changed) setTables((n) => n + 1) }) }
+    get()
+    const id = setInterval(get, 15 * 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   // Anonymous check-in: on start and every six hours, unless the committee turned it off.
   useEffect(() => {

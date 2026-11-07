@@ -12,7 +12,8 @@ import java.net.URLDecoder
  *
  * n name · ll latitude,longitude · tz time zone · cc country (optional) ·
  * i Subuh, Zohor, Asar, Maghrib, Isyak: minutes after azan ("10"), a fixed
- * time ("13:15"), or empty · j Jumu'ah (khutbah) time (optional).
+ * time ("13:15"), or empty · j Jumu'ah (khutbah) time (optional) ·
+ * e Hari Raya prayer time (optional).
  */
 @Serializable
 data class MasjidLink(
@@ -24,6 +25,8 @@ data class MasjidLink(
     /** Prayer raw value → rule. */
     val jamaah: Map<String, Rule> = emptyMap(),
     val jumuah: String? = null,
+    /** Hari Raya prayer time, while the masjid screen has one. */
+    val eid: String? = null,
 ) {
     @Serializable
     data class Rule(val after: Int? = null, val fixed: String? = null)
@@ -79,7 +82,7 @@ data class MasjidLink(
                 }
             }
             val cc = q["cc"]?.takeIf { Regex("^[A-Za-z]{2}$").matches(it) }?.uppercase()
-            return MasjidLink(name, lat, lng, tz, cc, jamaah, hhmm(q["j"].orEmpty()))
+            return MasjidLink(name, lat, lng, tz, cc, jamaah, hhmm(q["j"].orEmpty()), hhmm(q["e"].orEmpty()))
         }
     }
 }

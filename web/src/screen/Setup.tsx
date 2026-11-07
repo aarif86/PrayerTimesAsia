@@ -12,6 +12,7 @@ import {
 import { Display } from './Display'
 import { Frame } from './Frame'
 import { name, officialSourceForScreen } from './model'
+import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 
 /**
  * The committee's page: fill in the masjid's details on a phone, watch the
@@ -29,6 +30,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const [, setTables] = useState(0)
 
   const set = (change: Partial<ScreenConfig>) => setC((old) => ({ ...old, ...change }))
+  const setRamadan = (change: Partial<ScreenConfig['ramadan']>) => setC((old) => ({ ...old, ramadan: { ...old.ramadan, ...change } }))
   const results = useMemo(() => searchCities(query, 8), [query])
   const official = officialSourceForScreen(c)
   const link = `${location.origin}${location.pathname}#c=${encodeConfig(c)}`
@@ -170,7 +172,41 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
           </fieldset>
 
           <fieldset>
-            <legend><span class="step">4</span>Look and language</legend>
+            <legend><span class="step">4</span>Ramadan and Raya <span class="muted small">(optional)</span></legend>
+            <p class="muted small">In Ramadan the screen adds Imsak, calls Maghrib Berbuka and shows the Ramadan day. It starts and ends on the days {c.place ? 'your country\'s authority' : 'the authority'} announces.</p>
+            <div class="setup-iq two">
+              <div>
+                <label for="s-ishaex">Extra minutes before Isyak iqamah</label>
+                <input id="s-ishaex" type="number" min={0} max={60} value={c.ramadan.ishaExtra}
+                  onInput={(e) => setRamadan({ ishaExtra: Math.max(0, Math.min(60, +(e.target as HTMLInputElement).value || 0)) })} />
+              </div>
+              <div>
+                <label for="s-tarawih">Tarawih starts (empty means after Isyak)</label>
+                <input id="s-tarawih" value={c.ramadan.tarawihAt ?? ''} placeholder="21:15" inputMode="numeric"
+                  onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); setRamadan({ tarawihAt: isHHMM(v) ? v.padStart(5, '0') : null }) }} />
+              </div>
+              <div>
+                <label for="s-qiyam">Qiyamullail, last ten nights</label>
+                <input id="s-qiyam" value={c.ramadan.qiyamAt ?? ''} placeholder="03:30" inputMode="numeric"
+                  onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); setRamadan({ qiyamAt: isHHMM(v) ? v.padStart(5, '0') : null }) }} />
+              </div>
+              <div>
+                <label for="s-eid">Hari Raya prayer</label>
+                <input id="s-eid" value={c.ramadan.eidAt ?? ''} placeholder="08:00" inputMode="numeric"
+                  onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); setRamadan({ eidAt: isHHMM(v) ? v.padStart(5, '0') : null }) }} />
+              </div>
+            </div>
+            <label class="check"><input id="s-showtarawih" type="checkbox" checked={c.ramadan.tarawih} onChange={(e) => setRamadan({ tarawih: (e.target as HTMLInputElement).checked })} /> Show Tarawih in Ramadan</label>
+            <p class="muted small">The Raya prayer time also goes into the QR code, so jemaah see it in the app on Raya morning.</p>
+            <label for="s-preview">Try it before Ramadan</label>
+            <select id="s-preview" value={c.ramadan.preview} onChange={(e) => setRamadan({ preview: (e.target as HTMLSelectElement).value as SeasonPreview })}>
+              {SEASON_PREVIEWS.map((v) => <option key={v} value={v}>{SEASON_PREVIEW_LABEL[v]}</option>)}
+            </select>
+            {c.ramadan.preview !== 'off' && <p class="setup-error">Preview is on. Set it back to Off before putting the link on the TV.</p>}
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step">5</span>Look and language</legend>
             <label for="s-look">Look</label>
             <select id="s-look" value={c.look} onChange={(e) => set({ look: (e.target as HTMLSelectElement).value as ScreenLook })}>
               <option value="night">Night: dark, calm in a dim hall</option>
@@ -209,7 +245,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
           </section>
 
           <section class="setup-card setup-link">
-            <h2><span class="step">5</span>Put it on the TV</h2>
+            <h2><span class="step">6</span>Put it on the TV</h2>
             {!c.place && <p class="setup-error">Choose the masjid's location in step 1 first.</p>}
             <div class="setup-row">
               {canShare && <button type="button" class="primary" onClick={share} disabled={!c.place}>{copied === 'shared' ? 'Sent' : 'Share link'}</button>}

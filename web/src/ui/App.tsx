@@ -15,7 +15,9 @@ import { SettingsScreen, VERSION } from './Settings'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
 import { SKY, skyAt } from './sky'
 import { TodayScreen } from './Today'
+import { RamadanSheet } from './Ramadan'
 import { TrackerSheet } from './Tracker'
+import { WakeUpSheet } from './WakeUp'
 
 const MasjidScreen = lazy(() => import('./Masjid'))
 
@@ -50,9 +52,10 @@ export function App() {
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = scheme
+    document.documentElement.toggleAttribute('data-large-text', s.prefs.largeText)
     const meta = document.querySelector('meta[name="theme-color"]')
     meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
-  }, [scheme, bands])
+  }, [scheme, bands, s.prefs.largeText])
 
   useEffect(() => {
     const moved = takeMoveFromLink()
@@ -63,9 +66,11 @@ export function App() {
     // Counted a few seconds in, so the GPS place has usually arrived.
     const count = () => setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000)
     count()
-    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); scheduleAlerts(); count() } }
+    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); void s.refreshData(); scheduleAlerts(); count() } }
+    // On moon sighting nights the announcement can arrive while the app is open.
+    const poll = setInterval(() => { void s.refreshData() }, 10 * 60_000)
     document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
+    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll) }
   }, [])
 
   // Re-arm the next prayer alert whenever anything changes.
@@ -113,6 +118,8 @@ export function App() {
       {sheet?.kind === 'makers' && <MakersSheet placement={sheet.placement} />}
       {sheet?.kind === 'journey' && <JourneySheet />}
       {sheet?.kind === 'tracker' && <TrackerSheet />}
+      {sheet?.kind === 'ramadan' && <RamadanSheet />}
+      {sheet?.kind === 'wakeup' && <WakeUpSheet />}
       {sheet?.kind === 'level' && <LevelSheet />}
       {sheet?.kind === 'ar' && <ARScreen />}
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}

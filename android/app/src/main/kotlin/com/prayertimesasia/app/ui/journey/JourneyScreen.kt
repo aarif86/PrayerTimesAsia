@@ -1,5 +1,10 @@
 package com.prayertimesasia.app.ui.journey
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +19,11 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -23,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -82,6 +92,7 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                             }
                         }
                         Text(body, style = Txt.body, color = Palette.primary.copy(alpha = 0.9f))
+                        if (status.isTraveller) PlanTable(state)
                         if (state.prefs.arrivedAt != null && (status.isTraveller || status is Musafir.Status.Settled)) {
                             Text("Day ${r.daysHere(now) + 1} in ${r.profile.name.ifEmpty { "this place" }}", style = Txt.subheadlineSemibold,
                                 color = Palette.primary.copy(alpha = 0.8f))
@@ -91,6 +102,16 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                     Text("Set your home", style = Txt.title2, color = Palette.primary)
                     Text("Tell us where home is and we'll work out when you count as a traveller.", style = Txt.body,
                         color = Palette.primary.copy(alpha = 0.85f))
+                }
+            }
+            if (status?.isTraveller == true && r.isRamadanDay(now)) {
+                GlassCard {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("FASTING ON THIS JOURNEY", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Palette.primary.copy(alpha = 0.7f))
+                        Text("As a traveller you may choose not to fast today and replace it after Ramadan. If fasting is easy for you, fasting is better. The day counts as travel only if you left home before Subuh.",
+                            style = Txt.footnote, color = Palette.primary)
+                        Text("Mark it on the Ramadan page so the app counts the day to replace.", style = Txt.footnote, color = Palette.primary.copy(alpha = 0.8f))
+                    }
                 }
             }
             val today = r.day(now)
@@ -105,7 +126,7 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                         }
                         Window(state, Prayer.DHUHR, Prayer.ASR, today.time(Prayer.DHUHR), today.time(Prayer.MAGHRIB))
                         Window(state, Prayer.MAGHRIB, Prayer.ISHA, today.time(Prayer.MAGHRIB), tomorrow.time(Prayer.FAJR))
-                        Text("Jamak taqdim prays both in the first prayer's time; jamak ta'khir prays both in the second's. ${Prayer.FAJR.name(r.naming)} is never combined.",
+                        Text("Jamak taqdim means praying both in the first prayer's time. Jamak ta'khir means praying both in the second prayer's time. ${Prayer.FAJR.name(r.naming)} is never joined.",
                             style = Txt.footnote, color = Palette.primary.copy(alpha = 0.85f))
                     }
                 }
@@ -127,7 +148,7 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("TRAVEL DISTANCE", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Palette.primary.copy(alpha = 0.7f))
                     if (r.asrSchool == AsrSchool.HANAFI) {
-                        Text("Hanafi: about 78 km, stays up to 15 days. Prayers are shortened but not combined.", style = Txt.subheadline, color = Palette.primary)
+                        Text("In the Hanafi school the travel distance is about 78 km, for stays of up to 15 days. Prayers are shortened but not joined.", style = Txt.subheadline, color = Palette.primary)
                     } else {
                         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                             listOf(81.0 to "81 km (2 marhalah)", 89.0 to "89 km").forEachIndexed { i, (km, label) ->
@@ -138,8 +159,23 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                                     icon = {}) { Text(label) }
                             }
                         }
-                        Text("Shafi'i: stays of up to 3 days, not counting the days you arrive and leave.", style = Txt.subheadline,
-                            color = Palette.primary.copy(alpha = 0.85f))
+                        Text("Most of Southeast Asia uses 81 km, which is two marhalah. Some scholars use 89 km. Pick the one your local religious authority uses.",
+                            style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f))
+                        Text("In the Shafi'i school this holds for stays of up to 3 days, not counting the day you arrive and the day you leave.",
+                            style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f))
+                    }
+                    status?.let { Musafir.distanceCheck(it, r.musafirRules) }?.let { (counts, text) ->
+                        // Re-key on the chosen distance so switching 81 km and 89 km visibly refreshes the answer.
+                        AnimatedContent(targetState = counts to text, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "distance-check") { (ok, msg) ->
+                            Row(
+                                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Palette.primary.copy(alpha = 0.06f)).padding(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Icon(if (ok) Icons.Filled.CheckCircle else Icons.Filled.Cancel, null, Modifier.size(20.dp),
+                                    tint = if (ok) Color(0xFF2E9E5B) else Color(0xFFE08A1E))
+                                Text(msg, style = Txt.subheadlineSemibold, color = Palette.primary)
+                            }
+                        }
                     }
                 }
             }
@@ -164,6 +200,28 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
             Text("This is general guidance on the traveller's concessions (rukhsah), not a fatwa. When unsure, follow your local religious authority.",
                 style = Txt.caption, color = Palette.primary.copy(alpha = 0.7f))
             Spacer(Modifier.height(12.dp))
+        }
+    }
+}
+
+/** Each prayer on its own line: how many rakaat, and what it joins with. */
+@Composable
+private fun PlanTable(state: AppState) {
+    val r = state.resolver
+    val rows = Musafir.plan(r.musafirRules, r.naming)
+    Column {
+        rows.forEachIndexed { i, row ->
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.Top) {
+                Column(Modifier.weight(1f)) {
+                    Text(row.name, style = Txt.headline, color = Palette.primary)
+                    Text(row.join, style = Txt.footnote, color = Palette.primary.copy(alpha = 0.75f))
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(row.rakaat, style = Txt.headline, color = Palette.primary)
+                    Text(row.change, style = Txt.footnote, color = Palette.primary.copy(alpha = 0.75f))
+                }
+            }
+            if (i < rows.lastIndex) HorizontalDivider(color = Palette.primary.copy(alpha = 0.12f))
         }
     }
 }

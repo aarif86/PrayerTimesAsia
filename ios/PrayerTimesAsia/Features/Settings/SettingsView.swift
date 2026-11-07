@@ -3,9 +3,31 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
+    @State private var showRamadan = false
     @Environment(\.dismiss) private var dismiss
     /// A main tab (no Done button) rather than a sheet.
     var isTab = false
+    /// Every half hour of the day, in minutes past midnight.
+    static let halfHours = Array(stride(from: 0, to: 1440, by: 30))
+
+    /// A Ramadan alert switch that asks for notification permission when turned on.
+    private func ramadanAlert(_ title: String, _ detail: String, _ key: WritableKeyPath<Preferences, Bool>) -> some View {
+        Toggle(isOn: Binding(
+            get: { model.prefs[keyPath: key] },
+            set: { on in
+                Task {
+                    if on { model.prefs[keyPath: key] = await NotificationScheduler.requestPermission() }
+                    else { model.prefs[keyPath: key] = false }
+                }
+            })) {
+            VStack(alignment: .leading) { Text(title); Text(detail).font(.caption).foregroundStyle(.secondary) }
+        }
+    }
+
+    private var wakeUpSummary: String {
+        guard model.prefs.wakeUp != nil || model.prefs.sahurAlarm != nil else { return "Off" }
+        return model.nextWakeUp(after: .now).map { "Next \(model.formatted($0.date))" } ?? "On"
+    }
 
     var body: some View {
         @Bindable var model = model
@@ -17,6 +39,39 @@ struct SettingsView: View {
                         LabeledContent("Place", value: model.activePlace?.name ?? "Not set")
                     }
                     LabeledContent("Country rules", value: model.profile.code.isEmpty ? model.profile.name : "\(model.profile.flag) \(model.profile.name)")
+                }
+
+                Section {
+                    Button { showRamadan = true } label: {
+                        Label("Ramadan page", systemImage: "moon.stars")
+                    }
+                    Picker("Try Ramadan (for testers)", selection: $model.prefs.seasonPreview) {
+                        ForEach(SeasonPreview.allCases) { p in Text(p.label).tag(p) }
+                    }
+                    ramadanAlert("Imsak alert", "10 minutes before Imsak, to finish sahur", \.imsakAlert)
+                    ramadanAlert("Berbuka alert", "At Maghrib, with the doa", \.berbukaAlert)
+                    ramadanAlert("Qiyam in the last ten nights", "At the last third of the night", \.qiyamAlert)
+                } header: {
+                    Text("Ramadan and Syawal")
+                } footer: {
+                    Text(model.prefs.seasonPreview == .off
+                         ? "Ramadan mode turns on by itself on the day your local religious authority announces. Testers can pretend it's Ramadan or Raya with the switch above."
+                         : "Pretend mode is on. The app shows a pretend date, not today's. Turn it off before you rely on the times.")
+                }
+
+                Section {
+                    Button { model.showWakeUp = true } label: {
+                        LabeledContent {
+                            Text(wakeUpSummary)
+                        } label: {
+                            Label("Wake up for \(Prayer.fajr.name(model.naming))", systemImage: "alarm.fill")
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                } header: {
+                    Text("Wake-up")
+                } footer: {
+                    Text("Also on the Prayer screen. Tap the alarm clock at the top.")
                 }
 
                 Section {
@@ -57,6 +112,17 @@ struct SettingsView: View {
                             Label("Subscribe in Calendar", systemImage: "calendar.badge.plus")
                         }
                     }
+                    if let all = CalendarFile.make(model: model, prayers: Prayer.obligatory) {
+                        ShareLink(item: all) {
+                            Label("Add the next 30 days to a calendar", systemImage: "calendar")
+                        }
+                    }
+                    if let work = CalendarFile.make(model: model, prayers: [.dhuhr, .asr]) {
+                        ShareLink(item: work) {
+                            Label("Only \(Prayer.dhuhr.name(model.naming)) and \(Prayer.asr.name(model.naming)), for a work calendar",
+                                  systemImage: "briefcase")
+                        }
+                    }
                 } header: {
                     Text("Calculation")
                 } footer: {
@@ -76,29 +142,14 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Picker("\(Prayer.fajr.name(model.naming)) wake-up", selection: Binding(
-                        get: { model.prefs.wakeUp },
-                        set: { timing in
-                            Task {
-                                if timing != nil { _ = await NotificationScheduler.requestPermission() }
-                                model.prefs.wakeUp = timing
-                            }
-                        })) {
-                        Text("Off").tag(WakeUpTiming?.none)
-                        ForEach(WakeUpTiming.allCases) { Text($0.label(model.naming)).tag(WakeUpTiming?.some($0)) }
-                    }
-                } header: {
-                    Text("Wake-up")
-                } footer: {
-                    Text("A real alarm that rings even in Silent mode (iOS 26 and later; earlier versions get a notification). Moves with \(Prayer.fajr.name(model.naming)) every day and wherever you travel.")
-                }
-
-                Section {
                     Toggle("Prayer tracker", isOn: $model.prefs.trackerEnabled)
+                    if model.prefs.trackerEnabled {
+                        Toggle("Nudge before time runs out", isOn: $model.prefs.windowNudge)
+                    }
                 } header: {
                     Text("Tracker")
                 } footer: {
-                    Text("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone.")
+                    Text("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone." + (model.prefs.trackerEnabled ? " Nudge before time runs out sends one gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for \(Prayer.isha.name(model.naming)), which stays open until \(Prayer.fajr.name(model.naming)). Never while paused." : ""))
                 }
 
                 Section {
@@ -117,6 +168,7 @@ struct SettingsView: View {
                     Picker("Prayer screen", selection: $model.prefs.todayStyle) {
                         ForEach(TodayStyle.allCases) { Text($0.label).tag($0) }
                     }
+                    Toggle("Bigger text", isOn: $model.prefs.largeText)
                     Toggle("24-hour time", isOn: $model.prefs.use24Hour)
                     Stepper(value: $model.prefs.hijriAdjustment, in: -2...2) {
                         LabeledContent("Hijri date adjustment",
@@ -168,6 +220,41 @@ struct SettingsView: View {
                     Text("Alerts")
                 } footer: {
                     Text("Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both." + (Azan.isAvailable ? " With Play the azan on, prayer time alerts open with the azan (a Subuh azan at Subuh)." : "") + " Worked out on your phone and topped up every time you open the app - nothing comes from a server.")
+                }
+
+                Section {
+                    Toggle("Buzz only, no sound", isOn: $model.prefs.buzzOnly)
+                    Toggle("Quiet hours", isOn: $model.prefs.quietHours)
+                    if model.prefs.quietHours {
+                        Picker("From", selection: $model.prefs.quietFrom) {
+                            ForEach(Self.halfHours, id: \.self) { Text(model.clock($0)).tag($0) }
+                        }
+                        Picker("Until", selection: $model.prefs.quietTo) {
+                            ForEach(Self.halfHours, id: \.self) { Text(model.clock($0)).tag($0) }
+                        }
+                    }
+                } header: {
+                    Text("Quiet alerts")
+                } footer: {
+                    Text("For shift workers sleeping in the day, a baby asleep in the room, or simply a calm night. Alerts still come, but they only buzz. \(Prayer.fajr.name(model.naming)) keeps its sound so it can wake you.")
+                }
+
+                Section {
+                    Picker("Remind me to leave", selection: Binding(
+                        get: { model.prefs.jumuahReminderMinutes },
+                        set: { minutes in
+                            Task {
+                                if minutes > 0, !(await NotificationScheduler.requestPermission()) { return }
+                                model.prefs.jumuahReminderMinutes = minutes
+                            }
+                        })) {
+                        ForEach(Preferences.jumuahReminderChoices, id: \.self) { Text($0 == 0 ? "Off" : "\($0) min before").tag($0) }
+                    }
+                } header: {
+                    Text(Prayer.dhuhr.name(model.naming, isFriday: true))
+                } footer: {
+                    let friday = Prayer.dhuhr.name(model.naming, isFriday: true)
+                    Text("A reminder on Fridays to get ready and leave in time. It uses your masjid's own \(friday) time when you have set one in the Masjid tab, otherwise the start of \(Prayer.dhuhr.name(model.naming)). \(friday) is not required of women, travellers or the sick, who pray \(Prayer.dhuhr.name(model.naming)) instead.")
                 }
 
                 Section {
@@ -232,6 +319,7 @@ struct SettingsView: View {
             .background(SkyNow())
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
+            .sheet(isPresented: $showRamadan) { RamadanView() }
             .toolbar {
                 if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             }

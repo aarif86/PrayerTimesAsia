@@ -22,7 +22,7 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     feature("globe.asia.australia.fill", "Every country's own method",
                             "MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia - and sensible defaults everywhere else.")
-                    feature("airplane", "Built for travel",
+                    feature("suitcase.rolling.fill", "Built for travel",
                             "Switches when you land, works offline, and tells you when you can shorten and combine prayers.")
                     feature("location.north.line.fill", "Qibla in one glance",
                             "A calm compass that lights up when you're facing the Kaaba.")

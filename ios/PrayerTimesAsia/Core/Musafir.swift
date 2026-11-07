@@ -39,9 +39,6 @@ enum Musafir {
     }
 
     static func guidance(for status: Status, rules: Rules, naming: NamingStyle) -> (title: String, body: String) {
-        // Right-to-left names would scramble an English sentence, so use International there.
-        let n = (naming.isRightToLeft ? NamingStyle.international : naming).names
-        let four = "\(n[.dhuhr]!), \(n[.asr]!) and \(n[.isha]!)"
         switch status {
         case .home:
             return ("You're home", "Pray in full. Travel concessions apply once you journey at least \(Int(rules.thresholdKm)) km.")
@@ -51,13 +48,61 @@ enum Musafir {
         case .traveller:
             if rules.allowsJamak {
                 return ("You are a musafir",
-                        "You may shorten (qasar) \(four) to 2 rakaat, and combine (jamak) \(n[.dhuhr]!) with \(n[.asr]!), and \(n[.maghrib]!) with \(n[.isha]!).")
+                        "You may shorten (qasar) and join (jamak) your prayers. Here is what changes for each one.")
             }
             return ("You are a musafir",
-                    "Shorten (qasr) \(four) to 2 rakaat. In the Hanafi school prayers are not combined outside Hajj.")
+                    "You may shorten (qasr) your prayers. In the Hanafi school prayers are not joined outside Hajj. Here is what changes for each one.")
         case .settled(_, let days):
             return ("Settled here",
-                    "You've been here \(days) days. Staying longer than \(rules.maxStayDays) days ends the travel concession - pray in full.")
+                    "You've been here \(days) days. Staying longer than \(rules.maxStayDays) days ends the travel concession, so pray in full.")
+        }
+    }
+
+    /// One prayer's line in the traveller's plan, so nobody has to work out
+    /// from a sentence which prayers are shortened and which are joined.
+    struct PlanRow: Identifiable, Sendable {
+        let prayer: Prayer
+        let name: String
+        let rakaat: String
+        let change: String
+        let join: String
+        var id: Prayer { prayer }
+    }
+
+    /// Subuh and Maghrib keep their rakaat; Zohor, Asar and Isyak go from 4 to 2.
+    /// Zohor joins with Asar and Maghrib with Isyak (not in the Hanafi school).
+    static func plan(rules: Rules, naming: NamingStyle) -> [PlanRow] {
+        let n = (naming.isRightToLeft ? NamingStyle.international : naming).names
+        func join(_ p: Prayer) -> String {
+            guard rules.allowsJamak else { return "Not joined" }
+            switch p {
+            case .dhuhr: return "Can join with \(n[.asr]!)"
+            case .asr: return "Can join with \(n[.dhuhr]!)"
+            case .maghrib: return "Can join with \(n[.isha]!)"
+            case .isha: return "Can join with \(n[.maghrib]!)"
+            default: return "Never joined"
+            }
+        }
+        return [
+            PlanRow(prayer: .fajr, name: n[.fajr]!, rakaat: "2 rakaat", change: "No change", join: rules.allowsJamak ? "Never joined" : "Not joined"),
+            PlanRow(prayer: .dhuhr, name: n[.dhuhr]!, rakaat: "2 rakaat", change: "Shortened from 4", join: join(.dhuhr)),
+            PlanRow(prayer: .asr, name: n[.asr]!, rakaat: "2 rakaat", change: "Shortened from 4", join: join(.asr)),
+            PlanRow(prayer: .maghrib, name: n[.maghrib]!, rakaat: "3 rakaat", change: "No change", join: join(.maghrib)),
+            PlanRow(prayer: .isha, name: n[.isha]!, rakaat: "2 rakaat", change: "Shortened from 4", join: join(.isha)),
+        ]
+    }
+
+    /// Plain words on how the chosen travel distance decides the result,
+    /// so changing 81 km and 89 km visibly does something.
+    static func distanceCheck(for status: Status, rules: Rules) -> (counts: Bool, text: String)? {
+        let limit = Int(rules.thresholdKm)
+        switch status {
+        case .home:
+            return nil
+        case .nearby(let km):
+            return (false, "You are \(Int(km.rounded()).formatted()) km from home. That is less than \(limit) km, so this trip does not count as travel yet.")
+        case .traveller(let km), .settled(let km, _):
+            return (true, "You are \(Int(km.rounded()).formatted()) km from home. That is more than \(limit) km, so this trip counts as travel.")
         }
     }
 }

@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.dp
 
-/** The iOS app's own line icons (design/icons in the iOS repo): prayer mat, compass, telescope, masjid, plane. */
+/** The iOS app's own line icons (design/icons in the iOS repo): prayer mat, compass, telescope, masjid, travel bag. */
 object AppIcons {
     private fun rect(x: Float, y: Float, w: Float, h: Float, r: Float): String =
         "M${x + r},$y H${x + w - r} A$r,$r 0 0 1 ${x + w},${y + r} V${y + h - r} A$r,$r 0 0 1 ${x + w - r},${y + h} " +
@@ -72,9 +72,14 @@ object AppIcons {
             .build()
     }
 
+    /** A rolling travel bag: any journey, by road or air, and never mistaken for Airplane Mode. */
     val journey: ImageVector by lazy {
         B("journey")
-            .stroke("M12 2.4c.9 0 1.5 1 1.5 2.1v5.2l7.2 4.1v2l-7.2-2.1v4.1l2.1 1.6v1.6L12 20l-3.6 1v-1.6l2.1-1.6v-4.1l-7.2 2.1v-2l7.2-4.1V4.5c0-1.1.6-2.1 1.5-2.1z")
+            .stroke(rect(5.8f, 7f, 12.4f, 12.2f, 2.2f))
+            .stroke("M9.6 7V3.4h4.8V7")
+            .stroke("M9.6 10v6.2M14.4 10v6.2")
+            .fill(circle(8.9f, 21f, 1f))
+            .fill(circle(15.1f, 21f, 1f))
             .build()
     }
 }

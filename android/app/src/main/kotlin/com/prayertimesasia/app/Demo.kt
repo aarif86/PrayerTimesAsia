@@ -33,6 +33,8 @@ data class DemoConfig(
     val now: Instant? = null,
     val showMore: Boolean = false,
     val aligned: Boolean = false,
+    /** --es season ramadan (or sighting, last_ten, raya, syawal): the tester's Ramadan preview. */
+    val season: com.prayertimesasia.core.SeasonPreview = com.prayertimesasia.core.SeasonPreview.OFF,
 ) {
     val pasirRis = Place(id = "demo-pasir-ris", name = "Pasir Ris", countryCode = "SG", countryName = "Singapore",
         timeZoneId = "Asia/Singapore", coordinates = Coordinates(1.3721, 103.9474))
@@ -47,6 +49,13 @@ data class DemoConfig(
             hasOnboarded = true, useGPS = false, home = pasirRis, manualPlace = pasirRis, lastCountryCode = "SG",
             trackerEnabled = true, prayedLog = log, appearance = appearance, todayStyle = style, showMore = showMore,
         )
+        if (season != com.prayertimesasia.core.SeasonPreview.OFF) {
+            p = p.copy(seasonPreview = season, khatamPlan = true,
+                fastLog = (1..10).associate { back ->
+                    nowForStreak.atZone(sgt).toLocalDate().minusDays(back.toLong()).toString() to
+                        if (back == 4) com.prayertimesasia.core.FastMark.PERIOD else com.prayertimesasia.core.FastMark.FASTED
+                })
+        }
         when (variant) {
             "visitor" -> {
                 // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
@@ -112,6 +121,9 @@ data class DemoConfig(
                 now = intent.getStringExtra("now")?.let { runCatching { ZonedDateTime.parse(it).toInstant() }.getOrNull() },
                 showMore = intent.getBooleanExtra("more", false),
                 aligned = intent.getBooleanExtra("aligned", false),
+                season = pick(com.prayertimesasia.core.SeasonPreview.entries.toTypedArray(), intent.getStringExtra("season")) {
+                    listOf(it.name, it.name.replace("_", ""))
+                } ?: com.prayertimesasia.core.SeasonPreview.OFF,
             )
         }
     }
