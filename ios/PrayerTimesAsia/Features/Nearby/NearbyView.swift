@@ -63,7 +63,11 @@ final class NearbySearch {
 
     /// Call whenever the place changes. Distances update straight away from what
     /// is already found; a new search only starts once you've moved far enough.
-    func search(around center: Coordinates) {
+    func search(around center: Coordinates, country: String? = nil) {
+        if let country, country != self.country {
+            self.country = country
+            listFailed = false  // a new country: try its ready-made list
+        }
         here = center
         searchedAround = center
         rebuild()
@@ -71,10 +75,10 @@ final class NearbySearch {
         if appleTask == nil, appleCenter.map({ Geo.distanceKm($0, center) >= Self.appleRefreshKm }) ?? true {
             searchApple(around: center)
         }
-        // Singapore, Malaysia and Brunei: the weekly ready-made list replaces
-        // the live OpenStreetMap search, so nothing waits on busy servers.
-        if !MasjidList.countries(near: center).isEmpty, !listFailed {
-            if let ready = MasjidList.shared.places(near: center, withinKm: 15) {
+        // The weekly ready-made list replaces the live OpenStreetMap search,
+        // so nothing waits on busy servers. Live search only where it can't help.
+        if MasjidList.shared.mayCover(country: country), !listFailed {
+            if let ready = MasjidList.shared.places(near: center, country: country) {
                 osm = ready.map(Self.space)
                 osmCenter = center
                 osmOK = true
@@ -153,20 +157,25 @@ final class NearbySearch {
 
     private var listTask: Task<Void, Never>?
     private var listFailed = false
+    private var country: String?
+    private var refreshing = false
 
     private func downloadList(near center: Coordinates) {
         guard listTask == nil else { return }
-        let firstTime = MasjidList.shared.places(near: center, withinKm: 15) == nil
+        let country = self.country
+        let firstTime = MasjidList.shared.places(near: center, country: country) == nil
         if firstTime { isAddingMore = true }
         listTask = Task { [weak self] in
-            let ok = await MasjidList.shared.download(near: center)
+            let ok = await MasjidList.shared.download(near: center, country: country)
             guard let self else { return }
             self.listTask = nil
             if firstTime { self.isAddingMore = false }
             // No list and no copy from last week: fall back to the live search.
             // A weekly refresh just swaps in quietly; only the first download
             // needs the list rebuilt now.
-            guard firstTime else { return }
+            let wasRefresh = self.refreshing
+            self.refreshing = false
+            guard firstTime || wasRefresh else { return }
             if !ok { self.listFailed = true }
             if let now = self.here { self.search(around: now) }
         }
@@ -178,6 +187,14 @@ final class NearbySearch {
         item.name = p.name
         return PrayerSpace(id: "osm/\(p.id)", name: p.name, address: p.address, coordinate: coordinate,
                            distanceKm: 0, isMusollah: p.isMusollah, item: item)
+    }
+
+    /// Refresh: fetch this area's ready-made list again (last week's copy stays
+    /// if there's no signal), and search Apple Maps again.
+    func refresh() {
+        if let here { MasjidList.shared.forget(near: here) }
+        refreshing = true
+        retry()
     }
 
     /// Try again from the empty screen: forget past failures and ask afresh.
@@ -388,6 +405,9 @@ struct NearbyView: View {
                     }
                 }
 
+                // The list sits on frosted glass so its text stays easy to read
+                // over every sky colour, from bright Subuh to deep Isyak.
+                VStack(spacing: 0) {
                 Picker("Type", selection: $kind) {
                     ForEach(PrayerSpace.Kind.allCases) { Text($0.rawValue).tag($0) }
                 }
@@ -416,11 +436,19 @@ struct NearbyView: View {
                 }
 
                 list
+                }
+                .background(.regularMaterial,
+                            in: UnevenRoundedRectangle(topLeadingRadius: 22, topTrailingRadius: 22, style: .continuous))
             }
             .background(SkyNow())
             .navigationTitle("Masjid & Musollah")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { slow = false; search.refresh() } label: { Image(systemName: "arrow.clockwise") }
+                        .accessibilityLabel("Refresh the masjid list")
+                        .disabled(model.activePlace == nil)
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showAbout = true } label: { Image(systemName: "info.circle") }
                         .accessibilityLabel("About this app")
@@ -431,7 +459,7 @@ struct NearbyView: View {
                 guard let c = model.activePlace?.coordinates else { return }
                 slow = false
                 showYou(animated: false)
-                search.search(around: c)
+                search.search(around: c, country: model.activePlace?.countryCode)
             }
             .onChange(of: selected) { _, space in
                 if let space {

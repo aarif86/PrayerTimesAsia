@@ -104,18 +104,23 @@ final class NearbySearchTests: XCTestCase {
         XCTAssertNil(OverpassCache.load(near: kualaLumpur, within: NearbySearch.osmRefreshKm))
     }
 
-    /// The weekly ready-made list: which countries an area needs, and reading it.
+    /// The weekly ready-made list: which squares an area needs, and reading them.
     func testReadyMadeMasjidList() {
-        XCTAssertEqual(MasjidList.countries(near: Coordinates(latitude: 3.1390, longitude: 101.6869)), ["MY"])
-        XCTAssertEqual(MasjidList.countries(near: Coordinates(latitude: 1.4360, longitude: 103.7860)), ["MY", "SG"])
-        XCTAssertEqual(MasjidList.countries(near: Coordinates(latitude: 4.8903, longitude: 114.9402)), ["BN", "MY"])
-        XCTAssertEqual(MasjidList.countries(near: Coordinates(latitude: 10.7769, longitude: 106.7009)), [])
-        let json = #"{"country":"MY","updated":"2026-11-07","places":[["n1",3.14,101.69,"Masjid Negara","",0],["w2",3.15,101.7,"","Jalan Ampang",1]]}"#
+        // Kuala Lumpur sits inside one square; a point near 1° N 104° E touches four.
+        XCTAssertEqual(MasjidList.tiles(around: Coordinates(latitude: 3.1390, longitude: 101.6869)), ["3_101"])
+        XCTAssertEqual(Set(MasjidList.tiles(around: Coordinates(latitude: 1.0500, longitude: 103.9500))),
+                       ["0_103", "0_104", "1_103", "1_104"])
+        // Fiji, across the date line.
+        XCTAssertEqual(Set(MasjidList.tiles(around: Coordinates(latitude: -16.5, longitude: 179.95))), ["-17_179", "-17_-180"])
+        let json = #"{"tile":"3_101","updated":"2026-11-07","places":[["n1",3.14,101.69,"Masjid Negara","",0],["w2",3.15,101.7,"","Jalan Ampang",1]]}"#
         let places = MasjidList.parse(Data(json.utf8)) ?? []
         XCTAssertEqual(places.map(\.name), ["Masjid Negara", "Musollah"])
         XCTAssertEqual(places.map(\.isMusollah), [false, true])
         XCTAssertEqual(places.last?.address, "Jalan Ampang")
         XCTAssertNil(MasjidList.parse(Data("oops".utf8)))
+        let index = MasjidList.parseIndex(Data(#"{"updated":"2026-11-07","countries":{"MY":{"places":2}},"tiles":["3_101"]}"#.utf8))
+        XCTAssertEqual(index?.tiles, ["3_101"])
+        XCTAssertEqual(index?.countries, ["MY"])
     }
 }
 

@@ -599,6 +599,12 @@ final class AppModel {
             if p.trip.count > 30 { p.trip.removeLast(p.trip.count - 30) }
         }
         prefs = p
+        // Fetch this area's masjid list now, while there's signal, so the
+        // Masjid tab works at once (and offline) later. Tiny, and only once a week.
+        if !Self.isDemo {
+            let coordinates = place.coordinates, country = place.countryCode
+            Task { _ = await MasjidList.shared.download(near: coordinates, country: country) }
+        }
         refreshOfficialTimetable()
         scheduleNotifications()
     }

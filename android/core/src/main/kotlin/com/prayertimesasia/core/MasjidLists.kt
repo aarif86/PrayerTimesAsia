@@ -8,32 +8,51 @@ import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import kotlin.math.abs
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.max
 
 /**
- * Ready-made masjid and surau lists for Singapore, Malaysia and Brunei, built
- * every week from OpenStreetMap (tools/build_masjid_list.py) and downloaded
- * once a week, so the Masjid tab fills at once without the busy Overpass servers.
+ * Ready-made masjid and surau lists for every country the app supports, built
+ * every week from OpenStreetMap (tools/build_masjid_list.py) and cut into
+ * one-degree squares (about 110 km). The phone downloads only the few squares
+ * around it, once a week, so the Masjid tab fills at once without the busy
+ * Overpass servers.
  */
 object MasjidLists {
     const val BASE_URL = "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/masjids/"
     const val MAX_AGE_MS = 7L * 24 * 3600 * 1000
 
-    private data class Box(val minLat: Double, val maxLat: Double, val minLon: Double, val maxLon: Double)
+    data class Index(val tiles: Set<String>, val countries: Set<String>)
 
-    // A little wider than each country, so a place near a border gets both lists.
-    private val boxes = mapOf(
-        "SG" to Box(1.13, 1.50, 103.55, 104.15),
-        "MY" to Box(0.80, 7.50, 99.50, 119.40),
-        "BN" to Box(4.00, 5.10, 113.95, 115.40),
-    )
+    /** The squares a circle of [km] around here touches (one to four). */
+    fun tiles(c: Coordinates, km: Double = 15.0): List<String> {
+        val dLat = km / 111.0
+        val dLon = km / (111.0 * max(0.2, cos(Math.toRadians(c.latitude))))
+        val keys = mutableListOf<String>()
+        for (lat in listOf(c.latitude - dLat, c.latitude + dLat)) {
+            for (lon in listOf(c.longitude - dLon, c.longitude + dLon)) {
+                val wrapped = when {
+                    lon >= 180 -> lon - 360
+                    lon < -180 -> lon + 360
+                    else -> lon
+                }
+                val key = "${floor(lat).toInt()}_${floor(wrapped).toInt()}"
+                if (key !in keys) keys += key
+            }
+        }
+        return keys
+    }
 
-    /** The lists that cover this point (empty outside SG, MY and BN). */
-    fun countries(c: Coordinates): List<String> = boxes.filter { (_, b) ->
-        c.latitude in (b.minLat - 0.15)..(b.maxLat + 0.15) && c.longitude in (b.minLon - 0.15)..(b.maxLon + 0.15)
-    }.keys.sorted()
+    /** `{"tiles": ["3_101", ...], "countries": {"MY": {...}}}`; null when unreadable. */
+    fun parseIndex(text: String): Index? = runCatching {
+        val root = Json.parseToJsonElement(text).jsonObject
+        Index(
+            tiles = root["tiles"]!!.jsonArray.map { it.jsonPrimitive.content }.toSet(),
+            countries = root["countries"]!!.jsonObject.keys,
+        )
+    }.getOrNull()
 
     /** `{"places": [[id, lat, lon, name, address, musollah 0/1], ...]}`; null when unreadable. */
     fun parse(text: String): List<PrayerSpace>? = runCatching {
@@ -56,14 +75,10 @@ object MasjidLists {
     }.getOrNull()
 
     /** Places within [km] of [here], nearest first. */
-    fun near(places: List<PrayerSpace>, here: Coordinates, km: Double = 15.0): List<PrayerSpace> {
-        val dLat = km / 111.0
-        val dLon = km / (111.0 * max(0.2, cos(Math.toRadians(here.latitude))))
-        return places.asSequence()
-            .filter { abs(it.coordinates.latitude - here.latitude) <= dLat && abs(it.coordinates.longitude - here.longitude) <= dLon }
+    fun near(places: List<PrayerSpace>, here: Coordinates, km: Double = 15.0): List<PrayerSpace> =
+        places.asSequence()
             .map { it.copy(distanceKm = Geo.distanceKm(here, it.coordinates)) }
             .filter { it.distanceKm <= km }
             .sortedBy { it.distanceKm }
             .toList()
-    }
 }

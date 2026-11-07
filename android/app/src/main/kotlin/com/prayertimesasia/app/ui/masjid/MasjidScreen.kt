@@ -141,38 +141,46 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
     var selected by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     var attempt by remember { mutableIntStateOf(0) }
+    var handled by remember { mutableIntStateOf(0) }
     LaunchedEffect(place?.coordinates, attempt) {
         val c = place?.coordinates ?: return@LaunchedEffect
         if (preset != null || !state.sideEffects) return@LaunchedEffect
-        // Singapore, Malaysia and Brunei: the weekly ready-made list, no live search.
-        if (MasjidLists.countries(c).isNotEmpty()) {
-            val ready = withContext(Dispatchers.IO) { MasjidListStore.places(context, c) }
+        // Refresh or Try again pressed (not just a move).
+        val forced = attempt != handled
+        handled = attempt
+        // The weekly ready-made list (squares around you), no live search.
+        val country = place?.countryCode
+        val app = context.applicationContext
+        if (withContext(Dispatchers.IO) { MasjidListStore.mayCover(app, country) }) {
+            val ready = if (forced) null else withContext(Dispatchers.IO) { MasjidListStore.places(app, c, country) }
             if (ready != null) {
                 spaces = ready
                 failed = false
-                if (!MasjidListStore.isFresh(context, c)) {
+                if (!MasjidListStore.isFresh(app, c)) {
                     // Weekly refresh in the background; the next move picks it up.
-                    CoroutineScope(Dispatchers.IO).launch { MasjidListStore.download(context.applicationContext, c) }
+                    CoroutineScope(Dispatchers.IO).launch { MasjidListStore.download(app, c, country) }
                 }
                 return@LaunchedEffect
             }
             loading = true
             failed = false
             val fetched = withContext(Dispatchers.IO) {
-                if (MasjidListStore.download(context.applicationContext, c)) MasjidListStore.places(context, c) else null
+                if (forced) MasjidListStore.forget(app, c)
+                MasjidListStore.download(app, c, country)
+                MasjidListStore.places(app, c, country)
             }
             loading = false
             if (fetched != null) {
                 spaces = fetched
                 return@LaunchedEffect
             }
-            // No list yet and none from last week: fall back to the live search.
+            // No list here and none from before: fall back to the live search.
         }
         val last = NearbyCache.around
         if (last != null && NearbyCache.spaces.isNotEmpty()) {
             // Show distances from here straight away.
             spaces = NearbyCache.measuredFrom(c)
-            if (attempt == 0 && Geo.distanceKm(last, c) < NearbyCache.REFRESH_KM) return@LaunchedEffect
+            if (!forced && Geo.distanceKm(last, c) < NearbyCache.REFRESH_KM) return@LaunchedEffect
         }
         loading = true
         failed = false
@@ -234,8 +242,11 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                         HorizontalDivider(Modifier.padding(start = 56.dp), color = Palette.primary.copy(alpha = 0.1f))
                     }
                     item {
-                        Text("Places from OpenStreetMap (© OpenStreetMap contributors). Only the search area is sent.",
+                        Text("Places from OpenStreetMap (© OpenStreetMap contributors), kept on your phone and updated weekly. Only the area is sent.",
                             style = Txt.caption, color = Palette.secondary, modifier = Modifier.padding(Dims.gutter))
+                        OutlinedButton(onClick = { attempt += 1 }, modifier = Modifier.padding(horizontal = Dims.gutter)) {
+                            Text("Refresh list")
+                        }
                         Spacer(Modifier.height(24.dp))
                     }
                 }
