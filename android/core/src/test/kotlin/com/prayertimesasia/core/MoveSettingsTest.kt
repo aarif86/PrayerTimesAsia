@@ -70,6 +70,19 @@ class MoveSettingsTest {
         assertEquals(null, MovedSettings.from(Preferences(sahurAlarm = SahurTiming.FAJR_MINUS_60)).sahurDays)
     }
 
+    @Test fun prayerAlarmsMove() {
+        val prefs = Preferences(asrAlarm = PrayerAlarmTiming.PLUS_10, alarmSound = AlarmSound.BELLS, alarmRingtone = "content://x")
+        val moved = MovedSettings.from(prefs)
+        assertEquals(PrayerAlarmTiming.PLUS_10, moved.asrAlarm)
+        assertEquals(AlarmSound.BELLS, moved.alarmSound)
+        val back = MovedSettings.fromCode(moved.code)!!.appliedTo(Preferences())
+        assertEquals(PrayerAlarmTiming.PLUS_10, back.asrAlarm)
+        assertEquals(AlarmSound.BELLS, back.alarmSound)
+        // The picked ringtone stays on its own phone.
+        assertEquals(null, back.alarmRingtone)
+        assertEquals(null, MovedSettings.from(Preferences()).alarmSound)
+    }
+
     @Test fun freshInstallIsEmpty() {
         assertEquals(cases[0].settings, MovedSettings.from(Preferences()))
         assertEquals(MovedSettings(), MovedSettings.fromCode(MovedSettings().code))

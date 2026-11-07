@@ -143,7 +143,7 @@ class ScreenshotTest {
 
     @Test fun settings() = shoot("10-settings", d(TodayStyle.LIST, tab = Tab.SETTINGS))
     @Test fun wake_up() = shoot("10c-wake-up", d(TodayStyle.CENTRE)) { s ->
-        s.update { it.copy(wakeUp = WakeUpTiming.FAJR_MINUS_30, sahurAlarm = SahurTiming.FAJR_MINUS_90) }
+        s.update { it.copy(wakeUp = WakeUpTiming.FAJR_MINUS_30, sahurAlarm = SahurTiming.FAJR_MINUS_90, asrAlarm = com.prayertimesasia.core.PrayerAlarmTiming.PLUS_10) }
         s.showWakeUp = true
     }
     @Test fun wake_chip() = shoot("02c-today-centre-wake-chip", d(TodayStyle.CENTRE)) { s ->

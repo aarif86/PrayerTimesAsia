@@ -197,6 +197,31 @@ final class PrayerEngineTests: XCTestCase {
         XCTAssertEqual(SahurTiming.fajrMinus120.label(.malay), "2 hours before Subuh")
     }
 
+    func testPrayerAlarmTimings() {
+        let day = PrayerEngine.compute(year: 2026, month: 10, day: 21, at: singapore, method: .muis, asr: .standard)
+        let asr = day.time(.asr), maghrib = day.time(.maghrib)
+        XCTAssertEqual(PrayerAlarmTiming.atStart.date(start: asr, end: maghrib), asr)
+        XCTAssertEqual(PrayerAlarmTiming.plus10.date(start: asr, end: maghrib), asr.addingTimeInterval(600))
+        XCTAssertEqual(PrayerAlarmTiming.endMinus30.date(start: asr, end: maghrib), maghrib.addingTimeInterval(-1800))
+        // A very short window never rings before the prayer begins.
+        XCTAssertEqual(PrayerAlarmTiming.endMinus30.date(start: maghrib, end: maghrib.addingTimeInterval(1200)), maghrib)
+        XCTAssertEqual(PrayerAlarmTiming.end(of: .dhuhr, in: day), day.time(.asr))
+        XCTAssertEqual(PrayerAlarmTiming.plus5.label, "5 min after")
+        XCTAssertEqual(PrayerAlarmTiming.endMinus30.label, "30 min before it ends")
+        // Isyak is open until Subuh, so it has no "before it ends".
+        XCTAssertFalse(PrayerAlarmTiming.choices(for: .isha).contains(.endMinus30))
+        XCTAssertTrue(PrayerAlarmTiming.choices(for: .asr).contains(.endMinus30))
+        var prefs = Preferences()
+        XCTAssertFalse(prefs.anyAlarm)
+        prefs.setAlarm(.atStart, for: .asr)
+        prefs.setAlarm(.endMinus30, for: .isha)
+        XCTAssertTrue(prefs.anyAlarm)
+        XCTAssertTrue(prefs.alarmAtStart(.asr))
+        XCTAssertNil(prefs.ishaAlarm)
+        XCTAssertEqual(AlarmSound.classic.fileName, nil)
+        XCTAssertEqual(AlarmSound.chime.fileName, "alarm-chime.caf")
+    }
+
     func testSahurDays() {
         let tz = TimeZone(identifier: "Asia/Singapore")!
         func day(_ y: Int, _ m: Int, _ d: Int) -> PrayerDay {

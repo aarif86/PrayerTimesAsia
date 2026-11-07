@@ -25,7 +25,7 @@ struct SettingsView: View {
     }
 
     private var wakeUpSummary: String {
-        guard model.prefs.wakeUp != nil || model.prefs.sahurAlarm != nil else { return "Off" }
+        guard model.prefs.anyAlarm else { return "Off" }
         return model.nextWakeUp(after: .now).map { "Next \(model.formatted($0.date))" } ?? "On"
     }
 
@@ -64,7 +64,7 @@ struct SettingsView: View {
                         LabeledContent {
                             Text(wakeUpSummary)
                         } label: {
-                            Label("Wake up for \(Prayer.fajr.name(model.naming))", systemImage: "alarm.fill")
+                            Label("Prayer alarms", systemImage: "alarm.fill")
                                 .foregroundStyle(.primary)
                         }
                     }

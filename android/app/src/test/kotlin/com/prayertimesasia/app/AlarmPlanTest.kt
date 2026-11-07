@@ -2,6 +2,7 @@ package com.prayertimesasia.app
 
 import com.prayertimesasia.app.alarms.AlarmScheduler
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.PrayerAlarmTiming
 import com.prayertimesasia.core.Preferences
 import com.prayertimesasia.core.Resolver
 import com.prayertimesasia.core.SahurDay
@@ -57,6 +58,24 @@ class AlarmPlanTest {
         assertEquals("Wake up for tahajjud", tahajjud.title)
         assertEquals(AlarmScheduler.Kind.WAKE, sahur.kind)
         assertEquals(sahur, AlarmScheduler.nextWakeUp(r, monday.time(Prayer.FAJR).minusSeconds(4 * 3600)))
+    }
+
+    @Test fun alarmsForTheOtherPrayers() {
+        // Asar 10 min after it begins, Isyak on time: an alarm on time stands in for the Isyak alert.
+        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, notificationsEnabled = true,
+            asrAlarm = PrayerAlarmTiming.PLUS_10, ishaAlarm = PrayerAlarmTiming.AT_START)
+        val r = Resolver(prefs, locale = Locale("en", "SG"))
+        val plan = AlarmScheduler.plan(r, now)
+        val today = r.day(now)!!
+        val key = "${today.year}-${today.month}-${today.day}"
+        val asr = plan.single { it.id == "$key-asr-alarm" }
+        assertEquals(today.time(Prayer.ASR).plusSeconds(600), asr.at)
+        assertEquals(AlarmScheduler.Kind.WAKE, asr.kind)
+        assertEquals("Time for Asar", asr.title)
+        assertTrue(plan.any { it.id == "$key-isha-alarm" })
+        assertTrue(plan.none { it.id == "$key-isha" })
+        assertTrue(plan.any { it.id == "$key-asr" })
+        assertEquals(today.time(Prayer.ASR).plusSeconds(600), AlarmScheduler.nextWakeUp(r, today.time(Prayer.DHUHR))?.at)
     }
 
     @Test fun reminderBeforePrayerWorksOnItsOwn() {

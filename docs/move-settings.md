@@ -65,6 +65,8 @@ install; a missing key means the default. `"v": 1` is always there.
 | `excusedDays` | list of `yyyy-MM-dd` |
 | `trackerPausedSince` | `yyyy-MM-dd` the tracker was paused (haid, nifas, illness); every day from then until the pause ends counts as excused |
 | `wakeUp` | `atFajr`, `fajrPlus15`, `sunriseMinus30`, `sunriseMinus15` (phones only; the web keeps it if present) |
+| `dhuhrAlarm`, `asrAlarm`, `maghribAlarm`, `ishaAlarm` | `atStart`, `plus5`, `plus10`, `plus15`, `plus30`, `endMinus30` (not for Isyak) |
+| `alarmSound` | `classic`, `chime`, `bells`, `beeps`, `phone` (a ringtone picked on Android; the ringtone itself stays on that phone, elsewhere it plays `classic`) |
 
 A place is `{name, region?, countryCode?, countryName?, timeZoneID, lat, lon, district?}`.
 It has no id; the receiving app makes a new one.

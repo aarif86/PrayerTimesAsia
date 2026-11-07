@@ -114,6 +114,83 @@ enum SahurTiming: String, Codable, CaseIterable, Identifiable, Sendable {
     func date(in day: PrayerDay) -> Date { day.time(.fajr).addingTimeInterval(Double(-minutes) * 60) }
 }
 
+/// Alarms for the other four prayers (Subuh has `WakeUpTiming`): for heavy
+/// sleepers, a nap before Asar, or someone who keeps putting a prayer off.
+enum PrayerAlarmTiming: String, Codable, CaseIterable, Identifiable, Sendable {
+    case atStart, plus5, plus10, plus15, plus30, endMinus30
+
+    var id: String { rawValue }
+    static let prayers: [Prayer] = [.dhuhr, .asr, .maghrib, .isha]
+
+    /// The choices for one prayer. Isyak is open until Subuh, so it has no "before it ends".
+    static func choices(for prayer: Prayer) -> [PrayerAlarmTiming] {
+        prayer == .isha ? allCases.filter { $0 != .endMinus30 } : allCases
+    }
+
+    private var minutes: Int {
+        switch self {
+        case .atStart, .endMinus30: 0
+        case .plus5: 5
+        case .plus10: 10
+        case .plus15: 15
+        case .plus30: 30
+        }
+    }
+
+    /// Short, as it sits in the row beside the prayer's name.
+    var label: String {
+        switch self {
+        case .atStart: "On time"
+        case .endMinus30: "30 min before it ends"
+        default: "\(minutes) min after"
+        }
+    }
+
+    /// When it rings, given the prayer's start and its end (the next prayer).
+    func date(start: Date, end: Date) -> Date {
+        // A short window (Maghrib far north): never before the prayer has begun.
+        if self == .endMinus30 { return max(start, end.addingTimeInterval(-30 * 60)) }
+        return start.addingTimeInterval(Double(minutes) * 60)
+    }
+
+    /// The prayer's end in this day: the next prayer (Isyak's own start; it has no "before it ends").
+    static func end(of prayer: Prayer, in day: PrayerDay) -> Date {
+        switch prayer {
+        case .dhuhr: day.time(.asr)
+        case .asr: day.time(.maghrib)
+        default: day.time(.isha)
+        }
+    }
+}
+
+/// The sound every alarm plays. Classic is the phone's own alarm sound; the
+/// others are our own tones in Resources/ (tools/make_alarm_sounds.py).
+/// "phone" is a ringtone picked on Android; elsewhere it plays Classic.
+enum AlarmSound: String, Codable, CaseIterable, Identifiable, Sendable {
+    case classic, chime, bells, beeps, phone
+
+    var id: String { rawValue }
+    static let choices: [AlarmSound] = [.classic, .chime, .bells, .beeps]
+
+    var label: String {
+        switch self {
+        case .classic: "Classic alarm"
+        case .chime: "Gentle chime"
+        case .bells: "Rising bells"
+        case .beeps: "Soft beeps"
+        case .phone: "From my phone"
+        }
+    }
+
+    /// The file in the app, nil for the phone's own alarm sound.
+    var fileName: String? {
+        switch self {
+        case .classic, .phone: nil
+        default: "alarm-\(rawValue).caf"
+        }
+    }
+}
+
 /// Which mornings the sahur alarm rings: the days people usually fast.
 enum SahurDay: String, Codable, CaseIterable, Identifiable, Sendable {
     case ramadan, monThu, whiteDays, everyDay
@@ -216,6 +293,44 @@ struct Preferences: Codable, Equatable, Sendable {
     /// The earlier sahur alarm; nil = off. Rings only on `sahurDays`.
     var sahurAlarm: SahurTiming?
     var sahurDays: Set<SahurDay> = [.ramadan, .monThu]
+    /// Alarms for the other prayers; nil = off.
+    var dhuhrAlarm: PrayerAlarmTiming?
+    var asrAlarm: PrayerAlarmTiming?
+    var maghribAlarm: PrayerAlarmTiming?
+    var ishaAlarm: PrayerAlarmTiming?
+    /// The sound every alarm plays.
+    var alarmSound: AlarmSound = .classic
+
+    /// The alarm for one of the other four prayers.
+    func alarm(for prayer: Prayer) -> PrayerAlarmTiming? {
+        switch prayer {
+        case .dhuhr: dhuhrAlarm
+        case .asr: asrAlarm
+        case .maghrib: maghribAlarm
+        case .isha: ishaAlarm
+        default: nil
+        }
+    }
+
+    mutating func setAlarm(_ timing: PrayerAlarmTiming?, for prayer: Prayer) {
+        switch prayer {
+        case .dhuhr: dhuhrAlarm = timing
+        case .asr: asrAlarm = timing
+        case .maghrib: maghribAlarm = timing
+        case .isha: ishaAlarm = timing == .endMinus30 ? nil : timing
+        default: break
+        }
+    }
+
+    /// Is any alarm on: Subuh, sahur or one of the other prayers?
+    var anyAlarm: Bool {
+        wakeUp != nil || sahurAlarm != nil || PrayerAlarmTiming.prayers.contains { alarm(for: $0) != nil }
+    }
+
+    /// An alarm at the very start of this prayer rings instead of its alert.
+    func alarmAtStart(_ prayer: Prayer) -> Bool {
+        prayer == .fajr ? wakeUp == .atFajr : alarm(for: prayer) == .atStart
+    }
 
     /// Whose Ramadan/Eid dates you follow; nil = the authority of your home country.
     var communityAuthority: String?
@@ -315,6 +430,12 @@ struct Preferences: Codable, Equatable, Sendable {
         wakeUp = v(.wakeUp, d.wakeUp)
         sahurAlarm = v(.sahurAlarm, d.sahurAlarm)
         sahurDays = v(.sahurDays, d.sahurDays)
+        dhuhrAlarm = v(.dhuhrAlarm, d.dhuhrAlarm)
+        asrAlarm = v(.asrAlarm, d.asrAlarm)
+        maghribAlarm = v(.maghribAlarm, d.maghribAlarm)
+        ishaAlarm = v(.ishaAlarm, d.ishaAlarm)
+        if ishaAlarm == .endMinus30 { ishaAlarm = nil }
+        alarmSound = v(.alarmSound, d.alarmSound)
         communityAuthority = v(.communityAuthority, d.communityAuthority)
         appearance = v(.appearance, d.appearance)
         stylePick = v(.stylePick, d.stylePick)

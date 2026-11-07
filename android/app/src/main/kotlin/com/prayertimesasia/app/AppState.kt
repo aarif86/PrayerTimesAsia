@@ -279,6 +279,14 @@ class AppState(
         }
     }
 
+    /** An alarm for one of the other four prayers, as [setWakeUp]; null turns it off. */
+    fun setPrayerAlarm(prayer: com.prayertimesasia.core.Prayer, timing: com.prayertimesasia.core.PrayerAlarmTiming?) {
+        scope.launch {
+            if (timing != null) permissions?.notifications()
+            update { it.withAlarm(prayer, timing) }
+        }
+    }
+
     /** "Leave for Jumaat": asks for notification permission, then reminds [minutes] before Jumaat on Fridays. */
     fun enableJumuahReminder(minutes: Int) {
         scope.launch {

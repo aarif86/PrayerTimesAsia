@@ -95,6 +95,68 @@ enum class SahurTiming(val minutes: Int) {
     fun date(day: PrayerDay): java.time.Instant = day.time(Prayer.FAJR).minusSeconds(minutes * 60L)
 }
 
+/**
+ * Alarms for the other four prayers (Subuh has [WakeUpTiming]): for heavy
+ * sleepers, a nap before Asar, or someone who keeps putting a prayer off.
+ */
+@Serializable
+enum class PrayerAlarmTiming(val raw: String, private val minutes: Int) {
+    @SerialName("atStart") AT_START("atStart", 0),
+    @SerialName("plus5") PLUS_5("plus5", 5),
+    @SerialName("plus10") PLUS_10("plus10", 10),
+    @SerialName("plus15") PLUS_15("plus15", 15),
+    @SerialName("plus30") PLUS_30("plus30", 30),
+    @SerialName("endMinus30") END_MINUS_30("endMinus30", 0);
+
+    /** Short, as it sits in the row beside the prayer's name. */
+    val label: String
+        get() = when (this) {
+            AT_START -> "On time"
+            END_MINUS_30 -> "30 min before it ends"
+            else -> "$minutes min after"
+        }
+
+    /** When it rings, given the prayer's start and its end (the next prayer). */
+    fun date(start: java.time.Instant, end: java.time.Instant): java.time.Instant =
+        // A short window (Maghrib far north): never before the prayer has begun.
+        if (this == END_MINUS_30) maxOf(start, end.minusSeconds(30 * 60L)) else start.plusSeconds(minutes * 60L)
+
+    companion object {
+        val prayers: List<Prayer> = listOf(Prayer.DHUHR, Prayer.ASR, Prayer.MAGHRIB, Prayer.ISHA)
+
+        /** The choices for one prayer. Isyak is open until Subuh, so it has no "before it ends". */
+        fun choices(prayer: Prayer): List<PrayerAlarmTiming> =
+            if (prayer == Prayer.ISHA) entries.filter { it != END_MINUS_30 } else entries
+
+        /** The prayer's end in this day: the next prayer (Isyak's own start; it has no "before it ends"). */
+        fun end(prayer: Prayer, day: PrayerDay): java.time.Instant = when (prayer) {
+            Prayer.DHUHR -> day.time(Prayer.ASR)
+            Prayer.ASR -> day.time(Prayer.MAGHRIB)
+            else -> day.time(Prayer.ISHA)
+        }
+
+        fun of(raw: String?): PrayerAlarmTiming? = entries.firstOrNull { it.raw == raw }
+    }
+}
+
+/**
+ * The sound every alarm plays. Classic is the phone's default alarm sound; the
+ * others are our own tones in res/raw (tools/make_alarm_sounds.py); PHONE is a
+ * ringtone picked from the phone ([Preferences.alarmRingtone]).
+ */
+@Serializable
+enum class AlarmSound(val raw: String, val label: String) {
+    @SerialName("classic") CLASSIC("classic", "Classic alarm"),
+    @SerialName("chime") CHIME("chime", "Gentle chime"),
+    @SerialName("bells") BELLS("bells", "Rising bells"),
+    @SerialName("beeps") BEEPS("beeps", "Soft beeps"),
+    @SerialName("phone") PHONE("phone", "From my phone");
+
+    companion object {
+        fun of(raw: String?): AlarmSound? = entries.firstOrNull { it.raw == raw }
+    }
+}
+
 /** Which mornings the sahur alarm rings: the days people usually fast. */
 @Serializable
 enum class SahurDay(val raw: String, val label: String) {
@@ -215,6 +277,15 @@ data class Preferences(
     /** The earlier sahur alarm; null = off. Rings only on [sahurDays]. */
     val sahurAlarm: SahurTiming? = null,
     val sahurDays: Set<SahurDay> = SahurDay.DEFAULT,
+    /** Alarms for the other prayers; null = off. */
+    val dhuhrAlarm: PrayerAlarmTiming? = null,
+    val asrAlarm: PrayerAlarmTiming? = null,
+    val maghribAlarm: PrayerAlarmTiming? = null,
+    val ishaAlarm: PrayerAlarmTiming? = null,
+    /** The sound every alarm plays. */
+    val alarmSound: AlarmSound = AlarmSound.CLASSIC,
+    /** The ringtone picked from this phone for [AlarmSound.PHONE]; never moved to another phone. */
+    val alarmRingtone: String? = null,
     /** Whose Ramadan/Eid dates you follow; null = the authority of your home country. */
     val communityAuthority: String? = null,
 
@@ -271,6 +342,31 @@ data class Preferences(
 ) {
     fun encode(): String = CoreJson.encodeToString(serializer(), this)
 
+    /** The alarm for one of the other four prayers. */
+    fun alarm(prayer: Prayer): PrayerAlarmTiming? = when (prayer) {
+        Prayer.DHUHR -> dhuhrAlarm
+        Prayer.ASR -> asrAlarm
+        Prayer.MAGHRIB -> maghribAlarm
+        Prayer.ISHA -> ishaAlarm
+        else -> null
+    }
+
+    fun withAlarm(prayer: Prayer, timing: PrayerAlarmTiming?): Preferences = when (prayer) {
+        Prayer.DHUHR -> copy(dhuhrAlarm = timing)
+        Prayer.ASR -> copy(asrAlarm = timing)
+        Prayer.MAGHRIB -> copy(maghribAlarm = timing)
+        Prayer.ISHA -> copy(ishaAlarm = timing.takeIf { it != PrayerAlarmTiming.END_MINUS_30 })
+        else -> this
+    }
+
+    /** Is any alarm on: Subuh, sahur or one of the other prayers? */
+    val anyAlarm: Boolean
+        get() = wakeUp != null || sahurAlarm != null || PrayerAlarmTiming.prayers.any { alarm(it) != null }
+
+    /** An alarm at the very start of this prayer rings instead of its alert. */
+    fun alarmAtStart(prayer: Prayer): Boolean =
+        if (prayer == Prayer.FAJR) wakeUp == WakeUpTiming.AT_FAJR else alarm(prayer) == PrayerAlarmTiming.AT_START
+
     companion object {
         fun decode(text: String?): Preferences =
             (text?.let { runCatching { CoreJson.decodeFromString(serializer(), it) }.getOrNull() } ?: Preferences()).sane()
@@ -280,6 +376,8 @@ data class Preferences(
             quietFrom = quietFrom.takeIf { it in 0 until 1440 } ?: 23 * 60,
             quietTo = quietTo.takeIf { it in 0 until 1440 } ?: 6 * 60,
             jumuahReminderMinutes = jumuahReminderMinutes.takeIf { it in PrayerWindow.JUMUAH_REMINDER_CHOICES } ?: 0,
+            // Isyak is open until Subuh: it has no "before it ends" alarm.
+            ishaAlarm = ishaAlarm.takeIf { it != PrayerAlarmTiming.END_MINUS_30 },
         )
     }
 }
