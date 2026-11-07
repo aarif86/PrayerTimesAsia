@@ -103,6 +103,20 @@ final class NearbySearchTests: XCTestCase {
         let kualaLumpur = Coordinates(latitude: 3.1390, longitude: 101.6869)
         XCTAssertNil(OverpassCache.load(near: kualaLumpur, within: NearbySearch.osmRefreshKm))
     }
+
+    /// The weekly ready-made list: which countries an area needs, and reading it.
+    func testReadyMadeMasjidList() {
+        XCTAssertEqual(MasjidList.countries(near: Coordinates(latitude: 3.1390, longitude: 101.6869)), ["MY"])
+        XCTAssertEqual(MasjidList.countries(near: Coordinates(latitude: 1.4360, longitude: 103.7860)), ["MY", "SG"])
+        XCTAssertEqual(MasjidList.countries(near: Coordinates(latitude: 4.8903, longitude: 114.9402)), ["BN", "MY"])
+        XCTAssertEqual(MasjidList.countries(near: Coordinates(latitude: 10.7769, longitude: 106.7009)), [])
+        let json = #"{"country":"MY","updated":"2026-11-07","places":[["n1",3.14,101.69,"Masjid Negara","",0],["w2",3.15,101.7,"","Jalan Ampang",1]]}"#
+        let places = MasjidList.parse(Data(json.utf8)) ?? []
+        XCTAssertEqual(places.map(\.name), ["Masjid Negara", "Musollah"])
+        XCTAssertEqual(places.map(\.isMusollah), [false, true])
+        XCTAssertEqual(places.last?.address, "Jalan Ampang")
+        XCTAssertNil(MasjidList.parse(Data("oops".utf8)))
+    }
 }
 
 @MainActor

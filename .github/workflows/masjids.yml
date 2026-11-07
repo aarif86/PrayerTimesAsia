@@ -1,0 +1,57 @@
+name: Masjid lists
+
+# Builds the ready-made masjid and surau lists for Singapore, Malaysia and
+# Brunei from OpenStreetMap and publishes them on the orphan `masjids` branch:
+#   https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/masjids/my.json
+# The iPhone and Android apps download these once a week, so the Masjid tab
+# fills at once instead of waiting on the busy Overpass servers.
+
+on:
+  schedule:
+    - cron: "41 19 * * 5"   # Saturday 03:41 in Singapore, when Overpass is quiet
+  push:
+    branches: [main]
+    paths: ['tools/build_masjid_list.py', '.github/workflows/masjids.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write   # only to publish the `masjids` branch
+
+concurrency:
+  group: masjids
+  cancel-in-progress: false
+
+jobs:
+  masjids:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start from last week's lists
+        run: |
+          set -euo pipefail
+          mkdir -p masjids
+          if git fetch -q --depth 1 origin masjids 2>/dev/null; then
+            git --work-tree=masjids checkout FETCH_HEAD -- . 
+            git reset -q
+          fi
+          ls -la masjids
+      - name: Build lists
+        run: python3 tools/build_masjid_list.py masjids
+      - name: Publish masjids branch
+        run: |
+          set -euo pipefail
+          cd masjids
+          rm -rf .git
+          git init -q -b masjids
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Masjid lists for ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" masjids
+          {
+            echo "### Masjid lists"
+            echo
+            python3 -c "import json; d=json.load(open('index.json')); [print(f\"- {c}: {v['places']} places, {v['updated']}\") for c, v in d['countries'].items()]"
+            ls -la *.json | awk '{print "- " $9 " " $5 " bytes"}'
+          } >> "$GITHUB_STEP_SUMMARY"

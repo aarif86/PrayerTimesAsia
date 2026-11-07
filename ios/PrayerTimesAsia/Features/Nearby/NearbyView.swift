@@ -71,6 +71,21 @@ final class NearbySearch {
         if appleTask == nil, appleCenter.map({ Geo.distanceKm($0, center) >= Self.appleRefreshKm }) ?? true {
             searchApple(around: center)
         }
+        // Singapore, Malaysia and Brunei: the weekly ready-made list replaces
+        // the live OpenStreetMap search, so nothing waits on busy servers.
+        if !MasjidList.countries(near: center).isEmpty, !listFailed {
+            if let ready = MasjidList.shared.places(near: center, withinKm: 15) {
+                osm = ready.map(Self.space)
+                osmCenter = center
+                osmOK = true
+                rebuild()
+                if !MasjidList.shared.isFresh(near: center) { downloadList(near: center) }
+            } else {
+                downloadList(near: center)
+            }
+            return
+        }
+
         if osmTask == nil, osmCenter.map({ Geo.distanceKm($0, center) >= Self.osmRefreshKm }) ?? true {
             if let saved = OverpassCache.load(near: center, within: Self.osmRefreshKm),
                let parsed = Self.parseOverpass(saved.data, center: saved.center) {
@@ -134,6 +149,44 @@ final class NearbySearch {
             // Moved on a lot while searching? Catch up.
             if anySucceeded, let now = self.here { self.search(around: now) }
         }
+    }
+
+    private var listTask: Task<Void, Never>?
+    private var listFailed = false
+
+    private func downloadList(near center: Coordinates) {
+        guard listTask == nil else { return }
+        let firstTime = MasjidList.shared.places(near: center, withinKm: 15) == nil
+        if firstTime { isAddingMore = true }
+        listTask = Task { [weak self] in
+            let ok = await MasjidList.shared.download(near: center)
+            guard let self else { return }
+            self.listTask = nil
+            if firstTime { self.isAddingMore = false }
+            // No list and no copy from last week: fall back to the live search.
+            // A weekly refresh just swaps in quietly; only the first download
+            // needs the list rebuilt now.
+            guard firstTime else { return }
+            if !ok { self.listFailed = true }
+            if let now = self.here { self.search(around: now) }
+        }
+    }
+
+    private static func space(_ p: MasjidList.Place) -> PrayerSpace {
+        let coordinate = CLLocationCoordinate2D(latitude: p.latitude, longitude: p.longitude)
+        let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
+        item.name = p.name
+        return PrayerSpace(id: "osm/\(p.id)", name: p.name, address: p.address, coordinate: coordinate,
+                           distanceKm: 0, isMusollah: p.isMusollah, item: item)
+    }
+
+    /// Try again from the empty screen: forget past failures and ask afresh.
+    func retry() {
+        listFailed = false
+        lastOSMTry = nil
+        appleCenter = nil
+        osmCenter = nil
+        if let here { search(around: here) }
     }
 
     private func searchOpenStreetMap(around center: Coordinates) {
@@ -288,6 +341,7 @@ struct NearbyView: View {
     @State private var camera: MapCameraPosition = .automatic
     @State private var selected: PrayerSpace?
     @State private var showAbout = false
+    @State private var slow = false
 
     private var visible: [PrayerSpace] {
         switch kind {
@@ -375,6 +429,7 @@ struct NearbyView: View {
             .sheet(isPresented: $showAbout) { MakersSheet(placement: "masjid") }
             .task(id: model.activePlace?.coordinates) {
                 guard let c = model.activePlace?.coordinates else { return }
+                slow = false
                 showYou(animated: false)
                 search.search(around: c)
             }
@@ -403,14 +458,28 @@ struct NearbyView: View {
         if model.activePlace == nil {
             ContentUnavailableView("Choose a place", systemImage: "location.slash",
                                    description: Text("Allow location or pick a city on the Today tab."))
-        } else if (search.isLoading || search.isAddingMore) && search.spaces.isEmpty {
+        } else if (search.isLoading || search.isAddingMore) && search.spaces.isEmpty && !slow {
             ProgressView("Searching nearby…").frame(maxHeight: .infinity)
+                .task {
+                    // Never leave a bare spinner: after a few seconds say so and offer Try again.
+                    try? await Task.sleep(for: .seconds(6))
+                    slow = true
+                }
         } else if visible.isEmpty {
-            ContentUnavailableView(search.failed ? "Couldn't search" : "Nothing listed nearby",
-                                   systemImage: "moon.stars",
-                                   description: Text(search.failed
-                                                     ? "Searching needs an internet connection."
-                                                     : "Neither Apple Maps nor OpenStreetMap lists a \(kind == .musollah ? "musollah" : "masjid") within 15 km. Use the Qibla tab to pray where you are."))
+            let busy = search.isLoading || search.isAddingMore
+            ContentUnavailableView {
+                Label(busy ? "Still looking" : search.failed ? "Couldn't search" : "Nothing listed nearby",
+                      systemImage: "moon.stars")
+            } description: {
+                Text(busy ? "The connection is slow. Places will appear here as soon as they arrive."
+                     : search.failed ? "Searching needs an internet connection."
+                     : "Neither Apple Maps nor OpenStreetMap lists a \(kind == .musollah ? "musollah" : "masjid") within 15 km. Use the Qibla tab to pray where you are.")
+            } actions: {
+                if busy || search.failed {
+                    Button("Try again") { slow = false; search.retry() }
+                        .buttonStyle(.bordered)
+                }
+            }
         } else {
             List {
                 ForEach(visible) { space in
