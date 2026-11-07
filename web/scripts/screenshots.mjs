@@ -81,7 +81,7 @@ const shots = [
     await p.click('text=Gentle chime'); await p.waitForTimeout(300)
     await p.evaluate(() => [...document.querySelectorAll('.sheet h2.group-title')].find((h) => h.textContent === 'Other prayers')?.scrollIntoView())
   }],
-  ['34-time-left-day', { style: 'centre', appearance: 'system', now: '2026-10-25T15:45:00+08:00', tracker: 'on' }],
+  ['34-time-left-subuh', { style: 'sunpath', appearance: 'system', now: '2026-10-25T06:45:00+08:00', tracker: 'on' }],
   ['35-simple-day', { style: 'simple', appearance: 'system', now: DAY, tracker: 'on' }],
   ['36-simple-night-large', { style: 'simple', appearance: 'dark', now: '2026-10-25T22:10:00+08:00', large: '1' }],
   ['37-settings-quiet', { tab: 'settings', appearance: 'dark', now: NIGHT }, (p) => p.evaluate(() => document.querySelector('h2.group-title:nth-of-type(n)') && [...document.querySelectorAll('h2.group-title')].find((h) => h.textContent === 'Quiet alerts')?.scrollIntoView())],

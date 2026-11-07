@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
   Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
-  CloudMoon, Contrast, Droplet, Flame, Hourglass, Pause, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
+  CloudMoon, Contrast, Droplet, Flame, Pause, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
@@ -457,7 +457,7 @@ function SmallDial({ c, size }: { c: Ctx; size: number }) {
   return (
     <DayDial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}
       currentPrayer={current.prayer} currentName={store.name(current.prayer, current.time)}
-      countdown={short(next.time - now)} nextName={store.name(next.prayer, next.time)} />
+      countdown={countdown(now).count} label={countdown(now).label} />
   )
 }
 
@@ -473,7 +473,6 @@ function ClassicPage({ c }: { c: Ctx }) {
           <div><SourceBadge day={c.shown} compact /></div>
         </div>
       </div>
-      <TimeLeft now={c.now} />
       <TopPrompt />
       <ArrivalCard />
       {c.offset === 0 && <SeasonCard now={c.now} />}
@@ -487,31 +486,24 @@ function ClassicPage({ c }: { c: Ctx }) {
 // ---------- Time left to pray ----------
 
 /**
- * "Zohor is open until 3:58 PM · 1h 40m left". Busy people ask how long they
- * still have, not only when the next prayer starts. Nothing between sunrise
- * and Zohor, when no prayer is due. Once ticked in the tracker, it says so.
+ * The one countdown on the Prayer screen. While a prayer is open (and not yet
+ * ticked) it says how long is left to pray it: "19m left to pray". Every
+ * prayer's time ends when the next one starts (Subuh at Syuruk), so this is
+ * the same moment as the next prayer, said the way busy people ask it.
+ * Between Syuruk and Zohor, or once ticked, it counts to the next prayer.
  */
-export function timeLeftText(now: number): { line: string; left: string | null; urgent: boolean; done: boolean } | null {
+export function countdown(now: number): { count: string; label: string; text: string; urgent: boolean; done: boolean } {
   const w = store.window(now)
-  if (!w) return null
-  const name = store.name(w.prayer, w.start)
-  const done = store.prefs.trackerEnabled && store.isPrayed(w.prayer, w.start)
-  const urgent = !done && now >= nudgeAt(w)
-  if (done) return { line: `${name} prayed. Alhamdulillah.`, left: null, urgent: false, done }
-  if (w.prayer === 'isha') return { line: `${name} is open until ${store.name('fajr')} at ${store.formatted(w.end)}.`, left: `${short(w.end - now)} left`, urgent: false, done }
-  return { line: `${name} is open until ${store.formatted(w.end)}.`, left: `${short(w.end - now)} left`, urgent, done }
-}
-
-function TimeLeft({ now, plain }: { now: number; plain?: boolean }) {
-  const t = timeLeftText(now)
-  if (!t) return null
-  return (
-    <div class={`time-left ${t.urgent ? 'urgent' : ''} ${t.done ? 'done' : ''} ${plain ? 'plain' : ''}`} role="status">
-      {t.done ? <CheckCircle2 size={16} /> : <Hourglass size={16} />}
-      <span class="time-left-line">{t.line}</span>
-      {t.left && <span class="time-left-left mono">{t.left}</span>}
-    </div>
-  )
+  const done = !!w && store.prefs.trackerEnabled && store.isPrayed(w.prayer, w.start)
+  if (w && !done) {
+    const count = short(w.end - now)
+    return { count, label: 'left to pray', text: `${count} left to pray`, urgent: w.prayer !== 'isha' && now >= nudgeAt(w), done }
+  }
+  const next = store.next(now)
+  if (!next) return { count: '', label: '', text: '', urgent: false, done }
+  const count = short(next.time - now)
+  const label = `until ${store.name(next.prayer, next.time)}`
+  return { count, label, text: `${count} ${label}`, urgent: false, done }
 }
 
 // ---------- Big and Simple ----------
@@ -522,17 +514,14 @@ function TimeLeft({ now, plain }: { now: number; plain?: boolean }) {
  * it when the tracker is on. Nothing else.
  */
 function SimplePage({ c }: { c: Ctx }) {
-  const { now, day, current, next } = c
-  const t = timeLeftText(now)
-  const nextName = next ? store.name(next.prayer, next.time) : ''
+  const { now, day, current } = c
+  const t = countdown(now)
   return (
     <div class="today-page page simple-page">
       <div class="row" style={{ gap: '8px', paddingTop: '8px' }}><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
       <div class="simple-now">
-        {current && isObligatory(current.prayer) && t && <div class="simple-big display" style={{ color: tint(current.prayer) }}>{store.name(current.prayer, current.time)}</div>}
-        {t && <div class={`simple-line ${t.urgent ? 'accent' : ''}`}>{t.line}</div>}
-        {t?.left && <div class="simple-left mono">{t.left}</div>}
-        {next && <div class="simple-next">Next is <b>{nextName}</b> at <b>{store.formatted(next.time)}</b>, in {short(next.time - now)}</div>}
+        {current && <div class="simple-big display" style={{ color: tint(current.prayer) }}>{store.name(current.prayer, current.time)}{t.done && <CheckCircle2 size={34} class="accent" style={{ marginLeft: '10px' }} />}</div>}
+        {t.text && <div class={`simple-left mono ${t.urgent ? 'accent' : ''}`}>{t.text}</div>}
       </div>
       <div class="simple-list">
         {PRAYERS.map((p) => {
@@ -589,7 +578,6 @@ function CentrePage({ c }: { c: Ctx }) {
         <Controls c={c} order="column" />
       </div>
       <SunPlaceChip offset={c.offset} />
-      <TimeLeft now={c.now} />
       <TopPrompt />
       <ArrivalCard />
       {c.offset === 0 && <SeasonCard now={c.now} />}
@@ -637,7 +625,6 @@ function DialPage({ c }: { c: Ctx }) {
   return (
     <div class="today-page page dial-page">
       <div class="top-bar"><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
-      <TimeLeft now={c.now} />
       <TopPrompt />
       <ArrivalCard />
       {c.offset === 0 && <SeasonCard now={c.now} />}
@@ -663,8 +650,8 @@ function DialPage({ c }: { c: Ctx }) {
               <div class="hero-centre">
                 <div style={{ fontSize: `${sz * 0.028}px`, fontWeight: 800, letterSpacing: '0.6px', color: tint(cur.prayer) }}>NOW</div>
                 <div class="display" style={{ fontSize: `${sz * 0.085}px`, fontWeight: 700, lineHeight: 1.1 }}>{store.name(cur.prayer, cur.time)}</div>
-                <div class="display accent mono" style={{ fontSize: `${sz * 0.066}px`, fontWeight: 600 }}>{short(c.next.time - c.now)}</div>
-                <div class="secondary" style={{ fontSize: `${sz * 0.034}px`, fontWeight: 500 }}>until {store.name(c.next.prayer, c.next.time)}</div>
+                <div class="display accent mono" style={{ fontSize: `${sz * 0.066}px`, fontWeight: 600 }}>{countdown(c.now).count}</div>
+                <div class="secondary" style={{ fontSize: `${sz * 0.034}px`, fontWeight: 500 }}>{countdown(c.now).label}</div>
               </div>
             )
           }} />
@@ -733,9 +720,7 @@ function SunPathPage({ c }: { c: Ctx }) {
               <span class="dot" style={{ background: tint(current.prayer) }} />
               <span class="display" style={{ fontSize: '30px', fontWeight: 700 }}>{store.name(current.prayer, current.time)}</span>
             </div>
-            <span class="status-pill mono">
-              {next.prayer === 'sunrise' ? `${short(next.time - now)} until ${nextName} - ${store.name('fajr')} ends` : `${short(next.time - now)} until ${nextName}`}
-            </span>
+            <span class={`status-pill mono ${countdown(now).urgent ? 'urgent' : ''}`}>{countdown(now).text}</span>
           </div>
         )}
         <span class="spacer" />
@@ -747,7 +732,6 @@ function SunPathPage({ c }: { c: Ctx }) {
         <SunPath width={width} height={96} now={now} day={c.day} tz={store.timeZone} />
       </div>
       <SunPlaceChip offset={c.offset} />
-      <TimeLeft now={now} />
       <TopPrompt />
       <ArrivalCard />
       {c.offset === 0 && <SeasonCard now={c.now} />}
@@ -781,9 +765,8 @@ function BandsPage({ c }: { c: Ctx }) {
           <Controls c={c} />
         </div>
         {current && next && offset === 0 && (
-          <div class="bands-status mono">{store.name(current.prayer, current.time)} now · {short(next.time - now)} until {store.name(next.prayer, next.time)}</div>
+          <div class="bands-status mono">{store.name(current.prayer, current.time)} now · {countdown(now).text}</div>
         )}
-        {offset === 0 && <TimeLeft now={now} plain />}
         <TopPrompt />
         <ArrivalCard />
       {c.offset === 0 && <SeasonCard now={c.now} />}

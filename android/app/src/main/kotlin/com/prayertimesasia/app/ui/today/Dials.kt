@@ -123,14 +123,14 @@ private fun DrawScope.nowDot(c: Offset, ring: Float, accent: Color, glow: Color)
 @Composable
 fun DayDial(
     now: Instant, day: PrayerDay, nextFajr: Instant, zone: ZoneId,
-    currentName: String, currentPrayer: Prayer, countdown: String, nextName: String,
+    currentName: String, currentPrayer: Prayer, countdown: String, label: String,
     size: Dp, modifier: Modifier = Modifier,
 ) {
     val primary = Palette.primary
     val accent = Palette.accent
     val sunArc = Palette.sunArc
     val mid = midnight(day, zone)
-    Box(modifier.size(size).semantics { contentDescription = "Now $currentName. $countdown until $nextName." },
+    Box(modifier.size(size).semantics { contentDescription = "Now $currentName. $countdown $label." },
         contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val ring = this.size.width * 0.085f
@@ -152,7 +152,7 @@ fun DayDial(
         Column(Modifier.padding(horizontal = size * 0.18f), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(currentName, style = display((size.value * 0.14f).sp, FontWeight.Bold), color = primary, maxLines = 1, softWrap = false)
             Text(countdown, style = display((size.value * 0.1f).sp, FontWeight.SemiBold), color = accent, maxLines = 1)
-            Text("until $nextName", fontFamily = Rounded, fontSize = (size.value * 0.065f).sp, fontWeight = FontWeight.Medium,
+            Text(label, fontFamily = Rounded, fontSize = (size.value * 0.065f).sp, fontWeight = FontWeight.Medium,
                 color = Palette.secondary, maxLines = 1, textAlign = TextAlign.Center)
         }
     }
