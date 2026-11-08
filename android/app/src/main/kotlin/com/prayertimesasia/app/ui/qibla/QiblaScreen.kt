@@ -70,7 +70,9 @@ import com.prayertimesasia.app.ui.components.Chip
 import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.components.GlassCard
 import com.prayertimesasia.app.ui.makers.KaabaGlyph
+import com.prayertimesasia.app.ui.theme.Brand
 import com.prayertimesasia.app.ui.theme.LivingSkyBackground
+import com.prayertimesasia.app.ui.theme.drawCompassBezel
 import com.prayertimesasia.app.ui.theme.LocalSkyScheme
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
@@ -160,6 +162,7 @@ private fun QiblaDial(bearing: Double, heading: Double, delta: Double?, aligned:
     val primary = Palette.primary
     val gold = Palette.gold
     val reduce = LocalSkyScheme.current.reduceMotion
+    val light = !LocalSkyScheme.current.dark
     Box(Modifier.size(size).semantics { contentDescription = if (aligned) "Facing the qibla" else "Qibla compass" },
         contentAlignment = Alignment.Center) {
         // Fixed "you are pointing here" marker at the top.
@@ -167,12 +170,12 @@ private fun QiblaDial(bearing: Double, heading: Double, delta: Double?, aligned:
         Canvas(Modifier.fillMaxSize()) {
             val r = this.size.minDimension / 2
             if (aligned) {
-                drawCircle(Brush.radialGradient(listOf(green.copy(alpha = 0.28f), green.copy(alpha = 0.08f)), center, r), r)
-                drawCircle(green.copy(alpha = 0.7f), r - 2.5.dp.toPx(), style = Stroke(5.dp.toPx() + 8.dp.toPx()), alpha = 0.18f)
-                drawCircle(green, r - 2.5.dp.toPx(), style = Stroke(5.dp.toPx()))
+                drawCircle(Brush.radialGradient(listOf(green.copy(alpha = 0.28f), green.copy(alpha = 0.08f)), center, r), r - Brand.bezel.toPx())
             } else {
-                drawCircle(primary.copy(alpha = 0.07f), r)
-                drawCircle(primary.copy(alpha = 0.25f), r - 0.5.dp.toPx(), style = Stroke(1.dp.toPx()))
+                // Face inside the navy compass ring: white like the icon's dial in Light.
+                val face = r - Brand.bezel.toPx()
+                if (light) drawCircle(Brush.radialGradient(0.65f to Color.White, 1f to Color(0xFFE6E8F1), center = center, radius = face), face)
+                else drawCircle(primary.copy(alpha = 0.07f), face)
             }
         }
         if (aligned && !reduce) Ripple(green, size)
@@ -180,13 +183,15 @@ private fun QiblaDial(bearing: Double, heading: Double, delta: Double?, aligned:
         Box(Modifier.fillMaxSize().graphicsLayer { rotationZ = (-heading).toFloat() }, contentAlignment = Alignment.Center) {
             Canvas(Modifier.fillMaxSize()) {
                 val r = this.size.minDimension / 2
+                // The app icon's compass ring: navy, kawung batik, cream stitching.
+                drawCompassBezel()
                 for (i in 0 until 72) {
                     val major = i % 6 == 0
                     val alpha = if (i % 18 == 0) 0.9f else if (major) 0.55f else 0.25f
                     val len = (if (major) 12 else 6).dp.toPx()
                     val outer = r - 14.dp.toPx() + len / 2
                     rotate(i * 5f, center) {
-                        drawLine(primary.copy(alpha = alpha), Offset(center.x, center.y - outer), Offset(center.x, center.y - outer + len),
+                        drawLine(Color.White.copy(alpha = alpha), Offset(center.x, center.y - outer), Offset(center.x, center.y - outer + len),
                             strokeWidth = (if (major) 2 else 1).dp.toPx(), cap = StrokeCap.Round)
                     }
                 }
@@ -205,7 +210,7 @@ private fun QiblaDial(bearing: Double, heading: Double, delta: Double?, aligned:
                 val a = Math.toRadians(i * 90.0)
                 val rr = size / 2 - 38.dp
                 Text(letter, fontSize = 17.sp, fontWeight = if (i == 0) FontWeight.ExtraBold else FontWeight.SemiBold,
-                    color = if (i == 0) Palette.north else primary.copy(alpha = 0.8f),
+                    color = if (i == 0) Brand.northOnRing else Color.White,
                     modifier = Modifier.offset(x = rr * sin(a).toFloat(), y = -rr * cos(a).toFloat()).rotate(heading.toFloat()))
             }
             val b = Math.toRadians(bearing)
@@ -215,6 +220,12 @@ private fun QiblaDial(bearing: Double, heading: Double, delta: Double?, aligned:
                     .then(if (aligned) Modifier.clip(CircleShape).background(green.copy(alpha = 0.25f)).border(2.5.dp, green, CircleShape) else Modifier),
                 contentAlignment = Alignment.Center,
             ) { KaabaGlyph(Modifier.size(30.dp)) }
+        }
+        // Green trim closes round the navy ring when aligned.
+        if (aligned) Canvas(Modifier.fillMaxSize()) {
+            val r = this.size.minDimension / 2
+            drawCircle(green.copy(alpha = 0.7f), r - 2.5.dp.toPx(), style = Stroke(5.dp.toPx() + 8.dp.toPx()), alpha = 0.18f)
+            drawCircle(green, r - 2.5.dp.toPx(), style = Stroke(5.dp.toPx()))
         }
         // Centre: a tick when aligned, otherwise an arrow pointing at the qibla.
         Box(

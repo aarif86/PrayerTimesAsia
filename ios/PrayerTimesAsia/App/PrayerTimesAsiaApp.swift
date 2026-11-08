@@ -40,8 +40,18 @@ struct PrayerTimesAsiaApp: App {
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    // The opening screen (icon dial on navy) picks up from the launch screen, then fades.
+    // Skipped for the CI screenshots.
+    @State private var opening = !ProcessInfo.processInfo.arguments.contains("-demo")
 
     var body: some View {
+        ZStack {
+            content
+            if opening { OpeningView(isShowing: $opening).transition(.opacity).zIndex(1) }
+        }
+    }
+
+    @ViewBuilder private var content: some View {
         @Bindable var model = model
         if model.prefs.hasOnboarded {
             TabView(selection: $model.selectedTab) {

@@ -82,6 +82,7 @@ export function SettingsScreen() {
   return (
     <div class="page settings">
       <h1 class="h-title" style={{ margin: '28px 0 4px' }}>Settings</h1>
+      <AppCard />
 
       <Group title="Location">
         <button class="item" onClick={() => openSheet({ kind: 'places' })}>
@@ -287,5 +288,32 @@ export function SettingsScreen() {
         <div class="item"><span class="label">Version</span><span class="value">{VERSION}</span></div>
       </Group>
     </div>
+  )
+}
+
+/** The app's own card: the icon on the navy compass-ring colour, kawung batik and cream stitching. */
+function AppCard() {
+  return (
+    <a class="app-card" href="../" aria-label={`About Prayer Times Asia, version ${VERSION}`}>
+      <svg class="app-card-batik" aria-hidden="true">
+        <defs>
+          <pattern id="kawung-card" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45) scale(0.45)">
+            <g fill="none" stroke="#FFFFFF" stroke-width="1.8">
+              <ellipse cx="20" cy="10" rx="5.6" ry="9.2" /><ellipse cx="20" cy="30" rx="5.6" ry="9.2" />
+              <ellipse cx="10" cy="20" rx="9.2" ry="5.6" /><ellipse cx="30" cy="20" rx="9.2" ry="5.6" />
+            </g>
+            <circle cx="20" cy="20" r="1.8" fill="#FFFFFF" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#kawung-card)" />
+      </svg>
+      <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" width="64" height="64" />
+      <span class="app-card-text">
+        <span class="app-card-name">Prayer Times Asia</span>
+        <span class="app-card-line">Built fisabilillah in Singapore</span>
+        <span class="app-card-version">Version {VERSION}</span>
+      </span>
+      <ChevronRight size={18} class="app-card-chevron" />
+    </a>
   )
 }

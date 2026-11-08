@@ -16,8 +16,28 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <style>
+      /* Opening screen: the app icon's dial on navy with a faint kawung batik. main.tsx fades it out. */
+      #opening { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: #151A45; transition: opacity .4s ease; font-family: 'Nunito Variable', 'Nunito', ui-rounded, system-ui, sans-serif; }
+      #opening .batik { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .05; }
+      #opening .glow { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 40% at 50% 105%, rgba(247, 189, 143, .35), transparent); }
+      #opening img { position: relative; width: 180px; height: 180px; }
+      #opening .name { position: absolute; top: calc(50% + 120px); width: 100%; text-align: center; color: #FFFFFF; font-size: 26px; font-weight: 800; animation: rise .5s ease .1s both; }
+      #opening .line { position: absolute; bottom: calc(env(safe-area-inset-bottom) + 40px); width: 100%; text-align: center; color: rgba(238, 240, 250, .78); font-size: 14px; animation: rise .5s ease .2s both; }
+      #opening.done { opacity: 0; pointer-events: none; }
+      @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+      @media (prefers-reduced-motion: reduce) { #opening, #opening .name, #opening .line { animation: none; transition: none; } }
+    </style>
   </head>
   <body>
+    <div id="opening" aria-hidden="true">
+      <svg class="batik"><defs><pattern id="kawung-open" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45) scale(0.9)"><g fill="none" stroke="#fff" stroke-width="1.8"><ellipse cx="20" cy="10" rx="5.6" ry="9.2"/><ellipse cx="20" cy="30" rx="5.6" ry="9.2"/><ellipse cx="10" cy="20" rx="9.2" ry="5.6"/><ellipse cx="30" cy="20" rx="9.2" ry="5.6"/></g><circle cx="20" cy="20" r="1.8" fill="#fff"/></pattern></defs><rect width="100%" height="100%" fill="url(#kawung-open)"/></svg>
+      <div class="glow"></div>
+      <img src="icons/dial.svg" alt="" />
+      <div class="name">Prayer Times Asia</div>
+      <div class="line">Built fisabilillah in Singapore</div>
+    </div>
     <div id="app"></div>
     <noscript>Prayer Times Asia needs JavaScript to work out prayer times in your browser.</noscript>
     <script type="module" src="/src/main.tsx"></script>

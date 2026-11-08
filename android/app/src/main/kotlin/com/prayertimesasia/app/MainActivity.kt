@@ -6,6 +6,14 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import com.prayertimesasia.app.ui.theme.OpeningScreen
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import com.prayertimesasia.app.ui.PrayerTimesRoot
@@ -32,7 +40,17 @@ class MainActivity : ComponentActivity(), Permissions {
         state = if (demo != null) app.demoState(demo) else app.state
         state.permissions = this
         if (savedInstanceState == null) state.openLink(intent?.dataString)
-        setContent { PrayerTimesRoot(state) }
+        // The opening screen (icon dial on navy) picks up from the system splash, then fades.
+        // Not on a rotation or for the demo screenshots.
+        val showOpening = savedInstanceState == null && demo == null
+        val reduceMotion = android.provider.Settings.Global.getFloat(contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+        setContent {
+            var opening by remember { mutableStateOf(showOpening) }
+            Box(Modifier.fillMaxSize()) {
+                PrayerTimesRoot(state)
+                if (opening) OpeningScreen(reduceMotion) { opening = false }
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
