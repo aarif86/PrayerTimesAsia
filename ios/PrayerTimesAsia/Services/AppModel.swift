@@ -25,6 +25,8 @@ final class AppModel {
     var showJourney = false
     /// Wake up for Subuh (the alarm chip on the Prayer screen, or Settings).
     var showWakeUp = false
+    /// "Welcome back" after a reinstall brought the settings back.
+    var showWelcomeBack = false
     /// A masjid from a screen's QR code, waiting for the user to say yes.
     var pendingMasjid: MasjidLink?
 
@@ -37,6 +39,15 @@ final class AppModel {
     init() {
         prefs = Preferences.load()
         if let demo = Self.demoPreferences() { prefs = demo }
+        if Preferences.didRestore, !Self.isDemo {
+            // A reinstall: settings came back from the keychain. Ask again for
+            // what iOS forgets when an app is deleted.
+            showWelcomeBack = true
+            if prefs.useGPS { location.requestPermission() }
+            if prefs.notificationsEnabled || prefs.anyAlarm {
+                Task { _ = await NotificationScheduler.requestPermission(); scheduleNotifications() }
+            }
+        }
         if ProcessInfo.processInfo.arguments.contains("-masjid-link") { pendingMasjid = Self.demoMasjid }
     }
 
@@ -82,6 +93,7 @@ final class AppModel {
         p.hasOnboarded = true
         p.useGPS = false
         p.home = home
+        p.homeConfirmed = true
         p.manualPlace = home
         p.lastCountryCode = "SG"
         // Show the tracker with a three-day streak.
@@ -119,6 +131,7 @@ final class AppModel {
             // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
             p.home = Place(name: "Sydney", region: nil, countryCode: "AU", countryName: "Australia",
                            timeZoneID: "Australia/Sydney", coordinates: Coordinates(latitude: -33.8688, longitude: 151.2093))
+            p.homeConfirmed = true
             p.manualPlace = Place(name: "Kuala Lumpur", region: nil, countryCode: "MY", countryName: "Malaysia",
                                   timeZoneID: "Asia/Kuala_Lumpur", coordinates: Coordinates(latitude: 3.139, longitude: 101.6869))
             p.lastCountryCode = "MY"
@@ -222,8 +235,10 @@ final class AppModel {
         return max(0, Calendar.current.dateComponents([.day], from: arrived, to: .now).day ?? 0)
     }
 
+    /// Nil until home is set and the user has said it is home, so a guessed
+    /// home never tells anyone they are a traveller (or at home) by mistake.
     var musafirStatus: Musafir.Status? {
-        guard let place = activePlace else { return nil }
+        guard let place = activePlace, prefs.homeConfirmed else { return nil }
         return Musafir.status(home: prefs.home?.coordinates, current: place.coordinates,
                               daysHere: daysHere, rules: musafirRules)
     }
@@ -586,9 +601,16 @@ final class AppModel {
         if let gpsPlace { arrived(at: gpsPlace) }
     }
 
+    /// Home, picked by the user. Also counts as saying "this is home".
     func setHome(_ place: Place) {
-        prefs.home = place
+        var p = prefs
+        p.home = place
+        p.homeConfirmed = true
+        prefs = p
     }
+
+    /// "Yes, this is home" for the home the app guessed.
+    func confirmHome() { prefs.homeConfirmed = true }
 
     /// Travel mode: notice a new country, remember when we got here, show the welcome card.
     private func arrived(at place: Place) {

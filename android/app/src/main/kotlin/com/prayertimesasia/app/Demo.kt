@@ -46,7 +46,7 @@ data class DemoConfig(
             nowForStreak.atZone(sgt).toLocalDate().minusDays(back.toLong()).toString() to Prayer.obligatory.toSet()
         }
         var p = Preferences(
-            hasOnboarded = true, useGPS = false, home = pasirRis, manualPlace = pasirRis, lastCountryCode = "SG",
+            hasOnboarded = true, useGPS = false, home = pasirRis, homeConfirmed = true, manualPlace = pasirRis, lastCountryCode = "SG",
             trackerEnabled = true, prayedLog = log, appearance = appearance, todayStyle = style, showMore = showMore,
         )
         if (season != com.prayertimesasia.core.SeasonPreview.OFF) {
@@ -60,6 +60,7 @@ data class DemoConfig(
             "visitor" -> {
                 // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
                 p = p.copy(
+                    homeConfirmed = true,
                     home = Place(id = "demo-sydney", name = "Sydney", countryCode = "AU", countryName = "Australia",
                         timeZoneId = "Australia/Sydney", coordinates = Coordinates(-33.8688, 151.2093)),
                     manualPlace = Place(id = "demo-kl", name = "Kuala Lumpur", countryCode = "MY", countryName = "Malaysia",

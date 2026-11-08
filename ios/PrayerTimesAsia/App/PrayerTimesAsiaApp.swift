@@ -76,6 +76,11 @@ struct RootView: View {
             .sheet(isPresented: $model.showJourney) { JourneyView() }
             .sheet(isPresented: $model.showWakeUp) { WakeUpView() }
             .sheet(item: $model.pendingMasjid) { MasjidLinkSheet(link: $0) }
+            .alert("Welcome back", isPresented: $model.showWelcomeBack) {
+                Button("OK") {}
+            } message: {
+                Text("Your settings are back, just as you left them. Your phone keeps a private copy, so deleting the app never loses them.")
+            }
             .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-widget-preview"))) {
                 NavigationStack { WidgetPreviewView() }
             }

@@ -194,6 +194,7 @@ extension MovedSettings {
         out.hasOnboarded = true
         out.useGPS = useGPS ?? d.useGPS
         out.home = home?.place
+        out.homeConfirmed = home != nil
         out.manualPlace = manualPlace?.place
         out.savedPlaces = savedPlaces?.map(\.place) ?? []
         out.methodOverrideID = methodOverrideID

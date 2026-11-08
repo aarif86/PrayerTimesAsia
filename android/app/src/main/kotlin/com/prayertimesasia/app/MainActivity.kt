@@ -17,7 +17,9 @@ import com.prayertimesasia.app.ui.theme.OpeningScreen
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import com.prayertimesasia.app.ui.PrayerTimesRoot
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity(), Permissions {
     private lateinit var state: AppState
@@ -40,6 +42,7 @@ class MainActivity : ComponentActivity(), Permissions {
         state = if (demo != null) app.demoState(demo) else app.state
         state.permissions = this
         if (savedInstanceState == null) state.openLink(intent?.dataString)
+        if (savedInstanceState == null && demo == null) welcomeBackIfRestored()
         // The opening screen (icon dial on navy) picks up from the system splash, then fades.
         // Not on a rotation or for the demo screenshots.
         val showOpening = savedInstanceState == null && demo == null
@@ -50,6 +53,24 @@ class MainActivity : ComponentActivity(), Permissions {
                 PrayerTimesRoot(state)
                 if (opening) OpeningScreen(reduceMotion) { opening = false }
             }
+        }
+    }
+
+    /**
+     * After a reinstall, Google's app backup brings the settings back, but not
+     * the phone's permissions. A flag kept out of the backup tells a restored
+     * install apart from this one, so we ask again only once, right after.
+     */
+    private fun welcomeBackIfRestored() {
+        val install = getSharedPreferences(INSTALL_PREFS, MODE_PRIVATE)
+        if (install.getBoolean("seen", false)) return
+        install.edit().putBoolean("seen", true).apply()
+        val p = state.prefs
+        if (!p.hasOnboarded) return
+        android.widget.Toast.makeText(this, "Welcome back. Your settings are back.", android.widget.Toast.LENGTH_LONG).show()
+        lifecycleScope.launch {
+            if (p.useGPS && !state.location.hasPermission) { location(); state.useGPS() }
+            if (p.notificationsEnabled || p.anyAlarm) { notifications(); state.appBecameActive() }
         }
     }
 
@@ -84,5 +105,10 @@ class MainActivity : ComponentActivity(), Permissions {
         pending = d
         launch()
         return d.await()
+    }
+
+    companion object {
+        /** Not in the app backup (res/xml/backup_rules.xml), so it is empty after a reinstall. */
+        const val INSTALL_PREFS = "install"
     }
 }

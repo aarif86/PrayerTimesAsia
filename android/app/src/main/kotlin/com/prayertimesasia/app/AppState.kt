@@ -164,7 +164,11 @@ class AppState(
         if (sideEffects && prefs.useGPS && location.hasPermission) location.refresh { onLocation(it) }
     }
 
-    fun setHome(place: Place) = update { it.copy(home = place) }
+    /** Home, picked by the user. Also counts as saying "this is home". */
+    fun setHome(place: Place) = update { it.copy(home = place, homeConfirmed = true) }
+
+    /** "Yes, this is home" for the home the app guessed. */
+    fun confirmHome() = update { it.copy(homeConfirmed = true) }
 
     /** prayertimesasia://masjid?... from a masjid screen's QR code (or the web app's "Open in the app"). */
     fun openLink(uri: String?) {

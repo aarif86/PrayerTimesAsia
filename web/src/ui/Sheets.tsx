@@ -48,14 +48,18 @@ function fromNominatim(it: NominatimItem): Place {
   }
 }
 
-export function PlacesSheet() {
+/** Pick where times are shown, or (forHome) where home is. Picking home goes back to Journey. */
+export function PlacesSheet({ forHome = false }: { forHome?: boolean } = {}) {
   const s = useStore()
   const [query, setQuery] = useState('')
   const [online, setOnline] = useState<Place[] | null>(null)
   const [searching, setSearching] = useState(false)
   const builtIn = useMemo(() => searchCities(query), [query])
   useEffect(() => { setOnline(null) }, [query])
-  const pick = (p: Place) => { store.choose(p); closeSheet() }
+  const pick = (p: Place) => {
+    if (forHome) { store.setHome(p); openSheet({ kind: 'journey' }) } else { store.choose(p); closeSheet() }
+  }
+  const here = s.gpsPlace ?? s.activePlace
   const searchOnline = async () => {
     setSearching(true)
     const r = await fetchOK(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=8&accept-language=en&q=${encodeURIComponent(query)}`, 15000)
@@ -68,20 +72,38 @@ export function PlacesSheet() {
       <button class="row" style={{ flex: 1, gap: '12px', textAlign: 'left' }} onClick={() => pick(p)}>
         <span style={{ fontSize: '20px' }}>{isInAsia(p) ? flag(placeProfile(p).code) : '🌏'}</span>
         <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: 'block' }}>{p.name}</span>{placeSubtitle(p) && <span class="sub">{placeSubtitle(p)}</span>}</span>
-        {!s.prefs.useGPS && s.prefs.manualPlace && isNear(s.prefs.manualPlace, p) && <Check size={18} class="accent" />}
+        {(forHome ? !!s.prefs.home && isNear(s.prefs.home, p) : !s.prefs.useGPS && !!s.prefs.manualPlace && isNear(s.prefs.manualPlace, p)) && <Check size={18} class="accent" />}
       </button>
       {saved && <button aria-label={`Remove ${p.name}`} class="secondary" style={{ padding: '6px' }}
         onClick={() => store.update((x) => { x.savedPlaces = x.savedPlaces.filter((q) => q.id !== p.id) })}><Trash2 size={16} /></button>}
     </div>
   )
   return (
-    <Sheet title="Location" full>
+    <Sheet title={forHome ? 'Where is home?' : 'Location'} full>
       <label class="search-box">
         <Search size={17} class="secondary" />
         <input type="search" placeholder="City or country" value={query} autoFocus={!s.demo}
           onInput={(e) => setQuery((e.target as HTMLInputElement).value)} aria-label="City or country" />
       </label>
-      {!query ? (
+      {!query && forHome ? (
+        <>
+          {here && (
+            <div class="group" style={{ marginTop: '14px' }}>
+              <button class="item" onClick={() => pick(here)}>
+                <Navigation size={18} fill="currentColor" />
+                <span class="label">Where I am now<span class="sub">{here.name}{here.countryName ? `, ${here.countryName}` : ''}</span></span>
+              </button>
+            </div>
+          )}
+          {s.prefs.savedPlaces.filter((p) => p.name !== 'Current location').length > 0 && (
+            <>
+              <h3 class="group-title" style={{ fontSize: '15px' }}>Saved places</h3>
+              <div class="group">{s.prefs.savedPlaces.filter((p) => p.name !== 'Current location').map((p) => row(p))}</div>
+            </>
+          )}
+          <p class="group-foot">Search the town or area where you live, like Tampines, Shah Alam or Bandung. Home is used to work out when you count as a traveller.</p>
+        </>
+      ) : !query ? (
         <>
           <div class="group" style={{ marginTop: '14px' }}>
             <button class="item" onClick={() => { store.useGPS(); closeSheet() }}>
@@ -265,11 +287,10 @@ export function JourneySheet() {
   const g = status ? musafirGuidance(status, rules, s.naming) : null
   const km = status && status.kind !== 'home' ? status.distanceKm : null
   const today = s.day(now), tomorrow = s.day(now + 86_400_000)
-  const place = s.activePlace
   const home = s.prefs.home
   return (
     <Sheet title="Journey" full>
-      <div class="glass card" style={{ marginTop: '10px' }}>
+      {home && !s.prefs.homeConfirmed ? <HomeQuestion /> : <div class="glass card" style={{ marginTop: '10px' }}>
         {g && status ? (
           <>
             <div class="row" style={{ gap: '10px' }}>{status.kind === 'traveller' ? <span class="journey-badge"><TabJourney size={18} /></span> : <House size={28} />}<span style={{ fontSize: '22px', fontWeight: 700 }}>{g.title}</span></div>
@@ -288,9 +309,10 @@ export function JourneySheet() {
             {s.prefs.arrivedAt != null && (status.kind === 'traveller' || status.kind === 'settled') && <div class="subhead" style={{ fontWeight: 600, opacity: 0.8 }}>Day {s.daysHere(now) + 1} in {s.profile.name || 'this place'}</div>}
           </>
         ) : (
-          <><div style={{ fontSize: '22px', fontWeight: 700 }}>Set your home</div><p style={{ opacity: 0.85 }}>Tell us where home is and we'll work out when you count as a traveller.</p></>
+          <><div style={{ fontSize: '22px', fontWeight: 700 }}>Set your home</div><p style={{ opacity: 0.85 }}>Tell us where home is and we'll work out when you count as a traveller.</p>
+            <button class="pill-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}><House size={16} /> Set home</button></>
         )}
-      </div>
+      </div>}
       {status?.kind === 'traveller' && s.isRamadanDay(now) && (
         <div class="glass card" style={{ marginTop: '16px' }}>
           <div class="caps" style={{ opacity: 0.7 }}>Fasting on this journey</div>
@@ -312,7 +334,7 @@ export function JourneySheet() {
           <div class="headline">{home ? `${flag(placeProfile(home).code)} ${home.name}` : 'Not set'}</div>
           {home && placeSubtitle(home) && <div class="subhead" style={{ opacity: 0.75 }}>{placeSubtitle(home)}</div>}
         </div>
-        {place && (!home || !isNear(home, place)) && <button class="plain-btn" onClick={() => store.setHome(place)}>Set to here</button>}
+        <button class="plain-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}><House size={16} />{home ? 'Change home' : 'Set home'}</button>
       </div>
       <div class="glass card" style={{ marginTop: '16px' }}>
         <div class="caps" style={{ opacity: 0.7, marginBottom: '10px' }}>Travel distance</div>
@@ -430,3 +452,24 @@ export function MakersSheet({ placement }: { placement: string }) {
   return <Sheet title=""><MakersAbout placement={placement} /></Sheet>
 }
 
+
+/**
+ * "Is Kuala Lumpur your home?" for a home the app only guessed (from where the
+ * device was when the app was first opened). Until it is answered, Journey and
+ * the musafir line say nothing about travelling.
+ */
+export function HomeQuestion() {
+  const s = useStore()
+  const home = s.prefs.home
+  if (!home || s.prefs.homeConfirmed) return null
+  return (
+    <div class="glass card home-question" style={{ marginTop: '10px' }}>
+      <div class="row" style={{ gap: '10px' }}><House size={28} /><span style={{ fontSize: '20px', fontWeight: 700 }}>Is {home.name} your home?</span></div>
+      <p class="subhead" style={{ opacity: 0.85 }}>We guessed it from where you were when you first opened the app. Home is used to work out when you count as a traveller, so please check it.</p>
+      <div class="row" style={{ gap: '10px', flexWrap: 'wrap' }}>
+        <button class="pill-btn" onClick={() => store.confirmHome()}>Yes, this is home</button>
+        <button class="plain-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}>Change home</button>
+      </div>
+    </div>
+  )
+}

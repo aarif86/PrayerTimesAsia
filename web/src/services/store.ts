@@ -210,7 +210,8 @@ class AppStore {
 
   musafirStatus(now = this.now()): MusafirStatus | null {
     const place = this.activePlace
-    if (!place) return null
+    // A guessed home never says "traveller" or "home" until the user confirms it.
+    if (!place || !this.prefs.homeConfirmed) return null
     return musafirStatus(this.prefs.home?.coordinates, place.coordinates, this.daysHere(now), this.musafirRules)
   }
 
@@ -611,8 +612,14 @@ class AppStore {
     this.arrived(chosen)
   }
 
+  /** Home, picked by the user. Also counts as saying "this is home". */
   setHome(place: Place): void {
-    this.update((p) => { p.home = place })
+    this.update((p) => { p.home = place; p.homeConfirmed = true })
+  }
+
+  /** "Yes, this is home" for the home the app guessed. */
+  confirmHome(): void {
+    this.update((p) => { p.homeConfirmed = true })
   }
 
   /** Travel mode: notice a new country, remember when we got here, show the welcome card. */
@@ -737,6 +744,7 @@ function demoPreferences(demo: Demo): Preferences {
   p.hasOnboarded = true
   p.useGPS = false
   p.home = PASIR_RIS
+  p.homeConfirmed = true
   p.manualPlace = PASIR_RIS
   p.lastCountryCode = 'SG'
   p.trackerEnabled = true
@@ -780,6 +788,7 @@ function demoPreferences(demo: Demo): Preferences {
   if (q.get('masjid') === 'on') p.myMasjid = DEMO_MASJID
   if (q.get('large') === '1') p.largeText = true
   if (demo.variant === 'visitor') {
+    p.homeConfirmed = true
     p.home = { id: 'demo-sydney', name: 'Sydney', countryCode: 'AU', countryName: 'Australia', timeZoneID: 'Australia/Sydney', coordinates: { latitude: -33.8688, longitude: 151.2093 } }
     p.manualPlace = { id: 'demo-kl', name: 'Kuala Lumpur', countryCode: 'MY', countryName: 'Malaysia', timeZoneID: 'Asia/Kuala_Lumpur', coordinates: { latitude: 3.139, longitude: 101.6869 } }
     p.lastCountryCode = 'MY'

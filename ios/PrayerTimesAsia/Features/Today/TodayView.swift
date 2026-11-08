@@ -1435,6 +1435,9 @@ private struct ArrivalCard: View {
                     }
                     .tint(Theme.accent)
                     .padding(.top, 6)
+                    if model.prefs.musafirEnabled, !model.prefs.homeConfirmed {
+                        HomeQuestionCard().padding(.top, 6)
+                    }
                 }
                 HStack {
                     Text("Asr").font(.subheadline.weight(.semibold))

@@ -159,4 +159,18 @@ class NamingAndSanadTest {
         assertEquals("Subuh", r.localName(Prayer.FAJR, day.time(Prayer.FAJR)))
         assertNull(r.localName(Prayer.MAGHRIB, day.time(Prayer.MAGHRIB)))
     }
+
+    @Test fun aGuessedHomeSaysNothingAboutTravelUntilConfirmed() {
+        val kl = Place(name = "Kuala Lumpur", countryCode = "MY", timeZoneId = "Asia/Kuala_Lumpur", coordinates = Coordinates(3.139, 101.6869))
+        val now = ZonedDateTime.of(2026, 11, 9, 6, 0, 0, 0, ZoneId.of("Asia/Kuala_Lumpur")).toInstant()
+        val guessed = Preferences(useGPS = false, manualPlace = kl, home = kl)
+        assertNull(Resolver(guessed).musafirStatus(now))
+        assertEquals(Musafir.Status.Home, Resolver(guessed.copy(homeConfirmed = true)).musafirStatus(now))
+    }
+
+    @Test fun movedSettingsWithAHomeCountAsConfirmed() {
+        val sg = Place(name = "Pasir Ris", countryCode = "SG", timeZoneId = "Asia/Singapore", coordinates = Coordinates(1.3721, 103.9474))
+        val applied = MovedSettings.from(Preferences(hasOnboarded = true, home = sg)).appliedTo(Preferences())
+        assertTrue(applied.homeConfirmed)
+    }
 }

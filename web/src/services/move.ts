@@ -132,6 +132,7 @@ export function applyMoved(p: Preferences, m: MovedSettings): Preferences {
     return !!q && typeof q === 'object' && typeof q.name === 'string' && typeof q.timeZoneID === 'string' && typeof q.lat === 'number' && typeof q.lon === 'number'
   }
   raw.home = okPlace(m.home) ? place(m.home) : null
+  raw.homeConfirmed = raw.home != null
   raw.manualPlace = okPlace(m.manualPlace) ? place(m.manualPlace) : null
   raw.savedPlaces = Array.isArray(m.savedPlaces) ? m.savedPlaces.filter(okPlace).map(place) : []
   raw.sahurDays = Array.isArray(m.sahurDays) ? SAHUR_DAYS.filter((d) => m.sahurDays!.includes(d)) : [...DEFAULT_PREFS.sahurDays]
