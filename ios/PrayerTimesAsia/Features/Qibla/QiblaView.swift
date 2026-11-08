@@ -140,6 +140,7 @@ private struct Dial: View {
     let aligned: Bool
 
     private let green = Color.green
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         GeometryReader { geo in
@@ -148,24 +149,25 @@ private struct Dial: View {
                 // Fixed "you are pointing here" marker at the top.
                 Capsule().fill(aligned ? green : Color.primary).frame(width: 4, height: 22).offset(y: -size / 2 - 8)
 
-                // Face: tinted green and glowing when aligned.
+                // Face (inside the navy compass ring): tinted green and glowing when aligned,
+                // white like the icon's dial in Light.
                 Circle()
                     .fill(aligned
                           ? AnyShapeStyle(RadialGradient(colors: [green.opacity(0.28), green.opacity(0.08)],
                                                          center: .center, startRadius: 10, endRadius: size / 2))
-                          : AnyShapeStyle(Color.primary.opacity(0.07)))
-                Circle()
-                    .trim(from: 0, to: aligned ? 1 : 0)
-                    .stroke(green, style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .shadow(color: green.opacity(0.7), radius: 12)
-                Circle().strokeBorder(Color.primary.opacity(aligned ? 0 : 0.25), lineWidth: 1)
+                          : scheme == .light
+                            ? AnyShapeStyle(RadialGradient(colors: [.white, .white, Color(red: 0.90, green: 0.91, blue: 0.95)],
+                                                           center: .center, startRadius: 0, endRadius: size / 2 - Brand.bezel))
+                            : AnyShapeStyle(Color.primary.opacity(0.07)))
+                    .frame(width: size - 2 * Brand.bezel, height: size - 2 * Brand.bezel)
                 if aligned { Ripple(color: green).frame(width: size, height: size) }
 
                 ZStack {
+                    // The app icon's compass ring: navy, kawung batik, cream stitching.
+                    CompassBezel(size: size)
                     ForEach(0..<72, id: \.self) { i in
                         Capsule()
-                            .fill(Color.primary.opacity(i % 18 == 0 ? 0.9 : (i % 6 == 0 ? 0.55 : 0.25)))
+                            .fill(Color.white.opacity(i % 18 == 0 ? 0.9 : (i % 6 == 0 ? 0.55 : 0.25)))
                             .frame(width: i % 6 == 0 ? 2 : 1, height: i % 6 == 0 ? 12 : 6)
                             .offset(y: -size / 2 + 14)
                             .rotationEffect(.degrees(Double(i) * 5))
@@ -173,7 +175,7 @@ private struct Dial: View {
                     ForEach(Array(["N", "E", "S", "W"].enumerated()), id: \.offset) { i, letter in
                         Text(letter)
                             .font(.headline.weight(i == 0 ? .heavy : .semibold))
-                            .foregroundStyle(i == 0 ? Theme.north : Color.primary.opacity(0.8))
+                            .foregroundStyle(i == 0 ? Brand.northOnRing : Color.white)
                             .rotationEffect(.degrees(-Double(i) * 90 + heading))
                             .offset(y: -size / 2 + 38)
                             .rotationEffect(.degrees(Double(i) * 90))
@@ -200,6 +202,14 @@ private struct Dial: View {
                 }
                 .rotationEffect(.degrees(-heading))
                 .animation(.interpolatingSpring(stiffness: 60, damping: 14), value: heading)
+
+                // Green trim closes round the ring when aligned (drawn over the navy ring).
+                Circle()
+                    .inset(by: 2.5)
+                    .trim(from: 0, to: aligned ? 1 : 0)
+                    .stroke(green, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .shadow(color: green.opacity(0.7), radius: 12)
 
                 // Centre: a tick when aligned, otherwise an arrow pointing at the qibla.
                 Circle()

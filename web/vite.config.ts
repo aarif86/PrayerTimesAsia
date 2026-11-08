@@ -16,7 +16,7 @@ function serviceWorker(): Plugin {
     generateBundle(_options, bundle) {
       const files = Object.keys(bundle).filter((f) => !f.endsWith('.map') && f !== 'sw.js')
       const precache = ['./', 'index.html', 'screen/', 'print/', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
-        'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/badge-96.png',
+        'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/badge-96.png', 'icons/dial.svg',
         ...files.filter((f) => !f.endsWith('.html') && !/\.(woff2?)$/.test(f) || /latin-wght-normal|TwemojiCountryFlags/.test(f))]
       const version = createHash('sha256').update(files.sort().join('|')).digest('hex').slice(0, 12)
       const source = `/* Prayer Times Asia service worker (generated) */

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="night_sky">#FF060A1C</color>
+    <color name="night_navy">#FF151A45</color>
     <color name="sun_arc">#FFF7BD8F</color>
 </resources>

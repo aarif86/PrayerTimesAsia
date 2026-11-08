@@ -73,6 +73,7 @@ import com.prayertimesasia.app.BuildConfig
 import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.makers.MakersCard
 import com.prayertimesasia.app.ui.makers.MakersOffer
+import com.prayertimesasia.app.ui.theme.AppCard
 import com.prayertimesasia.app.ui.theme.AppIcons
 import com.prayertimesasia.app.ui.theme.LivingSkyBackground
 import com.prayertimesasia.app.ui.theme.LocalSkyScheme
@@ -111,6 +112,10 @@ fun SettingsScreen(
             item {
                 Text("Settings", style = display(34.sp, FontWeight.Bold), color = Palette.primary,
                     modifier = Modifier.padding(start = Dims.gutter, top = 16.dp, bottom = 4.dp))
+            }
+            item {
+                // The app's own card: the icon on the navy compass-ring colour. Opens Sources & credits.
+                AppCard("${BuildConfig.VERSION_NAME}", openCredits, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             }
             item {
                 Section("Location") {

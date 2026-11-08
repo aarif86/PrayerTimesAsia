@@ -34,6 +34,13 @@ struct SettingsView: View {
         NavigationStack {
             ScrollViewReader { proxy in
             Form {
+                // The app's own card: the icon on the navy compass-ring colour. Opens Sources & credits.
+                Section {
+                    AppCard()
+                        .overlay { NavigationLink { CreditsView() } label: { EmptyView() }.opacity(0) }
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                }
                 Section("Location") {
                     Button { showPlaces = true } label: {
                         LabeledContent("Place", value: model.activePlace?.name ?? "Not set")
