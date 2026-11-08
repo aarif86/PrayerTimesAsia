@@ -58,3 +58,32 @@ for density, legacy, adaptive in [("mdpi", 48, 108), ("hdpi", 72, 162), ("xhdpi"
     fg = Image.new("RGBA", (adaptive, adaptive), (0, 0, 0, 0))
     fg.alpha_composite(render(dial_only, dial), ((adaptive - dial) // 2, (adaptive - dial) // 2))
     save(fg, f"{d}/ic_launcher_foreground.png")
+
+# Opening screen: the dial alone (no square background), shown in the middle of the
+# navy opening screen on every platform. Cropped to the dial's white edge (r = 424).
+DIAL_BOX = (88, 88, 936, 936)
+dial_svg = re.sub(r"<metadata>.*?</metadata>", "", dial_only, flags=re.S)
+dial_svg = dial_svg.replace('width="1024" height="1024" viewBox="0 0 1024 1024"', 'width="848" height="848" viewBox="88 88 848 848"', 1)
+dial_svg = dial_svg.replace(' xmlns:c2pa="http://c2pa.org/manifest"', "")
+with open("web/public/icons/dial.svg", "w") as f:
+    f.write(dial_svg)
+print("web/public/icons/dial.svg")
+dial_big = render(dial_only, 1024).crop(DIAL_BOX)
+LAUNCH = "ios/PrayerTimesAsia/Resources/Assets.xcassets/LaunchDial.imageset"
+for scale in (1, 2, 3):  # 180 pt
+    save(dial_big.resize((180 * scale, 180 * scale), Image.LANCZOS), f"{LAUNCH}/launch-dial@{scale}x.png")
+with open(f"{LAUNCH}/Contents.json", "w") as f:
+    f.write('{\n  "images" : [\n'
+            + ",\n".join(f'    {{ "filename" : "launch-dial@{s}x.png", "idiom" : "universal", "scale" : "{s}x" }}' for s in (1, 2, 3))
+            + '\n  ],\n  "info" : { "author" : "xcode", "version" : 1 }\n}\n')
+save(dial_big.resize((540, 540), Image.LANCZOS), "android/app/src/main/res/drawable-nodpi/opening_dial.png")
+
+# The icon as a picture inside the app (the card at the top of Settings), 64 pt.
+CARD = "ios/PrayerTimesAsia/Resources/Assets.xcassets/AppIconImage.imageset"
+for scale in (1, 2, 3):
+    save(full.resize((64 * scale, 64 * scale), Image.LANCZOS).convert("RGB"), f"{CARD}/app-icon@{scale}x.png")
+with open(f"{CARD}/Contents.json", "w") as f:
+    f.write('{\n  "images" : [\n'
+            + ",\n".join(f'    {{ "filename" : "app-icon@{s}x.png", "idiom" : "universal", "scale" : "{s}x" }}' for s in (1, 2, 3))
+            + '\n  ],\n  "info" : { "author" : "xcode", "version" : 1 }\n}\n')
+save(full.resize((192, 192), Image.LANCZOS).convert("RGB"), "android/app/src/main/res/drawable-nodpi/app_icon_card.png")

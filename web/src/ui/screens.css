@@ -170,7 +170,7 @@
 .qibla-dial { position: relative; margin: 8px 0; flex: none; }
 .qibla-dial .top-marker { position: absolute; left: 50%; top: -19px; width: 4px; height: 22px; border-radius: 2px; transform: translateX(-50%); background: var(--fg); z-index: 3; }
 .qibla-dial.aligned .top-marker { background: var(--green); }
-.qibla-dial .face { position: absolute; inset: 0; border-radius: 50%; background: color-mix(in srgb, var(--fg) 7%, transparent);
+.qibla-dial .face { position: absolute; inset: 58px; border-radius: 50%; background: color-mix(in srgb, var(--fg) 7%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fg) 25%, transparent); transition: background .5s; }
 .qibla-dial.aligned .face { background: radial-gradient(circle, color-mix(in srgb, var(--green) 28%, transparent), color-mix(in srgb, var(--green) 8%, transparent)); box-shadow: none; }
 .qibla-dial .ring { position: absolute; inset: 0; }
@@ -179,6 +179,11 @@
 @keyframes ripple { to { transform: scale(1.18); opacity: 0; } }
 .qibla-dial .rotor { position: absolute; inset: 0; transition: transform .35s cubic-bezier(.2, .8, .3, 1.05); }
 .qibla-dial .rotor > svg { position: absolute; inset: 0; }
+/* On the navy compass ring (the app icon's ring) the letters are always light. */
+.qibla-dial .cardinal { color: #FFFFFF; font-weight: 700; }
+.qibla-dial .cardinal.north { color: #F28B78; font-weight: 800; }
+:root[data-theme="light"] .qibla-dial:not(.aligned) .face { background: radial-gradient(circle, #FFFFFF 65%, #E6E8F1); }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) .qibla-dial:not(.aligned) .face { background: radial-gradient(circle, #FFFFFF 65%, #E6E8F1); } }
 .cardinal { position: absolute; left: 50%; top: 50%; width: 24px; height: 24px; margin: -12px 0 0 -12px; display: flex; align-items: center; justify-content: center;
   font-size: 17px; font-weight: 600; color: color-mix(in srgb, var(--fg) 80%, transparent); }
 .cardinal.north { color: var(--north); font-weight: 800; }
@@ -440,3 +445,15 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 :root[data-theme="light"] :is(.now-tag, .in-tag, .dial-mark.current .dm-name, .tint-text):not([data-theme-local] *) {
   color: color-mix(in srgb, var(--tint) 48%, #000);
 }
+
+/* ---------- App card (top of Settings): the icon's navy ring, kawung batik and stitching ---------- */
+.app-card { position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; margin: 10px 0 6px; padding: 18px;
+  border-radius: 22px; background: #262B5E; color: #FFFFFF; text-decoration: none; box-shadow: 0 6px 20px rgba(11, 15, 42, 0.25); }
+.app-card::after { content: ''; position: absolute; inset: 6px; border-radius: 17px; border: 1.4px dashed rgba(242, 230, 207, 0.45); pointer-events: none; }
+.app-card-batik { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.16; }
+.app-card img { position: relative; width: 64px; height: 64px; border-radius: 15px; flex: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3); }
+.app-card-text { position: relative; flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.app-card-name { font-size: 19px; font-weight: 700; }
+.app-card-line { font-size: 14px; color: rgba(238, 240, 250, 0.88); }
+.app-card-version { font-size: 13px; color: rgba(238, 240, 250, 0.75); }
+.app-card-chevron { position: relative; flex: none; color: rgba(238, 240, 250, 0.75); }
