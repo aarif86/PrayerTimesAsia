@@ -30,6 +30,7 @@ full = render(svg, 1024)
 
 # iPhone: App Store icons must have no transparency
 save(full.convert("RGB"), "ios/PrayerTimesAsia/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png")
+save(full.convert("RGB"), "site/press/prayer-times-asia-icon.png")  # press kit download
 
 # Web app + promo site
 for path, size in [("web/public/icons/icon-512.png", 512), ("web/public/icons/icon-192.png", 192),
