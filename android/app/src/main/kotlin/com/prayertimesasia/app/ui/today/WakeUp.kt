@@ -1,5 +1,7 @@
 package com.prayertimesasia.app.ui.today
 
+import com.prayertimesasia.core.HadithId
+import com.prayertimesasia.app.ui.components.HadithView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -120,6 +122,7 @@ fun WakeUpSheetContent(state: AppState) {
             ChoiceRow("Off", null, p.wakeUp == null) { state.update { it.copy(wakeUp = null) } }
             choices(WakeUpTiming.Part.BEFORE_FAJR)
         }
+        HadithView(state, HadithId.NIGHT_PRAYER, Modifier.padding(horizontal = 16.dp).padding(top = 12.dp), line = true)
         Section("From $fajr") { choices(WakeUpTiming.Part.FROM_FAJR) }
         Section("Before ${Prayer.SUNRISE.name(r.naming)}", "Rings every morning and moves with $fajr wherever you are.") {
             choices(WakeUpTiming.Part.BEFORE_SUNRISE)
@@ -144,6 +147,10 @@ fun WakeUpSheetContent(state: AppState) {
                         }
                     }
                 }
+            }
+            Column(Modifier.padding(horizontal = 16.dp).padding(top = 12.dp)) {
+                HadithView(state, HadithId.MON_THU, line = true)
+                HadithView(state, HadithId.WHITE_DAYS, line = true)
             }
         }
 

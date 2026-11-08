@@ -124,6 +124,7 @@ struct TodayView: View {
         VStack(alignment: .leading, spacing: fill ? 12 : 12) {
             header(now: now, day: day, shown: shown, current: current, next: next)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+            prayerHadith(next)
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             if dayOffset == 0 { SeasonCard(now: now) }
             PrayerList(day: shown, now: now,
@@ -556,6 +557,7 @@ struct TodayView: View {
             .padding(.bottom, 10)
             sunPlaceChip()
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+            prayerHadith(next)
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             if dayOffset == 0 { SeasonCard(now: now) }
             if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
@@ -600,6 +602,7 @@ struct TodayView: View {
                 }
                 sunPlaceChip()
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+                prayerHadith(next)
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
                 if dayOffset == 0 { SeasonCard(now: now) }
                 if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
@@ -891,6 +894,14 @@ struct TodayView: View {
     // MARK: Day
 
     /// One tap to be told when each prayer begins (all five, at the exact time).
+    /// Before Subuh and before Asar: the hadith of the two cool prayers. Today only, and only on the list pages.
+    @ViewBuilder
+    private func prayerHadith(_ next: (prayer: Prayer, time: Date)?) -> some View {
+        if dayOffset == 0, let next, next.prayer == .fajr || next.prayer == .asr {
+            HadithView(id: .coolPrayers, tag: "Before \(next.prayer.name(model.naming))")
+        }
+    }
+
     private var alertsPrompt: some View {
         HStack(spacing: 10) {
             Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText)
@@ -947,6 +958,7 @@ private struct PrayerList: View {
     let showMore: Bool
     /// Stretch the rows to fill the height they are given.
     var fill = false
+    @State private var syurukOpen = false
 
     private enum Entry: Identifiable {
         case prayer(Prayer, Date)
@@ -979,7 +991,12 @@ private struct PrayerList: View {
         VStack(spacing: 6) {
             ForEach(entries) { entry in
                 switch entry {
-                case .prayer(let p, let t): row(p, t)
+                case .prayer(let p, let t):
+                    row(p, t)
+                    // Tapping Syuruk opens a short hadith on why it is not a prayer time.
+                    if p == .sunrise && syurukOpen && model.prefs.showHadith {
+                        HadithView(id: .syuruk, style: .line).padding(.horizontal, 4)
+                    }
                 case .blessed(let b, let t): blessedRow(b, t)
                 }
             }
@@ -1052,7 +1069,10 @@ private struct PrayerList: View {
         .contentShape(Rectangle())
         // Tracker (opt-in): tap a prayer that has passed to tick it off.
         .onTapGesture {
-            guard trackable else { return }
+            guard trackable else {
+                if prayer == .sunrise && model.prefs.showHadith { withAnimation(.snappy) { syurukOpen.toggle() } }
+                return
+            }
             withAnimation(.snappy) { model.togglePrayed(prayer, on: time) }
         }
         .sensoryFeedback(.success, trigger: prayed) { _, new in new }

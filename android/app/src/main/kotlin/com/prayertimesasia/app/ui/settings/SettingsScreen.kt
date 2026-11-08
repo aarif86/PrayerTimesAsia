@@ -194,6 +194,14 @@ fun SettingsScreen(
                 }
             }
             item {
+                Section("Hadith", "A short hadith or ayah on some screens, and one line under each prayer alert. Tap ✕ on any hadith to hide just that one. Turn both off for a clean app with times only.") {
+                    SwitchRow("Show hadith in the app", p.showHadith) { on ->
+                        state.update { it.copy(showHadith = on, hiddenHadith = if (on) emptyList() else it.hiddenHadith) }
+                    }
+                    SwitchRow("Add a hadith to alerts", p.hadithInAlerts) { on -> state.update { it.copy(hadithInAlerts = on) } }
+                }
+            }
+            item {
                 val nudgeNote = if (p.trackerEnabled) " Nudge before time runs out sends one gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for ${Prayer.ISHA.name(r.naming)}, which stays open until ${Prayer.FAJR.name(r.naming)}. Never while paused." else ""
                 Section("Tracker", "Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone.$nudgeNote") {
                     SwitchRow("Prayer tracker", p.trackerEnabled) { on -> state.update { it.copy(trackerEnabled = on) } }

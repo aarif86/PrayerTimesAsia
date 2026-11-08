@@ -111,6 +111,12 @@ export interface Preferences {
   largeText: boolean
   /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
   jumuahReminderMinutes: number
+  /** Short hadith and ayat on some screens (see core/hadith.ts). */
+  showHadith: boolean
+  /** One hadith line under prayer alerts and the Subuh alarm. */
+  hadithInAlerts: boolean
+  /** Hadith closed with their ✕, by id. Turning Show hadith back on brings them all back. */
+  hiddenHadith: string[]
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -173,6 +179,9 @@ export const DEFAULT_PREFS: Preferences = {
   buzzOnly: false,
   largeText: false,
   jumuahReminderMinutes: 0,
+  showHadith: true,
+  hadithInAlerts: true,
+  hiddenHadith: [],
 }
 
 const NULLABLE = new Set<keyof Preferences>([

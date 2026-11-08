@@ -490,6 +490,7 @@ final class AppModel {
         a.prayedLog = [:]; b.prayedLog = [:]
         a.excusedDays = []; b.excusedDays = []
         a.trackerPausedSince = nil; b.trackerPausedSince = nil
+        a.hiddenHadith = []; b.hiddenHadith = []
         a.fastLog = [:]; b.fastLog = [:]
         a.tarawihLog = []; b.tarawihLog = []
         a.quranLog = []; b.quranLog = []
@@ -771,6 +772,8 @@ final class AppModel {
         let jumuah = prefs.jumuahReminderMinutes
         let here = place.isInAsia ? "\(place.name) \(place.profile.flag)" : place.name
         let maghribAlertOn = onTime && prefs.notifyPrayers.contains(.maghrib)
+        // Settings, Hadith: one line under each prayer alert.
+        let hadithLine = prefs.hadithInAlerts ? "\n" + Hadith.of(.azan).alertLine(RamadanContent.lang(naming)) : ""
         var ramadan: [NotificationScheduler.Alert] = []
         // iOS keeps at most 64 pending, so fewer days when there are more alerts a day.
         let perDay = (onTime ? 6 : 0) + (early > 0 ? 6 : 0) + (nudges ? 4 : 0) + (jumuah > 0 ? 1 : 0)
@@ -833,7 +836,7 @@ final class AppModel {
                     continue
                 }
                 alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
-                                    body: "It's time for \(name) in \(here)", fireDate: time,
+                                    body: "It's time for \(name) in \(here)\(hadithLine)", fireDate: time,
                                     sound: prefs.azanSound ? (prayer == .fajr ? .azanSubuh : .azan) : .standard, silent: silent))
             }
         }

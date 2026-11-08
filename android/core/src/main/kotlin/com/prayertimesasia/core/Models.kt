@@ -341,6 +341,12 @@ data class Preferences(
     val largeText: Boolean = false,
     /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
     val jumuahReminderMinutes: Int = 0,
+    /** Short hadith and ayat on some screens (HadithContent.kt). */
+    val showHadith: Boolean = true,
+    /** One hadith line under each prayer alert. */
+    val hadithInAlerts: Boolean = true,
+    /** Hadith closed with their X, by key. Turning Show hadith back on brings them all back. */
+    val hiddenHadith: List<String> = emptyList(),
 ) {
     fun encode(): String = CoreJson.encodeToString(serializer(), this)
 

@@ -1,5 +1,8 @@
 package com.prayertimesasia.app.alarms
 
+import com.prayertimesasia.core.RamadanContent
+import com.prayertimesasia.core.HadithId
+import com.prayertimesasia.core.Hadith
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -105,7 +108,7 @@ object AlarmScheduler {
                             silent = r.isSilent(time, prayer))
                         continue
                     }
-                    out += Alert(id, "$name · ${r.formatted(time)}", "It's time for $name in $here", time, Kind.PRAYER, sound,
+                    out += Alert(id, "$name · ${r.formatted(time)}", "It's time for $name in $here${hadithLine(r, HadithId.AZAN)}", time, Kind.PRAYER, sound,
                         silent = r.isSilent(time, prayer))
                 }
             }
@@ -145,6 +148,10 @@ object AlarmScheduler {
         return out
     }
 
+    /** Settings, Hadith: one line under the alert, or nothing when it is off. */
+    private fun hadithLine(r: Resolver, id: HadithId): String =
+        if (r.prefs.hadithInAlerts) "\n" + Hadith.of(id).alertLine(RamadanContent.lang(r.naming)) else ""
+
     /** Every alarm on one day (Subuh, sahur and the other prayers), as they ring. */
     private fun wakeUps(r: Resolver, day: com.prayertimesasia.core.PrayerDay, key: String, placeName: String): List<Alert> {
         val p = r.prefs
@@ -157,9 +164,9 @@ object AlarmScheduler {
         }
         p.wakeUp?.let { w ->
             out += if (w == WakeUpTiming.FAJR_MINUS_30) {
-                Alert("$key-wake", "Wake up for tahajjud", "$fajr at ${r.formatted(day.time(Prayer.FAJR))} · $placeName", w.date(day), Kind.WAKE)
+                Alert("$key-wake", "Wake up for tahajjud", "$fajr at ${r.formatted(day.time(Prayer.FAJR))} · $placeName${hadithLine(r, HadithId.NIGHT_PRAYER)}", w.date(day), Kind.WAKE)
             } else {
-                Alert("$key-wake", "Wake up for $fajr", "$fajr ends at ${r.formatted(day.time(Prayer.SUNRISE))} · $placeName", w.date(day), Kind.WAKE)
+                Alert("$key-wake", "Wake up for $fajr", "$fajr ends at ${r.formatted(day.time(Prayer.SUNRISE))} · $placeName${hadithLine(r, HadithId.FAJR_RAKAAT)}", w.date(day), Kind.WAKE)
             }
         }
         for (prayer in PrayerAlarmTiming.prayers) {

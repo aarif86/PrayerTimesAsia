@@ -1,4 +1,5 @@
 import { ArrowUpRight, Globe } from 'lucide-preact'
+import { Hadith } from './Hadith'
 import { Kaaba } from './icons'
 
 /**
@@ -45,6 +46,7 @@ export function MakersCard({ offer, placement, compact }: { offer: Offer; placem
 export function MakersAbout({ placement }: { placement: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '8px' }}>
+      <Hadith id="fixedTimes" tag="Al Quran" />
       <h3 class="display" style={{ fontSize: '26px', fontWeight: 700, margin: 0 }}>Built fisabilillah</h3>
       <p class="secondary" style={{ margin: 0 }}>
         Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).

@@ -139,6 +139,7 @@ object Notifications {
             .setSmallIcon(R.drawable.ic_stat_prayer)
             .setContentTitle(title)
             .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setContentIntent(open)
             .setAutoCancel(true)
             .setCategory(if (wake) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)

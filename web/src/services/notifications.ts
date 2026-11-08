@@ -7,6 +7,8 @@ import { ALARM_KEY, ALARM_PRAYERS, prayerAlarmTime, sahurRings, sahurTime, wakeU
 import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
 import { playAzan } from './azan'
 import { playAlarm } from './alarmSound'
+import { hadithAlertLine, type HadithId } from '../core/hadith'
+import { lang3 } from '../core/ramadanContent'
 import { store } from './store'
 
 /**
@@ -130,10 +132,15 @@ export function upcomingAlerts(now: number): Alert[] {
         out.push({ id, title: `Time to berbuka · ${name} ${store.formatted(time)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu · ${here}`, at: time, prayer, silent })
         continue
       }
-      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}`, at: time, prayer, silent })
+      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}${alertHadith('azan')}`, at: time, prayer, silent })
     }
   }
   return [...out, ...wake].filter((a) => a.at > now).sort((a, b) => a.at - b.at)
+}
+
+/** "\n“When you hear the azan, say what the muazzin says.” al Bukhari", or nothing when Settings, Hadith, alerts is off. */
+function alertHadith(id: HadithId): string {
+  return store.prefs.hadithInAlerts ? `\n${hadithAlertLine(id, lang3(store.naming))}` : ''
 }
 
 export interface WakeUp { id: string; title: string; body: string; at: number; sahur: boolean; prayer?: AlarmPrayer }
@@ -167,7 +174,7 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
       const tahajjud = p.wakeUp === 'fajrMinus30'
       out.push({
         id: `${key}-wake`, title: tahajjud ? 'Wake up for tahajjud' : `Wake up for ${fajr}`,
-        body: tahajjud ? `${fajr} at ${store.formatted(day.times.fajr)} · ${place.name}` : `${fajr} ends at ${store.formatted(day.times.sunrise)} · ${place.name}`,
+        body: tahajjud ? `${fajr} at ${store.formatted(day.times.fajr)} · ${place.name}${alertHadith('nightPrayer')}` : `${fajr} ends at ${store.formatted(day.times.sunrise)} · ${place.name}${alertHadith('fajrRakaat')}`,
         at: wakeUpTime(p.wakeUp, day), sahur: false,
       })
     }

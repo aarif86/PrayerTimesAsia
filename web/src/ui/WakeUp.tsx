@@ -9,6 +9,7 @@ import { previewAlarm } from '../services/alarmSound'
 import { alertSupport, anyAlarm, downloadWakeICS, nextWakeUp, requestPermission } from '../services/notifications'
 import { store, useNow, useStore } from '../services/store'
 import { Sheet, ToggleItem } from './common'
+import { Hadith } from './Hadith'
 import { phoneAppOffer } from './pwa'
 
 /** The alarm clock on the Prayer screen: shows the next alarm's time when one is set. */
@@ -100,6 +101,7 @@ export function WakeUpSheet() {
               <Choice label={wakeUpLabel(t, s.naming)} detail={soon(now, (d) => wakeUpTime(t, d))} on={p.wakeUp === t} pick={() => setWake(t)} />
             ))}
           </div>
+          {part === 'beforeFajr' && <div class="hadith-after-group"><Hadith id="nightPrayer" variant="line" /></div>}
           {part === 'beforeSunrise' && <p class="group-foot">Rings every morning and moves with {fajr} wherever you are.</p>}
         </section>
       ))}
@@ -132,6 +134,10 @@ export function WakeUpSheet() {
                   }} />
               )
             })}
+          </div>
+          <div class="hadith-after-group">
+            <Hadith id="monThu" variant="line" />
+            <Hadith id="whiteDays" variant="line" />
           </div>
           <p class="group-foot">Ramadan and the white days follow the Hijri date in the app. Please follow your local religious authority for the start of Ramadan.</p>
         </section>

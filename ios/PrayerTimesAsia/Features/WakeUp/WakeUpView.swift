@@ -37,6 +37,7 @@ struct WakeUpView: View {
                 } header: {
                     Text("\(fajr) alarm")
                 }
+                Section { HadithView(id: .nightPrayer, style: .line).hadithRow() }
                 Section {
                     wakeChoices(.fromFajr)
                 } header: {
@@ -78,6 +79,10 @@ struct WakeUpView: View {
                         Text("Sahur alarm rings on")
                     } footer: {
                         Text("Ramadan and the white days follow the Hijri date in the app. Please follow your local religious authority for the start of Ramadan.")
+                    }
+                    Section {
+                        HadithView(id: .monThu, style: .line).hadithRow()
+                        HadithView(id: .whiteDays, style: .line).hadithRow()
                     }
                 }
 

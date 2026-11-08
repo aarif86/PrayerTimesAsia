@@ -21,6 +21,7 @@ import { featuredOffer, MakersCard } from './Makers'
 import { appBannerShownByBrowser, phoneAppOffer } from './pwa'
 import { TabJourney } from './icons'
 import { SeasonCard } from './Ramadan'
+import { Hadith } from './Hadith'
 
 type Moment = { prayer: Prayer; time: number } | null
 
@@ -251,6 +252,14 @@ function Offer({ c }: { c: Ctx }) {
 }
 
 /** One prompt at a time: the phone app first, since its alerts ring even when it's closed. */
+/** Before Subuh and before Asar: the hadith of the two cool prayers. Today only, and only on the list pages. */
+function PrayerHadith({ c }: { c: Ctx }) {
+  if (c.offset !== 0 || !store.prefs.showHadith) return null
+  const n = c.next?.prayer
+  if (n !== 'fajr' && n !== 'asr') return null
+  return <Hadith id="coolPrayers" tag={`Before ${store.name(n, c.next!.time)}`} />
+}
+
 function TopPrompt() {
   return phoneAppOffer() && !store.prefs.appPromptDismissed && !appBannerShownByBrowser() ? <AppPrompt /> : <AlertsPrompt />
 }
@@ -374,11 +383,18 @@ function PrayerList({ c, fill }: { c: Ctx; fill: boolean }) {
   const current = c.offset === 0 ? c.current?.prayer : null
   const next = c.offset === 0 ? c.next : null
   const prayerRows = list.filter((e) => e.kind === 'prayer').length
+  // Tapping Syuruk opens a short hadith on why it is not a prayer time.
+  const [syuruk, setSyuruk] = useState(false)
+  const syurukOpen = syuruk && store.prefs.showHadith && !store.prefs.hiddenHadith.includes('syuruk')
   return (
     <div class={`list-wrap ${fill ? 'fill' : ''}`} {...swipe}>
-      <div class="prayer-list glass" style={fill ? { maxHeight: `${prayerRows * 92 + (list.length - 1) * 6 + 16 + (list.length - prayerRows) * 66}px` } : undefined}>
+      <div class="prayer-list glass" style={fill ? { maxHeight: `${prayerRows * 92 + (list.length - 1) * 6 + 16 + (list.length - prayerRows) * 66 + (syurukOpen ? 200 : 0)}px` } : undefined}>
         {list.map((e) => e.kind === 'prayer'
-          ? <PrayerRow p={e.p} t={e.t} now={c.now} day={day} isCurrent={e.p === current && e.t <= c.now} next={next?.prayer === e.p && next.time === e.t ? next : null} />
+          ? <>
+              <PrayerRow p={e.p} t={e.t} now={c.now} day={day} isCurrent={e.p === current && e.t <= c.now} next={next?.prayer === e.p && next.time === e.t ? next : null}
+                onTap={e.p === 'sunrise' && store.prefs.showHadith ? () => setSyuruk(!syuruk) : undefined} />
+              {e.p === 'sunrise' && syurukOpen && <div class="syuruk-hadith"><Hadith id="syuruk" variant="line" /></div>}
+            </>
           : <BlessedRow b={e.b} t={e.t} now={c.now} />)}
       </div>
     </div>
@@ -392,7 +408,7 @@ function jamaahText(day: PrayerDay, p: Prayer, now: number): string | null {
   return day.times[p] <= now && now < j ? `Jamaah ${store.formatted(j)} · in ${short(j - now)}` : `Jamaah ${store.formatted(j)}`
 }
 
-function PrayerRow({ p, t, now, day, isCurrent, next }: { p: Prayer; t: number; now: number; day: PrayerDay; isCurrent: boolean; next: Moment }) {
+function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: number; now: number; day: PrayerDay; isCurrent: boolean; next: Moment; onTap?: () => void }) {
   const prefs = store.prefs
   const passed = t <= now && !isCurrent
   const notifying = prefs.notificationsEnabled && prefs.notifyPrayers.includes(p)
@@ -403,7 +419,7 @@ function PrayerRow({ p, t, now, day, isCurrent, next }: { p: Prayer; t: number; 
   const other = day.alternate[p]
   return (
     <div class={`prayer-row ${isCurrent ? 'current' : ''}`} style={{ '--tint': tint(p), '--tint-soft': tint(p, 0.16), '--tint-line': tint(p, 0.45), opacity: passed && !prayed ? 0.55 : 1 }}
-      onClick={() => { if (trackable) store.togglePrayed(p, t) }}>
+      onClick={() => { if (trackable) store.togglePrayed(p, t); else onTap?.() }}>
       <span class="bar" style={{ opacity: isCurrent ? 1 : 0.55 }} />
       <div class="names">
         <div class="name-line">
@@ -481,6 +497,7 @@ function ClassicPage({ c }: { c: Ctx }) {
         </div>
       </div>
       <TopPrompt />
+      <PrayerHadith c={c} />
       <ArrivalCard />
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <PrayerList c={c} fill />
@@ -605,6 +622,7 @@ function CentrePage({ c }: { c: Ctx }) {
       </div>
       <SunPlaceChip offset={c.offset} />
       <TopPrompt />
+      <PrayerHadith c={c} />
       <ArrivalCard />
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={c.now} />
@@ -760,6 +778,7 @@ function SunPathPage({ c }: { c: Ctx }) {
       </div>
       <SunPlaceChip offset={c.offset} />
       <TopPrompt />
+      <PrayerHadith c={c} />
       <ArrivalCard />
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={now} />

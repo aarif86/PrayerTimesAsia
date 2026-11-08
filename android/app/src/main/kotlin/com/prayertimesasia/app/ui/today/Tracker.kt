@@ -1,5 +1,7 @@
 package com.prayertimesasia.app.ui.today
 
+import com.prayertimesasia.core.HadithId
+import com.prayertimesasia.app.ui.components.HadithView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -68,6 +70,7 @@ fun TrackerSheetContent(state: AppState) {
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Dims.gutter, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text("Prayer tracker", style = Txt.headline, color = Palette.primary)
+        HadithView(state, HadithId.RIVER)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(if (since != null) Icons.Filled.Pause else Icons.Filled.Whatshot, null, Modifier.size(24.dp), tint = Palette.accent)
             Text("${r.streak(state.now)}", style = Txt.largeTitle, color = Palette.primary)
@@ -78,6 +81,7 @@ fun TrackerSheetContent(state: AppState) {
             else "For haid, nifas or illness: pause the tracker and every day until you end it counts as excused.",
             style = Txt.subheadline, color = Palette.secondary,
         )
+        if (since != null) HadithView(state, HadithId.ILLNESS, line = true)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (since != null) {
                 Pill("End pause", Icons.Filled.PlayArrow, Palette.accent, Color(0xFF1B1410)) { state.endTrackerPause(state.now) }

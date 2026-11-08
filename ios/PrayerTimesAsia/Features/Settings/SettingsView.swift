@@ -149,6 +149,26 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle(isOn: Binding(get: { model.prefs.showHadith },
+                                         set: { on in model.prefs.showHadith = on; if on { model.prefs.hiddenHadith = [] } })) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Show hadith in the app")
+                            Text("A short hadith or ayah on some screens").font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    Toggle(isOn: $model.prefs.hadithInAlerts) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Add a hadith to alerts")
+                            Text("One short line under each prayer alert").font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                } header: {
+                    Text("Hadith")
+                } footer: {
+                    Text("Tap ✕ on any hadith to hide just that one. Turn both off for a clean app with times only.")
+                }
+
+                Section {
                     Toggle("Prayer tracker", isOn: $model.prefs.trackerEnabled)
                     if model.prefs.trackerEnabled {
                         Toggle("Nudge before time runs out", isOn: $model.prefs.windowNudge)

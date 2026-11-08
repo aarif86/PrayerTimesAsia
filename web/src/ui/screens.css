@@ -446,6 +446,28 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
   color: color-mix(in srgb, var(--tint) 48%, #000);
 }
 
+/* Hadith around the app (ui/Hadith.tsx). Roomy on purpose, and every one can be closed. */
+.hadith-card { position: relative; margin: 6px 0 22px; padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 6px; }
+.hadith-line { position: relative; margin: 4px 0 22px; padding: 14px 16px; border-radius: 18px; background: var(--fill, rgba(127, 127, 127, 0.08)); border: 1px solid var(--separator, rgba(127, 127, 127, 0.16)); display: flex; flex-direction: column; gap: 4px; }
+.hadith-top { display: flex; justify-content: space-between; align-items: center; min-height: 28px; }
+.hadith-line .hadith-top { position: absolute; top: 10px; left: 10px; min-height: 0; }
+.hadith-tag { font-size: 11px; letter-spacing: 1.3px; text-transform: uppercase; font-weight: 700; color: var(--accent); }
+.hadith-x { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: rgba(127, 127, 127, 0.16); color: inherit; opacity: 0.8; flex: none; }
+.hadith-line .hadith-x { width: 24px; height: 24px; }
+.hadith-card .arabic, .hadith-line .arabic { margin: 0; text-align: right; font-family: 'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', 'Geeza Pro', serif; }
+.hadith-card .arabic { font-size: 22px; line-height: 1.9; }
+.hadith-line .arabic { font-size: 19px; line-height: 1.8; margin-left: 30px; }
+.hadith-card .quote { font-style: italic; font-size: 15px; line-height: 1.5; margin: 0; }
+.hadith-line .quote { font-size: 13.5px; line-height: 1.5; margin: 0; }
+.hadith-card .caption, .hadith-line .caption { margin: 0; font-size: 12px; line-height: 1.4; }
+.hadith-undo { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 4px 0 18px; padding: 12px 14px; border-radius: 16px; background: var(--fill, rgba(127, 127, 127, 0.1)); font-size: 13.5px; line-height: 1.4; }
+.hadith-undo button { color: var(--accent); font-weight: 700; white-space: nowrap; }
+.syuruk-hadith { padding: 2px 6px 0; }
+.syuruk-hadith .hadith-line { margin: 2px 0 10px; }
+.hadith-after-group { margin-top: 12px; }
+.hadith-after-group .hadith-line { margin: 0 0 12px; }
+.tracker-top .hadith-line { margin: 4px 0 6px; }
+
 /* ---------- App card (top of Settings): the icon's navy ring, kawung batik and stitching ---------- */
 .app-card { position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; margin: 10px 0 6px; padding: 18px;
   border-radius: 22px; background: #262B5E; color: #FFFFFF; text-decoration: none; box-shadow: 0 6px 20px rgba(11, 15, 42, 0.25); }

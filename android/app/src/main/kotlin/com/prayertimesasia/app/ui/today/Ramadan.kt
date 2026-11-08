@@ -1,5 +1,7 @@
 package com.prayertimesasia.app.ui.today
 
+import com.prayertimesasia.core.HadithId
+import com.prayertimesasia.app.ui.components.HadithView
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -297,6 +299,8 @@ private fun RamadanToday(state: AppState, s: Season.Info) {
         }
     }
     if (mark == FastMark.PERIOD) Text("You can also pause the prayer tracker for these days.", style = Txt.footnote, color = Palette.secondary)
+    val beforeBerbuka = r.fastingMoment(state.now)?.first == Resolver.FastingKind.BERBUKA
+    HadithView(state, HadithId.IFTAR, Modifier.padding(top = 8.dp), tag = if (beforeBerbuka) "Before berbuka" else null)
 }
 
 @Composable
