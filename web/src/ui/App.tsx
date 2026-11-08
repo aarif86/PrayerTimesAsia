@@ -81,7 +81,7 @@ export function App() {
       <>
         <LivingSky colors={SKY.dawn} scheme="dark" soft={false} />
         <Onboarding />
-        {sheet?.kind === 'places' && <PlacesSheet />}
+        {sheet?.kind === 'places' && <PlacesSheet forHome={sheet.forHome} />}
         {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
       </>
     )
@@ -112,7 +112,7 @@ export function App() {
           )
         })}
       </nav>
-      {sheet?.kind === 'places' && <PlacesSheet />}
+      {sheet?.kind === 'places' && <PlacesSheet forHome={sheet.forHome} />}
       {sheet?.kind === 'sanad' && <SanadSheet day={sheet.day} />}
       {sheet?.kind === 'calendar' && <CalendarSheet />}
       {sheet?.kind === 'makers' && <MakersSheet placement={sheet.placement} />}

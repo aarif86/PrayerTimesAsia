@@ -69,8 +69,10 @@ class Resolver(
         return max(0, ChronoUnit.DAYS.between(Instant.ofEpochMilli(arrived).atZone(systemZone), now.atZone(systemZone)).toInt())
     }
 
+    /** Null until home is set and confirmed, so a guessed home never says "traveller" or "home" by mistake. */
     fun musafirStatus(now: Instant): Musafir.Status? {
         val place = activePlace ?: return null
+        if (!prefs.homeConfirmed) return null
         return Musafir.status(prefs.home?.coordinates, place.coordinates, daysHere(now), musafirRules)
     }
 

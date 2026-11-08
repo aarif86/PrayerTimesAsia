@@ -247,6 +247,9 @@ struct Preferences: Codable, Equatable, Sendable {
     var manualPlace: Place?
     var savedPlaces: [Place] = []
     var home: Place?
+    /// The user said this is home (or picked it). Until then home is only the
+    /// app's guess from where the phone first was, and Journey asks about it.
+    var homeConfirmed = false
 
     var methodOverrideID: String?
     var asrOverride: AsrSchool?
@@ -415,6 +418,7 @@ struct Preferences: Codable, Equatable, Sendable {
         manualPlace = v(.manualPlace, d.manualPlace)
         savedPlaces = v(.savedPlaces, d.savedPlaces)
         home = v(.home, d.home)
+        homeConfirmed = v(.homeConfirmed, d.homeConfirmed)
         methodOverrideID = v(.methodOverrideID, d.methodOverrideID)
         asrOverride = v(.asrOverride, d.asrOverride)
         namingOverride = v(.namingOverride, d.namingOverride)
@@ -478,15 +482,30 @@ struct Preferences: Codable, Equatable, Sendable {
         hiddenHadith = v(.hiddenHadith, d.hiddenHadith)
     }
 
+    /// Set when `load()` brought settings back from the keychain copy.
+    nonisolated(unsafe) static var didRestore = false
+
+    /// This phone's settings. On a fresh install (nothing saved yet) they come
+    /// back from the keychain copy, so deleting the app loses nothing.
     static func load() -> Preferences {
-        guard let data = UserDefaults.standard.data(forKey: key),
-              let prefs = try? JSONDecoder().decode(Preferences.self, from: data) else { return Preferences() }
-        return prefs
+        if let data = UserDefaults.standard.data(forKey: key),
+           let prefs = try? JSONDecoder().decode(Preferences.self, from: data) {
+            return prefs
+        }
+        if let data = SettingsBackup.load(),
+           var prefs = try? JSONDecoder().decode(Preferences.self, from: data), prefs.hasOnboarded {
+            prefs.seasonPreview = .off
+            didRestore = true
+            UserDefaults.standard.set(data, forKey: key)
+            return prefs
+        }
+        return Preferences()
     }
 
     func save() {
         if let data = try? JSONEncoder().encode(self) {
             UserDefaults.standard.set(data, forKey: Self.key)
+            SettingsBackup.save(data)
         }
     }
 }

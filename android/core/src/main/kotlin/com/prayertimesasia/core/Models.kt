@@ -238,6 +238,8 @@ data class Preferences(
     val manualPlace: Place? = null,
     val savedPlaces: List<Place> = emptyList(),
     val home: Place? = null,
+    /** The user said this is home (or picked it). Until then home is only a guess and Journey asks about it. */
+    val homeConfirmed: Boolean = false,
 
     val methodOverrideId: String? = null,
     val asrOverride: AsrSchool? = null,

@@ -33,7 +33,7 @@ export const GRADE_TINT: Record<SourceGrade, string> = {
 // ---------- Sheets: one at a time, like iOS ----------
 
 export type SheetKind =
-  | { kind: 'places' } | { kind: 'sanad'; day: PrayerDay } | { kind: 'calendar' } | { kind: 'makers'; placement: string }
+  | { kind: 'places'; forHome?: boolean } | { kind: 'sanad'; day: PrayerDay } | { kind: 'calendar' } | { kind: 'makers'; placement: string }
   | { kind: 'journey' } | { kind: 'level' } | { kind: 'ar' } | { kind: 'alerts-help' } | { kind: 'credits' } | { kind: 'install' }
   | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup' }
 

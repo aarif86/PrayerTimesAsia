@@ -105,6 +105,7 @@ data class MovedSettings(
             hasOnboarded = true,
             useGPS = useGPS ?: d.useGPS,
             home = home?.place(),
+            homeConfirmed = home != null,
             manualPlace = manualPlace?.place(),
             savedPlaces = savedPlaces?.map { it.place() }.orEmpty(),
             methodOverrideId = methodOverrideID,

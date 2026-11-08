@@ -16,6 +16,7 @@ import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { WakeChip } from './WakeUp'
 import { fmtDate, openSheet, short, SourceBadge, Switch, TimeText } from './common'
+import { HomeQuestion } from './Sheets'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { featuredOffer, MakersCard } from './Makers'
 import { appBannerShownByBrowser, phoneAppOffer } from './pwa'
@@ -322,6 +323,7 @@ function ArrivalCard() {
           <Switch label="Musafir features" on={store.prefs.musafirEnabled} onChange={(v) => store.update((p) => { p.musafirEnabled = v })} />
         </div>
       )}
+      {store.prefs.musafirEnabled && !store.prefs.homeConfirmed && <HomeQuestion />}
       <label class="row arrival-row">
         <span class="subhead" style={{ fontWeight: 600, flex: 1 }}>Asr</span>
         <select class="inline-select" value={store.prefs.asrOverride ?? 'auto'}

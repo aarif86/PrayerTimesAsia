@@ -390,6 +390,9 @@ fun ArrivalCard(state: AppState) {
                 }
                 Switch(state.prefs.musafirEnabled, onCheckedChange = { on -> state.update { it.copy(musafirEnabled = on) } }, colors = switchColors)
             }
+            if (state.prefs.musafirEnabled && !state.prefs.homeConfirmed) {
+                Box(Modifier.padding(top = 6.dp)) { com.prayertimesasia.app.ui.journey.HomeQuestionCard(state) }
+            }
         }
         Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("Asr", style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f))

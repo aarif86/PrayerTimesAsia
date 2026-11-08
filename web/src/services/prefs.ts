@@ -33,6 +33,8 @@ export interface Preferences {
   manualPlace: Place | null
   savedPlaces: Place[]
   home: Place | null
+  /** The user said this is home (or picked it). Until then home is only a guess and Journey asks about it. */
+  homeConfirmed: boolean
   methodOverrideID: string | null
   asrOverride: AsrSchool | null
   namingOverride: NamingStyle | null
@@ -125,6 +127,7 @@ export const DEFAULT_PREFS: Preferences = {
   manualPlace: null,
   savedPlaces: [],
   home: null,
+  homeConfirmed: false,
   methodOverrideID: null,
   asrOverride: null,
   namingOverride: null,

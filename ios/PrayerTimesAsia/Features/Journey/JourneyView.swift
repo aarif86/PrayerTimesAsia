@@ -5,6 +5,7 @@ import SwiftUI
 struct JourneyView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @State private var pickingHome = false
 
     var body: some View {
         NavigationStack {
@@ -13,7 +14,11 @@ struct JourneyView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Journey").font(Theme.display(34, .bold)).padding(.top, 8)
-                        statusCard
+                        if model.prefs.home != nil, !model.prefs.homeConfirmed {
+                            HomeQuestionCard()
+                        } else {
+                            statusCard
+                        }
                         if model.musafirStatus?.isTraveller == true, model.asrSchool != .hanafi { combinedCard }
                         if model.musafirStatus?.isTraveller == true, model.isRamadanDay(.now) { fastingCard }
                         homeCard
@@ -29,6 +34,7 @@ struct JourneyView: View {
             }
             .foregroundStyle(.primary)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .sheet(isPresented: $pickingHome) { PlacesView(purpose: .home) }
         }
     }
 
@@ -63,10 +69,16 @@ struct JourneyView: View {
                     }
                 }
             } else {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text("Set your home").font(.title2.weight(.bold))
                     Text("Tell us where home is and we'll work out when you count as a traveller.")
                         .opacity(0.85)
+                    Button { pickingHome = true } label: {
+                        Label("Set home", systemImage: "house.fill").font(.headline)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.primary)
+                    .foregroundStyle(.background)
                 }
             }
         }
@@ -136,7 +148,7 @@ struct JourneyView: View {
 
     private var homeCard: some View {
         GlassCard {
-            HStack {
+            VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("HOME").font(.caption.weight(.heavy)).opacity(0.7)
                     Text(model.prefs.home.map { "\($0.profile.flag) \($0.name)" } ?? "Not set")
@@ -145,14 +157,14 @@ struct JourneyView: View {
                         Text(home.subtitle).font(.subheadline).opacity(0.75)
                     }
                 }
-                Spacer()
-                if let place = model.activePlace, model.prefs.home.map({ !$0.isNear(place) }) ?? true {
-                    Button("Set to here") { model.setHome(place) }
+                Button { pickingHome = true } label: {
+                    Label(model.prefs.home == nil ? "Set home" : "Change home", systemImage: "house")
                         .font(.subheadline.weight(.semibold))
-                        .buttonStyle(.bordered)
-                        .tint(.primary)
                 }
+                .buttonStyle(.bordered)
+                .tint(.primary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -225,5 +237,45 @@ struct JourneyView: View {
     private func isSettled(_ status: Musafir.Status) -> Bool {
         if case .settled = status { return true }
         return false
+    }
+}
+
+/// "Is Kuala Lumpur your home?" for a home the app only guessed (from where the
+/// phone was when the app was first opened). Until it is answered, Journey and
+/// the musafir line say nothing about travelling.
+struct HomeQuestionCard: View {
+    @Environment(AppModel.self) private var model
+    @State private var pickingHome = false
+
+    var body: some View {
+        if let home = model.prefs.home, !model.prefs.homeConfirmed {
+            GlassCard(padding: 20) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "house.circle.fill").font(.system(size: 30))
+                        Text("Is \(home.name) your home?").font(.title3.weight(.bold))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Text("We guessed it from where your phone was when you first opened the app. Home is used to work out when you count as a traveller, so please check it.")
+                        .font(.subheadline).opacity(0.85)
+                        .fixedSize(horizontal: false, vertical: true)
+                    HStack(spacing: 10) {
+                        Button { withAnimation { model.confirmHome() } } label: {
+                            Text("Yes, this is home").font(.subheadline.weight(.semibold))
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.primary)
+                        .foregroundStyle(.background)
+                        Button { pickingHome = true } label: {
+                            Text("Change home").font(.subheadline.weight(.semibold))
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.primary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .sheet(isPresented: $pickingHome) { PlacesView(purpose: .home) }
+        }
     }
 }
