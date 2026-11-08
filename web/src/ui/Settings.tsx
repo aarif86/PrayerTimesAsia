@@ -155,6 +155,13 @@ export function SettingsScreen() {
         <ToggleItem label="Show local names when travelling" on={p.showLocalNames} onChange={(v) => store.update((x) => { x.showLocalNames = v })} />
       </Group>
 
+      <Group title="Hadith" foot="Tap ✕ on any hadith to hide just that one. Turn both off for a clean app with times only.">
+        <ToggleItem label="Show hadith in the app" sub="A short hadith or ayah on some screens" on={p.showHadith}
+          onChange={(v) => store.update((x) => { x.showHadith = v; if (v) x.hiddenHadith = [] })} />
+        <ToggleItem label="Add a hadith to alerts" sub="One short line under each prayer alert and the Subuh alarm" on={p.hadithInAlerts}
+          onChange={(v) => store.update((x) => { x.hadithInAlerts = v })} />
+      </Group>
+
       <Group title="Tracker" foot="Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only in this browser.">
         <ToggleItem label="Prayer tracker" on={p.trackerEnabled} onChange={(v) => store.update((x) => { x.trackerEnabled = v })} />
         {p.trackerEnabled && (

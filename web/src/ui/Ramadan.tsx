@@ -7,6 +7,7 @@ import { DOA, FAST_MARK_LABEL, juzLink, lang3, MISSED, ZAKAT, ZAKAT_NOTE, type D
 import { addDays, civilKey, daysApart, type CivilDay } from '../core/season'
 import { store, useNow, useStore } from '../services/store'
 import { openSheet, Sheet, short, TimeText, ToggleItem } from './common'
+import { Hadith } from './Hadith'
 import { rayaCard, sharePicture, weekCard } from './shareCard'
 
 const fmtCivil = (d: CivilDay, opts: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' }) =>
@@ -198,7 +199,8 @@ function RamadanToday({ now }: { now: number }) {
   if (!shownDay) return null
   const moment = s.fastingMoment(now)
   return (
-    <div class="glass card ramadan-today" style={{ marginTop: '10px' }}>
+    <>
+    <div class="glass card ramadan-today" style={{ marginTop: '10px', marginBottom: '18px' }}>
       <div class="caps accent">{inRamadan ? `Ramadan day ${season.ramadanDay}` : first ? `1 Ramadan · ${fmtCivil(first)}` : 'Ramadan'}</div>
       <div class="rt-times">
         <div><span class="caps secondary">Imsak</span><TimeText ms={s.imsak(shownDay)} size={34} weight={700} /><span class="caption secondary">Stop eating</span></div>
@@ -208,6 +210,8 @@ function RamadanToday({ now }: { now: number }) {
       {inRamadan && moment && <p class="rt-count mono">{moment.kind === 'imsak' ? 'Imsak' : 'Berbuka'} in {short(moment.time - now)}</p>}
       {inRamadan && <FastToday now={now} />}
     </div>
+    {inRamadan && <Hadith id="iftar" tag={moment?.kind === 'berbuka' ? 'Before berbuka' : undefined} />}
+    </>
   )
 }
 

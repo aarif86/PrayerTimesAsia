@@ -4,6 +4,7 @@ import { OBLIGATORY } from '../core/prayer'
 import { ymdKey } from '../core/tz'
 import { useNow, useStore } from '../services/store'
 import { Sheet } from './common'
+import { Hadith } from './Hadith'
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const WEEK = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -30,7 +31,9 @@ export function TrackerSheet() {
 
   return (
     <Sheet title="Prayer tracker" full>
-      <div class="glass card tracker-top" style={{ marginTop: '10px' }}>
+      <div style={{ marginTop: '10px' }} />
+      <Hadith id="river" />
+      <div class="glass card tracker-top">
         <div class="tracker-streak">
           {s.trackerPaused ? <Pause size={22} /> : <Flame size={22} fill="currentColor" />}
           <span class="mono big">{s.streak(now)}</span>
@@ -39,6 +42,7 @@ export function TrackerSheet() {
         {s.trackerPaused ? (
           <>
             <p class="caption secondary">Paused since {sinceLabel}. These days count as excused, so your streak waits for you.</p>
+            <Hadith id="illness" variant="line" />
             <button class="pill-btn" onClick={() => s.endTrackerPause(now)}><Play size={16} />End pause</button>
           </>
         ) : (
