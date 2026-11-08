@@ -210,7 +210,7 @@ private fun Overlays(state: AppState, overlay: Overlay?, set: (Overlay?) -> Unit
     val close = { set(null) }
     when (overlay) {
         null -> {}
-        Overlay.Places -> AppSheet(close) { PlacesSheetContent(state, close) }
+        Overlay.Places -> AppSheet(close) { PlacesSheetContent(state, onDone = close) }
         Overlay.Calendar -> AppSheet(close) { CalendarSheetContent(state) }
         is Overlay.Sanad -> AppSheet(close) { SanadSheetContent(state, overlay.day) }
         Overlay.About -> AppSheet(close) { MakersSheetContent("masjid", state) }
