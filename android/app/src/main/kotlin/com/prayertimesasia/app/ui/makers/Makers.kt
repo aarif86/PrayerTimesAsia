@@ -1,5 +1,10 @@
 package com.prayertimesasia.app.ui.makers
 
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import com.prayertimesasia.app.AppState
+import com.prayertimesasia.core.HadithId
+import com.prayertimesasia.app.ui.components.HadithView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -106,8 +111,9 @@ fun MakersCard(offer: MakersOffer, placement: String, compact: Boolean = false, 
 
 /** "About" behind the (i) on the Masjid tab: who built the app, and their services. */
 @Composable
-fun MakersSheetContent(placement: String) {
-    Column(Modifier.fillMaxWidth().padding(Dims.gutter), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+fun MakersSheetContent(placement: String, state: AppState? = null) {
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Dims.gutter), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        state?.let { HadithView(it, HadithId.FIXED_TIMES, tag = "Al Quran") }
         Text("Built fisabilillah", style = display(26.sp, FontWeight.Bold), color = Palette.primary)
         Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).",
             style = Txt.body, color = Palette.secondary)

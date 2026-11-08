@@ -1,5 +1,7 @@
 package com.prayertimesasia.app.ui.today
 
+import com.prayertimesasia.core.HadithId
+import com.prayertimesasia.app.ui.components.HadithView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -177,9 +179,14 @@ fun Modifier.daySwipe(offset: Int, onOffset: (Int) -> Unit): Modifier = pointerI
 }
 
 @Composable
-private fun ColumnScope.Prompts(f: TodayFrame) {
+private fun ColumnScope.Prompts(f: TodayFrame, hadith: Boolean = false) {
     val p = f.state.prefs
     if (!p.notificationsEnabled && !p.alertsPromptDismissed) AlertsPrompt(f.state)
+    // Before Subuh and before Asar: the hadith of the two cool prayers. Today only, and only on the list pages.
+    val next = f.next?.first
+    if (hadith && f.isToday && (next == Prayer.FAJR || next == Prayer.ASR)) {
+        HadithView(f.state, HadithId.COOL_PRAYERS, tag = "Before ${next!!.name(f.state.resolver.naming)}")
+    }
     if (!p.arrivalBannerDismissed) ArrivalCard(f.state)
     if (f.offset == 0) SeasonCard(f.state, f.now)
 }
@@ -255,7 +262,7 @@ private fun ClassicPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
                 SourceBadge(f.state, f.shown, onClick = { openSanad(f.shown) })
             }
         }
-        Prompts(f)
+        Prompts(f, hadith = true)
     }, bottom = {
         ShowMoreButton(f.state, Modifier.fillMaxWidth())
         Makers(f)
@@ -287,7 +294,7 @@ private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -
             }
         }
         DayPlaceChip(f.state, f.offset, openPlaces)
-        Prompts(f)
+        Prompts(f, hadith = true)
         if (f.state.prefs.musafirEnabled && !f.state.prefs.musafirChipDismissed && f.state.resolver.musafirStatus(f.now)?.isTraveller == true) MusafirChip(f.state)
         DayNavigator(f.state, f.shown, f.offset, setOffset, openCalendar)
     }, bottom = {
@@ -473,7 +480,7 @@ private fun SunPathPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
         }
         SunPath(f.now, f.day, state.resolver.zone, Palette.sunArc, Modifier.bleed(Dims.gutter).height(96.dp))
         Box(Modifier.offset(y = (-6).dp)) { DayPlaceChip(state, f.offset, openPlaces) }
-        Prompts(f)
+        Prompts(f, hadith = true)
         if (state.prefs.musafirEnabled && !state.prefs.musafirChipDismissed && state.resolver.musafirStatus(f.now)?.isTraveller == true) MusafirChip(state)
         DayNavigator(state, f.shown, f.offset, setOffset, openCalendar)
         PrayerList(state, f.shown, f.now, f.currentPrayer, f.nextForList, state.prefs.showMore, null, Modifier.daySwipe(f.offset, setOffset))

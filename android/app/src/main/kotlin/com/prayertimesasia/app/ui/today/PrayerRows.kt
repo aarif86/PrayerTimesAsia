@@ -1,5 +1,7 @@
 package com.prayertimesasia.app.ui.today
 
+import com.prayertimesasia.core.HadithId
+import com.prayertimesasia.app.ui.components.HadithView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -107,6 +109,8 @@ fun PrayerList(
     rowHeight: Dp? = null, modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(Dims.corner)
+    // Tapping Syuruk opens a short hadith on why it is not a prayer time.
+    var syurukOpen by remember { mutableStateOf(false) }
     Column(
         modifier
             .fillMaxWidth()
@@ -118,7 +122,13 @@ fun PrayerList(
     ) {
         for (e in entries(state, day, showMore)) {
             when (e) {
-                is Entry.P -> PrayerRow(state, day, e.prayer, e.time, now, current, next, rowHeight)
+                is Entry.P -> {
+                    val onTap = if (e.prayer == Prayer.SUNRISE && state.prefs.showHadith) ({ syurukOpen = !syurukOpen }) else null
+                    PrayerRow(state, day, e.prayer, e.time, now, current, next, rowHeight, onTap)
+                    if (e.prayer == Prayer.SUNRISE && syurukOpen) {
+                        HadithView(state, HadithId.SYURUK, Modifier.padding(horizontal = 4.dp), line = true)
+                    }
+                }
                 is Entry.B -> BlessedRow(state, e.blessed, e.time, now, rowHeight?.let { it * 0.8f })
             }
         }
@@ -128,7 +138,7 @@ fun PrayerList(
 @Composable
 private fun PrayerRow(
     state: AppState, day: PrayerDay, prayer: Prayer, time: Instant, now: Instant,
-    current: Prayer?, next: Pair<Prayer, Instant>?, rowHeight: Dp?,
+    current: Prayer?, next: Pair<Prayer, Instant>?, rowHeight: Dp?, onTap: (() -> Unit)? = null,
 ) {
     val r = state.resolver
     val p = state.prefs
@@ -150,7 +160,7 @@ private fun PrayerRow(
                 if (isCurrent) Modifier.clip(rowShape).background(prayer.tint.copy(alpha = 0.16f), rowShape)
                     .border(1.dp, prayer.tint.copy(alpha = 0.45f), rowShape) else Modifier,
             )
-            .quietClick { if (trackable) state.togglePrayed(prayer, time) },
+            .quietClick { if (trackable) state.togglePrayed(prayer, time) else onTap?.invoke() },
     ) {
         Row(
             Modifier.fillMaxWidth().align(Alignment.Center)
