@@ -268,6 +268,11 @@ struct RamadanView: View {
             } header: {
                 Text(inRamadan ? "Ramadan day \(s.ramadanDay ?? 0)" : first.map { "1 Ramadan · \(dateText($0))" } ?? "Ramadan")
             }
+            if inRamadan {
+                Section {
+                    HadithView(id: .iftar, tag: model.fastingMoment(now)?.kind == .berbuka ? "Before berbuka" : nil).hadithRow()
+                }
+            }
         }
     }
 

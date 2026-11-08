@@ -96,18 +96,20 @@ struct MakersSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Built fisabilillah").font(Theme.display(26, .bold))
-                Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).")
-                    .foregroundStyle(.secondary)
-                ForEach(MakersOffer.allCases) { offer in
-                    MakersCard(offer: offer, placement: placement)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    HadithView(id: .fixedTimes, tag: "Al Quran")
+                    Text("Built fisabilillah").font(Theme.display(26, .bold))
+                    Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).")
+                        .foregroundStyle(.secondary)
+                    ForEach(MakersOffer.allCases) { offer in
+                        MakersCard(offer: offer, placement: placement)
+                    }
                 }
-                Spacer(minLength: 0)
+                .padding(Theme.gutter)
             }
-            .padding(Theme.gutter)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 }

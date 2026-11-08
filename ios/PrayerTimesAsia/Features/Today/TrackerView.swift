@@ -13,6 +13,7 @@ struct TrackerView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section { HadithView(id: .river).hadithRow() }
                 Section {
                     HStack(spacing: 8) {
                         Image(systemName: model.trackerPaused ? "pause.fill" : "flame.fill").foregroundStyle(.orange)
@@ -35,6 +36,9 @@ struct TrackerView: View {
                     } else {
                         Text("For haid, nifas or illness: pause the tracker and every day until you end it counts as excused.")
                     }
+                }
+                if model.trackerPaused {
+                    Section { HadithView(id: .illness, style: .line).hadithRow() }
                 }
 
                 Section {
