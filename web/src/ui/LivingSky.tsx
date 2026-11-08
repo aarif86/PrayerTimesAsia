@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'preact/hooks'
-import { css, darkness, daylight, softNight, type SkyColors } from './sky'
+import { css, darkness, daylight, readable, softNight, type SkyColors } from './sky'
 
 /** A fixed field of stars that fades in as the sky darkens (StarField). */
 function Stars({ opacity }: { opacity: number }) {
@@ -83,14 +83,14 @@ function BrightSky({ isDay, glow }: { isDay: boolean; glow: string }) {
 
 /** The Living Sky behind every tab: the sky outside, right now. */
 export function LivingSky({ colors, scheme, soft }: { colors: SkyColors; scheme: 'light' | 'dark'; soft: boolean }) {
-  const shown = scheme === 'light' ? daylight(colors) : soft ? softNight(colors) : colors
+  const shown = scheme === 'light' ? daylight(colors) : readable(soft ? softNight(colors) : colors)
   const dark = darkness(colors)
   return (
     <div class="sky" aria-hidden="true" style={{ background: `linear-gradient(180deg, ${css(shown.top)} 0%, ${css(shown.bottom)} 100%)` }}>
       {scheme === 'dark'
         ? <Stars opacity={dark * (soft ? 0.6 : 1)} />
         : <BrightSky isDay={dark < 0.5} glow={css(shown.glow, 0.18)} />}
-      <div class="horizon" style={{ background: `radial-gradient(circle, ${css(shown.glow, 0.35)} 0%, transparent 70%)` }} />
+      <div class="horizon" style={{ background: `radial-gradient(circle, ${css(shown.glow, scheme === 'light' ? 0.35 : 0.2)} 0%, transparent 70%)` }} />
     </div>
   )
 }

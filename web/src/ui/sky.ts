@@ -37,6 +37,34 @@ export const daylight = (s: SkyColors): SkyColors =>
 export const softNight = (s: SkyColors): SkyColors =>
   ({ top: mixRGB(s.top, hex(0x5C6190), 0.42), bottom: mixRGB(s.bottom, hex(0x8483B0), 0.4), glow: s.glow })
 
+const linear = (v: number) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+const gamma = (v: number) => {
+  const c = Math.min(1, Math.max(0, v))
+  return c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055
+}
+
+/** How bright a colour looks to the eye (WCAG relative luminance, 0..1). */
+export const luminance = (c: RGB) => 0.2126 * linear(c.r) + 0.7152 * linear(c.g) + 0.0722 * linear(c.b)
+
+/** The same colour, made deeper until it is no brighter than `limit`. Keeps the hue. */
+export function dimmed(c: RGB, limit: number): RGB {
+  const l = luminance(c)
+  if (l <= limit || l <= 0) return c
+  const k = limit / l
+  return { r: gamma(linear(c.r) * k), g: gamma(linear(c.g) * k), b: gamma(linear(c.b) * k) }
+}
+
+/** Brightest the sky may be under white text: white reads about 9 to 1, grey notes 4.5 to 1 or better. */
+export const READABLE_LIMIT = 0.07
+
+/**
+ * Dark looks put white text on the sky. By day the real sky is too bright for
+ * that, so the bright parts are deepened (same colours, richer). Night skies are
+ * already darker than the limit and stay exactly as they are.
+ */
+export const readable = (s: SkyColors): SkyColors =>
+  ({ top: dimmed(s.top, READABLE_LIMIT), bottom: dimmed(s.bottom, READABLE_LIMIT), glow: s.glow })
+
 /** 0 in daylight → 1 in full night, from how dark the top of the sky is. */
 export function darkness(s: SkyColors): number {
   const l = 0.2126 * s.top.r + 0.7152 * s.top.g + 0.0722 * s.top.b

@@ -99,7 +99,7 @@ fun MakersCard(offer: MakersOffer, placement: String, compact: Boolean = false, 
                 Text(offer.subtitle, style = Txt.caption, color = Palette.secondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
         }
-        Text(offer.site, style = Txt.captionSemibold, color = Palette.accent)
+        Text(offer.site, style = Txt.captionSemibold, color = Palette.accentText)
         Icon(Icons.Filled.CallMade, null, Modifier.size(13.dp), tint = Palette.accent)
     }
 }

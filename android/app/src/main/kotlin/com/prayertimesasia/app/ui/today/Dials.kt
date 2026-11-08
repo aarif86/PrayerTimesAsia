@@ -151,7 +151,7 @@ fun DayDial(
         Icon(Icons.Filled.DarkMode, null, Modifier.size(size * 0.07f).offset(y = size * 0.3f), tint = primary.copy(alpha = 0.35f))
         Column(Modifier.padding(horizontal = size * 0.18f), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(currentName, style = display((size.value * 0.14f).sp, FontWeight.Bold), color = primary, maxLines = 1, softWrap = false)
-            Text(countdown, style = display((size.value * 0.1f).sp, FontWeight.SemiBold), color = accent, maxLines = 1)
+            Text(countdown, style = display((size.value * 0.1f).sp, FontWeight.SemiBold), color = Palette.accentText, maxLines = 1)
             Text(label, fontFamily = Rounded, fontSize = (size.value * 0.065f).sp, fontWeight = FontWeight.Medium,
                 color = Palette.secondary, maxLines = 1, textAlign = TextAlign.Center)
         }

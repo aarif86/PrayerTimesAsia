@@ -154,7 +154,7 @@ struct WakeUpView: View {
                 Spacer()
                 if let detail { Text(detail).foregroundStyle(.secondary).monospacedDigit() }
                 Image(systemName: "checkmark").font(.body.weight(.semibold))
-                    .foregroundStyle(Theme.sunArc)
+                    .foregroundStyle(Theme.accentText)
                     .opacity(selected ? 1 : 0)
             }
             .contentShape(Rectangle())

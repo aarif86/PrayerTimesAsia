@@ -63,7 +63,7 @@ struct MakersCard: View {
                 Group {
                     switch offer {
                     case .badal: KaabaGlyph().frame(width: compact ? 15 : 18, height: compact ? 15 : 18)
-                    case .digital: Image(systemName: "globe").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.accent)
+                    case .digital: Image(systemName: "globe").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.accentText)
                     }
                 }
                 .frame(width: compact ? 28 : 34, height: compact ? 28 : 34)
@@ -76,8 +76,8 @@ struct MakersCard: View {
                     }
                 }
                 Spacer(minLength: 4)
-                Text(offer.site).font(.caption.weight(.semibold)).foregroundStyle(Theme.accent)
-                Image(systemName: "arrow.up.right").font(.caption2.weight(.bold)).foregroundStyle(Theme.accent)
+                Text(offer.site).font(.caption.weight(.semibold)).foregroundStyle(Theme.accentText)
+                Image(systemName: "arrow.up.right").font(.caption2.weight(.bold)).foregroundStyle(Theme.accentText)
             }
             .padding(.horizontal, 12).padding(.vertical, compact ? 6 : 9)
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))

@@ -37,6 +37,25 @@ data class RGB(val r: Double, val g: Double, val b: Double) {
     constructor(hex: Long) : this(((hex shr 16) and 0xFF) / 255.0, ((hex shr 8) and 0xFF) / 255.0, (hex and 0xFF) / 255.0)
 
     fun mix(other: RGB, t: Double) = RGB(r + (other.r - r) * t, g + (other.g - g) * t, b + (other.b - b) * t)
+
+    /** How bright the colour looks to the eye (WCAG relative luminance, 0..1). */
+    val luminance: Double get() = 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)
+
+    /** The same colour, made deeper until it is no brighter than [limit]. Keeps the hue. */
+    fun dimmed(limit: Double): RGB {
+        val l = luminance
+        if (l <= limit || l <= 0.0) return this
+        val k = limit / l
+        return RGB(gamma(linear(r) * k), gamma(linear(g) * k), gamma(linear(b) * k))
+    }
+
+    private companion object {
+        fun linear(v: Double) = if (v <= 0.04045) v / 12.92 else ((v + 0.055) / 1.055).pow(2.4)
+        fun gamma(v: Double): Double {
+            val c = v.coerceIn(0.0, 1.0)
+            return if (c <= 0.0031308) c * 12.92 else 1.055 * c.pow(1 / 2.4) - 0.055
+        }
+    }
     val color: Color get() = Color(r.toFloat(), g.toFloat(), b.toFloat())
     val argb: Int get() = color.let { android.graphics.Color.argb(255, (r * 255).toInt(), (g * 255).toInt(), (b * 255).toInt()) }
 }
@@ -48,6 +67,13 @@ data class SkyColors(val top: RGB, val bottom: RGB, /** The "now" highlight and 
     /** Automatic appearance after dark: the night sky lifted towards twilight - dim and restful. */
     val softNight: SkyColors get() = SkyColors(top.mix(RGB(0x5C6190), 0.42), bottom.mix(RGB(0x8483B0), 0.4), glow)
 
+    /**
+     * Dark looks and widgets put white text on the sky. By day the real sky is too
+     * bright for that, so the bright parts are deepened (same colours, richer).
+     * Night skies are already darker than the limit and stay exactly as they are.
+     */
+    val readable: SkyColors get() = SkyColors(top.dimmed(READABLE_LIMIT), bottom.dimmed(READABLE_LIMIT), glow)
+
     /** 0 in daylight → 1 in full night, from how dark the top of the sky is. */
     val darkness: Double
         get() {
@@ -58,11 +84,13 @@ data class SkyColors(val top: RGB, val bottom: RGB, /** The "now" highlight and 
     /** The sky as drawn for a scheme: daylight wash, soft night or full dark. */
     fun forScheme(scheme: SkyScheme): SkyColors = when {
         !scheme.dark -> daylight
-        scheme.softNight -> softNight
-        else -> this
+        scheme.softNight -> softNight.readable
+        else -> readable
     }
 
     companion object {
+        /** Brightest the sky may be under white text: white reads about 9 to 1, grey notes 4.5 to 1 or better. */
+        const val READABLE_LIMIT = 0.07
         private val WHITE = RGB(0xFFFFFF)
         fun mix(a: SkyColors, b: SkyColors, t: Double) = SkyColors(a.top.mix(b.top, t), a.bottom.mix(b.bottom, t), a.glow.mix(b.glow, t))
 
@@ -145,7 +173,8 @@ fun LivingSkyBackground(colors: SkyColors, modifier: Modifier = Modifier) {
         // Soft horizon glow - the one atmospheric touch; no particles, no noise.
         Canvas(Modifier.fillMaxSize()) {
             val center = Offset(size.width * 0.5f, size.height * 1.05f)
-            drawRect(Brush.radialGradient(listOf(c.glow.color.copy(alpha = 0.35f), Color.Transparent),
+            // Softer in the dark looks so it does not wash out text near the bottom.
+            drawRect(Brush.radialGradient(listOf(c.glow.color.copy(alpha = if (scheme.dark) 0.2f else 0.35f), Color.Transparent),
                 center = center, radius = 420.dp.toPx()))
         }
     }

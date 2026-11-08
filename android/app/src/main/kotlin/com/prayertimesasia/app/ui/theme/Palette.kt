@@ -41,9 +41,14 @@ object Palette {
     val gold: Color @Composable @ReadOnlyComposable get() = gold(LocalSkyScheme.current.dark)
     val success: Color @Composable @ReadOnlyComposable get() = if (LocalSkyScheme.current.dark) successDark else successLight
 
+    /** The peach for words (labels, countdowns): deeper on light skies so it reads. */
+    val accentText: Color @Composable @ReadOnlyComposable
+        get() = if (LocalSkyScheme.current.dark) sunArcDark else rgb(0.70, 0.33, 0.12)
+
     /** SwiftUI's `.primary`: white on dark skies, near-black on light ones. */
     val primary: Color @Composable @ReadOnlyComposable get() = if (LocalSkyScheme.current.dark) Color.White else Color(0xFF111114)
-    val secondary: Color @Composable @ReadOnlyComposable get() = primary.copy(alpha = 0.6f)
+    /** Grey notes: a step stronger than iOS's system grey so they read on the sky in every look. */
+    val secondary: Color @Composable @ReadOnlyComposable get() = primary.copy(alpha = if (LocalSkyScheme.current.dark) 0.82f else 0.72f)
 
     /** Frosted card fill on the sky (stands in for iOS's ultra-thin material). */
     val material: Color @Composable @ReadOnlyComposable
@@ -66,6 +71,23 @@ val Prayer.tint: Color
         Prayer.MAGHRIB -> rgb(0.87, 0.36, 0.33)
         Prayer.ISHA -> rgb(0.42, 0.37, 0.76)
     }
+
+/**
+ * The prayer's colour for words ("NOW", the current prayer's name, "in 5m"): as is
+ * on dark skies; on light skies the same hue made deep enough to read (about 5 to 1).
+ */
+val Prayer.textTint: Color
+    @Composable @ReadOnlyComposable get() = if (LocalSkyScheme.current.dark) tint else readableOnLight(tint)
+
+/** Deepens a colour, keeping its hue, until its luminance is at most 0.13. */
+fun readableOnLight(c: Color): Color {
+    fun lin(v: Float): Double = if (v <= 0.04045f) v / 12.92 else Math.pow((v + 0.055) / 1.055, 2.4)
+    fun gam(v: Double): Float { val x = v.coerceIn(0.0, 1.0); return (if (x <= 0.0031308) x * 12.92 else 1.055 * Math.pow(x, 1 / 2.4) - 0.055).toFloat() }
+    val l = 0.2126 * lin(c.red) + 0.7152 * lin(c.green) + 0.0722 * lin(c.blue)
+    if (l <= 0.13) return c
+    val k = 0.13 / l
+    return Color(gam(lin(c.red) * k), gam(lin(c.green) * k), gam(lin(c.blue) * k), c.alpha)
+}
 
 /** The colours of the classic Singapore timetable, a shade calmer. */
 object BandsPalette {

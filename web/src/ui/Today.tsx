@@ -95,9 +95,13 @@ interface Ctx {
 
 // ---------- Buttons ----------
 
-/** Automatic (follows the sky) → Light → Dark, one tap each. */
+/**
+ * Automatic (follows the sky) → Light → Dark, one tap each. Hidden on Colour Bands,
+ * which keeps its own fixed colours, so the button would do nothing there.
+ */
 function AppearanceButton({ c }: { c: Ctx }) {
   const a = store.prefs.appearance
+  if (store.prefs.todayStyle === 'bands') return null
   const Icon = a === 'system' ? Contrast : a === 'light' ? Sun : Moon
   return (
     <button class="round-btn" aria-label={`Appearance: ${APPEARANCE_LABEL[a]}. Switches between Automatic, Light and Dark.`}
@@ -523,7 +527,7 @@ function SimplePage({ c }: { c: Ctx }) {
     <div class="today-page page simple-page">
       <div class="row" style={{ gap: '8px', paddingTop: '8px' }}><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
       <div class="simple-now">
-        {current && <div class="simple-big display" style={{ color: tint(current.prayer) }}>{store.name(current.prayer, current.time)}{t.done && <CheckCircle2 size={34} class="accent" style={{ marginLeft: '10px' }} />}</div>}
+        {current && <div class="simple-big display tint-text" style={{ '--tint': tint(current.prayer) }}>{store.name(current.prayer, current.time)}{t.done && <CheckCircle2 size={34} class="accent" style={{ marginLeft: '10px' }} />}</div>}
         {t.text && <div class={`simple-left mono ${t.urgent ? 'accent' : ''}`}>{t.text}</div>}
       </div>
       <div class="simple-list">
@@ -670,7 +674,7 @@ function DialPage({ c }: { c: Ctx }) {
             if (!cur || !c.next) return <MoonStar size={sz * 0.08} style={{ opacity: 0.5 }} />
             return (
               <div class="hero-centre">
-                <div style={{ fontSize: `${sz * 0.028}px`, fontWeight: 800, letterSpacing: '0.6px', color: tint(cur.prayer) }}>NOW</div>
+                <div class="tint-text" style={{ fontSize: `${sz * 0.028}px`, fontWeight: 800, letterSpacing: '0.6px', '--tint': tint(cur.prayer) }}>NOW</div>
                 <div class="display" style={{ fontSize: `${sz * 0.085}px`, fontWeight: 700, lineHeight: 1.1 }}>{store.name(cur.prayer, cur.time)}</div>
                 <div class="display accent mono" style={{ fontSize: `${sz * 0.066}px`, fontWeight: 600 }}>{countdown(c.now).count}</div>
                 <div class="secondary" style={{ fontSize: `${sz * 0.034}px`, fontWeight: 500 }}>{countdown(c.now).label}</div>

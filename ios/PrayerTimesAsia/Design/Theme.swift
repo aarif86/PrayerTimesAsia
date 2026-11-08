@@ -18,6 +18,10 @@ enum Theme {
     static let sunArc = Color(UIColor { $0.userInterfaceStyle == .dark
         ? UIColor(red: 0.97, green: 0.74, blue: 0.56, alpha: 1)
         : UIColor(red: 0.91, green: 0.55, blue: 0.34, alpha: 1) })
+    /// The peach for words (labels, countdowns): deeper on light skies so it reads.
+    static let accentText = Color(UIColor { $0.userInterfaceStyle == .dark
+        ? UIColor(red: 0.97, green: 0.74, blue: 0.56, alpha: 1)
+        : UIColor(red: 0.70, green: 0.33, blue: 0.12, alpha: 1) })
     /// Qibla gold: bright on dark skies, deeper on light ones so it stays readable.
     static let gold = Color(UIColor { $0.userInterfaceStyle == .dark
         ? UIColor(red: 1, green: 0.84, blue: 0.5, alpha: 1)

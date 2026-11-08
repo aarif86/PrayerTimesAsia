@@ -38,6 +38,7 @@ import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.display
+import com.prayertimesasia.app.ui.theme.textTint
 import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerDay
@@ -94,7 +95,7 @@ fun SimplePage(state: AppState, day: PrayerDay, current: Pair<Prayer, Instant>?,
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             if (current != null) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(r.prayerName(current.first, current.second), style = display(52.sp, FontWeight.ExtraBold), color = current.first.tint,
+                    Text(r.prayerName(current.first, current.second), style = display(52.sp, FontWeight.ExtraBold), color = current.first.textTint,
                         maxLines = 1)
                     if (t?.done == true) Icon(Icons.Filled.CheckCircle, "Prayed", Modifier.size(34.dp), tint = Palette.accent)
                 }

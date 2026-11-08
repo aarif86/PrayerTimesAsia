@@ -70,6 +70,7 @@ import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.display
+import com.prayertimesasia.app.ui.theme.textTint
 import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.Prayer
@@ -377,7 +378,7 @@ private fun PrayerMark(state: AppState, day: PrayerDay, prayer: Prayer, time: In
             val own = r.prayerName(prayer, time)
             val name = r.localName(prayer, time)?.let { "$own · $it" } ?: own
             Text(name, fontSize = (size.value * 0.034f).sp, lineHeight = (size.value * 0.04f).sp, fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.SemiBold,
-                color = if (isCurrent) prayer.tint else Palette.primary.copy(alpha = 0.75f), maxLines = 1, textAlign = TextAlign.Center,
+                color = if (isCurrent) prayer.textTint else Palette.primary.copy(alpha = 0.75f), maxLines = 1, textAlign = TextAlign.Center,
                 fontFamily = com.prayertimesasia.app.ui.theme.Rounded)
             com.prayertimesasia.app.ui.components.TimeText(r.timeParts(time), size = (size.value * 0.05f).sp,
                 weight = if (isCurrent) FontWeight.Bold else FontWeight.SemiBold)
@@ -426,11 +427,11 @@ private fun DialCentre(f: TodayFrame, size: Dp) {
     val nxt = f.next
     if (cur != null && nxt != null) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy((size.value * 0.006f).dp)) {
-            Text("NOW", fontSize = (size.value * 0.028f).sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.6.sp, color = cur.first.tint)
+            Text("NOW", fontSize = (size.value * 0.028f).sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.6.sp, color = cur.first.textTint)
             Text(f.name(cur.first, cur.second), style = display((size.value * 0.085f).sp, FontWeight.Bold), color = Palette.primary, maxLines = 1)
             val count = Countdown.of(f.state, f.now, nxt)
             Text(count.count, style = display((size.value * 0.066f).sp, FontWeight.SemiBold),
-                color = Palette.accent, maxLines = 1)
+                color = Palette.accentText, maxLines = 1)
             Text(count.label, fontSize = (size.value * 0.034f).sp, fontWeight = FontWeight.Medium,
                 color = Palette.secondary, maxLines = 1)
         }

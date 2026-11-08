@@ -247,7 +247,7 @@ fun TabBar(state: AppState, modifier: Modifier = Modifier) {
             val selected = state.selectedTab == tab
             Column(
                 Modifier.weight(1f).fillMaxSize().clip(RoundedCornerShape(28.dp))
-                    .background(if (selected) Palette.primary.copy(alpha = 0.1f) else Color.Transparent)
+                    .background(if (selected) Palette.primary.copy(alpha = 0.2f) else Color.Transparent)
                     .clickable(onClickLabel = label) { state.selectedTab = tab },
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
@@ -291,7 +291,7 @@ private fun CreditsContent() {
                 Column(Modifier.padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(title, style = Txt.subheadlineSemibold, color = Palette.primary)
                     Text(detail, style = Txt.footnote, color = Palette.secondary)
-                    Text(url.removePrefix("https://"), style = Txt.footnote, color = Palette.accent,
+                    Text(url.removePrefix("https://"), style = Txt.footnote, color = Palette.accentText,
                         modifier = Modifier.clickable { runCatching { uri.openUri(url) } })
                 }
             }

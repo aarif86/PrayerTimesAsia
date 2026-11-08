@@ -79,7 +79,7 @@ private fun model(context: Context, style: TodayStyle? = null): WidgetModel? {
 
 /** The Living Sky behind a widget, as a small bitmap the launcher stretches (it's a smooth gradient). */
 internal fun skyBitmap(m: WidgetModel): Bitmap {
-    val sky = SkyColors.at(m.now, m.day)
+    val sky = SkyColors.at(m.now, m.day).readable
     val w = 96
     val h = 160
     val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -87,7 +87,7 @@ internal fun skyBitmap(m: WidgetModel): Bitmap {
     val p = Paint(Paint.ANTI_ALIAS_FLAG)
     p.shader = LinearGradient(0f, 0f, 0f, h.toFloat(), sky.top.color.toArgb(), sky.bottom.color.toArgb(), Shader.TileMode.CLAMP)
     c.drawRect(0f, 0f, w.toFloat(), h.toFloat(), p)
-    p.shader = RadialGradient(w / 2f, h * 1.1f, h * 0.75f, sky.glow.color.copy(alpha = 0.3f).toArgb(), 0, Shader.TileMode.CLAMP)
+    p.shader = RadialGradient(w / 2f, h * 1.1f, h * 0.75f, sky.glow.color.copy(alpha = 0.2f).toArgb(), 0, Shader.TileMode.CLAMP)
     c.drawRect(0f, 0f, w.toFloat(), h.toFloat(), p)
     return bmp
 }
