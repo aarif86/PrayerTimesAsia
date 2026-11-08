@@ -45,6 +45,8 @@ git show origin/screenshots-android:01-today-list-night.png > today.png
 
 Test builds are signed with the shared debug key in `app/debug.keystore`, so each new one installs over the last and keeps your settings.
 
+**To share with family and friends (no GitHub account needed):** send them https://github.com/aarif86/PrayerTimesAsia/releases/download/android-test/prayer-times-asia.apk. It always holds the newest build from `main`, as a plain `.apk` (no zip), so they start at step 3. When a newer build is out, the app itself offers it ("New version available", `ui/TestUpdate.kt`); Google Play builds never show this.
+
 1. On the phone, open the pull request on github.com (signed in) and tap **Download the APK** in the *Android test build* comment. Without a PR: Actions → Android → newest green run → *prayer-times-asia-debug-apk*.
 2. It downloads as a `.zip`. Open it in **Files** (or *Downloads*), tap it to extract, then tap the `.apk` inside.
 3. The first time, Android asks to allow installs from that app (Chrome or Files): tap **Settings → Allow from this source**, go back, tap **Install**.

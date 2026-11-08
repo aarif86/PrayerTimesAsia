@@ -38,6 +38,8 @@ jobs:
         run: ./gradlew :core:test 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
 
       - name: Build the debug APK and an unsigned release (checks R8)
+        env:
+          TEST_BUILD: ${{ github.run_number }}
         run: ./gradlew :app:assembleDebug :app:assembleRelease 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
 
       - name: App unit tests and JVM screenshots (Robolectric + Roborazzi)
@@ -126,7 +128,9 @@ jobs:
             gh release create android-test --prerelease --target main --title "Android test build" \
               --notes "The newest test version of the Android app, updated on every change. Download prayer-times-asia.apk on the phone, open it and tap Install (steps: android/README.md, Install a test build on your phone)."
           fi
-          gh release upload android-test "$RUNNER_TEMP/prayer-times-asia.apk" --clobber
+          # The app compares its own build number with this one to offer the update.
+          echo "{\"build\": ${{ github.run_number }}}" > "$RUNNER_TEMP/latest.json"
+          gh release upload android-test "$RUNNER_TEMP/prayer-times-asia.apk" "$RUNNER_TEMP/latest.json" --clobber
 
       - name: Publish screenshots to the screenshots-android branch
         if: success() && github.ref == 'refs/heads/main'

@@ -19,6 +19,9 @@ android {
         // The Play release workflow passes its run number, so every upload is higher than the last.
         versionCode = providers.environmentVariable("VERSION_CODE").orNull?.toIntOrNull() ?: 1
         versionName = "1.0.0"
+        // CI's run number on shared test builds, so the app can offer a newer one (ui/TestUpdate.kt).
+        // 0 everywhere else, including Google Play builds, which never ask.
+        buildConfigField("int", "TEST_BUILD", (providers.environmentVariable("TEST_BUILD").orNull?.toIntOrNull() ?: 0).toString())
     }
 
     // One shared debug key, so every CI test build installs over the last one without uninstalling.
