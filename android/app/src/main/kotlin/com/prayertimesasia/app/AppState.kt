@@ -282,10 +282,39 @@ class AppState(
     /** An alarm for one of the other four prayers, as [setWakeUp]; null turns it off. */
     fun setPrayerAlarm(prayer: com.prayertimesasia.core.Prayer, timing: com.prayertimesasia.core.PrayerAlarmTiming?) {
         scope.launch {
-            if (timing != null) permissions?.notifications()
+            if (timing != null) permissions?.notifications() else stopRinging()
             update { it.withAlarm(prayer, timing) }
         }
     }
+
+    /** Subuh alarm Off; anything ringing or snoozed stops too. */
+    fun turnOffWakeUp() {
+        stopRinging()
+        update { it.copy(wakeUp = null) }
+    }
+
+    /** Sahur alarm Off; anything ringing or snoozed stops too. */
+    fun turnOffSahurAlarm() {
+        stopRinging()
+        update { it.copy(sahurAlarm = null) }
+    }
+
+    /** Every alarm Off in one tap, and anything ringing or snoozed stops now. */
+    fun turnOffAllAlarms() {
+        stopRinging()
+        update { p ->
+            com.prayertimesasia.core.PrayerAlarmTiming.prayers.fold(p.copy(wakeUp = null, sahurAlarm = null)) { acc, prayer -> acc.withAlarm(prayer, null) }
+        }
+    }
+
+    /** Stops what is ringing or snoozed (the planned alarms stay). */
+    fun stopRinging() {
+        if (sideEffects) AlarmScheduler.stopRinging(context)
+        snoozeTick++
+    }
+
+    /** Bumped when a snooze is stopped, so the alarm sheet looks again. */
+    var snoozeTick by mutableStateOf(0)
 
     /** "Leave for Jumaat": asks for notification permission, then reminds [minutes] before Jumaat on Fridays. */
     fun enableJumuahReminder(minutes: Int) {
