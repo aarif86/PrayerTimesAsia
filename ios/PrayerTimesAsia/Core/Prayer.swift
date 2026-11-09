@@ -49,7 +49,7 @@ enum NamingStyle: String, CaseIterable, Codable, Identifiable, Sendable {
     /// Short name, for "Subuh (Malay)" style captions.
     var language: String {
         switch self {
-        case .international: "International"
+        case .international: "English"
         case .malay: "Malay"
         case .indonesian: "Indonesian"
         case .southAsian: "South Asian"
@@ -63,7 +63,7 @@ enum NamingStyle: String, CaseIterable, Codable, Identifiable, Sendable {
 
     var label: String {
         switch self {
-        case .international: "International (Fajr, Dhuhr, Asr, Isha)"
+        case .international: "English (Fajr, Dhuhr, Asr, Isha)"
         case .malay: "Malay (Subuh, Zohor, Asar, Isyak)"
         case .indonesian: "Indonesian (Subuh, Dzuhur, Ashar, Isya)"
         case .southAsian: "South Asian (Fajr, Zuhr, Asr, Isha)"

@@ -145,7 +145,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Prayer names")
                 } footer: {
-                    Text("Your names stay the same wherever you are: Automatic uses your home country's words, or your phone's language. When you travel somewhere that uses different words, the local name appears small underneath - \"Fajr\" with \"Subuh here\" in Kuala Lumpur - so the masjid's signs make sense. Spellings follow each authority's own timetable.")
+                    Text("Automatic shows English names like Fajr and Isha, or your phone's language if we have it. Pick Malay for Subuh and Isyak. Your names stay the same wherever you go. When you travel somewhere that uses other words, the local name shows small underneath, like Subuh in Kuala Lumpur, so the masjid's signs make sense. Spellings follow each authority's own timetable.")
                 }
 
                 Section {

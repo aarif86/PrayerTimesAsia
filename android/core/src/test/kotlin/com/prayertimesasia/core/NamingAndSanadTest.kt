@@ -12,26 +12,24 @@ import java.util.Locale
 class NamingAndSanadTest {
     private val sgt = ZoneId.of("Asia/Singapore")
 
-    @Test fun personalNamesComeFromHomeThenPhone() {
-        val english = Locale("en", "AU")
-        assertEquals(NamingStyle.MALAY, NamingStyle.personal("SG", english))
-        assertEquals(NamingStyle.INDONESIAN, NamingStyle.personal("ID", english))
-        assertEquals(NamingStyle.TURKISH, NamingStyle.personal("TR", english))
-        assertEquals(NamingStyle.INTERNATIONAL, NamingStyle.personal(null, english))
-        assertEquals(NamingStyle.MALAY, NamingStyle.personal(null, Locale("ms", "MY")))
-        assertEquals(NamingStyle.SOUTH_ASIAN, NamingStyle.personal(null, Locale("en", "PK")))
-        assertEquals(NamingStyle.INDONESIAN, NamingStyle.personal("AU", Locale("id", "ID")))
+    @Test fun personalNamesAreEnglishUnlessThePhoneSpeaksAnother() {
+        // Home country no longer decides; an English phone in Singapore sees Fajr.
+        assertEquals(NamingStyle.INTERNATIONAL, NamingStyle.personal(Locale("en", "SG")))
+        assertEquals(NamingStyle.INTERNATIONAL, NamingStyle.personal(Locale("en", "PK")))
+        assertEquals(NamingStyle.INTERNATIONAL, NamingStyle.personal(Locale("en", "AU")))
+        assertEquals("English", NamingStyle.INTERNATIONAL.language)
+        assertEquals(NamingStyle.MALAY, NamingStyle.personal(Locale("ms", "MY")))
+        assertEquals(NamingStyle.INDONESIAN, NamingStyle.personal(Locale("id", "ID")))
         // Android reports Indonesian with the old code "in".
-        assertEquals(NamingStyle.INDONESIAN, NamingStyle.personal(null, "in", "ID"))
+        assertEquals(NamingStyle.INDONESIAN, NamingStyle.personal("in"))
     }
 
     @Test fun phoneLanguageComesFirstInItsOwnScript() {
-        assertEquals(NamingStyle.ARABIC_SCRIPT, NamingStyle.personal(null, Locale("ar", "SA")))
-        assertEquals(NamingStyle.URDU, NamingStyle.personal("PK", Locale("ur", "PK")))
-        assertEquals(NamingStyle.BENGALI, NamingStyle.personal("BD", Locale("bn", "BD")))
-        assertEquals(NamingStyle.FRENCH, NamingStyle.personal("FR", Locale("fr", "FR")))
-        assertEquals(NamingStyle.TURKISH, NamingStyle.personal("SG", Locale("tr", "TR")))
-        assertEquals(NamingStyle.SOUTH_ASIAN, NamingStyle.personal("PK", Locale("en", "PK")))
+        assertEquals(NamingStyle.ARABIC_SCRIPT, NamingStyle.personal(Locale("ar", "SA")))
+        assertEquals(NamingStyle.URDU, NamingStyle.personal(Locale("ur", "PK")))
+        assertEquals(NamingStyle.BENGALI, NamingStyle.personal(Locale("bn", "BD")))
+        assertEquals(NamingStyle.FRENCH, NamingStyle.personal(Locale("fr", "FR")))
+        assertEquals(NamingStyle.TURKISH, NamingStyle.personal(Locale("tr", "TR")))
     }
 
     @Test fun everyLanguageHasEveryName() {
@@ -140,8 +138,9 @@ class NamingAndSanadTest {
         assertEquals("8:02 PM", r.formatted(day.time(Prayer.ISHA)))
         assertEquals(Prayer.ISHA, r.current(now)!!.first)
         assertEquals(Prayer.FAJR, r.next(now)!!.first)
-        assertEquals(NamingStyle.MALAY, r.naming)
-        assertEquals("14 Jamadilawal 1448", r.hijri(now))
+        // English by default, even at a Singapore home; Malay when picked.
+        assertEquals(NamingStyle.INTERNATIONAL, r.naming)
+        assertEquals("14 Jamadilawal 1448", Resolver(prefs.copy(namingOverride = NamingStyle.MALAY)).hijri(now))
         // Without a table (offline) it falls back to the calibrated calculation.
         val offline = Resolver(prefs).day(now)!!
         assertEquals(SourceGrade.CALCULATED, offline.grade)
@@ -158,6 +157,14 @@ class NamingAndSanadTest {
         assertEquals(NamingStyle.INTERNATIONAL, r.naming)
         assertEquals("Subuh", r.localName(Prayer.FAJR, day.time(Prayer.FAJR)))
         assertNull(r.localName(Prayer.MAGHRIB, day.time(Prayer.MAGHRIB)))
+    }
+
+    @Test fun noLocalWordAtHome() {
+        val sg = Place(name = "Singapore", countryCode = "SG", timeZoneId = "Asia/Singapore", coordinates = Coordinates(1.3521, 103.8198))
+        val r = Resolver(Preferences(useGPS = false, manualPlace = sg, home = sg), locale = Locale("en", "SG"))
+        val day = r.day(ZonedDateTime.of(2026, 10, 25, 12, 0, 0, 0, sgt).toInstant())!!
+        assertEquals(NamingStyle.INTERNATIONAL, r.naming)
+        assertNull(r.localName(Prayer.FAJR, day.time(Prayer.FAJR)))
     }
 
     @Test fun aGuessedHomeSaysNothingAboutTravelUntilConfirmed() {

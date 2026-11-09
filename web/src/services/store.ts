@@ -172,8 +172,8 @@ class AppStore {
   /** The same in one sentence or two, for the welcome card. */
   get sourceShort(): string { return sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true) }
   get asrSchool(): AsrSchool { return this.prefs.asrOverride ?? this.profile.asr }
-  get personalNaming(): NamingStyle { return personalNaming(this.prefs.home?.countryCode, navigatorLocale()) }
-  /** Your names - from your home or your browser, not from where you are. */
+  get personalNaming(): NamingStyle { return personalNaming(navigatorLocale()) }
+  /** Your names, from your browser's language (English unless it has names in it), not from where you are. */
   get naming(): NamingStyle { return this.prefs.namingOverride ?? this.personalNaming }
   /** The words used where you are (the masjid's signs). */
   get localNaming(): NamingStyle { return this.profile.naming }
@@ -185,6 +185,8 @@ class AppStore {
   /** The local word for a prayer, when it differs from yours. */
   localName(p: Prayer, at: number): string | null {
     if (!this.prefs.showLocalNames || this.localNaming === this.naming) return null
+    // At home you already know the local words; the hint is for travel.
+    if (this.prefs.home && placeProfile(this.prefs.home).code === this.profile.code) return null
     const friday = this.isFriday(at)
     const local = prayerName(p, this.localNaming, friday)
     return local === prayerName(p, this.naming, friday) ? null : local

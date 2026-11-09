@@ -41,15 +41,17 @@ class Resolver(
     val sourceShort: String get() = profile.sourceSummary(method, pinned = !isMethodAutomatic, short = true)
     val asrSchool: AsrSchool get() = prefs.asrOverride ?: profile.asr
 
-    /** Your prayer names - from your home or your phone, not from where you are. */
+    /** Your prayer names, from your phone's language (English unless it has names in it), not from where you are. */
     val naming: NamingStyle get() = prefs.namingOverride ?: personalNaming
-    val personalNaming: NamingStyle get() = NamingStyle.personal(prefs.home?.countryCode, locale)
+    val personalNaming: NamingStyle get() = NamingStyle.personal(locale)
     /** The words used where you are (the masjid's signs). */
     val localNaming: NamingStyle get() = profile.naming
 
     /** The local word for a prayer, when it differs from yours. */
     fun localName(prayer: Prayer, time: Instant): String? {
         if (!prefs.showLocalNames || localNaming == naming) return null
+        // At home you already know the local words; the hint is for travel.
+        if (prefs.home?.countryCode == profile.code) return null
         val local = prayer.name(localNaming, isFriday(time))
         return if (local == prayer.name(naming, isFriday(time))) null else local
     }

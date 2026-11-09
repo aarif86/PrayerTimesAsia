@@ -186,7 +186,7 @@ fun SettingsScreen(
                 }
             }
             item {
-                Section("Prayer names", "Your names stay the same wherever you are: Automatic uses your home country's words, or your phone's language. When you travel somewhere that uses different words, the local name appears small beside it - \"Fajr\" with \"Subuh\" in Kuala Lumpur - so the masjid's signs make sense. Spellings follow each authority's own timetable.") {
+                Section("Prayer names", "Automatic shows English names like Fajr and Isha, or your phone's language if we have it. Pick Malay for Subuh and Isyak. Your names stay the same wherever you go. When you travel somewhere that uses other words, the local name shows small beside it, like Subuh in Kuala Lumpur, so the masjid's signs make sense. Spellings follow each authority's own timetable.") {
                     PickerRow("Prayer names", p.namingOverride?.language ?: "Automatic · ${r.personalNaming.language}",
                         listOf<Pair<String, NamingStyle?>>("Automatic · ${r.personalNaming.language}" to null) + NamingStyle.entries.map { it.label to it },
                         p.namingOverride) { n -> state.update { it.copy(namingOverride = n) } }

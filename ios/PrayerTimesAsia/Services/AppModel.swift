@@ -207,16 +207,18 @@ final class AppModel {
     /// The same in one sentence or two, for the welcome card.
     var sourceShort: String { profile.sourceSummary(method: method, pinned: !isMethodAutomatic, short: true) }
     var asrSchool: AsrSchool { prefs.asrOverride ?? profile.asr }
-    /// Your prayer names - from your home or your phone, not from where you
-    /// are, so they stay the same as you travel.
+    /// Your prayer names, from your phone's language (English unless it has
+    /// names in it), not from where you are, so they stay the same as you travel.
     var naming: NamingStyle { prefs.namingOverride ?? personalNaming }
-    var personalNaming: NamingStyle { NamingStyle.personal(homeCountry: prefs.home?.countryCode) }
+    var personalNaming: NamingStyle { NamingStyle.personal() }
     /// The words used where you are (the masjid's signs, the azan app locals use).
     var localNaming: NamingStyle { profile.naming }
 
     /// The local word for a prayer, when it differs from yours.
     func localName(_ prayer: Prayer, at time: Date) -> String? {
         guard prefs.showLocalNames, localNaming != naming else { return nil }
+        // At home you already know the local words; the hint is for travel.
+        if let home = prefs.home?.countryCode, home == profile.code { return nil }
         let local = prayer.name(localNaming, isFriday: isFriday(time))
         return local == prayer.name(naming, isFriday: isFriday(time)) ? nil : local
     }
