@@ -39,8 +39,8 @@ import com.prayertimesasia.core.OpeningPose
 
 /**
  * Shown over the app for a moment as it opens: the icon's dial on Night Navy, moving for
- * about a second in one of six ways ([OpeningMove], never the same twice in a row), then
- * it fades. The clock hands always land on the real time. With animations off in the
+ * about a second in one of eleven ways ([OpeningMove], all of them once in a shuffled order
+ * before any repeats), then it fades. The clock hands always sweep round to the real time. With animations off in the
  * phone's settings the dial stays still. Settings > Opening screen turns it off, but it
  * always shows the first time (MainActivity decides).
  */
@@ -73,7 +73,7 @@ fun OpeningScreen(move: OpeningMove, reduceMotion: Boolean, onDone: () -> Unit) 
             drawRect(Brush.radialGradient(listOf(Color(0x59F7BD8F), Color.Transparent), Offset(center.x, size.height * 1.05f), size.width * 1.1f))
         }
         Box(Modifier.size(180.dp).graphicsLayer {
-            scaleX = p.dialScale.toFloat(); scaleY = p.dialScale.toFloat()
+            scaleX = (p.dialScale * p.dialFlip).toFloat(); scaleY = p.dialScale.toFloat(); rotationZ = p.dialRot.toFloat()
             alpha = p.dialOpacity.toFloat(); translationY = (p.dialY * 180.dp.toPx()).toFloat()
         }) {
             Box(Modifier.fillMaxSize().graphicsLayer {
@@ -81,14 +81,14 @@ fun OpeningScreen(move: OpeningMove, reduceMotion: Boolean, onDone: () -> Unit) 
             }) {
                 Layer(R.drawable.opening_ring)
                 Layer(R.drawable.opening_batik, rotation = p.batikRot, alpha = p.batikOpacity)
-                Layer(R.drawable.opening_stitch_outer, rotation = p.stitchOuterRot)
-                Layer(R.drawable.opening_stitch_inner, rotation = p.stitchInnerRot)
-                Layer(R.drawable.opening_marks)
+                Layer(R.drawable.opening_stitch_outer, rotation = p.stitchOuterRot, alpha = p.stitchOpacity)
+                Layer(R.drawable.opening_stitch_inner, rotation = p.stitchInnerRot, alpha = p.stitchOpacity)
+                Layer(R.drawable.opening_marks, alpha = p.marksOpacity)
             }
-            Layer(R.drawable.opening_face, scale = p.centreScale, alpha = p.centreOpacity)
+            Layer(R.drawable.opening_face, scale = p.centreScale, alpha = p.centreOpacity * p.faceOpacity)
             Layer(R.drawable.opening_kaabah, scale = p.kaabahScale, alpha = p.kaabahOpacity)
             Box(Modifier.fillMaxSize().graphicsLayer {
-                scaleX = p.centreScale.toFloat(); scaleY = p.centreScale.toFloat(); alpha = p.centreOpacity.toFloat()
+                scaleX = p.centreScale.toFloat(); scaleY = p.centreScale.toFloat(); alpha = (p.centreOpacity * p.handsOpacity).toFloat()
             }) {
                 Layer(R.drawable.opening_hour, rotation = p.hourRot)
                 Layer(R.drawable.opening_minute, rotation = p.minuteRot)

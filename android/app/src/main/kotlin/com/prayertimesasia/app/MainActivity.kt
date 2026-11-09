@@ -50,8 +50,10 @@ class MainActivity : ComponentActivity(), Permissions {
         val install = getSharedPreferences(INSTALL_PREFS, MODE_PRIVATE)
         val showOpening = savedInstanceState == null && demo == null &&
             (state.prefs.showOpening || !install.getBoolean("openingSeen", false))
-        val move = OpeningMove.next(install.getInt("openingLast", -1))
-        if (showOpening) install.edit().putBoolean("openingSeen", true).putInt("openingLast", move.ordinal).apply()
+        val bag = install.getString("openingBag", "").orEmpty().split(',').mapNotNull { it.toIntOrNull() }
+        val (move, rest) = OpeningMove.next(bag, install.getInt("openingLast", -1))
+        if (showOpening) install.edit().putBoolean("openingSeen", true).putInt("openingLast", move.ordinal)
+            .putString("openingBag", rest.joinToString(",")).apply()
         val reduceMotion = android.provider.Settings.Global.getFloat(contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
         setContent {
             var opening by remember { mutableStateOf(showOpening) }
