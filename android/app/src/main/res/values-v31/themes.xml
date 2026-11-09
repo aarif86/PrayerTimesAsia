@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Android 12+: the system splash shows the icon's dial on Night Navy, then the
-         app's opening screen (OpeningScreen in Brand.kt) carries on from it. -->
+    <!-- Android 12+: the system splash is plain Night Navy, then the app's moving
+         opening screen (OpeningScreen.kt) brings the dial in. -->
     <style name="Theme.PrayerTimesAsia" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/night_sky</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:colorAccent">@color/sun_arc</item>
         <item name="android:windowSplashScreenBackground">@color/night_navy</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_blank</item>
     </style>
 </resources>

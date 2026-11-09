@@ -59,24 +59,16 @@ for density, legacy, adaptive in [("mdpi", 48, 108), ("hdpi", 72, 162), ("xhdpi"
     fg.alpha_composite(render(dial_only, dial), ((adaptive - dial) // 2, (adaptive - dial) // 2))
     save(fg, f"{d}/ic_launcher_foreground.png")
 
-# Opening screen: the dial alone (no square background), shown in the middle of the
-# navy opening screen on every platform. Cropped to the dial's white edge (r = 424).
-DIAL_BOX = (88, 88, 936, 936)
+# Opening screen: the dial alone (no square background), cropped to its white edge (r = 424).
 dial_svg = re.sub(r"<metadata>.*?</metadata>", "", dial_only, flags=re.S)
 dial_svg = dial_svg.replace('width="1024" height="1024" viewBox="0 0 1024 1024"', 'width="848" height="848" viewBox="88 88 848 848"', 1)
 dial_svg = dial_svg.replace(' xmlns:c2pa="http://c2pa.org/manifest"', "")
 with open("web/public/icons/dial.svg", "w") as f:
     f.write(dial_svg)
 print("web/public/icons/dial.svg")
-dial_big = render(dial_only, 1024).crop(DIAL_BOX)
-LAUNCH = "ios/PrayerTimesAsia/Resources/Assets.xcassets/LaunchDial.imageset"
-for scale in (1, 2, 3):  # 180 pt
-    save(dial_big.resize((180 * scale, 180 * scale), Image.LANCZOS), f"{LAUNCH}/launch-dial@{scale}x.png")
-with open(f"{LAUNCH}/Contents.json", "w") as f:
-    f.write('{\n  "images" : [\n'
-            + ",\n".join(f'    {{ "filename" : "launch-dial@{s}x.png", "idiom" : "universal", "scale" : "{s}x" }}' for s in (1, 2, 3))
-            + '\n  ],\n  "info" : { "author" : "xcode", "version" : 1 }\n}\n')
-save(dial_big.resize((540, 540), Image.LANCZOS), "android/app/src/main/res/drawable-nodpi/opening_dial.png")
+# The opening screen animates the dial in layers: run export-opening-layers.py next.
+# (The iPhone launch screen and the Android 12 system splash are plain Night Navy, so the
+# dial first appears as it starts to move.)
 
 # The icon as a picture inside the app (the card at the top of Settings), 64 pt.
 CARD = "ios/PrayerTimesAsia/Resources/Assets.xcassets/AppIconImage.imageset"

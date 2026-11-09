@@ -29,7 +29,6 @@ targets:
         NSLocationWhenInUseUsageDescription: "Your location is used on your phone to calculate prayer times and the qibla direction where you are. It is never sent anywhere."
         UILaunchScreen:
           UIColorName: LaunchBackground
-          UIImageName: LaunchDial
         ITSAppUsesNonExemptEncryption: false
         # The next-prayer countdown Live Activity (drawn by PrayerTimesAsiaWidgets).
         NSSupportsLiveActivities: true

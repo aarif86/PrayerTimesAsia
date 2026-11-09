@@ -139,35 +139,3 @@ fun AppCard(version: String, onClick: () -> Unit, modifier: Modifier = Modifier)
         }
     }
 }
-
-/**
- * Shown over the app for a moment as it opens. It starts like the system splash
- * (the dial in the middle of Night Navy), lets the name rise in, then fades away.
- */
-@Composable
-fun OpeningScreen(reduceMotion: Boolean, onDone: () -> Unit) {
-    val words = remember { Animatable(0f) }
-    val fade = remember { Animatable(1f) }
-    LaunchedEffect(Unit) {
-        if (reduceMotion) {
-            words.snapTo(1f); kotlinx.coroutines.delay(500)
-        } else {
-            words.animateTo(1f, tween(500))
-            kotlinx.coroutines.delay(500)
-            fade.animateTo(0f, tween(400))
-        }
-        onDone()
-    }
-    Box(Modifier.fillMaxSize().graphicsLayer { alpha = fade.value }.background(Brand.nightNavy).clearAndSetSemantics { },
-        contentAlignment = Alignment.Center) {
-        Canvas(Modifier.fillMaxSize().graphicsLayer { alpha = words.value }) {
-            drawKawung(tile = 36.dp, alpha = 0.05f)
-            drawRect(Brush.radialGradient(listOf(Color(0x59F7BD8F), Color.Transparent), Offset(center.x, size.height * 1.05f), size.width * 1.1f))
-        }
-        Image(painterResource(R.drawable.opening_dial), null, Modifier.size(180.dp))
-        Text("Prayer Times Asia", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier.offset(y = 132.dp + 8.dp * (1 - words.value)).graphicsLayer { alpha = words.value })
-        Text("Built fisabilillah in Singapore", color = Brand.moonText.copy(alpha = 0.78f), fontSize = 14.sp,
-            modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 40.dp).graphicsLayer { alpha = words.value })
-    }
-}

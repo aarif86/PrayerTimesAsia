@@ -224,6 +224,10 @@ fun SettingsScreen(
                         state.update { it.copy(todayStyle = s) }
                     }
                     SwitchRow("Bigger text", p.largeText) { on -> state.update { it.copy(largeText = on) } }
+                    SwitchRow("Opening screen", p.showOpening,
+                        "The moving dial you see as the app opens. Turn it off to go straight to your prayer times. It always shows the first time.") { on ->
+                        state.update { it.copy(showOpening = on) }
+                    }
                     SwitchRow("24-hour time", p.use24Hour) { on -> state.update { it.copy(use24Hour = on) } }
                     StepperRow("Hijri date adjustment", if (p.hijriAdjustment == 0) "None" else String.format(java.util.Locale.ROOT, "%+d day", p.hijriAdjustment),
                         canDown = p.hijriAdjustment > -2, canUp = p.hijriAdjustment < 2,
@@ -399,8 +403,11 @@ fun ValueRow(label: String, value: String, onClick: (() -> Unit)? = null) = RowS
 }
 
 @Composable
-fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) = RowShell({ onChange(!checked) }) {
-    Text(label, style = Txt.body, color = Palette.primary, modifier = Modifier.weight(1f))
+fun SwitchRow(label: String, checked: Boolean, sub: String? = null, onChange: (Boolean) -> Unit) = RowShell({ onChange(!checked) }) {
+    Column(Modifier.weight(1f)) {
+        Text(label, style = Txt.body, color = Palette.primary)
+        if (sub != null) Text(sub, style = Txt.footnote, color = Palette.secondary)
+    }
     Switch(checked, onChange, colors = SwitchDefaults.colors(checkedTrackColor = Palette.success, checkedThumbColor = Color.White,
         uncheckedTrackColor = Palette.primary.copy(alpha = 0.16f), uncheckedThumbColor = Color.White, uncheckedBorderColor = Color.Transparent))
 }

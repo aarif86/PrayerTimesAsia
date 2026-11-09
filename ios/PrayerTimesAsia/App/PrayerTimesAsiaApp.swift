@@ -40,15 +40,25 @@ struct PrayerTimesAsiaApp: App {
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
-    // The opening screen (icon dial on navy) picks up from the launch screen, then fades.
+    // The moving opening screen (OpeningView.swift) plays over the plain navy launch screen,
+    // then fades. Always on a fresh install, then as Settings > Opening screen says.
     // Skipped for the CI screenshots.
-    @State private var opening = !ProcessInfo.processInfo.arguments.contains("-demo")
+    @State private var opening: Bool?
 
     var body: some View {
         ZStack {
             content
-            if opening { OpeningView(isShowing: $opening).transition(.opacity).zIndex(1) }
+            if opening ?? Self.showOpening(model.prefs) {
+                OpeningView(isShowing: Binding(get: { opening ?? true }, set: { opening = $0 }))
+                    .transition(.opacity).zIndex(1)
+            }
         }
+        // Decide once per launch, so turning it on in Settings doesn't bring it up mid-use.
+        .onAppear { if opening == nil { opening = Self.showOpening(model.prefs) } }
+    }
+
+    private static func showOpening(_ prefs: Preferences) -> Bool {
+        !ProcessInfo.processInfo.arguments.contains("-demo") && OpeningView.shouldShow(prefs)
     }
 
     @ViewBuilder private var content: some View {
