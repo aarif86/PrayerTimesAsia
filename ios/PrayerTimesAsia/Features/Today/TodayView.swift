@@ -149,51 +149,86 @@ struct TodayView: View {
     // MARK: Top
 
     /// The Day Dial on the left; where, when and the source on the right.
+    /// When the buttons need more room (an alarm time, the streak, the luggage button,
+    /// bigger text) the dial gets smaller, and if that is still not enough the buttons
+    /// move to their own row above. The row must never be wider than the screen: that
+    /// pushed the whole Prayer page sideways, cut off on the left.
     private func header(now: Date, day: PrayerDay, shown: PrayerDay,
                         current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
-        HStack(alignment: .center, spacing: 14) {
-            if let current, let next, let tomorrow = model.day(containing: now.addingTimeInterval(86_400)) {
-                DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
-                        currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
-                        currentPrayer: current.prayer,
-                        countdown: PrayerCountdown(now: now, next: next, model: model).count,
-                        label: PrayerCountdown(now: now, next: next, model: model).label)
-                    .frame(width: 172, height: 172)
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 14) {
+                headerDial(now: now, day: day, current: current, next: next, size: 172)
+                VStack(alignment: .leading, spacing: 10) {
+                    headerButtons(now)
+                    headerPlaceAndDay(shown)
+                }
             }
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    Spacer(minLength: 0)
-                    if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
-                        Button { model.showJourney = true } label: {
-                            Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
-                                .frame(width: 34, height: 34)
-                                .background(Theme.accent.opacity(0.25), in: Circle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Musafir: you may shorten and combine prayers")
-                    }
-                    wakeChip(now)
-                    if model.prefs.trackerEnabled { streakChip(now) }
-                    appearanceButton
-                    styleButton
+            HStack(alignment: .center, spacing: 10) {
+                headerDial(now: now, day: day, current: current, next: next, size: 140)
+                VStack(alignment: .leading, spacing: 10) {
+                    headerButtons(now)
+                    headerPlaceAndDay(shown)
                 }
-                Button { showPlaces = true } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
-                        Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
-                        if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
-                        Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
-                    }
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 10).padding(.vertical, 6)
-                    .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.7), lineWidth: 1))
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                headerButtons(now)
+                HStack(alignment: .center, spacing: 10) {
+                    headerDial(now: now, day: day, current: current, next: next, size: 140)
+                    VStack(alignment: .leading, spacing: 10) { headerPlaceAndDay(shown) }
                 }
-                .buttonStyle(.plain)
-                .accessibilityHint("Change location")
-                dateBlock(shown)
-                SourceBadge(day: shown, compact: true)
             }
         }
+    }
+
+    @ViewBuilder
+    private func headerDial(now: Date, day: PrayerDay, current: (prayer: Prayer, time: Date)?,
+                            next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
+        if let current, let next, let tomorrow = model.day(containing: now.addingTimeInterval(86_400)) {
+            DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
+                    currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
+                    currentPrayer: current.prayer,
+                    countdown: PrayerCountdown(now: now, next: next, model: model).count,
+                    label: PrayerCountdown(now: now, next: next, model: model).label)
+                .frame(width: size, height: size)
+        }
+    }
+
+    private func headerButtons(_ now: Date) -> some View {
+        HStack(spacing: 8) {
+            Spacer(minLength: 0)
+            if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
+                Button { model.showJourney = true } label: {
+                    Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
+                        .frame(width: 34, height: 34)
+                        .background(Theme.accent.opacity(0.25), in: Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Musafir: you may shorten and combine prayers")
+            }
+            wakeChip(now)
+            if model.prefs.trackerEnabled { streakChip(now) }
+            appearanceButton
+            styleButton
+        }
+    }
+
+    @ViewBuilder
+    private func headerPlaceAndDay(_ shown: PrayerDay) -> some View {
+        Button { showPlaces = true } label: {
+            HStack(spacing: 5) {
+                Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
+                Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
+                if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
+                Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
+            }
+            .font(.subheadline.weight(.semibold))
+            .padding(.horizontal, 10).padding(.vertical, 6)
+            .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.7), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Change location")
+        dateBlock(shown)
+        SourceBadge(day: shown, compact: true)
     }
 
     /// "TODAY / Fri 23 Oct / 12 Jamadilawal 1448" with ‹ › to move between days.

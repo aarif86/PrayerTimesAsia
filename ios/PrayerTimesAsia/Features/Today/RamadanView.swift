@@ -386,7 +386,7 @@ struct RamadanView: View {
                 let d = RamadanContent.doa(id)
                 DisclosureGroup(isExpanded: Binding(get: { openDoa == id }, set: { openDoa = $0 ? id : nil })) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(d.arabic).font(.title2).environment(\.layoutDirection, .rightToLeft)
+                        Text(d.arabic).font(.title2).fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .trailing).multilineTextAlignment(.trailing)
                         Text(d.rumi).italic()
                         Text(d.meaning(lang))

@@ -133,8 +133,9 @@ struct WakeUpView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("اللَّهُمَّ بَارِكْ لِأُمَّتِي فِي بُكُورِهَا")
                             .font(.title3)
+                            .multilineTextAlignment(.trailing)
+                            .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .trailing)
-                            .environment(\.layoutDirection, .rightToLeft)
                         Text("“O Allah, bless my ummah in their early mornings.”")
                             .font(.body.italic())
                         Text("The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi")
