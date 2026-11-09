@@ -796,8 +796,7 @@ final class AppModel {
         let jumuah = prefs.jumuahReminderMinutes
         let here = place.isInAsia ? "\(place.name) \(place.profile.flag)" : place.name
         let maghribAlertOn = onTime && prefs.notifyPrayers.contains(.maghrib)
-        // Settings, Hadith: one line under each prayer alert.
-        let hadithLine = prefs.hadithInAlerts ? "\n" + Hadith.of(.azan).alertLine(RamadanContent.lang(naming)) : ""
+        let lineLang = RamadanContent.lang(naming)
         var ramadan: [NotificationScheduler.Alert] = []
         // iOS keeps at most 64 pending, so fewer days when there are more alerts a day.
         let perDay = (onTime ? 6 : 0) + (early > 0 ? 6 : 0) + (nudges ? 4 : 0) + (jumuah > 0 ? 1 : 0)
@@ -842,7 +841,7 @@ final class AppModel {
                     let title = prayer == .sunrise ? "\(Prayer.fajr.name(naming)) ends in \(early) min" : "\(name) in \(early) min"
                     let at = time.addingTimeInterval(Double(-early) * 60)
                     alerts.append(.init(id: id + "-early", title: title,
-                                        body: "\(name) at \(formatted(time)) · \(here)",
+                                        body: "\(name) at \(formatted(time))",
                                         fireDate: at, silent: isSilent(at, prayer: prayer)))
                 }
                 guard onTime else { continue }
@@ -850,17 +849,17 @@ final class AppModel {
                 if prefs.alarmAtStart(prayer) { continue }
                 if prayer == .sunrise {
                     alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
-                                        body: "\(Prayer.fajr.name(naming)) has ended. \(here)", fireDate: time, silent: silent))
+                                        body: "\(Prayer.fajr.name(naming)) has ended.", fireDate: time, silent: silent))
                     continue
                 }
                 if prayer == .maghrib && isRamadanDay(time) {
                     alerts.append(.init(id: id, title: "Time to berbuka · \(name) \(formatted(time))",
-                                        body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu · \(here)", fireDate: time,
+                                        body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu", fireDate: time,
                                         sound: prefs.azanSound ? .azan : .standard, silent: silent))
                     continue
                 }
                 alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
-                                    body: "It's time for \(name) in \(here)\(hadithLine)", fireDate: time,
+                                    body: AlertLines.line(lineLang, prayer: prayer, friday: isFriday(time), year: pd.year, month: pd.month, day: pd.day, name: name), fireDate: time,
                                     sound: prefs.azanSound ? (prayer == .fajr ? .azanSubuh : .azan) : .standard, silent: silent))
             }
         }

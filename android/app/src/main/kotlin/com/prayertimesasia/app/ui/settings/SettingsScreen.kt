@@ -198,7 +198,7 @@ fun SettingsScreen(
                     SwitchRow("Show hadith in the app", p.showHadith) { on ->
                         state.update { it.copy(showHadith = on, hiddenHadith = if (on) emptyList() else it.hiddenHadith) }
                     }
-                    SwitchRow("Add a hadith to alerts", p.hadithInAlerts) { on -> state.update { it.copy(hadithInAlerts = on) } }
+                    SwitchRow("Add a hadith to wake-up alerts", p.hadithInAlerts) { on -> state.update { it.copy(hadithInAlerts = on) } }
                 }
             }
             item {

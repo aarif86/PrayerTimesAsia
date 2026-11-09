@@ -159,7 +159,7 @@ export function SettingsScreen() {
       <Group title="Hadith" foot="Tap ✕ on any hadith to hide just that one. Turn both off for a clean app with times only.">
         <ToggleItem label="Show hadith in the app" sub="A short hadith or ayah on some screens" on={p.showHadith}
           onChange={(v) => store.update((x) => { x.showHadith = v; if (v) x.hiddenHadith = [] })} />
-        <ToggleItem label="Add a hadith to alerts" sub="One short line under each prayer alert and the Subuh alarm" on={p.hadithInAlerts}
+        <ToggleItem label="Add a hadith to wake-up alerts" sub="One short line under the Subuh and tahajjud alerts" on={p.hadithInAlerts}
           onChange={(v) => store.update((x) => { x.hadithInAlerts = v })} />
       </Group>
 

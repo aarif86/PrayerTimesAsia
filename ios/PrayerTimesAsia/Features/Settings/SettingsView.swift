@@ -158,8 +158,8 @@ struct SettingsView: View {
                     }
                     Toggle(isOn: $model.prefs.hadithInAlerts) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Add a hadith to alerts")
-                            Text("One short line under each prayer alert").font(.caption).foregroundStyle(.secondary)
+                            Text("Add a hadith to wake-up alerts")
+                            Text("One short line under the Subuh and tahajjud alerts").font(.caption).foregroundStyle(.secondary)
                         }
                     }
                 } header: {

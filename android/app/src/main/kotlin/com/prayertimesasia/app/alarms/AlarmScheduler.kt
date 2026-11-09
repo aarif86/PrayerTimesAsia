@@ -1,6 +1,7 @@
 package com.prayertimesasia.app.alarms
 
 import com.prayertimesasia.core.RamadanContent
+import com.prayertimesasia.core.AlertLines
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.core.Hadith
 import android.app.AlarmManager
@@ -88,13 +89,13 @@ object AlarmScheduler {
                         // meeting or work would otherwise run past the time.
                         val title = if (prayer == Prayer.SUNRISE) "${Prayer.FAJR.name(r.naming)} ends in $early min" else "$name in $early min"
                         val at = time.minusSeconds(early * 60L)
-                        out += Alert("$id-early", title, "$name at ${r.formatted(time)} · $here", at, Kind.EARLY, silent = r.isSilent(at, prayer))
+                        out += Alert("$id-early", title, "$name at ${r.formatted(time)}", at, Kind.EARLY, silent = r.isSilent(at, prayer))
                     }
                     if (!p.notificationsEnabled) continue
                     // An alarm at the same minute rings instead, so it doesn't sound twice.
                     if (p.alarmAtStart(prayer)) continue
                     if (prayer == Prayer.SUNRISE) {
-                        out += Alert(id, "$name · ${r.formatted(time)}", "${Prayer.FAJR.name(r.naming)} has ended. $here", time, Kind.PRAYER,
+                        out += Alert(id, "$name · ${r.formatted(time)}", "${Prayer.FAJR.name(r.naming)} has ended.", time, Kind.PRAYER,
                             silent = r.isSilent(time, prayer))
                         continue
                     }
@@ -104,11 +105,11 @@ object AlarmScheduler {
                         else -> Sound.AZAN
                     }
                     if (prayer == Prayer.MAGHRIB && r.isRamadanDay(time)) {
-                        out += Alert(id, "Time to berbuka · $name ${r.formatted(time)}", "$BERBUKA_DOA · $here", time, Kind.PRAYER, sound,
+                        out += Alert(id, "Time to berbuka · $name ${r.formatted(time)}", BERBUKA_DOA, time, Kind.PRAYER, sound,
                             silent = r.isSilent(time, prayer))
                         continue
                     }
-                    out += Alert(id, "$name · ${r.formatted(time)}", "It's time for $name in $here${hadithLine(r, HadithId.AZAN)}", time, Kind.PRAYER, sound,
+                    out += Alert(id, "$name · ${r.formatted(time)}", AlertLines.line(RamadanContent.lang(r.naming), prayer, r.isFriday(time), day.year, day.month, day.day, name), time, Kind.PRAYER, sound,
                         silent = r.isSilent(time, prayer))
                 }
             }
@@ -148,7 +149,8 @@ object AlarmScheduler {
         return out
     }
 
-    /** Settings, Hadith: one line under the alert, or nothing when it is off. */
+
+    /** Settings, Hadith: one line under a wake-up alert, or nothing when it is off. */
     private fun hadithLine(r: Resolver, id: HadithId): String =
         if (r.prefs.hadithInAlerts) "\n" + Hadith.of(id).alertLine(RamadanContent.lang(r.naming)) else ""
 
