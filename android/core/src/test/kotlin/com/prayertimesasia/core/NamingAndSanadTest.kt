@@ -138,8 +138,9 @@ class NamingAndSanadTest {
         assertEquals("8:02 PM", r.formatted(day.time(Prayer.ISHA)))
         assertEquals(Prayer.ISHA, r.current(now)!!.first)
         assertEquals(Prayer.FAJR, r.next(now)!!.first)
-        assertEquals(NamingStyle.MALAY, r.naming)
-        assertEquals("14 Jamadilawal 1448", r.hijri(now))
+        // English by default, even at a Singapore home; Malay when picked.
+        assertEquals(NamingStyle.INTERNATIONAL, r.naming)
+        assertEquals("14 Jamadilawal 1448", Resolver(prefs.copy(namingOverride = NamingStyle.MALAY)).hijri(now))
         // Without a table (offline) it falls back to the calibrated calculation.
         val offline = Resolver(prefs).day(now)!!
         assertEquals(SourceGrade.CALCULATED, offline.grade)
