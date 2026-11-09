@@ -35,7 +35,8 @@ class AlarmPlanTest {
         // The next alert is this morning's Subuh, at the exact minute.
         assertEquals(today.time(Prayer.FAJR), first.at)
         assertTrue(first.title, first.title.startsWith("Fajr · "))
-        assertTrue(first.body, first.body.contains("Pasir Ris"))
+        // One short call to prayer, without the place name.
+        assertTrue(first.body, first.body.isNotBlank() && !first.body.contains("Pasir Ris") && !first.body.contains("\n"))
         val early = plan.first { it.kind == AlarmScheduler.Kind.EARLY }
         assertEquals(today.time(Prayer.FAJR).minusSeconds(600), early.at)
         val wake = plan.first { it.kind == AlarmScheduler.Kind.WAKE }

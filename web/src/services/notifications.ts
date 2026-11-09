@@ -9,6 +9,7 @@ import { playAzan } from './azan'
 import { playAlarm } from './alarmSound'
 import { hadithAlertLine, type HadithId } from '../core/hadith'
 import { lang3 } from '../core/ramadanContent'
+import { alertLine } from '../core/alertLines'
 import { store } from './store'
 
 /**
@@ -118,27 +119,28 @@ export function upcomingAlerts(now: number): Alert[] {
         // or work would otherwise run past the time.
         out.push({
           id: `${id}-early`, title: prayer === 'sunrise' ? `${store.name('fajr')} ends in ${early} min` : `${name} in ${early} min`,
-          body: `${name} at ${store.formatted(time)} · ${here}`, at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
+          body: `${name} at ${store.formatted(time)}`, at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
         })
       }
       if (!onTime) continue
       // An alarm at the same minute rings instead, so it doesn't sound twice.
       if (alarmAtStart(prayer)) continue
       if (prayer === 'sunrise') {
-        out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended. ${here}`, at: time, silent })
+        out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended.`, at: time, silent })
         continue
       }
       if (prayer === 'maghrib' && store.isRamadanDay(time)) {
-        out.push({ id, title: `Time to berbuka · ${name} ${store.formatted(time)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu · ${here}`, at: time, prayer, silent })
+        out.push({ id, title: `Time to berbuka · ${name} ${store.formatted(time)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu`, at: time, prayer, silent })
         continue
       }
-      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}${alertHadith('azan')}`, at: time, prayer, silent })
+      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: alertLine(lang3(store.naming), prayer, store.isFriday(time), day.year, day.month, day.day, name), at: time, prayer, silent })
     }
   }
   return [...out, ...wake].filter((a) => a.at > now).sort((a, b) => a.at - b.at)
 }
 
-/** "\n“When you hear the azan, say what the muazzin says.” al Bukhari", or nothing when Settings, Hadith, alerts is off. */
+
+/** "\n“...” al Bukhari" under a wake-up alert, or nothing when Settings, Hadith, alerts is off. */
 function alertHadith(id: HadithId): string {
   return store.prefs.hadithInAlerts ? `\n${hadithAlertLine(id, lang3(store.naming))}` : ''
 }

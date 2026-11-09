@@ -43,11 +43,13 @@ class LocationService(private val context: Context) {
         if (!hasPermission) return
         stop()
         val providers = runCatching { lm.getProviders(true) }.getOrDefault(emptyList())
+        // The last known fix can be days old and from another town or country;
+        // alerts are written days ahead with its times, so only a recent one.
         providers.mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
-            .maxByOrNull { it.time }?.let(onLocation)
+            .maxByOrNull { it.time }?.takeIf { usable(it) }?.let(onLocation)
         val l = object : LocationListener {
             override fun onLocationChanged(location: Location) {
-                onLocation(location)
+                if (usable(location)) onLocation(location)
                 if (location.hasAccuracy() && location.accuracy < 1000) stop()
             }
 
@@ -60,6 +62,13 @@ class LocationService(private val context: Context) {
         for (p in listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)) {
             if (p in providers) runCatching { lm.requestLocationUpdates(p, 10_000L, 500f, l, Looper.getMainLooper()) }
         }
+    }
+
+    /** Fresh (10 minutes) and, with precise location allowed, within 3 km: a rough cell guess can land across a border. */
+    private fun usable(location: Location): Boolean {
+        if (System.currentTimeMillis() - location.time > 10 * 60_000L) return false
+        val precise = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        return !(precise && location.hasAccuracy() && location.accuracy > 3000)
     }
 
     fun stop() {
