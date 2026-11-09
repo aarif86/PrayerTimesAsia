@@ -109,6 +109,7 @@ final class AppModel {
         if args.contains("-masjid") { p.myMasjid = demoMasjid }
         // -arrival: the Welcome card at home too (as after a reinstall).
         if args.contains("-arrival") { p.arrivalBannerDismissed = false }
+        if args.contains("-largetext") { p.largeText = true }
         // -season ramadan (or sighting, lastTen, raya, syawal): the tester's Ramadan preview.
         if let i = args.firstIndex(of: "-season"), i + 1 < args.count, let season = SeasonPreview(rawValue: args[i + 1]) {
             p.seasonPreview = season

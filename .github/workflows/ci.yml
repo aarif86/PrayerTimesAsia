@@ -98,7 +98,7 @@ jobs:
           shot -demo-travel -tab today;   xcrun simctl io "$UDID" screenshot screenshots/2-today-hanoi.png
           shot -demo-travel -tab today -sidedial; xcrun simctl io "$UDID" screenshot screenshots/2c-today-hanoi-sidedial.png
           shot -demo -tab today -sidedial -arrival; xcrun simctl io "$UDID" screenshot screenshots/2d-today-singapore-welcome.png
-          shot -demo-travel -tab today -sidedial -light; sleep 3; xcrun simctl io "$UDID" screenshot screenshots/2e-today-hanoi-sidedial-opening.png
+          shot -demo-travel -tab today -sidedial -largetext -wake; xcrun simctl io "$UDID" screenshot screenshots/2e-today-hanoi-sidedial-big-text.png
           shot -demo-visitor -tab today;  xcrun simctl io "$UDID" screenshot screenshots/2b-today-visitor-kl.png
           shot -demo -tab today -dial;    xcrun simctl io "$UDID" screenshot screenshots/1e-today-dial.png
           shot -demo -tab today -dial -light; xcrun simctl io "$UDID" screenshot screenshots/1f-today-dial-light.png
