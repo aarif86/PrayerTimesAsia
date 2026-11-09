@@ -103,13 +103,12 @@ enum AsiaRegions {
 
 extension NamingStyle {
     /// Your names, when you haven't picked any: your phone's language when we
-    /// have names in it, else your home country's, else your region's, else
-    /// International. Read from the phone only, never from your IP address.
-    static func personal(homeCountry: String?, locale: Locale = .deviceLanguage) -> NamingStyle {
-        if let spoken = forLanguage(locale.language.languageCode?.identifier) { return spoken }
-        // A home with its own spelling wins over an English phone.
-        if let home = AsiaRegions.profile(for: homeCountry), home.naming != .international { return home.naming }
-        return AsiaRegions.profile(for: locale.region?.identifier)?.naming ?? .international
+    /// have names in it, else English (International). Your home country does
+    /// not change them, so a Singapore user on an English phone sees Fajr, and
+    /// picks Malay in Settings for Subuh. Read from the phone only, never from
+    /// your IP address.
+    static func personal(locale: Locale = .deviceLanguage) -> NamingStyle {
+        forLanguage(locale.language.languageCode?.identifier) ?? .international
     }
 
     /// The names that go with a language code (ISO 639).

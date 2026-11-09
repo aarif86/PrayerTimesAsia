@@ -108,19 +108,13 @@ export function timeZoneForPlace(code: string | null | undefined, longitude: num
 
 /**
  * Your names, when you haven't picked any: your browser's language when we
- * have names in it, else your home country's, else your region's, else
- * International. Read from the device only, never from your IP address.
+ * have names in it, else English (International). Your home country does not
+ * change them, so a Singapore user on an English browser sees Fajr, and picks
+ * Malay in Settings for Subuh. Read from the device only, never from your IP
+ * address.
  */
-export function personalNaming(homeCountry: string | null | undefined, locale: string): NamingStyle {
-  const parts = locale.replace(/_/g, '-').split('-')
-  const lang = parts[0]
-  const region = parts.slice(1).find((s) => /^[A-Za-z]{2}$/.test(s))
-  const spoken = namingForLanguage(lang)
-  if (spoken) return spoken
-  // A home with its own spelling wins over an English browser.
-  const home = profileFor(homeCountry)
-  if (home && home.naming !== 'arabic') return home.naming
-  return profileFor(region)?.naming ?? 'arabic'
+export function personalNaming(locale: string): NamingStyle {
+  return namingForLanguage(locale.replace(/_/g, '-').split('-')[0]) ?? 'arabic'
 }
 
 /** The names that go with a language code (ISO 639; old Android/Java code "in" is Indonesian). */

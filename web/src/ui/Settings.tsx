@@ -149,7 +149,7 @@ export function SettingsScreen() {
         </a>
       </Group>
 
-      <Group title="Prayer names" foot={'Your names stay the same wherever you are: Automatic uses your home country\'s words, or your browser\'s language. When you travel somewhere that uses different words, the local name appears small beside it - "Fajr" with "Subuh" in Kuala Lumpur - so the masjid\'s signs make sense. Spellings follow each authority\'s own timetable.'}>
+      <Group title="Prayer names" foot={'Automatic shows English names like Fajr and Isha, or your browser\'s language if we have it. Pick Malay for Subuh and Isyak. Your names stay the same wherever you go. When you travel somewhere that uses other words, the local name shows small underneath, like Subuh in Kuala Lumpur, so the masjid\'s signs make sense. Spellings follow each authority\'s own timetable.'}>
         <SelectItem label="Prayer names" value={p.namingOverride ?? 'auto'}
           options={[{ value: 'auto', label: `Automatic · ${NAMING_LANGUAGE[s.personalNaming]}` }, ...NAMING_STYLES.map((n) => ({ value: n, label: NAMING_LABEL[n] }))]}
           onChange={(v) => store.update((x) => { x.namingOverride = v === 'auto' ? null : (v as NamingStyle) })} />

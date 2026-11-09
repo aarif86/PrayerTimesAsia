@@ -6,24 +6,21 @@ import { zonedTime } from '../src/core/tz'
 
 /** Your names follow you; the local word only shows when it differs (iOS NamingTests). */
 describe('Prayer names', () => {
-  it('come from home, then the browser', () => {
-    expect(personalNaming('SG', 'en-AU')).toBe('malay')
-    expect(personalNaming('ID', 'en-AU')).toBe('indonesian')
-    expect(personalNaming('TR', 'en-AU')).toBe('turkish')
-    expect(personalNaming(null, 'en-AU')).toBe('arabic')
-    expect(personalNaming(null, 'ms-MY')).toBe('malay')
-    expect(personalNaming(null, 'en_PK')).toBe('southAsian')
-    expect(personalNaming('AU', 'id-ID')).toBe('indonesian')
+  it('are English unless the browser speaks another', () => {
+    // Home country no longer decides; an English browser in Singapore sees Fajr.
+    expect(personalNaming('en-SG')).toBe('arabic')
+    expect(personalNaming('en_PK')).toBe('arabic')
+    expect(personalNaming('en-AU')).toBe('arabic')
+    expect(personalNaming('ms-MY')).toBe('malay')
+    expect(personalNaming('id-ID')).toBe('indonesian')
   })
 
-  it("follow the phone's language first, in its own script", () => {
-    expect(personalNaming(null, 'ar-SA')).toBe('arabicScript')
-    expect(personalNaming('PK', 'ur-PK')).toBe('urdu')
-    expect(personalNaming('BD', 'bn-BD')).toBe('bengali')
-    expect(personalNaming('FR', 'fr-FR')).toBe('french')
-    expect(personalNaming('SG', 'tr-TR')).toBe('turkish')
-    // An English phone still gets the home country's words.
-    expect(personalNaming('PK', 'en-PK')).toBe('southAsian')
+  it("follow the browser's language, in its own script", () => {
+    expect(personalNaming('ar-SA')).toBe('arabicScript')
+    expect(personalNaming('ur-PK')).toBe('urdu')
+    expect(personalNaming('bn-BD')).toBe('bengali')
+    expect(personalNaming('fr-FR')).toBe('french')
+    expect(personalNaming('tr-TR')).toBe('turkish')
   })
 
   it('have every name in every language', () => {
