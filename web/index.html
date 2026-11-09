@@ -40,9 +40,11 @@
       <div class="line">Built fisabilillah in Singapore</div>
     </div>
     <script>
-      // The opening screen moves for about a second, a different way each time (never the same
-      // twice in a row). Settings > Opening screen can turn it off, but it always shows the first time.
-      // The clock hands always land on the real time. Reduce Motion keeps the dial still.
+      // The opening screen moves for about a second, a different way each time. All eleven
+      // movements come round once, in a fresh shuffled order, before any repeats, and never the
+      // same one twice in a row. The clock hands always sweep round to the real time.
+      // Settings > Opening screen can turn it off, but it always shows the first time.
+      // Reduce Motion keeps the dial still. The same movements play on iPhone and Android.
       (function () {
         var el = document.getElementById('opening')
         function get(k) { try { return localStorage.getItem(k) } catch (e) { return null } }
@@ -65,10 +67,18 @@
           var up = [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }]
           a(el.querySelector('.name'), up, 500, delay); a(el.querySelector('.line'), up, 500, delay + 100)
         }
+        // The hands sweep round to the real time in every movement.
+        function sweep(delay) {
+          a(L('hour'), [rot(hour - 90), rot(hour)], 1000 - (delay || 0), delay)
+          a(L('minute'), [rot(minute - 300), rot(minute)], 1000 - (delay || 0), delay)
+        }
+        function show(node, ms, delay, from) {
+          a(node, [{ opacity: 0, transform: 'scale(' + (from || 1) + ')' }, { opacity: 1, transform: 'none' }], ms, delay)
+        }
         var MOVES = [
           function compass() { // the ring swings like a real compass and settles on North
             a(L('ring-all'), [rot(-75), { transform: 'rotate(28deg)', offset: .38 }, { transform: 'rotate(-11deg)', offset: .62 }, { transform: 'rotate(4deg)', offset: .82 }, rot(0)], 1000, 0, 'ease-in-out')
-            a(dial, [{ opacity: 0 }, { opacity: 1, offset: .2 }, { opacity: 1 }], 1000); rise(250)
+            a(dial, [{ opacity: 0 }, { opacity: 1, offset: .2 }, { opacity: 1 }], 1000); sweep(); rise(250)
           },
           function clock() { // the hands spin from twelve round to the real time
             a(L('hour'), [rot(0), rot(hour + 360)], 1000); a(L('minute'), [rot(0), rot(minute + 1080)], 1000)
@@ -76,28 +86,63 @@
           },
           function batik() { // the kawung ring turns and glows in
             a(L('batik'), [{ transform: 'rotate(-90deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], 1000)
-            a(dial, [{ transform: 'scale(.9)', opacity: 0 }, { transform: 'none', opacity: 1 }], 600); rise(250)
+            a(dial, [{ transform: 'scale(.9)', opacity: 0 }, { transform: 'none', opacity: 1 }], 600); sweep(); rise(250)
           },
           function stitch() { // the two stitch rings run opposite ways as the dial pops in
             a(L('stitch-outer'), [rot(-120), rot(0)], 1000); a(L('stitch-inner'), [rot(120), rot(0)], 1000)
-            a(dial, [{ transform: 'scale(.7)', opacity: 0 }, { transform: 'scale(1.06)', opacity: 1, offset: .55 }, { transform: 'none', opacity: 1 }], 700, 0, 'ease-out'); rise(300)
+            a(dial, [{ transform: 'scale(.7)', opacity: 0 }, { transform: 'scale(1.06)', opacity: 1, offset: .55 }, { transform: 'none', opacity: 1 }], 700, 0, 'ease-out'); sweep(); rise(300)
           },
           function sunrise() { // dawn glows and the dial rises into place
             a(el.querySelector('.glow'), [{ opacity: 0, transform: 'translateY(30%)' }, { opacity: 1, transform: 'none' }], 1000)
             a(dial, [{ transform: 'translateY(90px) scale(.85)', opacity: 0 }, { transform: 'translateY(-6px)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }], 1000)
-            a(L('hour'), [rot(hour - 60), rot(hour)], 1000); a(L('minute'), [rot(minute - 120), rot(minute)], 1000); rise(400)
+            sweep(); rise(400)
           },
           function kaabah() { // the Kaabah first, then the face and the compass open out around it
             a(L('kaabah'), [{ transform: 'scale(.3)', opacity: 0 }, { transform: 'scale(1.15)', opacity: 1, offset: .6 }, { transform: 'none', opacity: 1 }], 450)
-            ;['face', 'hub'].forEach(function (n) { a(L(n), [{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'none' }], 450, 250) })
-            a(L('hour'), [{ opacity: 0, transform: 'rotate(' + hour + 'deg) scale(.4)' }, { opacity: 1, transform: 'rotate(' + hour + 'deg)' }], 450, 250)
-            a(L('minute'), [{ opacity: 0, transform: 'rotate(' + minute + 'deg) scale(.4)' }, { opacity: 1, transform: 'rotate(' + minute + 'deg)' }], 450, 250)
+            ;['face', 'hub'].forEach(function (n) { show(L(n), 450, 250, .4) })
+            a(L('hour'), [{ opacity: 0, transform: 'rotate(' + (hour - 90) + 'deg) scale(.4)' }, { opacity: 1, transform: 'rotate(' + hour + 'deg)' }], 750, 250)
+            a(L('minute'), [{ opacity: 0, transform: 'rotate(' + (minute - 300) + 'deg) scale(.4)' }, { opacity: 1, transform: 'rotate(' + minute + 'deg)' }], 750, 250)
             a(L('ring-all'), [{ opacity: 0, transform: 'scale(.6) rotate(-40deg)' }, { opacity: 1, transform: 'none' }], 500, 500); rise(500)
           },
+          function tawaf() { // the ring circles once anticlockwise, the way of tawaf round the Kaabah
+            a(L('ring-all'), [rot(360), rot(0)], 1000)
+            a(dial, [{ opacity: 0 }, { opacity: 1 }], 250); sweep(); rise(300)
+          },
+          function drop() { // the dial drops in from above and settles with a soft bounce
+            a(dial, [{ transform: 'translateY(-160px)', opacity: 0 }, { transform: 'translateY(-110px)', opacity: 1, offset: .15 },
+              { transform: 'none', offset: .55 }, { transform: 'translateY(-14px)', offset: .7 }, { transform: 'none', offset: .85 },
+              { transform: 'translateY(-4px)', offset: .93 }, { transform: 'none', opacity: 1 }], 1000, 0, 'linear')
+            sweep(); rise(450)
+          },
+          function flip() { // the dial spins on its edge like a coin, then faces you
+            a(dial, [{ transform: 'scaleX(0)', opacity: 0 }, { transform: 'scaleX(1)', opacity: 1, offset: .3 }, { transform: 'scaleX(0)', opacity: 1, offset: .55 }, { transform: 'none', opacity: 1 }], 900)
+            sweep(); rise(350)
+          },
+          function pieces() { // the dial builds up piece by piece, from the ring in to the hands
+            show(L('ring'), 250, 0, .9); show(L('batik'), 250, 100); show(L('stitch-outer'), 250, 200); show(L('stitch-inner'), 250, 200)
+            show(L('marks'), 250, 300); show(L('face'), 250, 400, .85)
+            a(L('kaabah'), [{ transform: 'scale(.3)', opacity: 0 }, { transform: 'scale(1.15)', opacity: 1, offset: .6 }, { transform: 'none', opacity: 1 }], 300, 500)
+            show(L('hub'), 250, 600)
+            a(L('hour'), [{ opacity: 0, transform: 'rotate(' + (hour - 90) + 'deg)' }, { opacity: 1, transform: 'rotate(' + hour + 'deg)' }], 400, 600)
+            a(L('minute'), [{ opacity: 0, transform: 'rotate(' + (minute - 300) + 'deg)' }, { opacity: 1, transform: 'rotate(' + minute + 'deg)' }], 400, 600)
+            rise(500)
+          },
+          function spiral() { // the dial spirals in from far away
+            a(dial, [{ transform: 'rotate(-270deg) scale(.2)', opacity: 0 }, { transform: 'rotate(-150deg) scale(.6)', opacity: 1, offset: .3 }, { transform: 'none', opacity: 1 }], 1000)
+            sweep(); rise(350)
+          },
         ]
-        var last = parseInt(get('pta-opening-last') || '-1', 10), i
-        do { i = Math.floor(Math.random() * MOVES.length) } while (i === last)
-        put('pta-opening-last', String(i))
+        // A shuffled bag of every movement: take the next, refill when empty, never the last one first.
+        var n = MOVES.length, last = parseInt(get('pta-opening-last') || '-1', 10), bag = []
+        try { bag = JSON.parse(get('pta-opening-bag') || '[]').filter(function (x) { return x >= 0 && x < n && x === (x | 0) }) } catch (e) {}
+        if (!bag.length) {
+          for (var k = 0; k < n; k++) bag.push(k)
+          for (var j = n - 1; j > 0; j--) { var r = Math.floor(Math.random() * (j + 1)), t = bag[j]; bag[j] = bag[r]; bag[r] = t }
+          if (bag[0] === last) { bag.push(bag.shift()) }
+        }
+        var i = bag.shift(), forced = /[?&]opening=(\d+)/.exec(location.search)
+        if (forced && +forced[1] < n) i = +forced[1] // screenshots and previews of one movement
+        else { put('pta-opening-bag', JSON.stringify(bag)); put('pta-opening-last', String(i)) }
         MOVES[i]()
         window.__openingMs = 1350
       })()
