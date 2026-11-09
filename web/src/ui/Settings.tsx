@@ -178,6 +178,8 @@ export function SettingsScreen() {
           onChange={(v) => store.update((x) => { x.todayStyle = v as TodayStyle })} />
         <ToggleItem label="Bigger text" on={p.largeText} onChange={(v) => store.update((x) => { x.largeText = v })}
           sub="Makes every word and time larger. For the clearest screen, pick Big and Simple as the Prayer screen too." />
+        <ToggleItem label="Opening screen" on={p.showOpening} onChange={(v) => store.update((x) => { x.showOpening = v })}
+          sub="The moving dial you see as the app opens. Turn it off to go straight to your prayer times. It always shows the first time." />
         <ToggleItem label="24-hour time" on={p.use24Hour} onChange={(v) => store.update((x) => { x.use24Hour = v })} />
         <div class="item">
           <span class="label">Hijri date adjustment</span>

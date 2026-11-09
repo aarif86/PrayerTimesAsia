@@ -111,6 +111,8 @@ export interface Preferences {
   buzzOnly: boolean
   /** Bigger text everywhere, for older eyes. */
   largeText: boolean
+  /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
+  showOpening: boolean
   /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
   jumuahReminderMinutes: number
   /** Short hadith and ayat on some screens (see core/hadith.ts). */
@@ -181,6 +183,7 @@ export const DEFAULT_PREFS: Preferences = {
   quietTo: 6 * 60,
   buzzOnly: false,
   largeText: false,
+  showOpening: true,
   jumuahReminderMinutes: 0,
   showHadith: true,
   hadithInAlerts: true,

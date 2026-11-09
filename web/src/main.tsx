@@ -10,10 +10,12 @@ import { registerServiceWorker } from './ui/pwa'
 render(<App />, document.getElementById('app')!)
 registerServiceWorker()
 
-// Opening screen (index.html): keep it up for a short moment so it is seen, not flashed, then fade it out.
+// Opening screen (index.html): let its movement finish (about a second), or keep a still dial up
+// for a short moment so it is seen, not flashed, then fade it out.
 const opening = document.getElementById('opening')
 if (opening) {
-  const shown = Math.max(0, 900 - performance.now())
+  const holdMs = (window as { __openingMs?: number }).__openingMs ?? 900
+  const shown = Math.max(0, holdMs - performance.now())
   setTimeout(() => {
     opening.classList.add('done')
     setTimeout(() => opening.remove(), 450)

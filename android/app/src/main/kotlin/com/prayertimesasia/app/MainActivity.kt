@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.prayertimesasia.app.ui.theme.OpeningScreen
+import com.prayertimesasia.core.OpeningMove
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import com.prayertimesasia.app.ui.PrayerTimesRoot
@@ -43,15 +44,20 @@ class MainActivity : ComponentActivity(), Permissions {
         state.permissions = this
         if (savedInstanceState == null) state.openLink(intent?.dataString)
         if (savedInstanceState == null && demo == null) welcomeBackIfRestored()
-        // The opening screen (icon dial on navy) picks up from the system splash, then fades.
+        // The moving opening screen plays over the plain navy system splash, then fades.
+        // Always the first time after install, then as Settings > Opening screen says.
         // Not on a rotation or for the demo screenshots.
-        val showOpening = savedInstanceState == null && demo == null
+        val install = getSharedPreferences(INSTALL_PREFS, MODE_PRIVATE)
+        val showOpening = savedInstanceState == null && demo == null &&
+            (state.prefs.showOpening || !install.getBoolean("openingSeen", false))
+        val move = OpeningMove.next(install.getInt("openingLast", -1))
+        if (showOpening) install.edit().putBoolean("openingSeen", true).putInt("openingLast", move.ordinal).apply()
         val reduceMotion = android.provider.Settings.Global.getFloat(contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
         setContent {
             var opening by remember { mutableStateOf(showOpening) }
             Box(Modifier.fillMaxSize()) {
                 PrayerTimesRoot(state)
-                if (opening) OpeningScreen(reduceMotion) { opening = false }
+                if (opening) OpeningScreen(move, reduceMotion) { opening = false }
             }
         }
     }

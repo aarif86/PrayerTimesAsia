@@ -391,6 +391,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var buzzOnly = false
     /// Bigger text everywhere, for older eyes.
     var largeText = false
+    /// The moving opening screen. Off goes straight to the app; it still shows the first time.
+    var showOpening = true
     /// Fridays: a reminder this many minutes before Jumaat (0 = off).
     var jumuahReminderMinutes = 0
     static let jumuahReminderChoices = [0, 20, 30, 45, 60, 90]
@@ -475,6 +477,7 @@ struct Preferences: Codable, Equatable, Sendable {
         if !(0..<1440).contains(quietTo) { quietTo = d.quietTo }
         buzzOnly = v(.buzzOnly, d.buzzOnly)
         largeText = v(.largeText, d.largeText)
+        showOpening = v(.showOpening, d.showOpening)
         jumuahReminderMinutes = v(.jumuahReminderMinutes, d.jumuahReminderMinutes)
         if !Self.jumuahReminderChoices.contains(jumuahReminderMinutes) { jumuahReminderMinutes = 0 }
         showHadith = v(.showHadith, d.showHadith)

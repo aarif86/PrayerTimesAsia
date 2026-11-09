@@ -196,6 +196,10 @@ struct SettingsView: View {
                         ForEach(TodayStyle.allCases) { Text($0.label).tag($0) }
                     }
                     Toggle("Bigger text", isOn: $model.prefs.largeText)
+                    Toggle(isOn: $model.prefs.showOpening) {
+                        Text("Opening screen")
+                        Text("The moving dial you see as the app opens. Turn it off to go straight to your prayer times. It always shows the first time.")
+                    }
                     Toggle("24-hour time", isOn: $model.prefs.use24Hour)
                     Stepper(value: $model.prefs.hijriAdjustment, in: -2...2) {
                         LabeledContent("Hijri date adjustment",

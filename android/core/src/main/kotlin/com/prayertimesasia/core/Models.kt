@@ -341,6 +341,8 @@ data class Preferences(
     val buzzOnly: Boolean = false,
     /** Bigger text everywhere, for older eyes. */
     val largeText: Boolean = false,
+    /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
+    val showOpening: Boolean = true,
     /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
     val jumuahReminderMinutes: Int = 0,
     /** Short hadith and ayat on some screens (HadithContent.kt). */
