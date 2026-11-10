@@ -56,12 +56,12 @@ struct TodayView: View {
                 }
                 .scrollIndicators(.hidden)
             } else if model.prefs.todayStyle == .sunPath {
-                sunPathPage(now: now, day: day, shown: shown, current: current, next: next)
+                AnyView(sunPathPage(now: now, day: day, shown: shown, current: current, next: next))
             } else if model.prefs.todayStyle == .bands {
                 ViewThatFits(in: .vertical) {
-                    bandsPage(now: now, shown: shown, current: current, next: next, fill: true)
+                    AnyView(bandsPage(now: now, shown: shown, current: current, next: next, fill: true))
                     ScrollView {
-                        bandsPage(now: now, shown: shown, current: current, next: next, fill: false)
+                        AnyView(bandsPage(now: now, shown: shown, current: current, next: next, fill: false))
                     }
                     .scrollIndicators(.hidden)
                 }
@@ -70,19 +70,19 @@ struct TodayView: View {
             } else {
             ViewThatFits(in: .vertical) {
                 if model.prefs.todayStyle == .centre {
-                    centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                    AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
                 } else if model.prefs.todayStyle == .dial {
-                    dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                    AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
                 } else {
-                    page(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                    AnyView(page(now: now, day: day, shown: shown, current: current, next: next, fill: true))
                 }
                 ScrollView {
                     if model.prefs.todayStyle == .centre {
-                        centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                        AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
                     } else if model.prefs.todayStyle == .dial {
-                        dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                        AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
                     } else {
-                        page(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                        AnyView(page(now: now, day: day, shown: shown, current: current, next: next, fill: false))
                     }
                 }
                 .scrollIndicators(.hidden)
@@ -154,8 +154,12 @@ struct TodayView: View {
     /// move to their own row above. The row must never be wider than the screen: that
     /// pushed the whole Prayer page sideways, cut off on the left.
     private func header(now: Date, day: PrayerDay, shown: PrayerDay,
-                        current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
-        ViewThatFits(in: .horizontal) {
+                        current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> AnyView {
+        // AnyView on purpose. The three layouts below make a very deep SwiftUI type, and
+        // on a real iPhone (1 MB main thread stack) looking that type up when the Prayer
+        // screen opened ran out of stack and crashed the app at launch (build 30).
+        // The Simulator has a bigger stack, so CI never saw it.
+        AnyView(ViewThatFits(in: .horizontal) {
             HStack(alignment: .center, spacing: 14) {
                 headerDial(now: now, day: day, current: current, next: next, size: 172)
                 VStack(alignment: .leading, spacing: 10) {
@@ -177,7 +181,7 @@ struct TodayView: View {
                     VStack(alignment: .leading, spacing: 10) { headerPlaceAndDay(shown) }
                 }
             }
-        }
+        })
     }
 
     @ViewBuilder
