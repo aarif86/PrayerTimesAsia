@@ -282,7 +282,7 @@ extension MovedSettings {
     /// How far back "this year's Ramadan record" reaches from its newest day: the month itself, Syawal and the replaced fasts after it.
     static let ramadanYearDays = 330
 
-    /// Only the Ramadan record from the newest day back `ramadanYearDays` days; nil if nothing older was there to leave out.
+    /// Only the Ramadan record from the newest Ramadan month day back `ramadanYearDays` days, plus everything after it; nil if nothing older was there to leave out.
     var latestRamadanYear: MovedSettings? {
         let all = (Array((fastLog ?? [:]).keys) + (tarawihLog ?? []) + (quranLog ?? [])).filter(Self.isDay).sorted()
         guard let newest = all.last, let oldest = all.first else { return nil }
@@ -290,7 +290,10 @@ extension MovedSettings {
         f.locale = Locale(identifier: "en_US_POSIX")
         f.timeZone = TimeZone(identifier: "UTC")
         f.dateFormat = "yyyy-MM-dd"
-        guard let end = f.date(from: newest) else { return nil }
+        // Count back from the newest day in the month itself (a Tarawih or juz day, or a Ramadan fast),
+        // so replaced and Syawal fasts kept later in the year don't push this year's Ramadan out.
+        let inMonth = (Array((fastLog ?? [:]).filter { $0.value != .qadha && $0.value != .syawal }.keys) + (tarawihLog ?? []) + (quranLog ?? [])).filter(Self.isDay).sorted()
+        guard let end = f.date(from: inMonth.last ?? newest) else { return nil }
         let from = f.string(from: end.addingTimeInterval(-Double(Self.ramadanYearDays) * 86_400))
         guard oldest < from else { return nil }
         var out = self

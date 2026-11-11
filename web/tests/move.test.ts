@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import fixture from '../../testdata/move-settings.json'
-import { applyMoved, decodeMove, describeMoved, encodeForQR, encodeMove, movedFrom, type MovedSettings } from '../src/services/move'
+import { applyMoved, decodeMove, describeMoved, encodeForQR, encodeMove, latestRamadanYear, movedFrom, type MovedSettings } from '../src/services/move'
+import type { FastMark } from '../src/core/ramadanContent'
 import { DEFAULT_PREFS } from '../src/services/prefs'
 
 describe('Move my settings', () => {
@@ -118,5 +119,22 @@ describe('Move my settings', () => {
     expect(back!.tarawihLog).toHaveLength(30)
     // Short enough already: nothing is left out.
     expect((await encodeForQR(m, full.length)).ramadanTrimmed).toBe(false)
+  })
+  it('a fast replaced just before next Ramadan still keeps this year\'s whole Ramadan', () => {
+    const fastLog: Record<string, FastMark> = {}
+    const tarawihLog: string[] = []
+    for (const y of [2025, 2026]) {
+      for (let i = 0; i < 30; i++) {
+        const d = new Date(Date.UTC(y, 1, 18 + i)).toISOString().slice(0, 10)
+        fastLog[d] = 'fasted'
+        tarawihLog.push(d)
+      }
+    }
+    fastLog['2027-02-05'] = 'qadha'
+    const kept = latestRamadanYear({ v: 1, fastLog, tarawihLog })!
+    expect(Object.keys(kept.fastLog!).filter((d) => d.startsWith('2026-'))).toHaveLength(30)
+    expect(kept.fastLog!['2027-02-05']).toBe('qadha')
+    expect(Object.keys(kept.fastLog!).some((d) => d.startsWith('2025-'))).toBe(false)
+    expect(kept.tarawihLog).toHaveLength(30)
   })
 })

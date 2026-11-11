@@ -213,11 +213,14 @@ export async function decodeMove(text: string): Promise<MovedSettings | null> {
 /** How far back "this year's Ramadan record" reaches from its newest day: the month itself, Syawal and the replaced fasts after it. */
 export const RAMADAN_YEAR_DAYS = 330
 
-/** Only the Ramadan record from the newest day back RAMADAN_YEAR_DAYS days; null if nothing older was there to leave out. */
+/** Only the Ramadan record from the newest Ramadan month day back RAMADAN_YEAR_DAYS days, plus everything after it; null if nothing older was there to leave out. */
 export function latestRamadanYear(m: MovedSettings): MovedSettings | null {
   const all = [...Object.keys(m.fastLog ?? {}), ...(m.tarawihLog ?? []), ...(m.quranLog ?? [])].filter((d) => DAY.test(d)).sort()
   if (!all.length) return null
-  const newest = Date.parse(all[all.length - 1] + 'T00:00:00Z')
+  // Count back from the newest day in the month itself (a Tarawih or juz day, or a Ramadan fast),
+  // so replaced and Syawal fasts kept later in the year don't push this year's Ramadan out.
+  const inMonth = [...Object.entries(m.fastLog ?? {}).filter(([, k]) => k !== 'qadha' && k !== 'syawal').map(([d]) => d), ...(m.tarawihLog ?? []), ...(m.quranLog ?? [])].filter((d) => DAY.test(d)).sort()
+  const newest = Date.parse((inMonth.length ? inMonth[inMonth.length - 1] : all[all.length - 1]) + 'T00:00:00Z')
   const from = new Date(newest - RAMADAN_YEAR_DAYS * 86_400_000).toISOString().slice(0, 10)
   if (all[0] >= from) return null
   const out: MovedSettings = { ...m }

@@ -165,11 +165,14 @@ data class MovedSettings(
 
     fun link(): String = LINK_BASE + code
 
-    /** Only the Ramadan record from the newest day back [RAMADAN_YEAR_DAYS] days; null if nothing older was there to leave out. */
+    /** Only the Ramadan record from the newest Ramadan month day back [RAMADAN_YEAR_DAYS] days, plus everything after it; null if nothing older was there to leave out. */
     fun latestRamadanYear(): MovedSettings? {
         val all = (fastLog.orEmpty().keys + tarawihLog.orEmpty() + quranLog.orEmpty()).filter { DAY.matches(it) }.sorted()
         if (all.isEmpty()) return null
-        val from = runCatching { java.time.LocalDate.parse(all.last()).minusDays(RAMADAN_YEAR_DAYS.toLong()).toString() }.getOrNull() ?: return null
+        // Count back from the newest day in the month itself (a Tarawih or juz day, or a Ramadan fast),
+        // so replaced and Syawal fasts kept later in the year don't push this year's Ramadan out.
+        val inMonth = (fastLog.orEmpty().filterValues { it != "qadha" && it != "syawal" }.keys + tarawihLog.orEmpty() + quranLog.orEmpty()).filter { DAY.matches(it) }.sorted()
+        val from = runCatching { java.time.LocalDate.parse(inMonth.lastOrNull() ?: all.last()).minusDays(RAMADAN_YEAR_DAYS.toLong()).toString() }.getOrNull() ?: return null
         if (all.first() >= from) return null
         return copy(
             fastLog = fastLog?.filterKeys { it >= from }?.takeIf { it.isNotEmpty() },
