@@ -145,13 +145,15 @@ final class MoveSettingsTests: XCTestCase {
         moved.tarawihLog = days
         moved.quranLog = days
         let full = moved.link
-        let qr = moved.qrLink(maxCharacters: full.count - 1)
+        let qr = moved.qrLink(maxCharacters: full.count - 200)
         XCTAssertTrue(qr.ramadanTrimmed)
         XCTAssertNil(qr.keptDays)
         let back = try XCTUnwrap(MovedSettings(code: qr.link))
         XCTAssertTrue((back.fastLog ?? [:]).keys.allSatisfy { $0.hasPrefix("2026-") })
         XCTAssertEqual(back.tarawihLog?.count, 30)
-        XCTAssertFalse(moved.qrLink(maxCharacters: full.count).ramadanTrimmed)
+        // Room to spare: nothing is left out. (Dictionary order can change the
+        // packed length by a few characters from one encoding to the next.)
+        XCTAssertFalse(moved.qrLink(maxCharacters: full.count + 200).ramadanTrimmed)
         XCTAssertEqual(MoveOutView.trimNote(keptDays: nil, ramadanTrimmed: true),
                        "The QR code carries only this year's Ramadan record. To bring all of it, share the link instead.")
     }
