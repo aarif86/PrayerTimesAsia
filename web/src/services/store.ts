@@ -10,7 +10,7 @@ import { addDays, authorityDate, baseHijri, civilKey, communityHijri, daysApart,
 import { masjidProfile, MY_MASJID_RADIUS_KM, parseMasjidLink, type MasjidLink } from '../core/masjidLink'
 import { methodWithId, type CalculationMethod } from '../core/methods'
 import { musafirStatus, type MusafirRules, type MusafirStatus } from '../core/musafir'
-import { officialSourceFor, sourceLabel, type OfficialSource } from '../core/official'
+import { officialSourceFor, officialSummary, sourceLabel, type OfficialSource } from '../core/official'
 import { isNear, newPlaceId, placeProfile, type Place } from '../core/place'
 import { OBLIGATORY, PRAYERS, prayerName, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
 import { countryForTimeZone, FALLBACK_PROFILE, methodHere, personalNaming, profileFor, profileMethod, sourceSummary, type CountryProfile } from '../core/regions'
@@ -168,9 +168,9 @@ class AppStore {
 
   get isMethodAutomatic(): boolean { return this.prefs.methodOverrideID == null }
   /** Whose times these are, in plain words (official timetable, the authority's method, or a standard one). */
-  get sourceSummary(): string { return sourceSummary(this.profile, this.method, !this.isMethodAutomatic) }
+  get sourceSummary(): string { return officialSummary(this.officialSource) ?? sourceSummary(this.profile, this.method, !this.isMethodAutomatic) }
   /** The same in one sentence or two, for the welcome card. */
-  get sourceShort(): string { return sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true) }
+  get sourceShort(): string { return officialSummary(this.officialSource, true) ?? sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true) }
   get asrSchool(): AsrSchool { return this.prefs.asrOverride ?? this.profile.asr }
   get personalNaming(): NamingStyle { return personalNaming(navigatorLocale()) }
   /** Your names, from your browser's language (English unless it has names in it), not from where you are. */

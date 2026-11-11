@@ -1,5 +1,5 @@
 import {
-  cacheKey, FEEDS_BASE, feedName, matchKemenagCity, parseFeedICS, parseJAKIM, parseKemenag, parseMUIS,
+  cacheKey, FEEDS_BASE, feedName, LONDON_FEED, parseLondon, matchKemenagCity, parseFeedICS, parseJAKIM, parseKemenag, parseMUIS,
   type OfficialSource, type Table,
 } from '../core/official'
 import type { Prayer } from '../core/prayer'
@@ -134,6 +134,18 @@ export async function ensureTable(source: OfficialSource, year: number, tz: stri
       let got = false
       for (const [y, table] of years ?? []) {
         if (Object.keys(table).length > 25 && !tableFor(source, y)) { store(source, y, table, 'feed'); if (y === year) got = true }
+      }
+      if (got) return true
+    }
+    if (source.kind === 'london') {
+      const r = await fetchOK(LONDON_FEED, 20000)
+      let got = false
+      if (r) {
+        try {
+          for (const [y, table] of splitByYear(parseLondon(await r.json()))) {
+            if (Object.keys(table).length > 25 && !tableFor(source, y)) { store(source, y, table, 'feed'); if (y === year) got = true }
+          }
+        } catch { /* fall back to the calculation */ }
       }
       if (got) return true
     }

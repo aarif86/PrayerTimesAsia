@@ -17,6 +17,7 @@ export type OfficialSource =
   | { kind: 'muis' }
   | { kind: 'jakim'; zone: string }
   | { kind: 'kemenag'; regency: string }
+  | { kind: 'london' }
 
 /** "yyyy-MM-dd" → prayer → "HH:mm" */
 export type Table = Record<string, Partial<Record<Prayer, string>>>
@@ -26,11 +27,12 @@ export function sourceLabel(s: OfficialSource): string {
     case 'muis': return 'MUIS official timetable'
     case 'jakim': return `JAKIM e-Solat · zone ${s.zone}`
     case 'kemenag': return `Kemenag · ${s.regency}`
+    case 'london': return 'London Unified Prayer Timetable'
   }
 }
 
 export function sourceAuthority(s: OfficialSource): string {
-  return s.kind === 'muis' ? 'MUIS' : s.kind === 'jakim' ? 'JAKIM' : 'Kemenag'
+  return s.kind === 'muis' ? 'MUIS' : s.kind === 'jakim' ? 'JAKIM' : s.kind === 'london' ? 'London Unified' : 'Kemenag'
 }
 
 export const FEEDS_BASE = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/'
@@ -41,7 +43,39 @@ export function feedName(s: OfficialSource): string | null {
     case 'muis': return 'sg-muis'
     case 'jakim': return `my-${s.zone.toLowerCase()}`
     case 'kemenag': return null
+    case 'london': return null
   }
+}
+
+/**
+ * The London Unified Prayer Timetable, as published by the feeds workflow
+ * (tools/fetch_london.py). The workflow holds the API key, so the app never does.
+ */
+export const LONDON_FEED = `${FEEDS_BASE}gb-london.json`
+/** Central London; the timetable is for Greater London. */
+export const LONDON_CENTRE: Coordinates = { latitude: 51.5074, longitude: -0.1278 }
+export const LONDON_RADIUS_KM = 35
+
+/** Plain words for the source line when a table other than the country's own applies. */
+export function officialSummary(s: OfficialSource | null, short = false): string | null {
+  if (s?.kind !== 'london') return null
+  return short
+    ? 'London Unified Prayer Timetable from East London Mosque, followed by many London masjids.'
+    : 'London Unified Prayer Timetable from East London Mosque, followed by many London masjids. When it can\'t be downloaded, the app uses the Moonsighting Committee method. Your local masjid may differ by a few minutes.'
+}
+
+/** gb-london.json: {"times": {"2026-11-11": {"fajr": "05:43", "sunrise": "07:13", ...}}} */
+export function parseLondon(json: unknown): Table {
+  const days = (json as { times?: Record<string, Record<string, unknown>> })?.times
+  if (!days || typeof days !== 'object') throw new Error('Unexpected London timetable')
+  const out: Table = {}
+  for (const [date, r] of Object.entries(days)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !r) continue
+    const row: Partial<Record<Prayer, string>> = {}
+    for (const p of ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as Prayer[]) { const t = hhmm(r[p]); if (t) row[p] = t }
+    if (complete(row)) out[date] = row
+  }
+  return out
 }
 
 export function cacheKey(s: OfficialSource, year: number): string {
@@ -49,6 +83,7 @@ export function cacheKey(s: OfficialSource, year: number): string {
     case 'muis': return `muis-${year}`
     case 'jakim': return `jakim-${s.zone}-${year}`
     case 'kemenag': return `kemenag-${kemenagCore(s.regency).core}-${year}`
+    case 'london': return `london-${year}`
   }
 }
 
@@ -65,6 +100,7 @@ export function officialSourceFor(place: Place, method: CalculationMethod, zoneO
     const name = place.district ?? place.region ?? (place.name === 'Current location' ? null : place.name)
     return name ? { kind: 'kemenag', regency: name } : null
   }
+  if (code === 'GB' && method.id === 'moonsighting' && distanceKm(place.coordinates, LONDON_CENTRE) <= LONDON_RADIUS_KM) return { kind: 'london' }
   return null
 }
 

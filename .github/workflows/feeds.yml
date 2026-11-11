@@ -3,6 +3,7 @@ name: Calendar feeds
 # Builds one .ics per official zone (MUIS, every JAKIM zone) from the
 # authority's own table and publishes them on the orphan `feeds` branch:
 #   webcal://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/sg-muis.ics
+# Also gb-london.json, the London Unified Prayer Timetable (tools/fetch_london.py).
 # Weekly, so a corrected or newly published table reaches calendars quickly.
 
 on:
@@ -10,7 +11,7 @@ on:
     - cron: "17 2 * * 1"
   push:
     branches: [main]
-    paths: ['tools/gen_ics.py', 'config/official-sources.json', '.github/workflows/feeds.yml']
+    paths: ['tools/gen_ics.py', 'tools/fetch_london.py', 'config/official-sources.json', '.github/workflows/feeds.yml']
   workflow_dispatch:
 
 permissions:
@@ -28,6 +29,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Generate feeds
         run: python3 tools/gen_ics.py feeds
+      - name: London Unified Prayer Timetable
+        # The key lives only in the repository's Actions secrets. The apps read
+        # the published gb-london.json, never the API, so no app carries the key.
+        env:
+          LONDON_PRAYER_TIMES_KEY: ${{ secrets.LONDON_PRAYER_TIMES_KEY }}
+        run: python3 tools/fetch_london.py feeds
       - name: Publish feeds branch
         run: |
           set -euo pipefail

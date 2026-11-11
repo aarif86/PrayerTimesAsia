@@ -52,6 +52,20 @@ final class OfficialTimetablesTests: XCTestCase {
                        coordinates: Coordinates(latitude: 1.35, longitude: 103.82))
         XCTAssertEqual(OfficialTimetables.source(for: sg, method: .muis, zoneOverride: nil), .muis)
     }
+
+    func testLondonUnifiedInLondonOnly() throws {
+        func gb(_ lat: Double, _ lng: Double) -> Place {
+            Place(name: "x", countryCode: "GB", countryName: "United Kingdom", timeZoneID: "Europe/London",
+                  coordinates: Coordinates(latitude: lat, longitude: lng))
+        }
+        XCTAssertEqual(OfficialTimetables.source(for: gb(51.515, -0.072), method: .moonsighting, zoneOverride: nil), .london)
+        XCTAssertNil(OfficialTimetables.source(for: gb(52.4862, -1.8904), method: .moonsighting, zoneOverride: nil)) // Birmingham
+        XCTAssertNil(OfficialTimetables.source(for: gb(51.515, -0.072), method: .mwl, zoneOverride: nil))
+        let json = #"{"source":"London Unified Prayer Timetable","times":{"2026-11-11":{"fajr":"05:43","sunrise":"07:13","dhuhr":"11:53","asr":"13:57","maghrib":"16:17","isha":"17:51"},"2026-11-12":{"fajr":"05:45"}}}"#
+        let table = try OfficialTimetables.parseLondon(Data(json.utf8))
+        XCTAssertEqual(table.count, 1)
+        XCTAssertEqual(table["2026-11-11"]?["maghrib"], "16:17")
+    }
 }
 
 @MainActor
