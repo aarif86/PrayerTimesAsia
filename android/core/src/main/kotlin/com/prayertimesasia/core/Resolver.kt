@@ -36,9 +36,9 @@ class Resolver(
 
     val isMethodAutomatic: Boolean get() = prefs.methodOverrideId == null
     /** Whose times these are, in plain words (official timetable, the authority's method, or a standard one). */
-    val sourceSummary: String get() = profile.sourceSummary(method, pinned = !isMethodAutomatic)
+    val sourceSummary: String get() = Official.summary(officialSource) ?: profile.sourceSummary(method, pinned = !isMethodAutomatic)
     /** The same in one sentence or two, for the welcome card. */
-    val sourceShort: String get() = profile.sourceSummary(method, pinned = !isMethodAutomatic, short = true)
+    val sourceShort: String get() = Official.summary(officialSource, short = true) ?: profile.sourceSummary(method, pinned = !isMethodAutomatic, short = true)
     val asrSchool: AsrSchool get() = prefs.asrOverride ?: profile.asr
 
     /** Your prayer names, from your phone's language (English unless it has names in it), not from where you are. */

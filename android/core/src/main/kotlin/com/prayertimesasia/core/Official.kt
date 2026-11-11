@@ -23,12 +23,18 @@ sealed class OfficialSource {
     data class Jakim(val zone: String) : OfficialSource()
     /** Kemenag regency/city, by the name the geocoder gives for where you are. */
     data class Kemenag(val regency: String) : OfficialSource()
+    /**
+     * London Unified Prayer Timetable (East London Mosque), from the app's own
+     * published copy, so the API key stays in the repo's Actions secrets.
+     */
+    data object London : OfficialSource()
 
     val label: String
         get() = when (this) {
             Muis -> "MUIS official timetable"
             is Jakim -> "JAKIM e-Solat · zone $zone"
             is Kemenag -> "Kemenag · $regency"
+            London -> "London Unified Prayer Timetable"
         }
 
     /** Authority name for the source badge. */
@@ -37,6 +43,7 @@ sealed class OfficialSource {
             Muis -> "MUIS"
             is Jakim -> "JAKIM"
             is Kemenag -> "Kemenag"
+            London -> "London Unified"
         }
 
     /** Subscribable calendar feed built by the iOS repo's feeds workflow from the same official table. */
@@ -45,7 +52,7 @@ sealed class OfficialSource {
             val name = when (this) {
                 Muis -> "sg-muis"
                 is Jakim -> "my-${zone.lowercase()}"
-                is Kemenag -> return null
+                is Kemenag, London -> return null
             }
             return "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/$name.ics"
         }
@@ -54,6 +61,7 @@ sealed class OfficialSource {
         Muis -> "muis-$year"
         is Jakim -> "jakim-$zone-$year"
         is Kemenag -> "kemenag-${Official.kemenagCore(regency).core}-$year"
+        London -> "london-$year"
     }
 }
 
@@ -83,8 +91,37 @@ object Official {
                 val name = place.district ?: place.region ?: (if (place.name == "Current location") null else place.name)
                 name?.let { OfficialSource.Kemenag(it) }
             }
+            "GB" to "moonsighting" ->
+                if (Geo.distanceKm(place.coordinates, LONDON_CENTRE) <= LONDON_RADIUS_KM) OfficialSource.London else null
             else -> null
         }
+
+    const val LONDON_FEED = "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/gb-london.json"
+    /** Central London; the timetable is for Greater London. */
+    val LONDON_CENTRE = Coordinates(51.5074, -0.1278)
+    const val LONDON_RADIUS_KM = 35.0
+
+    /** Plain words for the source line when a table other than the country's own applies. */
+    fun summary(source: OfficialSource?, short: Boolean = false): String? {
+        if (source != OfficialSource.London) return null
+        return if (short) "London Unified Prayer Timetable from East London Mosque, followed by many London masjids."
+        else "London Unified Prayer Timetable from East London Mosque, followed by many London masjids. " +
+            "When it can't be downloaded, the app uses the Moonsighting Committee method. Your local masjid may differ by a few minutes."
+    }
+
+    /** gb-london.json (tools/fetch_london.py): {"times":{"2026-11-11":{"fajr":"05:43","sunrise":"07:13",...}}} */
+    fun parseLondon(text: String): OfficialTable {
+        val days = json.parseToJsonElement(text).jsonObject["times"] as? JsonObject
+            ?: throw IllegalArgumentException("Not a London timetable")
+        val out = mutableMapOf<String, Map<String, String>>()
+        for ((date, el) in days) {
+            val r = el as? JsonObject ?: continue
+            if (date.length != 10) continue
+            val row = Prayer.all.mapNotNull { p -> r.string(p.raw)?.let(::hhmm)?.let { p.raw to it } }.toMap()
+            if (row.size == 6) out[date] = row
+        }
+        return out
+    }
 
     fun nearestJakimZone(c: Coordinates): String {
         var best = "WLY01" to Double.MAX_VALUE

@@ -80,6 +80,7 @@ class OfficialRepository(context: Context) {
                 }
                 is OfficialSource.Jakim -> Official.parseJakim(Http.get(Official.jakimUrl(source.zone)), year)
                 is OfficialSource.Kemenag -> fetchKemenag(source.regency, year)
+                OfficialSource.London -> Official.parseLondon(Http.get(Official.LONDON_FEED)).filterKeys { it.startsWith("$year-") }
             }
             // A year is ~365 rows; Kemenag comes month by month, so accept a partial year.
             check(table.size > 25) { "Only ${table.size} rows" }
