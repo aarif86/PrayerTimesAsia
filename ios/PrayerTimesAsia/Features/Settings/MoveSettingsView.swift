@@ -32,8 +32,8 @@ struct MoveOutView: View {
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("On the other phone, open Prayer Times Asia › Settings › Bring in settings and scan this code. No app there? Point its camera at the code: it opens the web app with your settings.")
-                    if let kept = qr.keptDays {
-                        Text("The QR code carries your last \(kept) days of tracker history. To bring all of it, share the link instead.")
+                    if let note = Self.trimNote(keptDays: qr.keptDays, ramadanTrimmed: qr.ramadanTrimmed) {
+                        Text(note)
                     }
                 }
             }
@@ -56,6 +56,15 @@ struct MoveOutView: View {
         .background(SkyNow())
         .navigationTitle("Move my settings")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// What the QR code left out, if anything; the link always carries everything.
+    static func trimNote(keptDays: Int?, ramadanTrimmed: Bool) -> String? {
+        var parts: [String] = []
+        if let kept = keptDays { parts.append("your last \(kept) days of tracker history") }
+        if ramadanTrimmed { parts.append("only this year's Ramadan record") }
+        guard !parts.isEmpty else { return nil }
+        return "The QR code carries \(parts.joined(separator: " and ")). To bring all of it, share the link instead."
     }
 
     static func qrImage(_ text: String) -> UIImage? {

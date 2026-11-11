@@ -84,4 +84,77 @@ final class MoveSettingsTests: XCTestCase {
         XCTAssertGreaterThan(qr.keptDays ?? 0, 0)
         XCTAssertNotNil(MovedSettings(code: qr.link)?.prayedLog?["2026-06-23"])
     }
+
+    func testRamadanRecordRoundTrip() throws {
+        let moved = try XCTUnwrap(try fixture().cases.first { $0.name.hasPrefix("Ramadan record") }).settings
+        let prefs = moved.applied(to: Preferences())
+        XCTAssertEqual(prefs.fastLog["2026-02-25"], .period)
+        XCTAssertEqual(prefs.fastLog["2026-04-10"], .qadha)
+        XCTAssertEqual(prefs.tarawihLog, ["2026-02-17", "2026-02-18", "2026-03-16"])
+        XCTAssertEqual(prefs.quranLog, ["2026-02-18", "2026-02-19"])
+        let back = MovedSettings(prefs)
+        XCTAssertEqual(back, moved)
+        XCTAssertEqual(MovedSettings(code: back.code), moved)
+        XCTAssertTrue(back.summary.contains("Your Ramadan record of fasts, Tarawih and juz"))
+    }
+
+    func testRamadanRecordIsAdded() {
+        var here = Preferences()
+        here.fastLog = ["2026-02-18": .sick, "2025-03-01": .fasted]
+        here.tarawihLog = ["2025-03-01"]
+        var moved = MovedSettings()
+        moved.fastLog = ["2026-02-18": .fasted, "bad": .fasted]
+        moved.tarawihLog = ["2026-02-18", "x"]
+        let prefs = moved.applied(to: here)
+        XCTAssertEqual(prefs.fastLog, ["2026-02-18": .fasted, "2025-03-01": .fasted])
+        XCTAssertEqual(prefs.tarawihLog, ["2025-03-01", "2026-02-18"])
+    }
+
+    func testUnknownFastMarkIsSkipped() throws {
+        let json = #"{"v":1,"fastLog":{"2026-02-18":"fasted","2026-02-19":"someday"},"tarawihLog":["2026-02-18",3]}"#
+        let moved = try JSONDecoder().decode(MovedSettings.self, from: Data(json.utf8))
+        XCTAssertEqual(moved.fastLog, ["2026-02-18": .fasted])
+        XCTAssertEqual(moved.tarawihLog, ["2026-02-18"])
+    }
+
+    func testOlderCodeKeepsThisPhonesRamadanRecord() throws {
+        var here = Preferences()
+        here.fastLog = ["2026-02-18": .fasted]
+        here.tarawihLog = ["2026-02-18"]
+        here.quranLog = ["2026-02-19"]
+        let old = try XCTUnwrap(MovedSettings(code: try fixture().cases[1].code))
+        let prefs = old.applied(to: here)
+        XCTAssertEqual(prefs.home?.name, "Singapore")
+        XCTAssertEqual(prefs.fastLog, ["2026-02-18": .fasted])
+        XCTAssertEqual(prefs.tarawihLog, ["2026-02-18"])
+        XCTAssertEqual(prefs.quranLog, ["2026-02-19"])
+    }
+
+    func testQRKeepsOnlyThisYearsRamadanRecord() throws {
+        var moved = MovedSettings()
+        var fasts: [String: FastMark] = [:]
+        var days: [String] = []
+        for y in 2020...2026 {
+            for d in 1...30 {
+                let key = String(format: "%04d-03-%02d", y, d)
+                fasts[key] = .fasted
+                days.append(key)
+            }
+        }
+        moved.fastLog = fasts
+        moved.tarawihLog = days
+        moved.quranLog = days
+        let full = moved.link
+        let qr = moved.qrLink(maxCharacters: full.count - 200)
+        XCTAssertTrue(qr.ramadanTrimmed)
+        XCTAssertNil(qr.keptDays)
+        let back = try XCTUnwrap(MovedSettings(code: qr.link))
+        XCTAssertTrue((back.fastLog ?? [:]).keys.allSatisfy { $0.hasPrefix("2026-") })
+        XCTAssertEqual(back.tarawihLog?.count, 30)
+        // Room to spare: nothing is left out. (Dictionary order can change the
+        // packed length by a few characters from one encoding to the next.)
+        XCTAssertFalse(moved.qrLink(maxCharacters: full.count + 200).ramadanTrimmed)
+        XCTAssertEqual(MoveOutView.trimNote(keptDays: nil, ramadanTrimmed: true),
+                       "The QR code carries only this year's Ramadan record. To bring all of it, share the link instead.")
+    }
 }
