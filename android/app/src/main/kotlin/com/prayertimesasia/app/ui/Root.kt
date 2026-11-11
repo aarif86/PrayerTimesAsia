@@ -188,6 +188,7 @@ private fun RootContent(state: AppState) {
             state.pendingMasjid?.let { link ->
                 AppSheet({ state.pendingMasjid = null }) { MasjidLinkSheetContent(state, link) }
             }
+            if (state.fixedNow == null) TestUpdatePrompt()
         }
     }
 }
