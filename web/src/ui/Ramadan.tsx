@@ -3,25 +3,43 @@ import {
   BookOpen, Check, ChevronDown, ChevronRight, ExternalLink, Gift, HandCoins, HandHeart, Moon, MoonStar, Printer, Share2, Sparkles, Sunrise, Utensils,
 } from 'lucide-preact'
 import { authorityName } from '../core/calendarSanad'
-import { DOA, FAST_MARK_LABEL, juzLink, lang3, MISSED, ZAKAT, ZAKAT_NOTE, type DoaId, type FastMark } from '../core/ramadanContent'
+import { DOA, juzLink, lang3, MISSED, ZAKAT, ZAKAT_NOTE, type DoaId, type FastMark, type Lang3 } from '../core/ramadanContent'
+import { fastMarkLabel, fastMarkLetter, RAMADAN_LOCALE, wordsFor } from '../core/ramadanWords'
 import { addDays, civilKey, daysApart, type CivilDay } from '../core/season'
 import { store, useNow, useStore } from '../services/store'
 import { openSheet, Sheet, short, TimeText, ToggleItem } from './common'
 import { Hadith } from './Hadith'
 import { rayaCard, sharePicture, weekCard } from './shareCard'
 
-const fmtCivil = (d: CivilDay, opts: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' }) =>
-  new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', ...opts }).format(new Date(Date.UTC(d.year, d.month - 1, d.day))).replace(',', '')
+const fmtCivil = (d: CivilDay, opts: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' }, lang: Lang3 = 'en') =>
+  new Intl.DateTimeFormat(RAMADAN_LOCALE[lang], { timeZone: 'UTC', ...opts }).format(new Date(Date.UTC(d.year, d.month - 1, d.day))).replace(',', '')
 
 const ODD_NIGHTS = [21, 23, 25, 27, 29]
 
 /** "tomorrow", "the day after tomorrow" or the date. */
-function whenWords(from: CivilDay, d: CivilDay): string {
+function whenWords(from: CivilDay, d: CivilDay, lang: Lang3): string {
+  const t = wordsFor(lang)
   const n = daysApart(from, d)
-  if (n === 0) return 'today'
-  if (n === 1) return `tomorrow, ${fmtCivil(d, { weekday: 'long', day: 'numeric', month: 'short' })}`
-  if (n === 2) return `the day after tomorrow, ${fmtCivil(d, { weekday: 'long', day: 'numeric', month: 'short' })}`
-  return fmtCivil(d)
+  const date = fmtCivil(d, { weekday: 'long', day: 'numeric', month: 'short' }, lang)
+  if (n === 0) return t('today')
+  if (n === 1) return t('tomorrow', { d: date })
+  if (n === 2) return t('dayAfterTomorrow', { d: date })
+  return fmtCivil(d, undefined, lang)
+}
+
+/** The Ramadan words in the language of the prayer names. */
+function useWords() {
+  const lang = lang3(useStore().naming)
+  return { lang, t: wordsFor(lang) }
+}
+
+/** short() for screen readers in the page's language, rounded the same way: "2 hours 5 minutes", "2 jam 5 minit". */
+function spokenIn(ms: number, t: ReturnType<typeof wordsFor>): string {
+  const s = Math.max(0, Math.ceil(ms / 1000))
+  if (s < 60) return t('spokenUnderMinute')
+  const minutes = Math.floor((s + 59) / 60)
+  const h = Math.floor(minutes / 60), m = minutes % 60
+  return [h ? t('spokenHours', { n: h }) : '', m ? t('spokenMinutes', { n: m }) : ''].filter(Boolean).join(' ')
 }
 
 // ---------- The card on the Prayer screen ----------
@@ -34,6 +52,8 @@ export function SeasonCard({ now }: { now: number }) {
   const key = civilKey(today)
   const authority = s.communityAuthority
   const preview = s.isSeasonPreview
+  const { lang, t } = useWords()
+  const previewTag = preview && <span class="preview-tag">{t('preview')}</span>
 
   if (season.phase === 'none') return null
 
@@ -46,23 +66,23 @@ export function SeasonCard({ now }: { now: number }) {
         <span class="season-text">
           {season.sightingTonight ? (
             <>
-              <span class="season-title">Moon sighting tonight</span>
-              <span class="season-sub">{authority ? `${authorityName(authority)} announces the start of Ramadan this evening. This screen updates by itself.` : 'Ramadan may begin tomorrow, after tonight\'s moon sighting.'}</span>
+              <span class="season-title">{t('sightingTonightTitle')}</span>
+              <span class="season-sub">{authority ? t('sightingAnnounces', { a: authorityName(authority) }) : t('sightingMaybe')}</span>
             </>
           ) : season.nextStart?.announced ? (
             <>
-              <span class="season-title">Ramadan begins {whenWords(today, season.nextStart.day)}</span>
-              <span class="season-sub">Announced by {authorityName(authority ?? '')}. First Tarawih the night before.</span>
+              <span class="season-title">{t('ramadanBegins', { w: whenWords(today, season.nextStart.day, lang) })}</span>
+              <span class="season-sub">{t('announcedBy', { a: authorityName(authority ?? '') })}</span>
             </>
           ) : days != null && days >= 0 ? (
             <>
-              <span class="season-title">{days === 0 ? 'Ramadan begins today' : days === 1 ? 'Ramadan begins tomorrow' : `Ramadan in about ${days} days`}</span>
-              <span class="season-sub">{days <= 1 ? 'First Tarawih tonight. Set your sahur alarm.' : 'Get ready with your alerts, a timetable to print and the doa.'}</span>
+              <span class="season-title">{days === 0 ? t('beginsToday') : days === 1 ? t('beginsTomorrow') : t('beginsInDays', { n: days })}</span>
+              <span class="season-sub">{days <= 1 ? t('firstTarawihTonight') : t('getReady')}</span>
             </>
-          ) : <span class="season-title">Ramadan is near</span>}
+          ) : <span class="season-title">{t('ramadanNear')}</span>}
         </span>
         <ChevronRight size={16} class="secondary" />
-        {preview && <span class="preview-tag">PREVIEW</span>}
+        {previewTag}
       </button>
     )
   }
@@ -75,44 +95,44 @@ export function SeasonCard({ now }: { now: number }) {
     const night = season.nightTonight
     return (
       <div class="season-card glass ramadan">
-        <button class="season-main" onClick={() => openSheet({ kind: 'ramadan' })} aria-label={`Ramadan day ${season.ramadanDay}. Opens your Ramadan page.`}>
-          <span class="season-day"><span class="caps">Ramadan</span><span class="mono big">{season.ramadanDay}</span></span>
+        <button class="season-main" onClick={() => openSheet({ kind: 'ramadan' })} aria-label={moment ? t('cardAriaCount', { n: season.ramadanDay ?? '', w: moment.kind === 'imsak' ? t('imsak') : t('berbuka'), l: spokenIn(moment.time - now, t) }) : t('cardAria', { n: season.ramadanDay ?? '' })}>
+          <span class="season-day"><span class="caps">{t('ramadan')}</span><span class="mono big">{season.ramadanDay}</span></span>
           {moment ? (
             <span class="season-count">
-              <span class="caps">{moment.kind === 'imsak' ? 'Imsak in' : 'Berbuka in'}</span>
-              <span class="mono count">{short(moment.time - now)}</span>
-              <span class="secondary at">{moment.kind === 'imsak' ? 'Finish sahur by' : 'Maghrib at'} <TimeText ms={moment.time} size={15} weight={600} /></span>
+              <span class="caps">{moment.kind === 'imsak' ? t('imsakIn') : t('berbukaIn')}</span>
+              <span class="mono count" role="timer">{short(moment.time - now)}</span>
+              <span class="secondary at">{moment.kind === 'imsak' ? t('finishSahurBy') : t('maghribAt')} <TimeText ms={moment.time} size={15} weight={600} /></span>
             </span>
           ) : (
-            <span class="season-count"><span class="caps">Tonight</span><span class="count small">{season.sightingTonight ? 'Moon sighting for Raya' : 'Tarawih after Isyak'}</span></span>
+            <span class="season-count"><span class="caps">{t('tonight')}</span><span class="count small">{season.sightingTonight ? t('sightingForRaya') : t('tarawihAfterIsyak')}</span></span>
           )}
           <ChevronRight size={16} class="secondary" />
         </button>
         {season.sightingTonight && (
           <p class="season-note"><MoonStar size={14} /> {season.nextStart?.announced
-            ? `Hari Raya is ${whenWords(today, season.nextStart.day)}, announced by ${authorityName(authority ?? '')}.`
-            : `Moon sighting tonight. ${authority ? authorityName(authority) : 'Your authority'} announces whether tomorrow is Raya.`}</p>
+            ? t('rayaAnnounced', { w: whenWords(today, season.nextStart.day, lang), a: authorityName(authority ?? '') })
+            : t('rayaSighting', { a: authority ? authorityName(authority) : t('yourAuthority') })}</p>
         )}
-        {!season.sightingTonight && season.hijri.day === 30 && <p class="season-note"><Sparkles size={14} /> The last fast. Hari Raya is tomorrow.</p>}
+        {!season.sightingTonight && season.hijri.day === 30 && <p class="season-note"><Sparkles size={14} /> {t('lastFast')}</p>}
         {season.lastTen && night && night <= 30 && (
-          <p class="season-note"><Sparkles size={14} /> Night {night} tonight{season.oddNight ? ', one of the odd nights. Seek Lailatul Qadr.' : ', in the last ten nights.'}</p>
+          <p class="season-note"><Sparkles size={14} /> {season.oddNight ? t('oddNight', { n: night }) : t('lastTenNight', { n: night })}</p>
         )}
-        {season.nuzulQuran && <p class="season-note"><BookOpen size={14} /> 17 Ramadan, Nuzul Quran.</p>}
+        {season.nuzulQuran && <p class="season-note"><BookOpen size={14} /> {t('nuzulQuran')}</p>}
         <div class="season-chips">
           <button class={`chip ${mark === 'fasted' ? 'on' : ''}`} aria-pressed={mark === 'fasted'}
             onClick={() => s.setFast(key, mark === 'fasted' ? null : 'fasted')}>
-            {mark === 'fasted' ? <Check size={14} /> : <Utensils size={14} />}{mark && mark !== 'fasted' ? FAST_MARK_LABEL[mark] : 'Fasting today'}
+            {mark === 'fasted' ? <Check size={14} /> : <Utensils size={14} />}{mark && mark !== 'fasted' ? fastMarkLabel(lang, mark) : t('fastingToday')}
           </button>
           <button class={`chip ${tarawih ? 'on' : ''}`} aria-pressed={tarawih} onClick={() => s.toggleDay('tarawihLog', key)}>
-            {tarawih ? <Check size={14} /> : <Moon size={14} />}Tarawih
+            {tarawih ? <Check size={14} /> : <Moon size={14} />}{t('tarawih')}
           </button>
           {s.prefs.khatamPlan && season.ramadanDay && (
             <button class={`chip ${read ? 'on' : ''}`} aria-pressed={read} onClick={() => s.toggleDay('quranLog', key)}>
-              {read ? <Check size={14} /> : <BookOpen size={14} />}Juz {season.ramadanDay}
+              {read ? <Check size={14} /> : <BookOpen size={14} />}{t('juz', { n: season.ramadanDay })}
             </button>
           )}
         </div>
-        {preview && <span class="preview-tag">PREVIEW</span>}
+        {previewTag}
       </div>
     )
   }
@@ -127,21 +147,21 @@ export function SeasonCard({ now }: { now: number }) {
       <span class="season-text">
         {season.phase === 'raya' ? (
           <>
-            <span class="season-title">Selamat Hari Raya Aidilfitri</span>
+            <span class="season-title">{t('selamatHariRaya')}</span>
             <span class="season-sub">
-              {eid ? `Raya prayer at ${s.prefs.myMasjid?.name ?? 'your masjid'} ${eid}. ` : 'Takbir until the Raya prayer. '}
-              {!zakatPaid ? 'Pay zakat fitrah before the prayer if you haven\'t.' : 'Maaf zahir dan batin.'}
+              {eid ? t('rayaPrayerAt', { p: s.prefs.myMasjid?.name ?? t('yourMasjid'), t: eid }) : t('takbirUntilPrayer')}{' '}
+              {!zakatPaid ? t('payZakatBefore') : t('maafZahirBatin')}
             </span>
           </>
         ) : (
           <>
-            <span class="season-title">Syawal {season.syawalDay} · Puasa enam {Math.min(6, sum.syawal)} of 6</span>
-            <span class="season-sub">{sum.owed > 0 ? `${sum.owed} Ramadan fast${sum.owed === 1 ? '' : 's'} to replace. ` : ''}Tap to mark a Syawal or replaced fast.</span>
+            <span class="season-title">{t('syawalCardTitle', { d: season.syawalDay ?? '', n: Math.min(6, sum.syawal) })}</span>
+            <span class="season-sub">{sum.owed > 0 ? `${t('fastsToReplace', { n: sum.owed })} ` : ''}{t('tapToMarkSyawal')}</span>
           </>
         )}
       </span>
       <ChevronRight size={16} class="secondary" />
-      {preview && <span class="preview-tag">PREVIEW</span>}
+      {previewTag}
     </button>
   )
 }
@@ -152,12 +172,13 @@ export function RamadanSheet() {
   const s = useStore()
   const now = useNow(30_000)
   const season = s.season(now)
-  const title = season.phase === 'raya' || season.phase === 'syawal' ? 'Syawal' : 'Ramadan'
+  const { t } = useWords()
+  const title = season.phase === 'raya' || season.phase === 'syawal' ? t('syawal') : t('ramadan')
   const year = season.hijri.year
   return (
     <Sheet title={title} full>
       {s.isSeasonPreview && (
-        <p class="preview-banner">Ramadan preview is on, so dates here are pretend. Turn it off in Settings, Ramadan.</p>
+        <p class="preview-banner">{t('previewBanner')}</p>
       )}
       {(season.phase === 'raya' || season.phase === 'syawal') ? (
         <>
@@ -181,7 +202,7 @@ export function RamadanSheet() {
         </>
       )}
       <p class="caption secondary" style={{ padding: '4px 20px 28px' }}>
-        Imsak is 10 minutes before Subuh, as MUIS, JAKIM and Kemenag publish it. The first day of Ramadan and Raya follows {s.communityAuthority ? authorityName(s.communityAuthority) : 'your authority'} (change it by tapping the date on the Prayer screen). Follow your local religious authority. Your fasting record stays on this device.
+        {t('footer', { a: s.communityAuthority ? authorityName(s.communityAuthority) : t('yourAuthorityLower') })}
       </p>
     </Sheet>
   )
@@ -191,6 +212,7 @@ function RamadanToday({ now }: { now: number }) {
   const s = useStore()
   const season = s.season(now)
   const today = s.day(now)
+  const { lang, t } = useWords()
   if (!today) return null
   const inRamadan = season.phase === 'ramadan'
   // Before Ramadan, show the first day's times.
@@ -201,16 +223,16 @@ function RamadanToday({ now }: { now: number }) {
   return (
     <>
     <div class="glass card ramadan-today" style={{ marginTop: '10px', marginBottom: '18px' }}>
-      <div class="caps accent">{inRamadan ? `Ramadan day ${season.ramadanDay}` : first ? `1 Ramadan · ${fmtCivil(first)}` : 'Ramadan'}</div>
+      <div class="caps accent">{inRamadan ? t('ramadanDay', { n: season.ramadanDay ?? '' }) : first ? t('firstOfRamadan', { d: fmtCivil(first, undefined, lang) }) : t('ramadan')}</div>
       <div class="rt-times">
-        <div><span class="caps secondary">Imsak</span><TimeText ms={s.imsak(shownDay)} size={34} weight={700} /><span class="caption secondary">Stop eating</span></div>
-        <div><span class="caps secondary">Subuh</span><TimeText ms={shownDay.times.fajr} size={34} weight={700} /><span class="caption secondary">Fast begins</span></div>
-        <div class="gold"><span class="caps">Berbuka</span><TimeText ms={shownDay.times.maghrib} size={34} weight={700} /><span class="caption secondary">Maghrib</span></div>
+        <div><span class="caps secondary">{t('imsak')}</span><TimeText ms={s.imsak(shownDay)} size={34} weight={700} /><span class="caption secondary">{t('stopEating')}</span></div>
+        <div><span class="caps secondary">{t('subuh')}</span><TimeText ms={shownDay.times.fajr} size={34} weight={700} /><span class="caption secondary">{t('fastBegins')}</span></div>
+        <div class="gold"><span class="caps">{t('berbuka')}</span><TimeText ms={shownDay.times.maghrib} size={34} weight={700} /><span class="caption secondary">{t('maghrib')}</span></div>
       </div>
-      {inRamadan && moment && <p class="rt-count mono">{moment.kind === 'imsak' ? 'Imsak' : 'Berbuka'} in {short(moment.time - now)}</p>}
+      {inRamadan && moment && <p class="rt-count mono" role="timer"><span aria-hidden="true">{t('countIn', { w: moment.kind === 'imsak' ? t('imsak') : t('berbuka'), l: short(moment.time - now) })}</span><span class="sr-only">{t('countIn', { w: moment.kind === 'imsak' ? t('imsak') : t('berbuka'), l: spokenIn(moment.time - now, t) })}</span></p>}
       {inRamadan && <FastToday now={now} />}
     </div>
-    {inRamadan && <Hadith id="iftar" tag={moment?.kind === 'berbuka' ? 'Before berbuka' : undefined} />}
+    {inRamadan && <Hadith id="iftar" tag={moment?.kind === 'berbuka' ? t('beforeBerbuka') : undefined} />}
     </>
   )
 }
@@ -222,24 +244,25 @@ function FastToday({ now }: { now: number }) {
   const key = civilKey(s.civil(now))
   const mark = s.fastMark(key)
   const [open, setOpen] = useState(false)
+  const { lang, t } = useWords()
   return (
     <div class="fast-today">
       <div class="season-chips">
         <button class={`chip ${mark === 'fasted' ? 'on' : ''}`} aria-pressed={mark === 'fasted'} onClick={() => s.setFast(key, mark === 'fasted' ? null : 'fasted')}>
-          {mark === 'fasted' ? <Check size={14} /> : <Utensils size={14} />}I'm fasting today
+          {mark === 'fasted' ? <Check size={14} /> : <Utensils size={14} />}{t('imFastingToday')}
         </button>
         <button class={`chip ${mark && MISSED.includes(mark) ? 'on missed' : ''}`} aria-expanded={open} onClick={() => setOpen(!open)}>
-          {mark && MISSED.includes(mark) ? `Missed · ${FAST_MARK_LABEL[mark]}` : 'Not fasting today'}<ChevronDown size={14} />
+          {mark && MISSED.includes(mark) ? t('missedBecause', { r: fastMarkLabel(lang, mark) }) : t('notFastingToday')}<ChevronDown size={14} />
         </button>
       </div>
       {open && (
         <div class="season-chips">
           {MISSED.map((m) => (
-            <button class={`chip small ${mark === m ? 'on missed' : ''}`} onClick={() => { s.setFast(key, mark === m ? null : m); setOpen(false) }}>{FAST_MARK_LABEL[m]}</button>
+            <button class={`chip small ${mark === m ? 'on missed' : ''}`} aria-pressed={mark === m} onClick={() => { s.setFast(key, mark === m ? null : m); setOpen(false) }}>{fastMarkLabel(lang, m)}</button>
           ))}
         </div>
       )}
-      {mark === 'period' && <p class="caption secondary">You can also pause the prayer tracker for these days.</p>}
+      {mark === 'period' && <p class="caption secondary">{t('pauseTrackerToo')}</p>}
     </div>
   )
 }
@@ -250,6 +273,7 @@ function RamadanMonth({ now, year, compact }: { now: number; year: number; compa
   const days = s.monthDays(year, 9)
   const todayKey = civilKey(s.civil(now))
   const sum = s.fastSummary(year)
+  const { lang, t } = useWords()
   if (!days.length || civilKey(days[0]) > todayKey) return null
   const cycle = (k: string) => {
     const m = s.fastMark(k)
@@ -258,9 +282,9 @@ function RamadanMonth({ now, year, compact }: { now: number; year: number; compa
   }
   return (
     <section>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>{compact ? `Ramadan ${year}` : 'Your fasts this month'}</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{compact ? t('ramadanYear', { y: year }) : t('yourFastsThisMonth')}</h3>
       <div class="glass card">
-        <div class="fast-grid" role="grid">
+        <div class="fast-grid" role="group" aria-label={compact ? t('ramadanYear', { y: year }) : t('yourFastsThisMonth')}>
           {days.map((d, i) => {
             const k = civilKey(d)
             const m = s.fastMark(k)
@@ -268,19 +292,19 @@ function RamadanMonth({ now, year, compact }: { now: number; year: number; compa
             const kind = m === 'fasted' ? 'fasted' : m && MISSED.includes(m) ? 'missed' : ''
             return (
               <button class={`fast-day ${kind} ${k === todayKey ? 'is-today' : ''} ${ODD_NIGHTS.includes(i + 1) ? 'odd' : ''}`} disabled={future}
-                aria-label={`${i + 1} Ramadan, ${fmtCivil(d, { day: 'numeric', month: 'short' })}: ${m ? FAST_MARK_LABEL[m] : 'not marked'}`}
+                aria-label={t('ramadanDayAria', { n: i + 1, d: fmtCivil(d, { day: 'numeric', month: 'short' }, lang), s: m ? fastMarkLabel(lang, m) : t('notMarked') })}
                 onClick={() => cycle(k)}>
                 <span class="mono">{i + 1}</span>
-                {m && m !== 'fasted' && <span class="fast-reason">{m === 'period' ? 'P' : m === 'sick' ? 'S' : m === 'travel' ? 'T' : 'O'}</span>}
+                {m && m !== 'fasted' && <span class="fast-reason" aria-hidden="true">{fastMarkLetter(lang, m)}</span>}
               </button>
             )
           })}
         </div>
         <p class="tracker-sum">
-          <b class="mono">{sum.fasted}</b> fasted{sum.missed > 0 && <> · <b class="mono">{sum.missed}</b> missed</>}
-          {sum.owed > 0 && <span class="secondary"> · {sum.owed} to replace</span>}
+          <b class="mono">{sum.fasted}</b> {t('fastedCount')}{sum.missed > 0 && <> · <b class="mono">{sum.missed}</b> {t('missedCount')}</>}
+          {sum.owed > 0 && <span class="secondary"> · {t('toReplace', { n: sum.owed })}</span>}
         </p>
-        <p class="caption secondary" style={{ margin: 0 }}>Tap a day to change it. P period, S sick, T travelling, O other reason. Missed days are counted for you to replace after Ramadan.</p>
+        <p class="caption secondary" style={{ margin: 0 }}>{t('monthHelp')}</p>
       </div>
     </section>
   )
@@ -289,13 +313,14 @@ function RamadanMonth({ now, year, compact }: { now: number; year: number; compa
 function LastTenNights({ now, year }: { now: number; year: number }) {
   const s = useStore()
   const days = s.monthDays(year, 9)
+  const { lang, t } = useWords()
   if (days.length < 20) return null
   const today = s.civil(now)
   return (
     <section>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>The last ten nights</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{t('lastTenTitle')}</h3>
       <div class="glass card">
-        <p class="subhead" style={{ marginTop: 0 }}>Lailatul Qadr is better than a thousand months. Seek it in the odd nights of the last ten.</p>
+        <p class="subhead" style={{ marginTop: 0 }}>{t('lailatulQadr')}</p>
         <div class="odd-nights">
           {ODD_NIGHTS.map((n) => {
             // Night n begins at Maghrib on the day before n Ramadan.
@@ -305,13 +330,13 @@ function LastTenNights({ now, year }: { now: number; year: number }) {
             return (
               <div class={`odd-night ${tonight ? 'tonight' : ''}`}>
                 <span class="mono big">{n}</span>
-                <span class="caption">{tonight ? 'Tonight' : fmtCivil(eve, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                <span class="caption">{tonight ? t('tonight') : fmtCivil(eve, { weekday: 'short', day: 'numeric', month: 'short' }, lang)}</span>
               </div>
             )
           })}
         </div>
-        <p class="caption secondary">Each night begins at Maghrib the evening before. The last third of the night is the best time for qiyam.</p>
-        <ToggleItem label="Remind me for qiyam" sub="At the last third of each of the last ten nights" on={s.prefs.qiyamAlert}
+        <p class="caption secondary">{t('eachNightBegins')}</p>
+        <ToggleItem label={t('qiyamReminder')} sub={t('qiyamReminderSub')} on={s.prefs.qiyamAlert}
           onChange={(v) => s.update((p) => { p.qiyamAlert = v })} />
       </div>
     </section>
@@ -321,10 +346,11 @@ function LastTenNights({ now, year }: { now: number; year: number }) {
 export function DoaList({ ids }: { ids: DoaId[] }) {
   const s = useStore()
   const lang = lang3(s.naming)
+  const t = wordsFor(lang)
   const [open, setOpen] = useState<DoaId | null>(null)
   return (
     <section>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>Doa and niat</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{t('doaAndNiat')}</h3>
       <div class="group">
         {DOA.filter((d) => ids.includes(d.id)).map((d) => (
           <div class="doa">
@@ -350,24 +376,25 @@ export function DoaList({ ids }: { ids: DoaId[] }) {
 function ZakatCard({ year }: { year: number }) {
   const s = useStore()
   const lang = lang3(s.naming)
+  const t = wordsFor(lang)
   const code = s.prefs.home?.countryCode ?? s.profile.code
   const bodies = ZAKAT[code] ?? []
   const paid = s.prefs.zakatPaid.includes(year)
   return (
     <section>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>Zakat fitrah</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{t('zakatFitrah')}</h3>
       <div class="group">
         <p class="item footnote" style={{ display: 'block', lineHeight: 1.4 }}>{ZAKAT_NOTE[lang]}</p>
         {bodies.map((b) => (
           <a class="item" href={b.url} target="_blank" rel="noopener noreferrer">
-            <HandCoins size={20} /><span class="label">{b.name}<span class="sub">Official site, amount and how to pay</span></span><ExternalLink size={15} class="secondary" />
+            <HandCoins size={20} /><span class="label">{b.name}<span class="sub">{t('zakatOfficial')}</span></span><ExternalLink size={15} class="secondary" />
           </a>
         ))}
-        {!bodies.length && <p class="item footnote">Pay through your masjid or your local zakat body.</p>}
-        <ToggleItem label={`I've paid zakat fitrah for ${year}`} on={paid}
+        {!bodies.length && <p class="item footnote">{t('zakatThroughMasjid')}</p>}
+        <ToggleItem label={t('zakatPaid', { y: year })} on={paid}
           onChange={(v) => s.update((p) => { p.zakatPaid = v ? [...new Set([...p.zakatPaid, year])] : p.zakatPaid.filter((y) => y !== year) })} />
       </div>
-      <p class="group-foot">Prayer Times Asia takes no money. These links go straight to the official bodies.</p>
+      <p class="group-foot">{t('zakatNoMoney')}</p>
     </section>
   )
 }
@@ -375,15 +402,16 @@ function ZakatCard({ year }: { year: number }) {
 function TravelFasting() {
   const s = useStore()
   const km = s.musafirRules.thresholdKm
+  const { t } = useWords()
   return (
     <section>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>Travelling in Ramadan</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{t('travelTitle')}</h3>
       <div class="group">
         <p class="item footnote" style={{ display: 'block', lineHeight: 1.4 }}>
-          A traveller on a journey of about {km} km or more may choose not to fast, and replace the day after Ramadan. If fasting is easy, fasting is better. Leave your home area before Subuh for the day to count as travel. Ask your local religious authority when unsure.
+          {t('travelNote', { km })}
         </p>
         {s.prefs.musafirEnabled && (
-          <button class="item" onClick={() => openSheet({ kind: 'journey' })}><Sunrise size={20} /><span class="label">Open Journey</span><ChevronRight size={16} class="secondary" /></button>
+          <button class="item" onClick={() => openSheet({ kind: 'journey' })}><Sunrise size={20} /><span class="label">{t('openJourney')}</span><ChevronRight size={16} class="secondary" /></button>
         )}
       </div>
     </section>
@@ -393,10 +421,11 @@ function TravelFasting() {
 function RamadanTools({ now }: { now: number }) {
   const s = useStore()
   const [busy, setBusy] = useState(false)
+  const { t } = useWords()
   const share = async () => {
     setBusy(true)
     const c = weekCard(civilStartMs())
-    if (c) await sharePicture(c, 'ramadan-times', `Imsak and Berbuka times for ${s.activePlace?.name ?? ''}`)
+    if (c) await sharePicture(c, 'ramadan-times', t('shareWeekText', { p: s.activePlace?.name ?? '' }))
     setBusy(false)
   }
   /** Before Ramadan, the week shared is the first week. */
@@ -407,16 +436,16 @@ function RamadanTools({ now }: { now: number }) {
   }
   return (
     <section>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>Share and print</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{t('shareAndPrint')}</h3>
       <div class="group">
         <button class="item" disabled={busy} onClick={() => void share()}>
-          <Share2 size={20} /><span class="label">Share this week's times<span class="sub">A picture of Imsak and Berbuka for {s.activePlace?.name ?? 'your place'}, for family chats</span></span>
+          <Share2 size={20} /><span class="label">{t('shareWeek')}<span class="sub">{t('shareWeekSub', { p: s.activePlace?.name ?? t('yourPlace') })}</span></span>
         </button>
         <a class="item" href="print/#sheet=ramadan">
-          <Printer size={20} /><span class="label">Print the Ramadan timetable</span><ChevronRight size={16} class="secondary" />
+          <Printer size={20} /><span class="label">{t('printTimetable')}</span><ChevronRight size={16} class="secondary" />
         </a>
         <a class="item" href="print/#sheet=fasting">
-          <Printer size={20} /><span class="label">Print a kids' fasting chart</span><ChevronRight size={16} class="secondary" />
+          <Printer size={20} /><span class="label">{t('printKidsChart')}</span><ChevronRight size={16} class="secondary" />
         </a>
       </div>
     </section>
@@ -426,20 +455,21 @@ function RamadanTools({ now }: { now: number }) {
 function RamadanSettings() {
   const s = useStore()
   const p = s.prefs
+  const { t } = useWords()
   return (
     <section>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>Ramadan alerts and reading</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{t('alertsTitle')}</h3>
       <div class="group">
-        <ToggleItem label="Imsak alert" sub="10 minutes before Imsak, to finish sahur" on={p.imsakAlert} onChange={(v) => s.update((x) => { x.imsakAlert = v })} />
-        <ToggleItem label="Berbuka alert" sub="At Maghrib, with the doa" on={p.berbukaAlert} onChange={(v) => s.update((x) => { x.berbukaAlert = v })} />
-        <ToggleItem label="A juz a day" sub="Finish the Quran this month. Tick each juz on the Prayer screen" on={p.khatamPlan} onChange={(v) => s.update((x) => { x.khatamPlan = v })} />
+        <ToggleItem label={t('imsakAlert')} sub={t('imsakAlertSub')} on={p.imsakAlert} onChange={(v) => s.update((x) => { x.imsakAlert = v })} />
+        <ToggleItem label={t('berbukaAlert')} sub={t('berbukaAlertSub')} on={p.berbukaAlert} onChange={(v) => s.update((x) => { x.berbukaAlert = v })} />
+        <ToggleItem label={t('juzADay')} sub={t('juzADaySub')} on={p.khatamPlan} onChange={(v) => s.update((x) => { x.khatamPlan = v })} />
         {p.khatamPlan && (
           <a class="item" href={juzLink(s.season(s.now()).ramadanDay ?? 1)} target="_blank" rel="noopener noreferrer">
-            <BookOpen size={20} /><span class="label">Read today's juz</span><ExternalLink size={15} class="secondary" />
+            <BookOpen size={20} /><span class="label">{t('readTodaysJuz')}</span><ExternalLink size={15} class="secondary" />
           </a>
         )}
       </div>
-      <p class="group-foot">On the web, alerts ring only while the app is open. The phone apps ring them even when closed.</p>
+      <p class="group-foot">{t('webAlertsNote')}</p>
     </section>
   )
 }
@@ -451,15 +481,16 @@ function RayaToday({ now }: { now: number }) {
   const season = s.season(now)
   const eid = s.eidPrayer
   const day = s.day(now)
+  const { t } = useWords()
   return (
     <div class="glass card raya-today" style={{ marginTop: '10px' }}>
-      <div class="caps accent">{season.phase === 'raya' ? '1 Syawal' : `Syawal ${season.syawalDay}`}</div>
-      <h3 class="display" style={{ margin: '4px 0' }}>{season.phase === 'raya' ? 'Selamat Hari Raya Aidilfitri' : 'Syawal'}</h3>
+      <div class="caps accent">{season.phase === 'raya' ? t('firstSyawal') : t('syawalDay', { n: season.syawalDay ?? '' })}</div>
+      <h3 class="display" style={{ margin: '4px 0' }}>{season.phase === 'raya' ? t('selamatHariRaya') : t('syawal')}</h3>
       {season.phase === 'raya' && (
         <>
-          {eid ? <p class="subhead">Raya prayer at {s.prefs.myMasjid?.name ?? 'your masjid'}, <b class="mono">{eid}</b></p>
-            : <p class="subhead">Your masjid sets the Raya prayer time, usually between 7.30 and 8.30 in the morning{day ? `, after Syuruk at ${s.formatted(day.times.sunrise)}` : ''}.</p>}
-          <p class="caption secondary">Eat something before going out, take a different road home, and keep the takbir until the prayer begins.</p>
+          {eid ? <p class="subhead">{t('rayaPrayerAtPlace', { p: s.prefs.myMasjid?.name ?? t('yourMasjid') })} <b class="mono">{eid}</b></p>
+            : <p class="subhead">{day ? t('masjidSetsRayaTimeAfterSyuruk', { s: s.formatted(day.times.sunrise) }) : t('masjidSetsRayaTime')}</p>}
+          <p class="caption secondary">{t('rayaSunnah')}</p>
         </>
       )}
     </div>
@@ -473,36 +504,37 @@ function SyawalFasts({ now, year }: { now: number; year: number }) {
   const sum = s.fastSummary(year)
   const order: (FastMark | null)[] = [null, 'syawal', 'qadha']
   const tomorrow = s.civilAfter(now, 1)
+  const { lang, t } = useWords()
   return (
     <section>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>Puasa enam and ganti</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{t('syawalFastsTitle')}</h3>
       <div class="glass card">
         <div class="syawal-count">
-          <div><span class="mono big">{Math.min(6, sum.syawal)}</span><span class="caption secondary"> of 6 Syawal fasts</span></div>
-          <div><span class="mono big">{sum.owed}</span><span class="caption secondary"> Ramadan fast{sum.owed === 1 ? '' : 's'} to replace</span></div>
+          <div><span class="mono big">{Math.min(6, sum.syawal)}</span><span class="caption secondary"> {t('ofSixSyawal')}</span></div>
+          <div><span class="mono big">{sum.owed}</span><span class="caption secondary"> {t('ramadanFastsToReplace', { n: sum.owed })}</span></div>
         </div>
-        <div class="fast-grid" role="grid">
+        <div class="fast-grid" role="group" aria-label={t('syawalFastsTitle')}>
           {days.map((d, i) => {
             const k = civilKey(d)
             const m = s.fastMark(k)
             const raya = i === 0
             return (
               <button class={`fast-day ${m === 'syawal' ? 'fasted' : m === 'qadha' ? 'qadha' : ''} ${k === todayKey ? 'is-today' : ''}`} disabled={raya || k > todayKey}
-                aria-label={`${i + 1} Syawal: ${raya ? 'Hari Raya, no fasting' : m ? FAST_MARK_LABEL[m] : 'not marked'}`}
+                aria-label={t('syawalDayAria', { n: i + 1, s: raya ? t('rayaNoFasting') : m ? fastMarkLabel(lang, m) : t('notMarked') })}
                 onClick={() => s.setFast(k, order[(order.indexOf(m === 'syawal' || m === 'qadha' ? m : null) + 1) % order.length])}>
-                <span class="mono">{i + 1}</span>{m === 'qadha' && <span class="fast-reason">G</span>}
+                <span class="mono">{i + 1}</span>{m === 'qadha' && <span class="fast-reason" aria-hidden="true">{fastMarkLetter(lang, 'qadha')}</span>}
               </button>
             )
           })}
         </div>
-        <p class="caption secondary">Tap a day once for a Syawal fast, twice for a replaced (ganti) fast. No fasting on 1 Syawal. Fasting tomorrow, {fmtCivil(tomorrow, { weekday: 'long', day: 'numeric', month: 'short' })}? Make the niat tonight.</p>
+        <p class="caption secondary">{t('syawalHelp', { d: fmtCivil(tomorrow, { weekday: 'long', day: 'numeric', month: 'short' }, lang) })}</p>
         {sum.owed > 0 && s.season(now).phase !== 'raya' && (
           <button class="pill-btn" onClick={() => s.setFast(todayKey, s.fastMark(todayKey) === 'qadha' ? null : 'qadha')}>
-            <Check size={16} />{s.fastMark(todayKey) === 'qadha' ? 'Replaced a fast today' : 'I replaced a fast today'}
+            <Check size={16} />{s.fastMark(todayKey) === 'qadha' ? t('replacedToday') : t('iReplacedToday')}
           </button>
         )}
       </div>
-      <p class="group-foot">Missed Ramadan fasts can be replaced any day before next Ramadan, except the days of Raya and Tasyrik. Replaced fasts you mark later in the year count here too.</p>
+      <p class="group-foot">{t('replaceRule')}</p>
     </section>
   )
 }
@@ -510,13 +542,14 @@ function SyawalFasts({ now, year }: { now: number; year: number }) {
 function RayaShare() {
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
+  const { t } = useWords()
   return (
     <section>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>Send a Raya card</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{t('sendRayaCard')}</h3>
       <div class="group">
-        <label class="item"><span class="label">From</span><input class="inline-input" value={name} placeholder="Your name or family" onInput={(e) => setName((e.target as HTMLInputElement).value)} /></label>
-        <button class="item" disabled={busy} onClick={async () => { setBusy(true); await sharePicture(rayaCard(name), 'selamat-hari-raya', 'Selamat Hari Raya Aidilfitri, maaf zahir dan batin'); setBusy(false) }}>
-          <Share2 size={20} /><span class="label">Share the card</span>
+        <label class="item"><span class="label">{t('from')}</span><input class="inline-input" value={name} placeholder={t('yourNameOrFamily')} onInput={(e) => setName((e.target as HTMLInputElement).value)} /></label>
+        <button class="item" disabled={busy} onClick={async () => { setBusy(true); await sharePicture(rayaCard(name), 'selamat-hari-raya', t('rayaShareText')); setBusy(false) }}>
+          <Share2 size={20} /><span class="label">{t('shareTheCard')}</span>
         </button>
       </div>
     </section>

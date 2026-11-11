@@ -26,14 +26,18 @@ Places (home, chosen place, saved places, and whether to use GPS), calculation
 choices (method, Asr, JAKIM zone, Ramadan/Eid authority, Hijri adjustment),
 prayer names, look (appearance, Prayer screen style, 24-hour time), which prayers
 to alert and the early reminder, the wake-up alarm, musafir settings, offers on or
-off, and the prayer tracker with its history.
+off, the prayer tracker with its history, and the Ramadan record (how each
+day's fast went, and the days Tarawih was prayed and the juz read).
 
 Left behind on purpose: whether alerts are on (each phone must ask permission
 again), travel-mode memory (last country, arrival day, trip log) and one-off
 prompts.
 
-Bringing settings in replaces the ones on the new phone. Tracker history is the
-exception: it is added to what the new phone already has, so nothing is lost.
+Bringing settings in replaces the ones on the new phone. Tracker history and the
+Ramadan record are the exception: they are added to what the new phone already
+has, so nothing is lost (a fast marked on both phones takes the moved one). An
+older code made before the Ramadan record travelled simply leaves the new phone's
+record as it is.
 
 ## The code
 
@@ -66,15 +70,19 @@ install; a missing key means the default. `"v": 1` is always there.
 | `trackerPausedSince` | `yyyy-MM-dd` the tracker was paused (haid, nifas, illness); every day from then until the pause ends counts as excused |
 | `wakeUp` | `atFajr`, `fajrPlus15`, `sunriseMinus30`, `sunriseMinus15` (phones only; the web keeps it if present) |
 | `dhuhrAlarm`, `asrAlarm`, `maghribAlarm`, `ishaAlarm` | `atStart`, `plus5`, `plus10`, `plus15`, `plus30`, `endMinus30` (not for Isyak) |
+| `fastLog` | `{"yyyy-MM-dd": mark}`, mark is `fasted`, `period`, `sick`, `travel`, `other`, `qadha` (a replaced fast) or `syawal` |
+| `tarawihLog`, `quranLog` | lists of `yyyy-MM-dd`: the days Tarawih was prayed, and the days the day's juz was read |
 | `alarmSound` | `classic`, `chime`, `bells`, `beeps`, `phone` (a ringtone picked on Android; the ringtone itself stays on that phone, elsewhere it plays `classic`) |
 
 A place is `{name, region?, countryCode?, countryName?, timeZoneID, lat, lon, district?}`.
 It has no id; the receiving app makes a new one.
 
 A value an app doesn't understand is skipped, not fatal. A QR code is kept under
-1,500 characters so phone cameras read it easily: if a long tracker history doesn't
-fit, the QR code carries the most recent days that do and says so; Share and Copy
-link always carry everything.
+1,500 characters so phone cameras read it easily. If everything doesn't fit, the QR
+code first carries only this year's Ramadan record (the 330 days up to its newest
+day, so the month, Syawal and the replaced fasts after it), then, if a long tracker
+history still doesn't fit, the most recent tracker days that do, and says so. Share
+and Copy link always carry everything.
 
 ## Where it lives
 

@@ -89,6 +89,31 @@
         "wakeUp": "sunriseMinus30"
       },
       "code": "PTA1.xZNRT9swEID_Crpnt4vbUdq8lTGxQhmVOoTYhKajvjRuY7s620CE-t8npxCqlT3vKdKdL_f5u_MLPEIuBURP57M55AVWngSUzhDkL2AxfWGu7RI3jgkELFy0gesvTjWZ8_fQ98PDQRv66SxNziCHsdf4aT9bYYBcdvvHPSmgchZymfW7QzkabgUYtBGrWYWL_03i8ZFUA-Ih_9WiXEas8GgazSYyCGBa6lQIt7rCGsujGbGndQwR7QHs1d0B7BVWWHuNH7I2vX63vRrcflf2Ry2t7A6Gg9FWtHinaFW0y32yC3zCo1NkDAdAk7MDoIlVztK_iC5wjRzwDaYz6I7kyXGLc9IdyJEUoLQPrBch-XIhdd9Rbe8FGAqlU9ePxKzV7tcmag8C0PNbGHIo0WKhQaSbabvcy5jkDJrt7X3-5iJDHjim_dUr1mO1ij4YsolPCrAu6KKeMdbEaZJQ4CrZNLgsWT-AAO1LhPtkzGiriK-0jYH8KRVpTXKZCTDRY6H5q8WHitRbv9foj5LJl65Slwby4UjACtfaJHF70LfTu0w2to2JVod6HEPpWIc6bcHNZJ4EbDaEjDbtPijkdZqBU1jPQ12l2ANalUz50j1dF0Vzode3m0JTt8AqzfE9HBgXa_obfJNsqKlbpjfWy3qDjsw6veM9O6qMJe9m8qGrtmhwUHS_FUDPi-hJnWHdKG9PZ6n2Cdd0s4EcfLSsPSXfvp_B9g8"
+    },
+    {
+      "name": "Ramadan record: fasts, Tarawih and juz",
+      "settings": {
+        "v": 1,
+        "fastLog": {
+          "2026-02-18": "fasted",
+          "2026-02-19": "fasted",
+          "2026-02-25": "period",
+          "2026-02-26": "period",
+          "2026-03-05": "travel",
+          "2026-03-22": "syawal",
+          "2026-04-10": "qadha"
+        },
+        "tarawihLog": [
+          "2026-02-17",
+          "2026-02-18",
+          "2026-03-16"
+        ],
+        "quranLog": [
+          "2026-02-18",
+          "2026-02-19"
+        ]
+      },
+      "code": "PTA1.bc9BDoIwEIXhu7x1m7SjVpwzeAPDYhKqkBiRUiCGcHcjmxZ1-2Vm8s-MEWwVrtLHc3sDzyBDThvStgCv7iuopKd_Sgcwnj407Ubdr-60-czGIKO_Z0oERv-SSZLutTVgdFLVgkUhSpCpqdfOSyo65nlFdtM6lArdEOTxvVNsXyqXNw"
     }
   ]
 }

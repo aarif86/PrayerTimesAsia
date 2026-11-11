@@ -1,5 +1,6 @@
 import { newPlaceId, type Place } from '../core/place'
 import { PRAYERS, type Prayer } from '../core/prayer'
+import type { FastMark } from '../core/ramadanContent'
 import { SAHUR_DAYS } from '../core/wakeup'
 import { decodePreferences, DEFAULT_PREFS, type Preferences } from './prefs'
 
@@ -74,7 +75,14 @@ export interface MovedSettings {
   maghribAlarm?: string
   ishaAlarm?: string
   alarmSound?: string
+  /** The Ramadan record: how each day's fast went, and the days Tarawih was prayed and the juz read. */
+  fastLog?: Record<string, FastMark>
+  tarawihLog?: string[]
+  quranLog?: string[]
 }
+
+const FAST_MARKS: readonly FastMark[] = ['fasted', 'period', 'sick', 'travel', 'other', 'qadha', 'syawal']
+const DAY = /^\d{4}-\d{2}-\d{2}$/
 
 /** The plain settings, with the travel-mode memory and one-off prompts left behind. */
 const SIMPLE_KEYS = [
@@ -116,13 +124,18 @@ export function movedFrom(p: Preferences): MovedSettings {
   if (p.excusedDays.length) out.excusedDays = [...p.excusedDays].sort()
   const sahurDays = SAHUR_DAYS.filter((d) => p.sahurDays.includes(d))
   if (sahurDays.join() !== SAHUR_DAYS.filter((d) => DEFAULT_PREFS.sahurDays.includes(d)).join()) out.sahurDays = sahurDays
+  const fasts = Object.entries(p.fastLog).sort(([a], [b]) => a.localeCompare(b))
+  if (fasts.length) out.fastLog = Object.fromEntries(fasts)
+  if (p.tarawihLog.length) out.tarawihLog = [...p.tarawihLog].sort()
+  if (p.quranLog.length) out.quranLog = [...p.quranLog].sort()
   return out
 }
 
 /**
  * These preferences with the moved settings in place. Every moved setting
  * replaces this device's (a missing one goes back to its default), except the
- * tracker history, which is added to what this device already has.
+ * tracker history and the Ramadan record, which are added to what this device
+ * already has (an older code without them leaves this device's as they are).
  */
 export function applyMoved(p: Preferences, m: MovedSettings): Preferences {
   const raw: Record<string, unknown> = structuredClone(p) as unknown as Record<string, unknown>
@@ -147,6 +160,15 @@ export function applyMoved(p: Preferences, m: MovedSettings): Preferences {
   raw.prayedLog = log
   const excused = Array.isArray(m.excusedDays) ? m.excusedDays.filter((d) => typeof d === 'string') : []
   raw.excusedDays = [...new Set([...p.excusedDays, ...excused])].sort()
+  const fasts: Record<string, FastMark> = structuredClone(p.fastLog)
+  if (m.fastLog && typeof m.fastLog === 'object' && !Array.isArray(m.fastLog)) {
+    for (const [day, mark] of Object.entries(m.fastLog)) if (DAY.test(day) && FAST_MARKS.includes(mark)) fasts[day] = mark
+  }
+  raw.fastLog = fasts
+  const days = (here: string[], moved: unknown) =>
+    [...new Set([...here, ...(Array.isArray(moved) ? moved.filter((d): d is string => typeof d === 'string' && DAY.test(d)) : [])])].sort()
+  raw.tarawihLog = days(p.tarawihLog, m.tarawihLog)
+  raw.quranLog = days(p.quranLog, m.quranLog)
   raw.hasOnboarded = true
   // The same checks as loading saved preferences: a wrong value falls back to its default.
   return decodePreferences(raw)
@@ -188,14 +210,47 @@ export async function decodeMove(text: string): Promise<MovedSettings | null> {
   }
 }
 
+/** How far back "this year's Ramadan record" reaches from its newest day: the month itself, Syawal and the replaced fasts after it. */
+export const RAMADAN_YEAR_DAYS = 330
+
+/** Only the Ramadan record from the newest Ramadan month day back RAMADAN_YEAR_DAYS days, plus everything after it; null if nothing older was there to leave out. */
+export function latestRamadanYear(m: MovedSettings): MovedSettings | null {
+  const all = [...Object.keys(m.fastLog ?? {}), ...(m.tarawihLog ?? []), ...(m.quranLog ?? [])].filter((d) => DAY.test(d)).sort()
+  if (!all.length) return null
+  // Count back from the newest day in the month itself (a Tarawih or juz day, or a Ramadan fast),
+  // so replaced and Syawal fasts kept later in the year don't push this year's Ramadan out.
+  const inMonth = [...Object.entries(m.fastLog ?? {}).filter(([, k]) => k !== 'qadha' && k !== 'syawal').map(([d]) => d), ...(m.tarawihLog ?? []), ...(m.quranLog ?? [])].filter((d) => DAY.test(d)).sort()
+  const newest = Date.parse((inMonth.length ? inMonth[inMonth.length - 1] : all[all.length - 1]) + 'T00:00:00Z')
+  const from = new Date(newest - RAMADAN_YEAR_DAYS * 86_400_000).toISOString().slice(0, 10)
+  if (all[0] >= from) return null
+  const out: MovedSettings = { ...m }
+  const fasts = Object.entries(m.fastLog ?? {}).filter(([d]) => d >= from)
+  const tarawih = (m.tarawihLog ?? []).filter((d) => d >= from)
+  const quran = (m.quranLog ?? []).filter((d) => d >= from)
+  if (fasts.length) out.fastLog = Object.fromEntries(fasts); else delete out.fastLog
+  if (tarawih.length) out.tarawihLog = tarawih; else delete out.tarawihLog
+  if (quran.length) out.quranLog = quran; else delete out.quranLog
+  return out
+}
+
 /**
- * The code for a QR code: everything if it fits, otherwise the tracker history
- * trimmed to the most recent days that fit. `keptDays` says how many made it.
+ * The code for a QR code: everything if it fits. Otherwise first only this
+ * year's Ramadan record (`ramadanTrimmed`), then the tracker history trimmed to
+ * the most recent days that fit (`keptDays` says how many made it).
  */
-export async function encodeForQR(m: MovedSettings, max = QR_MAX_CHARS, prefixLength = 0): Promise<{ code: string; keptDays: number | null }> {
-  const code = await encodeMove(m)
+export async function encodeForQR(m: MovedSettings, max = QR_MAX_CHARS, prefixLength = 0): Promise<{ code: string; keptDays: number | null; ramadanTrimmed: boolean }> {
+  const fits = (c: string) => c.length + prefixLength <= max
+  let code = await encodeMove(m)
+  if (fits(code)) return { code, keptDays: null, ramadanTrimmed: false }
+  const thisYear = latestRamadanYear(m)
+  const ramadanTrimmed = thisYear != null
+  if (thisYear) {
+    m = thisYear
+    code = await encodeMove(m)
+    if (fits(code)) return { code, keptDays: null, ramadanTrimmed }
+  }
   const days = Object.keys(m.prayedLog ?? {}).sort()
-  if (code.length + prefixLength <= max || !days.length) return { code, keptDays: null }
+  if (!days.length) return { code, keptDays: null, ramadanTrimmed }
   let keep = days.length
   for (;;) {
     keep = Math.floor(keep / 2)
@@ -203,7 +258,7 @@ export async function encodeForQR(m: MovedSettings, max = QR_MAX_CHARS, prefixLe
     const trimmed: MovedSettings = { ...m, prayedLog: Object.fromEntries(Object.entries(m.prayedLog!).filter(([d]) => recent.has(d))) }
     if (!keep) delete trimmed.prayedLog
     const c = await encodeMove(trimmed)
-    if (c.length + prefixLength <= max || !keep) return { code: c, keptDays: keep }
+    if (fits(c) || !keep) return { code: c, keptDays: keep, ramadanTrimmed }
   }
 }
 
@@ -219,6 +274,7 @@ export function describeMoved(m: MovedSettings): string[] {
   if (m.appearance || m.todayStyle || m.use24Hour || m.namingOverride) lines.push('Your look and prayer names')
   if (m.notifyPrayers || m.reminderMinutesBefore || m.quietHours || m.buzzOnly || m.jumuahReminderMinutes) lines.push('Which prayers to alert, and how')
   if (m.wakeUp || m.sahurAlarm) lines.push('Your wake-up alarms')
+  if (Object.keys(m.fastLog ?? {}).length || m.tarawihLog?.length || m.quranLog?.length) lines.push('Your Ramadan record of fasts, Tarawih and juz')
   if (m.largeText) lines.push('Bigger text')
   if (m.musafirEnabled) lines.push('Musafir features')
   return lines.length ? lines : ['The standard settings']

@@ -41,6 +41,10 @@ object Palette {
     val gold: Color @Composable @ReadOnlyComposable get() = gold(LocalSkyScheme.current.dark)
     val success: Color @Composable @ReadOnlyComposable get() = if (LocalSkyScheme.current.dark) successDark else successLight
 
+    /** Gold for words and numbers (Ramadan labels, countdowns): deep gold on light skies so it passes contrast. */
+    val goldText: Color @Composable @ReadOnlyComposable
+        get() = if (LocalSkyScheme.current.dark) goldDark else Color(0xFF583900)
+
     /** The peach for words (labels, countdowns): deeper on light skies so it reads. */
     val accentText: Color @Composable @ReadOnlyComposable
         get() = if (LocalSkyScheme.current.dark) sunArcDark else rgb(0.70, 0.33, 0.12)
