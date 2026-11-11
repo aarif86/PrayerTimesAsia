@@ -6,7 +6,7 @@ import { authorityName } from '../core/calendarSanad'
 import { DOA, FAST_MARK_LABEL, juzLink, lang3, MISSED, ZAKAT, ZAKAT_NOTE, type DoaId, type FastMark } from '../core/ramadanContent'
 import { addDays, civilKey, daysApart, type CivilDay } from '../core/season'
 import { store, useNow, useStore } from '../services/store'
-import { openSheet, Sheet, short, TimeText, ToggleItem } from './common'
+import { openSheet, Sheet, short, spokenShort, TimeText, ToggleItem } from './common'
 import { Hadith } from './Hadith'
 import { rayaCard, sharePicture, weekCard } from './shareCard'
 
@@ -75,12 +75,12 @@ export function SeasonCard({ now }: { now: number }) {
     const night = season.nightTonight
     return (
       <div class="season-card glass ramadan">
-        <button class="season-main" onClick={() => openSheet({ kind: 'ramadan' })} aria-label={`Ramadan day ${season.ramadanDay}. Opens your Ramadan page.`}>
+        <button class="season-main" onClick={() => openSheet({ kind: 'ramadan' })} aria-label={`Ramadan day ${season.ramadanDay}. ${moment ? `${moment.kind === 'imsak' ? 'Imsak' : 'Berbuka'} in ${spokenShort(moment.time - now)}. ` : ''}Opens your Ramadan page.`}>
           <span class="season-day"><span class="caps">Ramadan</span><span class="mono big">{season.ramadanDay}</span></span>
           {moment ? (
             <span class="season-count">
               <span class="caps">{moment.kind === 'imsak' ? 'Imsak in' : 'Berbuka in'}</span>
-              <span class="mono count">{short(moment.time - now)}</span>
+              <span class="mono count" role="timer">{short(moment.time - now)}</span>
               <span class="secondary at">{moment.kind === 'imsak' ? 'Finish sahur by' : 'Maghrib at'} <TimeText ms={moment.time} size={15} weight={600} /></span>
             </span>
           ) : (
@@ -207,7 +207,7 @@ function RamadanToday({ now }: { now: number }) {
         <div><span class="caps secondary">Subuh</span><TimeText ms={shownDay.times.fajr} size={34} weight={700} /><span class="caption secondary">Fast begins</span></div>
         <div class="gold"><span class="caps">Berbuka</span><TimeText ms={shownDay.times.maghrib} size={34} weight={700} /><span class="caption secondary">Maghrib</span></div>
       </div>
-      {inRamadan && moment && <p class="rt-count mono">{moment.kind === 'imsak' ? 'Imsak' : 'Berbuka'} in {short(moment.time - now)}</p>}
+      {inRamadan && moment && <p class="rt-count mono" role="timer"><span aria-hidden="true">{moment.kind === 'imsak' ? 'Imsak' : 'Berbuka'} in {short(moment.time - now)}</span><span class="sr-only">{moment.kind === 'imsak' ? 'Imsak' : 'Berbuka'} in {spokenShort(moment.time - now)}</span></p>}
       {inRamadan && <FastToday now={now} />}
     </div>
     {inRamadan && <Hadith id="iftar" tag={moment?.kind === 'berbuka' ? 'Before berbuka' : undefined} />}
@@ -235,7 +235,7 @@ function FastToday({ now }: { now: number }) {
       {open && (
         <div class="season-chips">
           {MISSED.map((m) => (
-            <button class={`chip small ${mark === m ? 'on missed' : ''}`} onClick={() => { s.setFast(key, mark === m ? null : m); setOpen(false) }}>{FAST_MARK_LABEL[m]}</button>
+            <button class={`chip small ${mark === m ? 'on missed' : ''}`} aria-pressed={mark === m} onClick={() => { s.setFast(key, mark === m ? null : m); setOpen(false) }}>{FAST_MARK_LABEL[m]}</button>
           ))}
         </div>
       )}
@@ -260,7 +260,7 @@ function RamadanMonth({ now, year, compact }: { now: number; year: number; compa
     <section>
       <h3 class="group-title" style={{ fontSize: '15px' }}>{compact ? `Ramadan ${year}` : 'Your fasts this month'}</h3>
       <div class="glass card">
-        <div class="fast-grid" role="grid">
+        <div class="fast-grid" role="group" aria-label={compact ? `Ramadan ${year}` : 'Your fasts this month'}>
           {days.map((d, i) => {
             const k = civilKey(d)
             const m = s.fastMark(k)
@@ -481,7 +481,7 @@ function SyawalFasts({ now, year }: { now: number; year: number }) {
           <div><span class="mono big">{Math.min(6, sum.syawal)}</span><span class="caption secondary"> of 6 Syawal fasts</span></div>
           <div><span class="mono big">{sum.owed}</span><span class="caption secondary"> Ramadan fast{sum.owed === 1 ? '' : 's'} to replace</span></div>
         </div>
-        <div class="fast-grid" role="grid">
+        <div class="fast-grid" role="group" aria-label="Syawal fasts">
           {days.map((d, i) => {
             const k = civilKey(d)
             const m = s.fastMark(k)

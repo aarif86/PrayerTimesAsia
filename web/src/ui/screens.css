@@ -358,13 +358,14 @@
 .season-title { font-weight: 700; font-size: 16px; }
 .season-sub { font-size: 13px; opacity: 0.8; line-height: 1.35; }
 .season-main { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; color: inherit; }
-.season-day { display: flex; flex-direction: column; align-items: center; min-width: 58px; padding: 4px 8px; border-radius: 14px; background: color-mix(in srgb, #f3c969 18%, transparent); color: var(--gold); }
+.season-day { display: flex; flex-direction: column; align-items: center; min-width: 58px; padding: 4px 8px; border-radius: 14px; background: color-mix(in srgb, #f3c969 18%, transparent); color: var(--gold-text); }
 .season-day .big { font-size: 28px; font-weight: 700; line-height: 1.05; color: var(--fg); }
 .season-card .caps, .ramadan-today .caps, .raya-today .caps { font-size: 11px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; }
 .season-count { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.season-count .count { font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--gold); }
+.season-count .count { font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--gold-text); white-space: nowrap; }
 .season-count .count.small { font-size: 17px; color: inherit; }
-.season-count .at { font-size: 13px; display: inline-flex; gap: 4px; align-items: baseline; }
+.season-count .at { font-size: 13px; display: inline-flex; flex-wrap: wrap; column-gap: 4px; align-items: baseline; }
+.season-count .at .time { white-space: nowrap; }
 .season-note { display: flex; gap: 6px; align-items: center; margin: 0; font-size: 13px; opacity: 0.9; }
 .season-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 999px; font-size: 14px; font-weight: 600; color: inherit;
@@ -375,11 +376,12 @@
 .chip.small { font-size: 13px; padding: 6px 10px; }
 .preview-tag { position: absolute; top: -7px; right: 12px; font-size: 10px; font-weight: 800; letter-spacing: .6px; padding: 2px 7px; border-radius: 999px; background: #f3c969; color: #1b1410; }
 .preview-banner { margin: 10px 16px 0; padding: 10px 12px; border-radius: 12px; font-size: 13px; background: color-mix(in srgb, #f3c969 22%, transparent); }
-.ramadan-today .rt-times { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+/* Three boxes side by side; with bigger text or a narrow phone they wrap instead of being cut off. */
+.ramadan-today .rt-times { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; margin-top: 10px; }
 .ramadan-today .rt-times > div { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; border-radius: 14px; background: color-mix(in srgb, var(--fg) 6%, transparent); }
-.ramadan-today .rt-times > div.gold { background: color-mix(in srgb, #f3c969 20%, transparent); }
+.ramadan-today .rt-times > div.gold { background: color-mix(in srgb, #f3c969 20%, transparent); color: var(--gold-text); }
 .ramadan-today .rt-times .time { font-size: clamp(22px, 7vw, 34px) !important; }
-.rt-count { text-align: center; font-size: 17px; font-weight: 700; color: var(--gold); margin: 10px 0 4px; }
+.rt-count { text-align: center; font-size: 17px; font-weight: 700; color: var(--gold-text); margin: 10px 0 4px; }
 .fast-today { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .fast-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
 .fast-day { position: relative; aspect-ratio: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: inherit;
@@ -390,8 +392,8 @@
 .fast-day.qadha { background: color-mix(in srgb, var(--accent) 45%, transparent); }
 .fast-day.is-today { outline: 2px solid var(--accent); outline-offset: 1px; }
 .fast-day[disabled] { opacity: .4; }
-.fast-reason { position: absolute; bottom: 2px; right: 5px; font-size: 10px; font-weight: 800; opacity: .8; }
-.odd-nights { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0; }
+.fast-reason { position: absolute; bottom: 2px; right: 5px; font-size: 11px; font-weight: 800; }
+.odd-nights { display: grid; grid-template-columns: repeat(auto-fit, minmax(54px, 1fr)); gap: 6px; margin: 8px 0; }
 .odd-night { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; border-radius: 12px; background: color-mix(in srgb, #3a2a7a 30%, transparent); }
 .odd-night .big { font-size: 22px; font-weight: 700; }
 .odd-night.tonight { background: color-mix(in srgb, #f3c969 35%, transparent); }

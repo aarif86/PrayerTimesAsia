@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -98,6 +99,22 @@ private fun countdown(from: Instant, to: Instant): String {
     return if (h > 0) "${h}h ${m}m" else if (m > 0) "${m}m ${s % 60}s" else "${s}s"
 }
 
+/** "2 hours 5 minutes" for TalkBack, rounded up to the minute like the countdown. */
+private fun spokenCountdown(from: Instant, to: Instant): String {
+    val s = Duration.between(from, to).seconds.coerceAtLeast(0)
+    if (s < 60) return "less than a minute"
+    val minutes = (s + 59) / 60
+    val h = minutes / 60
+    val m = minutes % 60
+    return listOfNotNull(
+        if (h > 0) "$h hour${if (h == 1L) "" else "s"}" else null,
+        if (m > 0) "$m minute${if (m == 1L) "" else "s"}" else null,
+    ).joinToString(" ")
+}
+
+/** At the largest text sizes, boxes stack instead of sitting side by side. */
+@Composable private fun bigText(): Boolean = LocalDensity.current.fontScale >= 1.5f
+
 private fun authorityName(r: Resolver): String? = r.communityAuthority?.let(CalendarSanad::authorityName)
 
 @Composable
@@ -137,7 +154,7 @@ fun SeasonCard(state: AppState, now: Instant) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     Column(Modifier.clip(RoundedCornerShape(14.dp)).background(Palette.gold.copy(alpha = 0.18f)).padding(horizontal = 10.dp, vertical = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("RAMADAN", style = Txt.caption2Heavy, color = Palette.gold)
+                        Text("RAMADAN", style = Txt.caption2Heavy, color = Palette.goldText)
                         Text("${s.ramadanDay ?: 0}", style = Txt.largeTitle, color = Palette.primary)
                     }
                     Column(Modifier.weight(1f)) {
@@ -145,7 +162,9 @@ fun SeasonCard(state: AppState, now: Instant) {
                         if (m != null) {
                             val imsak = m.first == Resolver.FastingKind.IMSAK
                             Text(if (imsak) "IMSAK IN" else "BERBUKA IN", style = Txt.caption2Heavy, color = Palette.primary)
-                            Text(countdown(now, m.second), style = Txt.title2.copy(fontSize = 28.sp), color = Palette.gold)
+                            val spoken = spokenCountdown(now, m.second)
+                            Text(countdown(now, m.second), style = Txt.title2.copy(fontSize = 28.sp), color = Palette.goldText,
+                                modifier = Modifier.semantics { contentDescription = spoken })
                             Text("${if (imsak) "Finish sahur by" else "Maghrib at"} ${r.formatted(m.second)}", style = Txt.footnote, color = Palette.secondary)
                         } else {
                             Text("TONIGHT", style = Txt.caption2Heavy, color = Palette.primary)
@@ -257,7 +276,7 @@ fun RamadanSheetContent(state: AppState) {
 private fun TimeBox(title: String, time: String, sub: String, highlight: Boolean, modifier: Modifier) {
     Column(modifier.clip(RoundedCornerShape(14.dp)).background(if (highlight) Palette.gold.copy(alpha = 0.2f) else Palette.primary.copy(alpha = 0.06f))
         .padding(vertical = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(title, style = Txt.caption2Heavy, color = if (highlight) Palette.gold else Palette.secondary)
+        Text(title, style = Txt.caption2Heavy, color = if (highlight) Palette.goldText else Palette.secondary)
         Text(time, style = Txt.title3, color = Palette.primary)
         Text(sub, style = Txt.caption2, color = Palette.secondary)
     }
@@ -271,15 +290,26 @@ private fun RamadanToday(state: AppState, s: Season.Info) {
     val first = if (inRamadan) null else r.monthDays(s.hijri.year, 9).firstOrNull()
     val shown = first?.let { r.dayOf(it) } ?: r.day(state.now) ?: return
     SectionHeader(if (inRamadan) "Ramadan day ${s.ramadanDay ?: 0}" else first?.let { "1 Ramadan · ${dateText(it)}" } ?: "Ramadan")
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        TimeBox("IMSAK", r.formatted(r.imsak(shown)), "Stop eating", false, Modifier.weight(1f))
-        TimeBox("SUBUH", r.formatted(shown.time(Prayer.FAJR)), "Fast begins", false, Modifier.weight(1f))
-        TimeBox("BERBUKA", r.formatted(shown.time(Prayer.MAGHRIB)), "Maghrib", true, Modifier.weight(1f))
+    if (bigText()) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            TimeBox("IMSAK", r.formatted(r.imsak(shown)), "Stop eating", false, Modifier.fillMaxWidth())
+            TimeBox("SUBUH", r.formatted(shown.time(Prayer.FAJR)), "Fast begins", false, Modifier.fillMaxWidth())
+            TimeBox("BERBUKA", r.formatted(shown.time(Prayer.MAGHRIB)), "Maghrib", true, Modifier.fillMaxWidth())
+        }
+    } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TimeBox("IMSAK", r.formatted(r.imsak(shown)), "Stop eating", false, Modifier.weight(1f))
+            TimeBox("SUBUH", r.formatted(shown.time(Prayer.FAJR)), "Fast begins", false, Modifier.weight(1f))
+            TimeBox("BERBUKA", r.formatted(shown.time(Prayer.MAGHRIB)), "Maghrib", true, Modifier.weight(1f))
+        }
     }
     if (!inRamadan) return
     r.fastingMoment(state.now)?.let { (kind, t) ->
-        Text("${if (kind == Resolver.FastingKind.IMSAK) "Imsak" else "Berbuka"} in ${countdown(state.now, t)}", style = Txt.headline,
-            color = Palette.gold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        val label = if (kind == Resolver.FastingKind.IMSAK) "Imsak" else "Berbuka"
+        val spoken = "$label in ${spokenCountdown(state.now, t)}"
+        Text("$label in ${countdown(state.now, t)}", style = Txt.headline,
+            color = Palette.goldText, textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = spoken })
     }
     val key = r.civil(state.now).toString()
     val mark = state.prefs.fastLog[key]
@@ -347,6 +377,7 @@ private fun RamadanMonth(state: AppState, year: Int) {
         style = Txt.caption, color = Palette.secondary)
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LastTen(state: AppState, year: Int) {
     val r = state.resolver
@@ -355,7 +386,8 @@ private fun LastTen(state: AppState, year: Int) {
     val today = r.civil(state.now)
     SectionHeader("The last ten nights")
     Text("Lailatul Qadr is better than a thousand months. Seek it in the odd nights of the last ten.", style = Txt.subheadline, color = Palette.primary)
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    val big = bigText()
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp), maxItemsInEachRow = if (big) 2 else 5) {
         oddNights.filter { it - 2 < days.size }.forEach { n ->
             val eve = days[n - 2]
             Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (eve == today) Palette.gold.copy(alpha = 0.35f) else Purple.copy(alpha = 0.18f))
