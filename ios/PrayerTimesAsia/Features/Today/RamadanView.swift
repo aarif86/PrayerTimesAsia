@@ -123,7 +123,7 @@ struct SeasonCard: View {
         let moment = model.fastingMoment(now)
         return VStack(alignment: .leading, spacing: 10) {
             Button { showPage = true } label: {
-                rowOrColumn(typeSize.isAccessibilitySize, spacing: 14) {
+                rowOrColumn(typeSize.isAccessibilitySize, spacing: 14).callAsFunction {
                     VStack(spacing: 0) {
                         Text("RAMADAN").font(.caption2.weight(.heavy)).foregroundStyle(goldText)
                         Text("\(s.ramadanDay ?? 0)").font(Theme.display(28, .bold)).monospacedDigit()
@@ -269,7 +269,7 @@ struct RamadanView: View {
         let first = inRamadan ? nil : model.monthDays(hijriYear: s.hijri.year, month: 9).first
         if let shown = first.flatMap({ model.day(of: $0) }) ?? model.day(containing: now) {
             Section {
-                rowOrColumn(typeSize.isAccessibilitySize, spacing: 8) {
+                rowOrColumn(typeSize.isAccessibilitySize, spacing: 8).callAsFunction {
                     timeBox("IMSAK", model.imsak(shown), "Stop eating")
                     timeBox("SUBUH", shown.time(.fajr), "Fast begins")
                     timeBox("BERBUKA", shown.time(.maghrib), "Maghrib", highlight: true)
@@ -305,7 +305,7 @@ struct RamadanView: View {
     @ViewBuilder private func fastToday(_ now: Date) -> some View {
         let key = model.civil(now).key
         let mark = model.prefs.fastLog[key]
-        rowOrColumn(typeSize.isAccessibilitySize, spacing: 6) {
+        rowOrColumn(typeSize.isAccessibilitySize, spacing: 6).callAsFunction {
             SeasonChip(title: "I'm fasting today", icon: mark == .fasted ? "checkmark" : "fork.knife", on: mark == .fasted) {
                 model.setFast(key, mark == .fasted ? nil : .fasted)
             }
@@ -314,7 +314,7 @@ struct RamadanView: View {
             }
         }
         if showMissed {
-            rowOrColumn(typeSize.isAccessibilitySize, spacing: 6) {
+            rowOrColumn(typeSize.isAccessibilitySize, spacing: 6).callAsFunction {
                 ForEach(FastMark.missed, id: \.self) { m in
                     SeasonChip(title: m.label, icon: m == .travel ? "car" : m == .sick ? "cross.case" : m == .period ? "drop" : "ellipsis", on: mark == m, tint: pink) {
                         model.setFast(key, mark == m ? nil : m); showMissed = false
@@ -371,7 +371,7 @@ struct RamadanView: View {
             let today = model.civil(now)
             Section {
                 Text("Lailatul Qadr is better than a thousand months. Seek it in the odd nights of the last ten.")
-                rowOrColumn(typeSize.isAccessibilitySize, spacing: 6) {
+                rowOrColumn(typeSize.isAccessibilitySize, spacing: 6).callAsFunction {
                     ForEach(oddNights, id: \.self) { n in
                         if n - 2 < days.count {
                             let eve = days[n - 2]
