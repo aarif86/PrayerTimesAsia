@@ -33,6 +33,15 @@ function useWords() {
   return { lang, t: wordsFor(lang) }
 }
 
+/** short() for screen readers in the page's language, rounded the same way: "2 hours 5 minutes", "2 jam 5 minit". */
+function spokenIn(ms: number, t: ReturnType<typeof wordsFor>): string {
+  const s = Math.max(0, Math.ceil(ms / 1000))
+  if (s < 60) return t('spokenUnderMinute')
+  const minutes = Math.floor((s + 59) / 60)
+  const h = Math.floor(minutes / 60), m = minutes % 60
+  return [h ? t('spokenHours', { n: h }) : '', m ? t('spokenMinutes', { n: m }) : ''].filter(Boolean).join(' ')
+}
+
 // ---------- The card on the Prayer screen ----------
 
 /** Ramadan, Raya and Syawal at the top of the Prayer screen. Nothing outside the season. */
@@ -86,12 +95,12 @@ export function SeasonCard({ now }: { now: number }) {
     const night = season.nightTonight
     return (
       <div class="season-card glass ramadan">
-        <button class="season-main" onClick={() => openSheet({ kind: 'ramadan' })} aria-label={t('cardAria', { n: season.ramadanDay ?? '' })}>
+        <button class="season-main" onClick={() => openSheet({ kind: 'ramadan' })} aria-label={moment ? t('cardAriaCount', { n: season.ramadanDay ?? '', w: moment.kind === 'imsak' ? t('imsak') : t('berbuka'), l: spokenIn(moment.time - now, t) }) : t('cardAria', { n: season.ramadanDay ?? '' })}>
           <span class="season-day"><span class="caps">{t('ramadan')}</span><span class="mono big">{season.ramadanDay}</span></span>
           {moment ? (
             <span class="season-count">
               <span class="caps">{moment.kind === 'imsak' ? t('imsakIn') : t('berbukaIn')}</span>
-              <span class="mono count">{short(moment.time - now)}</span>
+              <span class="mono count" role="timer">{short(moment.time - now)}</span>
               <span class="secondary at">{moment.kind === 'imsak' ? t('finishSahurBy') : t('maghribAt')} <TimeText ms={moment.time} size={15} weight={600} /></span>
             </span>
           ) : (
@@ -220,7 +229,7 @@ function RamadanToday({ now }: { now: number }) {
         <div><span class="caps secondary">{t('subuh')}</span><TimeText ms={shownDay.times.fajr} size={34} weight={700} /><span class="caption secondary">{t('fastBegins')}</span></div>
         <div class="gold"><span class="caps">{t('berbuka')}</span><TimeText ms={shownDay.times.maghrib} size={34} weight={700} /><span class="caption secondary">{t('maghrib')}</span></div>
       </div>
-      {inRamadan && moment && <p class="rt-count mono">{t('countIn', { w: moment.kind === 'imsak' ? t('imsak') : t('berbuka'), l: short(moment.time - now) })}</p>}
+      {inRamadan && moment && <p class="rt-count mono" role="timer"><span aria-hidden="true">{t('countIn', { w: moment.kind === 'imsak' ? t('imsak') : t('berbuka'), l: short(moment.time - now) })}</span><span class="sr-only">{t('countIn', { w: moment.kind === 'imsak' ? t('imsak') : t('berbuka'), l: spokenIn(moment.time - now, t) })}</span></p>}
       {inRamadan && <FastToday now={now} />}
     </div>
     {inRamadan && <Hadith id="iftar" tag={moment?.kind === 'berbuka' ? t('beforeBerbuka') : undefined} />}
@@ -249,7 +258,7 @@ function FastToday({ now }: { now: number }) {
       {open && (
         <div class="season-chips">
           {MISSED.map((m) => (
-            <button class={`chip small ${mark === m ? 'on missed' : ''}`} onClick={() => { s.setFast(key, mark === m ? null : m); setOpen(false) }}>{fastMarkLabel(lang, m)}</button>
+            <button class={`chip small ${mark === m ? 'on missed' : ''}`} aria-pressed={mark === m} onClick={() => { s.setFast(key, mark === m ? null : m); setOpen(false) }}>{fastMarkLabel(lang, m)}</button>
           ))}
         </div>
       )}
@@ -275,7 +284,7 @@ function RamadanMonth({ now, year, compact }: { now: number; year: number; compa
     <section>
       <h3 class="group-title" style={{ fontSize: '15px' }}>{compact ? t('ramadanYear', { y: year }) : t('yourFastsThisMonth')}</h3>
       <div class="glass card">
-        <div class="fast-grid" role="grid">
+        <div class="fast-grid" role="group" aria-label={compact ? t('ramadanYear', { y: year }) : t('yourFastsThisMonth')}>
           {days.map((d, i) => {
             const k = civilKey(d)
             const m = s.fastMark(k)
@@ -504,7 +513,7 @@ function SyawalFasts({ now, year }: { now: number; year: number }) {
           <div><span class="mono big">{Math.min(6, sum.syawal)}</span><span class="caption secondary"> {t('ofSixSyawal')}</span></div>
           <div><span class="mono big">{sum.owed}</span><span class="caption secondary"> {t('ramadanFastsToReplace', { n: sum.owed })}</span></div>
         </div>
-        <div class="fast-grid" role="grid">
+        <div class="fast-grid" role="group" aria-label={t('syawalFastsTitle')}>
           {days.map((d, i) => {
             const k = civilKey(d)
             const m = s.fastMark(k)

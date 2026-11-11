@@ -36,5 +36,16 @@ enum RamadanWords {
         func callAsFunction(_ key: RamadanWordKey, _ args: [String: CustomStringConvertible] = [:]) -> String { RamadanWords.text(key, lang, args) }
         func mark(_ m: FastMark) -> String { RamadanWords.mark(m, lang) }
         func letter(_ m: FastMark) -> String { RamadanWords.letter(m, lang) }
+
+        /// A countdown for VoiceOver in this language, "2 hours 5 minutes", rounded up
+        /// to the minute the same way as the countdown on screen (TodayView.short).
+        func spoken(_ seconds: TimeInterval) -> String {
+            let s = max(0, Int(seconds.rounded(.up)))
+            if s < 60 { return callAsFunction(.spokenUnderMinute) }
+            let minutes = (s + 59) / 60
+            let h = minutes / 60, m = minutes % 60
+            return [h > 0 ? callAsFunction(.spokenHours, ["n": h]) : nil, m > 0 ? callAsFunction(.spokenMinutes, ["n": m]) : nil]
+                .compactMap { $0 }.joined(separator: " ")
+        }
     }
 }

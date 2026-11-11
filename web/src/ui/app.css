@@ -35,6 +35,8 @@
   --sheet: rgba(28, 28, 38, 0.92);
   --accent: rgb(247, 189, 143);
   --gold: rgb(255, 214, 128);
+  /* Gold for words, not just shapes: strong enough to read (WCAG AA) on this theme. */
+  --gold-text: rgb(255, 214, 128);
   --green: rgb(48, 209, 88);
   --grade-d: rgba(255, 255, 255, 0.75);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -53,6 +55,7 @@
   --sheet: rgba(246, 246, 250, 0.95);
   --accent: rgb(178, 84, 31);
   --gold: rgb(184, 128, 10);
+  --gold-text: rgb(88, 57, 0);
   --green: rgb(36, 168, 70);
   --grade-d: rgba(0, 0, 0, 0.55);
   --shadow: 0 10px 30px rgba(40, 40, 80, 0.15);

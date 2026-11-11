@@ -26,6 +26,17 @@ export function short(ms: number): string {
   return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 
+/** short() for screen readers: "3 hours 8 minutes", read once when focused rather than every second. */
+export function spokenShort(ms: number): string {
+  const s = Math.max(0, Math.ceil(ms / 1000))
+  if (s < 60) return 'less than a minute'
+  const minutes = Math.floor((s + 59) / 60)
+  const h = Math.floor(minutes / 60), m = minutes % 60
+  const hours = h ? `${h} hour${h === 1 ? '' : 's'}` : ''
+  const mins = m ? `${m} minute${m === 1 ? '' : 's'}` : ''
+  return [hours, mins].filter(Boolean).join(' ')
+}
+
 export const GRADE_TINT: Record<SourceGrade, string> = {
   A: 'var(--grade-a)', B: 'var(--grade-b)', C: 'var(--grade-c)', D: 'var(--grade-d)', F: 'var(--accent)',
 }

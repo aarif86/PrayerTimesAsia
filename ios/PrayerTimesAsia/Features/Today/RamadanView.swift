@@ -1,6 +1,17 @@
 import SwiftUI
 
 private let gold = Color(red: 0.95, green: 0.79, blue: 0.41)
+/// Gold for words and numbers. The bright gold is hard to read on a light
+/// background, so Light mode uses a deep gold that passes contrast checks.
+private let goldText = Color(UIColor { $0.userInterfaceStyle == .dark
+    ? UIColor(red: 0.95, green: 0.79, blue: 0.41, alpha: 1)
+    : UIColor(red: 88 / 255, green: 57 / 255, blue: 0, alpha: 1) })
+
+/// Side by side normally, one above the other at the largest text sizes so
+/// nothing is cut off.
+private func rowOrColumn(_ big: Bool, spacing: CGFloat) -> AnyLayout {
+    big ? AnyLayout(VStackLayout(alignment: .leading, spacing: spacing)) : AnyLayout(HStackLayout(spacing: spacing))
+}
 private let pink = Color(red: 0.88, green: 0.42, blue: 0.54)
 private let oddNights = [21, 23, 25, 27, 29]
 
@@ -28,6 +39,7 @@ private func whenWords(from: CivilDay, _ d: CivilDay, _ lang: RamadanContent.Lan
 /// Ramadan, Raya and Syawal at the top of the Prayer screen. Nothing outside the season.
 struct SeasonCard: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     let now: Date
     @State private var showPage = false
 
@@ -115,9 +127,9 @@ struct SeasonCard: View {
         let moment = model.fastingMoment(now)
         return VStack(alignment: .leading, spacing: 10) {
             Button { showPage = true } label: {
-                HStack(spacing: 14) {
+                rowOrColumn(typeSize.isAccessibilitySize, spacing: 14).callAsFunction {
                     VStack(spacing: 0) {
-                        Text(t(.ramadan).uppercased()).font(.caption2.weight(.heavy)).foregroundStyle(gold)
+                        Text(t(.ramadan).uppercased()).font(.caption2.weight(.heavy)).foregroundStyle(goldText)
                         Text("\(s.ramadanDay ?? 0)").font(Theme.display(28, .bold)).monospacedDigit()
                     }
                     .frame(minWidth: 58).padding(.vertical, 4)
@@ -126,7 +138,8 @@ struct SeasonCard: View {
                         if let moment {
                             Text((moment.kind == .imsak ? t(.imsakIn) : t(.berbukaIn)).uppercased()).font(.caption2.weight(.heavy))
                             Text(TodayView.short(moment.time.timeIntervalSince(now))).font(Theme.display(30, .bold)).monospacedDigit()
-                                .foregroundStyle(gold).contentTransition(.numericText(countsDown: true))
+                                .foregroundStyle(goldText).contentTransition(.numericText(countsDown: true))
+                                .accessibilityLabel(t.spoken(moment.time.timeIntervalSince(now)))
                             Text("\(moment.kind == .imsak ? t(.finishSahurBy) : t(.maghribAt)) \(model.formatted(moment.time))").font(.footnote).foregroundStyle(.secondary)
                         } else {
                             Text(t(.tonight).uppercased()).font(.caption2.weight(.heavy))
@@ -209,6 +222,7 @@ private extension SeasonCard {
 
 struct RamadanView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.dismiss) private var dismiss
     @State private var openDoa: Doa.ID?
     @State private var showMissed = false
@@ -262,14 +276,17 @@ struct RamadanView: View {
         let first = inRamadan ? nil : model.monthDays(hijriYear: s.hijri.year, month: 9).first
         if let shown = first.flatMap({ model.day(of: $0) }) ?? model.day(containing: now) {
             Section {
-                HStack(spacing: 8) {
+                rowOrColumn(typeSize.isAccessibilitySize, spacing: 8).callAsFunction {
                     timeBox(t(.imsak).uppercased(), model.imsak(shown), t(.stopEating))
                     timeBox(t(.subuh).uppercased(), shown.time(.fajr), t(.fastBegins))
                     timeBox(t(.berbuka).uppercased(), shown.time(.maghrib), t(.maghrib), highlight: true)
                 }
                 if inRamadan, let m = model.fastingMoment(now) {
-                    Text(t(.countIn, ["w": m.kind == .imsak ? t(.imsak) : t(.berbuka), "l": TodayView.short(m.time.timeIntervalSince(now))]))
-                        .font(.headline).monospacedDigit().foregroundStyle(gold).frame(maxWidth: .infinity)
+                    let word = m.kind == .imsak ? t(.imsak) : t(.berbuka)
+                    Text(t(.countIn, ["w": word, "l": TodayView.short(m.time.timeIntervalSince(now))]))
+                        .font(.headline).monospacedDigit().foregroundStyle(goldText).frame(maxWidth: .infinity)
+                        .accessibilityLabel(t(.countIn, ["w": word, "l": t.spoken(m.time.timeIntervalSince(now))]))
+                        .accessibilityAddTraits(.updatesFrequently)
                 }
                 if inRamadan { fastToday(now) }
             } header: {
@@ -285,7 +302,7 @@ struct RamadanView: View {
 
     private func timeBox(_ title: String, _ time: Date, _ sub: String, highlight: Bool = false) -> some View {
         VStack(spacing: 2) {
-            Text(title).font(.caption2.weight(.heavy)).foregroundStyle(highlight ? gold : .secondary)
+            Text(title).font(.caption2.weight(.heavy)).foregroundStyle(highlight ? goldText : .secondary)
             TimeText(parts: model.timeParts(time), size: 24, weight: .bold)
             Text(sub).font(.caption2).foregroundStyle(.secondary)
         }
@@ -296,7 +313,7 @@ struct RamadanView: View {
     @ViewBuilder private func fastToday(_ now: Date) -> some View {
         let key = model.civil(now).key
         let mark = model.prefs.fastLog[key]
-        HStack(spacing: 6) {
+        rowOrColumn(typeSize.isAccessibilitySize, spacing: 6).callAsFunction {
             SeasonChip(title: t(.imFastingToday), icon: mark == .fasted ? "checkmark" : "fork.knife", on: mark == .fasted) {
                 model.setFast(key, mark == .fasted ? nil : .fasted)
             }
@@ -305,7 +322,7 @@ struct RamadanView: View {
             }
         }
         if showMissed {
-            HStack(spacing: 6) {
+            rowOrColumn(typeSize.isAccessibilitySize, spacing: 6).callAsFunction {
                 ForEach(FastMark.missed, id: \.self) { m in
                     SeasonChip(title: t.mark(m), icon: m == .travel ? "car" : m == .sick ? "cross.case" : m == .period ? "drop" : "ellipsis", on: mark == m, tint: pink) {
                         model.setFast(key, mark == m ? nil : m); showMissed = false
@@ -362,7 +379,7 @@ struct RamadanView: View {
             let today = model.civil(now)
             Section {
                 Text(t(.lailatulQadr))
-                HStack(spacing: 6) {
+                rowOrColumn(typeSize.isAccessibilitySize, spacing: 6).callAsFunction {
                     ForEach(oddNights, id: \.self) { n in
                         if n - 2 < days.count {
                             let eve = days[n - 2]

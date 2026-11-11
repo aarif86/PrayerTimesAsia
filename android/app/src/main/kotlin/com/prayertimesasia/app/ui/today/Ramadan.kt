@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -103,6 +104,21 @@ private fun countdown(from: Instant, to: Instant): String {
     return if (h > 0) "${h}h ${m}m" else if (m > 0) "${m}m ${s % 60}s" else "${s}s"
 }
 
+/** The countdown for TalkBack in the page's language, "2 hours 4 minutes", cut the same way as [countdown]. */
+private fun spokenCountdown(from: Instant, to: Instant, t: RamadanWords.In): String {
+    val s = Duration.between(from, to).seconds.coerceAtLeast(0)
+    if (s < 60) return t(RamadanWordKey.spokenUnderMinute)
+    val h = s / 3600
+    val m = (s % 3600) / 60
+    return listOfNotNull(
+        if (h > 0) t(RamadanWordKey.spokenHours, "n" to h) else null,
+        if (m > 0) t(RamadanWordKey.spokenMinutes, "n" to m) else null,
+    ).joinToString(" ")
+}
+
+/** At the largest text sizes, boxes stack instead of sitting side by side. */
+@Composable private fun bigText(): Boolean = LocalDensity.current.fontScale >= 1.5f
+
 private fun authorityName(r: Resolver): String? = r.communityAuthority?.let(CalendarSanad::authorityName)
 
 @Composable
@@ -143,7 +159,7 @@ fun SeasonCard(state: AppState, now: Instant) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     Column(Modifier.clip(RoundedCornerShape(14.dp)).background(Palette.gold.copy(alpha = 0.18f)).padding(horizontal = 10.dp, vertical = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(t(RamadanWordKey.ramadan).uppercase(), style = Txt.caption2Heavy, color = Palette.gold)
+                        Text(t(RamadanWordKey.ramadan).uppercase(), style = Txt.caption2Heavy, color = Palette.goldText)
                         Text("${s.ramadanDay ?: 0}", style = Txt.largeTitle, color = Palette.primary)
                     }
                     Column(Modifier.weight(1f)) {
@@ -151,7 +167,9 @@ fun SeasonCard(state: AppState, now: Instant) {
                         if (m != null) {
                             val imsak = m.first == Resolver.FastingKind.IMSAK
                             Text((if (imsak) t(RamadanWordKey.imsakIn) else t(RamadanWordKey.berbukaIn)).uppercase(), style = Txt.caption2Heavy, color = Palette.primary)
-                            Text(countdown(now, m.second), style = Txt.title2.copy(fontSize = 28.sp), color = Palette.gold)
+                            val spoken = spokenCountdown(now, m.second, t)
+                            Text(countdown(now, m.second), style = Txt.title2.copy(fontSize = 28.sp), color = Palette.goldText,
+                                modifier = Modifier.semantics { contentDescription = spoken })
                             Text("${if (imsak) t(RamadanWordKey.finishSahurBy) else t(RamadanWordKey.maghribAt)} ${r.formatted(m.second)}", style = Txt.footnote, color = Palette.secondary)
                         } else {
                             Text(t(RamadanWordKey.tonight).uppercase(), style = Txt.caption2Heavy, color = Palette.primary)
@@ -265,7 +283,7 @@ fun RamadanSheetContent(state: AppState) {
 private fun TimeBox(title: String, time: String, sub: String, highlight: Boolean, modifier: Modifier) {
     Column(modifier.clip(RoundedCornerShape(14.dp)).background(if (highlight) Palette.gold.copy(alpha = 0.2f) else Palette.primary.copy(alpha = 0.06f))
         .padding(vertical = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(title, style = Txt.caption2Heavy, color = if (highlight) Palette.gold else Palette.secondary)
+        Text(title, style = Txt.caption2Heavy, color = if (highlight) Palette.goldText else Palette.secondary)
         Text(time, style = Txt.title3, color = Palette.primary)
         Text(sub, style = Txt.caption2, color = Palette.secondary)
     }
@@ -280,15 +298,23 @@ private fun RamadanToday(state: AppState, s: Season.Info) {
     val t = words(state)
     val shown = first?.let { r.dayOf(it) } ?: r.day(state.now) ?: return
     SectionHeader(if (inRamadan) t(RamadanWordKey.ramadanDay, "n" to (s.ramadanDay ?: 0)) else first?.let { t(RamadanWordKey.firstOfRamadan, "d" to dateText(it, lang = t.lang)) } ?: t(RamadanWordKey.ramadan))
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        TimeBox(t(RamadanWordKey.imsak).uppercase(), r.formatted(r.imsak(shown)), t(RamadanWordKey.stopEating), false, Modifier.weight(1f))
-        TimeBox(t(RamadanWordKey.subuh).uppercase(), r.formatted(shown.time(Prayer.FAJR)), t(RamadanWordKey.fastBegins), false, Modifier.weight(1f))
-        TimeBox(t(RamadanWordKey.berbuka).uppercase(), r.formatted(shown.time(Prayer.MAGHRIB)), t(RamadanWordKey.maghrib), true, Modifier.weight(1f))
+    val boxes = @Composable { mod: Modifier ->
+        TimeBox(t(RamadanWordKey.imsak).uppercase(), r.formatted(r.imsak(shown)), t(RamadanWordKey.stopEating), false, mod)
+        TimeBox(t(RamadanWordKey.subuh).uppercase(), r.formatted(shown.time(Prayer.FAJR)), t(RamadanWordKey.fastBegins), false, mod)
+        TimeBox(t(RamadanWordKey.berbuka).uppercase(), r.formatted(shown.time(Prayer.MAGHRIB)), t(RamadanWordKey.maghrib), true, mod)
+    }
+    if (bigText()) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) { boxes(Modifier.fillMaxWidth()) }
+    } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { boxes(Modifier.weight(1f)) }
     }
     if (!inRamadan) return
     r.fastingMoment(state.now)?.let { (kind, at) ->
-        Text(t(RamadanWordKey.countIn, "w" to (if (kind == Resolver.FastingKind.IMSAK) t(RamadanWordKey.imsak) else t(RamadanWordKey.berbuka)), "l" to countdown(state.now, at)), style = Txt.headline,
-            color = Palette.gold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        val label = if (kind == Resolver.FastingKind.IMSAK) t(RamadanWordKey.imsak) else t(RamadanWordKey.berbuka)
+        val spoken = t(RamadanWordKey.countIn, "w" to label, "l" to spokenCountdown(state.now, at, t))
+        Text(t(RamadanWordKey.countIn, "w" to label, "l" to countdown(state.now, at)), style = Txt.headline,
+            color = Palette.goldText, textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = spoken })
     }
     val key = r.civil(state.now).toString()
     val mark = state.prefs.fastLog[key]
@@ -358,6 +384,7 @@ private fun RamadanMonth(state: AppState, year: Int) {
         style = Txt.caption, color = Palette.secondary)
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LastTen(state: AppState, year: Int) {
     val r = state.resolver
@@ -367,7 +394,8 @@ private fun LastTen(state: AppState, year: Int) {
     val t = words(state)
     SectionHeader(t(RamadanWordKey.lastTenTitle))
     Text(t(RamadanWordKey.lailatulQadr), style = Txt.subheadline, color = Palette.primary)
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    val big = bigText()
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp), maxItemsInEachRow = if (big) 2 else 5) {
         oddNights.filter { it - 2 < days.size }.forEach { n ->
             val eve = days[n - 2]
             Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (eve == today) Palette.gold.copy(alpha = 0.35f) else Purple.copy(alpha = 0.18f))
@@ -434,7 +462,7 @@ private fun ShareAndPrint(state: AppState, s: Season.Info) {
     val uri = LocalUriHandler.current
     val t = words(state)
     SectionHeader(t(RamadanWordKey.shareAndPrint))
-    LinkLine(t(RamadanWordKey.shareWeek), t(RamadanWordKey.shareWeekSub, "p" to (r.activePlace?.name ?: t(RamadanWordKey.yourPlace))), Icons.Filled.Share) {
+    LinkLine(t(RamadanWordKey.shareWeek), t(RamadanWordKey.shareWeekSubText, "p" to (r.activePlace?.name ?: t(RamadanWordKey.yourPlace))), Icons.Filled.Share) {
         val today = r.civil(state.now)
         val start = r.monthDays(s.hijri.year, 9).firstOrNull()?.let { if (it > today) it else today } ?: today
         val lines = (0 until 7).mapNotNull { i ->
