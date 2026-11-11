@@ -4,21 +4,22 @@ private let gold = Color(red: 0.95, green: 0.79, blue: 0.41)
 private let pink = Color(red: 0.88, green: 0.42, blue: 0.54)
 private let oddNights = [21, 23, 25, 27, 29]
 
-private func dateText(_ d: CivilDay, _ format: String = "EEEE d MMMM") -> String {
+private func dateText(_ d: CivilDay, _ format: String = "EEEE d MMMM", _ lang: RamadanContent.Lang = .en) -> String {
     let f = DateFormatter()
-    f.locale = Locale(identifier: "en_GB")
+    f.locale = RamadanWords.locale(lang)
     f.timeZone = TimeZone(identifier: "UTC")
     f.dateFormat = format
     return f.string(from: d.noon(in: TimeZone(identifier: "UTC")!))
 }
 
 /// "tomorrow, Sunday 8 Feb" or the date.
-private func whenWords(from: CivilDay, _ d: CivilDay) -> String {
+private func whenWords(from: CivilDay, _ d: CivilDay, _ lang: RamadanContent.Lang) -> String {
+    let t = RamadanWords.In(lang)
     switch from.days(to: d) {
-    case 0: "today"
-    case 1: "tomorrow, \(dateText(d, "EEEE d MMM"))"
-    case 2: "the day after tomorrow, \(dateText(d, "EEEE d MMM"))"
-    default: dateText(d)
+    case 0: return t(.today)
+    case 1: return t(.tomorrow, ["d": dateText(d, "EEEE d MMM", lang)])
+    case 2: return t(.dayAfterTomorrow, ["d": dateText(d, "EEEE d MMM", lang)])
+    default: return dateText(d, "EEEE d MMMM", lang)
     }
 }
 
@@ -29,6 +30,9 @@ struct SeasonCard: View {
     @Environment(AppModel.self) private var model
     let now: Date
     @State private var showPage = false
+
+    private var lang: RamadanContent.Lang { RamadanContent.lang(model.naming) }
+    private var t: RamadanWords.In { RamadanWords.In(lang) }
 
     var body: some View {
         let season = model.season(at: now)
@@ -52,7 +56,7 @@ struct SeasonCard: View {
 
     @ViewBuilder private var previewTag: some View {
         if model.isSeasonPreview {
-            Text("PREVIEW").font(.caption2.weight(.heavy)).padding(.horizontal, 7).padding(.vertical, 2)
+            Text(t(.preview)).font(.caption2.weight(.heavy)).padding(.horizontal, 7).padding(.vertical, 2)
                 .background(gold, in: Capsule()).foregroundStyle(.black).offset(x: -12, y: -8)
         }
     }
@@ -76,31 +80,31 @@ struct SeasonCard: View {
         let today = model.civil(now)
         let authority = model.communityAuthority.map(CalendarSanad.authorityName)
         if s.sightingTonight != nil {
-            Text("Moon sighting tonight").font(.headline)
-            Text(authority.map { "\($0) announces the start of Ramadan this evening. This screen updates by itself." } ?? "Ramadan may begin tomorrow, after tonight's moon sighting.")
+            Text(t(.sightingTonightTitle)).font(.headline)
+            Text(authority.map { t(.sightingAnnounces, ["a": $0]) } ?? t(.sightingMaybe))
                 .font(.footnote).opacity(0.8)
         } else if let next = s.nextStart, next.announced {
-            Text("Ramadan begins \(whenWords(from: today, next.day))").font(.headline)
-            Text("Announced by \(authority ?? "your authority"). First Tarawih the night before.").font(.footnote).opacity(0.8)
+            Text(t(.ramadanBegins, ["w": whenWords(from: today, next.day, lang)])).font(.headline)
+            Text(t(.announcedBy, ["a": authority ?? t(.yourAuthorityLower)])).font(.footnote).opacity(0.8)
         } else if let first = model.monthDays(hijriYear: s.hijri.year, month: 9).first {
             let days = today.days(to: first)
-            Text(days <= 0 ? "Ramadan begins today" : days == 1 ? "Ramadan begins tomorrow" : "Ramadan in about \(days) days").font(.headline)
-            Text(days <= 1 ? "First Tarawih tonight. Set your sahur alarm." : "Get ready with your alerts, a timetable to print and the doa.").font(.footnote).opacity(0.8)
+            Text(days <= 0 ? t(.beginsToday) : days == 1 ? t(.beginsTomorrow) : t(.beginsInDays, ["n": days])).font(.headline)
+            Text(days <= 1 ? t(.firstTarawihTonight) : t(.getReady)).font(.footnote).opacity(0.8)
         } else {
-            Text("Ramadan is near").font(.headline)
+            Text(t(.ramadanNear)).font(.headline)
         }
     }
 
     @ViewBuilder private func syawalText(_ s: Season.Info) -> some View {
         let sum = model.fastSummary(hijriYear: s.hijri.year)
         if s.phase == .raya {
-            Text("Selamat Hari Raya Aidilfitri").font(.headline)
-            let eid = model.eidPrayer.map { "Raya prayer at \(model.prefs.myMasjid?.name ?? "your masjid") \($0). " } ?? "Takbir until the Raya prayer. "
-            Text(eid + (model.prefs.zakatPaid.contains(s.hijri.year) ? "Maaf zahir dan batin." : "Pay zakat fitrah before the prayer if you haven't."))
+            Text(t(.selamatHariRaya)).font(.headline)
+            let eid = model.eidPrayer.map { t(.rayaPrayerAt, ["p": model.prefs.myMasjid?.name ?? t(.yourMasjid), "t": $0]) } ?? t(.takbirUntilPrayer)
+            Text(eid + " " + (model.prefs.zakatPaid.contains(s.hijri.year) ? t(.maafZahirBatin) : t(.payZakatBefore)))
                 .font(.footnote).opacity(0.8)
         } else {
-            Text("Syawal \(s.syawalDay ?? 0) · Puasa enam \(min(6, sum.syawal)) of 6").font(.headline)
-            Text((sum.owed > 0 ? "\(sum.owed) Ramadan fast\(sum.owed == 1 ? "" : "s") to replace. " : "") + "Tap to mark a Syawal or replaced fast.")
+            Text(t(.syawalCardTitle, ["d": s.syawalDay ?? 0, "n": min(6, sum.syawal)])).font(.headline)
+            Text((sum.owed > 0 ? t(.fastsToReplace, ["n": sum.owed]) + " " : "") + t(.tapToMarkSyawal))
                 .font(.footnote).opacity(0.8)
         }
     }
@@ -113,20 +117,20 @@ struct SeasonCard: View {
             Button { showPage = true } label: {
                 HStack(spacing: 14) {
                     VStack(spacing: 0) {
-                        Text("RAMADAN").font(.caption2.weight(.heavy)).foregroundStyle(gold)
+                        Text(t(.ramadan).uppercased()).font(.caption2.weight(.heavy)).foregroundStyle(gold)
                         Text("\(s.ramadanDay ?? 0)").font(Theme.display(28, .bold)).monospacedDigit()
                     }
                     .frame(minWidth: 58).padding(.vertical, 4)
                     .background(gold.opacity(0.18), in: RoundedRectangle(cornerRadius: 14))
                     VStack(alignment: .leading, spacing: 1) {
                         if let moment {
-                            Text(moment.kind == .imsak ? "IMSAK IN" : "BERBUKA IN").font(.caption2.weight(.heavy))
+                            Text((moment.kind == .imsak ? t(.imsakIn) : t(.berbukaIn)).uppercased()).font(.caption2.weight(.heavy))
                             Text(TodayView.short(moment.time.timeIntervalSince(now))).font(Theme.display(30, .bold)).monospacedDigit()
                                 .foregroundStyle(gold).contentTransition(.numericText(countsDown: true))
-                            Text("\(moment.kind == .imsak ? "Finish sahur by" : "Maghrib at") \(model.formatted(moment.time))").font(.footnote).foregroundStyle(.secondary)
+                            Text("\(moment.kind == .imsak ? t(.finishSahurBy) : t(.maghribAt)) \(model.formatted(moment.time))").font(.footnote).foregroundStyle(.secondary)
                         } else {
-                            Text("TONIGHT").font(.caption2.weight(.heavy))
-                            Text(s.sightingTonight != nil ? "Moon sighting for Raya" : "Tarawih after Isyak").font(.headline)
+                            Text(t(.tonight).uppercased()).font(.caption2.weight(.heavy))
+                            Text(s.sightingTonight != nil ? t(.sightingForRaya) : t(.tarawihAfterIsyak)).font(.headline)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -134,33 +138,33 @@ struct SeasonCard: View {
                 }
             }
             .buttonStyle(.plain)
-            .accessibilityHint("Opens your Ramadan page")
+            .accessibilityHint(t(.opensRamadanPage))
 
             if s.sightingTonight != nil {
-                let authority = model.communityAuthority.map(CalendarSanad.authorityName) ?? "Your authority"
+                let authority = model.communityAuthority.map(CalendarSanad.authorityName) ?? t(.yourAuthority)
                 if let next = s.nextStart, next.announced {
-                    note("moon.stars", "Hari Raya is \(whenWords(from: model.civil(now), next.day)), announced by \(authority).")
+                    note("moon.stars", t(.rayaAnnounced, ["w": whenWords(from: model.civil(now), next.day, lang), "a": authority]))
                 } else {
-                    note("moon.stars", "Moon sighting tonight. \(authority) announces whether tomorrow is Raya.")
+                    note("moon.stars", t(.rayaSighting, ["a": authority]))
                 }
             } else if s.hijri.day == 30 {
-                note("sparkles", "The last fast. Hari Raya is tomorrow.")
+                note("sparkles", t(.lastFast))
             }
             if s.lastTen, let night = s.nightTonight {
-                note("sparkles", "Night \(night) tonight" + (s.oddNight ? ", one of the odd nights. Seek Lailatul Qadr." : ", in the last ten nights."))
+                note("sparkles", s.oddNight ? t(.oddNight, ["n": night]) : t(.lastTenNight, ["n": night]))
             }
-            if s.nuzulQuran { note("book", "17 Ramadan, Nuzul Quran.") }
+            if s.nuzulQuran { note("book", t(.nuzulQuran)) }
 
             HStack(spacing: 6) {
-                chip(mark == .fasted ? "Fasting today" : mark.map(\.label) ?? "Fasting today",
+                chip(mark == .fasted ? t(.fastingToday) : mark.map(t.mark) ?? t(.fastingToday),
                      icon: mark == .fasted ? "checkmark" : "fork.knife", on: mark == .fasted) {
                     model.setFast(key, mark == .fasted ? nil : .fasted)
                 }
-                chip("Tarawih", icon: model.prefs.tarawihLog.contains(key) ? "checkmark" : "moon", on: model.prefs.tarawihLog.contains(key)) {
+                chip(t(.tarawih), icon: model.prefs.tarawihLog.contains(key) ? "checkmark" : "moon", on: model.prefs.tarawihLog.contains(key)) {
                     if model.prefs.tarawihLog.contains(key) { model.prefs.tarawihLog.remove(key) } else { model.prefs.tarawihLog.insert(key) }
                 }
                 if model.prefs.khatamPlan, let juz = s.ramadanDay {
-                    chip("Juz \(juz)", icon: model.prefs.quranLog.contains(key) ? "checkmark" : "book", on: model.prefs.quranLog.contains(key)) {
+                    chip(t(.juz, ["n": juz]), icon: model.prefs.quranLog.contains(key) ? "checkmark" : "book", on: model.prefs.quranLog.contains(key)) {
                         if model.prefs.quranLog.contains(key) { model.prefs.quranLog.remove(key) } else { model.prefs.quranLog.insert(key) }
                     }
                 }
@@ -210,6 +214,9 @@ struct RamadanView: View {
     @State private var showMissed = false
     @State private var rayaFrom = ""
 
+    private var lang: RamadanContent.Lang { RamadanContent.lang(model.naming) }
+    private var t: RamadanWords.In { RamadanWords.In(lang) }
+
     var body: some View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
             let now = context.date
@@ -218,7 +225,7 @@ struct RamadanView: View {
             NavigationStack {
                 List {
                     if model.isSeasonPreview {
-                        Section { Text("Ramadan preview is on, so dates here are pretend. Turn it off in Settings, Ramadan and Syawal.").font(.footnote) }
+                        Section { Text(t(.previewBanner)).font(.footnote) }
                             .listRowBackground(gold.opacity(0.22))
                     }
                     if syawal {
@@ -238,10 +245,10 @@ struct RamadanView: View {
                         settingsSection(season)
                     }
                     Section {} footer: {
-                        Text("Imsak is 10 minutes before Subuh, as MUIS, JAKIM and Kemenag publish it. The first day of Ramadan and Raya follows \(model.communityAuthority.map(CalendarSanad.authorityName) ?? "your authority") (change it by tapping the date on the Prayer screen). Follow your local religious authority. Your fasting record stays on this phone.")
+                        Text(t(.footer, ["a": model.communityAuthority.map(CalendarSanad.authorityName) ?? t(.yourAuthorityLower)]))
                     }
                 }
-                .navigationTitle(syawal ? "Syawal" : "Ramadan")
+                .navigationTitle(syawal ? t(.syawal) : t(.ramadan))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             }
@@ -256,21 +263,21 @@ struct RamadanView: View {
         if let shown = first.flatMap({ model.day(of: $0) }) ?? model.day(containing: now) {
             Section {
                 HStack(spacing: 8) {
-                    timeBox("IMSAK", model.imsak(shown), "Stop eating")
-                    timeBox("SUBUH", shown.time(.fajr), "Fast begins")
-                    timeBox("BERBUKA", shown.time(.maghrib), "Maghrib", highlight: true)
+                    timeBox(t(.imsak).uppercased(), model.imsak(shown), t(.stopEating))
+                    timeBox(t(.subuh).uppercased(), shown.time(.fajr), t(.fastBegins))
+                    timeBox(t(.berbuka).uppercased(), shown.time(.maghrib), t(.maghrib), highlight: true)
                 }
                 if inRamadan, let m = model.fastingMoment(now) {
-                    Text("\(m.kind == .imsak ? "Imsak" : "Berbuka") in \(TodayView.short(m.time.timeIntervalSince(now)))")
+                    Text(t(.countIn, ["w": m.kind == .imsak ? t(.imsak) : t(.berbuka), "l": TodayView.short(m.time.timeIntervalSince(now))]))
                         .font(.headline).monospacedDigit().foregroundStyle(gold).frame(maxWidth: .infinity)
                 }
                 if inRamadan { fastToday(now) }
             } header: {
-                Text(inRamadan ? "Ramadan day \(s.ramadanDay ?? 0)" : first.map { "1 Ramadan · \(dateText($0))" } ?? "Ramadan")
+                Text(inRamadan ? t(.ramadanDay, ["n": s.ramadanDay ?? 0]) : first.map { t(.firstOfRamadan, ["d": dateText($0, "EEEE d MMMM", lang)]) } ?? t(.ramadan))
             }
             if inRamadan {
                 Section {
-                    HadithView(id: .iftar, tag: model.fastingMoment(now)?.kind == .berbuka ? "Before berbuka" : nil).hadithRow()
+                    HadithView(id: .iftar, tag: model.fastingMoment(now)?.kind == .berbuka ? t(.beforeBerbuka) : nil).hadithRow()
                 }
             }
         }
@@ -290,23 +297,23 @@ struct RamadanView: View {
         let key = model.civil(now).key
         let mark = model.prefs.fastLog[key]
         HStack(spacing: 6) {
-            SeasonChip(title: "I'm fasting today", icon: mark == .fasted ? "checkmark" : "fork.knife", on: mark == .fasted) {
+            SeasonChip(title: t(.imFastingToday), icon: mark == .fasted ? "checkmark" : "fork.knife", on: mark == .fasted) {
                 model.setFast(key, mark == .fasted ? nil : .fasted)
             }
-            SeasonChip(title: mark?.isMissed == true ? "Missed · \(mark!.label)" : "Not fasting today", icon: "chevron.down", on: mark?.isMissed == true, tint: pink) {
+            SeasonChip(title: mark?.isMissed == true ? t(.missedBecause, ["r": t.mark(mark!)]) : t(.notFastingToday), icon: "chevron.down", on: mark?.isMissed == true, tint: pink) {
                 showMissed.toggle()
             }
         }
         if showMissed {
             HStack(spacing: 6) {
                 ForEach(FastMark.missed, id: \.self) { m in
-                    SeasonChip(title: m.label, icon: m == .travel ? "car" : m == .sick ? "cross.case" : m == .period ? "drop" : "ellipsis", on: mark == m, tint: pink) {
+                    SeasonChip(title: t.mark(m), icon: m == .travel ? "car" : m == .sick ? "cross.case" : m == .period ? "drop" : "ellipsis", on: mark == m, tint: pink) {
                         model.setFast(key, mark == m ? nil : m); showMissed = false
                     }
                 }
             }
         }
-        if mark == .period { Text("You can also pause the prayer tracker for these days.").font(.footnote).foregroundStyle(.secondary) }
+        if mark == .period { Text(t(.pauseTrackerToo)).font(.footnote).foregroundStyle(.secondary) }
     }
 
     private static let cycle: [FastMark?] = [nil, .fasted, .period, .sick, .travel, .other]
@@ -327,7 +334,7 @@ struct RamadanView: View {
                             ZStack(alignment: .bottomTrailing) {
                                 Text("\(i + 1)").font(.callout.weight(.semibold)).monospacedDigit()
                                     .frame(maxWidth: .infinity, minHeight: 40)
-                                if let m, m != .fasted { Text(m.letter).font(.caption2.weight(.heavy)).padding(3) }
+                                if let m, m != .fasted { Text(t.letter(m)).font(.caption2.weight(.heavy)).padding(3).accessibilityHidden(true) }
                             }
                             .background(m == .fasted ? Color.green : m?.isMissed == true ? pink.opacity(0.3) : Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
                             .foregroundStyle(m == .fasted ? .white : .primary)
@@ -336,15 +343,15 @@ struct RamadanView: View {
                         }
                         .buttonStyle(.plain)
                         .disabled(d > today)
-                        .accessibilityLabel("\(i + 1) Ramadan: \(m?.label ?? "not marked")")
+                        .accessibilityLabel(t(.ramadanDayAria, ["n": i + 1, "d": dateText(d, "d MMM", lang), "s": m.map(t.mark) ?? t(.notMarked)]))
                     }
                 }
                 .padding(.vertical, 4)
-                Text(LocalizedStringKey("**\(sum.fasted)** fasted" + (sum.missed > 0 ? " · **\(sum.missed)** missed" : "") + (sum.owed > 0 ? " · \(sum.owed) to replace" : "")))
+                Text(LocalizedStringKey("**\(sum.fasted)** \(t(.fastedCount))" + (sum.missed > 0 ? " · **\(sum.missed)** \(t(.missedCount))" : "") + (sum.owed > 0 ? " · \(t(.toReplace, ["n": sum.owed]))" : "")))
             } header: {
-                Text("Your fasts this month")
+                Text(t(.yourFastsThisMonth))
             } footer: {
-                Text("Tap a day to change it. P period, S sick, T travelling, O other reason. Missed days are counted for you to replace after Ramadan.")
+                Text(t(.monthHelp))
             }
         }
     }
@@ -354,14 +361,14 @@ struct RamadanView: View {
         if days.count >= 20 {
             let today = model.civil(now)
             Section {
-                Text("Lailatul Qadr is better than a thousand months. Seek it in the odd nights of the last ten.")
+                Text(t(.lailatulQadr))
                 HStack(spacing: 6) {
                     ForEach(oddNights, id: \.self) { n in
                         if n - 2 < days.count {
                             let eve = days[n - 2]
                             VStack(spacing: 2) {
                                 Text("\(n)").font(.title3.weight(.bold)).monospacedDigit()
-                                Text(eve == today ? "Tonight" : dateText(eve, "d MMM")).font(.caption2)
+                                Text(eve == today ? t(.tonight) : dateText(eve, "d MMM", lang)).font(.caption2)
                             }
                             .frame(maxWidth: .infinity).padding(.vertical, 8)
                             .background(eve == today ? gold.opacity(0.35) : Color.purple.opacity(0.18), in: RoundedRectangle(cornerRadius: 12))
@@ -369,19 +376,19 @@ struct RamadanView: View {
                     }
                 }
                 Toggle(isOn: Binding(get: { model.prefs.qiyamAlert }, set: { model.prefs.qiyamAlert = $0 })) {
-                    VStack(alignment: .leading) { Text("Remind me for qiyam"); Text("At the last third of each of the last ten nights").font(.caption).foregroundStyle(.secondary) }
+                    VStack(alignment: .leading) { Text(t(.qiyamReminder)); Text(t(.qiyamReminderSub)).font(.caption).foregroundStyle(.secondary) }
                 }
             } header: {
-                Text("The last ten nights")
+                Text(t(.lastTenTitle))
             } footer: {
-                Text("Each night begins at Maghrib the evening before. The last third of the night is the best time for qiyam.")
+                Text(t(.eachNightBegins))
             }
         }
     }
 
     private func doaSection(_ ids: [Doa.ID]) -> some View {
         let lang = RamadanContent.lang(model.naming)
-        return Section("Doa and niat") {
+        return Section(t(.doaAndNiat)) {
             ForEach(ids, id: \.self) { id in
                 let d = RamadanContent.doa(id)
                 DisclosureGroup(isExpanded: Binding(get: { openDoa == id }, set: { openDoa = $0 ? id : nil })) {
@@ -409,52 +416,52 @@ struct RamadanView: View {
             Text(RamadanContent.zakatNote(lang)).font(.footnote)
             ForEach(bodies, id: \.self) { b in
                 Link(destination: b.url) {
-                    Label { VStack(alignment: .leading) { Text(b.name); Text("Official site, amount and how to pay").font(.caption).foregroundStyle(.secondary) } } icon: { Image(systemName: "banknote") }
+                    Label { VStack(alignment: .leading) { Text(b.name); Text(t(.zakatOfficial)).font(.caption).foregroundStyle(.secondary) } } icon: { Image(systemName: "banknote") }
                 }
             }
-            if bodies.isEmpty { Text("Pay through your masjid or your local zakat body.").font(.footnote) }
-            Toggle("I've paid zakat fitrah for \(String(year))", isOn: Binding(
+            if bodies.isEmpty { Text(t(.zakatThroughMasjid)).font(.footnote) }
+            Toggle(t(.zakatPaid, ["y": String(year)]), isOn: Binding(
                 get: { model.prefs.zakatPaid.contains(year) },
                 set: { if $0 { model.prefs.zakatPaid.insert(year) } else { model.prefs.zakatPaid.remove(year) } }))
         } header: {
-            Text("Zakat fitrah")
+            Text(t(.zakatFitrah))
         } footer: {
-            Text("Prayer Times Asia takes no money. These links go straight to the official bodies.")
+            Text(t(.zakatNoMoney))
         }
     }
 
     private var travelSection: some View {
-        Section("Travelling in Ramadan") {
-            Text("A traveller on a journey of about \(Int(model.musafirRules.thresholdKm)) km or more may choose not to fast, and replace the day after Ramadan. If fasting is easy, fasting is better. Leave your home area before Subuh for the day to count as travel. Ask your local religious authority when unsure.")
+        Section(t(.travelTitle)) {
+            Text(t(.travelNote, ["km": Int(model.musafirRules.thresholdKm)]))
                 .font(.footnote)
         }
     }
 
     @ViewBuilder private func shareSection(_ now: Date) -> some View {
-        Section("Share and print") {
+        Section(t(.shareAndPrint)) {
             if let image = weekImage(now) {
-                ShareLink(item: image, preview: SharePreview("Imsak and Berbuka times", image: image)) {
-                    Label { VStack(alignment: .leading) { Text("Share this week's times"); Text("A picture of Imsak and Berbuka for \(model.activePlace?.name ?? "your place"), for family chats").font(.caption).foregroundStyle(.secondary) } } icon: { Image(systemName: "square.and.arrow.up") }
+                ShareLink(item: image, preview: SharePreview(t(.shareWeekText, ["p": model.activePlace?.name ?? ""]), image: image)) {
+                    Label { VStack(alignment: .leading) { Text(t(.shareWeek)); Text(t(.shareWeekSub, ["p": model.activePlace?.name ?? t(.yourPlace)])).font(.caption).foregroundStyle(.secondary) } } icon: { Image(systemName: "square.and.arrow.up") }
                 }
             }
-            Link(destination: URL(string: "https://prayertimes.asia/app/print/#sheet=ramadan")!) { Label("Print the Ramadan timetable", systemImage: "printer") }
-            Link(destination: URL(string: "https://prayertimes.asia/app/print/#sheet=fasting")!) { Label("Print a kids' fasting chart", systemImage: "printer") }
+            Link(destination: URL(string: "https://prayertimes.asia/app/print/#sheet=ramadan")!) { Label(t(.printTimetable), systemImage: "printer") }
+            Link(destination: URL(string: "https://prayertimes.asia/app/print/#sheet=fasting")!) { Label(t(.printKidsChart), systemImage: "printer") }
         }
     }
 
     private func settingsSection(_ s: Season.Info) -> some View {
         @Bindable var model = model
         return Section {
-            Toggle(isOn: $model.prefs.imsakAlert) { VStack(alignment: .leading) { Text("Imsak alert"); Text("10 minutes before Imsak, to finish sahur").font(.caption).foregroundStyle(.secondary) } }
-            Toggle(isOn: $model.prefs.berbukaAlert) { VStack(alignment: .leading) { Text("Berbuka alert"); Text("At Maghrib, with the doa").font(.caption).foregroundStyle(.secondary) } }
-            Toggle(isOn: $model.prefs.khatamPlan) { VStack(alignment: .leading) { Text("A juz a day"); Text("Finish the Quran this month. Tick each juz on this page").font(.caption).foregroundStyle(.secondary) } }
+            Toggle(isOn: $model.prefs.imsakAlert) { VStack(alignment: .leading) { Text(t(.imsakAlert)); Text(t(.imsakAlertSub)).font(.caption).foregroundStyle(.secondary) } }
+            Toggle(isOn: $model.prefs.berbukaAlert) { VStack(alignment: .leading) { Text(t(.berbukaAlert)); Text(t(.berbukaAlertSub)).font(.caption).foregroundStyle(.secondary) } }
+            Toggle(isOn: $model.prefs.khatamPlan) { VStack(alignment: .leading) { Text(t(.juzADay)); Text(t(.juzADaySub)).font(.caption).foregroundStyle(.secondary) } }
             if model.prefs.khatamPlan {
-                Link(destination: RamadanContent.juzLink(s.ramadanDay ?? 1)) { Label("Read today's juz", systemImage: "book") }
+                Link(destination: RamadanContent.juzLink(s.ramadanDay ?? 1)) { Label(t(.readTodaysJuz), systemImage: "book") }
             }
         } header: {
-            Text("Ramadan alerts and reading")
+            Text(t(.alertsTitle))
         } footer: {
-            Text("Alerts need notifications allowed for Prayer Times Asia.")
+            Text(t(.alertsNeedNotifications))
         }
     }
 
@@ -462,17 +469,17 @@ struct RamadanView: View {
 
     private func rayaToday(_ now: Date, _ s: Season.Info) -> some View {
         Section {
-            Text(s.phase == .raya ? "Selamat Hari Raya Aidilfitri" : "Syawal").font(.title2.weight(.bold))
+            Text(s.phase == .raya ? t(.selamatHariRaya) : t(.syawal)).font(.title2.weight(.bold))
             if s.phase == .raya {
                 if let eid = model.eidPrayer {
-                    Text("Raya prayer at \(model.prefs.myMasjid?.name ?? "your masjid"), **\(eid)**")
+                    Text(LocalizedStringKey(t(.rayaPrayerAtPlace, ["p": model.prefs.myMasjid?.name ?? t(.yourMasjid)]) + " **\(eid)**"))
                 } else if let day = model.day(containing: now) {
-                    Text("Your masjid sets the Raya prayer time, usually between 7.30 and 8.30 in the morning, after Syuruk at \(model.formatted(day.time(.sunrise))).")
+                    Text(t(.masjidSetsRayaTimeAfterSyuruk, ["s": model.formatted(day.time(.sunrise))]))
                 }
-                Text("Eat something before going out, take a different road home, and keep the takbir until the prayer begins.").font(.footnote).foregroundStyle(.secondary)
+                Text(t(.rayaSunnah)).font(.footnote).foregroundStyle(.secondary)
             }
         } header: {
-            Text(s.phase == .raya ? "1 Syawal" : "Syawal \(s.syawalDay ?? 0)")
+            Text(s.phase == .raya ? t(.firstSyawal) : t(.syawalDay, ["n": s.syawalDay ?? 0]))
         }
     }
 
@@ -484,8 +491,8 @@ struct RamadanView: View {
         let sum = model.fastSummary(hijriYear: s.hijri.year)
         Section {
             HStack(spacing: 18) {
-                Text("**\(min(6, sum.syawal))** of 6 Syawal fasts")
-                Text("**\(sum.owed)** to replace")
+                Text(LocalizedStringKey("**\(min(6, sum.syawal))** \(t(.ofSixSyawal))"))
+                Text(LocalizedStringKey("**\(sum.owed)** \(t(.ramadanFastsToReplace, ["n": sum.owed]))"))
             }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 6), spacing: 6) {
                 ForEach(Array(days.enumerated()), id: \.offset) { i, d in
@@ -496,7 +503,7 @@ struct RamadanView: View {
                     } label: {
                         ZStack(alignment: .bottomTrailing) {
                             Text("\(i + 1)").font(.callout.weight(.semibold)).monospacedDigit().frame(maxWidth: .infinity, minHeight: 40)
-                            if m == .qadha { Text("G").font(.caption2.weight(.heavy)).padding(3) }
+                            if m == .qadha { Text(t.letter(.qadha)).font(.caption2.weight(.heavy)).padding(3).accessibilityHidden(true) }
                         }
                         .background(m == .syawal ? Color.green : m == .qadha ? Theme.accent.opacity(0.45) : Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
                         .foregroundStyle(m == .syawal ? .white : .primary)
@@ -505,29 +512,29 @@ struct RamadanView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(i == 0 || d > today)
-                    .accessibilityLabel("\(i + 1) Syawal: \(i == 0 ? "Hari Raya, no fasting" : m?.label ?? "not marked")")
+                    .accessibilityLabel(t(.syawalDayAria, ["n": i + 1, "s": i == 0 ? t(.rayaNoFasting) : m.map(t.mark) ?? t(.notMarked)]))
                 }
             }
             .padding(.vertical, 4)
             if sum.owed > 0 && s.phase != .raya {
                 let key = today.key
                 Button { model.setFast(key, model.prefs.fastLog[key] == .qadha ? nil : .qadha) } label: {
-                    Label(model.prefs.fastLog[key] == .qadha ? "Replaced a fast today" : "I replaced a fast today", systemImage: "checkmark")
+                    Label(model.prefs.fastLog[key] == .qadha ? t(.replacedToday) : t(.iReplacedToday), systemImage: "checkmark")
                 }
             }
         } header: {
-            Text("Puasa enam and ganti")
+            Text(t(.syawalFastsTitle))
         } footer: {
-            Text("Tap a day once for a Syawal fast, twice for a replaced (ganti) fast. No fasting on 1 Syawal. Missed Ramadan fasts can be replaced any day before next Ramadan, except the days of Raya and Tasyrik.")
+            Text(t(.syawalHelp, ["d": dateText(today.adding(1), "EEEE d MMM", lang)]) + " " + t(.replaceRule))
         }
     }
 
     private var rayaShare: some View {
-        Section("Send a Raya card") {
-            TextField("From (your name or family)", text: $rayaFrom)
+        Section(t(.sendRayaCard)) {
+            TextField(t(.yourNameOrFamily), text: $rayaFrom)
             let image = Image(uiImage: renderCard(RayaCardView(from: rayaFrom)))
             ShareLink(item: image, preview: SharePreview("Selamat Hari Raya", image: image)) {
-                Label("Share the card", systemImage: "square.and.arrow.up")
+                Label(t(.shareTheCard), systemImage: "square.and.arrow.up")
             }
         }
     }

@@ -11,9 +11,9 @@ name: Web
 on:
   push:
     branches: [main]
-    paths: ['web/**', 'site/**', 'testdata/**', 'config/analytics.json', '.github/workflows/web.yml']
+    paths: ['web/**', 'site/**', 'testdata/**', 'data/ramadan-words.json', 'config/analytics.json', '.github/workflows/web.yml']
   pull_request:
-    paths: ['web/**', 'site/**', 'testdata/**', 'config/analytics.json', '.github/workflows/web.yml']
+    paths: ['web/**', 'site/**', 'testdata/**', 'data/ramadan-words.json', 'config/analytics.json', '.github/workflows/web.yml']
   workflow_dispatch:
 
 permissions:
