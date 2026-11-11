@@ -31,13 +31,13 @@ function QR({ text }: { text: string }) {
 }
 
 export function MoveOutSheet() {
-  const [qr, setQr] = useState<{ link: string; keptDays: number | null } | null>(null)
+  const [qr, setQr] = useState<{ link: string; keptDays: number | null; ramadanTrimmed: boolean } | null>(null)
   const [full, setFull] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   useEffect(() => {
     const m = movedFrom(store.prefs)
     const prefix = moveLink('').length
-    void encodeForQR(m, undefined, prefix).then(({ code, keptDays }) => setQr({ link: moveLink(code), keptDays }))
+    void encodeForQR(m, undefined, prefix).then(({ code, keptDays, ramadanTrimmed }) => setQr({ link: moveLink(code), keptDays, ramadanTrimmed }))
     void encodeMove(m).then((code) => setFull(moveLink(code)))
   }, [])
 
@@ -56,8 +56,11 @@ export function MoveOutSheet() {
           <li>On the other phone, open Prayer Times Asia › Settings › <b>Bring in settings</b> and scan this code.</li>
           <li>No app there? Point its camera at the code: it opens the web app with your settings.</li>
         </ol>
-        {qr?.keptDays != null && (
-          <p class="footnote secondary">The QR code carries your last {qr.keptDays} days of tracker history. To bring all of it, use Copy link or Share.</p>
+        {qr && (qr.keptDays != null || qr.ramadanTrimmed) && (
+          <p class="footnote secondary">The QR code carries {[
+            qr.keptDays != null ? `your last ${qr.keptDays} days of tracker history` : null,
+            qr.ramadanTrimmed ? "only this year's Ramadan record" : null,
+          ].filter(Boolean).join(' and ')}. To bring all of it, use Copy link or Share.</p>
         )}
         <div class="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
           <button class="plain-btn" disabled={!full} onClick={() => void copy()}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Copied' : 'Copy link'}</button>

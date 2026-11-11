@@ -65,6 +65,10 @@ data class MovedSettings(
     val buzzOnly: Boolean? = null,
     val largeText: Boolean? = null,
     val jumuahReminderMinutes: Int? = null,
+    /** The Ramadan record: how each day's fast went (FastMark raw values; an unknown one is skipped), and the days Tarawih was prayed and the juz read. */
+    val fastLog: Map<String, String>? = null,
+    val tarawihLog: List<String>? = null,
+    val quranLog: List<String>? = null,
 ) {
     @Serializable
     data class MovedPlace(
@@ -93,7 +97,8 @@ data class MovedSettings(
     /**
      * These preferences with the moved settings in place. Every moved setting
      * replaces this phone's (a missing one goes back to its default), except the
-     * tracker history, which is added to what this phone already has.
+     * tracker history and the Ramadan record, which are added to what this phone
+     * already has (an older code without them leaves this phone's as they are).
      */
     fun appliedTo(p: Preferences): Preferences {
         val d = Preferences()
@@ -101,6 +106,8 @@ data class MovedSettings(
         prayedLog?.forEach { (day, list) ->
             if (DAY.matches(day)) log[day] = (log[day].orEmpty()) + prayers(list)
         }
+        val fasts = p.fastLog.toMutableMap()
+        fastLog?.forEach { (day, raw) -> if (DAY.matches(day)) fastMark(raw)?.let { fasts[day] = it } }
         return p.copy(
             hasOnboarded = true,
             useGPS = useGPS ?: d.useGPS,
@@ -144,6 +151,9 @@ data class MovedSettings(
             buzzOnly = buzzOnly ?: d.buzzOnly,
             largeText = largeText ?: d.largeText,
             jumuahReminderMinutes = jumuahReminderMinutes?.takeIf { it in PrayerWindow.JUMUAH_REMINDER_CHOICES } ?: 0,
+            fastLog = fasts,
+            tarawihLog = p.tarawihLog + tarawihLog.orEmpty().filter { DAY.matches(it) },
+            quranLog = p.quranLog + quranLog.orEmpty().filter { DAY.matches(it) },
         )
     }
 
@@ -155,21 +165,47 @@ data class MovedSettings(
 
     fun link(): String = LINK_BASE + code
 
+    /** Only the Ramadan record from the newest day back [RAMADAN_YEAR_DAYS] days; null if nothing older was there to leave out. */
+    fun latestRamadanYear(): MovedSettings? {
+        val all = (fastLog.orEmpty().keys + tarawihLog.orEmpty() + quranLog.orEmpty()).filter { DAY.matches(it) }.sorted()
+        if (all.isEmpty()) return null
+        val from = runCatching { java.time.LocalDate.parse(all.last()).minusDays(RAMADAN_YEAR_DAYS.toLong()).toString() }.getOrNull() ?: return null
+        if (all.first() >= from) return null
+        return copy(
+            fastLog = fastLog?.filterKeys { it >= from }?.takeIf { it.isNotEmpty() },
+            tarawihLog = tarawihLog?.filter { it >= from }?.takeIf { it.isNotEmpty() },
+            quranLog = quranLog?.filter { it >= from }?.takeIf { it.isNotEmpty() },
+        )
+    }
+
+    /** A QR code's link, and what it left out to fit (the shared link always carries everything). */
+    data class QrLink(val link: String, val keptDays: Int?, val ramadanTrimmed: Boolean)
+
     /**
-     * The link for a QR code: everything if it fits, otherwise the tracker
-     * history trimmed to the most recent days that fit. `keptDays` says how many made it.
+     * The link for a QR code: everything if it fits. Otherwise first only this
+     * year's Ramadan record (`ramadanTrimmed`), then the tracker history trimmed
+     * to the most recent days that fit (`keptDays` says how many made it).
      */
-    fun qrLink(maxCharacters: Int = QR_MAX_CHARACTERS): Pair<String, Int?> {
-        val full = link()
-        val days = prayedLog.orEmpty().keys.sorted()
-        if (full.length <= maxCharacters || days.isEmpty()) return full to null
+    fun qrLink(maxCharacters: Int = QR_MAX_CHARACTERS): QrLink {
+        var base = this
+        var l = link()
+        if (l.length <= maxCharacters) return QrLink(l, null, false)
+        val thisYear = latestRamadanYear()
+        if (thisYear != null) {
+            base = thisYear
+            l = base.link()
+            if (l.length <= maxCharacters) return QrLink(l, null, true)
+        }
+        val ramadanTrimmed = thisYear != null
+        val days = base.prayedLog.orEmpty().keys.sorted()
+        if (days.isEmpty()) return QrLink(l, null, ramadanTrimmed)
         var keep = days.size
         while (true) {
             keep /= 2
             val recent = days.takeLast(keep).toSet()
-            val trimmed = copy(prayedLog = if (keep == 0) null else prayedLog!!.filterKeys { it in recent })
-            val l = trimmed.link()
-            if (l.length <= maxCharacters || keep == 0) return l to keep
+            val trimmed = base.copy(prayedLog = if (keep == 0) null else base.prayedLog!!.filterKeys { it in recent })
+            val t = trimmed.link()
+            if (t.length <= maxCharacters || keep == 0) return QrLink(t, keep, ramadanTrimmed)
         }
     }
 
@@ -186,6 +222,7 @@ data class MovedSettings(
             if (wakeUp != null || sahurAlarm != null || dhuhrAlarm != null || asrAlarm != null || maghribAlarm != null || ishaAlarm != null) {
                 add("Your prayer alarms")
             }
+            if (!fastLog.isNullOrEmpty() || !tarawihLog.isNullOrEmpty() || !quranLog.isNullOrEmpty()) add("Your Ramadan record of fasts, Tarawih and juz")
             if (largeText == true) add("Bigger text")
             if (musafirEnabled == true) add("Musafir features")
         }.ifEmpty { listOf("The standard settings") }
@@ -197,6 +234,17 @@ data class MovedSettings(
         const val LINK_BASE = "https://aarif86.github.io/PrayerTimesAsia/app/#move="
         /** Phone cameras read a QR code of this many characters off a screen without fuss. */
         const val QR_MAX_CHARACTERS = 1500
+        /** How far back "this year's Ramadan record" reaches from its newest day: the month itself, Syawal and the replaced fasts after it. */
+        const val RAMADAN_YEAR_DAYS = 330
+
+        /** What the QR code left out, if anything, in one line; null when it carries everything. */
+        fun trimNote(keptDays: Int?, ramadanTrimmed: Boolean): String? {
+            val parts = listOfNotNull(
+                keptDays?.let { "your last $it days of tracker history" },
+                if (ramadanTrimmed) "only this year's Ramadan record" else null,
+            )
+            return if (parts.isEmpty()) null else "The QR code carries ${parts.joinToString(" and ")}. To bring all of it, share the link instead."
+        }
 
         private val DAY = Regex("""\d{4}-\d{2}-\d{2}""")
         private val CODE = Regex("""PTA1\.([A-Za-z0-9_-]+)""")
@@ -208,6 +256,7 @@ data class MovedSettings(
         }
 
         private fun prayers(raw: List<String>): Set<Prayer> = Prayer.entries.filter { it.raw in raw }.toSet()
+        private fun fastMark(raw: String): FastMark? = FastMark.entries.firstOrNull { it.name.lowercase() == raw }
         private fun ordered(set: Set<Prayer>): List<String> = Prayer.entries.filter { it in set }.map { it.raw }
 
         /** What to put in the code: only the settings that differ from a fresh install. */
@@ -254,6 +303,9 @@ data class MovedSettings(
                 buzzOnly = changed(p.buzzOnly, d.buzzOnly),
                 largeText = changed(p.largeText, d.largeText),
                 jumuahReminderMinutes = changed(p.jumuahReminderMinutes, d.jumuahReminderMinutes),
+                fastLog = p.fastLog.takeIf { it.isNotEmpty() }?.mapValues { it.value.name.lowercase() }?.toSortedMap(),
+                tarawihLog = p.tarawihLog.takeIf { it.isNotEmpty() }?.sorted(),
+                quranLog = p.quranLog.takeIf { it.isNotEmpty() }?.sorted(),
             )
         }
 

@@ -62,6 +62,10 @@ struct MovedSettings: Codable, Equatable {
     var buzzOnly: Bool?
     var largeText: Bool?
     var jumuahReminderMinutes: Int?
+    /// The Ramadan record: how each day's fast went, and the days Tarawih was prayed and the juz read.
+    var fastLog: [String: FastMark]?
+    var tarawihLog: [String]?
+    var quranLog: [String]?
 
     static let version = 1
     static let prefix = "PTA1."
@@ -118,6 +122,11 @@ struct MovedSettings: Codable, Equatable {
         buzzOnly = field(.buzzOnly)
         largeText = field(.largeText)
         jumuahReminderMinutes = field(.jumuahReminderMinutes)
+        if let log: [String: Lenient<FastMark>] = field(.fastLog) {
+            fastLog = log.compactMapValues { $0.value }
+        }
+        tarawihLog = (try? c.decodeIfPresent([Lenient<String>].self, forKey: .tarawihLog))?.map { $0.compactMap { $0.value } }
+        quranLog = (try? c.decodeIfPresent([Lenient<String>].self, forKey: .quranLog))?.map { $0.compactMap { $0.value } }
     }
 
     private struct Lenient<T: Decodable>: Decodable {
@@ -183,11 +192,15 @@ extension MovedSettings {
         buzzOnly = changed(p.buzzOnly, d.buzzOnly)
         largeText = changed(p.largeText, d.largeText)
         jumuahReminderMinutes = changed(p.jumuahReminderMinutes, d.jumuahReminderMinutes)
+        fastLog = p.fastLog.isEmpty ? nil : p.fastLog
+        tarawihLog = p.tarawihLog.isEmpty ? nil : p.tarawihLog.sorted()
+        quranLog = p.quranLog.isEmpty ? nil : p.quranLog.sorted()
     }
 
     /// These preferences with the moved settings in place. Every moved setting
     /// replaces this phone's (a missing one goes back to its default), except the
-    /// tracker history, which is added to what this phone already has.
+    /// tracker history and the Ramadan record, which are added to what this phone
+    /// already has (an older code without them leaves this phone's as they are).
     func applied(to p: Preferences) -> Preferences {
         let d = Preferences()
         var out = p
@@ -233,6 +246,9 @@ extension MovedSettings {
         out.buzzOnly = buzzOnly ?? d.buzzOnly
         out.largeText = largeText ?? d.largeText
         out.jumuahReminderMinutes = jumuahReminderMinutes.flatMap { Preferences.jumuahReminderChoices.contains($0) ? $0 : nil } ?? 0
+        for (day, mark) in fastLog ?? [:] where Self.isDay(day) { out.fastLog[day] = mark }
+        out.tarawihLog.formUnion((tarawihLog ?? []).filter(Self.isDay))
+        out.quranLog.formUnion((quranLog ?? []).filter(Self.isDay))
         return out
     }
 
@@ -261,20 +277,56 @@ extension MovedSettings {
         self = moved
     }
 
-    /// The link for a QR code: everything if it fits, otherwise the tracker
-    /// history trimmed to the most recent days that fit. `keptDays` says how many made it.
-    func qrLink(maxCharacters: Int = qrMaxCharacters) -> (link: String, keptDays: Int?) {
-        let full = link
-        let days = (prayedLog ?? [:]).keys.sorted()
-        guard full.count > maxCharacters, !days.isEmpty else { return (full, nil) }
+    private static func isDay(_ s: String) -> Bool { s.wholeMatch(of: #/\d{4}-\d{2}-\d{2}/#) != nil }
+
+    /// How far back "this year's Ramadan record" reaches from its newest day: the month itself, Syawal and the replaced fasts after it.
+    static let ramadanYearDays = 330
+
+    /// Only the Ramadan record from the newest day back `ramadanYearDays` days; nil if nothing older was there to leave out.
+    var latestRamadanYear: MovedSettings? {
+        let all = (Array((fastLog ?? [:]).keys) + (tarawihLog ?? []) + (quranLog ?? [])).filter(Self.isDay).sorted()
+        guard let newest = all.last, let oldest = all.first else { return nil }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(identifier: "UTC")
+        f.dateFormat = "yyyy-MM-dd"
+        guard let end = f.date(from: newest) else { return nil }
+        let from = f.string(from: end.addingTimeInterval(-Double(Self.ramadanYearDays) * 86_400))
+        guard oldest < from else { return nil }
+        var out = self
+        let fasts = (fastLog ?? [:]).filter { $0.key >= from }
+        let tarawih = (tarawihLog ?? []).filter { $0 >= from }
+        let quran = (quranLog ?? []).filter { $0 >= from }
+        out.fastLog = fasts.isEmpty ? nil : fasts
+        out.tarawihLog = tarawih.isEmpty ? nil : tarawih
+        out.quranLog = quran.isEmpty ? nil : quran
+        return out
+    }
+
+    /// The link for a QR code: everything if it fits. Otherwise first only this
+    /// year's Ramadan record (`ramadanTrimmed`), then the tracker history trimmed
+    /// to the most recent days that fit (`keptDays` says how many made it).
+    func qrLink(maxCharacters: Int = qrMaxCharacters) -> (link: String, keptDays: Int?, ramadanTrimmed: Bool) {
+        var base = self
+        var l = base.link
+        guard l.count > maxCharacters else { return (l, nil, false) }
+        let thisYear = latestRamadanYear
+        if let thisYear {
+            base = thisYear
+            l = base.link
+            if l.count <= maxCharacters { return (l, nil, true) }
+        }
+        let ramadanTrimmed = thisYear != nil
+        let days = (base.prayedLog ?? [:]).keys.sorted()
+        guard !days.isEmpty else { return (l, nil, ramadanTrimmed) }
         var keep = days.count
         while true {
             keep /= 2
-            var trimmed = self
+            var trimmed = base
             let recent = Set(days.suffix(keep))
-            trimmed.prayedLog = keep == 0 ? nil : prayedLog?.filter { recent.contains($0.key) }
-            let l = trimmed.link
-            if l.count <= maxCharacters || keep == 0 { return (l, keep) }
+            trimmed.prayedLog = keep == 0 ? nil : base.prayedLog?.filter { recent.contains($0.key) }
+            let t = trimmed.link
+            if t.count <= maxCharacters || keep == 0 { return (t, keep, ramadanTrimmed) }
         }
     }
 
@@ -294,6 +346,9 @@ extension MovedSettings {
         }
         if wakeUp != nil || sahurAlarm != nil || dhuhrAlarm != nil || asrAlarm != nil || maghribAlarm != nil || ishaAlarm != nil {
             lines.append("Your prayer alarms")
+        }
+        if !(fastLog ?? [:]).isEmpty || !(tarawihLog ?? []).isEmpty || !(quranLog ?? []).isEmpty {
+            lines.append("Your Ramadan record of fasts, Tarawih and juz")
         }
         if largeText == true { lines.append("Bigger text") }
         if musafirEnabled == true { lines.append("Musafir features") }
