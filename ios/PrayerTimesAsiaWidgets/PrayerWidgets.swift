@@ -31,21 +31,27 @@ struct PrayerProvider: TimelineProvider {
     }
 
     /// An entry every 15 minutes (the sky colour drifts) plus one exactly at each
-    /// prayer, for 24 hours. Countdowns tick on their own between entries.
+    /// prayer, for 12 hours, then WidgetKit asks again. Countdowns tick on their
+    /// own between entries. Kept short so the widget stays well inside its
+    /// small memory allowance.
     func getTimeline(in context: Context, completion: @escaping (Timeline<PrayerEntry>) -> Void) {
         let snapshot = WidgetSnapshot.load()
-        let now = Date.now
-        var dates = Set<Date>([now])
-        for i in 1...96 { dates.insert(now.addingTimeInterval(Double(i) * 900)) }
-        for item in snapshot?.timeline ?? [] where item.time > now && item.time < now.addingTimeInterval(86_400) {
-            dates.insert(item.time)
-        }
-        let entries = dates.sorted().map { PrayerEntry(date: $0, snapshot: snapshot) }
+        let entries = WidgetSnapshot.entryDates(snapshot).map { PrayerEntry(date: $0, snapshot: snapshot) }
         completion(Timeline(entries: entries, policy: .atEnd))
     }
 }
 
 extension WidgetSnapshot {
+    /// Now, every 15 minutes for 12 hours, and each prayer in between.
+    static func entryDates(_ snapshot: WidgetSnapshot?, from now: Date = .now) -> [Date] {
+        var dates = Set<Date>([now])
+        for i in 1...48 { dates.insert(now.addingTimeInterval(Double(i) * 900)) }
+        for item in snapshot?.timeline ?? [] where item.time > now && item.time < now.addingTimeInterval(43_200) {
+            dates.insert(item.time)
+        }
+        return dates.sorted()
+    }
+
     /// Placeholder for the widget gallery: Singapore, calculated live.
     static var preview: WidgetSnapshot {
         let tz = TimeZone(identifier: "Asia/Singapore")!
@@ -84,7 +90,7 @@ struct NextPrayerView: View {
         Group {
             if let s = entry.snapshot, let next = s.next(after: entry.date) {
                 let sky = (s.day(containing: entry.date).map { SkyColors.at(entry.date, day: $0) } ?? .night).readable
-                content(s, next: next)
+                AnyView(content(s, next: next))
                     .containerBackground(for: .widget) {
                         ZStack {
                             LinearGradient(colors: [sky.top.color, sky.bottom.color], startPoint: .top, endPoint: .bottom)
