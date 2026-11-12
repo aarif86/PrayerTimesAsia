@@ -392,7 +392,6 @@ private fun RamadanMonth(state: AppState, year: Int) {
         style = Txt.caption, color = Palette.secondary)
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 /**
  * Tarawih: the user picks 8 or 20 rakaat the first time (the app never says which
  * is right), then taps the big button after each salam. Reaching the total ticks
@@ -458,6 +457,7 @@ private fun TarawihCounter(state: AppState) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LastTen(state: AppState, year: Int) {
     val r = state.resolver
