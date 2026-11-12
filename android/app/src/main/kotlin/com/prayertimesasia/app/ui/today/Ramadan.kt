@@ -155,7 +155,7 @@ fun SeasonCard(state: AppState, now: Instant) {
         when (s.phase) {
             Season.Phase.RAMADAN -> {
                 val key = today.toString()
-                val mark = state.prefs.fastLog[key]
+                val mark = r.fastMark(key, state.now)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     Column(Modifier.clip(RoundedCornerShape(14.dp)).background(Palette.gold.copy(alpha = 0.18f)).padding(horizontal = 10.dp, vertical = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally) {
@@ -317,7 +317,7 @@ private fun RamadanToday(state: AppState, s: Season.Info) {
             modifier = Modifier.fillMaxWidth().semantics { contentDescription = spoken })
     }
     val key = r.civil(state.now).toString()
-    val mark = state.prefs.fastLog[key]
+    val mark = r.fastMark(key, state.now)
     var showMissed by remember { mutableStateOf(false) }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         SeasonChip(t(RamadanWordKey.imFastingToday), if (mark == FastMark.FASTED) Icons.Filled.Check else Icons.Filled.Restaurant, mark == FastMark.FASTED) {
@@ -363,7 +363,7 @@ private fun RamadanMonth(state: AppState, year: Int) {
     val t = words(state)
     SectionHeader(t(RamadanWordKey.yourFastsThisMonth))
     DayGrid(days, today) { i, d, modifier ->
-        val m = state.prefs.fastLog[d.toString()]
+        val m = r.fastMark(d.toString(), state.now)
         val future = d > today
         Box(
             modifier.heightIn(min = 40.dp).clip(RoundedCornerShape(10.dp))
@@ -527,7 +527,7 @@ private fun SyawalFasts(state: AppState, s: Season.Info) {
     SectionHeader(t(RamadanWordKey.syawalFastsTitle))
     Text("${minOf(6, sum.syawal)} ${t(RamadanWordKey.ofSixSyawal)} · ${t(RamadanWordKey.toReplace, "n" to sum.owed)}", style = Txt.bodySemibold, color = Palette.primary)
     DayGrid(days, today) { i, d, modifier ->
-        val m = state.prefs.fastLog[d.toString()]
+        val m = r.fastMark(d.toString(), state.now)
         val off = i == 0 || d > today
         Box(
             modifier.heightIn(min = 40.dp).clip(RoundedCornerShape(10.dp))
@@ -543,7 +543,7 @@ private fun SyawalFasts(state: AppState, s: Season.Info) {
     }
     if (sum.owed > 0 && s.phase != Season.Phase.RAYA) {
         val key = today.toString()
-        val done = state.prefs.fastLog[key] == FastMark.QADHA
+        val done = r.fastMark(key, state.now) == FastMark.QADHA
         SeasonChip(if (done) t(RamadanWordKey.replacedToday) else t(RamadanWordKey.iReplacedToday), Icons.Filled.Check, done) {
             state.setFast(key, if (done) null else FastMark.QADHA)
         }

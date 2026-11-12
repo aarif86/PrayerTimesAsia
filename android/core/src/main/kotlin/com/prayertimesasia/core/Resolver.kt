@@ -292,7 +292,16 @@ class Resolver(
         Season.monthDays(hijriYear, month, if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
 
     fun fastSummary(hijriYear: Int, today: LocalDate): Season.FastSummary =
-        Season.fastSummary(hijriYear, today, prefs.fastLog, if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
+        Season.fastSummary(hijriYear, today, womensDays.effectiveLog(today.toString(), ::isRamadanKey), if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
+
+    /** The fast record and the tracker pause, kept in step by [WomensDays]. */
+    val womensDays: WomensDays get() = WomensDays(prefs.fastLog, prefs.excusedDays, prefs.trackerPausedSince)
+
+    /** Is this "yyyy-MM-dd" a Ramadan day for this community. */
+    fun isRamadanKey(key: String): Boolean = runCatching { LocalDate.parse(key) }.getOrNull()?.let { hijriOf(it).month == 9 } ?: false
+
+    /** How a fast day went. An unmarked Ramadan day inside a tracker pause reads as "Period". */
+    fun fastMark(key: String, now: Instant = Instant.now()): FastMark? = womensDays.mark(key, dayKey(now), ::isRamadanKey)
 
     companion object {
         /** Prayers where [other] differs from [day] by more than 2 minutes. */

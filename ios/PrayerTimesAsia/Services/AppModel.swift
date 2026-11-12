@@ -456,14 +456,28 @@ final class AppModel {
 
     /// Pause for haid, nifas or illness: today and every day until it's ended
     /// count as excused, so the streak waits.
-    func pauseTracker(_ date: Date = .now) { prefs.trackerPausedSince = dayKey(date) }
+    /// In Ramadan the paused days read as "Period" in the fast record too.
+    func pauseTracker(_ date: Date = .now) { linkWomensDays { $0.pause(today: dayKey(date)) } }
 
-    /// End the pause: the paused days are kept as excused days, today included.
+    /// End the pause: the paused days are kept as excused days, today included,
+    /// and as "Period" fasts in Ramadan.
     func endTrackerPause(_ date: Date = .now) {
-        guard let since = prefs.trackerPausedSince else { return }
-        prefs.excusedDays.formUnion(Self.days(from: since, to: dayKey(date)))
-        prefs.trackerPausedSince = nil
+        guard prefs.trackerPausedSince != nil else { return }
+        let today = dayKey(date)
+        linkWomensDays { $0.endPause(today: today, isRamadan: isRamadanKey) }
     }
+
+    /// The fast record and the tracker pause kept in step (Core/WomensDays.swift).
+    private func linkWomensDays(_ change: (inout WomensDays) -> Void) {
+        var w = WomensDays(fastLog: prefs.fastLog, excusedDays: prefs.excusedDays, trackerPausedSince: prefs.trackerPausedSince)
+        change(&w)
+        if w.fastLog != prefs.fastLog { prefs.fastLog = w.fastLog }
+        if w.excusedDays != prefs.excusedDays { prefs.excusedDays = w.excusedDays }
+        if w.trackerPausedSince != prefs.trackerPausedSince { prefs.trackerPausedSince = w.trackerPausedSince }
+    }
+
+    /// Is this "yyyy-MM-dd" a Ramadan day for this community.
+    func isRamadanKey(_ key: String) -> Bool { CivilDay(key).map { hijri(of: $0).month == 9 } ?? false }
 
     /// Every "yyyy-MM-dd" from `from` to `to`, both included (at most a year).
     nonisolated static func days(from: String, to: String) -> [String] {
@@ -482,9 +496,10 @@ final class AppModel {
         return out
     }
 
+    /// "Just today": in Ramadan it marks that fast "Period" too, and again undoes both.
     func toggleExcused(_ date: Date) {
         let key = dayKey(date)
-        if prefs.excusedDays.contains(key) { prefs.excusedDays.remove(key) } else { prefs.excusedDays.insert(key) }
+        linkWomensDays { $0.toggleExcused(key, isRamadan: isRamadanKey) }
     }
 
     /// Consecutive days with all five prayers marked (or excused). Today counts
@@ -736,7 +751,7 @@ final class AppModel {
         let today = civil(.now).key
         var fasted = 0, missed = 0
         for d in days where d.key <= today {
-            switch prefs.fastLog[d.key] {
+            switch fastMark(d.key) {
             case .fasted?: fasted += 1
             case let m? where m.isMissed: missed += 1
             default: break
@@ -753,8 +768,16 @@ final class AppModel {
         return FastSummary(days: days, fasted: fasted, missed: missed, replaced: replaced, owed: max(0, missed - replaced), syawal: syawal)
     }
 
+    /// How a fast day went. An unmarked Ramadan day inside a tracker pause reads as "Period".
+    func fastMark(_ key: String) -> FastMark? {
+        WomensDays(fastLog: prefs.fastLog, excusedDays: prefs.excusedDays, trackerPausedSince: prefs.trackerPausedSince)
+            .mark(key, today: dayKey(.now), isRamadan: isRamadanKey)
+    }
+
+    /// Marking "Period" pauses the tracker too, and changing it back undoes both.
     func setFast(_ key: String, _ mark: FastMark?) {
-        prefs.fastLog[key] = mark
+        let today = dayKey(.now)
+        linkWomensDays { $0.setFast(key, mark, today: today, isRamadan: isRamadanKey) }
         if prefs.fastLog.count > 800, let oldest = prefs.fastLog.keys.min() { prefs.fastLog[oldest] = nil }
     }
 
