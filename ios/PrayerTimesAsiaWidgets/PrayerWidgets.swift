@@ -49,6 +49,10 @@ extension WidgetSnapshot {
         for item in snapshot?.timeline ?? [] where item.time > now && item.time < now.addingTimeInterval(43_200) {
             dates.insert(item.time)
         }
+        // In Ramadan, Imsak too, so the countdown turns to Berbuka right on time.
+        for fast in snapshot?.fasts ?? [] where fast.imsak > now && fast.imsak < now.addingTimeInterval(43_200) {
+            dates.insert(fast.imsak)
+        }
         return dates.sorted()
     }
 
@@ -108,25 +112,46 @@ struct NextPrayerView: View {
         .foregroundStyle(.white)
     }
 
+    /// "Asar 4:32 PM" under the Ramadan countdown; nil outside Ramadan or when the next prayer is Berbuka itself.
+    private static func nextLine(_ s: WidgetSnapshot, next: (prayer: Prayer, time: Date), fastTime: Date?) -> String? {
+        guard let fastTime, abs(fastTime.timeIntervalSince(next.time)) >= 60 else { return nil }
+        return "\(s.name(next.prayer, at: next.time)) \(s.format(next.time))"
+    }
+
     @ViewBuilder
     private func content(_ s: WidgetSnapshot, next: (prayer: Prayer, time: Date)) -> some View {
+        // Ramadan: count down to Berbuka by day and Imsak at night; the next prayer
+        // stays as a small line when it is a different moment. Outside Ramadan, as before.
+        let fast = s.fastMoment(at: entry.date)
+        let title = fast?.label ?? s.name(next.prayer, at: next.time)
+        let target = fast?.time ?? next.time
+        let symbol = fast?.symbol ?? next.prayer.symbol
+        let nextLine = Self.nextLine(s, next: next, fastTime: fast?.time)
         let small = VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
-                Image(systemName: next.prayer.symbol)
+                Image(systemName: symbol)
                 Text(s.placeName).lineLimit(1)
             }
             .font(.caption2.weight(.semibold))
             .opacity(0.85)
             Spacer(minLength: 0)
-            Text(s.name(next.prayer, at: next.time))
+            Text(title)
                 .font(.headline)
-            Text(s.format(next.time))
+                .lineLimit(1)
+            Text(s.format(target))
                 .font(.system(size: 26, weight: .semibold, design: .rounded))
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
-            Text(timerInterval: entry.date...max(entry.date, next.time), countsDown: true)
+            Text(timerInterval: entry.date...max(entry.date, target), countsDown: true)
                 .font(.caption.weight(.medium).monospacedDigit())
                 .opacity(0.85)
+            if let nextLine {
+                Text(nextLine)
+                    .font(.caption2.weight(.medium))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .opacity(0.75)
+            }
         }
         .padding(14)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -178,15 +203,18 @@ struct LockScreenView: View {
     let entry: PrayerEntry
 
     var body: some View {
-        if let s = entry.snapshot, let next = s.next(after: entry.date) {
-            let name = s.name(next.prayer, at: next.time)
+        if let s = entry.snapshot, let prayer = s.next(after: entry.date) {
+            // Ramadan: Berbuka by day, Imsak at night. Otherwise the next prayer.
+            let fast = s.fastMoment(at: entry.date)
+            let next = (time: fast?.time ?? prayer.time, symbol: fast?.symbol ?? prayer.prayer.symbol)
+            let name = fast?.label ?? s.name(prayer.prayer, at: prayer.time)
             let shortTime = s.format(next.time).replacingOccurrences(of: " AM", with: "").replacingOccurrences(of: " PM", with: "")
             switch family {
             case .accessoryCircular:
                 ZStack {
                     AccessoryWidgetBackground()
                     VStack(spacing: 0) {
-                        Image(systemName: next.prayer.symbol).font(.caption2)
+                        Image(systemName: next.symbol).font(.caption2)
                         Text(shortTime)
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
                             .minimumScaleFactor(0.6)
@@ -202,11 +230,11 @@ struct LockScreenView: View {
                 Label {
                     Text("\(name) \(shortTime) · ") + Text(timerInterval: entry.date...max(entry.date, next.time), countsDown: true)
                 } icon: {
-                    Image(systemName: next.prayer.symbol)
+                    Image(systemName: next.symbol)
                 }
             default:
                 VStack(alignment: .leading, spacing: 1) {
-                    Label(name, systemImage: next.prayer.symbol).font(.headline)
+                    Label(name, systemImage: next.symbol).font(.headline)
                     Text(s.format(next.time)).font(.system(.body, design: .rounded).weight(.semibold))
                     Text(timerInterval: entry.date...max(entry.date, next.time), countsDown: true)
                         .font(.caption.monospacedDigit())

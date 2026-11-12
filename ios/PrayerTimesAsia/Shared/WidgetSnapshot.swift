@@ -32,6 +32,16 @@ struct WidgetSnapshot: Codable, Sendable {
     /// The Prayer screen style chosen in the app; the big widget follows it
     /// unless the widget is set to a style of its own.
     var style: TodayStyle? = nil
+    /// Ramadan fasts in the next week (empty outside Ramadan), so the small
+    /// widgets and the Lock Screen count down to Berbuka by day and Imsak at night,
+    /// the same as the Ramadan card. The app works out which days are Ramadan.
+    var fasts: [Fast]? = nil
+    /// "Imsak" and "Berbuka" in the prayer names' language.
+    var fastWords: FastWords? = nil
+
+    struct Fast: Codable, Sendable { var imsak: Date; var berbuka: Date }
+    struct FastWords: Codable, Sendable { var imsak: String; var berbuka: String }
+    enum FastKind: Sendable { case imsak, berbuka }
 
     static let appGroup = "group.com.prayertimesasia.app"
     private static let key = "widget.snapshot.v1"
@@ -80,6 +90,19 @@ struct WidgetSnapshot: Codable, Sendable {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = timeZone
         return cal.component(.weekday, from: date) == 6
+    }
+
+    /// In Ramadan: Berbuka from Imsak until Maghrib, then the next fast's Imsak
+    /// (tonight or before dawn). Nil outside Ramadan, so the widgets look as before.
+    func fastMoment(at now: Date) -> (kind: FastKind, time: Date, label: String, symbol: String)? {
+        guard let words = fastWords, let fast = fasts?.first(where: { $0.berbuka > now }) else { return nil }
+        if now >= fast.imsak { return (.berbuka, fast.berbuka, words.berbuka, Prayer.maghrib.symbol) }
+        // Imsak only when it is today's or tomorrow's, like the Ramadan card.
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        let days = cal.dateComponents([.day], from: cal.startOfDay(for: now), to: cal.startOfDay(for: fast.imsak)).day ?? 99
+        guard days <= 1 else { return nil }
+        return (.imsak, fast.imsak, words.imsak, Prayer.fajr.symbol)
     }
 
     func name(_ prayer: Prayer, at date: Date) -> String {

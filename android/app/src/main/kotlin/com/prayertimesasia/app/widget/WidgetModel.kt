@@ -2,6 +2,9 @@ package com.prayertimesasia.app.widget
 
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerDay
+import com.prayertimesasia.core.RamadanContent
+import com.prayertimesasia.core.RamadanWordKey
+import com.prayertimesasia.core.RamadanWords
 import com.prayertimesasia.core.Resolver
 import com.prayertimesasia.core.TodayStyle
 import java.time.Instant
@@ -25,7 +28,12 @@ data class WidgetModel(
     val nextName: String?,
     val nextTime: String?,
     val zone: java.time.ZoneId,
+    /** In Ramadan, the fast's next moment (Imsak or Berbuka), as the Ramadan card shows it; null otherwise. */
+    val fast: FastMoment? = null,
 ) {
+    /** "Berbuka" at 7:05 PM, in the prayer names' language. */
+    data class FastMoment(val kind: Resolver.FastingKind, val at: Instant, val label: String, val time: String)
+
     /**
      * Which row carries the live countdown: the next prayer's ("in "), or once the
      * next is tomorrow's Subuh, the one we are in ("Subuh in ").
@@ -54,6 +62,10 @@ data class WidgetModel(
                 nextName = next?.let { r.prayerName(it.first, it.second) },
                 nextTime = next?.let { r.formatted(it.second) },
                 zone = r.zone,
+                fast = r.fastingMoment(now)?.let { (kind, at) ->
+                    val t = RamadanWords.In(RamadanContent.lang(r.naming))
+                    FastMoment(kind, at, t(if (kind == Resolver.FastingKind.IMSAK) RamadanWordKey.imsak else RamadanWordKey.berbuka), r.formatted(at))
+                },
             )
         }
     }

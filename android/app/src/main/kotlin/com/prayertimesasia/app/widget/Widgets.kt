@@ -173,9 +173,21 @@ private fun NextPrayerContent(context: Context) {
             Column(GlanceModifier.defaultWeight()) {
                 Text("${m.placeName} ${m.flag}", style = style(11, FontWeight.Medium, white(0.85f)), maxLines = 1)
                 Spacer(GlanceModifier.defaultWeight())
-                Text(m.nextName ?: "", style = style(17, FontWeight.Bold))
-                Text(m.nextTime ?: "", style = style(26, FontWeight.Bold), maxLines = 1)
-                Countdown(context, next.second)
+                val fast = m.fast
+                if (fast != null) {
+                    // Ramadan: Berbuka through the fasting day, Imsak at night. The next prayer
+                    // stays underneath when it is a different moment (not Maghrib at Berbuka).
+                    Text(fast.label, style = style(17, FontWeight.Bold), maxLines = 1)
+                    Text(fast.time, style = style(26, FontWeight.Bold), maxLines = 1)
+                    Countdown(context, fast.at)
+                    if (kotlin.math.abs(next.second.epochSecond - fast.at.epochSecond) >= 60) {
+                        Text("${m.nextName ?: ""} ${m.nextTime ?: ""}", style = style(11, FontWeight.Medium, white(0.8f)), maxLines = 1)
+                    }
+                } else {
+                    Text(m.nextName ?: "", style = style(17, FontWeight.Bold))
+                    Text(m.nextTime ?: "", style = style(26, FontWeight.Bold), maxLines = 1)
+                    Countdown(context, next.second)
+                }
             }
             if (wide) {
                 Spacer(GlanceModifier.width(10.dp))
