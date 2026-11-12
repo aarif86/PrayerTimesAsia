@@ -37,6 +37,16 @@ enum RamadanWordKey: String, CaseIterable, Sendable {
     case nuzulQuran
     case fastingToday
     case tarawih
+    case tarawihCounter
+    case tarawihHowMany
+    case tarawihChangeLater
+    case rakaatN
+    case tarawihTapHint
+    case tarawihProgress
+    case tarawihDone
+    case tarawihUndo
+    case tarawihRestart
+    case tarawihChange
     case juz
     case mark_fasted
     case mark_period
@@ -183,6 +193,16 @@ extension RamadanWords {
             "nuzulQuran": "17 Ramadan, Nuzul Quran.",
             "fastingToday": "Fasting today",
             "tarawih": "Tarawih",
+            "tarawihCounter": "Tarawih counter",
+            "tarawihHowMany": "How many rakaat of Tarawih do you pray?",
+            "tarawihChangeLater": "The counter follows your choice. You can change it later.",
+            "rakaatN": "{n} rakaat",
+            "tarawihTapHint": "Tap after each salam",
+            "tarawihProgress": "{d} of {n} rakaat",
+            "tarawihDone": "Tarawih done for tonight",
+            "tarawihUndo": "Undo",
+            "tarawihRestart": "Start again",
+            "tarawihChange": "Change",
             "juz": "Juz {n}",
             "mark_fasted": "Fasted",
             "mark_period": "Period",
@@ -330,6 +350,16 @@ extension RamadanWords {
             "nuzulQuran": "17 Ramadan, Nuzul Quran.",
             "fastingToday": "Berpuasa hari ini",
             "tarawih": "Tarawih",
+            "tarawihCounter": "Pengira Tarawih",
+            "tarawihHowMany": "Berapa rakaat Tarawih yang anda kerjakan?",
+            "tarawihChangeLater": "Pengira ini mengikut pilihan anda. Anda boleh menukarnya kemudian.",
+            "rakaatN": "{n} rakaat",
+            "tarawihTapHint": "Ketik selepas setiap salam",
+            "tarawihProgress": "{d} daripada {n} rakaat",
+            "tarawihDone": "Tarawih malam ini selesai",
+            "tarawihUndo": "Batal",
+            "tarawihRestart": "Mula semula",
+            "tarawihChange": "Tukar",
             "juz": "Juzuk {n}",
             "mark_fasted": "Berpuasa",
             "mark_period": "Haid",
@@ -473,6 +503,16 @@ extension RamadanWords {
             "nuzulQuran": "17 Ramadan, Nuzulul Quran.",
             "fastingToday": "Puasa hari ini",
             "tarawih": "Tarawih",
+            "tarawihCounter": "Penghitung Tarawih",
+            "tarawihHowMany": "Berapa rakaat Tarawih yang Anda kerjakan?",
+            "tarawihChangeLater": "Penghitung ini mengikuti pilihan Anda. Anda dapat mengubahnya nanti.",
+            "rakaatN": "{n} rakaat",
+            "tarawihTapHint": "Ketuk setelah setiap salam",
+            "tarawihProgress": "{d} dari {n} rakaat",
+            "tarawihDone": "Tarawih malam ini selesai",
+            "tarawihUndo": "Urungkan",
+            "tarawihRestart": "Mulai lagi",
+            "tarawihChange": "Ubah",
             "juz": "Juz {n}",
             "mark_fasted": "Puasa",
             "mark_period": "Haid",

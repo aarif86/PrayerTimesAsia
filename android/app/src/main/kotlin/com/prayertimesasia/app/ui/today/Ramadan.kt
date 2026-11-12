@@ -28,6 +28,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.Print
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
@@ -47,7 +49,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -68,6 +74,7 @@ import com.prayertimesasia.core.RamadanWordKey
 import com.prayertimesasia.core.RamadanWords
 import com.prayertimesasia.core.Resolver
 import com.prayertimesasia.core.Season
+import com.prayertimesasia.core.Tarawih
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -263,6 +270,7 @@ fun RamadanSheetContent(state: AppState) {
             Zakat(state, s.hijri.year)
         } else {
             RamadanToday(state, s)
+            if (s.phase == Season.Phase.RAMADAN) TarawihCounter(state)
             RamadanMonth(state, s.hijri.year)
             LastTen(state, s.hijri.year)
             DoaList(state, listOf(DoaId.NIAT_PUASA, DoaId.BERBUKA, DoaId.BERBUKA_HADITH, DoaId.QADR))
@@ -382,6 +390,71 @@ private fun RamadanMonth(state: AppState, year: Int) {
         style = Txt.subheadline, color = Palette.primary)
     Text(t(RamadanWordKey.monthHelp),
         style = Txt.caption, color = Palette.secondary)
+}
+
+/**
+ * Tarawih: the user picks 8 or 20 rakaat the first time (the app never says which
+ * is right), then taps the big button after each salam. Reaching the total ticks
+ * tonight's Tarawih. The count itself lives only on this screen.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TarawihCounter(state: AppState) {
+    val r = state.resolver
+    val t = words(state)
+    val key = r.civil(state.now).toString()
+    val total = state.prefs.tarawihRakaat
+    var done by remember { mutableStateOf(0) }
+    var choosing by remember { mutableStateOf(false) }
+    val haptic = LocalHapticFeedback.current
+    SectionHeader(t(RamadanWordKey.tarawihCounter))
+    if (total == null || choosing) {
+        Text(t(RamadanWordKey.tarawihHowMany), style = Txt.subheadline, color = Palette.primary)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Tarawih.CHOICES.forEach { n ->
+                val on = total == n
+                Box(Modifier.weight(1f).heightIn(min = 48.dp).clip(RoundedCornerShape(24.dp))
+                    .background(if (on) Palette.success.copy(alpha = 0.35f) else Palette.primary.copy(alpha = 0.08f))
+                    .clickable { state.setTarawihRakaat(n); done = 0; choosing = false }
+                    .semantics { selected = on },
+                    contentAlignment = Alignment.Center) {
+                    Text(t(RamadanWordKey.rakaatN, "n" to n), style = Txt.headline, color = Palette.primary)
+                }
+            }
+        }
+        Text(t(RamadanWordKey.tarawihChangeLater), style = Txt.caption, color = Palette.secondary)
+        return
+    }
+    val complete = done >= total
+    val spoken = t(RamadanWordKey.tarawihProgress, "d" to minOf(done, total), "n" to total) + ". " +
+        (if (complete) t(RamadanWordKey.tarawihDone) else t(RamadanWordKey.tarawihTapHint))
+    Column(Modifier.fillMaxWidth().heightIn(min = 180.dp).clip(RoundedCornerShape(22.dp))
+        .background(if (complete) Palette.success.copy(alpha = 0.3f) else Purple.copy(alpha = 0.18f))
+        .clickable {
+            done = Tarawih.tap(done, total)
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            if (done == total) state.markTarawih(key)
+        }
+        .clearAndSetSemantics { contentDescription = spoken }
+        .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text("${minOf(done, total)}", style = Txt.largeTitle.copy(fontSize = 56.sp), color = Palette.primary)
+            Text(" / $total", style = Txt.title2, color = Palette.secondary)
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            repeat(Tarawih.sets(total)) { i ->
+                Box(Modifier.size(12.dp).clip(CircleShape).border(2.dp, Palette.primary, CircleShape)
+                    .background(if (i < done / 2) Palette.primary else Color.Transparent))
+            }
+        }
+        Text(if (complete) t(RamadanWordKey.tarawihDone) else t(RamadanWordKey.tarawihTapHint), style = Txt.subheadline, color = Palette.primary)
+    }
+    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        SeasonChip(t(RamadanWordKey.tarawihUndo), Icons.Filled.Undo, false) { done = Tarawih.undo(done) }
+        SeasonChip(t(RamadanWordKey.tarawihRestart), Icons.Filled.Refresh, false) { done = 0 }
+        SeasonChip("${t(RamadanWordKey.rakaatN, "n" to total)} · ${t(RamadanWordKey.tarawihChange)}", Icons.Filled.NightsStay, false) { choosing = true }
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)

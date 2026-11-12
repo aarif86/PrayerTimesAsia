@@ -79,6 +79,8 @@ export interface MovedSettings {
   fastLog?: Record<string, FastMark>
   tarawihLog?: string[]
   quranLog?: string[]
+  /** The Tarawih counter's 8 or 20 rakaat. */
+  tarawihRakaat?: 8 | 20
 }
 
 const FAST_MARKS: readonly FastMark[] = ['fasted', 'period', 'sick', 'travel', 'other', 'qadha', 'syawal']
@@ -91,6 +93,7 @@ const SIMPLE_KEYS = [
   'showOffers', 'showLocalNames', 'trackerEnabled', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
   'dhuhrAlarm', 'asrAlarm', 'maghribAlarm', 'ishaAlarm', 'alarmSound',
   'windowNudge', 'quietHours', 'quietFrom', 'quietTo', 'buzzOnly', 'largeText', 'jumuahReminderMinutes',
+  'tarawihRakaat',
 ] as const satisfies readonly (keyof Preferences & keyof MovedSettings)[]
 
 function movedPlace(p: Place): MovedPlace {

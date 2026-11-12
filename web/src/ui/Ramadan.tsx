@@ -6,6 +6,7 @@ import { authorityName } from '../core/calendarSanad'
 import { DOA, juzLink, lang3, MISSED, ZAKAT, ZAKAT_NOTE, type DoaId, type FastMark, type Lang3 } from '../core/ramadanContent'
 import { fastMarkLabel, fastMarkLetter, RAMADAN_LOCALE, wordsFor } from '../core/ramadanWords'
 import { addDays, civilKey, daysApart, type CivilDay } from '../core/season'
+import { TARAWIH_RAKAAT, tarawihSets, tarawihTap, tarawihUndo } from '../core/tarawih'
 import { store, useNow, useStore } from '../services/store'
 import { openSheet, Sheet, short, TimeText, ToggleItem } from './common'
 import { Hadith } from './Hadith'
@@ -192,6 +193,7 @@ export function RamadanSheet() {
       ) : (
         <>
           <RamadanToday now={now} />
+          {season.phase === 'ramadan' && <TarawihCounter now={now} />}
           <RamadanMonth now={now} year={season.phase === 'ramadan' ? year : year} />
           <LastTenNights now={now} year={year} />
           <DoaList ids={['niatPuasa', 'berbuka', 'berbukaHadith', 'qadr']} />
@@ -234,6 +236,63 @@ function RamadanToday({ now }: { now: number }) {
     </div>
     {inRamadan && <Hadith id="iftar" tag={moment?.kind === 'berbuka' ? t('beforeBerbuka') : undefined} />}
     </>
+  )
+}
+
+/**
+ * Tarawih: the user picks 8 or 20 rakaat the first time (the app never says which
+ * is right), then taps the big button after each salam. Reaching the total ticks
+ * tonight's Tarawih. The count itself lives only on this screen.
+ */
+function TarawihCounter({ now }: { now: number }) {
+  const s = useStore()
+  const { t } = useWords()
+  const key = civilKey(s.civil(now))
+  const total = s.prefs.tarawihRakaat
+  const [done, setDone] = useState(0)
+  const [choosing, setChoosing] = useState(false)
+  const ticked = s.prefs.tarawihLog.includes(key)
+  const choose = (n: 8 | 20) => { s.update((p) => { p.tarawihRakaat = n }); setDone(0); setChoosing(false) }
+  const tap = () => {
+    if (!total) return
+    const next = tarawihTap(done, total)
+    setDone(next)
+    try { navigator.vibrate?.(next === total ? [30, 60, 30] : 20) } catch { /* not supported */ }
+    if (next === total && !ticked) s.toggleDay('tarawihLog', key)
+  }
+  return (
+    <section>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{t('tarawihCounter')}</h3>
+      <div class="glass card tarawih-card">
+        {!total || choosing ? (
+          <>
+            <p class="subhead" style={{ marginTop: 0 }}>{t('tarawihHowMany')}</p>
+            <div class="tarawih-choice">
+              {TARAWIH_RAKAAT.map((n) => (
+                <button class={`pill-btn quiet ${total === n ? 'on' : ''}`} aria-pressed={total === n} onClick={() => choose(n)}>{t('rakaatN', { n })}</button>
+              ))}
+            </div>
+            <p class="caption secondary">{t('tarawihChangeLater')}</p>
+          </>
+        ) : (
+          <>
+            <button class={`tarawih-tap ${done === total ? 'complete' : ''}`} onClick={tap}
+              aria-label={`${t('tarawihProgress', { d: done, n: total })}. ${done === total ? t('tarawihDone') : t('tarawihTapHint')}`}>
+              <span class="mono tarawih-count" aria-hidden="true">{done}<span class="secondary"> / {total}</span></span>
+              <span class="tarawih-dots" aria-hidden="true">
+                {Array.from({ length: tarawihSets(total) }, (_, i) => <span class={i < done / 2 ? 'on' : ''} />)}
+              </span>
+              <span class="caption" aria-hidden="true">{done === total ? t('tarawihDone') : t('tarawihTapHint')}</span>
+            </button>
+            <div class="season-chips" style={{ justifyContent: 'center', marginTop: '10px' }}>
+              <button class="chip small" disabled={done === 0} onClick={() => setDone(tarawihUndo(done))}>{t('tarawihUndo')}</button>
+              <button class="chip small" disabled={done === 0} onClick={() => setDone(0)}>{t('tarawihRestart')}</button>
+              <button class="chip small" onClick={() => setChoosing(true)}>{t('rakaatN', { n: total })} · {t('tarawihChange')}</button>
+            </div>
+          </>
+        )}
+      </div>
+    </section>
   )
 }
 
