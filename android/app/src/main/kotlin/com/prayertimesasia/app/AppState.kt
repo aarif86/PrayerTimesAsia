@@ -101,9 +101,9 @@ class AppState(
         store?.save(prefs)
         // Ticking a prayer in the tracker shouldn't reschedule every alarm.
         val a = prefs.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false,
-            fastLog = emptyMap(), tarawihLog = emptySet(), quranLog = emptySet(), zakatPaid = emptySet())
+            fastLog = emptyMap(), tarawihLog = emptySet(), tarawihRakaat = null, quranLog = emptySet(), zakatPaid = emptySet())
         val b = old.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false,
-            fastLog = emptyMap(), tarawihLog = emptySet(), quranLog = emptySet(), zakatPaid = emptySet())
+            fastLog = emptyMap(), tarawihLog = emptySet(), tarawihRakaat = null, quranLog = emptySet(), zakatPaid = emptySet())
         if (a == b) return
         refreshOfficialTimetable()
         rescheduleAlerts()
@@ -235,6 +235,9 @@ class AppState(
         p.copy(fastLog = log)
     }
 
+    fun setTarawihRakaat(n: Int) = update { it.copy(tarawihRakaat = n.takeIf { v -> v in com.prayertimesasia.core.Tarawih.CHOICES }) }
+    /** The counter reached the total: tick tonight's Tarawih (never unticks). */
+    fun markTarawih(key: String) = update { p -> if (key in p.tarawihLog) p else p.copy(tarawihLog = p.tarawihLog + key) }
     fun toggleTarawih(key: String) = update { p -> p.copy(tarawihLog = if (key in p.tarawihLog) p.tarawihLog - key else p.tarawihLog + key) }
     fun toggleJuz(key: String) = update { p -> p.copy(quranLog = if (key in p.quranLog) p.quranLog - key else p.quranLog + key) }
 

@@ -513,6 +513,7 @@ final class AppModel {
         a.hiddenHadith = []; b.hiddenHadith = []
         a.fastLog = [:]; b.fastLog = [:]
         a.tarawihLog = []; b.tarawihLog = []
+        a.tarawihRakaat = nil; b.tarawihRakaat = nil
         a.quranLog = []; b.quranLog = []
         a.zakatPaid = []; b.zakatPaid = []
         guard a != b else {

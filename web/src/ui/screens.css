@@ -481,3 +481,19 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .app-card-line { font-size: 14px; color: rgba(238, 240, 250, 0.88); }
 .app-card-version { font-size: 13px; color: rgba(238, 240, 250, 0.75); }
 .app-card-chevron { position: relative; flex: none; color: rgba(238, 240, 250, 0.75); }
+
+/* Tarawih counter: one big tap area, easy to hit without looking closely. */
+.tarawih-choice { display: flex; gap: 10px; margin: 10px 0; }
+.tarawih-choice .pill-btn { flex: 1; justify-content: center; min-height: 48px; font-size: 17px; }
+.tarawih-choice .pill-btn.quiet.on { background: color-mix(in srgb, var(--green) 85%, transparent); color: #fff; }
+.tarawih-tap { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 180px;
+  border-radius: 22px; background: color-mix(in srgb, #3a2a7a 30%, transparent); color: inherit; touch-action: manipulation; }
+.tarawih-tap:active { transform: scale(.98); }
+.tarawih-tap.complete { background: color-mix(in srgb, var(--green) 35%, transparent); }
+.tarawih-count { font-size: 56px; font-weight: 700; line-height: 1; }
+.tarawih-count .secondary { font-size: 28px; }
+.tarawih-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 260px; }
+.tarawih-dots span { width: 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; opacity: .5; }
+.tarawih-dots span.on { background: currentColor; opacity: 1; }
+.chip:disabled { opacity: .45; }
+.tarawih-tap .caption { font-size: 15px; }

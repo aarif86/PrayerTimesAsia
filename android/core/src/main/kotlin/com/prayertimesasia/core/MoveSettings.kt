@@ -69,6 +69,8 @@ data class MovedSettings(
     val fastLog: Map<String, String>? = null,
     val tarawihLog: List<String>? = null,
     val quranLog: List<String>? = null,
+    /** The Tarawih counter's 8 or 20 rakaat. */
+    val tarawihRakaat: Int? = null,
 ) {
     @Serializable
     data class MovedPlace(
@@ -154,6 +156,7 @@ data class MovedSettings(
             fastLog = fasts,
             tarawihLog = p.tarawihLog + tarawihLog.orEmpty().filter { DAY.matches(it) },
             quranLog = p.quranLog + quranLog.orEmpty().filter { DAY.matches(it) },
+            tarawihRakaat = tarawihRakaat?.takeIf { it in Tarawih.CHOICES },
         )
     }
 
@@ -309,6 +312,7 @@ data class MovedSettings(
                 fastLog = p.fastLog.takeIf { it.isNotEmpty() }?.mapValues { it.value.name.lowercase() }?.toSortedMap(),
                 tarawihLog = p.tarawihLog.takeIf { it.isNotEmpty() }?.sorted(),
                 quranLog = p.quranLog.takeIf { it.isNotEmpty() }?.sorted(),
+                tarawihRakaat = p.tarawihRakaat,
             )
         }
 
