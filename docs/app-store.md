@@ -61,6 +61,82 @@ jadwal salat,sholat,shalat,adzan,azan,kemenag,imsakiyah,imsak,masjid,musala,rama
 Both lists should be read once by a native speaker before going live (the
 wording, not the meaning, is what to check).
 
+## Ramadan search words (draft, not live yet)
+
+People search differently in Ramadan: imsak, sahur, berbuka, jadual puasa,
+imsakiyah. Apple lets the keywords and subtitle change with each new version,
+and the promotional text change at any time without review. So the idea is to
+swap in the Ramadan set with the version sent about three weeks before
+Ramadan 1448 (expected around mid January 2027), then swap back to the normal
+set with the first version after Hari Raya.
+
+Apple joins words across the name, subtitle and keywords, so "waktu" in the
+subtitle plus "berbuka" in the keywords already matches "waktu berbuka", and
+"jadual" plus "puasa" matches "jadual puasa". Words in the subtitle are not
+repeated in the keywords.
+
+This is a draft for the owner to pick. Nothing has been sent to App Store Connect.
+
+### English (main listing)
+
+| Field | Now | Ramadan draft |
+|---|---|---|
+| Subtitle | Prayer times & qibla in Asia (28 / 30) | Imsak, berbuka & qibla in Asia (30 / 30) |
+| Promotional text | Land anywhere in Asia and know when to pray and which way to face. Official MUIS and JAKIM timetables, works offline, no ads. (125 / 170) | Ramadan made easy. Imsak and Berbuka countdown, sahur alarm, Tarawih counter and your fasting record. Official MUIS and JAKIM times, no ads. (140 / 170) |
+
+Keywords now (93 / 100):
+
+```
+waktu solat,azan,adhan,kiblat,qiblat,muis,jakim,salah,solat,namaz,masjid,musollah,surau,hijri
+```
+
+Keywords in Ramadan (96 / 100):
+
+```
+ramadan,sahur,suhoor,iftar,fasting,puasa,tarawih,waktu solat,azan,kiblat,muis,jakim,masjid,surau
+```
+
+### Malay (ms)
+
+| Field | Now | Ramadan draft |
+|---|---|---|
+| Subtitle | Waktu solat & kiblat di Asia (28 / 30) | Imsak, berbuka & waktu solat (28 / 30) |
+| Promotional text | Waktu solat & kiblat di Asia. Waktu rasmi MUIS & JAKIM, tanpa iklan, luar talian. (80 / 170) | Ramadan lebih mudah. Kiraan detik imsak dan berbuka, penggera sahur, kiraan Tarawih dan rekod puasa. Waktu rasmi MUIS dan JAKIM, tanpa iklan. (141 / 170) |
+
+Keywords now (98 / 100):
+
+```
+azan,jakim,muis,e-solat,surau,masjid,musolla,imsak,subuh,maghrib,takwim,hijrah,qasar,jamak,musafir
+```
+
+Keywords in Ramadan (98 / 100):
+
+```
+azan,jakim,muis,sahur,puasa,jadual,ramadan,tarawih,imsakiah,subuh,maghrib,surau,masjid,raya,kiblat
+```
+
+### Indonesian (id)
+
+| Field | Now | Ramadan draft |
+|---|---|---|
+| Subtitle | Jadwal sholat & arah kiblat (27 / 30) | Imsakiyah & jadwal sholat (25 / 30) |
+| Promotional text | Jadwal sholat & kiblat. Waktu resmi Kemenag, tanpa iklan, bisa offline. (71 / 170) | Ramadhan lebih mudah. Hitung mundur imsak dan buka puasa, alarm sahur, hitungan Tarawih dan catatan puasa. Waktu resmi Kemenag, tanpa iklan. (140 / 170) |
+
+Keywords now (98 / 100):
+
+```
+jadwal salat,sholat,shalat,adzan,azan,kemenag,imsakiyah,imsak,masjid,musala,ramadhan,puasa,hijriah
+```
+
+Keywords in Ramadan (95 / 100):
+
+```
+salat,shalat,adzan,kemenag,imsak,sahur,buka puasa,ramadhan,tarawih,lebaran,masjid,musala,kiblat
+```
+
+The Malay and Indonesian lines should be read once by a native speaker
+before they go live.
+
 ## Promotional text (125 / 170)
 
 Land anywhere in Asia and know when to pray and which way to face. Official MUIS and JAKIM timetables, works offline, no ads.
