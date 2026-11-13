@@ -86,6 +86,20 @@ const shots = [
   ['35b-simple-more', { style: 'simple', appearance: 'dark', now: DAY }, async (p) => { await p.click('.simple-more'); await p.waitForTimeout(300); await p.evaluate(() => document.querySelector('.simple-more')?.scrollIntoView()) }],
   ['36-simple-night-large', { style: 'simple', appearance: 'dark', now: '2026-10-25T22:10:00+08:00', large: '1' }],
   ['37-settings-quiet', { tab: 'settings', appearance: 'dark', now: NIGHT }, (p) => p.evaluate(() => document.querySelector('h2.group-title:nth-of-type(n)') && [...document.querySelectorAll('h2.group-title')].find((h) => h.textContent === 'Quiet alerts')?.scrollIntoView())],
+  // Ramadan 1448 on its real dates (1 Ramadan 9 Feb 2027 in Singapore), for the website's Ramadan page.
+  ['39-ramadan-berbuka', { style: 'centre', appearance: 'dark', now: '2027-02-20T17:40:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }],
+  ['40-ramadan-sheet', { style: 'centre', appearance: 'dark', now: '2027-02-20T17:40:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }, (p) => p.click('.season-main, button.season-card')],
+  ['41-ramadan-sahur', { style: 'list', appearance: 'dark', now: '2027-02-20T04:50:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }],
+  ['42-syawal-sheet', { style: 'list', appearance: 'system', now: '2027-03-17T10:00:00+08:00', season: 'syawal', preview: 'off', alerts: 'on' }, (p) => p.click('.season-main, button.season-card')],
+  ['43-ramadan-fasts', { style: 'centre', appearance: 'dark', now: '2027-02-20T17:40:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }, async (p) => {
+    await p.click('.season-main'); await p.waitForTimeout(500)
+    await p.evaluate(() => [...document.querySelectorAll('.sheet h2, .sheet h3')].find((h) => /Your fasts/.test(h.textContent ?? ''))?.scrollIntoView({ block: 'center' }))
+  }],
+  ['44-sahur-alarm', { style: 'centre', appearance: 'dark', now: '2027-02-20T21:30:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }, async (p) => {
+    await p.click('button[aria-label^="Prayer alarms"]'); await p.waitForTimeout(400)
+    await p.click('.sheet [aria-label="Sahur alarm"]'); await p.waitForTimeout(300)
+    await p.evaluate(() => [...document.querySelectorAll('.sheet *')].find((h) => h.textContent === 'Sahur alarm')?.scrollIntoView({ block: 'center' }))
+  }],
   ['28-journey', { demo: 'travel', style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Musafir"]')],
 ]
 
@@ -93,10 +107,14 @@ const feed = process.env.FEED_FILE && existsSync(process.env.FEED_FILE) ? readFi
 const overpass = readFileSync(join(root, 'scripts/fixtures/overpass-pasir-ris.json'), 'utf8')
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {})
+// ANDROID=1: Android phone size (the website's Android frames are a little taller).
+const android = process.env.ANDROID === '1'
 const context = await browser.newContext({
-  viewport: { width: 393, height: 852 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true,
+  viewport: android ? { width: 412, height: 920 } : { width: 393, height: 852 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true,
   locale: 'en-US', timezoneId: 'Asia/Singapore', colorScheme: 'dark',
-  userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+  userAgent: android
+    ? 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36'
+    : 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
 })
 await context.route(/data\.gov\.sg|e-solat|myquran/, (r) => r.abort())
 await context.route(/raw\.githubusercontent\.com\/aarif86\/PrayerTimesAsia\/feeds\/sg-muis\.ics/, (r) =>

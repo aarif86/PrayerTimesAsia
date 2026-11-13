@@ -780,6 +780,8 @@ function demoPreferences(demo: Demo): Preferences {
     }
     p.tarawihLog = [dayKey(now - 86_400_000, 'Asia/Singapore')]
     p.khatamPlan = season === 'ramadan' || season === 'lastTen'
+    // &preview=off: a real Ramadan date is in ?now, so keep the marks but not the tester's preview (website pictures).
+    if (q.get('preview') === 'off') p.seasonPreview = 'off'
   }
   const appearance = q.get('appearance')
   p.appearance = appearance === 'light' || appearance === 'dark' || appearance === 'system' ? appearance : 'dark'
