@@ -9,6 +9,7 @@ import { MISSED, type FastMark } from '../core/ramadanContent'
 import { addDays, authorityDate, baseHijri, civilKey, communityHijri, daysApart, parseCivil, previewShift, seasonFor, type CivilDay, type Season } from '../core/season'
 import { masjidProfile, MY_MASJID_RADIUS_KM, parseMasjidLink, type MasjidLink } from '../core/masjidLink'
 import { methodWithId, type CalculationMethod } from '../core/methods'
+import { longDaysKey, twilightLastsAllNight } from '../core/longDays'
 import { musafirStatus, type MusafirRules, type MusafirStatus } from '../core/musafir'
 import { officialSourceFor, officialSummary, sourceLabel, type OfficialSource } from '../core/official'
 import { isNear, newPlaceId, placeProfile, type Place } from '../core/place'
@@ -323,6 +324,26 @@ class AppStore {
     const nextDay = this.nextDay(day)
     if (!place || !nextDay) return []
     return computeBlessed(day, nextDay, place.coordinates, this.isRamadanDay(day.times.dhuhr))
+  }
+
+  /**
+   * The long summer days note: its key when today's Fajr and Isha come from a
+   * high latitude rule (twilight lasts all night) and the note for this place and
+   * summer hasn't been closed. Only for calculated times; an official timetable
+   * already sets its own.
+   */
+  longDaysNote(now: number): string | null {
+    const place = this.activePlace
+    if (!place || this.officialSource) return null
+    const { latitude: lat, longitude: lng } = place.coordinates
+    const d = this.civil(now)
+    if (!twilightLastsAllNight(d.year, d.month, d.day, lat, this.method)) return null
+    const key = longDaysKey(d.year, d.month, lat, lng, place.countryCode ?? '')
+    return this.prefs.longDaysClosed.includes(key) ? null : key
+  }
+
+  closeLongDaysNote(key: string): void {
+    this.update((p) => { p.longDaysClosed = [...p.longDaysClosed.filter((k) => k !== key), key].slice(-30) })
   }
 
   // MARK: Ramadan and Syawal

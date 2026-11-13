@@ -188,6 +188,7 @@ private fun ColumnScope.Prompts(f: TodayFrame, hadith: Boolean = false) {
         HadithView(f.state, HadithId.COOL_PRAYERS, tag = "Before ${next!!.name(f.state.resolver.naming)}")
     }
     if (!p.arrivalBannerDismissed) ArrivalCard(f.state)
+    if (f.offset == 0) LongDaysNote(f.state, f.now)
     if (f.offset == 0) SeasonCard(f.state, f.now)
 }
 

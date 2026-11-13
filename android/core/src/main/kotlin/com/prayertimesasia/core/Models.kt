@@ -265,6 +265,8 @@ data class Preferences(
     val arrivalBannerDismissed: Boolean = true,
     /** The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival. */
     val musafirChipDismissed: Boolean = false,
+    /** Long summer days notes closed, one per place and summer ([LongDays.key]). Stays on this phone. */
+    val longDaysClosed: List<String> = emptyList(),
     val trip: List<TripStop> = emptyList(),
 
     // Prayer tracker (opt-in)
