@@ -647,6 +647,22 @@ final class AppModel {
     /// The local calendar day containing `date`.
     func civil(_ date: Date) -> CivilDay { CivilDay(date, timeZone: timeZone) }
 
+    /// The long summer days note: its key when today's Fajr and Isha come from a high
+    /// latitude rule (twilight lasts all night) and the note for this place and summer
+    /// hasn't been closed. Only for calculated times; an official timetable sets its own.
+    func longDaysNote(_ now: Date) -> String? {
+        guard let place = activePlace, officialSource == nil else { return nil }
+        let d = civil(now)
+        let c = place.coordinates
+        guard LongDays.twilightLastsAllNight(year: d.year, month: d.month, day: d.day, latitude: c.latitude, method: method) else { return nil }
+        let key = LongDays.key(year: d.year, month: d.month, latitude: c.latitude, longitude: c.longitude, countryCode: place.countryCode)
+        return prefs.longDaysClosed.contains(key) ? nil : key
+    }
+
+    func closeLongDaysNote(_ key: String) {
+        prefs.longDaysClosed = Array((prefs.longDaysClosed.filter { $0 != key } + [key]).suffix(30))
+    }
+
     var isSeasonPreview: Bool { prefs.seasonPreview != .off }
 
     /// Days the tester's "Try Ramadan" moves the calendar by (0 when off).

@@ -74,6 +74,10 @@ import com.prayertimesasia.app.ui.theme.display
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.AsrSchool
 import com.prayertimesasia.core.PrayerDay
+import com.prayertimesasia.core.LongDays
+import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.RamadanContent
+import java.time.Instant
 import com.prayertimesasia.core.TodayStyle
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -349,6 +353,25 @@ fun MusafirChip(state: AppState) {
 }
 
 /** Welcome to a new country: what switched, and the travel choices. */
+/** Far from the equator in summer: why Fajr and Isha look unusual. Once per place and summer, closable. */
+@Composable
+fun LongDaysNote(state: AppState, now: Instant) {
+    val r = state.resolver
+    val key = r.longDaysNote(now) ?: return
+    val w = LongDays.words(RamadanContent.lang(r.naming))
+    GlassCard {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Icon(Icons.Filled.LightMode, null, Modifier.size(26.dp), tint = Palette.accent)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(w.title, style = Txt.headline, color = Palette.primary)
+                Text(w.body(Prayer.FAJR.name(r.naming), Prayer.ISHA.name(r.naming)), style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f))
+            }
+            Icon(Icons.Filled.Close, w.close, Modifier.size(28.dp).clip(CircleShape)
+                .clickable { state.update { p -> p.copy(longDaysClosed = (p.longDaysClosed - key + key).takeLast(30)) } }.padding(6.dp), tint = Palette.primary)
+        }
+    }
+}
+
 @Composable
 fun ArrivalCard(state: AppState) {
     val r = state.resolver
