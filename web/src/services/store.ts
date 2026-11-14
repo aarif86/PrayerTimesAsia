@@ -17,7 +17,7 @@ import { countryForTimeZone, FALLBACK_PROFILE, methodHere, personalNaming, profi
 import {
   disagreements, jamaahTimes, mosqueAsr, mosqueMethod, mosqueNear, type MosqueDataset, type MosqueProfile,
 } from '../core/sources'
-import { dayKey, daysBetween, deviceTimeZone, ymdKey, zoned, zonedTime } from '../core/tz'
+import { dayKey, daysBetween, deviceTimeZone, noonDaysAfter, ymdKey, zoned, zonedTime } from '../core/tz'
 export { parseCivil, civilKey }
 import { CITIES, nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
@@ -296,7 +296,7 @@ class AppStore {
     if (!today) return null
     const upcoming = ordered(today).find((x) => x.time > now)
     if (upcoming) return upcoming
-    const tomorrow = this.day(now + 86_400_000)
+    const tomorrow = this.day(noonDaysAfter(now, 1, this.timeZone))
     return tomorrow ? { prayer: 'fajr', time: tomorrow.times.fajr } : null
   }
 
@@ -306,15 +306,15 @@ class AppStore {
     if (!today) return null
     const passed = ordered(today).filter((x) => x.time <= now).pop()
     if (passed) return passed
-    const yesterday = this.day(now - 86_400_000)
+    const yesterday = this.day(noonDaysAfter(now, -1, this.timeZone))
     return yesterday ? { prayer: 'isha', time: yesterday.times.isha } : null
   }
 
   /** The prayer open now and when its time runs out; null between sunrise and Zohor. */
   window(now: number): PrayerWindow | null {
     const today = this.day(now)
-    const yesterday = this.day(now - 86_400_000)
-    const tomorrow = this.day(now + 86_400_000)
+    const yesterday = this.day(noonDaysAfter(now, -1, this.timeZone))
+    const tomorrow = this.day(noonDaysAfter(now, 1, this.timeZone))
     return today && yesterday && tomorrow ? openWindow(now, yesterday, today, tomorrow) : null
   }
 
@@ -386,7 +386,7 @@ class AppStore {
       if (now < imsak) return { kind: 'imsak', time: imsak }
       if (now < today.times.maghrib) return { kind: 'berbuka', time: today.times.maghrib }
     }
-    const tomorrow = this.day(now + 86_400_000)
+    const tomorrow = this.day(noonDaysAfter(now, 1, this.timeZone))
     if (tomorrow && this.isRamadanDay(tomorrow.times.dhuhr)) return { kind: 'imsak', time: this.imsak(tomorrow) }
     return null
   }
@@ -547,7 +547,7 @@ class AppStore {
   streak(now = this.now()): number {
     let count = 0
     for (let i = 0; i < 400; i++) {
-      const key = this.dayKey(now - i * 86_400_000)
+      const key = this.dayKey(noonDaysAfter(now, -i, this.timeZone))
       const complete = this.isExcusedKey(key) || (this.prefs.prayedLog[key]?.length ?? 0) >= OBLIGATORY.length
       if (complete) count++
       else if (i > 0) break

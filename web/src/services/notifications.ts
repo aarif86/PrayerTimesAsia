@@ -2,7 +2,7 @@ import { isInAsia, placeProfile } from '../core/place'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { flag } from '../core/regions'
 import type { PrayerDay } from '../core/engine'
-import { zoned } from '../core/tz'
+import { noonDaysAfter, zoned } from '../core/tz'
 import { ALARM_KEY, ALARM_PRAYERS, prayerAlarmTime, sahurRings, sahurTime, wakeUpTime, type AlarmPrayer } from '../core/wakeup'
 import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
 import { playAzan } from './azan'
@@ -78,8 +78,8 @@ export function upcomingAlerts(now: number): Alert[] {
   const here = isInAsia(place) ? `${place.name} ${flag(placeProfile(place).code)}` : place.name
   const out: Alert[] = []
   for (let offset = -1; offset < 2; offset++) {
-    const day = store.day(now + offset * 86_400_000)
-    const nextDay = store.day(now + (offset + 1) * 86_400_000)
+    const day = store.day(noonDaysAfter(now, offset, tz))
+    const nextDay = store.day(noonDaysAfter(now, offset + 1, tz))
     if (!day) continue
     if (nudges && nextDay) {
       for (const w of windowsOf(day, nextDay)) {
@@ -166,7 +166,7 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
   const fajr = store.name('fajr')
   const out: WakeUp[] = []
   for (let offset = start; offset < start + days; offset++) {
-    const day = store.day(now + offset * 86_400_000)
+    const day = store.day(noonDaysAfter(now, offset, place.timeZoneID))
     if (!day) continue
     const key = `${day.year}-${day.month}-${day.day}`
     if (p.sahurAlarm && sahurRings(day, p.sahurDays, place.timeZoneID, p.hijriAdjustment)) {
@@ -310,7 +310,7 @@ export function buildICS(days = 30, prayers: Prayer[] = ['fajr', 'dhuhr', 'asr',
     `X-WR-CALNAME:${esc(`Prayer times · ${place.name}`)}`]
   const early = store.prefs.reminderMinutesBefore
   for (let i = 0; i < days; i++) {
-    const day = store.day(now + i * 86_400_000)
+    const day = store.day(noonDaysAfter(now, i, tz))
     if (!day) continue
     for (const p of prayers) {
       const t = day.times[p]
