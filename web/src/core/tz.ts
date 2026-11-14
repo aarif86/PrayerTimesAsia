@@ -95,3 +95,14 @@ export function daysBetween(a: number, b: number, tz: string): number {
   const za = zoned(a, tz), zb = zoned(b, tz)
   return Math.round((Date.UTC(zb.year, zb.month - 1, zb.day) - Date.UTC(za.year, za.month - 1, za.day)) / 86_400_000)
 }
+
+/**
+ * Noon on the local calendar day `days` after the one containing `ms`. Stepping
+ * by whole days this way never lands on the same day twice or skips one when
+ * the clocks change (a day can be 23 or 25 hours long), unlike adding 24 hours.
+ */
+export function noonDaysAfter(ms: number, days: number, tz: string): number {
+  const z = zoned(ms, tz)
+  const d = new Date(Date.UTC(z.year, z.month - 1, z.day + days))
+  return zonedTime(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), 12, 0, 0, tz)
+}
