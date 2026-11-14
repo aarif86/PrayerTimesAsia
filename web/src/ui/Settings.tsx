@@ -1,6 +1,6 @@
 import { azanAvailable } from '../services/azan'
 import { useEffect, useState } from 'preact/hooks'
-import { AlarmClock, ArrowDownToLine, ArrowRightLeft, MoonStar, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
+import { AlarmClock, ArrowDownToLine, ArrowRightLeft, MoonStar, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, MapPinned, Mail, MapPinOff, Printer, Smartphone } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
@@ -146,6 +146,9 @@ export function SettingsScreen() {
         </button>
         <a class="item" href="print/">
           <Printer size={20} /><span class="label">Print a prayer calendar<span class="sub">A monthly or Ramadan timetable, a sticker calendar or a kids' prayer tracker</span></span>
+        </a>
+        <a class="item" href="print/#sheet=letter">
+          <Mail size={20} /><span class="label">Print a letter for work or school<span class="sub">Explains your prayer breaks to an employer or teacher, with today's times</span></span>
         </a>
       </Group>
 

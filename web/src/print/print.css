@@ -200,3 +200,30 @@ button.link { background: none; border: 0; padding: 0; color: var(--night); text
 .fs-date { font-size: 8.5pt; font-weight: 700; }
 .fs-times { font-size: 6.5pt; color: var(--ink2); text-align: center; }
 .fs-syawal { font-family: var(--font-display); font-size: 13pt; margin: 6mm 0 0; }
+
+/* MARK: Prayer break letter */
+
+.seg { display: flex; gap: 6px; background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 4px; }
+.seg button { flex: 1; border: 0; background: transparent; border-radius: 8px; padding: 8px 6px; font-size: 14px; font-weight: 600; color: var(--ink2); }
+.seg button.on { background: #f1f2fa; color: var(--night); box-shadow: inset 0 0 0 1px var(--night); }
+
+.paper.paper-letter { width: 215.9mm; height: 279.4mm; }
+.sheet-letter { padding: 20mm 22mm 12mm; font-size: 11pt; line-height: 1.5; }
+.sheet-letter > p { margin: 0 0 3.2mm; }
+.letter-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8mm; margin-bottom: 8mm; padding-bottom: 4mm; border-bottom: .5mm solid var(--gold); }
+.letter-head h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 22pt; line-height: 1.1; color: var(--night); }
+.letter-moon { width: 11mm; height: 11mm; color: var(--gold); flex: none; transform: rotate(-20deg); }
+.blank { display: inline-block; width: 50mm; border-bottom: .3mm solid var(--ink2); height: 5mm; vertical-align: baseline; }
+.blank.wide { width: 70mm; }
+.letter-dear { margin-bottom: 5mm !important; }
+.letter-times { margin: 2mm 0 5mm; border: .35mm solid var(--rule); border-radius: 3mm; padding: 3mm 4mm 3.5mm; }
+.letter-times h2 { margin: 0 0 2.5mm; font-size: 9pt; font-weight: 700; color: var(--ink2); letter-spacing: .02em; }
+.lt-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2mm; font-variant-numeric: tabular-nums; }
+.lt-cell { display: flex; flex-direction: column; gap: .5mm; }
+.lt-cell i { display: block; height: 1.2mm; border-radius: 1mm; margin-bottom: 1mm; }
+.lt-cell span { font-size: 9pt; color: var(--ink2); }
+.lt-cell b { font-family: var(--font-display); font-size: 14pt; color: var(--ink); }
+.letter-signoff { margin-top: 5mm !important; }
+.letter-sign { display: flex; gap: 8mm; margin-top: 12mm; }
+.letter-sign div { display: flex; flex-direction: column; gap: 1mm; }
+.letter-sign small { font-size: 8.5pt; color: var(--ink2); }
