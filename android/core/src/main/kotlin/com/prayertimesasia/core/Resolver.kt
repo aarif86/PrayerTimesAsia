@@ -139,7 +139,7 @@ class Resolver(
     fun next(after: Instant): Pair<Prayer, Instant>? {
         val today = day(after) ?: return null
         today.ordered.firstOrNull { it.second > after }?.let { return it }
-        val tomorrow = day(after.plusSeconds(86_400)) ?: return null
+        val tomorrow = day(after, 1) ?: return null
         return Prayer.FAJR to tomorrow.time(Prayer.FAJR)
     }
 
@@ -147,11 +147,14 @@ class Resolver(
     fun current(at: Instant): Pair<Prayer, Instant>? {
         val today = day(at) ?: return null
         today.ordered.lastOrNull { it.second <= at }?.let { return it }
-        val yesterday = day(at.minusSeconds(86_400)) ?: return null
+        val yesterday = day(at, -1) ?: return null
         return Prayer.ISHA to yesterday.time(Prayer.ISHA)
     }
 
-    /** The prayer day [offset] local days from the one containing [now]. */
+    /**
+     * The prayer day [offset] local days from the one containing [now]. Steps by
+     * calendar day, so a 23 or 25 hour day (clocks changing) is never skipped or counted twice.
+     */
     fun day(now: Instant, offset: Int): PrayerDay? {
         if (offset == 0) return day(now)
         val local = now.atZone(zone).toLocalDate().plusDays(offset.toLong())
@@ -284,7 +287,7 @@ class Resolver(
             if (now < imsak(today)) return FastingKind.IMSAK to imsak(today)
             if (now < today.time(Prayer.MAGHRIB)) return FastingKind.BERBUKA to today.time(Prayer.MAGHRIB)
         }
-        val tomorrow = day(now.plusSeconds(86_400)) ?: return null
+        val tomorrow = day(now, 1) ?: return null
         return if (isRamadanDay(tomorrow.time(Prayer.DHUHR))) FastingKind.IMSAK to imsak(tomorrow) else null
     }
 
