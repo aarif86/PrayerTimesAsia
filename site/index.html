@@ -124,7 +124,7 @@
     .btn-ghost { background: var(--card); color: var(--text); border-color: var(--card-line); }
     .btn-ghost:hover { background: rgba(255,255,255,0.09); }
     .btn small { display: block; font-weight: 600; font-size: 0.72rem; opacity: 0.75; line-height: 1.1; }
-    .btn .two { text-align: left; line-height: 1.2; }
+    .btn .two { text-align: start; line-height: 1.2; }
     .btn-sm { padding: 10px 16px; min-height: 40px; font-size: 0.92rem; }
     .top-right { display: flex; align-items: center; gap: 10px; }
     .brand, .btn-sm { white-space: nowrap; }
@@ -364,6 +364,9 @@
     .js .strip ul { flex-wrap: nowrap; justify-content: flex-start; width: max-content; animation: marquee 34s linear infinite; }
     .strip:hover ul { animation-play-state: paused; }
     @keyframes marquee { to { transform: translateX(-50%); } }
+    /* Right to left pages (Arabic, Urdu): the list starts at the right edge, so it must slide the other way or it empties out. */
+    [dir="rtl"] .strip ul { animation-name: marquee-rtl; }
+    @keyframes marquee-rtl { to { transform: translateX(50%); } }
 
     .card, .chapter { transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s, box-shadow .35s; position: relative; overflow: hidden; }
     .card::after, .chapter::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s;
@@ -395,6 +398,7 @@
     @media (max-width: 600px) { .to-top { inset-inline-end: 16px; bottom: 16px; width: 50px; height: 50px; } }
     .progress { position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 20; transform-origin: 0 50%; transform: scaleX(0);
       background: linear-gradient(90deg, var(--gold), var(--ember), var(--rose)); }
+    [dir="rtl"] .progress { transform-origin: 100% 50%; background: linear-gradient(270deg, var(--gold), var(--ember), var(--rose)); }
 
     .tv-row div.on { animation: pulse 2.4s ease-in-out infinite; }
     @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 #f39a4a00; } 50% { box-shadow: 0 0 18px 2px #f39a4a66; } }
@@ -440,7 +444,7 @@
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#top"><img src="img/icon-104.webp" alt="" width="34" height="34" />Prayer Times Asia</a>
+    <a class="brand" href="#top"><img src="img/icon-96.webp" alt="" width="34" height="34" />Prayer Times Asia</a>
     <nav class="links" aria-label="Sections">
       <a href="#story">Our story</a>
       <a href="#features">Features</a>
@@ -476,8 +480,8 @@
         <p class="note"><a href="#story">Read the story</a> · Built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd)</p>
       </div>
       <div class="hero-phones" aria-hidden="true">
-        <div class="phone android back"><img src="img/android-dial.webp" srcset="img/android-dial-400.webp 400w, img/android-dial.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1347" /></div>
-        <div class="phone front"><img src="img/today.webp" srcset="img/today-400.webp 400w, img/today.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1311" /></div>
+        <div class="phone android back"><img src="img/android-dial.webp" srcset="img/android-dial-400.webp 400w, img/android-dial.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1347" fetchpriority="high" /></div>
+        <div class="phone front"><img src="img/today.webp" srcset="img/today-400.webp 400w, img/today.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1311" fetchpriority="high" /></div>
       </div>
     </div>
   </section>
@@ -581,7 +585,7 @@
       </div>
       <div class="grid">
         <div class="card">
-          <div class="ex ex-note" aria-hidden="true"><img src="img/icon-104.webp" alt="" /><div><div class="ex-top"><b>Prayer Times Asia</b><span>now</span></div><div class="ex-main">Asar in 15 minutes</div><div class="ex-sub">4.11 pm at Raffles Place</div></div></div>
+          <div class="ex ex-note" aria-hidden="true"><img src="img/icon-96.webp" alt="" width="30" height="30" loading="lazy" /><div><div class="ex-top"><b>Prayer Times Asia</b><span>now</span></div><div class="ex-main">Asar in 15 minutes</div><div class="ex-sub">4.11 pm at Raffles Place</div></div></div>
           <h3>The worker between meetings</h3>
           <p>A gentle reminder before Zohor and Asar, and the next prayer right on your home screen, so a busy day never makes you miss salah.</p>
         </div>
@@ -783,8 +787,8 @@
             <a class="btn btn-primary" href="mailto:salam@prayertimes.asia?subject=Masjid%20partnership&amp;body=Assalamualaikum%2C%0A%0AMasjid%20or%20musollah%20name%3A%0ACity%20and%20country%3A%0AMy%20role%3A%0AHow%20we%20would%20like%20to%20help%3A%0A">Become a partner masjid</a>
           </div>
         </div>
-        <div aria-hidden="true">
-          <div class="tv">
+        <div>
+          <div class="tv" aria-hidden="true">
             <div class="tv-in">
               <div class="tv-head"><span>Your masjid · Singapore</span><span>Friday 30 October · 18 Jamadilawal 1448</span></div>
               <div class="tv-now"><span>Asar iqamah in</span><b>00:12:40</b></div>

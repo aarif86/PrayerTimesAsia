@@ -114,11 +114,11 @@ export function App() {
       </div>
       {/* Big screens have room beside the app: a way back to the website. */}
       <a class="site-link" href="../">&larr; prayertimes.asia</a>
-      <nav class="tabbar" role="tablist" aria-label="Sections">
+      <nav class="tabbar" aria-label="Sections">
         {TABS.map((t) => {
           const Icon = TAB_ICON[t]
           return (
-            <button role="tab" aria-selected={s.tab === t} onClick={() => { s.setTab(t); document.getElementById('main')?.scrollTo({ top: 0 }) }}>
+            <button aria-current={s.tab === t ? 'page' : undefined} onClick={() => { s.setTab(t); document.getElementById('main')?.scrollTo({ top: 0 }) }}>
               <Icon size={25} /><span>{TAB_LABEL[t]}</span>
             </button>
           )
@@ -154,7 +154,7 @@ function Onboarding() {
           <p class="onb-lead">Wherever you land, know when to pray and which way to face.</p>
         </div>
         <div class="onb-features">
-          <Feature icon={<Globe2 size={24} />} title="Every country's own method" detail="MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia - and sensible defaults everywhere else." />
+          <Feature icon={<Globe2 size={24} />} title="Every country's own method" detail="MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia, and sensible defaults everywhere else." />
           <Feature icon={<Plane size={24} />} title="Built for travel" detail="Switches when you land, works offline, and tells you when you can shorten and combine prayers." />
           <Feature icon={<Compass size={24} />} title="Qibla in one glance" detail="A calm compass that lights up when you're facing the Kaaba." />
         </div>

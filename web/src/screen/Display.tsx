@@ -1,4 +1,4 @@
-import { useMemo } from 'preact/hooks'
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import qrcode from 'qrcode-generator'
 import { rowFor } from '../services/officialTables'
 import { PRAYERS, type Prayer } from '../core/prayer'
@@ -37,7 +37,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
       {c.look !== 'day' && c.look !== 'bands' && <div class="scr-shade" aria-hidden="true" />}
       <header class="scr-head">
         <div class="scr-title">
-          <h1>{c.name || c.place.name}</h1>
+          <h1 class={lengthClass(c.name || c.place.name, 28, 48)}>{c.name || c.place.name}</h1>
           {c.name && <p>{c.place.name}</p>}
         </div>
         <p class="scr-date">{gregorianDate(now, tz, c.lang)}<br />{formatHijriDate(today.hijri, hijriStyle)}</p>
@@ -53,7 +53,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
 
       <ol class={`scr-grid${c.showIqamah ? '' : ' no-iq'}`}>
         {sd.imsak != null && (
-          <li class="scr-cell scr-imsak">
+          <li class={`scr-cell scr-imsak${isToday && sd.imsak <= now ? ' passed' : ''}`}>
             <span class="scr-name">{w.imsak}</span>
             <Time ms={sd.imsak} tz={tz} h24={c.h24} />
           </li>
@@ -66,7 +66,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
           return (
             <li key={p} class={`scr-cell p-${p}${on ? ' on' : ''}${passed ? ' passed' : ''}${p === 'sunrise' ? ' scr-syuruk' : ''}`} style={{ '--tint': `var(--t-${p})` }}>
               <i class="scr-bar" />
-              <span class="scr-name">{label(p)}{sub && <em> · {sub}</em>}</span>
+              <span class="scr-name">{label(p)}{sub && <em><i class="scr-dotsep"> · </i>{sub}</em>}</span>
               <Time ms={sd.day.times[p]} tz={tz} h24={c.h24} />
               {c.showIqamah && <span class="scr-iq">{iq != null ? <>{p === 'dhuhr' && sd.friday && c.jumuah ? w.khutbah : w.iqamah} <Time ms={iq} tz={tz} h24={c.h24} small /></> : ' '}</span>}
             </li>
@@ -127,8 +127,19 @@ function Dial({ sd, now, config: c, label, focus, isToday }: {
   const nextFajr = screenDay(sd.day.times.dhuhr + 86_400_000, c, rowFor)?.day.times.fajr ?? sd.day.times.fajr + 86_400_000
   const marks: DialMark[] = PRAYERS.map((p) => ({ id: p, date: sd.day.times[p], extraLine: c.showIqamah && p !== 'sunrise' && sd.iqamah[p] != null, tint: `var(--t-${p})` }))
   if (sd.imsak != null) marks.push({ id: 'imsak', date: sd.imsak, minor: true })
+  // The dial is drawn at a fixed size: shrink it to the room left by a long name, notice or the Ramadan line.
+  const slot = useRef<HTMLElement>(null)
+  const [fit, setFit] = useState(0)
+  useEffect(() => {
+    const el = slot.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => setFit(el.clientHeight / 600))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
   return (
-    <section class="scr-dialbox">
+    <section class="scr-dialslot" ref={slot}>
+    <div class="scr-dialbox" style={fit > 0 ? { '--fit': String(fit) } : undefined}>
       <HeroDial size={600} now={now} day={sd.day} nextFajr={nextFajr} tz={tz} currentPrayer={isToday ? focus : null} marks={marks}
         label={(m) => {
           if (m.id === 'imsak') return <div class="scr-dm minor"><span class="scr-dm-name">{w.imsak}</span><Time ms={m.date} tz={tz} h24={c.h24} small /></div>
@@ -145,6 +156,7 @@ function Dial({ sd, now, config: c, label, focus, isToday }: {
           )
         }}
         centre={() => <div class="scr-dial-centre" style={{ '--tint': `var(--t-${focus})` }}><span>{w.next}</span><b>{label(focus)}</b></div>} />
+    </div>
     </section>
   )
 }
@@ -163,7 +175,7 @@ function Hero({ phase, now, config: c, label }: { phase: Phase; now: number; con
     const left = phase.iqamah == null ? 0 : phase.iqamah - now
     return (
       <section class={`scr-hero${phase.iqamah != null && left <= 60_000 ? ' scr-final' : ''}`}>
-        <p class="scr-kicker">{w.azan} {label(phase.prayer)}{phase.iqamah != null && <> · {jumuah ? w.khutbah : w.iqamahIn}</>}</p>
+        <p class="scr-kicker">{w.azan} {label(phase.prayer)}{phase.iqamah != null && <> · {jumuah ? w.khutbahIn : w.iqamahIn}</>}</p>
         <p class="scr-big">{phase.iqamah != null ? countdown(left) : label(phase.prayer)}</p>
         <p class="scr-line"><span class="scr-now">{clock.time}{clock.suffix && <small>{clock.suffix}</small>}</span> · {w.silence}</p>
       </section>
@@ -224,9 +236,14 @@ function Notice({ notices, now }: { notices: string[]; now: number }) {
   if (!notices.length) return <p class="scr-notice" />
   const i = Math.floor(now / 12_000) % notices.length
   return (
-    <p class="scr-notice" key={i}>
+    <p class={`scr-notice ${lengthClass(notices[i], 70, 115)}`} key={i}>
       {notices[i]}
       {notices.length > 1 && <span class="scr-dots">{notices.map((_, j) => <i key={j} class={j === i ? 'on' : ''} />)}</span>}
     </p>
   )
+}
+
+/** Long masjid names and notices step down a size so they fit in two lines instead of being cut off. */
+function lengthClass(text: string, long: number, xlong: number): string {
+  return text.length > xlong ? 'xlong' : text.length > long ? 'long' : ''
 }

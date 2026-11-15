@@ -64,8 +64,8 @@ export function TrackerSheet() {
           <h3>{MONTHS[shown.m - 1]} {shown.y}</h3>
           <button class="round-btn" aria-label="Next month" disabled={isThisMonth} onClick={() => move(1)}><ChevronRight size={18} /></button>
         </div>
-        <div class="tracker-grid" role="grid">
-          {WEEK.map((w) => <span class="tracker-wd secondary">{w}</span>)}
+        <div class="tracker-grid">
+          {WEEK.map((w) => <span class="tracker-wd secondary" aria-hidden="true">{w}</span>)}
           {cells.map((k) => {
             if (!k) return <span />
             const d = s.trackerDay(k)
@@ -74,7 +74,7 @@ export function TrackerSheet() {
             const label = `${Number(k.slice(8))} ${MONTHS[shown.m - 1]}: ${future ? 'not yet' : d.excused ? 'excused' : `${d.prayed} of 5 prayers`}`
             return (
               <span class={`tracker-day ${k === today ? 'is-today' : ''} ${future ? 'future' : ''} ${full ? 'full' : ''} ${d.excused ? 'excused' : ''}`}
-                style={{ '--fill': `${(d.prayed / OBLIGATORY.length) * 360}deg` }} role="gridcell" aria-label={label}>
+                style={{ '--fill': `${(d.prayed / OBLIGATORY.length) * 360}deg` }} role="img" aria-label={label}>
                 {d.excused && !full ? <Droplet size={12} fill="currentColor" /> : <span class="mono">{Number(k.slice(8))}</span>}
               </span>
             )
@@ -91,7 +91,7 @@ export function TrackerSheet() {
         </p>
       </div>
       <p class="caption secondary" style={{ padding: '0 20px 24px' }}>
-        Tap a prayer on the Prayer screen once its time has come to tick it off. Your tracker is kept only on this device - never uploaded, and it moves to a new phone only through Move my settings.
+        Tap a prayer on the Prayer screen once its time has come to tick it off. Your tracker is kept only on this device. It is never uploaded, and it moves to a new phone only through Move my settings.
       </p>
     </Sheet>
   )

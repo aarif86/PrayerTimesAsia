@@ -33,7 +33,7 @@ function fromNominatim(it: NominatimItem): Place {
   const a = it.address ?? {}
   const code = (a.country_code ?? '').toUpperCase() || null
   const lat = parseFloat(it.lat), lng = parseFloat(it.lon)
-  const tz = timeZoneForPlace(code, lng)
+  const tz = timeZoneForPlace(code, lng, lat)
   const offset = Math.round(lng / 15)
   const fallbackTz = offset === 0 ? 'Etc/GMT' : `Etc/GMT${offset > 0 ? '-' : '+'}${Math.abs(offset)}`
   return {
@@ -393,7 +393,7 @@ export function AlertsHelpSheet() {
         {support === 'unsupported' && <p class="headline">This browser can't show notifications.</p>}
         {support === 'supported' && <p class="headline">Notifications are blocked for this site.</p>}
         {support === 'supported' && <p class="subhead">Allow notifications in your browser's site settings (the icon left of the address), then try again.</p>}
-        <p class="subhead">Web alerts ring only while Prayer Times Asia is open. For alerts that ring when it's closed, use <b>Settings › Add the next 30 days to a calendar</b> - your calendar app rings every prayer.</p>
+        <p class="subhead">Web alerts ring only while Prayer Times Asia is open. For alerts that ring when it's closed, use <b>Settings › Add the next 30 days to a calendar</b>. Your calendar app rings every prayer.</p>
         <button class="primary-btn" onClick={closeSheet}>OK</button>
       </div>
     </Sheet>
@@ -440,7 +440,7 @@ export function CreditsSheet() {
           <div class="item" style={{ display: 'block' }}>
             <div class="subhead" style={{ fontWeight: 600 }}>{t}</div>
             <div class="footnote secondary">{d}</div>
-            {u && <a class="footnote accent" href={u} target="_blank" rel="noopener noreferrer">{u.replace('https://', '')}</a>}
+            {u && <a class="footnote accent" style={{ overflowWrap: 'anywhere' }} href={u} target="_blank" rel="noopener noreferrer">{u.replace('https://', '')}</a>}
           </div>
         ))}
       </div>

@@ -4,7 +4,7 @@ import { render } from 'preact'
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import type { Place } from '../core/place'
 import { NAMING_LABEL, NAMING_STYLES, type NamingStyle } from '../core/prayer'
-import { profileFor, timeZoneForPlace } from '../core/regions'
+import { profileFor, timeZoneForLocated } from '../core/regions'
 import { deviceTimeZone, zoned } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable, rowFor } from '../services/officialTables'
@@ -74,7 +74,7 @@ function App() {
 
   const days = useMemo(() => {
     if (!c.place) return []
-    return o.sheet === 'ramadan' || o.sheet === 'fasting' ? ramadanDays(c, now, rowFor, communityHijriFor(c)) : monthDays(c, o.year, o.month, rowFor)
+    return o.sheet === 'ramadan' || o.sheet === 'fasting' ? ramadanDays(c, now, rowFor, communityHijriFor(c)) : monthDays(c, o.year, o.month, rowFor, communityHijriFor(c))
   }, [c, o, tables])
 
   // Ramadan can fall in the next year: fetch every year the sheet touches.
@@ -103,7 +103,7 @@ function App() {
       const lat = +pos.coords.latitude.toFixed(4), lng = +pos.coords.longitude.toFixed(4)
       const near = nearestCity(lat, lng, 25), wide = nearestCity(lat, lng, 200)
       const cc = wide?.countryCode ?? null
-      choose({ name: near?.name ?? 'My place', lat, lng, tz: timeZoneForPlace(cc, lng) ?? deviceTimeZone(), cc, district: near?.district ?? null })
+      choose({ name: near?.name ?? 'My place', lat, lng, tz: timeZoneForLocated(cc, lat, lng) ?? deviceTimeZone(), cc, district: near?.district ?? null })
       setGps('idle')
     }, () => setGps('failed'), { enableHighAccuracy: true, timeout: 20_000 })
   }
