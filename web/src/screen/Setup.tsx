@@ -279,12 +279,20 @@ function TextField({ id, value, placeholder, maxLength, inputMode, parse, onChan
   return (
     <input id={id} value={text} placeholder={placeholder} maxLength={maxLength} inputMode={inputMode} autoComplete="off"
       class={invalid ? 'invalid' : ''} aria-invalid={invalid}
-      onInput={(e) => { const t = (e.target as HTMLInputElement).value; setText(t); onChange(parse(t)) }} />
+      onInput={(e) => {
+        const t = (e.target as HTMLInputElement).value
+        setText(t)
+        // Half-typed or wrong text keeps the last good value; an empty box clears it.
+        const v = parse(t)
+        if (v != null || t.trim() === '') onChange(v)
+      }} />
   )
 }
 
 const parseTime = (text: string): string | null => {
-  const v = text.trim().replace('.', ':')
+  // iPhone number pads show "." or "," (Indonesian), never ":". "1300" works too.
+  let v = text.trim().replace(/[.,]/, ':')
+  if (/^\d{3,4}$/.test(v)) v = `${v.slice(0, -2)}:${v.slice(-2)}`
   return isHHMM(v) ? v.padStart(5, '0') : null
 }
 

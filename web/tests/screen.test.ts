@@ -52,6 +52,7 @@ describe('screen config', () => {
   it('reads iqamah as minutes or a time', () => {
     expect(parseIqamah('10')).toEqual({ after: 10 })
     expect(parseIqamah(' 7 ')).toEqual({ after: 7 })
+    expect(parseIqamah('13,15')).toEqual({ fixed: '13:15' })
     expect(parseIqamah('13:15')).toEqual({ fixed: '13:15' })
     expect(parseIqamah('6.05')).toEqual({ fixed: '06:05' })
     expect(parseIqamah('')).toBeNull()

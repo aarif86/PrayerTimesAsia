@@ -37,7 +37,7 @@ const TILES = 'ptasia-tiles-osm'
 const PRECACHE = ${JSON.stringify([...new Set(precache)])}
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(SHELL).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()))
+  event.waitUntil(caches.open(SHELL).then((c) => c.addAll(PRECACHE.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()))
 })
 
 self.addEventListener('activate', (event) => {

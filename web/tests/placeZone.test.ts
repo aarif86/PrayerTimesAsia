@@ -84,4 +84,31 @@ describe('Time zone of a GPS place', () => {
     expect(timeZoneForLocated('US', 40.76, -111.89, 'Asia/Singapore')).toBe('America/Denver')
     expect(timeZoneForLocated('ID', -0.955, 114.894, 'UTC')).toBe('Asia/Jakarta')
   })
+
+  it('places either side of a border that the nearest point once got wrong', () => {
+    const winter = Date.UTC(2026, 0, 15, 12)
+    const off = (cc: string, lat: number, lng: number, t = Date.UTC(2026, 6, 1, 12)) => offsetMinutes(t, timeZoneForPlace(cc, lng, lat)!)
+    // Tatarstan and the Volga keep Moscow time; Perm is on Yekaterinburg time.
+    expect(off('RU', 55.74, 52.40)).toBe(180) // Naberezhnye Chelny
+    expect(off('RU', 55.64, 51.82)).toBe(180) // Nizhnekamsk
+    expect(off('RU', 54.90, 52.30)).toBe(180) // Almetyevsk
+    expect(off('RU', 55.80, 49.11)).toBe(180) // Kazan
+    expect(off('RU', 58.60, 49.67)).toBe(180) // Kirov
+    expect(off('RU', 53.20, 45.02)).toBe(180) // Penza
+    expect(off('RU', 58.01, 56.25)).toBe(300) // Perm
+    expect(off('RU', 56.85, 53.20)).toBe(240) // Izhevsk stays on Samara time
+    // Central Kalimantan coast is WIB; Banjarmasin across the river is WITA.
+    expect(off('ID', -3.00, 114.39)).toBe(420) // Kuala Kapuas
+    expect(off('ID', -2.75, 114.26)).toBe(420) // Pulang Pisau
+    expect(off('ID', -3.32, 114.59)).toBe(480) // Banjarmasin
+    // United States
+    expect(off('US', 37.97, -87.57)).toBe(-300) // Evansville IN, Central
+    expect(off('US', 32.69, -114.63)).toBe(-420) // Yuma AZ, no summer time
+    expect(off('US', 35.19, -114.05)).toBe(-420) // Kingman AZ
+    expect(off('US', 44.37, -100.35)).toBe(-300) // Pierre SD, Central
+    expect(off('US', 46.88, -102.79)).toBe(-360) // Dickinson ND, Mountain
+    expect(off('US', 39.35, -101.71)).toBe(-360) // Goodland KS, Mountain
+    // Australia: Mildura is Victoria, not Broken Hill
+    expect(off('AU', -34.19, 142.16, winter)).toBe(660)
+  })
 })

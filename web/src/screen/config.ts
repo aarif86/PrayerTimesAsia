@@ -114,7 +114,7 @@ export function isHHMM(s: unknown): s is string {
 
 /** "10" → 10 minutes after azan; "13:15" → fixed; anything else → none. */
 export function parseIqamah(text: string): IqamahRule | null {
-  const t = text.trim().replace('.', ':')
+  const t = text.trim().replace(/[.,]/, ':')
   if (/^\d{1,2}$/.test(t)) {
     const n = parseInt(t, 10)
     return n >= 0 && n <= 60 ? { after: n } : null
