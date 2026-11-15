@@ -1,9 +1,16 @@
 import preact from '@preact/preset-vite'
 import { createHash } from 'node:crypto'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
 import { NATIVE_APPS } from './src/core/nativeApps'
+
+function publicFiles(dir: string): { name: string; path: string }[] {
+  return readdirSync(dir, { recursive: true, withFileTypes: true }).filter((d) => d.isFile())
+    .map((d) => ({ name: resolve(d.parentPath, d.name).slice(dir.length), path: resolve(d.parentPath, d.name) }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+}
 
 /**
  * Writes sw.js after the build with the list of files to keep offline, so the
@@ -18,7 +25,11 @@ function serviceWorker(): Plugin {
       const precache = ['./', 'index.html', 'screen/', 'print/', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
         'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/badge-96.png', 'icons/dial.svg',
         ...files.filter((f) => !f.endsWith('.html') && !/\.(woff2?)$/.test(f) || /latin-wght-normal|TwemojiCountryFlags/.test(f))]
-      const version = createHash('sha256').update(files.sort().join('|')).digest('hex').slice(0, 12)
+      // Bundle names carry content hashes; public/ files (manifest, icons) don't, so their bytes go in too.
+      // Otherwise a deploy that only changes an icon or the manifest leaves sw.js unchanged and the old copy cached.
+      const hash = createHash('sha256').update(files.sort().join('|'))
+      for (const f of publicFiles(resolve(root, 'public'))) hash.update(f.name).update(readFileSync(f.path))
+      const version = hash.digest('hex').slice(0, 12)
       const source = `/* Prayer Times Asia service worker (generated) */
 const VERSION = ${JSON.stringify(version)}
 const SHELL = 'ptasia-shell-' + VERSION
@@ -48,7 +59,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin === self.location.origin) {
     // The masjid screen (screen/) and the print page (print/) are their own pages, kept under their own paths for offline restarts.
     if (req.mode === 'navigate') {
-      const page = url.pathname.match(/\/(screen|print)\//)
+      const page = url.pathname.match(/[/](screen|print)[/]/)
       const key = page ? page[1] + '/' : 'index.html'
       event.respondWith(fetch(req).then((r) => { const copy = r.clone(); caches.open(SHELL).then((c) => c.put(key, copy)); return r })
         .catch(() => caches.match(key, { ignoreSearch: true }).then((hit) => hit || caches.match('index.html', { ignoreSearch: true }))))
@@ -77,6 +88,8 @@ self.addEventListener('notificationclick', (event) => {
   }))
 })
 `
+      // A syntax slip in this template (an escape eaten by the backticks) silently kills offline, so check it parses.
+      try { new Function(source) } catch (e) { this.error(`generated sw.js does not parse: ${(e as Error).message}`) }
       this.emitFile({ type: 'asset', fileName: 'sw.js', source })
     },
   }
