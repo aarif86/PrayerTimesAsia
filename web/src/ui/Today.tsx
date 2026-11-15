@@ -78,6 +78,7 @@ export function TodayScreen() {
   const style = s.prefs.todayStyle
   return (
     <div class={`today style-${style}`} data-theme-local={style === 'bands' ? 'dark' : undefined}>
+      <h1 class="sr-only">Prayer times{s.activePlace ? ` in ${s.activePlace.name}` : ''}</h1>
       {style === 'list' && <ClassicPage c={ctx} />}
       {style === 'centre' && <CentrePage c={ctx} />}
       {style === 'dial' && <DialPage c={ctx} />}
@@ -822,7 +823,7 @@ function BandsPage({ c }: { c: Ctx }) {
       <div class="bands-date">
         <button aria-label="Previous day" onClick={() => c.setOffset(offset - 1)}><ChevronLeft size={20} strokeWidth={2.6} /></button>
         <button class="bands-date-main" onClick={() => dateTap(c)} aria-label={offset === 0 ? 'Ramadan and Eid dates with their sources' : 'Back to today'}>
-          {offset !== 0 && <Undo2 size={13} />} {fmtDate(shown.times.dhuhr, { day: 'numeric', month: 'short', year: 'numeric' })} · {hijri(shown.times.dhuhr)}
+          {offset !== 0 && <Undo2 size={13} />}<span>{fmtDate(shown.times.dhuhr, { day: 'numeric', month: 'short', year: 'numeric' })} ·</span><span>{hijri(shown.times.dhuhr)}</span>
         </button>
         <button aria-label="Next day" onClick={() => c.setOffset(offset + 1)}><ChevronRight size={20} strokeWidth={2.6} /></button>
       </div>

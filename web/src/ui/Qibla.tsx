@@ -71,7 +71,7 @@ export function QiblaScreen() {
           <>
             <Step icon={<MapIcon size={20} class="gold" />}>
               {compass.state === 'denied' ? 'Compass access was not allowed.' : 'This device or browser has no compass.'} Use the qibla bearing above with a map,
-              or the sun in Falak. Stand facing {Math.round(bearing)}° ({compassPoint(bearing)}) - for example, line yourself up with the gold line on the map.
+              or the sun in Falak. Stand facing {Math.round(bearing)}° ({compassPoint(bearing)}). For example, line yourself up with the gold line on the map.
             </Step>
             <div style={{ marginTop: '12px' }}><QiblaMapButton /></div>
           </>
