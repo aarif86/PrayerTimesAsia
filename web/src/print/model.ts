@@ -49,10 +49,10 @@ export function daysInMonth(year: number, month: number): number {
 }
 
 /** Every day of a Gregorian month at the configured place. */
-export function monthDays(c: ScreenConfig, year: number, month: number, lookup: RowLookup): SheetDay[] {
+export function monthDays(c: ScreenConfig, year: number, month: number, lookup: RowLookup, hijriOf?: HijriOf): SheetDay[] {
   if (!c.place) return []
   const out: SheetDay[] = []
-  for (let d = 1; d <= daysInMonth(year, month); d++) out.push(sheetDay(noon(year, month, d, c.place.tz), c, lookup))
+  for (let d = 1; d <= daysInMonth(year, month); d++) out.push(sheetDay(noon(year, month, d, c.place.tz), c, lookup, hijriOf))
   return out
 }
 

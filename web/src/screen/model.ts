@@ -152,10 +152,18 @@ export type Phase =
 /** Without an iqamah time, "Azan now" stays up this long. */
 export const AZAN_ONLY_MS = 3 * 60_000
 
+/** Noon of the place's calendar day `days` away from `now`. Adding 24 hours misses or repeats a day when the clocks change. */
+function localNoon(now: number, days: number, c: ScreenConfig): number {
+  const tz = c.place?.tz ?? 'UTC'
+  const z = zoned(now, tz)
+  const d = new Date(Date.UTC(z.year, z.month - 1, z.day + days))
+  return zonedTime(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), 12, 0, 0, tz)
+}
+
 export function phaseAt(now: number, c: ScreenConfig, lookup: RowLookup): Phase | null {
   const today = screenDay(now, c, lookup)
   if (!today) return null
-  const yesterday = screenDay(now - 86_400_000, c, lookup)!
+  const yesterday = screenDay(localNoon(now, -1, c), c, lookup)!
   // A prayer whose azan or iqamah is in progress takes over the screen. Isyak can run past midnight.
   for (const d of [today, yesterday]) {
     for (const p of OBLIGATORY_PRAYERS) {
@@ -174,7 +182,7 @@ export function phaseAt(now: number, c: ScreenConfig, lookup: RowLookup): Phase 
   // Syuruk ends Subuh but starts no prayer: nothing is highlighted until Zohor.
   const current = passed && passed.p !== 'sunrise' ? passed.p : null
   if (upcoming) return { kind: 'waiting', current, next: upcoming.p, at: upcoming.t, day: today }
-  const tomorrow = screenDay(now + 86_400_000, c, lookup)!
+  const tomorrow = screenDay(localNoon(now, 1, c), c, lookup)!
   // After Isyak the grid shows tomorrow's times, with nothing highlighted.
   return { kind: 'waiting', current: null, next: 'fajr', at: tomorrow.day.times.fajr, day: tomorrow }
 }

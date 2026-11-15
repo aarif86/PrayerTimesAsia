@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { sourceLabel } from '../core/official'
 import { NAMING_LABEL, NAMING_STYLES, type NamingStyle } from '../core/prayer'
-import { FALLBACK_PROFILE, profileFor, profileMethod, sourceSummary, timeZoneForPlace } from '../core/regions'
-import { deviceTimeZone } from '../core/tz'
+import { FALLBACK_PROFILE, profileFor, profileMethod, sourceSummary, timeZoneForLocated } from '../core/regions'
+import { deviceTimeZone, zoned } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable } from '../services/officialTables'
 import {
@@ -37,7 +37,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
 
   useEffect(() => {
     if (!official || !c.place) return
-    const year = new Date(now).getFullYear()
+    const year = zoned(now, c.place.tz).year
     ensureTable(official, year, c.place.tz).then((changed) => { if (changed) setTables((n) => n + 1) })
   }, [JSON.stringify(official)])
 
@@ -50,7 +50,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       const lat = +pos.coords.latitude.toFixed(4), lng = +pos.coords.longitude.toFixed(4)
       const near = nearestCity(lat, lng, 25), wide = nearestCity(lat, lng, 200)
       const cc = wide?.countryCode ?? null
-      choose({ name: near?.name ?? 'Masjid', lat, lng, tz: timeZoneForPlace(cc, lng) ?? deviceTimeZone(), cc, district: near?.district ?? null })
+      choose({ name: near?.name ?? 'Masjid', lat, lng, tz: timeZoneForLocated(cc, lat, lng) ?? deviceTimeZone(), cc, district: near?.district ?? null })
       setGps('idle')
     }, () => setGps('failed'), { enableHighAccuracy: true, timeout: 20_000 })
   }
