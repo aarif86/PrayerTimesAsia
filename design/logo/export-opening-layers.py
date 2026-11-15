@@ -9,7 +9,7 @@ Run from the repo root after export-icons.py:  python3 design/logo/export-openin
 Writes
   web/index.html                      the layered SVG between the dial-layers markers
   iPhone  Assets.xcassets/Opening*.imageset   one 180 pt picture per layer
-  Android drawable-nodpi/opening_*.png        one 540 px picture per layer
+  Android drawable-nodpi/opening_*.webp       one 540 px picture per layer
 Every picture is the whole 848 unit dial box, so each layer turns about its own middle.
 """
 import io, os, re
@@ -88,6 +88,6 @@ for key, inner in LAYERS.items():
         f.write('{\n  "images" : [\n'
                 + ",\n".join(f'    {{ "filename" : "{key}@{s}x.png", "idiom" : "universal", "scale" : "{s}x" }}' for s in (2, 3))
                 + '\n  ],\n  "info" : { "author" : "xcode", "version" : 1 }\n}\n')
-    out = f"android/app/src/main/res/drawable-nodpi/opening_{key.replace('-', '_')}.png"
-    render(inner, 540).save(out, optimize=True)
+    out = f"android/app/src/main/res/drawable-nodpi/opening_{key.replace('-', '_')}.webp"
+    render(inner, 540).save(out, "WEBP", lossless=True, method=6, exact=True)
     print(name, out)

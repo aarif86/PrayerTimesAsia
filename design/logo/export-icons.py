@@ -22,7 +22,12 @@ def render(text, size):
 
 def save(im, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    im.save(path)
+    if path.startswith("android/") and path.endswith(".png"):
+        # Android: lossless WebP, the same pixels in about half the bytes.
+        path = path[:-4] + ".webp"
+        im.save(path, "WEBP", lossless=True, method=6, exact=True)
+    else:
+        im.save(path)
     print(path, im.size)
 
 
