@@ -57,7 +57,7 @@ extension WidgetSnapshot {
         let tz = TimeZone(identifier: "Asia/Singapore")!
         var days: [Day] = []
         for offset in 0..<2 {
-            let d = PrayerEngine.compute(for: Date.now.addingTimeInterval(Double(offset) * 86_400), in: tz,
+            let d = PrayerEngine.compute(for: DayStep.noon(.now, plus: offset, in: tz), in: tz,
                                          at: Coordinates(latitude: 1.3521, longitude: 103.8198), method: .muis, asr: .standard)
             var times: [String: Date] = [:]
             for p in Prayer.allCases { times[p.rawValue] = d.time(p) }

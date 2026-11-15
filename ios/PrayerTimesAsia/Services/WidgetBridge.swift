@@ -18,7 +18,7 @@ enum WidgetBridge {
         guard let place = model.activePlace else { return nil }
         var days: [WidgetSnapshot.Day] = []
         for offset in 0..<7 {
-            guard let d = model.day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
+            guard let d = model.day(containing: model.noon(.now, plus: offset)) else { continue }
             var times: [String: Date] = [:]
             for p in Prayer.allCases { times[p.rawValue] = d.time(p) }
             days.append(.init(year: d.year, month: d.month, day: d.day, times: times))

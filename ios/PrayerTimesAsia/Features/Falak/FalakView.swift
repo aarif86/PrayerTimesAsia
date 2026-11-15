@@ -299,7 +299,7 @@ private struct RashdulCard: View {
 
     private func nextAlignment(after date: Date) -> Falak.Alignment? {
         for offset in 1...60 {
-            let ymd = model.ymd(date.addingTimeInterval(Double(offset) * 86_400))
+            let ymd = model.ymd(model.noon(date, plus: offset))
             if let first = Falak.rashdulQiblat(year: ymd.0, month: ymd.1, day: ymd.2, timeZone: model.timeZone,
                                                coordinates: place.coordinates).first {
                 return first

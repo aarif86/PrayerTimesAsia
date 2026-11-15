@@ -342,7 +342,7 @@ final class AppModel {
     func next(after now: Date) -> (prayer: Prayer, time: Date)? {
         guard let today = day(containing: now) else { return nil }
         if let upcoming = today.ordered.first(where: { $0.time > now }) { return upcoming }
-        guard let tomorrow = day(containing: now.addingTimeInterval(86_400)) else { return nil }
+        guard let tomorrow = day(containing: noon(now, plus: 1)) else { return nil }
         return (.fajr, tomorrow.time(.fajr))
     }
 
@@ -350,7 +350,7 @@ final class AppModel {
     func current(at now: Date) -> (prayer: Prayer, time: Date)? {
         guard let today = day(containing: now) else { return nil }
         if let passed = today.ordered.last(where: { $0.time <= now }) { return passed }
-        guard let yesterday = day(containing: now.addingTimeInterval(-86_400)) else { return nil }
+        guard let yesterday = day(containing: noon(now, plus: -1)) else { return nil }
         return (.isha, yesterday.time(.isha))
     }
 
@@ -365,8 +365,8 @@ final class AppModel {
     /// The prayer open now and when its time runs out; nil between sunrise and Zohor.
     func window(at now: Date) -> PrayerWindow? {
         guard let today = day(containing: now),
-              let yesterday = day(containing: now.addingTimeInterval(-86_400)),
-              let tomorrow = day(containing: now.addingTimeInterval(86_400)) else { return nil }
+              let yesterday = day(containing: noon(now, plus: -1)),
+              let tomorrow = day(containing: noon(now, plus: 1)) else { return nil }
         return PrayerWindow.open(at: now, yesterday: yesterday, today: today, tomorrow: tomorrow)
     }
 
@@ -416,6 +416,11 @@ final class AppModel {
     }
 
     // MARK: Prayer tracker
+
+    /// Local noon `days` calendar days after `date` here, safe on clock change days.
+    func noon(_ date: Date, plus days: Int) -> Date {
+        DayStep.noon(date, plus: days, in: timeZone)
+    }
 
     /// Local calendar key ("yyyy-MM-dd") for a date at the active place.
     func dayKey(_ date: Date) -> String {
@@ -496,7 +501,7 @@ final class AppModel {
             let key = dayKey(date)
             let complete = isExcused(key: key) || (prefs.prayedLog[key]?.count ?? 0) >= Prayer.obligatory.count
             if complete { count += 1 } else if i > 0 { break }
-            date = date.addingTimeInterval(-86_400)
+            date = noon(date, plus: -1)
         }
         return count
     }
@@ -703,7 +708,7 @@ final class AppModel {
             if now < imsak(today) { return (.imsak, imsak(today)) }
             if now < today.time(.maghrib) { return (.berbuka, today.time(.maghrib)) }
         }
-        if let tomorrow = day(containing: now.addingTimeInterval(86_400)), isRamadanDay(tomorrow.time(.dhuhr)) {
+        if let tomorrow = day(containing: noon(now, plus: 1)), isRamadanDay(tomorrow.time(.dhuhr)) {
             return (.imsak, imsak(tomorrow))
         }
         return nil
@@ -805,7 +810,7 @@ final class AppModel {
         let perDay = (onTime ? 6 : 0) + (early > 0 ? 6 : 0) + (nudges ? 4 : 0) + (jumuah > 0 ? 1 : 0)
         let days = max(2, min(12, 60 / max(perDay, 1)))
         for offset in -1..<days {
-            guard let pd = day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
+            guard let pd = day(containing: noon(.now, plus: offset)) else { continue }
             if nudges, let next = day(containing: pd.time(.dhuhr).addingTimeInterval(86_400)) {
                 for w in PrayerWindow.windows(of: pd, next: next) where prefs.notifyPrayers.contains(w.prayer) {
                     // Already ticked or excused: no nudge (ticking reschedules).
@@ -917,7 +922,7 @@ final class AppModel {
         let fajr = Prayer.fajr.name(naming)
         var out: [WakeUp] = []
         for offset in start..<(start + days) {
-            guard let pd = day(containing: now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
+            guard let pd = day(containing: noon(now, plus: offset)) else { continue }
             if let sahur = prefs.sahurAlarm,
                SahurDay.rings(on: pd, prefs.sahurDays, timeZone: timeZone, hijriAdjustment: prefs.hijriAdjustment) {
                 out.append(WakeUp(date: sahur.date(in: pd), title: "Wake up for sahur · \(fajr) at \(formatted(pd.time(.fajr)))", isSahur: true))
