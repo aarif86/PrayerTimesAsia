@@ -193,7 +193,7 @@ export function name(p: Prayer, style: NamingStyle, friday: boolean, arabic: boo
 
 export interface Words {
   next: string; iqamah: string; azan: string; iqamahIn: string; silence: string; inPrayer: string
-  khutbah: string; imsak: string; iftar: string; ends: (n: string) => string; fullScreen: string
+  khutbah: string; khutbahIn: string; imsak: string; iftar: string; ends: (n: string) => string; fullScreen: string
   edit: string; source: string; getApp: string; noPlace: string
   nowTag: string; inTag: (d: string) => string; scan: string
   tarawih: string; afterIsha: string; qiyam: string; eid: string; ramadanDay: (n: number) => string; raya: string; takbir: string; lastTen: string
@@ -202,7 +202,7 @@ export interface Words {
 export const WORDS: Record<ScreenLanguage, Words> = {
   en: {
     next: 'Next', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah in', silence: 'Please silence your phone',
-    inPrayer: 'Prayer in progress', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Iftar', ends: (n) => `${n} ends`,
+    inPrayer: 'Prayer in progress', khutbah: 'Khutbah', khutbahIn: 'Khutbah in', imsak: 'Imsak', iftar: 'Iftar', ends: (n) => `${n} ends`,
     fullScreen: 'Press OK or click for full screen', edit: 'Edit screen', source: 'Times', getApp: 'Prayer times on your phone',
     noPlace: 'Choose the masjid\'s location to show prayer times.',
     nowTag: 'Now', inTag: (d) => `in ${d}`, scan: 'Scan for iqamah times',
@@ -211,7 +211,7 @@ export const WORDS: Record<ScreenLanguage, Words> = {
   },
   ms: {
     next: 'Seterusnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Sila senyapkan telefon bimbit anda',
-    inPrayer: 'Solat sedang didirikan', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Tamat ${n}`,
+    inPrayer: 'Solat sedang didirikan', khutbah: 'Khutbah', khutbahIn: 'Khutbah dalam', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Tamat ${n}`,
     fullScreen: 'Tekan OK atau klik untuk skrin penuh', edit: 'Ubah skrin', source: 'Waktu', getApp: 'Waktu solat di telefon anda',
     noPlace: 'Pilih lokasi masjid untuk memaparkan waktu solat.',
     nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Imbas untuk waktu iqamah',
@@ -220,7 +220,7 @@ export const WORDS: Record<ScreenLanguage, Words> = {
   },
   id: {
     next: 'Berikutnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Mohon nonaktifkan nada dering ponsel',
-    inPrayer: 'Sholat sedang berlangsung', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Akhir ${n}`,
+    inPrayer: 'Sholat sedang berlangsung', khutbah: 'Khutbah', khutbahIn: 'Khutbah dalam', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Akhir ${n}`,
     fullScreen: 'Tekan OK atau klik untuk layar penuh', edit: 'Ubah layar', source: 'Jadwal', getApp: 'Jadwal sholat di ponsel Anda',
     noPlace: 'Pilih lokasi masjid untuk menampilkan jadwal sholat.',
     nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Pindai untuk jadwal iqamah',
