@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { sourceLabel } from '../core/official'
 import { NAMING_LABEL, NAMING_STYLES, type NamingStyle } from '../core/prayer'
-import { FALLBACK_PROFILE, profileFor, profileMethod, sourceSummary, timeZoneForPlace } from '../core/regions'
-import { deviceTimeZone } from '../core/tz'
+import { FALLBACK_PROFILE, profileFor, profileMethod, sourceSummary, timeZoneForLocated } from '../core/regions'
+import { deviceTimeZone, zoned } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable } from '../services/officialTables'
 import {
@@ -37,7 +37,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
 
   useEffect(() => {
     if (!official || !c.place) return
-    const year = new Date(now).getFullYear()
+    const year = zoned(now, c.place.tz).year
     ensureTable(official, year, c.place.tz).then((changed) => { if (changed) setTables((n) => n + 1) })
   }, [JSON.stringify(official)])
 
@@ -50,7 +50,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       const lat = +pos.coords.latitude.toFixed(4), lng = +pos.coords.longitude.toFixed(4)
       const near = nearestCity(lat, lng, 25), wide = nearestCity(lat, lng, 200)
       const cc = wide?.countryCode ?? null
-      choose({ name: near?.name ?? 'Masjid', lat, lng, tz: timeZoneForPlace(cc, lng) ?? deviceTimeZone(), cc, district: near?.district ?? null })
+      choose({ name: near?.name ?? 'Masjid', lat, lng, tz: timeZoneForLocated(cc, lat, lng) ?? deviceTimeZone(), cc, district: near?.district ?? null })
       setGps('idle')
     }, () => setGps('failed'), { enableHighAccuracy: true, timeout: 20_000 })
   }
@@ -92,7 +92,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       <header class="setup-head">
         <p class="eyebrow">Prayer Times Asia · Masjid screen</p>
         <h1>Set up your masjid's screen</h1>
-        <p class="muted">Four short steps on your phone or computer, then one link to open on the masjid TV. The TV remembers it, even after a power cut. Prayer times come from the official timetable (MUIS, JAKIM or Kemenag) and keep working without internet.</p>
+        <p class="muted">Five short steps on your phone or computer, then one link to open on the masjid TV. The TV remembers it, even after a power cut. Prayer times come from the official timetable (MUIS, JAKIM or Kemenag) and keep working without internet.</p>
       </header>
 
       <div class="setup-body">
@@ -128,8 +128,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             {official?.kind === 'jakim' && (
               <>
                 <label for="s-zone">JAKIM zone (only if the masjid uses a different one)</label>
-                <input id="s-zone" value={c.zone ?? ''} placeholder={official.zone} maxLength={5}
-                  onInput={(e) => { const v = (e.target as HTMLInputElement).value.toUpperCase(); set({ zone: /^[A-Z]{3}\d{2}$/.test(v) ? v : null }) }} />
+                <TextField key={`${c.place?.lat},${c.place?.lng}`} id="s-zone" value={c.zone ?? ''} placeholder={official.zone} maxLength={5}
+                  parse={(v) => { const z = v.trim().toUpperCase(); return /^[A-Z]{3}\d{2}$/.test(z) ? z : null }} onChange={(v) => set({ zone: v })} />
               </>
             )}
           </fieldset>
@@ -141,7 +141,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               {OBLIGATORY_PRAYERS.map((p) => (
                 <div key={p}>
                   <label for={`s-iq-${p}`}>{name(p, c.names, false, false)}</label>
-                  <input id={`s-iq-${p}`} inputMode="numeric" value={iqText[p]} placeholder="10"
+                  <input id={`s-iq-${p}`} inputMode="decimal" value={iqText[p]} placeholder="10"
                     class={iqText[p] && !parseIqamah(iqText[p]) ? 'invalid' : ''}
                     onInput={(e) => setIqamah(p, (e.target as HTMLInputElement).value)} />
                 </div>
@@ -150,8 +150,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <label class="check"><input id="s-showiq" type="checkbox" checked={c.showIqamah} onChange={(e) => set({ showIqamah: (e.target as HTMLInputElement).checked })} /> Also print the iqamah times on the screen (most jemaah only need the prayer times)</label>
             <label class="check"><input id="s-showqr" type="checkbox" checked={c.showQr} onChange={(e) => set({ showQr: (e.target as HTMLInputElement).checked })} /> Show a QR code that jemaah scan to see these iqamah times in the Prayer Times Asia app</label>
             <label for="s-jumuah">Friday khutbah starts (24-hour, for example 13:00)</label>
-            <input id="s-jumuah" value={c.jumuah ?? ''} placeholder="13:00" inputMode="numeric"
-              onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); set({ jumuah: isHHMM(v) ? v.padStart(5, '0') : null }) }} />
+            <TimeField id="s-jumuah" value={c.jumuah} placeholder="13:00" onChange={(v) => set({ jumuah: v })} />
             <div class="setup-iq two">
               <div>
                 <label for="s-dim">Screen dims for the prayer (minutes)</label>
@@ -182,18 +181,15 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               </div>
               <div>
                 <label for="s-tarawih">Tarawih starts (empty means after Isyak)</label>
-                <input id="s-tarawih" value={c.ramadan.tarawihAt ?? ''} placeholder="21:15" inputMode="numeric"
-                  onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); setRamadan({ tarawihAt: isHHMM(v) ? v.padStart(5, '0') : null }) }} />
+                <TimeField id="s-tarawih" value={c.ramadan.tarawihAt} placeholder="21:15" onChange={(v) => setRamadan({ tarawihAt: v })} />
               </div>
               <div>
                 <label for="s-qiyam">Qiyamullail, last ten nights</label>
-                <input id="s-qiyam" value={c.ramadan.qiyamAt ?? ''} placeholder="03:30" inputMode="numeric"
-                  onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); setRamadan({ qiyamAt: isHHMM(v) ? v.padStart(5, '0') : null }) }} />
+                <TimeField id="s-qiyam" value={c.ramadan.qiyamAt} placeholder="03:30" onChange={(v) => setRamadan({ qiyamAt: v })} />
               </div>
               <div>
                 <label for="s-eid">Hari Raya prayer</label>
-                <input id="s-eid" value={c.ramadan.eidAt ?? ''} placeholder="08:00" inputMode="numeric"
-                  onInput={(e) => { const v = (e.target as HTMLInputElement).value.trim(); setRamadan({ eidAt: isHHMM(v) ? v.padStart(5, '0') : null }) }} />
+                <TimeField id="s-eid" value={c.ramadan.eidAt} placeholder="08:00" onChange={(v) => setRamadan({ eidAt: v })} />
               </div>
             </div>
             <label class="check"><input id="s-showtarawih" type="checkbox" checked={c.ramadan.tarawih} onChange={(e) => setRamadan({ tarawih: (e.target as HTMLInputElement).checked })} /> Show Tarawih in Ramadan</label>
@@ -268,4 +264,38 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       </div>
     </main>
   )
+}
+
+/**
+ * A text box that keeps what the person is typing, and passes up only a valid value (or null).
+ * A controlled input bound to the parsed value would wipe each half-typed "1" or "13:" on the next render.
+ */
+function TextField({ id, value, placeholder, maxLength, inputMode, parse, onChange }: {
+  id: string; value: string; placeholder?: string; maxLength?: number; inputMode?: 'numeric' | 'decimal' | 'text'
+  parse: (text: string) => string | null; onChange: (v: string | null) => void
+}) {
+  const [text, setText] = useState(value)
+  const invalid = text.trim() !== '' && parse(text) == null
+  return (
+    <input id={id} value={text} placeholder={placeholder} maxLength={maxLength} inputMode={inputMode} autoComplete="off"
+      class={invalid ? 'invalid' : ''} aria-invalid={invalid}
+      onInput={(e) => {
+        const t = (e.target as HTMLInputElement).value
+        setText(t)
+        // Half-typed or wrong text keeps the last good value; an empty box clears it.
+        const v = parse(t)
+        if (v != null || t.trim() === '') onChange(v)
+      }} />
+  )
+}
+
+const parseTime = (text: string): string | null => {
+  // iPhone number pads show "." or "," (Indonesian), never ":". "1300" works too.
+  let v = text.trim().replace(/[.,]/, ':')
+  if (/^\d{3,4}$/.test(v)) v = `${v.slice(0, -2)}:${v.slice(-2)}`
+  return isHHMM(v) ? v.padStart(5, '0') : null
+}
+
+function TimeField({ id, value, placeholder, onChange }: { id: string; value: string | null; placeholder: string; onChange: (v: string | null) => void }) {
+  return <TextField id={id} value={value ?? ''} placeholder={placeholder} maxLength={5} inputMode="decimal" parse={parseTime} onChange={onChange} />
 }

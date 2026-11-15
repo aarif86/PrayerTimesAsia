@@ -126,13 +126,13 @@ export function LevelSheet() {
         <div class="display mono" style={{ fontSize: '54px', fontWeight: 700 }}>{available ? `${tilt.toFixed(1)}°` : '-'}</div>
         <div class="headline" style={{ color: level ? 'var(--green)' : 'var(--fg)', textAlign: 'center' }}>
           {motion.state === 'needs-permission' ? 'This browser asks before sharing motion.'
-            : available ? (level ? 'Level - good for a reading' : 'Not level yet - adjust until the bubble turns green')
+            : available ? (level ? 'Level, good for a reading' : 'Not level yet. Adjust until the bubble turns green')
               : motion.state === 'starting' ? 'Waiting for the motion sensor…' : 'This device has no motion sensor.'}
         </div>
         {motion.state === 'needs-permission' && <button class="primary-btn" onClick={() => void motion.enable()}>Use motion sensor</button>}
         <p class="footnote" style={{ textAlign: 'center', opacity: 0.75 }}>
           {mode === 'flat' ? 'Lay the phone flat where the stick will stand. Within 0.5° is good.' : "Hold the phone's long edge against the stick. Within 0.5° of vertical is good."}
-          {' '}A tilt of 1° moves a 1 m stick's shadow tip by about 1.7 cm - enough to shift a reading by a minute.
+          {' '}A tilt of 1° moves a 1 m stick's shadow tip by about 1.7 cm, enough to shift a reading by a minute.
         </p>
       </div>
     </Sheet>

@@ -6,6 +6,7 @@
 
 .classic-header { display: flex; align-items: center; gap: 14px; }
 .classic-side { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.classic-side > * { max-width: 100%; }
 .controls-row { display: flex; align-self: stretch; justify-content: flex-end; gap: 8px; }
 .controls-col { position: absolute; right: 0; top: 4px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
@@ -21,6 +22,7 @@
 .date-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 1px; }
 .caps-day { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; }
 .date-line { font-size: 17px; font-weight: 600; }
+.date-main .hijri-line { white-space: normal; max-width: 100%; }
 .hijri-line { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--fg2); white-space: nowrap; }
 
 .source-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; background: var(--fill); max-width: 100%; }
@@ -137,14 +139,15 @@
 
 /* Colour Bands - always on a dark timetable, like the classic Singapore one */
 .bands-backdrop { position: fixed; inset: 0; z-index: 0; background: rgb(43, 43, 43); }
-.bands-page { color: #fff; gap: 0; --fg: #fff; --fg2: rgba(235, 235, 245, 0.82); --fill: rgba(255, 255, 255, 0.12); --accent: rgb(247, 189, 143); --gold-text: rgb(255, 214, 128);
+.bands-page { color: #fff; gap: 0; --fg: #fff; --fg2: rgba(235, 235, 245, 0.82); --fill: rgba(255, 255, 255, 0.12); --accent: rgb(247, 189, 143); --on-accent: rgba(0, 0, 0, 0.82); --gold-text: rgb(255, 214, 128);
   --glass: rgba(60, 60, 60, 0.6); --stroke: rgba(255, 255, 255, 0.1); --grade-d: rgba(255, 255, 255, 0.75); }
 .bands-top { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; padding-bottom: 12px; }
 .bands-place { display: inline-flex; align-items: center; gap: 5px; font-size: 20px; font-weight: 700; min-width: 0; }
 .bands-status { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.75); }
 .bands-date { display: flex; align-items: center; gap: 4px; padding: 0 8px; background: rgb(61, 61, 61); font-size: 17px; font-weight: 600; }
 .bands-date > button:first-child, .bands-date > button:last-child { width: 36px; height: 40px; display: flex; align-items: center; justify-content: center; }
-.bands-date-main { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; }
+.bands-date-main { flex: 1; min-width: 0; display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 6px; padding: 4px 0; line-height: 1.25; text-align: center; }
+.bands-date-main > span { white-space: nowrap; }
 .bands { flex: 1; display: flex; flex-direction: column; touch-action: pan-y; }
 .band { position: relative; display: flex; align-items: center; gap: 8px; padding: 0 var(--gutter); min-height: 64px; flex: 1 1 64px; color: #fff; text-align: left; width: 100%; }
 .band.current::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: #fff; }
@@ -283,7 +286,7 @@
 
 /* ---------- Settings & sheets ---------- */
 .settings { padding-bottom: 12px; }
-.settings .item .value { max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.settings .item .value { max-width: 55%; overflow-wrap: anywhere; }
 .settings a.item { text-decoration: none; color: var(--fg); }
 .settings .item svg { flex: none; }
 .makers-list { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; }

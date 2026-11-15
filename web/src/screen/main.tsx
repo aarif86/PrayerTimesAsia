@@ -80,6 +80,8 @@ function App() {
   const [config, setConfig] = useState<ScreenConfig | null>(initialConfig)
   const [editing, setEditing] = useState(() => !config || location.hash.includes('setup') || query.has('setup'))
   const now = useClock()
+  // The setup page is in English; the screen speaks its chosen language (screen readers, TV translation prompts).
+  useEffect(() => { document.documentElement.lang = editing || !config ? 'en' : config.lang }, [editing, config])
 
   if (editing || !config) {
     return <Setup initial={config ?? DEFAULT_CONFIG} now={now} onOpen={(c) => {

@@ -152,10 +152,18 @@ export type Phase =
 /** Without an iqamah time, "Azan now" stays up this long. */
 export const AZAN_ONLY_MS = 3 * 60_000
 
+/** Noon of the place's calendar day `days` away from `now`. Adding 24 hours misses or repeats a day when the clocks change. */
+function localNoon(now: number, days: number, c: ScreenConfig): number {
+  const tz = c.place?.tz ?? 'UTC'
+  const z = zoned(now, tz)
+  const d = new Date(Date.UTC(z.year, z.month - 1, z.day + days))
+  return zonedTime(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), 12, 0, 0, tz)
+}
+
 export function phaseAt(now: number, c: ScreenConfig, lookup: RowLookup): Phase | null {
   const today = screenDay(now, c, lookup)
   if (!today) return null
-  const yesterday = screenDay(now - 86_400_000, c, lookup)!
+  const yesterday = screenDay(localNoon(now, -1, c), c, lookup)!
   // A prayer whose azan or iqamah is in progress takes over the screen. Isyak can run past midnight.
   for (const d of [today, yesterday]) {
     for (const p of OBLIGATORY_PRAYERS) {
@@ -174,7 +182,7 @@ export function phaseAt(now: number, c: ScreenConfig, lookup: RowLookup): Phase 
   // Syuruk ends Subuh but starts no prayer: nothing is highlighted until Zohor.
   const current = passed && passed.p !== 'sunrise' ? passed.p : null
   if (upcoming) return { kind: 'waiting', current, next: upcoming.p, at: upcoming.t, day: today }
-  const tomorrow = screenDay(now + 86_400_000, c, lookup)!
+  const tomorrow = screenDay(localNoon(now, 1, c), c, lookup)!
   // After Isyak the grid shows tomorrow's times, with nothing highlighted.
   return { kind: 'waiting', current: null, next: 'fajr', at: tomorrow.day.times.fajr, day: tomorrow }
 }
@@ -193,7 +201,7 @@ export function name(p: Prayer, style: NamingStyle, friday: boolean, arabic: boo
 
 export interface Words {
   next: string; iqamah: string; azan: string; iqamahIn: string; silence: string; inPrayer: string
-  khutbah: string; imsak: string; iftar: string; ends: (n: string) => string; fullScreen: string
+  khutbah: string; khutbahIn: string; imsak: string; iftar: string; ends: (n: string) => string; fullScreen: string
   edit: string; source: string; getApp: string; noPlace: string
   nowTag: string; inTag: (d: string) => string; scan: string
   tarawih: string; afterIsha: string; qiyam: string; eid: string; ramadanDay: (n: number) => string; raya: string; takbir: string; lastTen: string
@@ -202,7 +210,7 @@ export interface Words {
 export const WORDS: Record<ScreenLanguage, Words> = {
   en: {
     next: 'Next', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah in', silence: 'Please silence your phone',
-    inPrayer: 'Prayer in progress', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Iftar', ends: (n) => `${n} ends`,
+    inPrayer: 'Prayer in progress', khutbah: 'Khutbah', khutbahIn: 'Khutbah in', imsak: 'Imsak', iftar: 'Iftar', ends: (n) => `${n} ends`,
     fullScreen: 'Press OK or click for full screen', edit: 'Edit screen', source: 'Times', getApp: 'Prayer times on your phone',
     noPlace: 'Choose the masjid\'s location to show prayer times.',
     nowTag: 'Now', inTag: (d) => `in ${d}`, scan: 'Scan for iqamah times',
@@ -211,7 +219,7 @@ export const WORDS: Record<ScreenLanguage, Words> = {
   },
   ms: {
     next: 'Seterusnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Sila senyapkan telefon bimbit anda',
-    inPrayer: 'Solat sedang didirikan', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Tamat ${n}`,
+    inPrayer: 'Solat sedang didirikan', khutbah: 'Khutbah', khutbahIn: 'Khutbah dalam', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Tamat ${n}`,
     fullScreen: 'Tekan OK atau klik untuk skrin penuh', edit: 'Ubah skrin', source: 'Waktu', getApp: 'Waktu solat di telefon anda',
     noPlace: 'Pilih lokasi masjid untuk memaparkan waktu solat.',
     nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Imbas untuk waktu iqamah',
@@ -220,7 +228,7 @@ export const WORDS: Record<ScreenLanguage, Words> = {
   },
   id: {
     next: 'Berikutnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Mohon nonaktifkan nada dering ponsel',
-    inPrayer: 'Sholat sedang berlangsung', khutbah: 'Khutbah', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Akhir ${n}`,
+    inPrayer: 'Sholat sedang berlangsung', khutbah: 'Khutbah', khutbahIn: 'Khutbah dalam', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Akhir ${n}`,
     fullScreen: 'Tekan OK atau klik untuk layar penuh', edit: 'Ubah layar', source: 'Jadwal', getApp: 'Jadwal sholat di ponsel Anda',
     noPlace: 'Pilih lokasi masjid untuk menampilkan jadwal sholat.',
     nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Pindai untuk jadwal iqamah',

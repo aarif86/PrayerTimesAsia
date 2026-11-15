@@ -192,7 +192,7 @@ export function SettingsScreen() {
       </Group>
 
       <Group title="Alerts" foot={<>
-        Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both. <b>On the web, they ring only while Prayer Times Asia is open</b> - in a tab or as an installed app.
+        Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it. Turn on either or both. <b>On the web, they ring only while Prayer Times Asia is open</b>, in a tab or as an installed app.
         For alerts when it's closed, add the times to your calendar above: your calendar rings them, reminder included.
         {perm === 'denied' && ' Notifications are blocked for this site in your browser settings.'}
       </>}>
@@ -236,7 +236,7 @@ export function SettingsScreen() {
           onChange={(v) => void setJumuah(parseInt(v, 10))} />
       </Group>
 
-      <Group title="Moving to another phone" foot="Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. It works between the web, iPhone and Android.">
+      <Group title="Moving to another phone" foot="Your places, choices and tracker history travel inside a QR code or link. No account, nothing uploaded. It works between the web, iPhone and Android.">
         <button class="item" onClick={() => openSheet({ kind: 'move-out' })}>
           <ArrowRightLeft size={20} /><span class="label">Move my settings</span><ChevronRight size={16} class="secondary" />
         </button>
@@ -265,7 +265,7 @@ export function SettingsScreen() {
         <p class="item footnote" style={{ display: 'block', lineHeight: 1.4 }}>
           Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times.
           In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it in this browser for offline use; if an authority is down, the app's own calendar feeds (built weekly from the same tables) stand in.
-          Everywhere else, and before that download, times are calculated in your browser with the country's own method - the same engine as the iOS app, checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.
+          Everywhere else, and before that download, times are calculated in your browser with the country's own method, the same engine as the iOS app, checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.
         </p>
       </Group>
 
@@ -277,7 +277,7 @@ export function SettingsScreen() {
         <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (map tiles and Overpass), which see the area you look at.</div>
       </Group>
 
-      <Group id="makers" title="From the makers" foot="Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own - no ad networks, nothing tracked.">
+      <Group id="makers" title="From the makers" foot="Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own. No ad networks, nothing tracked.">
         <div class="makers-list">{OFFERS.map((o) => <MakersCard offer={o} placement="settings" />)}</div>
         <ToggleItem label="Show offers on Prayer and Masjid" on={p.showOffers} onChange={(v) => store.update((x) => { x.showOffers = v })} />
       </Group>

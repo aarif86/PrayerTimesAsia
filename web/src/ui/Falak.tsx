@@ -34,7 +34,7 @@ export function FalakScreen() {
           <TabFalak size={38} class="accent" />
           <h1 class="h-title">Falak</h1>
         </div>
-        <p class="subhead" style={{ margin: '8px 0', opacity: 0.9 }}>Read the time and the qibla from the sun and its shadow, the way the muwaqqit did - no signal needed.</p>
+        <p class="subhead" style={{ margin: '8px 0', opacity: 0.9 }}>Read the time and the qibla from the sun and its shadow, the way the muwaqqit did. No signal needed.</p>
         <div class="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
           <span class="chip"><SunDim size={15} />Grade F · Falak</span>
           <span class="chip"><Hourglass size={14} />Pending shariah review</span>
@@ -75,7 +75,7 @@ export function SunSafety() {
   return (
     <div class="safety">
       <TriangleAlert size={26} style={{ color: 'var(--warning)', flex: 'none' }} />
-      <div class="footnote" style={{ fontWeight: 600 }}>Never look at the sun - not briefly, not through sunglasses, binoculars or your phone's camera. Look only at the shadow on the ground.</div>
+      <div class="footnote" style={{ fontWeight: 600 }}>Never look at the sun, not briefly, not through sunglasses, binoculars or your phone's camera. Look only at the shadow on the ground.</div>
     </div>
   )
 }
@@ -218,7 +218,7 @@ function ShadowStickCard({ place, now }: { place: Place; now: number }) {
   return (
     <div class="glass card">
       <CardTitle icon={<Ruler size={20} />} title="Tongkat istiwa' (shadow stick)" />
-      <p class="footnote" style={{ opacity: 0.85 }}>Stand a straight stick upright on level ground - a pen on a table works. Measure the stick and its shadow in centimetres.</p>
+      <p class="footnote" style={{ opacity: 0.85 }}>Stand a straight stick upright on level ground. A pen on a table works. Measure the stick and its shadow in centimetres.</p>
       <label class="field-row"><span>Stick height</span>
         <input type="number" inputMode="decimal" min="1" step="0.5" value={height} onInput={(e) => { const v = parseFloat((e.target as HTMLInputElement).value); if (v > 0) setHeight(v) }} /> <span class="unit">cm</span></label>
       <div class="subhead" style={{ fontWeight: 600, marginTop: '10px' }}>Today, for this stick</div>
@@ -267,7 +267,7 @@ function ReadingResult({ r, plan, height }: { r: Falak.Reading; plan: Falak.Shad
       ) : <div class="footnote">The sun never gets that low on this side of noon today. Re-measure, or check the time.</div>}
       {r.asrReached != null
         ? <div class="footnote" style={{ fontWeight: 600 }}>{r.asrReached ? `Asr (${schoolName}) has begun by your shadow: it is past ${cm(Falak.asrShadow(plan, height, school))}.` : `Asr (${schoolName}) hasn't begun by your shadow: it needs to reach ${cm(Falak.asrShadow(plan, height, school))}.`}</div>
-        : <div class="footnote" style={{ fontWeight: 600 }}>Morning reading - before zawal. {store.name('dhuhr')} has not begun.</div>}
+        : <div class="footnote" style={{ fontWeight: 600 }}>Morning reading, before zawal. {store.name('dhuhr')} has not begun.</div>}
     </div>
   )
 }
@@ -287,8 +287,8 @@ function SkySignsCard({ now }: { now: number }) {
     <div class="glass card">
       <CardTitle icon={<Sparkles size={20} />} title="Signs in the sky" />
       <p class="footnote" style={{ opacity: 0.85 }}>What the prayer times describe, so you can see them for yourself. Informational: city lights, haze and buildings hide these signs, and scholars differ on how to read dawn and twilight. Pray by your timetable.</p>
-      {sign('maghrib', <Sunset size={22} />, "The whole disc of the sun has gone below the horizon - its upper edge has disappeared. Best seen over the sea or open land; behind hills or buildings it vanishes early, so don't pray by that.")}
-      {sign('isha', <MoonStar size={22} />, "The red glow (shafaq ahmar) has gone from the western sky - the view of the Shafi'i, Maliki and Hanbali schools. Imam Abu Hanifah held it is the white glow that follows it. Timetables use the sun's depth below the horizon (about 17°-18°) instead.")}
+      {sign('maghrib', <Sunset size={22} />, "The whole disc of the sun has gone below the horizon and its upper edge has disappeared. Best seen over the sea or open land; behind hills or buildings it vanishes early, so don't pray by that.")}
+      {sign('isha', <MoonStar size={22} />, "The red glow (shafaq ahmar) has gone from the western sky. This is the view of the Shafi'i, Maliki and Hanbali schools. Imam Abu Hanifah held it is the white glow that follows it. Timetables use the sun's depth below the horizon (about 17°-18°) instead.")}
       {sign('fajr', <Sunrise size={22} />, 'True dawn (fajr sadiq): a thin whiteness spreading sideways along the eastern horizon, growing steadily. Not the false dawn (fajr kazib) before it: a faint upright column of light that fades again. Researchers still debate the exact depth of the sun at true dawn, so this stays informational.')}
     </div>
   )
