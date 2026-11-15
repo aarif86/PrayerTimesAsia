@@ -829,7 +829,7 @@ function BandsPage({ c }: { c: Ctx }) {
       </div>
       <div class="bands" {...swipe}>
         {PRAYERS.map((p) => <PrayerBand p={p} t={shown.times[p]} jamaah={shown.jamaah[p]} now={now} isCurrent={offset === 0 && p === current?.prayer}
-          next={offset === 0 && p === next?.prayer ? next : null} />)}
+          next={offset === 0 && p === next?.prayer && next.time === shown.times[p] ? next : null} />)}
         {blessed.map(([b, t]) => <BlessedBand b={b} t={t} now={now} />)}
       </div>
       <div class="bands-foot page">

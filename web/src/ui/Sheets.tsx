@@ -33,7 +33,7 @@ function fromNominatim(it: NominatimItem): Place {
   const a = it.address ?? {}
   const code = (a.country_code ?? '').toUpperCase() || null
   const lat = parseFloat(it.lat), lng = parseFloat(it.lon)
-  const tz = timeZoneForPlace(code, lng)
+  const tz = timeZoneForPlace(code, lng, lat)
   const offset = Math.round(lng / 15)
   const fallbackTz = offset === 0 ? 'Etc/GMT' : `Etc/GMT${offset > 0 ? '-' : '+'}${Math.abs(offset)}`
   return {
