@@ -51,7 +51,7 @@ for c in countries:
         f'<td class="n">{e(c.get("note", ""))}</td></tr>')
 
 cards = ''.join(
-    f'<div class="card"><b>{counts[k]}</b><h3>{e(WHO[k][0])}</h3><p>{e(WHO[k][1])}</p></div>' for k in ('table', 'authority', 'standard'))
+    f'<div class="card"><b>{counts[k]}</b><h2>{e(WHO[k][0])}</h2><p>{e(WHO[k][1])}</p></div>' for k in ('table', 'authority', 'standard'))
 
 page = f'''<!doctype html>
 <html lang="en">
@@ -77,13 +77,14 @@ page = f'''<!doctype html>
   .cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 28px 0; }}
   .card {{ background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; }}
   .card b {{ font-size: 2rem; color: var(--gold); }}
-  .card h3 {{ margin: 2px 0 6px; font-size: 1.05rem; }}
+  .card h2 {{ margin: 2px 0 6px; font-size: 1.05rem; }}
   .card p {{ margin: 0; color: var(--muted); font-size: 0.93rem; }}
   .tools {{ display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 14px; }}
   input, select {{ font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }}
   input {{ flex: 1; min-width: 220px; }}
-  .table {{ margin-bottom: 30px; overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 0.93rem; }}
+  div.table {{ margin-bottom: 30px; overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; }}
+  div.table:focus-visible {{ outline: 2px solid var(--gold); outline-offset: 2px; }}
+  table {{ width: 100%; min-width: 560px; border-collapse: collapse; font-size: 0.93rem; }}
   th, td {{ text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }}
   th {{ color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); position: sticky; top: 0; }}
   tr:last-child td {{ border-bottom: 0; }}
@@ -98,12 +99,12 @@ page = f'''<!doctype html>
   footer.wrap {{ color: var(--muted); padding: 34px 20px 100px; margin-top: 64px; border-top: 1px solid var(--line); font-size: 0.92rem; }}
   footer a, .lead a {{ color: var(--gold); }}
   header .wrap {{ display: flex; align-items: center; justify-content: space-between; gap: 12px; }}
-  header a.back {{ font-weight: 600; font-size: 0.92rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; transition: color .2s, border-color .2s; }}
+  header a.back {{ white-space: nowrap; flex-shrink: 0; font-weight: 600; font-size: 0.92rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; transition: color .2s, border-color .2s; }}
   header a.back:hover {{ color: var(--gold); border-color: var(--gold); }}
   .totop {{ position: fixed; right: 20px; bottom: 20px; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: #1a1f45; color: var(--gold); font-size: 1.3rem; cursor: pointer; display: grid; place-items: center; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .3s, transform .3s; box-shadow: 0 6px 20px rgba(0,0,0,.35); }}
   .totop.show {{ opacity: 1; transform: none; pointer-events: auto; }}
   .totop:hover {{ border-color: var(--gold); }}
-  @media (max-width: 700px) {{ td.n {{ display: none; }} th.n {{ display: none; }} }}
+  @media (max-width: 700px) {{ td.n {{ display: none; }} th.n {{ display: none; }} td.c {{ white-space: normal; }} }}
 </style>
 </head>
 <body>
@@ -121,7 +122,7 @@ page = f'''<!doctype html>
       <option value="standard">What most masjids use</option>
     </select>
   </div>
-  <div class="table"><table>
+  <div class="table" tabindex="0" role="region" aria-label="Every country and its prayer time source"><table>
     <thead><tr><th>Country</th><th>Whose times</th><th>Method</th><th>Asr</th><th class="n">Note</th></tr></thead>
     <tbody>{''.join(rows)}</tbody>
   </table></div>

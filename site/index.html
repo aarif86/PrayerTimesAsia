@@ -124,7 +124,7 @@
     .btn-ghost { background: var(--card); color: var(--text); border-color: var(--card-line); }
     .btn-ghost:hover { background: rgba(255,255,255,0.09); }
     .btn small { display: block; font-weight: 600; font-size: 0.72rem; opacity: 0.75; line-height: 1.1; }
-    .btn .two { text-align: left; line-height: 1.2; }
+    .btn .two { text-align: start; line-height: 1.2; }
     .btn-sm { padding: 10px 16px; min-height: 40px; font-size: 0.92rem; }
     .top-right { display: flex; align-items: center; gap: 10px; }
     .brand, .btn-sm { white-space: nowrap; }
@@ -364,6 +364,9 @@
     .js .strip ul { flex-wrap: nowrap; justify-content: flex-start; width: max-content; animation: marquee 34s linear infinite; }
     .strip:hover ul { animation-play-state: paused; }
     @keyframes marquee { to { transform: translateX(-50%); } }
+    /* Right to left pages (Arabic, Urdu): the list starts at the right edge, so it must slide the other way or it empties out. */
+    [dir="rtl"] .strip ul { animation-name: marquee-rtl; }
+    @keyframes marquee-rtl { to { transform: translateX(50%); } }
 
     .card, .chapter { transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s, box-shadow .35s; position: relative; overflow: hidden; }
     .card::after, .chapter::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s;
@@ -395,6 +398,7 @@
     @media (max-width: 600px) { .to-top { inset-inline-end: 16px; bottom: 16px; width: 50px; height: 50px; } }
     .progress { position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 20; transform-origin: 0 50%; transform: scaleX(0);
       background: linear-gradient(90deg, var(--gold), var(--ember), var(--rose)); }
+    [dir="rtl"] .progress { transform-origin: 100% 50%; background: linear-gradient(270deg, var(--gold), var(--ember), var(--rose)); }
 
     .tv-row div.on { animation: pulse 2.4s ease-in-out infinite; }
     @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 #f39a4a00; } 50% { box-shadow: 0 0 18px 2px #f39a4a66; } }
@@ -783,8 +787,8 @@
             <a class="btn btn-primary" href="mailto:salam@prayertimes.asia?subject=Masjid%20partnership&amp;body=Assalamualaikum%2C%0A%0AMasjid%20or%20musollah%20name%3A%0ACity%20and%20country%3A%0AMy%20role%3A%0AHow%20we%20would%20like%20to%20help%3A%0A">Become a partner masjid</a>
           </div>
         </div>
-        <div aria-hidden="true">
-          <div class="tv">
+        <div>
+          <div class="tv" aria-hidden="true">
             <div class="tv-in">
               <div class="tv-head"><span>Your masjid · Singapore</span><span>Friday 30 October · 18 Jamadilawal 1448</span></div>
               <div class="tv-now"><span>Asar iqamah in</span><b>00:12:40</b></div>
