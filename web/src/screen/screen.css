@@ -298,9 +298,9 @@ textarea { resize: vertical; }
   border: 0; border-radius: 0; color: #fff; background: var(--band); -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 .scr-look-bands .p-fajr { --band: rgb(33, 110, 92); }
-.scr-look-bands .p-sunrise { --band: rgb(143, 168, 82); }
-.scr-look-bands .p-dhuhr { --band: rgb(217, 171, 33); }
-.scr-look-bands .p-asr { --band: rgb(227, 148, 82); }
+.scr-look-bands .p-sunrise { --band: rgb(131, 154, 75); }
+.scr-look-bands .p-dhuhr { --band: rgb(179, 141, 27); }
+.scr-look-bands .p-asr { --band: rgb(220, 119, 36); }
 .scr-look-bands .p-maghrib { --band: rgb(224, 110, 84); }
 .scr-look-bands .p-isha { --band: rgb(219, 79, 89); }
 .scr-look-bands .scr-imsak { --band: rgb(75, 75, 82); }

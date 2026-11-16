@@ -155,7 +155,7 @@
 .band-name { font-size: 26px; font-weight: 700; white-space: nowrap; }
 .now-pill { font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.25); align-self: center; }
 .band-time { display: inline-flex; align-items: baseline; gap: 4px; font-size: 34px; font-weight: 300; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.band-time .sfx { font-size: 22px; }
+.band-time .sfx { font-size: 22px; font-weight: 700; }
 .band-time.small { font-size: 24px; }
 .band-time.small .sfx { font-size: 15px; }
 .blessed-band { display: flex; align-items: center; gap: 8px; padding: 6px var(--gutter); min-height: 52px; background: rgb(77, 77, 77); color: #fff; }
