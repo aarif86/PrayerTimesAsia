@@ -73,6 +73,13 @@ jobs:
         run: npm run build
         env:
           BASE_PATH: ${{ steps.pages.outputs.base }}app/
+      - name: Accessibility check (axe on every screen, Light and Dark, every look, keyboard)
+        working-directory: web
+        run: |
+          npx playwright install --with-deps chromium
+          npm run a11y
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base }}app/
       - name: Put the promo site and the app together
         env:
           BASE: ${{ steps.pages.outputs.base }}

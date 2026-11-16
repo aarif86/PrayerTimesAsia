@@ -39,13 +39,18 @@ export function QiblaScreen() {
   const isAligned = demoAligned || aligned
   const instruction = delta == null ? `Face ${Math.round(bearing)}° from north`
     : isAligned ? "You're facing the Qibla" : delta > 0 ? `Turn right ${Math.round(Math.abs(delta))}°` : `Turn left ${Math.round(Math.abs(delta))}°`
+  // Spoken in steps of 10 degrees, so a screen reader is not interrupted at every degree.
+  const step = delta == null ? 0 : Math.max(10, Math.round(Math.abs(delta) / 10) * 10)
+  const spoken = delta == null ? instruction
+    : isAligned ? instruction : `${delta > 0 ? 'Turn right' : 'Turn left'}, about ${step}°`
   const hasCompass = demoAligned || compass.state === 'active'
 
   return (
     <div class="page qibla">
       <div class="qibla-head">
         <h1 class="h-title">Qibla</h1>
-        <div class={`qibla-instruction ${isAligned ? 'ok' : ''}`} aria-live="polite">{instruction}</div>
+        <div class={`qibla-instruction ${isAligned ? 'ok' : ''}`} aria-hidden="true">{instruction}</div>
+        <span class="sr-only" aria-live="polite">{spoken}</span>
         <button class="chip" onClick={() => s.setTab('falak')} aria-label="Falak Mode: find the qibla from the sun"><Sun size={15} fill="currentColor" />Check with the sun</button>
       </div>
       <QiblaDial bearing={bearing} heading={heading != null ? dial.current.heading : 0} delta={delta} aligned={isAligned} />
