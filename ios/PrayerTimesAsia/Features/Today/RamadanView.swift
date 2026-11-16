@@ -123,7 +123,7 @@ struct SeasonCard: View {
 
     private func ramadanCard(_ s: Season.Info) -> some View {
         let key = model.civil(now).key
-        let mark = model.prefs.fastLog[key]
+        let mark = model.fastMark(key)
         let moment = model.fastingMoment(now)
         return VStack(alignment: .leading, spacing: 10) {
             Button { showPage = true } label: {
@@ -312,7 +312,7 @@ struct RamadanView: View {
 
     @ViewBuilder private func fastToday(_ now: Date) -> some View {
         let key = model.civil(now).key
-        let mark = model.prefs.fastLog[key]
+        let mark = model.fastMark(key)
         rowOrColumn(typeSize.isAccessibilitySize, spacing: 6).callAsFunction {
             SeasonChip(title: t(.imFastingToday), icon: mark == .fasted ? "checkmark" : "fork.knife", on: mark == .fasted) {
                 model.setFast(key, mark == .fasted ? nil : .fasted)
@@ -343,7 +343,7 @@ struct RamadanView: View {
             Section {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 6), spacing: 6) {
                     ForEach(Array(days.enumerated()), id: \.offset) { i, d in
-                        let m = model.prefs.fastLog[d.key]
+                        let m = model.fastMark(d.key)
                         Button {
                             let at = Self.cycle.firstIndex(where: { $0 == m }) ?? 0
                             model.setFast(d.key, Self.cycle[(at + 1) % Self.cycle.count])
@@ -513,7 +513,7 @@ struct RamadanView: View {
             }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 6), spacing: 6) {
                 ForEach(Array(days.enumerated()), id: \.offset) { i, d in
-                    let m = model.prefs.fastLog[d.key]
+                    let m = model.fastMark(d.key)
                     Button {
                         let at = Self.syawalCycle.firstIndex(where: { $0 == m }) ?? 0
                         model.setFast(d.key, Self.syawalCycle[(at + 1) % Self.syawalCycle.count])
@@ -535,8 +535,8 @@ struct RamadanView: View {
             .padding(.vertical, 4)
             if sum.owed > 0 && s.phase != .raya {
                 let key = today.key
-                Button { model.setFast(key, model.prefs.fastLog[key] == .qadha ? nil : .qadha) } label: {
-                    Label(model.prefs.fastLog[key] == .qadha ? t(.replacedToday) : t(.iReplacedToday), systemImage: "checkmark")
+                Button { model.setFast(key, model.fastMark(key) == .qadha ? nil : .qadha) } label: {
+                    Label(model.fastMark(key) == .qadha ? t(.replacedToday) : t(.iReplacedToday), systemImage: "checkmark")
                 }
             }
         } header: {

@@ -6,6 +6,7 @@ import { openWindow, type PrayerWindow } from '../core/window'
 import { distanceKm, KAABA } from '../core/geo'
 import { formatHijriDate, gregorianFromHijri, type HijriDate } from '../core/hijri'
 import { MISSED, type FastMark } from '../core/ramadanContent'
+import { endPauseLinked, fastMarkFor, pauseLinked, setFastLinked, toggleExcusedLinked } from '../core/womensDays'
 import { addDays, authorityDate, baseHijri, civilKey, communityHijri, daysApart, parseCivil, previewShift, seasonFor, type CivilDay, type Season } from '../core/season'
 import { masjidProfile, MY_MASJID_RADIUS_KM, parseMasjidLink, type MasjidLink } from '../core/masjidLink'
 import { methodWithId, type CalculationMethod } from '../core/methods'
@@ -393,11 +394,22 @@ class AppStore {
 
   // Fasting log, kept on this device only.
 
-  fastMark(key: string): FastMark | null { return this.prefs.fastLog[key] ?? null }
+  /** How a fast day went. An unmarked Ramadan day inside a tracker pause reads as "Period" (core/womensDays.ts). */
+  fastMark(key: string): FastMark | null {
+    return fastMarkFor(this.prefs, key, this.dayKey(this.now()), this.isRamadanKey)
+  }
 
+  /** Is this "yyyy-MM-dd" a Ramadan day for this community. */
+  readonly isRamadanKey = (key: string): boolean => {
+    const g = parseCivil(key)
+    return !!g && this.hijriOfCivil(g).month === 9
+  }
+
+  /** Marking "Period" pauses the tracker too, and changing it back undoes both. */
   setFast(key: string, mark: FastMark | null): void {
+    const today = this.dayKey(this.now())
     this.update((p) => {
-      if (mark) p.fastLog[key] = mark; else delete p.fastLog[key]
+      setFastLinked(p, key, mark, today, this.isRamadanKey)
       const keys = Object.keys(p.fastLog).sort()
       if (keys.length > 800) delete p.fastLog[keys[0]]
     })
@@ -436,7 +448,7 @@ class AppStore {
     for (const d of days) {
       const k = civilKey(d)
       if (k > todayKey) break
-      const m = this.prefs.fastLog[k]
+      const m = this.fastMark(k)
       if (m === 'fasted') fasted++
       else if (m && MISSED.includes(m)) missed++
     }
@@ -520,27 +532,22 @@ class AppStore {
   get trackerPaused(): boolean { return !!this.prefs.trackerPausedSince }
 
   /** Pause for haid, nifas or illness: today and every day until it's ended count as excused, so the streak waits. */
+  /** In Ramadan the paused days read as "Period" in the fast record too. */
   pauseTracker(ms: number): void {
     const key = this.dayKey(ms)
-    this.update((p) => { p.trackerPausedSince = key })
+    this.update((p) => { pauseLinked(p, key) })
   }
 
-  /** End the pause: the paused days are kept as excused days, today included. */
+  /** End the pause: the paused days are kept as excused days, today included, and as "Period" fasts in Ramadan. */
   endTrackerPause(ms: number): void {
-    const since = this.prefs.trackerPausedSince
-    if (!since) return
+    if (!this.prefs.trackerPausedSince) return
     const today = this.dayKey(ms)
-    this.update((p) => {
-      p.excusedDays = [...new Set([...p.excusedDays, ...daysFrom(since, today)])].sort()
-      p.trackerPausedSince = null
-    })
+    this.update((p) => { endPauseLinked(p, today, this.isRamadanKey) })
   }
 
   toggleExcused(ms: number): void {
     const key = this.dayKey(ms)
-    this.update((p) => {
-      p.excusedDays = p.excusedDays.includes(key) ? p.excusedDays.filter((k) => k !== key) : [...p.excusedDays, key]
-    })
+    this.update((p) => { toggleExcusedLinked(p, key, this.isRamadanKey) })
   }
 
   /** Consecutive days with all five prayers marked (or excused); an unfinished today doesn't break it. */
