@@ -2,7 +2,7 @@ package com.prayertimesasia.app
 
 import android.content.Context
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.isRoot
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
@@ -62,7 +62,9 @@ class AccessibilityTest {
         setup(s)
         compose.setContent { PrayerTimesRoot(s) }
         compose.waitForIdle()
-        compose.onRoot().checkRoboAccessibility(options)
+        // A sheet opens in its own window, so check every window on screen.
+        val roots = compose.onAllNodes(isRoot()).fetchSemanticsNodes().size
+        for (i in 0 until roots) compose.onAllNodes(isRoot())[i].checkRoboAccessibility(options)
     }
 
     // The Prayer screen in each style, Dark at night and Light by day.
