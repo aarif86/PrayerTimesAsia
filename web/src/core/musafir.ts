@@ -73,6 +73,8 @@ export function musafirDistanceCheck(status: MusafirStatus, rules: MusafirRules)
   const limit = Math.trunc(rules.thresholdKm)
   if (status.kind === 'home') return null
   const km = Math.round(status.distanceKm).toLocaleString('en')
-  if (status.kind === 'nearby') return { counts: false, text: `You are ${km} km from home. That is less than ${limit} km, so this trip does not count as travel yet.` }
+  // Round down when short of the limit, so 80.6 km never reads "81 km, less than 81 km".
+  const shortKm = Math.floor(status.distanceKm).toLocaleString('en')
+  if (status.kind === 'nearby') return { counts: false, text: `You are ${shortKm} km from home. That is less than ${limit} km, so this trip does not count as travel yet.` }
   return { counts: true, text: `You are ${km} km from home. That is more than ${limit} km, so this trip counts as travel.` }
 }

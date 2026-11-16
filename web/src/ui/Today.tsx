@@ -11,6 +11,7 @@ import { isObligatory, PRAYERS, type Prayer } from '../core/prayer'
 import { LONG_DAYS_WORDS } from '../core/longDays'
 import { lang3 } from '../core/ramadanContent'
 import { flag } from '../core/regions'
+import { noonDaysAfter } from '../core/tz'
 import { nudgeAt } from '../core/window'
 import { alertSupport, requestPermission } from '../services/notifications'
 import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '../services/prefs'
@@ -72,7 +73,7 @@ export function TodayScreen() {
   const setShowMore = (v: boolean) => { setShowMoreState(v); if (!s.demo) writeString('today.showMore', v ? '1' : '0') }
   const day = s.day(now)
   if (!day) return <NoPlace />
-  const shown = offset === 0 ? day : s.day(now + offset * 86_400_000) ?? day
+  const shown = offset === 0 ? day : s.day(noonDaysAfter(now, offset, s.timeZone)) ?? day
   const ctx: Ctx = {
     now, day, shown, offset, setOffset, showMore, setShowMore, showToast,
     current: s.current(now), next: s.next(now),
