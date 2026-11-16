@@ -224,6 +224,6 @@ button.link { background: none; border: 0; padding: 0; min-height: 32px; color: 
 .lt-cell span { font-size: 9pt; color: var(--ink2); }
 .lt-cell b { font-family: var(--font-display); font-size: 14pt; color: var(--ink); }
 .letter-signoff { margin-top: 5mm !important; }
-.letter-sign { display: flex; gap: 8mm; margin-top: 12mm; }
+.letter-sign { display: flex; gap: 8mm; margin-top: 8mm; }
 .letter-sign div { display: flex; flex-direction: column; gap: 1mm; }
 .letter-sign small { font-size: 8.5pt; color: var(--ink2); }
