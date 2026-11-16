@@ -175,7 +175,8 @@ fun MusafirButton(state: AppState, background: Color = Palette.accent.copy(alpha
 /** Musafir, streak, appearance and style: the Prayer screen's buttons. */
 @Composable
 fun HeaderButtons(state: AppState, showMusafir: Boolean = true, background: Color = Palette.primary.copy(alpha = 0.1f)) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+    // 14 dp apart, so each 34 dp button keeps a full 48 dp touch area of its own.
+    Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
         if (showMusafir && state.prefs.musafirEnabled && state.resolver.musafirStatus(state.now)?.isTraveller == true) {
             MusafirButton(state, if (background == Palette.primary.copy(alpha = 0.1f)) Palette.accent.copy(alpha = 0.25f) else background)
         }

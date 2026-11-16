@@ -283,7 +283,7 @@ private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -
                     Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 148.dp,
                     Modifier.align(Alignment.Center))
             }
-            Column(Modifier.align(Alignment.TopEnd).padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
+            Column(Modifier.align(Alignment.TopEnd).padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 if (f.state.prefs.musafirEnabled && f.state.prefs.musafirChipDismissed && f.state.resolver.musafirStatus(f.now)?.isTraveller == true) {
                     MusafirButton(f.state)

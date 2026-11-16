@@ -70,6 +70,12 @@ android {
             all {
                 it.maxHeapSize = "4g"
                 it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
+                // Print the whole failure (accessibility results list every problem) in the build log.
+                it.testLogging {
+                    events("failed")
+                    exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                    showStackTraces = false
+                }
             }
         }
     }
