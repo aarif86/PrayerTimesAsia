@@ -198,7 +198,7 @@ struct WakeUpView: View {
     private func timeToday(_ date: (PrayerDay) -> Date) -> String? {
         let now = Date.now
         for offset in 0..<2 {
-            if let day = model.day(containing: now.addingTimeInterval(Double(offset) * 86_400)) {
+            if let day = model.day(containing: model.noon(now, plus: offset)) {
                 let t = date(day)
                 if t > now { return model.formatted(t) }
             }

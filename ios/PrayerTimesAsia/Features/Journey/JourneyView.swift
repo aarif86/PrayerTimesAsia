@@ -121,7 +121,7 @@ struct JourneyView: View {
     /// Today's combined (jamak) windows from the times on the Today screen.
     @ViewBuilder
     private var combinedCard: some View {
-        if let today = model.day(containing: .now), let tomorrow = model.day(containing: .now.addingTimeInterval(86_400)) {
+        if let today = model.day(containing: .now), let tomorrow = model.day(containing: model.noon(.now, plus: 1)) {
             GlassCard {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {

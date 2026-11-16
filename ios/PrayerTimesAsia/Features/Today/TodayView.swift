@@ -38,7 +38,7 @@ struct TodayView: View {
         let sky = SkyColors.at(now, day: day)
         let next = model.next(after: now)
         let current = model.current(at: now)
-        let shown = dayOffset == 0 ? day : (model.day(containing: now.addingTimeInterval(Double(dayOffset) * 86_400)) ?? day)
+        let shown = dayOffset == 0 ? day : (model.day(containing: model.noon(now, plus: dayOffset)) ?? day)
 
         ZStack {
             LivingSkyBackground(colors: sky)
@@ -187,7 +187,7 @@ struct TodayView: View {
     @ViewBuilder
     private func headerDial(now: Date, day: PrayerDay, current: (prayer: Prayer, time: Date)?,
                             next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
-        if let current, let next, let tomorrow = model.day(containing: now.addingTimeInterval(86_400)) {
+        if let current, let next, let tomorrow = model.day(containing: model.noon(now, plus: 1)) {
             DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
                     currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
                     currentPrayer: current.prayer,
@@ -574,7 +574,7 @@ struct TodayView: View {
                             current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             ZStack(alignment: .topTrailing) {
-                if let current, let next, let tomorrow = model.day(containing: now.addingTimeInterval(86_400)) {
+                if let current, let next, let tomorrow = model.day(containing: model.noon(now, plus: 1)) {
                     DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
                             currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
                             currentPrayer: current.prayer,
