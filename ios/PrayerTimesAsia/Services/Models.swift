@@ -377,6 +377,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var fastLog: [String: FastMark] = [:]
     /// Days Tarawih was prayed.
     var tarawihLog: Set<String> = []
+    /// How many rakaat of Tarawih the user prays (8 or 20), for the counter; nil until they choose.
+    var tarawihRakaat: Int?
     /// Days the day's juz was read.
     var quranLog: Set<String> = []
     /// Hijri years zakat fitrah was paid.
@@ -467,6 +469,8 @@ struct Preferences: Codable, Equatable, Sendable {
         khatamPlan = v(.khatamPlan, d.khatamPlan)
         fastLog = v(.fastLog, d.fastLog)
         tarawihLog = v(.tarawihLog, d.tarawihLog)
+        tarawihRakaat = v(.tarawihRakaat, d.tarawihRakaat)
+        if let n = tarawihRakaat, !Tarawih.choices.contains(n) { tarawihRakaat = nil }
         quranLog = v(.quranLog, d.quranLog)
         zakatPaid = v(.zakatPaid, d.zakatPaid)
         windowNudge = v(.windowNudge, d.windowNudge)

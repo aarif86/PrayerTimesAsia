@@ -227,6 +227,9 @@ struct RamadanView: View {
     @State private var openDoa: Doa.ID?
     @State private var showMissed = false
     @State private var rayaFrom = ""
+    /// Tarawih counter: rakaat done tonight (only on this screen), and the 8 or 20 picker.
+    @State private var tarawihDone = 0
+    @State private var choosingRakaat = false
 
     private var lang: RamadanContent.Lang { RamadanContent.lang(model.naming) }
     private var t: RamadanWords.In { RamadanWords.In(lang) }
@@ -250,6 +253,7 @@ struct RamadanView: View {
                         rayaShare
                     } else {
                         ramadanToday(now, season)
+                        if season.phase == .ramadan { tarawihSection(now) }
                         monthSection(now, year: season.hijri.year)
                         lastTenSection(now, year: season.hijri.year)
                         doaSection([.niatPuasa, .berbuka, .berbukaHadith, .qadr])
@@ -297,6 +301,74 @@ struct RamadanView: View {
                     HadithView(id: .iftar, tag: model.fastingMoment(now)?.kind == .berbuka ? t(.beforeBerbuka) : nil).hadithRow()
                 }
             }
+        }
+    }
+
+    /// Tarawih: the user picks 8 or 20 rakaat the first time (the app never says which
+    /// is right), then taps the big button after each salam. Reaching the total ticks
+    /// tonight's Tarawih.
+    @ViewBuilder private func tarawihSection(_ now: Date) -> some View {
+        let key = model.civil(now).key
+        Section {
+            if let total = model.prefs.tarawihRakaat, !choosingRakaat {
+                let complete = tarawihDone >= total
+                Button {
+                    tarawihDone = Tarawih.tap(tarawihDone, total: total)
+                    if tarawihDone == total, !model.prefs.tarawihLog.contains(key) { model.prefs.tarawihLog.insert(key) }
+                } label: {
+                    VStack(spacing: 10) {
+                        (Text("\(min(tarawihDone, total))").font(.system(size: 56, weight: .bold, design: .rounded))
+                            + Text(" / \(total)").font(.system(size: 28, weight: .semibold, design: .rounded)).foregroundColor(.secondary))
+                            .monospacedDigit()
+                        HStack(spacing: 6) {
+                            ForEach(0..<Tarawih.sets(total), id: \.self) { i in
+                                Circle().strokeBorder(lineWidth: 2).background(Circle().fill(i < tarawihDone / 2 ? Color.primary : .clear))
+                                    .frame(width: 12, height: 12)
+                            }
+                        }
+                        Text(complete ? t(.tarawihDone) : t(.tarawihTapHint)).font(.subheadline)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 180)
+                    .background(complete ? Color.green.opacity(0.3) : Color.purple.opacity(0.18), in: RoundedRectangle(cornerRadius: 22))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .sensoryFeedback(.increase, trigger: tarawihDone)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(t(.tarawihProgress, ["d": min(tarawihDone, total), "n": total]))
+                .accessibilityHint(complete ? t(.tarawihDone) : t(.tarawihTapHint))
+                .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
+                HStack {
+                    Button(t(.tarawihUndo)) { tarawihDone = Tarawih.undo(tarawihDone) }.disabled(tarawihDone == 0)
+                    Spacer()
+                    Button(t(.tarawihRestart)) { tarawihDone = 0 }.disabled(tarawihDone == 0)
+                    Spacer()
+                    Button("\(t(.rakaatN, ["n": total])) · \(t(.tarawihChange))") { choosingRakaat = true }
+                }
+                .buttonStyle(.borderless)
+                .font(.subheadline)
+            } else {
+                Text(t(.tarawihHowMany))
+                HStack(spacing: 10) {
+                    ForEach(Tarawih.choices, id: \.self) { n in
+                        Button {
+                            model.prefs.tarawihRakaat = n
+                            tarawihDone = 0
+                            choosingRakaat = false
+                        } label: {
+                            Text(t(.rakaatN, ["n": n])).font(.headline)
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                                .background(model.prefs.tarawihRakaat == n ? Color.green.opacity(0.35) : Color.primary.opacity(0.08), in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(model.prefs.tarawihRakaat == n ? .isSelected : [])
+                    }
+                }
+            }
+        } header: {
+            Text(t(.tarawihCounter))
+        } footer: {
+            if model.prefs.tarawihRakaat == nil || choosingRakaat { Text(t(.tarawihChangeLater)) }
         }
     }
 

@@ -66,6 +66,8 @@ struct MovedSettings: Codable, Equatable {
     var fastLog: [String: FastMark]?
     var tarawihLog: [String]?
     var quranLog: [String]?
+    /// The Tarawih counter's 8 or 20 rakaat.
+    var tarawihRakaat: Int?
 
     static let version = 1
     static let prefix = "PTA1."
@@ -127,6 +129,7 @@ struct MovedSettings: Codable, Equatable {
         }
         tarawihLog = (try? c.decodeIfPresent([Lenient<String>].self, forKey: .tarawihLog))?.map { $0.compactMap { $0.value } }
         quranLog = (try? c.decodeIfPresent([Lenient<String>].self, forKey: .quranLog))?.map { $0.compactMap { $0.value } }
+        tarawihRakaat = field(.tarawihRakaat)
     }
 
     private struct Lenient<T: Decodable>: Decodable {
@@ -195,6 +198,7 @@ extension MovedSettings {
         fastLog = p.fastLog.isEmpty ? nil : p.fastLog
         tarawihLog = p.tarawihLog.isEmpty ? nil : p.tarawihLog.sorted()
         quranLog = p.quranLog.isEmpty ? nil : p.quranLog.sorted()
+        tarawihRakaat = p.tarawihRakaat
     }
 
     /// These preferences with the moved settings in place. Every moved setting
@@ -249,6 +253,7 @@ extension MovedSettings {
         for (day, mark) in fastLog ?? [:] where Self.isDay(day) { out.fastLog[day] = mark }
         out.tarawihLog.formUnion((tarawihLog ?? []).filter(Self.isDay))
         out.quranLog.formUnion((quranLog ?? []).filter(Self.isDay))
+        out.tarawihRakaat = tarawihRakaat.flatMap { Tarawih.choices.contains($0) ? $0 : nil }
         return out
     }
 
