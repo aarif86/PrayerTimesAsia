@@ -17,12 +17,16 @@ enum WidgetBridge {
     static func snapshot(_ model: AppModel) -> WidgetSnapshot? {
         guard let place = model.activePlace else { return nil }
         var days: [WidgetSnapshot.Day] = []
+        var fasts: [WidgetSnapshot.Fast] = []
         for offset in 0..<7 {
             guard let d = model.day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
             var times: [String: Date] = [:]
             for p in Prayer.allCases { times[p.rawValue] = d.time(p) }
             days.append(.init(year: d.year, month: d.month, day: d.day, times: times))
+            // Announced dates when there are, the estimate otherwise, and "Try Ramadan" for testers.
+            if model.isRamadanDay(d.time(.dhuhr)) { fasts.append(.init(imsak: model.imsak(d), berbuka: d.time(.maghrib))) }
         }
+        let words = RamadanWords.In(RamadanContent.lang(model.naming))
         let today = model.day(containing: .now)
         let snapshot = WidgetSnapshot(
             placeName: place.name,
@@ -34,7 +38,9 @@ enum WidgetBridge {
             days: days,
             updated: .now,
             hijriAdjustment: model.prefs.hijriAdjustment,
-            style: model.prefs.todayStyle)
+            style: model.prefs.todayStyle,
+            fasts: fasts,
+            fastWords: .init(imsak: words(.imsak), berbuka: words(.berbuka)))
         return snapshot
     }
 }
@@ -53,12 +59,20 @@ enum LiveCountdown {
             end(running)
             return
         }
-        let state = PrayerActivityAttributes.ContentState(
+        var state = PrayerActivityAttributes.ContentState(
             prayerName: next.prayer.name(model.naming, isFriday: model.isFriday(next.time)),
             symbol: next.prayer.symbol,
             time: next.time,
             timeText: model.formatted(next.time))
-        let content = ActivityContent(state: state, staleDate: next.time.addingTimeInterval(15 * 60))
+        // Ramadan: Berbuka through the fasting day, Imsak at night, as on the Ramadan card.
+        if let fast = model.fastingMoment(.now) {
+            let words = RamadanWords.In(RamadanContent.lang(model.naming))
+            state = .init(prayerName: fast.kind == .imsak ? words(.imsak) : words(.berbuka),
+                          symbol: fast.kind == .imsak ? Prayer.fajr.symbol : Prayer.maghrib.symbol,
+                          time: fast.time,
+                          timeText: model.formatted(fast.time))
+        }
+        let content = ActivityContent(state: state, staleDate: state.time.addingTimeInterval(15 * 60))
 
         if let current = running.first, current.attributes.placeName == place.name {
             if current.content.state != state {
