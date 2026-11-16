@@ -126,7 +126,7 @@ struct TodayView: View {
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             prayerHadith(next)
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-            if dayOffset == 0 { SeasonCard(now: now) }
+            if dayOffset == 0 { TodayNotes(now: now) }
             PrayerList(day: shown, now: now,
                        current: dayOffset == 0 ? current?.prayer : nil,
                        next: dayOffset == 0 ? next : nil,
@@ -281,7 +281,7 @@ struct TodayView: View {
             topBar(now)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-            if dayOffset == 0 { SeasonCard(now: now) }
+            if dayOffset == 0 { TodayNotes(now: now) }
             dateHeader(shown)
             dial(now: now, shown: shown, current: current, next: next)
                 .padding(.horizontal, 8 - Theme.gutter)
@@ -494,7 +494,7 @@ struct TodayView: View {
                 }
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-                if dayOffset == 0 { SeasonCard(now: now) }
+                if dayOffset == 0 { TodayNotes(now: now) }
             }
             .padding(.horizontal, Theme.gutter)
             .padding(.top, 4).padding(.bottom, 12)
@@ -598,7 +598,7 @@ struct TodayView: View {
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             prayerHadith(next)
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-            if dayOffset == 0 { SeasonCard(now: now) }
+            if dayOffset == 0 { TodayNotes(now: now) }
             if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
             sunDayNavigator(shown)
             PrayerList(day: shown, now: now,
@@ -643,7 +643,7 @@ struct TodayView: View {
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 prayerHadith(next)
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-                if dayOffset == 0 { SeasonCard(now: now) }
+                if dayOffset == 0 { TodayNotes(now: now) }
                 if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
                 sunDayNavigator(shown)
                 PrayerList(day: shown, now: now,
@@ -1421,6 +1421,47 @@ private struct BlessedBand: View {
         .opacity(time <= now ? 0.7 : 1)
         .transition(.opacity.combined(with: .move(edge: .top)))
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// The long summer days note, then the Ramadan and Syawal card. One view, so the
+/// Prayer pages' types stay as shallow as before.
+private struct TodayNotes: View {
+    let now: Date
+
+    var body: some View {
+        LongDaysNote(now: now)
+        SeasonCard(now: now)
+    }
+}
+
+/// Far from the equator in summer: why Fajr and Isha look unusual. Once per place and summer, closable.
+private struct LongDaysNote: View {
+    @Environment(AppModel.self) private var model
+    let now: Date
+
+    var body: some View {
+        if let key = model.longDaysNote(now) {
+            let w = LongDays.words(RamadanContent.lang(model.naming))
+            GlassCard {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "sun.max.fill").font(.title2).foregroundStyle(Theme.accent)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(w.title).font(.headline)
+                        Text(w.body(Prayer.fajr.name(model.naming), Prayer.isha.name(model.naming)))
+                            .font(.subheadline)
+                            .opacity(0.85)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                    Button { withAnimation(.snappy) { model.closeLongDaysNote(key) } } label: {
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).padding(6)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(w.close)
+                }
+            }
+        }
     }
 }
 

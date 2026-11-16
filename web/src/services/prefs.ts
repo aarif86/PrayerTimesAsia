@@ -54,6 +54,8 @@ export interface Preferences {
   arrivalBannerDismissed: boolean
   /** The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival. */
   musafirChipDismissed: boolean
+  /** Long summer days notes closed, one per place and summer (core/longDays.ts longDaysKey). Stays on this device. */
+  longDaysClosed: string[]
   trip: TripStop[]
   trackerEnabled: boolean
   prayedLog: Record<string, Prayer[]>
@@ -148,6 +150,7 @@ export const DEFAULT_PREFS: Preferences = {
   arrivedAt: null,
   arrivalBannerDismissed: true,
   musafirChipDismissed: false,
+  longDaysClosed: [],
   trip: [],
   trackerEnabled: false,
   prayedLog: {},
@@ -244,6 +247,7 @@ export function decodePreferences(raw: unknown): Preferences {
     if (Array.isArray(d)) {
       if (!Array.isArray(v)) continue
       if (key === 'savedPlaces') (out as unknown as Record<string, unknown>)[key] = v.filter(isPlace)
+      else if (key === 'longDaysClosed') (out as unknown as Record<string, unknown>)[key] = v.filter((x) => typeof x === 'string').slice(-30)
       else if (key === 'sahurDays') (out as unknown as Record<string, unknown>)[key] = SAHUR_DAYS.filter((d) => v.includes(d))
       else (out as unknown as Record<string, unknown>)[key] = v
       continue

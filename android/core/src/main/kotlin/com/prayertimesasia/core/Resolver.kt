@@ -244,6 +244,21 @@ class Resolver(
 
     fun civil(instant: Instant): LocalDate = instant.atZone(zone).toLocalDate()
 
+    /**
+     * The long summer days note: its key when today's Fajr and Isha come from a high
+     * latitude rule (twilight lasts all night) and the note for this place and summer
+     * hasn't been closed. Only for calculated times; an official timetable sets its own.
+     */
+    fun longDaysNote(now: Instant): String? {
+        val place = activePlace ?: return null
+        if (officialSource != null) return null
+        val d = civil(now)
+        val c = place.coordinates
+        if (!LongDays.twilightLastsAllNight(d.year, d.monthValue, d.dayOfMonth, c.latitude, method)) return null
+        val key = LongDays.key(d.year, d.monthValue, c.latitude, c.longitude, place.countryCode)
+        return if (key in prefs.longDaysClosed) null else key
+    }
+
     val isSeasonPreview: Boolean get() = prefs.seasonPreview != SeasonPreview.OFF
 
     /** Days the tester's "Try Ramadan" moves the calendar by (0 when off). */
