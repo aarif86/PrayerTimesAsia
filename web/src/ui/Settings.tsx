@@ -16,7 +16,8 @@ import { canInstall, install, isStandalone, phoneAppOffer } from './pwa'
 import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { daysToRamadan } from './Ramadan'
 
-export const VERSION = '1.0.0 (web)'
+import { VERSION } from './version'
+export { VERSION }
 
 /** Every half hour of the day, in minutes past midnight. */
 const HALF_HOURS = Array.from({ length: 48 }, (_, i) => i * 30)

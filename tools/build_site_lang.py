@@ -80,6 +80,10 @@ work = re.sub(r'\x00(\d+)\x00', lambda m: kept[int(m.group(1))], work)
 # The page lives one folder down: fix relative links (not #anchors, mailto or full URLs).
 work = re.sub(r'\b(href|src)="(?!https?:|mailto:|#|/|data:)([^"]*)"',
               lambda m: f'{m.group(1)}="../{m.group(2)}"', work)
+work = re.sub(r'\bsrcset="([^"]*)"',
+              lambda m: 'srcset="' + ', '.join(
+                  c if re.match(r'(https?:|/|data:)', c) else '../' + c
+                  for c in (part.strip() for part in m.group(1).split(','))) + '"', work)
 work = work.replace('url("fonts/', 'url("../fonts/')
 work = work.replace('<html lang="en">', f'<html lang="{lang}"' + (' dir="rtl"' if lang in RTL else '') + '>', 1)
 if table.get('_head'):
