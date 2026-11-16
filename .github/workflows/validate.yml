@@ -30,5 +30,7 @@ jobs:
         run: python3 tools/gen_countries.py --check
       - name: Check the Ramadan words match data/ramadan-words.json
         run: python3 tools/build_ramadan_words.py --check
+      - name: Check the shared app words in data/app-words
+        run: python3 tools/check_app_words.py
       - name: Compare with official timetables
         run: python3 tools/validate_official.py ${{ github.event.inputs.zones }}
