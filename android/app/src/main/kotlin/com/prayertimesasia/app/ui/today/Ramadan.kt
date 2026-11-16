@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -404,7 +405,7 @@ private fun TarawihCounter(state: AppState) {
     val t = words(state)
     val key = r.civil(state.now).toString()
     val total = state.prefs.tarawihRakaat
-    var done by remember { mutableStateOf(0) }
+    var done by rememberSaveable { mutableStateOf(0) }
     var choosing by remember { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
     SectionHeader(t(RamadanWordKey.tarawihCounter))

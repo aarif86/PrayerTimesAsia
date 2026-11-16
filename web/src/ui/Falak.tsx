@@ -7,7 +7,7 @@ import * as Falak from '../core/falak'
 import { compassPoint, qiblaBearing } from '../core/geo'
 import type { Place } from '../core/place'
 import type { Prayer } from '../core/prayer'
-import { daysBetween, zoned, zonedTime } from '../core/tz'
+import { daysBetween, noonDaysAfter, zoned, zonedTime } from '../core/tz'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { fmtDate, openSheet } from './common'
@@ -166,7 +166,7 @@ function RashdulCard({ place, now }: { place: Place; now: number }) {
   let next: Falak.Alignment | null = null
   if (!today.length) {
     for (let off = 1; off <= 60 && !next; off++) {
-      const [yy, mm, dd] = ymd(now + off * 86_400_000)
+      const [yy, mm, dd] = ymd(noonDaysAfter(now, off, store.timeZone))
       next = Falak.rashdulQiblat(yy, mm, dd, store.timeZone, place.coordinates)[0] ?? null
     }
   }

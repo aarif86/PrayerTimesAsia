@@ -47,7 +47,7 @@ function whenText(now: number, at: number): string {
   const tz = store.timeZone
   const key = (ms: number) => new Date(ms).toLocaleDateString('en-CA', { timeZone: tz })
   if (key(at) === key(now)) return 'today'
-  if (key(at) === key(now + 86_400_000)) return 'tomorrow'
+  if (key(at) === key(noonDaysAfter(now, 1, tz))) return 'tomorrow'
   return new Date(at).toLocaleDateString('en-GB', { weekday: 'long', timeZone: tz })
 }
 

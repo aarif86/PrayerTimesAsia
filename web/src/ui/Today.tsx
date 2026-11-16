@@ -500,7 +500,7 @@ function DateBlock({ c }: { c: Ctx }) {
 
 function SmallDial({ c, size }: { c: Ctx; size: number }) {
   const { now, day, current, next } = c
-  const tomorrow = store.day(now + 86_400_000)
+  const tomorrow = store.day(noonDaysAfter(now, 1, store.timeZone))
   if (!current || !next || !tomorrow) return <div style={{ width: `${size}px`, height: `${size}px` }} />
   return (
     <DayDial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}

@@ -27,9 +27,21 @@ const MasjidLinkSheet = later(() => import('./MyMasjid').then((m) => m.MasjidLin
 const MoveInSheet = later(() => import('./Move').then((m) => m.MoveInSheet))
 const MoveOutSheet = later(() => import('./Move').then((m) => m.MoveOutSheet))
 
+/**
+ * A lazy piece failed to download: usually a new version went live and its old
+ * file is gone. Reload once (to the new version) rather than leave a broken
+ * screen; if it fails again straight away, show the error as before.
+ */
+function reloadOnce(err: unknown): never {
+  let again = false
+  try { again = sessionStorage.getItem('ptasia.reloadedForChunk') === '1'; sessionStorage.setItem('ptasia.reloadedForChunk', '1') } catch { /* private mode */ }
+  if (!again) { location.reload(); return new Promise<never>(() => {}) as never }
+  throw err
+}
+
 /** A component loaded on first use; shows nothing (or `fallback`) for the moment it takes. */
 function later<P extends object>(load: () => Promise<ComponentType<P>>, fallback: preact.JSX.Element | null = null) {
-  const Lazy = lazy(() => load().then((c) => ({ default: c }))) as ComponentType<P>
+  const Lazy = lazy(() => load().then((c) => { try { sessionStorage.removeItem('ptasia.reloadedForChunk') } catch { /* private mode */ } return { default: c } }, reloadOnce)) as ComponentType<P>
   return (p: P) => <Suspense fallback={fallback}><Lazy {...p} /></Suspense>
 }
 
