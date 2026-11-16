@@ -17,7 +17,6 @@ import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
-import com.prayertimesasia.core.trackerDays
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.Preferences
 import com.prayertimesasia.core.Resolver
@@ -101,9 +100,9 @@ class AppState(
         store?.save(prefs)
         // Ticking a prayer in the tracker shouldn't reschedule every alarm.
         val a = prefs.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false,
-            fastLog = emptyMap(), tarawihLog = emptySet(), quranLog = emptySet(), zakatPaid = emptySet())
+            fastLog = emptyMap(), tarawihLog = emptySet(), tarawihRakaat = null, quranLog = emptySet(), zakatPaid = emptySet())
         val b = old.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false,
-            fastLog = emptyMap(), tarawihLog = emptySet(), quranLog = emptySet(), zakatPaid = emptySet())
+            fastLog = emptyMap(), tarawihLog = emptySet(), tarawihRakaat = null, quranLog = emptySet(), zakatPaid = emptySet())
         if (a == b) return
         refreshOfficialTimetable()
         rescheduleAlerts()
@@ -212,29 +211,38 @@ class AppState(
         p.copy(prayedLog = log)
     }
 
-    /** Pause for haid, nifas or illness: today and every day until it's ended count as excused, so the streak waits. */
+    /** Pause for haid, nifas or illness: today and every day until it's ended count as excused, so the streak waits.
+     *  In Ramadan the paused days read as "Period" in the fast record too. */
     fun pauseTracker(on: Instant) = update { it.copy(trackerPausedSince = resolver.dayKey(on)) }
 
-    /** End the pause: the paused days are kept as excused days, today included. */
+    /** End the pause: the paused days are kept as excused days, today included, and as "Period" fasts in Ramadan. */
     fun endTrackerPause(on: Instant) = update { p ->
-        val since = p.trackerPausedSince ?: return@update p
-        p.copy(excusedDays = p.excusedDays + trackerDays(since, resolver.dayKey(on)), trackerPausedSince = null)
+        if (p.trackerPausedSince == null) return@update p
+        p.withWomensDays(womensDays(p).endPause(resolver.dayKey(on), resolver::isRamadanKey))
     }
 
+    /** "Just today": in Ramadan it marks that fast "Period" too, and again undoes both. */
     fun toggleExcused(on: Instant) = update { p ->
-        val key = resolver.dayKey(on)
-        p.copy(excusedDays = if (key in p.excusedDays) p.excusedDays - key else p.excusedDays + key)
+        p.withWomensDays(womensDays(p).toggleExcused(resolver.dayKey(on), resolver::isRamadanKey))
     }
 
     // MARK: Ramadan
 
-    /** Marks how a day's fast went; null clears it. Keeps about two years. */
+    /** Marks how a day's fast went; null clears it. "Period" pauses the tracker too, and changing it back undoes both. Keeps about two years. */
     fun setFast(key: String, mark: com.prayertimesasia.core.FastMark?) = update { p ->
-        var log = if (mark == null) p.fastLog - key else p.fastLog + (key to mark)
+        val w = womensDays(p).setFast(key, mark, resolver.dayKey(Instant.now()), resolver::isRamadanKey)
+        var log = w.fastLog
         if (log.size > 800) log = log - log.keys.min()
-        p.copy(fastLog = log)
+        p.withWomensDays(w.copy(fastLog = log))
     }
 
+    private fun womensDays(p: Preferences) = com.prayertimesasia.core.WomensDays(p.fastLog, p.excusedDays, p.trackerPausedSince)
+    private fun Preferences.withWomensDays(w: com.prayertimesasia.core.WomensDays) =
+        copy(fastLog = w.fastLog, excusedDays = w.excusedDays, trackerPausedSince = w.trackerPausedSince)
+
+    fun setTarawihRakaat(n: Int) = update { it.copy(tarawihRakaat = n.takeIf { v -> v in com.prayertimesasia.core.Tarawih.CHOICES }) }
+    /** The counter reached the total: tick tonight's Tarawih (never unticks). */
+    fun markTarawih(key: String) = update { p -> if (key in p.tarawihLog) p else p.copy(tarawihLog = p.tarawihLog + key) }
     fun toggleTarawih(key: String) = update { p -> p.copy(tarawihLog = if (key in p.tarawihLog) p.tarawihLog - key else p.tarawihLog + key) }
     fun toggleJuz(key: String) = update { p -> p.copy(quranLog = if (key in p.quranLog) p.quranLog - key else p.quranLog + key) }
 

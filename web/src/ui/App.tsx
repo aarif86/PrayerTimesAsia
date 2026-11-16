@@ -1,25 +1,49 @@
+import type { ComponentType } from 'preact'
 import { lazy, Suspense } from 'preact/compat'
 import { useEffect, useLayoutEffect } from 'preact/hooks'
 import { Compass, Globe2, Plane } from 'lucide-preact'
 import { scheduleAlerts } from '../services/notifications'
 import { store, TABS, useNow, useStore, type Tab } from '../services/store'
 import { openSheet, useSheet } from './common'
-import { FalakScreen } from './Falak'
-import { ARScreen, LevelSheet } from './FalakTools'
 import { TabFalak, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 import { LivingSky } from './LivingSky'
-import { MasjidLinkSheet } from './MyMasjid'
-import { MoveInSheet, MoveOutSheet, takeMoveFromLink } from './Move'
-import { QiblaScreen } from './Qibla'
-import { SettingsScreen, VERSION } from './Settings'
+import { takeMoveFromLink } from './moveLink'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
 import { SKY, skyAt } from './sky'
 import { TodayScreen } from './Today'
 import { RamadanSheet } from './Ramadan'
-import { TrackerSheet } from './Tracker'
+import { VERSION } from './version'
 import { WakeUpSheet } from './WakeUp'
 
 const MasjidScreen = lazy(() => import('./Masjid'))
+// Screens and sheets the first screen never shows load when first opened (and are kept offline like the rest).
+const QiblaScreen = later(() => import('./Qibla').then((m) => m.QiblaScreen), <div class="page" />)
+const FalakScreen = later(() => import('./Falak').then((m) => m.FalakScreen), <div class="page" />)
+const SettingsScreen = later(() => import('./Settings').then((m) => m.SettingsScreen), <div class="page" />)
+const LevelSheet = later(() => import('./FalakTools').then((m) => m.LevelSheet))
+const ARScreen = later(() => import('./FalakTools').then((m) => m.ARScreen))
+const TrackerSheet = later(() => import('./Tracker').then((m) => m.TrackerSheet))
+const MasjidLinkSheet = later(() => import('./MyMasjid').then((m) => m.MasjidLinkSheet))
+const MoveInSheet = later(() => import('./Move').then((m) => m.MoveInSheet))
+const MoveOutSheet = later(() => import('./Move').then((m) => m.MoveOutSheet))
+
+/**
+ * A lazy piece failed to download: usually a new version went live and its old
+ * file is gone. Reload once (to the new version) rather than leave a broken
+ * screen; if it fails again straight away, show the error as before.
+ */
+function reloadOnce(err: unknown): never {
+  let again = false
+  try { again = sessionStorage.getItem('ptasia.reloadedForChunk') === '1'; sessionStorage.setItem('ptasia.reloadedForChunk', '1') } catch { /* private mode */ }
+  if (!again) { location.reload(); return new Promise<never>(() => {}) as never }
+  throw err
+}
+
+/** A component loaded on first use; shows nothing (or `fallback`) for the moment it takes. */
+function later<P extends object>(load: () => Promise<ComponentType<P>>, fallback: preact.JSX.Element | null = null) {
+  const Lazy = lazy(() => load().then((c) => { try { sessionStorage.removeItem('ptasia.reloadedForChunk') } catch { /* private mode */ } return { default: c } }, reloadOnce)) as ComponentType<P>
+  return (p: P) => <Suspense fallback={fallback}><Lazy {...p} /></Suspense>
+}
 
 const TAB_LABEL: Record<Tab, string> = { today: 'Prayer', qibla: 'Qibla', falak: 'Falak', masjid: 'Masjid', settings: 'Settings' }
 const TAB_ICON: Record<Tab, (p: { size?: number }) => preact.JSX.Element> = {

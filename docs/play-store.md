@@ -47,6 +47,39 @@ Indonesian short description (71 / 80):
 Jadwal sholat & kiblat. Waktu resmi Kemenag, tanpa iklan, bisa offline.
 ```
 
+## Ramadan search words (draft, not live yet)
+
+Google Play reads the short and full description in each language, and both
+can be changed at any time in Play Console (a listing change is checked by
+Google, usually within a few days). The idea is to swap in the Ramadan short
+descriptions and add the Ramadan part to the full description about three
+weeks before Ramadan 1448 (expected around mid January 2027), then swap back
+after Hari Raya.
+
+This is a draft for the owner to pick. Nothing has been sent to Play Console.
+
+| Language | Now | Ramadan draft |
+|---|---|---|
+| English | Prayer times & qibla across Asia. Official MUIS & JAKIM times, offline, no ads (78 / 80) | Prayer times, imsak & berbuka across Asia. Official MUIS & JAKIM times, no ads (78 / 80) |
+| Malay | Waktu solat & kiblat di Asia. Waktu rasmi MUIS & JAKIM, tanpa iklan, luar talian (80 / 80) | Waktu solat, imsak & berbuka. Waktu rasmi MUIS & JAKIM, tanpa iklan (67 / 80) |
+| Indonesian | Jadwal sholat & kiblat. Waktu resmi Kemenag, tanpa iklan, bisa offline. (71 / 80) | Jadwal sholat & imsakiyah Ramadhan. Waktu resmi Kemenag, tanpa iklan (68 / 80) |
+
+Ramadan part for the full description, pasted right after the first
+paragraph (about 330 characters, so the total stays well under 4,000):
+
+```
+RAMADAN AND SYAWAL
+• Countdown to Imsak and Berbuka on the Prayer screen and the home screen widget
+• Sahur alarm, so you wake in time
+• Tarawih counter for 8 or 20 rakaat
+• Your fasting record, with the days to replace
+• Hari Raya and the six days of Syawal
+• Printable Ramadan timetable for home or the masjid
+```
+
+The Malay and Indonesian lines should be read once by a native speaker
+before they go live.
+
 ## Full description (about 1,900 / 4,000)
 
 ```

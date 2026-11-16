@@ -8,7 +8,10 @@ import type { PrayerDay } from '../core/engine'
 import { parameterSummary } from '../core/methods'
 import { isInAsia, placeProfile } from '../core/place'
 import { isObligatory, PRAYERS, type Prayer } from '../core/prayer'
+import { LONG_DAYS_WORDS } from '../core/longDays'
+import { lang3 } from '../core/ramadanContent'
 import { flag } from '../core/regions'
+import { noonDaysAfter } from '../core/tz'
 import { nudgeAt } from '../core/window'
 import { alertSupport, requestPermission } from '../services/notifications'
 import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '../services/prefs'
@@ -70,7 +73,7 @@ export function TodayScreen() {
   const setShowMore = (v: boolean) => { setShowMoreState(v); if (!s.demo) writeString('today.showMore', v ? '1' : '0') }
   const day = s.day(now)
   if (!day) return <NoPlace />
-  const shown = offset === 0 ? day : s.day(now + offset * 86_400_000) ?? day
+  const shown = offset === 0 ? day : s.day(noonDaysAfter(now, offset, s.timeZone)) ?? day
   const ctx: Ctx = {
     now, day, shown, offset, setOffset, showMore, setShowMore, showToast,
     current: s.current(now), next: s.next(now),
@@ -293,6 +296,25 @@ function AlertsPrompt() {
   )
 }
 
+/** Far from the equator in summer: why Fajr and Isha look unusual. Once per place and summer, closable. */
+function LongDaysNote({ now }: { now: number }) {
+  const key = store.longDaysNote(now)
+  if (!key) return null
+  const w = LONG_DAYS_WORDS[lang3(store.naming)]
+  return (
+    <div class="glass card arrival long-days" role="note">
+      <div class="row" style={{ alignItems: 'flex-start', gap: '12px' }}>
+        <Sun size={26} class="accent" style={{ flex: 'none', marginTop: '2px' }} />
+        <div style={{ flex: 1 }}>
+          <div class="headline">{w.title}</div>
+          <div class="subhead" style={{ opacity: 0.85, marginTop: '4px' }}>{w.body(store.name('fajr'), store.name('isha'))}</div>
+        </div>
+        <button aria-label={w.close} onClick={() => store.closeLongDaysNote(key)} style={{ padding: '6px' }}><X size={16} strokeWidth={3} /></button>
+      </div>
+    </div>
+  )
+}
+
 function ArrivalCard() {
   if (store.prefs.arrivalBannerDismissed) return null
   const profile = store.profile
@@ -478,7 +500,7 @@ function DateBlock({ c }: { c: Ctx }) {
 
 function SmallDial({ c, size }: { c: Ctx; size: number }) {
   const { now, day, current, next } = c
-  const tomorrow = store.day(now + 86_400_000)
+  const tomorrow = store.day(noonDaysAfter(now, 1, store.timeZone))
   if (!current || !next || !tomorrow) return <div style={{ width: `${size}px`, height: `${size}px` }} />
   return (
     <DayDial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}
@@ -502,6 +524,7 @@ function ClassicPage({ c }: { c: Ctx }) {
       <TopPrompt />
       <PrayerHadith c={c} />
       <ArrivalCard />
+      {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <PrayerList c={c} fill />
       <ShowMoreButton c={c} />
@@ -627,6 +650,7 @@ function CentrePage({ c }: { c: Ctx }) {
       <TopPrompt />
       <PrayerHadith c={c} />
       <ArrivalCard />
+      {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={c.now} />
       <DayNavigator c={c} />
@@ -674,6 +698,7 @@ function DialPage({ c }: { c: Ctx }) {
       <div class="top-bar"><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
       <TopPrompt />
       <ArrivalCard />
+      {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <button class="date-header" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? 'Ramadan and Eid dates with their sources' : 'Back to today'}>
         <span class="caps-day accent">{dayLabel(c.offset)}</span>
@@ -783,6 +808,7 @@ function SunPathPage({ c }: { c: Ctx }) {
       <TopPrompt />
       <PrayerHadith c={c} />
       <ArrivalCard />
+      {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={now} />
       <DayNavigator c={c} />
@@ -818,6 +844,7 @@ function BandsPage({ c }: { c: Ctx }) {
         )}
         <TopPrompt />
         <ArrivalCard />
+      {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       </div>
       <div class="bands-date">

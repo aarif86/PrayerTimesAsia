@@ -265,6 +265,8 @@ data class Preferences(
     val arrivalBannerDismissed: Boolean = true,
     /** The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival. */
     val musafirChipDismissed: Boolean = false,
+    /** Long summer days notes closed, one per place and summer ([LongDays.key]). Stays on this phone. */
+    val longDaysClosed: List<String> = emptyList(),
     val trip: List<TripStop> = emptyList(),
 
     // Prayer tracker (opt-in)
@@ -327,6 +329,8 @@ data class Preferences(
     val fastLog: Map<String, FastMark> = emptyMap(),
     /** Days Tarawih was prayed. */
     val tarawihLog: Set<String> = emptySet(),
+    /** How many rakaat of Tarawih the user prays (8 or 20), for the counter; null until they choose. */
+    val tarawihRakaat: Int? = null,
     /** Days the day's juz was read. */
     val quranLog: Set<String> = emptySet(),
     /** Hijri years zakat fitrah was paid. */
@@ -390,6 +394,7 @@ data class Preferences(
             jumuahReminderMinutes = jumuahReminderMinutes.takeIf { it in PrayerWindow.JUMUAH_REMINDER_CHOICES } ?: 0,
             // Isyak is open until Subuh: it has no "before it ends" alarm.
             ishaAlarm = ishaAlarm.takeIf { it != PrayerAlarmTiming.END_MINUS_30 },
+            tarawihRakaat = tarawihRakaat?.takeIf { it in Tarawih.CHOICES },
         )
     }
 }

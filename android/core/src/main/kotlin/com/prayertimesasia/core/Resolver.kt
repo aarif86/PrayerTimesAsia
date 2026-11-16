@@ -139,7 +139,7 @@ class Resolver(
     fun next(after: Instant): Pair<Prayer, Instant>? {
         val today = day(after) ?: return null
         today.ordered.firstOrNull { it.second > after }?.let { return it }
-        val tomorrow = day(after.plusSeconds(86_400)) ?: return null
+        val tomorrow = day(after, 1) ?: return null
         return Prayer.FAJR to tomorrow.time(Prayer.FAJR)
     }
 
@@ -147,11 +147,14 @@ class Resolver(
     fun current(at: Instant): Pair<Prayer, Instant>? {
         val today = day(at) ?: return null
         today.ordered.lastOrNull { it.second <= at }?.let { return it }
-        val yesterday = day(at.minusSeconds(86_400)) ?: return null
+        val yesterday = day(at, -1) ?: return null
         return Prayer.ISHA to yesterday.time(Prayer.ISHA)
     }
 
-    /** The prayer day [offset] local days from the one containing [now]. */
+    /**
+     * The prayer day [offset] local days from the one containing [now]. Steps by
+     * calendar day, so a 23 or 25 hour day (clocks changing) is never skipped or counted twice.
+     */
     fun day(now: Instant, offset: Int): PrayerDay? {
         if (offset == 0) return day(now)
         val local = now.atZone(zone).toLocalDate().plusDays(offset.toLong())
@@ -244,6 +247,21 @@ class Resolver(
 
     fun civil(instant: Instant): LocalDate = instant.atZone(zone).toLocalDate()
 
+    /**
+     * The long summer days note: its key when today's Fajr and Isha come from a high
+     * latitude rule (twilight lasts all night) and the note for this place and summer
+     * hasn't been closed. Only for calculated times; an official timetable sets its own.
+     */
+    fun longDaysNote(now: Instant): String? {
+        val place = activePlace ?: return null
+        if (officialSource != null) return null
+        val d = civil(now)
+        val c = place.coordinates
+        if (!LongDays.twilightLastsAllNight(d.year, d.monthValue, d.dayOfMonth, c.latitude, method)) return null
+        val key = LongDays.key(d.year, d.monthValue, c.latitude, c.longitude, place.countryCode)
+        return if (key in prefs.longDaysClosed) null else key
+    }
+
     val isSeasonPreview: Boolean get() = prefs.seasonPreview != SeasonPreview.OFF
 
     /** Days the tester's "Try Ramadan" moves the calendar by (0 when off). */
@@ -284,7 +302,7 @@ class Resolver(
             if (now < imsak(today)) return FastingKind.IMSAK to imsak(today)
             if (now < today.time(Prayer.MAGHRIB)) return FastingKind.BERBUKA to today.time(Prayer.MAGHRIB)
         }
-        val tomorrow = day(now.plusSeconds(86_400)) ?: return null
+        val tomorrow = day(now, 1) ?: return null
         return if (isRamadanDay(tomorrow.time(Prayer.DHUHR))) FastingKind.IMSAK to imsak(tomorrow) else null
     }
 
@@ -292,7 +310,16 @@ class Resolver(
         Season.monthDays(hijriYear, month, if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
 
     fun fastSummary(hijriYear: Int, today: LocalDate): Season.FastSummary =
-        Season.fastSummary(hijriYear, today, prefs.fastLog, if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
+        Season.fastSummary(hijriYear, today, womensDays.effectiveLog(today.toString(), ::isRamadanKey), if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
+
+    /** The fast record and the tracker pause, kept in step by [WomensDays]. */
+    val womensDays: WomensDays get() = WomensDays(prefs.fastLog, prefs.excusedDays, prefs.trackerPausedSince)
+
+    /** Is this "yyyy-MM-dd" a Ramadan day for this community. */
+    fun isRamadanKey(key: String): Boolean = runCatching { LocalDate.parse(key) }.getOrNull()?.let { hijriOf(it).month == 9 } ?: false
+
+    /** How a fast day went. An unmarked Ramadan day inside a tracker pause reads as "Period". */
+    fun fastMark(key: String, now: Instant = Instant.now()): FastMark? = womensDays.mark(key, dayKey(now), ::isRamadanKey)
 
     companion object {
         /** Prayers where [other] differs from [day] by more than 2 minutes. */

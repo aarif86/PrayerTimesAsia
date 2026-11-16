@@ -12,7 +12,7 @@ import { isInAsia, isNear, placeProfile, placeSubtitle, type Place } from '../co
 import { OBLIGATORY } from '../core/prayer'
 import { flag, profileFor, timeZoneForPlace } from '../core/regions'
 import { GRADE_EXPLANATION, GRADE_TITLE, mosqueMethod, type SourceGrade } from '../core/sources'
-import { isValidTimeZone } from '../core/tz'
+import { isValidTimeZone, noonDaysAfter } from '../core/tz'
 import { searchCities } from '../services/cities'
 import { alertSupport } from '../services/notifications'
 import { fetchOK } from '../services/storage'
@@ -286,7 +286,7 @@ export function JourneySheet() {
   const rules = s.musafirRules
   const g = status ? musafirGuidance(status, rules, s.naming) : null
   const km = status && status.kind !== 'home' ? status.distanceKm : null
-  const today = s.day(now), tomorrow = s.day(now + 86_400_000)
+  const today = s.day(now), tomorrow = s.day(noonDaysAfter(now, 1, s.timeZone))
   const home = s.prefs.home
   return (
     <Sheet title="Journey" full>

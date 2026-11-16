@@ -1,3 +1,4 @@
+import { TARAWIH_RAKAAT } from '../core/tarawih'
 import type { MasjidLink } from '../core/masjidLink'
 import type { Place } from '../core/place'
 import type { FastMark } from '../core/ramadanContent'
@@ -53,6 +54,8 @@ export interface Preferences {
   arrivalBannerDismissed: boolean
   /** The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival. */
   musafirChipDismissed: boolean
+  /** Long summer days notes closed, one per place and summer (core/longDays.ts longDaysKey). Stays on this device. */
+  longDaysClosed: string[]
   trip: TripStop[]
   trackerEnabled: boolean
   prayedLog: Record<string, Prayer[]>
@@ -97,6 +100,8 @@ export interface Preferences {
   fastLog: Record<string, FastMark>
   /** Days Tarawih was prayed. */
   tarawihLog: string[]
+  /** How many rakaat of Tarawih the user prays, for the counter; null until they choose. */
+  tarawihRakaat: 8 | 20 | null
   /** Days the day's juz was read. */
   quranLog: string[]
   /** Hijri years zakat fitrah was paid. */
@@ -145,6 +150,7 @@ export const DEFAULT_PREFS: Preferences = {
   arrivedAt: null,
   arrivalBannerDismissed: true,
   musafirChipDismissed: false,
+  longDaysClosed: [],
   trip: [],
   trackerEnabled: false,
   prayedLog: {},
@@ -175,6 +181,7 @@ export const DEFAULT_PREFS: Preferences = {
   khatamPlan: false,
   fastLog: {},
   tarawihLog: [],
+  tarawihRakaat: null,
   quranLog: [],
   zakatPaid: [],
   windowNudge: true,
@@ -190,7 +197,7 @@ export const DEFAULT_PREFS: Preferences = {
   hiddenHadith: [],
 }
 
-const NULLABLE = new Set<keyof Preferences>([
+const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat', 
   'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'jakimZoneOverride',
   'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
   'dhuhrAlarm', 'asrAlarm', 'maghribAlarm', 'ishaAlarm',
@@ -232,6 +239,7 @@ export function decodePreferences(raw: unknown): Preferences {
       if (key === 'arrivedAt' && typeof v !== 'number') continue
       if (key === 'myMasjid' && !isMasjid(v)) continue
       if (['methodOverrideID', 'jakimZoneOverride', 'lastCountryCode', 'communityAuthority'].includes(key) && typeof v !== 'string') continue
+      if (key === 'tarawihRakaat' && !TARAWIH_RAKAAT.includes(v as 8 | 20)) continue
       if (key === 'trackerPausedSince' && !(typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v))) continue
       ;(out as unknown as Record<string, unknown>)[key] = v
       continue
@@ -239,6 +247,7 @@ export function decodePreferences(raw: unknown): Preferences {
     if (Array.isArray(d)) {
       if (!Array.isArray(v)) continue
       if (key === 'savedPlaces') (out as unknown as Record<string, unknown>)[key] = v.filter(isPlace)
+      else if (key === 'longDaysClosed') (out as unknown as Record<string, unknown>)[key] = v.filter((x) => typeof x === 'string').slice(-30)
       else if (key === 'sahurDays') (out as unknown as Record<string, unknown>)[key] = SAHUR_DAYS.filter((d) => v.includes(d))
       else (out as unknown as Record<string, unknown>)[key] = v
       continue

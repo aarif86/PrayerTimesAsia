@@ -278,6 +278,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var arrivalBannerDismissed = true
     /// The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival.
     var musafirChipDismissed = false
+    /// Long summer days notes closed, one per place and summer (Core/LongDays.swift). Stays on this phone.
+    var longDaysClosed: [String] = []
     var trip: [TripStop] = []
 
     /// Keep a Live Activity countdown to the next prayer on the Lock Screen.
@@ -377,6 +379,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var fastLog: [String: FastMark] = [:]
     /// Days Tarawih was prayed.
     var tarawihLog: Set<String> = []
+    /// How many rakaat of Tarawih the user prays (8 or 20), for the counter; nil until they choose.
+    var tarawihRakaat: Int?
     /// Days the day's juz was read.
     var quranLog: Set<String> = []
     /// Hijri years zakat fitrah was paid.
@@ -436,6 +440,7 @@ struct Preferences: Codable, Equatable, Sendable {
         arrivedAt = v(.arrivedAt, d.arrivedAt)
         arrivalBannerDismissed = v(.arrivalBannerDismissed, d.arrivalBannerDismissed)
         musafirChipDismissed = v(.musafirChipDismissed, d.musafirChipDismissed)
+        longDaysClosed = v(.longDaysClosed, d.longDaysClosed)
         trip = v(.trip, d.trip)
         liveActivityEnabled = v(.liveActivityEnabled, d.liveActivityEnabled)
         trackerEnabled = v(.trackerEnabled, d.trackerEnabled)
@@ -467,6 +472,8 @@ struct Preferences: Codable, Equatable, Sendable {
         khatamPlan = v(.khatamPlan, d.khatamPlan)
         fastLog = v(.fastLog, d.fastLog)
         tarawihLog = v(.tarawihLog, d.tarawihLog)
+        tarawihRakaat = v(.tarawihRakaat, d.tarawihRakaat)
+        if let n = tarawihRakaat, !Tarawih.choices.contains(n) { tarawihRakaat = nil }
         quranLog = v(.quranLog, d.quranLog)
         zakatPaid = v(.zakatPaid, d.zakatPaid)
         windowNudge = v(.windowNudge, d.windowNudge)

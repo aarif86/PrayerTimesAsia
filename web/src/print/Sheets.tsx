@@ -3,6 +3,8 @@ import { useMemo } from 'preact/hooks'
 import { PRAYERS, prayerName, type Prayer } from '../core/prayer'
 import { profileFor } from '../core/regions'
 import { OBLIGATORY_PRAYERS, type ScreenConfig } from '../screen/config'
+import { zoned } from '../core/tz'
+import { LETTER_WORDS } from './letter'
 import { clock, hijriSpan, PRINT_WORDS, type PrintOptions, type SheetDay } from './model'
 
 /**
@@ -311,6 +313,61 @@ export function FastingSheet({ c, days, qrLink }: SheetProps) {
       <footer class="tracker-foot">
         <div class="score"><span>{w.fastsKept}</span><b>____ / {days.length + 6}</b></div>
         <div class="score wide"><span>{w.reward}</span><b /></div>
+        <Brand c={c} qrLink={qrLink} />
+      </footer>
+    </article>
+  )
+}
+
+// MARK: Prayer break letter
+
+/** "1:05 pm" (a reader may not know which half of the day) or "13:05". */
+function letterClock(ms: number, tz: string, h24: boolean): string {
+  if (h24) return clock(ms, tz, true)
+  return `${clock(ms, tz, false)} ${zoned(ms, tz).hour < 12 ? 'am' : 'pm'}`
+}
+
+export function LetterSheet({ c, o, days, qrLink }: SheetProps) {
+  const w = PRINT_WORDS[c.lang]
+  const lw = LETTER_WORDS[c.lang]
+  const t = lw.text[o.for ?? 'work']
+  const tz = c.place!.tz
+  const d = days[0]
+  const place = [c.place!.name, profileFor(c.place!.cc)?.name].filter(Boolean).join(', ')
+  const date = `${w.weekdays[d.weekday]} ${d.day} ${w.months[d.month - 1]} ${d.year}`
+  return (
+    <article class={`paper sheet-letter${o.paper === 'letter' ? ' paper-letter' : ''}`}>
+      <header class="letter-head">
+        <h1>{t.title}</h1>
+        <Crescent class="letter-moon" />
+      </header>
+      <p class="letter-dear">{t.dear} <span class="blank wide" />,</p>
+      {t.before.map((p, k) => <p key={k}>{p}</p>)}
+      <p>{t.timesFor(place)}</p>
+      <section class="letter-times" aria-label={t.today(date)}>
+        <h2>{t.today(date)}</h2>
+        <div class="lt-row">
+          {FIVE.map((p) => (
+            <div key={p} class={`lt-cell p-${p}`}>
+              <i style={{ background: `var(--t-${p})` }} />
+              <span>{p === 'dhuhr' && d.times.friday ? t.friday : prayerName(p, c.names)}</span>
+              <b>{letterClock(d.times.day.times[p], tz, c.h24)}</b>
+            </div>
+          ))}
+        </div>
+      </section>
+      {t.after.map((p, k) => <p key={k}>{p}</p>)}
+      <p class="letter-signoff">{t.signOff}</p>
+      <div class="letter-sign">
+        <div><span class="blank" /><small>{t.name}</small></div>
+        <div><span class="blank" /><small>{t.role}</small></div>
+        <div><span class="blank" /><small>{t.date}</small></div>
+      </div>
+      <footer class="sheet-foot">
+        <div class="notes">
+          <p>{sourceLine(c, days)}</p>
+          <p>{lw.authority}</p>
+        </div>
         <Brand c={c} qrLink={qrLink} />
       </footer>
     </article>

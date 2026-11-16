@@ -118,6 +118,8 @@ object AlarmScheduler {
         }
         // Widgets move on at each prayer even with alerts off.
         r.next(now)?.let { (_, t) -> out += Alert("refresh", "", "", t, Kind.REFRESH) }
+        // In Ramadan the widget also switches at Imsak and Berbuka, which are not prayer times.
+        r.fastingMoment(now)?.let { (_, t) -> out += Alert("refresh-fast", "", "", t, Kind.REFRESH) }
         return out.filter { it.at > now }.sortedBy { it.at }.take(48)
     }
 

@@ -1,5 +1,6 @@
 import { AlarmClock, AlarmClockCheck, Check, Download, Play, Smartphone } from 'lucide-preact'
 import type { PrayerDay } from '../core/engine'
+import { noonDaysAfter } from '../core/tz'
 import {
   ALARM_KEY, ALARM_PRAYERS, ALARM_SOUND_LABEL, ALARM_SOUNDS, prayerAlarmChoices, prayerAlarmLabel, prayerAlarmTime,
   SAHUR_DAY_LABEL, SAHUR_DAYS, SAHUR_TIMINGS, sahurLabel, sahurTime, WAKE_UP_TIMINGS, wakeUpLabel, wakeUpTime,
@@ -34,7 +35,7 @@ export function WakeChip({ now, open }: { now: number; open: () => void }) {
 /** When this choice would next ring: this morning if it is still ahead, else tomorrow. */
 function soon(now: number, at: (d: PrayerDay) => number): string | null {
   for (let offset = 0; offset < 2; offset++) {
-    const day = store.day(now + offset * 86_400_000)
+    const day = store.day(noonDaysAfter(now, offset, store.timeZone))
     if (!day) continue
     const t = at(day)
     if (t > now) return store.formatted(t)
@@ -46,7 +47,7 @@ function whenText(now: number, at: number): string {
   const tz = store.timeZone
   const key = (ms: number) => new Date(ms).toLocaleDateString('en-CA', { timeZone: tz })
   if (key(at) === key(now)) return 'today'
-  if (key(at) === key(now + 86_400_000)) return 'tomorrow'
+  if (key(at) === key(noonDaysAfter(now, 1, tz))) return 'tomorrow'
   return new Date(at).toLocaleDateString('en-GB', { weekday: 'long', timeZone: tz })
 }
 

@@ -23,7 +23,7 @@ enum CalendarFile {
                      "METHOD:PUBLISH", "X-WR-CALNAME:\(esc("Prayer times · \(place.name)"))"]
         let early = model.prefs.reminderMinutesBefore
         for i in 0..<days {
-            guard let day = model.day(containing: now.addingTimeInterval(Double(i) * 86_400)) else { continue }
+            guard let day = model.day(containing: model.noon(now, plus: i)) else { continue }
             for p in prayers {
                 let t = day.time(p)
                 let name = p.name(model.naming, isFriday: model.isFriday(t))

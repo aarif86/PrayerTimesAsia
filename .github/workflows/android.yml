@@ -40,6 +40,13 @@ jobs:
       - name: Build the debug APK and an unsigned release (checks R8)
         run: ./gradlew :app:assembleDebug :app:assembleRelease 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
 
+      - name: App size
+        run: |
+          echo "### App size" >> "$GITHUB_STEP_SUMMARY"
+          for f in app/build/outputs/apk/release/*.apk app/build/outputs/apk/debug/*.apk; do
+            if [ -f "$f" ]; then echo "- $(basename "$f"): $(( $(stat -c %s "$f") / 1024 )) KB" | tee -a "$GITHUB_STEP_SUMMARY"; fi
+          done
+
       - name: App unit tests and JVM screenshots (Robolectric + Roborazzi)
         run: ./gradlew :app:recordRoborazziDebug 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}
 
