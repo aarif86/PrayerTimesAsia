@@ -112,6 +112,7 @@ jobs:
           for lang in ms id ar ur bn tr fr; do test -f "_site/$lang/index.html"; done
           test -f _site/sources.html
           test -f _site/press.html
+          test -f _site/ramadan.html
           ! grep -q "__TELEMETRYDECK_APP_ID__" _site/index.html _site/ms/index.html _site/id/index.html _site/ar/index.html _site/ur/index.html _site/bn/index.html _site/tr/index.html _site/fr/index.html
           # Every image and page the promo page links to is there.
           for f in $(grep -oE '(src|href)="[^"#:]+"' _site/index.html | sed -E 's/^[a-z]+="//; s/"$//' | sort -u); do
