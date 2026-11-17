@@ -3,6 +3,7 @@ package com.prayertimesasia.app.ui.makers
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import com.prayertimesasia.app.AppState
+import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.app.ui.components.HadithView
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,13 +54,18 @@ import com.prayertimesasia.app.ui.theme.display
  * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
  * The cards are our own services and, from time to time, a hand picked halal
  * sponsor for the user's country ([CommunityCard], data/community-cards.json).
- * No ad networks, nothing tracked: each card just opens the website.
+ * No outside ads, nothing tracked: each card just opens the website.
  */
+
+/** The name of the card space. One place to change it (Makers.tsx and Makers.swift have the same). */
+const val PICKS_NAME = "Barakah Picks"
 
 /** A slim card that opens the card's website. */
 @Composable
-fun MakersCard(card: CommunityCard, placement: String, compact: Boolean = false, modifier: Modifier = Modifier) {
+fun MakersCard(card: CommunityCard, placement: String, compact: Boolean = false, modifier: Modifier = Modifier, state: AppState? = null) {
     val uri = LocalUriHandler.current
+    // Counted as seen once it is drawn on screen (once a day, see UsageCounter).
+    LaunchedEffect(card.id, placement) { state?.countCard(UsageCounter.CardEvent.SEEN, card, placement) }
     val shape = RoundedCornerShape(16.dp)
     Row(
         modifier
@@ -66,8 +73,11 @@ fun MakersCard(card: CommunityCard, placement: String, compact: Boolean = false,
             .clip(shape)
             .background(Palette.material, shape)
             .border(1.dp, Palette.primary.copy(alpha = 0.08f), shape)
-            .clickable { runCatching { uri.openUri(card.url(placement)) } }
-            .semantics { contentDescription = "${if (card.isSponsor) "Sponsored. " else ""}${card.title}, opens ${card.site}" }
+            .clickable {
+                state?.countCard(UsageCounter.CardEvent.TAPPED, card, placement)
+                runCatching { uri.openUri(card.url(placement)) }
+            }
+            .semantics { contentDescription = "$PICKS_NAME${if (card.isSponsor) ", sponsored" else ""}. ${card.title}, opens ${card.site}" }
             .padding(horizontal = 12.dp, vertical = if (compact) 6.dp else 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -85,9 +95,8 @@ fun MakersCard(card: CommunityCard, placement: String, compact: Boolean = false,
             }
         }
         Column(Modifier.weight(1f)) {
-            if (card.isSponsor) {
-                Text("SPONSORED", fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.6.sp, color = Palette.secondary)
-            }
+            Text((if (card.isSponsor) "$PICKS_NAME · Sponsored" else PICKS_NAME).uppercase(),
+                fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.6.sp, color = Palette.secondary)
             Text(card.title, style = Txt.subheadlineSemibold, color = Palette.primary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (!compact) {
                 Text(card.subtitle, style = Txt.caption, color = Palette.secondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -104,9 +113,9 @@ fun MakersSheetContent(placement: String, state: AppState? = null) {
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Dims.gutter), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         state?.let { HadithView(it, HadithId.FIXED_TIMES, tag = "Al Quran") }
         Text("Built fisabilillah", style = display(26.sp, FontWeight.Bold), color = Palette.primary)
-        Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).",
+        Text("Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).",
             style = Txt.body, color = Palette.secondary)
-        CommunityCard.ours(state?.offerCountry ?: "").forEach { MakersCard(it, placement) }
+        CommunityCard.ours(state?.offerCountry ?: "").forEach { MakersCard(it, placement, state = state) }
         Spacer(Modifier.width(1.dp))
     }
 }

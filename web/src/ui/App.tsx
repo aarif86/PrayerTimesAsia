@@ -175,7 +175,7 @@ function Onboarding() {
           <button class="onb-primary" onClick={() => { store.update((p) => { p.hasOnboarded = true }); store.useGPS() }}>Use my location</button>
           <button class="onb-secondary" onClick={() => { store.update((p) => { p.hasOnboarded = true; p.useGPS = false }); openSheet({ kind: 'places' }) }}>Choose a city instead</button>
           <button class="onb-secondary" onClick={() => openSheet({ kind: 'move-in' })}>Bring in settings from another phone</button>
-          <p class="caption" style={{ opacity: 0.75, textAlign: 'center' }}>No ad networks. No account. Your location stays on your device.</p>
+          <p class="caption" style={{ opacity: 0.75, textAlign: 'center' }}>No outside ads. No account. Your location stays on your device.</p>
         </div>
       </div>
     </div>

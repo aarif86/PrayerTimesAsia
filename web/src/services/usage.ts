@@ -27,7 +27,7 @@ export const SCREEN_EVERY_MS = 6 * 3_600_000
 export interface UsageConfig { telemetryDeckAppID: string; enabled: boolean }
 interface CachedConfig extends UsageConfig { fetchedAt: number }
 
-export type UsageEvent = 'App.installed' | 'App.opened' | 'Screen.running'
+export type UsageEvent = 'App.installed' | 'App.opened' | 'Screen.running' | 'Card.seen' | 'Card.tapped'
 export type Payload = Record<string, string | number | boolean>
 
 export interface Signal {
@@ -170,3 +170,41 @@ export function countScreenRunning(version: string, s: ScreenFacts): void {
 }
 
 const SCREEN_ID_KEY = 'ptasia.usage.screen'
+
+// MARK: Barakah Picks counts (docs/community-cards.md)
+
+const CARD_SEEN_KEY = 'ptasia.usage.cardSeen'
+
+export interface CardFacts { id: string; kind: string; placement: string }
+
+/** What a card count says: which card, where in the app, and the usual app keys. */
+export function cardPayload(version: string, where: Where, language: string, card: CardFacts): Payload {
+  const payload = basePayload('web', version, where, language)
+  payload['Card.id'] = card.id
+  payload['Card.kind'] = card.kind
+  payload['Card.placement'] = card.placement
+  return payload
+}
+
+/** A card counts as seen once a day on each device, however often it scrolls past. */
+export function shouldCountSeen(seen: Record<string, string> | null, cardId: string, today: string): boolean {
+  return seen?.[cardId] !== today
+}
+
+/**
+ * Counts a Barakah Picks card seen on screen (once a day) or tapped. Only the
+ * card and the usual anonymous keys are sent, never who tapped. The caller
+ * checks Settings first, the same as for app opens.
+ */
+export function countCard(event: 'Card.seen' | 'Card.tapped', version: string, where: Where, card: CardFacts, today: string): void {
+  if (event === 'Card.seen') {
+    const seen = readJSON<Record<string, string>>(CARD_SEEN_KEY)
+    if (!shouldCountSeen(seen, card.id, today)) return
+    // Keep only today's marks so the record stays tiny.
+    const next: Record<string, string> = Object.fromEntries(Object.entries(seen ?? {}).filter(([, d]) => d === today))
+    next[card.id] = today
+    writeJSON(CARD_SEEN_KEY, next)
+  }
+  const { id } = deviceId()
+  void send([event], cardPayload(version, where, navigator.language || 'en', card), id)
+}

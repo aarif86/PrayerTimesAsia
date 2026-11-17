@@ -3,7 +3,10 @@ import SwiftUI
 /// The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
 /// The cards are our own services and, from time to time, a hand picked halal
 /// sponsor for the user's country (CommunityCard, data/community-cards.json).
-/// No ad networks, nothing tracked: each card just opens the website.
+/// No outside ads, nothing tracked: each card just opens the website.
+/// The name of the card space. One place to change it (Makers.tsx and Makers.kt have the same).
+let picksName = "Barakah Picks"
+
 extension AppModel {
     /// Where the user lives, for which cards are relevant: home country, else where they are now.
     var offerCountry: String { prefs.home?.countryCode ?? profile.code }
@@ -15,9 +18,14 @@ struct MakersCard: View {
     let placement: String
     /// One line, for the Prayer screen where every point of height counts.
     var compact = false
+    @Environment(AppModel.self) private var model
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
-        Link(destination: card.url(from: placement)) {
+        Button {
+            model.countCard(.tapped, card: card, placement: placement)
+            openURL(card.url(from: placement))
+        } label: {
             HStack(spacing: 12) {
                 Group {
                     switch card.icon {
@@ -31,9 +39,8 @@ struct MakersCard: View {
                 .frame(width: compact ? 28 : 34, height: compact ? 28 : 34)
                 .background(Theme.accent.opacity(0.18), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 VStack(alignment: .leading, spacing: 1) {
-                    if card.isSponsor {
-                        Text("SPONSORED").font(.system(size: 10, weight: .bold)).tracking(0.6).foregroundStyle(.secondary)
-                    }
+                    Text(card.isSponsor ? "\(picksName) · Sponsored" : picksName)
+                        .textCase(.uppercase).font(.system(size: 10, weight: .bold)).tracking(0.6).foregroundStyle(.secondary)
                     Text(card.title).font(.subheadline.weight(.semibold)).lineLimit(1)
                     if !compact {
                         Text(card.subtitle).font(.caption).foregroundStyle(.secondary)
@@ -50,7 +57,8 @@ struct MakersCard: View {
                 .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(card.isSponsor ? "Sponsored. \(card.title)" : card.title)
+        .onAppear { model.countCard(.seen, card: card, placement: placement) }
+        .accessibilityLabel("\(picksName)\(card.isSponsor ? ", sponsored" : ""). \(card.title)")
         .accessibilityHint("Opens \(card.site) in Safari")
     }
 }
@@ -86,7 +94,7 @@ struct MakersSheet: View {
                 VStack(alignment: .leading, spacing: 16) {
                     HadithView(id: .fixedTimes, tag: "Al Quran")
                     Text("Built fisabilillah").font(Theme.display(26, .bold))
-                    Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).")
+                    Text("Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).")
                         .foregroundStyle(.secondary)
                     ForEach(CommunityCard.ours(for: model.offerCountry)) { card in
                         MakersCard(card: card, placement: placement)

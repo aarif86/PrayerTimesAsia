@@ -2,7 +2,7 @@
 
 The web version of **Prayer Times Asia**, the iOS app for Muslims living and travelling across Asia: accurate prayer
 times with their source, qibla, falak (sun-and-shadow) tools and nearby masjids. An installable, offline-capable
-PWA (Preact + TypeScript + Vite), no accounts, no ad networks, no analytics.
+PWA (Preact + TypeScript + Vite), no accounts, no outside ads, no analytics.
 
 - Live (GitHub Pages): **https://aarif86.github.io/PrayerTimesAsia/app/** (the promo page from `site/` is at the root; both move to prayertimes.asia once the domain is set up, see [site/README.md](../site/README.md)).
 - Screenshots: [`docs/screenshots/`](docs/screenshots/) ([contact sheet](docs/screenshots/contact-sheet.png)).

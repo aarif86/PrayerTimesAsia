@@ -590,6 +590,12 @@ final class AppModel {
         }
     }
 
+    /// Anonymous count of a Barakah Picks card seen (once a day) or tapped (docs/community-cards.md).
+    func countCard(_ event: UsageCounter.CardEvent, card: CommunityCard, placement: String) {
+        guard prefs.shareUsage, !Self.isDemo else { return }
+        UsageCounter.countCard(event, card: card, placement: placement, place: activePlace)
+    }
+
     private static var isDemo: Bool { ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") || $0 == "-widget-preview" } }
 
     /// Called when GPS moves. Reverse-geocodes when online; falls back to the

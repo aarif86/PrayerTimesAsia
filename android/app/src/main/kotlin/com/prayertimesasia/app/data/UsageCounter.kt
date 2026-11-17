@@ -3,6 +3,7 @@ package com.prayertimesasia.app.data
 import android.content.Context
 import android.os.Build
 import com.prayertimesasia.app.BuildConfig
+import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Place
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,6 +15,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import java.time.LocalDate
 import java.util.Locale
 import java.util.UUID
 
@@ -61,6 +63,34 @@ class UsageCounter(context: Context) {
         Unit
     }
 
+    enum class CardEvent(val type: String) { SEEN("Card.seen"), TAPPED("Card.tapped") }
+
+    /**
+     * Counts a Barakah Picks card seen (once a day on this phone) or tapped. Only
+     * the card and the usual anonymous keys are sent, never who tapped.
+     * AppState.countCard checks Settings first. Never throws.
+     */
+    suspend fun countCard(event: CardEvent, card: CommunityCard, placement: String, place: Place?): Unit = withContext(Dispatchers.IO) {
+        runCatching<Unit> {
+            if (event == CardEvent.SEEN) {
+                val today = LocalDate.now().toString()
+                val key = SEEN_PREFIX + card.id
+                if (!shouldCountSeen(sp.getString(key, null), today)) return@runCatching
+                sp.edit().putString(key, today).apply()
+            }
+            if (!sp.contains(ID)) sp.edit().putString(ID, UUID.randomUUID().toString()).apply()
+            val id = sp.getString(ID, null) ?: return@runCatching
+            val appId = config()?.activeAppId ?: return@runCatching
+            val body = payload(BuildConfig.VERSION_NAME, Build.VERSION.RELEASE ?: "?", Locale.getDefault().toLanguageTag(),
+                place?.district ?: place?.name, place?.countryCode).toMutableMap()
+            body["Card.id"] = card.id
+            body["Card.kind"] = card.kind.name.lowercase()
+            body["Card.placement"] = placement
+            Http.postJson(ENDPOINT, signals(appId, id, listOf(event.type), body, BuildConfig.DEBUG))
+        }
+        Unit
+    }
+
     /** The switch and App ID from the repo, re-read at most twice a day. */
     private fun config(): Config? {
         val cached = sp.getString(CONFIG, null)?.let { Config.decode(it) }
@@ -82,6 +112,10 @@ class UsageCounter(context: Context) {
         private const val CONFIG_AT = "configAt"
 
         fun shouldCountOpen(last: Long?, now: Long): Boolean = last == null || now - last >= OPEN_GAP_MS
+
+        /** A card counts as seen once a day on each phone, however often it scrolls past. */
+        fun shouldCountSeen(lastSeenDay: String?, today: String): Boolean = lastSeenDay != today
+        private const val SEEN_PREFIX = "cardSeen."
 
         /** A place name fit to count: not the "Current location" placeholder, and short. */
         fun cleanCity(name: String?): String? = name?.trim()?.takeIf { it.isNotEmpty() && it != "Current location" }?.take(60)

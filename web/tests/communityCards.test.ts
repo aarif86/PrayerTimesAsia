@@ -52,3 +52,21 @@ describe('Community cards (docs/community-cards.md)', () => {
     expect(cardURL(card('x', ['*'], { url: 'https://x.com/shop?id=1' }), 'settings')).toBe('https://x.com/shop?id=1&utm_source=prayertimesasia&utm_medium=app&utm_campaign=settings')
   })
 })
+
+describe('Barakah Picks counts (docs/community-cards.md)', async () => {
+  const { cardPayload, shouldCountSeen } = await import('../src/services/usage')
+  it('counts a card as seen once a day per device', () => {
+    expect(shouldCountSeen(null, 'badal', '2026-11-17')).toBe(true)
+    expect(shouldCountSeen({ badal: '2026-11-17' }, 'badal', '2026-11-17')).toBe(false)
+    expect(shouldCountSeen({ badal: '2026-11-17' }, 'digital', '2026-11-17')).toBe(true)
+    expect(shouldCountSeen({ badal: '2026-11-16' }, 'badal', '2026-11-17')).toBe(true)
+  })
+  it('sends the card and the usual anonymous keys, never coordinates', () => {
+    const p = cardPayload('1.0.0', { city: 'Pasir Ris', countryCode: 'sg' }, 'en-SG', { id: 'badal', kind: 'ours', placement: 'prayer' })
+    expect(p['Card.id']).toBe('badal')
+    expect(p['Card.kind']).toBe('ours')
+    expect(p['Card.placement']).toBe('prayer')
+    expect(p['Place.country']).toBe('SG')
+    expect(Object.keys(p).some((k) => /latitude|longitude|coord|\.(lat|lng)$/i.test(k))).toBe(false)
+  })
+})

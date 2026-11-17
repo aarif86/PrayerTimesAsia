@@ -205,7 +205,7 @@ private fun Makers(f: TodayFrame) {
     if (next != null && next.first == Prayer.MAGHRIB && Duration.between(f.now, next.second).toMinutes() < 30 &&
         r.season(f.now).phase == Season.Phase.RAMADAN) return
     val card = CommunityCard.ofTheDay(f.state.offerCountry, LocalDate.ofInstant(f.now, r.zone)) ?: return
-    MakersCard(card, "prayer", compact = true)
+    MakersCard(card, "prayer", compact = true, state = f.state)
 }
 
 /**

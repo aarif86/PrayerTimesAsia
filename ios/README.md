@@ -2,7 +2,7 @@
 
 Prayer times and qibla for Muslims living and travelling across Asia.
 **Every time has a source. We show it.** Free forever, open source (GNU AGPL 3.0, see [NOTICE.md](../NOTICE.md)).
-Native SwiftUI, iOS 17+. No ad networks, no accounts, no tracking. Location never leaves the phone.
+Native SwiftUI, iOS 17+. No outside ads, no accounts, no tracking. Location never leaves the phone.
 
 ## Why it exists
 

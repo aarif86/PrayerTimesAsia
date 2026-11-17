@@ -1,6 +1,6 @@
 /**
  * The small cards under Show more on the Prayer screen and in Settings.
- * No ad networks, nothing tracked: each card is a plain link. The list lives in
+ * No outside ads, nothing tracked: each card is a plain link. The list lives in
  * data/community-cards.json (one copy for all three apps, every card approved by
  * hand against docs/community-cards.md). Same rules as CommunityCards.swift and
  * CommunityCards.kt.

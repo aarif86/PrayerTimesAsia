@@ -13,6 +13,7 @@ import com.prayertimesasia.app.data.PrefsStore
 import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
+import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Place
@@ -409,6 +410,12 @@ class AppState(
             delay(8_000)
             if (prefs.shareUsage) usage.countOpen(resolver.activePlace)
         }
+    }
+
+    /** Anonymous count of a Barakah Picks card seen (once a day) or tapped (docs/community-cards.md). */
+    fun countCard(event: UsageCounter.CardEvent, card: CommunityCard, placement: String) {
+        if (!prefs.shareUsage || !sideEffects || fixedNow != null) return
+        scope.launch { usage.countCard(event, card, placement, resolver.activePlace) }
     }
 
     /** The day [offset] days from today, or today. */

@@ -36,6 +36,7 @@ file and commit.
 | New installs (including people adding the web app to their Home Screen) | `App.installed` (the first open on a device), plus `Web.installedToHomeScreen` |
 | Which masjids run the screen, and whether each is still on | `Screen.running` with `Masjid.name` (sent at start and every 6 hours; a masjid missing for a day means its TV is off or offline) |
 | How masjids set up their screen | `Screen.look`, `Screen.language`, `Screen.orientation` |
+| How often each Barakah Picks card is seen and tapped | `Card.seen` (once a day per card per device) and `Card.tapped`, with `Card.id`, `Card.kind`, `Card.placement` |
 
 ### Charts worth making first
 
@@ -48,6 +49,9 @@ In the TelemetryDeck dashboard, add an Insight for each. Filter by **signal type
 3. **New installs**: `App.installed`, count per week, broken down by `App.platform`.
 4. **Masjid screens on today**: `Screen.running`, last 24 hours, broken down by `Masjid.name`.
 5. **App versions in use**: `App.opened`, broken down by `App.version`.
+
+6. **Barakah Picks**: `Card.seen` and `Card.tapped`, broken down by `Card.id`. How to
+   turn these into a sponsor report is in [community-cards.md](community-cards.md).
 
 Events from test builds and from a computer on your home network are marked as tests.
 TelemetryDeck hides them unless you switch on "Test mode".

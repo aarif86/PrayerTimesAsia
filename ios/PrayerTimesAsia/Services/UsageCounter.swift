@@ -92,6 +92,42 @@ enum UsageCounter {
         Task.detached(priority: .utility) { await send(types: types, payload: body, clientUser: id) }
     }
 
+    // MARK: Barakah Picks counts
+
+    enum CardEvent: String { case seen = "Card.seen", tapped = "Card.tapped" }
+    private static let cardSeenKey = "usage.cardSeen"
+
+    /// A card counts as seen once a day on each phone, however often it scrolls past.
+    static func shouldCountSeen(_ seen: [String: String], cardID: String, today: String) -> Bool {
+        seen[cardID] != today
+    }
+
+    /// Counts a card seen or tapped. Only the card and the usual anonymous keys
+    /// are sent, never who tapped. AppModel.countCard checks Settings first.
+    @MainActor
+    static func countCard(_ event: CardEvent, card: CommunityCard, placement: String, place: Place?) {
+        let defaults = UserDefaults.standard
+        if event == .seen {
+            let c = Calendar.current.dateComponents([.year, .month, .day], from: .now)
+            let today = "\(c.year ?? 0)-\(c.month ?? 0)-\(c.day ?? 0)"
+            let seen = defaults.dictionary(forKey: cardSeenKey) as? [String: String] ?? [:]
+            guard shouldCountSeen(seen, cardID: card.id, today: today) else { return }
+            var next = seen.filter { $0.value == today }
+            next[card.id] = today
+            defaults.set(next, forKey: cardSeenKey)
+        }
+        if defaults.string(forKey: idKey) == nil { defaults.set(UUID().uuidString, forKey: idKey) }
+        let id = defaults.string(forKey: idKey) ?? UUID().uuidString
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        var body = payload(version: version, system: UIDevice.current.systemVersion,
+                           language: Locale.preferredLanguages.first ?? "en",
+                           city: place?.district ?? place?.name, countryCode: place?.countryCode)
+        body["Card.id"] = card.id
+        body["Card.kind"] = card.kind.rawValue
+        body["Card.placement"] = placement
+        Task.detached(priority: .utility) { await send(types: [event.rawValue], payload: body, clientUser: id) }
+    }
+
     private static func send(types: [String], payload: [String: String], clientUser: String) async {
         guard let appID = await config()?.appID else { return }
         #if DEBUG

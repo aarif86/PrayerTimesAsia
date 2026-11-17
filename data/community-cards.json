@@ -1,5 +1,5 @@
 {
-  "about": "The small cards under Show more on the Prayer screen and in Settings. No ad networks and nothing tracked: each card is a plain link to the website. Every card is approved by hand by Ustaz Aarif Raziff against docs/community-cards.md (halal only, no riba, no gambling, nothing immodest). kind: ours = our own services, sponsor = a paid community card (shows a Sponsored tag). countries: two letter codes, or * for everywhere. The app shows the cards for the user's home country plus the * cards, one a day in turn. from/until (YYYY-MM-DD, optional) set when a paid month starts and ends. Run python3 tools/build_community_cards.py after editing.",
+  "about": "The small cards under Show more on the Prayer screen and in Settings. No outside ads and nothing tracked: each card is a plain link to the website. Every card is approved by hand by Ustaz Aarif Raziff against docs/community-cards.md (halal only, no riba, no gambling, nothing immodest). kind: ours = our own services, sponsor = a paid community card (shows a Sponsored tag). countries: two letter codes, or * for everywhere. The app shows the cards for the user's home country plus the * cards, one a day in turn. from/until (YYYY-MM-DD, optional) set when a paid month starts and ends. Run python3 tools/build_community_cards.py after editing.",
   "cards": [
     {
       "id": "badal",

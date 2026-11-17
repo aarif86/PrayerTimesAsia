@@ -307,7 +307,7 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Label("No ad networks, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
+                    Label("No outside ads, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
                     Label("Your exact location never leaves your phone.", systemImage: "location.slash.fill")
                     Label("Nearby masjid search goes through Apple Maps and OpenStreetMap (only the area is sent).", systemImage: "map.fill")
                     Toggle("Share anonymous usage counts", isOn: $model.prefs.shareUsage)
@@ -323,11 +323,11 @@ struct SettingsView: View {
                         MakersCard(card: card, placement: "settings")
                             .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
                     }
-                    Toggle("Show offers on Prayer and Masjid", isOn: $model.prefs.showOffers)
+                    Toggle("Show \(picksName)", isOn: $model.prefs.showOffers)
                 } header: {
-                    Text("From the makers").id("makers")
+                    Text(picksName).id("makers")
                 } footer: {
-                    Text("Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). Under Show more you will see our own services, and sometimes a halal Muslim business we picked by hand for your country, marked Sponsored. No ad networks, nothing tracked. [Our ad rules](https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md)")
+                    Text("Barakah Picks is not a normal ad. It is one small space we check by hand for halal Muslim businesses and causes, safe for the whole family. No gambling, alcohol, riba or anything immodest, and never Google, Facebook or Instagram ads. Most picks are our own services, and paid ones are marked Sponsored. We keep only simple counts of how often each card is seen and tapped, never who you are. [Our rules for Barakah Picks](https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md)")
                 }
 
                 Section {

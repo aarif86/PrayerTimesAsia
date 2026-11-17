@@ -11,7 +11,7 @@ import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, JUMUAH_REMINDE
 import { store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
 import { ourCards } from '../core/communityCards'
-import { MakersCard } from './Makers'
+import { MakersCard, PICKS_NAME } from './Makers'
 import { TabJourney } from './icons'
 import { canInstall, install, isStandalone, phoneAppOffer } from './pwa'
 import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
@@ -275,16 +275,16 @@ export function SettingsScreen() {
       </Group>
 
       <Group title="Privacy" foot={<a href="../privacy.html">Full privacy details</a>}>
-        <div class="item footnote"><Hand size={18} />No ad networks, no accounts, no tracking across other apps or sites.</div>
+        <div class="item footnote"><Hand size={18} />No outside ads, no accounts, no tracking across other apps or sites.</div>
         <div class="item footnote"><MapPinOff size={18} />Your exact location stays in this browser. The place name comes from a built-in list, not a server.</div>
         <ToggleItem label="Share anonymous usage counts" on={p.shareUsage} onChange={(v) => store.update((x) => { x.shareUsage = v })}
           sub="Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept." />
         <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (map tiles and Overpass), which see the area you look at.</div>
       </Group>
 
-      <Group id="makers" title="From the makers" foot={<>Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). Under Show more you will see our own services, and sometimes a halal Muslim business we picked by hand for your country, marked Sponsored. No ad networks, nothing tracked. <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md" target="_blank" rel="noopener noreferrer">Our ad rules</a></>}>
+      <Group id="makers" title={PICKS_NAME} foot={<>Barakah Picks is not a normal ad. It is one small space we check by hand for halal Muslim businesses and causes, safe for the whole family. No gambling, alcohol, riba or anything immodest, and never Google, Facebook or Instagram ads. Most picks are our own services, and paid ones are marked Sponsored. We keep only simple counts of how often each card is seen and tapped, never who you are. <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md" target="_blank" rel="noopener noreferrer">Our rules for Barakah Picks</a></>}>
         <div class="makers-list">{ourCards(store.offerCountry, new Date()).map((c) => <MakersCard card={c} placement="settings" />)}</div>
-        <ToggleItem label="Show offers on Prayer and Masjid" on={p.showOffers} onChange={(v) => store.update((x) => { x.showOffers = v })} />
+        <ToggleItem label="Show Barakah Picks" on={p.showOffers} onChange={(v) => store.update((x) => { x.showOffers = v })} />
       </Group>
 
       <Group foot="Prayer Times Asia. Built in Asia, made for Muslims everywhere.">
