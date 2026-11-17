@@ -449,7 +449,7 @@ export function CreditsSheet() {
 }
 
 export function MakersSheet({ placement }: { placement: string }) {
-  return <Sheet title=""><MakersAbout placement={placement} /></Sheet>
+  return <Sheet title=""><MakersAbout placement={placement} country={store.offerCountry} /></Sheet>
 }
 
 

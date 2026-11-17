@@ -10,7 +10,8 @@ import { alertSupport, downloadICS, anyAlarm, nextWakeUp, permission, requestPer
 import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, JUMUAH_REMINDER_CHOICES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
 import { store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
-import { MakersCard, OFFERS } from './Makers'
+import { ourCards } from '../core/communityCards'
+import { MakersCard } from './Makers'
 import { TabJourney } from './icons'
 import { canInstall, install, isStandalone, phoneAppOffer } from './pwa'
 import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
@@ -274,15 +275,15 @@ export function SettingsScreen() {
       </Group>
 
       <Group title="Privacy" foot={<a href="../privacy.html">Full privacy details</a>}>
-        <div class="item footnote"><Hand size={18} />No third-party ads, no accounts, no tracking across other apps or sites.</div>
+        <div class="item footnote"><Hand size={18} />No ad networks, no accounts, no tracking across other apps or sites.</div>
         <div class="item footnote"><MapPinOff size={18} />Your exact location stays in this browser. The place name comes from a built-in list, not a server.</div>
         <ToggleItem label="Share anonymous usage counts" on={p.shareUsage} onChange={(v) => store.update((x) => { x.shareUsage = v })}
           sub="Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept." />
         <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (map tiles and Overpass), which see the area you look at.</div>
       </Group>
 
-      <Group id="makers" title="From the makers" foot="Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own. No ad networks, nothing tracked.">
-        <div class="makers-list">{OFFERS.map((o) => <MakersCard offer={o} placement="settings" />)}</div>
+      <Group id="makers" title="From the makers" foot={<>Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). Under Show more you will see our own services, and sometimes a halal Muslim business we picked by hand for your country, marked Sponsored. No ad networks, nothing tracked. <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md" target="_blank" rel="noopener noreferrer">Our ad rules</a></>}>
+        <div class="makers-list">{ourCards(store.offerCountry, new Date()).map((c) => <MakersCard card={c} placement="settings" />)}</div>
         <ToggleItem label="Show offers on Prayer and Masjid" on={p.showOffers} onChange={(v) => store.update((x) => { x.showOffers = v })} />
       </Group>
 

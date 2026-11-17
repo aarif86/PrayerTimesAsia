@@ -1,49 +1,42 @@
-import { ArrowUpRight, Globe } from 'lucide-preact'
+import { ArrowUpRight, Globe, Heart, Store } from 'lucide-preact'
+import { cardURL, ourCards, type CommunityCard } from '../core/communityCards'
 import { Hadith } from './Hadith'
 import { Kaaba } from './icons'
 
 /**
- * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only promotion in
- * it is for the makers' own services - no ad networks, nothing tracked: each
- * card just opens the website (Makers.swift).
+ * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
+ * The cards are our own services and, from time to time, a hand picked halal
+ * sponsor for the user's country (data/community-cards.json). No ad networks,
+ * nothing tracked: each card just opens the website (Makers.swift).
  */
-export type Offer = 'badal' | 'digital'
-export const OFFERS: Offer[] = ['badal', 'digital']
-
-const TITLE: Record<Offer, string> = { badal: 'Badal Haji & Umrah', digital: 'NasarDigital' }
-const SUBTITLE: Record<Offer, string> = {
-  badal: 'Performed in Makkah for loved ones who have passed on or cannot go',
-  digital: 'Digital marketing from the team behind this app',
-}
-const SITE: Record<Offer, string> = { badal: 'Badal.sg', digital: 'nasardigital.com' }
-const BASE: Record<Offer, string> = { badal: 'https://badal.sg', digital: 'https://nasardigital.com' }
-
-/** The website, tagged with where in the app it was tapped (same parameters as the iOS app). */
-export function offerURL(o: Offer, placement: string): string {
-  return `${BASE[o]}/?utm_source=prayertimesasia&utm_medium=app&utm_campaign=${placement}`
+function CardIcon({ card, compact }: { card: CommunityCard; compact?: boolean }) {
+  const size = compact ? 15 : 17
+  switch (card.icon) {
+    case 'kaaba': return <Kaaba size={compact ? 15 : 18} />
+    case 'shop': return <Store size={size} strokeWidth={2.2} class="accent" />
+    case 'heart': return <Heart size={size} strokeWidth={2.2} class="accent" />
+    default: return <Globe size={size} strokeWidth={2.2} class="accent" />
+  }
 }
 
-/** Badal is offered to Singaporeans for now; everyone else sees NasarDigital. */
-export const featuredOffer = (country: string): Offer => (country === 'SG' ? 'badal' : 'digital')
-
-export function MakersCard({ offer, placement, compact }: { offer: Offer; placement: string; compact?: boolean }) {
+export function MakersCard({ card, placement, compact }: { card: CommunityCard; placement: string; compact?: boolean }) {
+  const sponsor = card.kind === 'sponsor'
   return (
-    <a class={`makers-card glass ${compact ? 'compact' : ''}`} href={offerURL(offer, placement)} target="_blank" rel="noopener noreferrer"
-      aria-label={`${TITLE[offer]} - opens ${SITE[offer]}`}>
-      <span class="makers-icon">
-        {offer === 'badal' ? <Kaaba size={compact ? 15 : 18} /> : <Globe size={compact ? 15 : 17} strokeWidth={2.2} class="accent" />}
-      </span>
+    <a class={`makers-card glass ${compact ? 'compact' : ''}`} href={cardURL(card, placement)} target="_blank" rel="noopener noreferrer sponsored"
+      aria-label={`${sponsor ? 'Sponsored. ' : ''}${card.title}, opens ${card.site}`}>
+      <span class="makers-icon"><CardIcon card={card} compact={compact} /></span>
       <span class="makers-text">
-        <span class="makers-title">{TITLE[offer]}</span>
-        {!compact && <span class="makers-sub">{SUBTITLE[offer]}</span>}
+        {sponsor && <span class="makers-tag">Sponsored</span>}
+        <span class="makers-title">{card.title}</span>
+        {!compact && <span class="makers-sub">{card.subtitle}</span>}
       </span>
-      <span class="makers-site">{SITE[offer]}</span>
+      <span class="makers-site">{card.site}</span>
       <ArrowUpRight size={13} strokeWidth={2.6} class="accent" />
     </a>
   )
 }
 
-export function MakersAbout({ placement }: { placement: string }) {
+export function MakersAbout({ placement, country }: { placement: string; country: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '8px' }}>
       <Hadith id="fixedTimes" tag="Al Quran" />
@@ -51,7 +44,7 @@ export function MakersAbout({ placement }: { placement: string }) {
       <p class="secondary" style={{ margin: 0 }}>
         Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).
       </p>
-      {OFFERS.map((o) => <MakersCard offer={o} placement={placement} />)}
+      {ourCards(country, new Date()).map((c) => <MakersCard card={c} placement={placement} />)}
     </div>
   )
 }

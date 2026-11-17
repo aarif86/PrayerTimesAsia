@@ -12,7 +12,11 @@ These are on the website and in the apps. Changing any of them should be treated
 breaking a promise to every user and masjid.
 
 1. **Free forever.** No subscriptions, no paid features, no in-app purchases.
-2. **No ads.** Not in the apps, not on the masjid screen, not in notifications or the azan.
+2. **No ad networks.** No Google or other ad networks, nothing tracked. The only cards are our
+   own services and hand picked halal community sponsors, marked Sponsored, under Show more
+   only ([community-cards.md](community-cards.md)). Never on the masjid screen, in
+   notifications, alarms or the azan. Changed from "No ads" on 17 November 2026, before
+   launch, by the owner's decision.
 3. **Your data stays yours.** No accounts, location stays on the phone, nothing sold or
    shared. Only anonymous counts (city and country), which anyone can switch off.
 4. **Always open source.** The code stays public under the GNU AGPL ([NOTICE.md](../NOTICE.md)).
@@ -22,14 +26,18 @@ breaking a promise to every user and masjid.
 Decided 5 November 2026. The app is Nasar Pte Ltd's shop window, not its product.
 
 - **Allowed:** "Built by Nasar Pte Ltd" with a link to NasarDigital on the website, the
-  About/Settings pages, and the small "From the makers" card in the apps (Badal.sg in
-  Singapore, NasarDigital elsewhere), which anyone can switch off.
+  About/Settings pages, and the small card under Show more in the apps (Badal.sg and
+  NasarDigital everywhere, one a day in turn), which anyone can switch off.
+- **Allowed since 17 November 2026:** paid community sponsor cards in the same small card,
+  chosen per country, approved by hand against [community-cards.md](community-cards.md),
+  marked Sponsored. A flat fee for a set time, never paid per view, per tap or per user.
 - **Never:** a paid tier, "Pro" plan, locked feature, subscription or in-app purchase,
   for anyone. Masjids get the full mosque screen free too.
 - **Not for now:** charging masjids for setup or care plans, and asking users for
   donations. Revisit only if the owner raises it.
-- Nasar promotion never appears on prayer screens, the azan, notifications or the
-  masjid TV.
+- No card, ours or a sponsor's, ever appears on the azan, notifications, alarms, the
+  masjid TV or the Ramadan Berbuka moment. On the Prayer screen it sits below the times,
+  only when Show more is open.
 
 ## What must be protected
 
@@ -47,9 +55,9 @@ project and are never transferred to a business:
 |---|---|
 | A company offers money for the app, name or listings | Decline with the reply below. Offer collaboration or sponsorship instead. |
 | Someone offers money per user to add their code (SDK, analytics, ads, "audience partnership") | No, every time. Do not negotiate. |
-| An authority or non-profit wants to take over or adopt the app | Welcome, only with written terms: stays free, no ads, no data sales, stays open source, name kept under a non-profit asset lock. A lawyer reads it first. |
+| An authority or non-profit wants to take over or adopt the app | Welcome, only with written terms: stays free, no ad networks, no data sales, stays open source, name kept under a non-profit asset lock. A lawyer reads it first. |
 | An authority wants its own branded version | Yes. The licence allows it. Ask them to share improvements back and use their own name. |
-| A sponsor wants their logo in the app | About page and website only. Never on prayer screens, azan, notifications or the masjid TV. |
+| A sponsor wants their logo in the app | The small community card only, under Show more, marked Sponsored, and only if it passes [community-cards.md](community-cards.md). Never on the azan, notifications, alarms or the masjid TV. |
 | A company offers the owner a job because of the app | Fine personally. The app, name and listings stay where they are. |
 | Running costs grow beyond what the owner pays comfortably | Nasar covers them from its paid work. Ask a sponsor if needed. No donation drive for now (owner decided, 5 November 2026). |
 | Sponsor money passes about S$5,000 a year, a formal deal with an authority or masjid network, or a second person shares the work | Set up a non-profit company limited by guarantee and move the listings, domain, trademark and repo into it. |
@@ -60,7 +68,7 @@ project and are never transferred to a business:
 
 > Assalamualaikum, and thank you for your interest in Prayer Times Asia.
 >
-> The app is a non-profit effort and is not for sale. It will stay free, with no ads
+> The app is a non-profit effort and is not for sale. It will stay free, with no ad networks
 > and no collection or sale of personal data, and its code is open for anyone to use
 > under its licence.
 >

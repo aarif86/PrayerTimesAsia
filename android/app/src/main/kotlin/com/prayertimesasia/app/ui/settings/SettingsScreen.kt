@@ -72,7 +72,7 @@ import com.prayertimesasia.app.AppState
 import com.prayertimesasia.app.BuildConfig
 import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.makers.MakersCard
-import com.prayertimesasia.app.ui.makers.MakersOffer
+import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.app.ui.theme.AppCard
 import com.prayertimesasia.app.ui.theme.AppIcons
 import com.prayertimesasia.app.ui.theme.LivingSkyBackground
@@ -302,16 +302,16 @@ fun SettingsScreen(
             }
             item {
                 Section("Privacy", "Usage counts tell us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept.") {
-                    LabelRow(Icons.Filled.PanTool, "No third-party ads, no accounts, no tracking across other apps.")
+                    LabelRow(Icons.Filled.PanTool, "No ad networks, no accounts, no tracking across other apps.")
                     LabelRow(Icons.Filled.LocationOff, "Your exact location never leaves your phone.")
                     LabelRow(Icons.Filled.Map, "Nearby masjid search sends only the search area to OpenStreetMap.")
                     SwitchRow("Share anonymous usage counts", p.shareUsage) { on -> state.update { it.copy(shareUsage = on) } }
                 }
             }
             item {
-                Section("From the makers", "Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own - no ad networks, nothing tracked.") {
+                Section("From the makers", "Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). Under Show more you will see our own services, and sometimes a halal Muslim business we picked by hand for your country, marked Sponsored. No ad networks, nothing tracked.") {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        MakersOffer.entries.forEach { MakersCard(it, "settings") }
+                        CommunityCard.ours(state.offerCountry).forEach { MakersCard(it, "settings") }
                     }
                     SwitchRow("Show offers on Prayer and Masjid", p.showOffers) { on -> state.update { it.copy(showOffers = on) } }
                 }

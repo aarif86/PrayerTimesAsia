@@ -138,7 +138,7 @@ struct TodayView: View {
                 })
             showMoreButton
             if model.prefs.showOffers && showMore {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                CommunityCardSlot(now: now, next: next)
             }
         }
         .padding(.horizontal, Theme.gutter)
@@ -295,7 +295,7 @@ struct TodayView: View {
             dayRow(shown)
             showMoreButton
             if model.prefs.showOffers && showMore {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                CommunityCardSlot(now: now, next: next)
             }
         }
         .padding(.horizontal, Theme.gutter)
@@ -528,7 +528,7 @@ struct TodayView: View {
                     showMoreButton.fixedSize()
                 }
                 if model.prefs.showOffers && showMore {
-                    MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                    CommunityCardSlot(now: now, next: next)
                 }
             }
             .padding(.horizontal, Theme.gutter)
@@ -619,7 +619,7 @@ struct TodayView: View {
                 showMoreButton.fixedSize()
             }
             if model.prefs.showOffers && showMore {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                CommunityCardSlot(now: now, next: next)
             }
         }
         .padding(.horizontal, Theme.gutter)
@@ -660,7 +660,7 @@ struct TodayView: View {
                 showMoreButton
                 SourceBadge(day: shown)
                 if model.prefs.showOffers && showMore {
-                    MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                    CommunityCardSlot(now: now, next: next)
                 }
             }
             .padding(.horizontal, Theme.gutter)

@@ -297,7 +297,7 @@ data class Preferences(
 
     val appearance: Appearance = Appearance.SYSTEM,
     val todayStyle: TodayStyle = TodayStyle.CENTRE,
-    /** The makers' own offers (Badal, NasarDigital) on the Prayer and Masjid screens. */
+    /** The small community card under Show more (docs/community-cards.md). */
     val showOffers: Boolean = true,
     /** Travel concessions (jamak, qasar) and the Journey screen. Off until the user turns it on. */
     val musafirEnabled: Boolean = false,

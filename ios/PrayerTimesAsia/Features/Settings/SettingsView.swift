@@ -307,7 +307,7 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Label("No third-party ads, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
+                    Label("No ad networks, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
                     Label("Your exact location never leaves your phone.", systemImage: "location.slash.fill")
                     Label("Nearby masjid search goes through Apple Maps and OpenStreetMap (only the area is sent).", systemImage: "map.fill")
                     Toggle("Share anonymous usage counts", isOn: $model.prefs.shareUsage)
@@ -319,15 +319,15 @@ struct SettingsView: View {
                 .font(.footnote)
 
                 Section {
-                    ForEach(MakersOffer.allCases) { offer in
-                        MakersCard(offer: offer, placement: "settings")
+                    ForEach(CommunityCard.ours(for: model.offerCountry)) { card in
+                        MakersCard(card: card, placement: "settings")
                             .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
                     }
                     Toggle("Show offers on Prayer and Masjid", isOn: $model.prefs.showOffers)
                 } header: {
                     Text("From the makers").id("makers")
                 } footer: {
-                    Text("Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own - no ad networks, nothing tracked.")
+                    Text("Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). Under Show more you will see our own services, and sometimes a halal Muslim business we picked by hand for your country, marked Sponsored. No ad networks, nothing tracked. [Our ad rules](https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md)")
                 }
 
                 Section {

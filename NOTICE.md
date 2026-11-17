@@ -46,5 +46,5 @@ and Google Play. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Our promises
 
-Prayer Times Asia is built fisabilillah. It stays free, without ads, without
+Prayer Times Asia is built fisabilillah. It stays free, without ad networks, without
 selling or sharing anyone's data, and open source. See [docs/stewardship.md](docs/stewardship.md).

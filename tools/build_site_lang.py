@@ -107,7 +107,7 @@ if table.get('_appnote'):
     work = work[:m.end()] + f'\n        <p class="app-lang">{html.escape(table["_appnote"], quote=False)}</p>' + work[m.end():]
 # WhatsApp share text.
 must_replace(
-    'https://wa.me/?text=A%20free%20prayer%20app%20made%20by%20Ustaz%20Aarif%2C%20no%20ads%20https%3A%2F%2Fprayertimes.asia',
+    'https://wa.me/?text=A%20free%20prayer%20app%20made%20by%20Ustaz%20Aarif%2C%20no%20ad%20networks%20https%3A%2F%2Fprayertimes.asia',
     table['_share'])
 
 import os

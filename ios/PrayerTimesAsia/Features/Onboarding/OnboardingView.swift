@@ -42,7 +42,7 @@ struct OnboardingView: View {
                     Button("Bring in settings from another phone") { showMoveIn = true }
                         .font(.footnote.weight(.semibold))
                         .opacity(0.85)
-                    Text("No third-party ads. No account. Your location stays on your phone.")
+                    Text("No ad networks. No account. Your location stays on your phone.")
                         .font(.caption).opacity(0.75)
                 }
                 .frame(maxWidth: .infinity)

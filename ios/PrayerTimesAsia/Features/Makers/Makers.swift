@@ -1,82 +1,47 @@
 import SwiftUI
 
-/// The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only promotion
-/// in it is for the makers' own services - no ad networks, nothing tracked:
-/// each card just opens the website, which has the WhatsApp contact.
-enum MakersOffer: String, CaseIterable, Identifiable {
-    case badal, digital
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .badal: "Badal Haji & Umrah"
-        case .digital: "NasarDigital"
-        }
-    }
-
-    var subtitle: String {
-        switch self {
-        case .badal: "Performed in Makkah for loved ones who have passed on or cannot go"
-        case .digital: "Digital marketing from the team behind this app"
-        }
-    }
-
-    var site: String {
-        switch self {
-        case .badal: "Badal.sg"
-        case .digital: "nasardigital.com"
-        }
-    }
-
-    /// The website, tagged with where in the app it was tapped so visits show
-    /// in the site's own analytics. The app itself records nothing.
-    func url(from placement: String) -> URL {
-        let base = switch self {
-        case .badal: "https://badal.sg"
-        case .digital: "https://nasardigital.com"
-        }
-        return URL(string: "\(base)/?utm_source=prayertimesasia&utm_medium=app&utm_campaign=\(placement)")!
-    }
-
-    /// Badal is offered to Singaporeans for now (Badal.my is coming); everyone
-    /// else sees NasarDigital.
-    static func featured(for country: String) -> MakersOffer {
-        country == "SG" ? .badal : .digital
-    }
-}
-
+/// The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
+/// The cards are our own services and, from time to time, a hand picked halal
+/// sponsor for the user's country (CommunityCard, data/community-cards.json).
+/// No ad networks, nothing tracked: each card just opens the website.
 extension AppModel {
-    /// Where the user lives, for which offer is relevant: home country, else where they are now.
+    /// Where the user lives, for which cards are relevant: home country, else where they are now.
     var offerCountry: String { prefs.home?.countryCode ?? profile.code }
 }
 
 /// A slim card that opens the offer's website.
 struct MakersCard: View {
-    let offer: MakersOffer
+    let card: CommunityCard
     let placement: String
     /// One line, for the Prayer screen where every point of height counts.
     var compact = false
 
     var body: some View {
-        Link(destination: offer.url(from: placement)) {
+        Link(destination: card.url(from: placement)) {
             HStack(spacing: 12) {
                 Group {
-                    switch offer {
-                    case .badal: KaabaGlyph().frame(width: compact ? 15 : 18, height: compact ? 15 : 18)
-                    case .digital: Image(systemName: "globe").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.accentText)
+                    switch card.icon {
+                    case .kaaba: KaabaGlyph().frame(width: compact ? 15 : 18, height: compact ? 15 : 18)
+                    case .globe: Image(systemName: "globe")
+                    case .shop: Image(systemName: "storefront")
+                    case .heart: Image(systemName: "heart")
                     }
                 }
+                .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.accentText)
                 .frame(width: compact ? 28 : 34, height: compact ? 28 : 34)
                 .background(Theme.accent.opacity(0.18), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(offer.title).font(.subheadline.weight(.semibold))
+                    if card.isSponsor {
+                        Text("SPONSORED").font(.system(size: 10, weight: .bold)).tracking(0.6).foregroundStyle(.secondary)
+                    }
+                    Text(card.title).font(.subheadline.weight(.semibold)).lineLimit(1)
                     if !compact {
-                        Text(offer.subtitle).font(.caption).foregroundStyle(.secondary)
+                        Text(card.subtitle).font(.caption).foregroundStyle(.secondary)
                             .lineLimit(2).multilineTextAlignment(.leading)
                     }
                 }
                 Spacer(minLength: 4)
-                Text(offer.site).font(.caption.weight(.semibold)).foregroundStyle(Theme.accentText)
+                Text(card.site).font(.caption.weight(.semibold)).foregroundStyle(Theme.accentText)
                 Image(systemName: "arrow.up.right").font(.caption2.weight(.bold)).foregroundStyle(Theme.accentText)
             }
             .padding(.horizontal, 12).padding(.vertical, compact ? 6 : 9)
@@ -85,13 +50,34 @@ struct MakersCard: View {
                 .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .accessibilityHint("Opens \(offer.site) in Safari")
+        .accessibilityLabel(card.isSponsor ? "Sponsored. \(card.title)" : card.title)
+        .accessibilityHint("Opens \(card.site) in Safari")
+    }
+}
+
+/// Today's one community card, below the times and only with Show more open
+/// (docs/community-cards.md). Never in the half hour before Berbuka in Ramadan.
+struct CommunityCardSlot: View {
+    @Environment(AppModel.self) private var model
+    let now: Date
+    let next: (prayer: Prayer, time: Date)?
+
+    var body: some View {
+        if let card = CommunityCard.ofTheDay(for: model.offerCountry, on: now), !nearBerbuka {
+            MakersCard(card: card, placement: "prayer", compact: true)
+        }
+    }
+
+    private var nearBerbuka: Bool {
+        guard let next, next.prayer == .maghrib, next.time.timeIntervalSince(now) < 30 * 60 else { return false }
+        return model.season(at: now).phase == .ramadan
     }
 }
 
 /// "About" behind the (i) on the Masjid tab: who built the app, and their services.
 struct MakersSheet: View {
     let placement: String
+    @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -102,8 +88,8 @@ struct MakersSheet: View {
                     Text("Built fisabilillah").font(Theme.display(26, .bold))
                     Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).")
                         .foregroundStyle(.secondary)
-                    ForEach(MakersOffer.allCases) { offer in
-                        MakersCard(offer: offer, placement: placement)
+                    ForEach(CommunityCard.ours(for: model.offerCountry)) { card in
+                        MakersCard(card: card, placement: placement)
                     }
                 }
                 .padding(Theme.gutter)

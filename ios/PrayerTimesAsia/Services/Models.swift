@@ -350,7 +350,7 @@ struct Preferences: Codable, Equatable, Sendable {
         get { stylePick ?? .centre }
         set { stylePick = newValue }
     }
-    /// The makers' own offers (Badal, NasarDigital) on the Prayer and Masjid screens.
+    /// The small community card under Show more (docs/community-cards.md).
     var showOffers = true
     /// Travel concessions (jamak, qasar) and the Journey screen. Off until the
     /// user turns it on - offered when they land in another country.
