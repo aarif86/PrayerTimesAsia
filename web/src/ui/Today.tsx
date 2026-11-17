@@ -215,7 +215,7 @@ function PlaceLabel() {
   const place = store.activePlace
   return (
     <>
-      {store.prefs.useGPS ? <Navigation size={11} fill="currentColor" /> : <MapPin size={12} />}
+      {store.prefs.useGPS ? <Navigation size={11} fill="currentColor" class={store.isCheckingLocation ? 'checking-location' : undefined} /> : <MapPin size={12} />}
       <span class="place-name" style={(place?.name.length ?? 0) > 11 ? { fontSize: '0.87em' } : undefined}>{place?.name ?? 'Choose a place'}</span>
       {place && isInAsia(place) && <span class="flag">{flag(placeProfile(place).code)}</span>}
       <ChevronDown size={12} strokeWidth={3} style={{ opacity: 0.6 }} />

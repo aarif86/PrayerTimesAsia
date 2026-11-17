@@ -43,6 +43,9 @@ export interface Demo {
 
 const DATA_BASE = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/main/data/'
 
+/** The last place GPS found (stays in this browser). */
+const LAST_GPS_KEY = 'ptasia.lastGpsPlace'
+
 class AppStore {
   prefs: Preferences
   demo: Demo | null
@@ -68,6 +71,9 @@ class AppStore {
     if (m?.mosques) this.mosques = m
     const c = readJSON<CalendarDataset>('ptasia.calendar')
     if (c?.announcements) this.calendar = c
+    // Open on the last place GPS found, so the times show at once instead of
+    // "Finding where you are" while the browser gets a fresh fix.
+    if (!this.demo) this.gpsPlace = readJSON<Place>(LAST_GPS_KEY)
     if (this.demo && new URLSearchParams(location.search).get('masjid') === 'link') this.pendingMasjid = DEMO_MASJID
     if (typeof location !== 'undefined' && !this.demo) {
       this.readMasjidLink()
@@ -152,6 +158,11 @@ class AppStore {
     if (this.demo || !this.prefs.shareUsage || !this.prefs.hasOnboarded) return
     const p = this.activePlace
     countAppOpen(version, { city: p?.name, countryCode: p?.countryCode })
+  }
+
+  /** Showing the last known place while the browser checks where we are now. */
+  get isCheckingLocation(): boolean {
+    return this.prefs.useGPS && this.gpsStatus === 'locating' && this.gpsPlace != null
   }
 
   get activePlace(): Place | null {
@@ -620,6 +631,7 @@ class AppStore {
       district: city?.district ?? null,
     }
     this.gpsPlace = place
+    writeJSON(LAST_GPS_KEY, place)
     this.gpsStatus = 'ok'
     if (this.prefs.useGPS) this.arrived(place)
     else this.emit()
