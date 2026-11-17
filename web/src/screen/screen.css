@@ -432,6 +432,10 @@ select option { background-color: #161a36; color: #fff; }
 .scr-ramadan .scr-dotsep { font-style: normal; opacity: 0.5; }
 .scr-ramadan .scr-t-small { font-size: 1em; }
 .scr-look-dial .scr-ramadan { position: relative; z-index: 2; }
+/* The gold words need a deeper gold on the light Day look to be readable. */
+.scr-look-day .scr-ramadan b { color: #8a5a00; }
+/* The Kaaba line keeps its name and time together when the line wraps. */
+.scr-kaaba b { white-space: nowrap; }
 
 /* Day Dial: the iqamah line stays small (the bigger dial time above would otherwise apply to it too and push labels into each other). */
 .scr-dm .scr-dm-iq { font-size: 16px; line-height: 1.1; }

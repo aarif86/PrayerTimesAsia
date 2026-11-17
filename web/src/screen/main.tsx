@@ -8,6 +8,7 @@ import { ensureTable } from '../services/officialTables'
 import { readJSON, writeJSON } from '../services/storage'
 import { countScreenRunning, SCREEN_EVERY_MS } from '../services/usage'
 import { registerServiceWorker } from '../ui/pwa'
+import { CHECK_EVERY_MS, checkClock, onClockChange, screenNow } from './clockCheck'
 import { configFromHash, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, type ScreenConfig } from './config'
 import { Display } from './Display'
 import { Frame } from './Frame'
@@ -23,7 +24,7 @@ const SCREEN_VERSION = '1.0.0'
 /** Screenshot mode: ?demo (an example masjid) and ?now=2026-10-26T16:30:00%2B08:00 (a fixed clock). */
 const query = new URLSearchParams(location.search)
 const fixedNow = (() => { const t = Date.parse(query.get('now') ?? ''); return Number.isNaN(t) ? null : t })()
-if (fixedNow != null) setScreenClock(() => fixedNow)
+setScreenClock(fixedNow != null ? () => fixedNow : screenNow)
 
 /** Ramadan and Raya announcements: the saved copy at once, then the latest every 15 minutes (moon sighting nights). */
 const CALENDAR_URL = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/main/data/calendar.json'
@@ -63,15 +64,23 @@ function initialConfig(): ScreenConfig | null {
   return saved ? sanitize(saved) : null
 }
 
+const onOnline = () => { void checkClock() }
+
 function useClock(): number {
-  const [now, setNow] = useState(fixedNow ?? Date.now())
+  const [now, setNow] = useState(fixedNow ?? screenNow())
   useEffect(() => {
     if (fixedNow != null) return
     // Tick on the second boundary so the countdown never skips a number.
     let id: ReturnType<typeof setTimeout>
-    const tick = () => { setNow(Date.now()); id = setTimeout(tick, 1000 - (Date.now() % 1000) + 5) }
+    const tick = () => { setNow(screenNow()); id = setTimeout(tick, 1000 - (screenNow() % 1000) + 5) }
     tick()
-    return () => clearTimeout(id)
+    // A new clock check moves the time at once, not on the next tick.
+    const off = onClockChange(() => { clearTimeout(id); tick() })
+    // TV clock check: on start (after the page settles) and every six hours, when online.
+    const first = setTimeout(() => { void checkClock() }, 5_000)
+    const again = setInterval(() => { void checkClock() }, CHECK_EVERY_MS)
+    window.addEventListener('online', onOnline)
+    return () => { clearTimeout(id); off(); clearTimeout(first); clearInterval(again); window.removeEventListener('online', onOnline) }
   }, [])
   return now
 }
@@ -105,7 +114,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
     if (!source || !config.place) return
     const tz = config.place.tz
     const fetchTables = () => {
-      const z = zoned(Date.now(), tz)
+      const z = zoned(screenNow(), tz)
       for (const y of z.month === 12 ? [z.year, z.year + 1] : [z.year]) {
         ensureTable(source, y, tz).then((changed) => { if (changed) setTables((n) => n + 1) })
       }
@@ -151,7 +160,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
   useEffect(() => {
     if (fixedNow != null || !config.place) return
     const id = setInterval(() => {
-      const z = zoned(Date.now(), config.place!.tz)
+      const z = zoned(screenNow(), config.place!.tz)
       if (z.hour === 3 && z.minute === 0 && navigator.onLine) location.reload()
     }, 30_000)
     return () => clearInterval(id)

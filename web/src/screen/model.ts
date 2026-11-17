@@ -1,7 +1,8 @@
 import { computeFor, type PrayerDay } from '../core/engine'
-import { defaultAuthority, type CalendarAnnouncement } from '../core/calendarSanad'
-import type { HijriDate } from '../core/hijri'
-import { addDays, baseHijri, communityHijri, previewShift } from '../core/season'
+import { defaultAuthority, type CalendarAnnouncement, type HijriEvent } from '../core/calendarSanad'
+import { gregorianFromHijri, type HijriDate } from '../core/hijri'
+import { qiblaDays, sunPosition } from '../core/falak'
+import { addDays, authorityDate, baseHijri, civilKey, communityHijri, daysApart, previewShift, type CivilDay } from '../core/season'
 import { officialSourceFor, sourceLabel, type OfficialSource } from '../core/official'
 import type { Place } from '../core/place'
 import { PRAYERS, prayerName, type NamingStyle, type Prayer } from '../core/prayer'
@@ -187,6 +188,108 @@ export function phaseAt(now: number, c: ScreenConfig, lookup: RowLookup): Phase 
   return { kind: 'waiting', current: null, next: 'fajr', at: tomorrow.day.times.fajr, day: tomorrow }
 }
 
+// MARK: Occasions and the sun over the Kaaba
+
+/** The big dates the screen can count down to. */
+export type Occasion = 'ramadan' | 'aidilfitri' | 'aidiladha' | 'maalHijrah' | 'maulid'
+const OCCASIONS: { id: Occasion; month: number; day: number; event: HijriEvent | null }[] = [
+  { id: 'maalHijrah', month: 1, day: 1, event: '1_muharram' },
+  { id: 'maulid', month: 3, day: 12, event: null },
+  { id: 'ramadan', month: 9, day: 1, event: '1_ramadan' },
+  { id: 'aidilfitri', month: 10, day: 1, event: '1_syawal' },
+  { id: 'aidiladha', month: 12, day: 10, event: '10_zulhijjah' },
+]
+/** The line appears this many days before the date. */
+export const OCCASION_DAYS_AHEAD = 100
+
+export interface NextOccasion { id: Occasion; date: CivilDay; days: number; announced: boolean }
+
+const civilOf = (ms: number, tz: string): CivilDay => { const z = zoned(ms, tz); return { year: z.year, month: z.month, day: z.day } }
+const occasionCache = new Map<string, NextOccasion | null>()
+
+/**
+ * The civil day on which a Hijri date falls for this masjid: the authority's
+ * announced or published date first (data/calendar.json), otherwise the day the
+ * screen's own Hijri date (with the committee's adjustment) reaches it.
+ */
+export function occasionDate(c: ScreenConfig, o: typeof OCCASIONS[number], hijriYear: number): { date: CivilDay; announced: boolean } | null {
+  if (o.event && c.ramadan.preview === 'off') {
+    const a = authorityDate(announcements, defaultAuthority(c.place?.cc ?? '') ?? null, o.event, hijriYear)
+    if (a) return { date: a.day, announced: a.announced }
+  }
+  const estimate = gregorianFromHijri(hijriYear, o.month, o.day)
+  if (!estimate) return null
+  for (const step of [0, -1, 1, -2, 2, -3, 3]) {
+    const g = addDays(estimate, step)
+    const h = screenHijri(c, g.year, g.month, g.day)
+    if (h.year === hijriYear && h.month === o.month && h.day === o.day) return { date: g, announced: false }
+  }
+  return { date: addDays(estimate, -c.hijriAdj), announced: false }
+}
+
+/** The next big date from the masjid's today (today itself counts), within OCCASION_DAYS_AHEAD days. */
+export function nextOccasion(now: number, c: ScreenConfig): NextOccasion | null {
+  if (!c.place) return null
+  const today = civilOf(now, c.place.tz)
+  const key = `${civilKey(today)}|${c.place.cc}|${c.hijriAdj}|${c.ramadan.preview}|${announcements.length}`
+  if (occasionCache.has(key)) return occasionCache.get(key)!
+  const h = screenHijri(c, today.year, today.month, today.day)
+  let best: NextOccasion | null = null
+  for (const year of [h.year - 1, h.year, h.year + 1]) {
+    for (const o of OCCASIONS) {
+      const d = occasionDate(c, o, year)
+      if (!d) continue
+      const days = daysApart(today, d.date)
+      if (days < 0 || days > OCCASION_DAYS_AHEAD) continue
+      if (!best || days < best.days) best = { id: o.id, date: d.date, days, announced: d.announced }
+    }
+  }
+  if (occasionCache.size > 50) occasionCache.clear()
+  occasionCache.set(key, best)
+  return best
+}
+
+const kaabaYears = new Map<number, number[]>()
+/** The two noons a year when the sun stands over the Kaaba (core/falak.ts, the app's own astronomy). */
+function kaabaMoments(year: number): number[] {
+  let list = kaabaYears.get(year)
+  if (!list) { list = qiblaDays(year); kaabaYears.set(year, list) }
+  return list
+}
+
+/**
+ * On the masjid's day when the sun passes over the Kaaba, the moment it does, if
+ * the sun is up at the masjid then (so shadows can be used to check the qibla).
+ */
+export function kaabaMomentToday(now: number, c: ScreenConfig): number | null {
+  if (!c.place) return null
+  const tz = c.place.tz
+  const today = civilOf(now, tz)
+  for (const year of [today.year - 1, today.year, today.year + 1]) {
+    for (const t of kaabaMoments(year)) {
+      const d = civilOf(t, tz)
+      if (d.year !== today.year || d.month !== today.month || d.day !== today.day) continue
+      const sunUp = sunPosition(t, { latitude: c.place.lat, longitude: c.place.lng }).altitude
+      return sunUp >= 5 ? t : null
+    }
+  }
+  return null
+}
+
+/** Occasion names follow the masjid's words: Malay names in Singapore, Malaysia and Brunei, Indonesian in Indonesia. */
+export function occasionName(id: Occasion, c: ScreenConfig): string {
+  const cc = c.place?.cc ?? ''
+  const style = c.lang === 'ms' ? 'malay' : c.lang === 'id' ? 'indonesian'
+    : ['SG', 'MY', 'BN'].includes(cc) ? 'malay' : cc === 'ID' ? 'indonesian' : 'english'
+  return OCCASION_NAMES[style][id]
+}
+
+const OCCASION_NAMES: Record<'malay' | 'indonesian' | 'english', Record<Occasion, string>> = {
+  malay: { ramadan: '1 Ramadan', aidilfitri: 'Hari Raya Aidilfitri', aidiladha: 'Hari Raya Aidiladha', maalHijrah: 'Maal Hijrah', maulid: 'Maulidur Rasul' },
+  indonesian: { ramadan: '1 Ramadan', aidilfitri: 'Idul Fitri', aidiladha: 'Idul Adha', maalHijrah: 'Tahun Baru Islam', maulid: 'Maulid Nabi' },
+  english: { ramadan: '1 Ramadan', aidilfitri: 'Eid al-Fitr', aidiladha: 'Eid al-Adha', maalHijrah: 'Islamic New Year', maulid: 'Mawlid' },
+}
+
 // MARK: Words
 
 export const ARABIC: Record<Prayer, string> = {
@@ -205,6 +308,10 @@ export interface Words {
   edit: string; source: string; getApp: string; noPlace: string
   nowTag: string; inTag: (d: string) => string; scan: string
   tarawih: string; afterIsha: string; qiyam: string; eid: string; ramadanDay: (n: number) => string; raya: string; takbir: string; lastTen: string
+  /** "Hari Raya Aidiladha in 12 days", "... tomorrow", "... today". */
+  occasion: (name: string, days: number) => string
+  /** "Sun over the Kaaba" + "today at" + time + the hint. Draft wording for the owner. */
+  kaaba: string; kaabaAt: string; kaabaHint: string
 }
 
 export const WORDS: Record<ScreenLanguage, Words> = {
@@ -216,6 +323,8 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     nowTag: 'Now', inTag: (d) => `in ${d}`, scan: 'Scan for iqamah times',
     tarawih: 'Tarawih', afterIsha: 'after Isyak', qiyam: 'Qiyamullail', eid: 'Hari Raya prayer', ramadanDay: (n) => `Ramadan day ${n}`,
     raya: 'Selamat Hari Raya Aidilfitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'The last ten nights',
+    occasion: (n, d) => d === 0 ? `${n} today` : d === 1 ? `${n} tomorrow` : `${n} in ${d} days`,
+    kaaba: 'Sun over the Kaaba', kaabaAt: 'today at', kaabaHint: 'face the sun and you face the qibla',
   },
   ms: {
     next: 'Seterusnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Sila senyapkan telefon bimbit anda',
@@ -225,6 +334,8 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Imbas untuk waktu iqamah',
     tarawih: 'Tarawih', afterIsha: 'selepas Isyak', qiyam: 'Qiamullail', eid: 'Solat Sunat Aidilfitri', ramadanDay: (n) => `${n} Ramadan`,
     raya: 'Selamat Hari Raya Aidilfitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'Sepuluh malam terakhir',
+    occasion: (n, d) => d === 0 ? `Hari ini ${n}` : d === 1 ? `Esok ${n}` : `${d} hari lagi ${n}`,
+    kaaba: 'Matahari tegak di atas Kaabah', kaabaAt: 'hari ini pada', kaabaHint: 'menghadap matahari bererti menghadap kiblat',
   },
   id: {
     next: 'Berikutnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Mohon nonaktifkan nada dering ponsel',
@@ -234,6 +345,8 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Pindai untuk jadwal iqamah',
     tarawih: 'Tarawih', afterIsha: 'setelah Isya', qiyam: 'Qiyamul lail', eid: 'Sholat Idul Fitri', ramadanDay: (n) => `${n} Ramadan`,
     raya: 'Selamat Hari Raya Idul Fitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'Sepuluh malam terakhir',
+    occasion: (n, d) => d === 0 ? `Hari ini ${n}` : d === 1 ? `Besok ${n}` : `${d} hari lagi ${n}`,
+    kaaba: 'Matahari tepat di atas Ka\'bah', kaabaAt: 'hari ini pukul', kaabaHint: 'menghadap matahari berarti menghadap kiblat',
   },
 }
 
