@@ -57,8 +57,6 @@ final class AccessibilityAuditTests: XCTestCase {
         case .dynamicType: "dynamicType"
         case .textClipped: "textClipped"
         case .trait: "trait"
-        case .action: "action"
-        case .parentChild: "parentChild"
         default: "other(\(t.rawValue))"
         }
     }
