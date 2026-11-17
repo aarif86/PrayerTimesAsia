@@ -75,7 +75,10 @@ class AppState(
     val isCheckingLocation: Boolean
         get() = prefs.useGPS && location.hasPermission && !hasFreshFix && gpsPlace != null
     var now by mutableStateOf(fixedNow ?: Instant.now())
-    var selectedTab by mutableStateOf(Tab.PRAYER)
+    private var tab by mutableStateOf(Tab.PRAYER)
+    var selectedTab: Tab
+        get() = tab
+        set(value) { tab = value; usageScreen(value) }
     var showJourney by mutableStateOf(false)
     var showTracker by mutableStateOf(false)
     var showRamadan by mutableStateOf(false)
@@ -410,6 +413,20 @@ class AppState(
             delay(8_000)
             if (prefs.shareUsage) usage.countOpen(resolver.activePlace)
         }
+    }
+
+    private val usageOn: Boolean get() = prefs.shareUsage && prefs.hasOnboarded && sideEffects && fixedNow == null
+
+    /** Minutes on screen, opens and screens used today, sent as one summary the next day. */
+    fun usageVisible(visible: Boolean) {
+        if (!visible) { if (sideEffects) usage.tallyStop(); return }
+        if (!usageOn) return
+        scope.launch { usage.tallyStart(resolver.activePlace) }
+        usageScreen(selectedTab)
+    }
+
+    private fun usageScreen(tab: Tab) {
+        if (usageOn) usage.tallyScreen(tab.name.lowercase())
     }
 
     /** Anonymous count of a Barakah Picks card seen (once a day) or tapped (docs/community-cards.md). */

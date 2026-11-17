@@ -90,11 +90,17 @@ export function App() {
     // Counted a few seconds in, so the GPS place has usually arrived.
     const count = () => setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000)
     count()
-    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); void s.refreshData(); scheduleAlerts(); count() } }
+    s.usageVisible(true)
+    const onVisible = () => {
+      s.usageVisible(document.visibilityState === 'visible')
+      if (document.visibilityState === 'visible') { s.refreshOfficial(); void s.refreshData(); scheduleAlerts(); count() }
+    }
+    const onHide = () => s.usageVisible(false)
+    addEventListener('pagehide', onHide)
     // On moon sighting nights the announcement can arrive while the app is open.
     const poll = setInterval(() => { void s.refreshData() }, 10 * 60_000)
     document.addEventListener('visibilitychange', onVisible)
-    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll) }
+    return () => { document.removeEventListener('visibilitychange', onVisible); removeEventListener('pagehide', onHide); clearInterval(poll) }
   }, [])
 
   // Re-arm the next prayer alert whenever anything changes.

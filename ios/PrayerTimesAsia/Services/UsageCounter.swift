@@ -128,6 +128,114 @@ enum UsageCounter {
         Task.detached(priority: .utility) { await send(types: [event.rawValue], payload: body, clientUser: id) }
     }
 
+    // MARK: A day of use (App.daySummary)
+
+    /// Minutes on screen, opens and screens used on one day. Kept on the phone and
+    /// sent once, as one event, on the first open of a later day. The same as the
+    /// web and Android apps (docs/analytics.md).
+    struct DayTally: Codable, Equatable {
+        var day: String
+        var seconds: Double = 0
+        var opens: Int = 0
+        var screens: [String] = []
+    }
+
+    /// One stretch on screen counts at most this long (a phone left open on a table).
+    static let maxStretch: TimeInterval = 2 * 3_600
+    static let screens = ["prayer", "qibla", "falak", "masjid", "settings"]
+    private static let tallyKey = "usage.day"
+    private static var activeSince: Date?
+
+    /// Starts today's tally, handing back the older one if it has anything to send.
+    static func roll(_ t: DayTally?, today: String) -> (tally: DayTally, finished: DayTally?) {
+        if let t, t.day == today { return (t, nil) }
+        guard let t, t.seconds > 0 || t.opens > 0 else { return (DayTally(day: today), nil) }
+        return (DayTally(day: today), t)
+    }
+
+    static func adding(_ seconds: TimeInterval, to t: DayTally) -> DayTally {
+        var out = t
+        out.seconds += max(0, min(maxStretch, seconds.rounded()))
+        return out
+    }
+
+    static func adding(screen: String, to t: DayTally) -> DayTally {
+        var out = t
+        if !out.screens.contains(screen) { out.screens.append(screen) }
+        return out
+    }
+
+    static func minutesBand(_ minutes: Double) -> String {
+        switch minutes {
+        case ..<1: return "under 1"
+        case ..<5: return "1 to 5"
+        case ..<15: return "5 to 15"
+        case ..<30: return "15 to 30"
+        case ..<60: return "30 to 60"
+        default: return "over 60"
+        }
+    }
+
+    static func dayPayload(_ base: [String: String], _ t: DayTally) -> [String: String] {
+        var out = base
+        out["Day.date"] = t.day
+        out["Day.minutes"] = String(Int((t.seconds / 60).rounded()))
+        out["Day.minutesBand"] = minutesBand(t.seconds / 60)
+        out["Day.opens"] = String(t.opens)
+        out["Day.screens"] = t.screens.sorted().joined(separator: ",")
+        for s in screens { out["Used.\(s)"] = t.screens.contains(s) ? "true" : "false" }
+        return out
+    }
+
+    static func localDay(_ date: Date = .now) -> String {
+        let c = Calendar.current.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
+    }
+
+    private static func readTally() -> DayTally? {
+        UserDefaults.standard.data(forKey: tallyKey).flatMap { try? JSONDecoder().decode(DayTally.self, from: $0) }
+    }
+
+    private static func writeTally(_ t: DayTally) {
+        UserDefaults.standard.set(try? JSONEncoder().encode(t), forKey: tallyKey)
+    }
+
+    /// The app came on screen: one open for today, start the clock, and on the
+    /// first open of a new day send the last day's summary. AppModel checks Settings first.
+    @MainActor
+    static func tallyStart(place: Place?) {
+        let (tally, finished) = roll(readTally(), today: localDay())
+        var t = tally
+        t.opens += 1
+        writeTally(t)
+        activeSince = .now
+        guard let finished else { return }
+        let defaults = UserDefaults.standard
+        if defaults.string(forKey: idKey) == nil { defaults.set(UUID().uuidString, forKey: idKey) }
+        let id = defaults.string(forKey: idKey) ?? UUID().uuidString
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let base = payload(version: version, system: UIDevice.current.systemVersion,
+                           language: Locale.preferredLanguages.first ?? "en",
+                           city: place?.district ?? place?.name, countryCode: place?.countryCode)
+        let body = dayPayload(base, finished)
+        Task.detached(priority: .utility) { await send(types: ["App.daySummary"], payload: body, clientUser: id) }
+    }
+
+    /// The app left the screen: adds the time since it came on.
+    @MainActor
+    static func tallyStop() {
+        guard let since = activeSince else { return }
+        let t = roll(readTally(), today: localDay()).tally
+        writeTally(adding(Date.now.timeIntervalSince(since), to: t))
+        activeSince = nil
+    }
+
+    /// A screen (tab) was used today.
+    @MainActor
+    static func tallyScreen(_ screen: String) {
+        writeTally(adding(screen: screen, to: roll(readTally(), today: localDay()).tally))
+    }
+
     private static func send(types: [String], payload: [String: String], clientUser: String) async {
         guard let appID = await config()?.appID else { return }
         #if DEBUG
