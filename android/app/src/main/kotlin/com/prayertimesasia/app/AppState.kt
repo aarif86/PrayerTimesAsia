@@ -60,9 +60,19 @@ class AppState(
 
     var prefs by mutableStateOf(initialPrefs)
         private set
-    /** The place resolved from the latest GPS fix. */
-    var gpsPlace by mutableStateOf<Place?>(null)
+    /**
+     * The place resolved from the latest GPS fix. Starts on the last one saved, so the
+     * times show at once instead of "Finding where you are" while the phone gets a fresh fix.
+     */
+    var gpsPlace by mutableStateOf<Place?>(if (sideEffects) store?.lastGpsPlace() else null)
         private set
+    /** A fresh fix has arrived since the app started (until then the place is the last saved one). */
+    var hasFreshFix by mutableStateOf(false)
+        private set
+
+    /** Showing the last known place while the phone checks where it is now. */
+    val isCheckingLocation: Boolean
+        get() = prefs.useGPS && location.hasPermission && !hasFreshFix && gpsPlace != null
     var now by mutableStateOf(fixedNow ?: Instant.now())
     var selectedTab by mutableStateOf(Tab.PRAYER)
     var showJourney by mutableStateOf(false)
@@ -128,15 +138,24 @@ class AppState(
     // MARK: Places
 
     fun onLocation(location: Location) {
+        hasFreshFix = true
+        // Show times at once with an offline guess (the phone's time zone gives the
+        // country) when we've moved, then refine with the geocoder's town name.
+        val guess = this.location.offlinePlace(location)
+        val before = gpsPlace
+        if (before == null || !before.isNear(guess)) adoptGps(guess)
         scope.launch {
             val place = this@AppState.location.place(location)
             val previous = gpsPlace
-            if (previous == null || !previous.isNear(place) || previous.name != place.name) {
-                gpsPlace = place
-                if (prefs.useGPS) arrived(place)
-                refreshOfficialTimetable()
-            }
+            if (previous == null || !previous.isNear(place) || previous.name != place.name) adoptGps(place)
         }
+    }
+
+    private fun adoptGps(place: Place) {
+        gpsPlace = place
+        if (sideEffects) store?.saveLastGpsPlace(place)
+        if (prefs.useGPS) arrived(place)
+        refreshOfficialTimetable()
     }
 
     fun choose(place: Place) {

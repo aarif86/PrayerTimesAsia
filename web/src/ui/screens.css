@@ -500,3 +500,8 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .tarawih-dots span.on { background: currentColor; opacity: 1; }
 .chip:disabled { opacity: .45; }
 .tarawih-tap .caption { font-size: 15px; }
+
+/* The GPS arrow pulses while the app shows the last known place and checks where we are now. */
+.checking-location { animation: checking-location 1.4s ease-in-out infinite; }
+@keyframes checking-location { 50% { opacity: 0.3; } }
+@media (prefers-reduced-motion: reduce) { .checking-location { animation: none; opacity: 0.6; } }

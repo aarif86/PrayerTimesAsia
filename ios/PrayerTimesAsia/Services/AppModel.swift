@@ -49,6 +49,29 @@ final class AppModel {
             }
         }
         if ProcessInfo.processInfo.arguments.contains("-masjid-link") { pendingMasjid = Self.demoMasjid }
+        // Open on the last place GPS found, so the times show at once instead of
+        // "Finding where you are" while the phone gets a fresh fix. The fresh fix
+        // then updates the place (and the country's method) in place.
+        if !Self.isDemo { gpsPlace = Self.loadLastGPSPlace() }
+    }
+
+    // MARK: Last GPS place
+
+    private static let lastGPSPlaceKey = "lastGPSPlace.v1"
+
+    private static func loadLastGPSPlace() -> Place? {
+        guard let data = UserDefaults.standard.data(forKey: lastGPSPlaceKey) else { return nil }
+        return try? JSONDecoder().decode(Place.self, from: data)
+    }
+
+    private static func saveLastGPSPlace(_ place: Place) {
+        if let data = try? JSONEncoder().encode(place) { UserDefaults.standard.set(data, forKey: lastGPSPlaceKey) }
+    }
+
+    /// Showing the last known place while the phone checks where it is now
+    /// (the location arrow pulses until the fresh fix lands).
+    var isCheckingLocation: Bool {
+        prefs.useGPS && location.isAuthorized && location.location == nil && gpsPlace != nil
     }
 
     /// For screenshots only: a made-up masjid in Pasir Ris with typical iqamah gaps.
@@ -607,6 +630,7 @@ final class AppModel {
 
     private func adopt(gps place: Place) {
         gpsPlace = place
+        if !Self.isDemo { Self.saveLastGPSPlace(place) }
         if prefs.useGPS { arrived(at: place) }
         refreshOfficialTimetable()
     }

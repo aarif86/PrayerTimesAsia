@@ -221,6 +221,7 @@ struct TodayView: View {
         Button { showPlaces = true } label: {
             HStack(spacing: 5) {
                 Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
+                    .symbolEffect(.pulse, isActive: model.isCheckingLocation)
                 Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
                 if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                 Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
@@ -310,6 +311,7 @@ struct TodayView: View {
             Button { showPlaces = true } label: {
                 HStack(spacing: 5) {
                     Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
+                        .symbolEffect(.pulse, isActive: model.isCheckingLocation)
                     Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
@@ -464,6 +466,7 @@ struct TodayView: View {
                     Button { showPlaces = true } label: {
                         HStack(spacing: 5) {
                             Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
+                                .symbolEffect(.pulse, isActive: model.isCheckingLocation)
                             Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
                             if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                             Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
@@ -696,6 +699,7 @@ struct TodayView: View {
                 Rectangle().fill(Color.primary.opacity(0.3)).frame(width: 1, height: 12)
                 HStack(spacing: 5) {
                     Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
+                        .symbolEffect(.pulse, isActive: model.isCheckingLocation)
                     Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)

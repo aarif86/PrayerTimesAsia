@@ -80,9 +80,7 @@ class LocationService(private val context: Context) {
     suspend fun place(location: Location): Place {
         val coords = Coordinates(location.latitude, location.longitude)
         val tz = TimeZone.getDefault().id
-        val guess = AsiaRegions.countryCode(tz)
-        val offline = Place(name = "Current location", countryCode = guess, countryName = AsiaRegions.profile(guess)?.name,
-            timeZoneId = tz, coordinates = coords)
+        val offline = offlinePlace(location)
         val address = reverse(location.latitude, location.longitude) ?: return offline
         val code = address.countryCode
         return Place(
@@ -94,6 +92,14 @@ class LocationService(private val context: Context) {
             coordinates = coords,
             district = address.subAdminArea,
         )
+    }
+
+    /** A quick guess with no network: the fix, and the country from the phone's time zone. */
+    fun offlinePlace(location: Location): Place {
+        val tz = TimeZone.getDefault().id
+        val guess = AsiaRegions.countryCode(tz)
+        return Place(name = "Current location", countryCode = guess, countryName = AsiaRegions.profile(guess)?.name,
+            timeZoneId = tz, coordinates = Coordinates(location.latitude, location.longitude))
     }
 
     private suspend fun reverse(lat: Double, lng: Double): Address? {
