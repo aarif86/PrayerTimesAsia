@@ -30,6 +30,14 @@ enum Theme {
     static func display(_ size: CGFloat, _ weight: Font.Weight = .semibold) -> Font {
         .system(size: size, weight: weight, design: .rounded)
     }
+
+    /// A screen's big title ("Qibla", "Falak", "Journey"): 34 pt like before, and it
+    /// grows with the phone's text size setting.
+    static let screenTitle = Font.system(.largeTitle, design: .rounded, weight: .bold)
+
+    /// True when the app is opened by the UI tests with -still: the sky stops moving,
+    /// so Apple's accessibility audit can finish (it times out on a moving screen).
+    static let still = ProcessInfo.processInfo.arguments.contains("-still")
 }
 
 /// Frosted card used on top of the sky.

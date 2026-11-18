@@ -4,6 +4,7 @@ import SwiftUI
 /// path, then the day's times - large, colour-coded, AM/PM never wrapping.
 struct TodayView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var showPlaces = false
     @State private var showCalendar = false
     @State private var showTracker = false
@@ -222,7 +223,7 @@ struct TodayView: View {
             HStack(spacing: 5) {
                 Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                     .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
+                Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1).minimumScaleFactor(0.8)
                 if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                 Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
             }
@@ -312,7 +313,7 @@ struct TodayView: View {
                 HStack(spacing: 5) {
                     Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                         .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
+                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1).minimumScaleFactor(0.8)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                 }
@@ -429,6 +430,8 @@ struct TodayView: View {
             .lineLimit(1)
             .minimumScaleFactor(0.6)
             .accessibilityElement(children: .combine)
+            // Sized to the dial, not to the text size setting: it has to fit inside the circle.
+            .accessibilityIdentifier("dial-centre")
         } else {
             Image(systemName: "moon.stars").font(.system(size: size * 0.08, weight: .light)).opacity(0.5)
         }
@@ -467,7 +470,7 @@ struct TodayView: View {
                         HStack(spacing: 5) {
                             Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                                 .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                            Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
+                            Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
                             if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                             Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                         }
@@ -700,7 +703,7 @@ struct TodayView: View {
                 HStack(spacing: 5) {
                     Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                         .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
+                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                 }
@@ -725,7 +728,8 @@ struct TodayView: View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Circle().fill(current.prayer.tint).frame(width: 9, height: 9)
-                Text(currentName).font(Theme.display(30, .bold))
+                Text(currentName).font(.system(.title, design: .rounded, weight: .bold))
+                    .lineLimit(1).minimumScaleFactor(0.5)
             }
             Text(count.text)
                 .font(.subheadline.weight(.semibold))
@@ -949,7 +953,8 @@ struct TodayView: View {
         HStack(spacing: 10) {
             Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText)
             Text("Get an alert when each prayer begins").font(.subheadline.weight(.semibold))
-                .lineLimit(2).minimumScaleFactor(0.85)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 2).minimumScaleFactor(0.85)
+                .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
             Spacer(minLength: 4)
             Button("Turn on") {
                 Task {
@@ -1309,6 +1314,7 @@ private struct BlessedMark: View {
 /// on, to tick it off.
 private struct PrayerBand: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     let prayer: Prayer
     let time: Date
     let now: Date
@@ -1366,7 +1372,7 @@ private struct PrayerBand: View {
             }
             .foregroundStyle(.white)
             .padding(.horizontal, Theme.gutter)
-            .frame(maxWidth: .infinity, minHeight: 64, maxHeight: fill ? .infinity : 64)
+            .frame(maxWidth: .infinity, minHeight: 64, maxHeight: fill || typeSize.isAccessibilitySize ? .infinity : 64)
             .background(BandsPalette.color(prayer))
             .overlay(alignment: .leading) {
                 if isCurrent { Rectangle().fill(.white).frame(width: 5) }

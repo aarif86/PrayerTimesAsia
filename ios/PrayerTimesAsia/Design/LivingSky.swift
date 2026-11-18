@@ -182,8 +182,8 @@ struct BrightSkyLayer: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { context in
-            let t = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate
+        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion || Theme.still)) { context in
+            let t = reduceMotion || Theme.still ? 0 : context.date.timeIntervalSinceReferenceDate
             GeometryReader { geo in
                 let w = geo.size.width
                 ZStack {

@@ -79,7 +79,7 @@ struct FalakView: View {
                 Image("Tab-falak").resizable().frame(width: 38, height: 38)
                     .foregroundStyle(Theme.accentText)
                     .accessibilityHidden(true)
-                Text("Falak").font(Theme.display(34, .bold)).accessibilityAddTraits(.isHeader)
+                Text("Falak").font(Theme.screenTitle).accessibilityAddTraits(.isHeader)
             }
             Text("Read the time and the qibla from the sun and its shadow, the way the muwaqqit did - no signal needed.")
                 .font(.subheadline).opacity(0.9)
