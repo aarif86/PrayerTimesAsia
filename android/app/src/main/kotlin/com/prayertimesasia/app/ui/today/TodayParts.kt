@@ -2,6 +2,11 @@
 
 package com.prayertimesasia.app.ui.today
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -52,6 +57,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -187,6 +194,15 @@ fun HeaderButtons(state: AppState, showMusafir: Boolean = true, background: Colo
 }
 
 /** "➤ Pasir Ris 🇸🇬 ⌄" - where we are; tap to change. */
+/** The GPS arrow (or a pin for a chosen city). It pulses while the phone checks where it is now. */
+@Composable
+private fun PlaceIcon(state: AppState, size: Dp) {
+    val pulse = rememberInfiniteTransition(label = "checking location")
+    val fade by pulse.animateFloat(1f, 0.3f, infiniteRepeatable(tween(700), RepeatMode.Reverse), label = "alpha")
+    val alpha = if (state.isCheckingLocation) fade else 1f
+    Icon(if (state.prefs.useGPS) Icons.Filled.NearMe else Icons.Filled.Place, null, Modifier.size(size).alpha(alpha), tint = Palette.primary)
+}
+
 @Composable
 fun PlaceChip(state: AppState, onClick: () -> Unit, big: Boolean = false, outlined: Boolean = true) {
     val place = state.resolver.activePlace
@@ -198,7 +214,7 @@ fun PlaceChip(state: AppState, onClick: () -> Unit, big: Boolean = false, outlin
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp),
     ) {
-        Icon(if (state.prefs.useGPS) Icons.Filled.NearMe else Icons.Filled.Place, null, Modifier.size(if (big) 15.dp else 12.dp), tint = Palette.primary)
+        PlaceIcon(state, if (big) 15.dp else 12.dp)
         Text(place?.name ?: "Choose a place", style = if (big) Txt.title3.copy(fontWeight = FontWeight.Bold) else Txt.subheadlineSemibold,
             color = Palette.primary, maxLines = 1)
         if (place != null && place.isInAsia) Text(place.profile.flag, fontSize = if (big) 18.sp else 14.sp)
@@ -220,7 +236,7 @@ fun DayPlaceChip(state: AppState, offset: Int, onClick: () -> Unit) {
         ) {
             Text(dayLabel(offset), style = Txt.captionSemibold.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = 0.5.sp), color = Palette.primary)
             Box(Modifier.width(1.dp).height(12.dp).background(Palette.primary.copy(alpha = 0.3f)))
-            Icon(if (state.prefs.useGPS) Icons.Filled.NearMe else Icons.Filled.Place, null, Modifier.size(12.dp), tint = Palette.primary)
+            PlaceIcon(state, 12.dp)
             Text(place?.name ?: "Choose a place", style = Txt.subheadlineSemibold, color = Palette.primary, maxLines = 1)
             if (place != null && place.isInAsia) Text(place.profile.flag, fontSize = 14.sp)
             Icon(Icons.Filled.KeyboardArrowDown, null, Modifier.size(16.dp), tint = Palette.primary.copy(alpha = 0.6f))
