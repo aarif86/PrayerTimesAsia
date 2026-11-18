@@ -57,7 +57,7 @@ struct Chip: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            if let systemImage { Image(systemName: systemImage) }
+            if let systemImage { Image(systemName: systemImage).accessibilityHidden(true) }
             Text(text)
         }
         .font(.footnote.weight(.semibold))

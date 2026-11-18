@@ -951,7 +951,7 @@ struct TodayView: View {
 
     private var alertsPrompt: some View {
         HStack(spacing: 10) {
-            Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText)
+            Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText).accessibilityHidden(true)
             Text("Get an alert when each prayer begins").font(.subheadline.weight(.semibold))
                 .lineLimit(typeSize.isAccessibilitySize ? nil : 2).minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
@@ -968,7 +968,7 @@ struct TodayView: View {
             .tint(Theme.sunArc)
             .foregroundStyle(.black.opacity(0.8))
             Button { withAnimation { model.prefs.alertsPromptDismissed = true } } label: {
-                Image(systemName: "xmark").font(.caption.weight(.bold)).opacity(0.6).frame(width: 24, height: 24)
+                Image(systemName: "xmark").font(.caption.weight(.bold)).opacity(0.6).frame(width: 44, height: 44).contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Not now")
@@ -1106,7 +1106,8 @@ private struct PrayerList: View {
                     Image(systemName: notifying ? "bell.fill" : "bell.slash")
                         .font(.subheadline)
                         .opacity(notifying ? 0.95 : 0.4)
-                        .frame(width: 30, height: 34)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(notifying ? "Turn off alert" : "Turn on alert")
@@ -1465,7 +1466,7 @@ private struct LongDaysNote: View {
                     }
                     Spacer(minLength: 0)
                     Button { withAnimation(.snappy) { model.closeLongDaysNote(key) } } label: {
-                        Image(systemName: "xmark").font(.footnote.weight(.bold)).padding(6)
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(w.close)
@@ -1500,7 +1501,7 @@ private struct ArrivalCard: View {
                     }
                     Spacer(minLength: 0)
                     Button { model.prefs.arrivalBannerDismissed = true } label: {
-                        Image(systemName: "xmark").font(.footnote.weight(.bold)).padding(6)
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss")

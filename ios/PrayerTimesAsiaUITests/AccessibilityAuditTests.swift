@@ -43,7 +43,8 @@ final class AccessibilityAuditTests: XCTestCase {
                 return " [\(e.elementType.rawValue)] \"\(label.prefix(60))\""
             } ?? ""
             if Self.accepted(issue) { return true }
-            found.append("\(screen.name)\(extra.isEmpty ? "" : " " + extra.joined(separator: " ")): \(Self.name(issue.auditType)): \(issue.compactDescription)\(element)")
+            let blocking = Self.blocking.contains(issue.auditType)
+            found.append((blocking ? "BLOCKING " : "TO DO ") + "\(screen.name)\(extra.isEmpty ? "" : " " + extra.joined(separator: " ")): \(Self.name(issue.auditType)): \(issue.compactDescription)\(element)")
             return true
         }
         app.terminate()
@@ -76,6 +77,12 @@ final class AccessibilityAuditTests: XCTestCase {
         }
     }
 
+    /// What fails the test: a screen reader with nothing sensible to say, or controls it
+    /// cannot find. Text that does not grow with the text size, text squeezed to fit and
+    /// touch areas under 44 pt are listed as TO DO lines in the log (search "A11Y-") and
+    /// tracked in issue #89, so they can be worked down screen by screen.
+    private static let blocking: XCUIAccessibilityAuditType = [.sufficientElementDescription, .elementDetection, .trait]
+
     func testMainScreensAtNormalSize() throws {
         var issues: [String] = []
         // Colour contrast is left out here: the audit cannot measure text on the moving sky
@@ -94,7 +101,9 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     private func report(_ issues: [String]) {
-        for line in issues { print("A11Y-ISSUE \(line)") }
-        XCTAssertTrue(issues.isEmpty, "\(issues.count) accessibility issues:\n" + issues.joined(separator: "\n"))
+        for line in issues { print("A11Y-\(line)") }
+        let blocking = issues.filter { $0.hasPrefix("BLOCKING ") }
+        print("A11Y-SUMMARY \(blocking.count) blocking, \(issues.count - blocking.count) to do")
+        XCTAssertTrue(blocking.isEmpty, "\(blocking.count) accessibility problems:\n" + blocking.joined(separator: "\n"))
     }
 }

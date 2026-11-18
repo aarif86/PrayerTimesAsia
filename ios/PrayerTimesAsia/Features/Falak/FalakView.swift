@@ -132,6 +132,7 @@ struct SunSafetyCard: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "eye.trianglebadge.exclamationmark.fill")
                 .font(.title2).foregroundStyle(Theme.warning)
+                .accessibilityHidden(true)
             Text("Never look at the sun - not briefly, not through sunglasses, binoculars or your phone's camera. Look only at the shadow on the ground.")
                 .font(.footnote.weight(.semibold))
         }
