@@ -1,3 +1,4 @@
+import { SiteHomeButton } from './SiteHome'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { ComponentChildren } from 'preact'
 import { Footprints, House, Info, Loader2, MoonStar } from 'lucide-preact'
@@ -159,6 +160,7 @@ export default function MasjidScreen() {
       <div class="masjid-map-wrap">
         <div ref={mapEl} class="masjid-map" />
         <div class="masjid-title">
+          <SiteHomeButton class="masjid-home" />
           <span class="spacer" />
           <h1>Masjid &amp; Musollah</h1>
           <span class="spacer" />

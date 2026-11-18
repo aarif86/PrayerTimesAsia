@@ -23,6 +23,7 @@ import { HomeQuestion } from './Sheets'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { featuredOffer, MakersCard } from './Makers'
 import { appBannerShownByBrowser, phoneAppOffer } from './pwa'
+import { SiteHomeButton } from './SiteHome'
 import { TabJourney } from './icons'
 import { SeasonCard } from './Ramadan'
 import { Hadith } from './Hadith'
@@ -192,6 +193,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
   if (order === 'column') {
     return (
       <div class="controls-col">
+        <SiteHomeButton />
         <JourneyButton now={c.now} withChip />
         <StyleButton c={c} />
         <AppearanceButton c={c} />
@@ -207,6 +209,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
       {store.prefs.trackerEnabled && <StreakChip now={c.now} />}
       <AppearanceButton c={c} />
       <StyleButton c={c} />
+      <SiteHomeButton />
     </>
   )
 }
@@ -800,6 +803,7 @@ function SunPathPage({ c }: { c: Ctx }) {
         {store.prefs.trackerEnabled && <StreakChip now={now} />}
         <AppearanceButton c={c} />
         <StyleButton c={c} />
+        <SiteHomeButton />
       </div>
       <div class="sunpath-wrap" ref={wrap}>
         <SunPath width={width} height={96} now={now} day={c.day} tz={store.timeZone} />
