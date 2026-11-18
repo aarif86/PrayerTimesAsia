@@ -86,6 +86,8 @@ class AppState(
     var permissions: Permissions? = null
     /** Screenshots: pretend the phone faces the qibla. */
     var demoAligned = false
+    /** Screenshots: a Ramadan preview without the testers' PREVIEW tag (store pictures). */
+    var demoMode = false
 
     /** The rules and times for right now. Cheap to build; read it fresh each time. */
     val resolver: Resolver

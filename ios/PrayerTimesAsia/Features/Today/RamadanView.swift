@@ -67,7 +67,8 @@ struct SeasonCard: View {
     }
 
     @ViewBuilder private var previewTag: some View {
-        if model.isSeasonPreview {
+        // Store screenshots (demo launch) leave out the testers' tag.
+        if model.isSeasonPreview, !AppModel.isDemo {
             Text(t(.preview)).font(.caption2.weight(.heavy)).padding(.horizontal, 7).padding(.vertical, 2)
                 .background(gold, in: Capsule()).foregroundStyle(.black).offset(x: -12, y: -8)
         }

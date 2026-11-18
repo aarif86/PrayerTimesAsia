@@ -590,7 +590,7 @@ final class AppModel {
         }
     }
 
-    private static var isDemo: Bool { ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") || $0 == "-widget-preview" } }
+    static var isDemo: Bool { ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") || $0 == "-widget-preview" } }
 
     /// Called when GPS moves. Reverse-geocodes when online; falls back to the
     /// phone's time zone for the country when offline, so times still appear.
