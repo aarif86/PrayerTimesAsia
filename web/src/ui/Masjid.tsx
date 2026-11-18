@@ -6,6 +6,7 @@ import type { Coordinates } from '../core/engine'
 import { distanceKm } from '../core/geo'
 import { looksLikePrayerSpace } from '../core/official'
 import { fetchOK } from '../services/storage'
+import { listNearby } from '../services/masjidList'
 import { useStore } from '../services/store'
 import { openSheet, Segmented } from './common'
 import { tint } from './Dials'
@@ -70,6 +71,9 @@ async function searchNearby(center: Coordinates): Promise<PrayerSpace[] | null> 
         .sort((a, b) => a.distanceKm - b.distanceKm)
     }
   } catch { /* ignore */ }
+  // The weekly ready-made list first: a small file, answered in about a second.
+  const listed = await listNearby(center).catch(() => null)
+  if (listed) return listed
   const q = `[out:json][timeout:20];(nwr["amenity"="place_of_worship"]["religion"="muslim"](around:12000,${lat},${lng}););out center tags;`
   const ask = async (base: string) => {
     // Busy public servers can take 15-30 s to answer, so give each one time.

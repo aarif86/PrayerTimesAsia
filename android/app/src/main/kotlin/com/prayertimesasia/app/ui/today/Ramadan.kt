@@ -59,6 +59,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prayertimesasia.app.AppState
@@ -472,10 +473,14 @@ private fun LastTen(state: AppState, year: Int) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp), maxItemsInEachRow = if (big) 2 else 5) {
         oddNights.filter { it - 2 < days.size }.forEach { n ->
             val eve = days[n - 2]
-            Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (eve == today) Palette.gold.copy(alpha = 0.35f) else Purple.copy(alpha = 0.18f))
-                .padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("$n", style = Txt.title3, color = Palette.primary)
-                Text(if (eve == today) t(RamadanWordKey.tonight) else dateText(eve, "d MMM", t.lang), style = Txt.caption2, color = Palette.primary)
+            // Same tile as Imsak and Subuh above: night, weekday, date, each on one line.
+            val tonight = eve == today
+            Column(Modifier.weight(1f).clip(RoundedCornerShape(14.dp)).background(if (tonight) Palette.gold.copy(alpha = 0.2f) else Palette.primary.copy(alpha = 0.06f))
+                .padding(vertical = 10.dp, horizontal = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("$n", style = Txt.title3, color = if (tonight) Palette.goldText else Palette.primary, maxLines = 1)
+                Text(if (tonight) t(RamadanWordKey.tonight) else dateText(eve, "EEE", t.lang), style = if (tonight) Txt.caption2Heavy else Txt.caption2,
+                    color = if (tonight) Palette.goldText else Palette.secondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(dateText(eve, "d MMM", t.lang), style = Txt.caption2, color = Palette.primary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }
