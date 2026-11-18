@@ -49,8 +49,7 @@ export function QiblaScreen() {
       <div class="qibla-head">
         <h1 class="h-title">Qibla</h1>
         <div class={`qibla-instruction ${isAligned ? 'ok' : ''}`} aria-live="polite">{instruction}</div>
-        {askFirst
-          ? (
+        {askFirst && (
             <button class="compass-on" onClick={turnOn}>
               <CompassIcon size={26} />
               <span class="compass-on-text">
@@ -58,8 +57,8 @@ export function QiblaScreen() {
                 <span class="compass-on-line">Tap here, then press Allow</span>
               </span>
             </button>
-          )
-          : <button class="chip" onClick={() => s.setTab('falak')} aria-label="Falak Mode: find the qibla from the sun"><Sun size={15} fill="currentColor" />Check with the sun</button>}
+        )}
+        <button class="chip" onClick={() => s.setTab('falak')} aria-label="Falak Mode: find the qibla from the sun"><Sun size={15} fill="currentColor" />Check with the sun</button>
       </div>
       <QiblaDial bearing={bearing} heading={heading != null ? dial.current.heading : 0} delta={delta} aligned={isAligned} onTap={askFirst ? turnOn : undefined} />
       <div class="glass card stats">
@@ -193,7 +192,7 @@ function QiblaDial({ bearing, heading, delta, aligned, onTap }: { bearing: numbe
             : <Navigation2 size={size * 0.08} style={{ opacity: 0.6 }} />}
       </div>
       {onTap && (
-        <button class="centre centre-tap" style={{ width: `${size * 0.42}px`, height: `${size * 0.42}px` }} onClick={onTap}>
+        <button class="centre centre-tap" aria-hidden="true" tabIndex={-1} style={{ width: `${size * 0.42}px`, height: `${size * 0.42}px` }} onClick={onTap}>
           <CompassIcon size={size * 0.1} />
           <span>Tap to start</span>
         </button>
