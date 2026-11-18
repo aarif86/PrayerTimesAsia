@@ -505,3 +505,24 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .checking-location { animation: checking-location 1.4s ease-in-out infinite; }
 @keyframes checking-location { 50% { opacity: 0.3; } }
 @media (prefers-reduced-motion: reduce) { .checking-location { animation: none; opacity: 0.6; } }
+/* Qibla: the big "Turn on the compass" button iPhone Safari needs before it shares the compass. */
+.compass-on { display: flex; align-items: center; gap: 12px; margin-top: 4px; padding: 14px 22px 14px 18px; border-radius: 22px; text-align: left;
+  background: var(--accent); color: var(--on-accent); box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent);
+  animation: compass-on-glow 2.4s ease-in-out infinite; }
+.compass-on:active { transform: scale(.97); }
+.compass-on-text { display: flex; flex-direction: column; gap: 2px; }
+.compass-on-title { font-size: 19px; font-weight: 800; }
+.compass-on-line { font-size: 14px; font-weight: 600; opacity: .8; }
+@keyframes compass-on-glow {
+  0%, 100% { box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); }
+  50% { box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 0 10px color-mix(in srgb, var(--accent) 0%, transparent); }
+}
+.qibla-dial .centre-tap { z-index: 4; flex-direction: column; gap: 4px; color: var(--accent); font-weight: 700; font-size: 14px; cursor: pointer;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 70%, transparent); }
+@media (prefers-reduced-motion: reduce) { .compass-on { animation: none; } }
+/* A way back to the website from every tab (web only). Quiet, like the other round buttons. */
+.home-site-btn { text-decoration: none; color: inherit; }
+.home-site-btn.corner { position: absolute; z-index: 3; top: calc(var(--safe-top) + 14px); right: 16px; opacity: .85; }
+.masjid-title .masjid-home { position: absolute; left: 16px; pointer-events: auto; background: rgba(0, 0, 0, 0.25); width: 38px; height: 38px; }
+:root[data-theme="light"] .masjid-title .masjid-home { background: rgba(255, 255, 255, 0.7); }
+@media (min-width: 900px) and (display-mode: browser) { .home-site-btn { display: none !important; } }

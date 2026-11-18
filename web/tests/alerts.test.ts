@@ -207,7 +207,8 @@ describe('calendar files', () => {
   it('puts every alarm in the alarm calendar', () => {
     use(SG, { wakeUp: 'atFajr', maghribAlarm: 'atStart' })
     const ics = buildWakeICS(10)!
-    expect((ics.match(/BEGIN:VEVENT/g) ?? []).length).toBeGreaterThanOrEqual(19)
+    // Two alarms a day for 10 days; late in the evening both of today's have already gone.
+    expect((ics.match(/BEGIN:VEVENT/g) ?? []).length).toBeGreaterThanOrEqual(18)
   })
 })
 
