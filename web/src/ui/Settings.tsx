@@ -278,7 +278,7 @@ export function SettingsScreen() {
         <div class="item footnote"><MapPinOff size={18} />Your exact location stays in this browser. The place name comes from a built-in list, not a server.</div>
         <ToggleItem label="Share anonymous usage counts" on={p.shareUsage} onChange={(v) => store.update((x) => { x.shareUsage = v })}
           sub="Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept." />
-        <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (map tiles and Overpass), which see the area you look at.</div>
+        <div class="item footnote"><MapPinned size={18} />The Masjid map and list use OpenStreetMap data. The map tiles, our weekly masjid list on GitHub and Overpass see only the area you look at.</div>
       </Group>
 
       <Group id="makers" title="From the makers" foot="Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own. No ad networks, nothing tracked.">
