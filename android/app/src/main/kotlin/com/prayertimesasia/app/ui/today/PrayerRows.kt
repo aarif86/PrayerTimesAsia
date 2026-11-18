@@ -283,7 +283,7 @@ fun ColumnScope.PrayerBand(
                 Text(parts.first, style = display(34.sp, FontWeight.Light), color = Color.White, maxLines = 1, softWrap = false,
                     modifier = Modifier.alignByBaseline())
                 parts.second?.let {
-                    Text(it, style = display(22.sp, FontWeight.Light), color = Color.White, modifier = Modifier.alignByBaseline())
+                    Text(it, style = display(22.sp, FontWeight.Bold), color = Color.White, modifier = Modifier.alignByBaseline())
                 }
             }
             if (p.notificationsEnabled && !notifying && prayer.isObligatory) {

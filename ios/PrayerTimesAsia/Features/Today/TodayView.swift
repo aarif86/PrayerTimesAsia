@@ -1357,7 +1357,7 @@ private struct PrayerBand: View {
                 Spacer(minLength: 6)
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(parts.time).font(.system(size: 34, weight: .light)).monospacedDigit()
-                    if let suffix = parts.suffix { Text(suffix).font(.system(size: 22, weight: .light)) }
+                    if let suffix = parts.suffix { Text(suffix).font(.system(size: 22, weight: .bold)) }
                 }
                 .fixedSize()
                 if model.prefs.notificationsEnabled && !notifying && prayer.isObligatory {
