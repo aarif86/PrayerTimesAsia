@@ -526,3 +526,102 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .masjid-title .masjid-home { position: absolute; left: 16px; pointer-events: auto; background: rgba(0, 0, 0, 0.25); width: 38px; height: 38px; }
 :root[data-theme="light"] .masjid-title .masjid-home { background: rgba(255, 255, 255, 0.7); }
 @media (min-width: 900px) and (display-mode: browser) { .home-site-btn { display: none !important; } }
+
+/* ---------- Quick guide (first launch, and from Settings) ---------- */
+.guide { position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; color: #fff;
+  background: radial-gradient(120% 70% at 50% 0%, #3a3480 0%, #151a45 55%, #0b0f2a 100%);
+  padding: calc(var(--safe-top) + 12px) 0 calc(var(--safe-bottom) + 16px); animation: guide-in 0.45s ease-out both; }
+@keyframes guide-in { from { opacity: 0; transform: scale(1.02); } to { opacity: 1; transform: none; } }
+.guide-top { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; min-height: 44px; max-width: 520px; width: 100%; margin: 0 auto; }
+.guide-langs { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); }
+.guide-langs button { font-size: 13px; font-weight: 700; padding: 6px 11px; border-radius: 999px; color: rgba(255, 255, 255, 0.7); letter-spacing: 0.04em; }
+.guide-langs button[aria-pressed="true"] { background: rgba(255, 255, 255, 0.92); color: #151a45; }
+.guide-skip { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.8); padding: 8px 12px; }
+.guide-viewport { flex: 1; overflow: hidden; touch-action: pan-y; max-width: 520px; width: 100%; margin: 0 auto; }
+.guide-track { display: flex; height: 100%; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.guide-track.dragging { transition: none; }
+.guide-card { flex: 0 0 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center;
+  padding: max(4vh, 8px) 32px 8px; gap: 0; user-select: none; -webkit-user-select: none; }
+.guide-card > * { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.guide-card.on > * { opacity: 1; transform: none; }
+.guide-card.on > :nth-child(2) { transition-delay: 0.08s; }
+.guide-card.on > :nth-child(3) { transition-delay: 0.14s; }
+.guide-card.on > :nth-child(4) { transition-delay: 0.2s; }
+.guide-card.on > :nth-child(5) { transition-delay: 0.26s; }
+.guide-card.on > :nth-child(6) { transition-delay: 0.32s; }
+.guide-hello { font-size: 15px; font-weight: 600; color: #f7bd8f; margin: 18px 0 0; }
+.guide-title { font-family: 'Nunito Variable', ui-rounded, system-ui, sans-serif; font-size: 30px; font-weight: 800; line-height: 1.12; margin: 14px 0 12px; }
+.guide-card .guide-hello + .guide-title { margin-top: 6px; }
+.guide-body { font-size: 17px; line-height: 1.5; color: rgba(238, 240, 250, 0.88); margin: 0; max-width: 380px; }
+.guide-again { font-size: 14px; color: rgba(238, 240, 250, 0.65); margin: 14px 0 0; }
+.guide-tabs { display: flex; gap: 6px; margin-top: 26px; padding: 8px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.07); }
+.guide-tabs span { width: 38px; height: 34px; display: grid; place-items: center; border-radius: 999px; color: rgba(255, 255, 255, 0.4); transition: color 0.4s, background 0.4s; }
+.guide-tabs span.lit { color: #151a45; background: #f7bd8f; }
+.guide-foot { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: 'dots dots' 'back next'; align-items: center; gap: 16px 12px; padding: 0 20px; max-width: 520px; width: 100%; margin: 0 auto; }
+.guide-back { grid-area: back; justify-self: start; font-size: 16px; font-weight: 600; color: rgba(255, 255, 255, 0.75); padding: 12px 6px; }
+.guide-next { grid-area: next; justify-self: end; min-width: 112px; padding: 14px 22px; border-radius: 999px; background: #fff; color: #151a45; font-size: 16px; font-weight: 700; }
+.guide-dots { grid-area: dots; justify-self: center; display: flex; gap: 7px; align-items: center; }
+.guide-dots button { width: 7px; height: 7px; border-radius: 99px; background: rgba(255, 255, 255, 0.3); padding: 0; transition: width 0.35s ease, background 0.35s; }
+.guide-dots button.on { width: 22px; background: #f7bd8f; }
+
+/* The pictures: navy compass ring, gold accents, each with its own gentle movement. */
+.guide-scene { position: relative; width: 176px; height: 176px; margin-top: 4vh; display: grid; place-items: center; flex: none; color: #fff; }
+.scene-ring { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, #262b5e 0%, #1c2050 70%);
+  box-shadow: 0 0 0 6px rgba(242, 238, 233, 0.08), 0 0 0 7px rgba(242, 238, 233, 0.18), 0 18px 50px rgba(0, 0, 0, 0.35); }
+.scene-ring::after { content: ''; position: absolute; inset: 12px; border-radius: 50%; border: 1.5px dashed rgba(242, 238, 233, 0.22); }
+.scene-icon { position: relative; }
+.scene-badge { position: absolute; right: 8px; bottom: 10px; width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center;
+  background: #f7bd8f; color: #151a45; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3); }
+.guide-card.on .scene-badge { animation: pop 0.6s 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+
+.scene-orbit { position: absolute; inset: 0; }
+.scene-orbit .sun { position: absolute; top: 6px; left: 50%; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: #e2b65a; box-shadow: 0 0 14px 4px rgba(226, 182, 90, 0.55); }
+.guide-card.on .scene-orbit { animation: spin 9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.guide-card.on .bell { animation: ring 2.4s 0.4s ease-in-out infinite; transform-origin: 50% 8%; }
+@keyframes ring { 0%, 45%, 100% { transform: rotate(0); } 5% { transform: rotate(14deg); } 12% { transform: rotate(-12deg); } 19% { transform: rotate(9deg); } 26% { transform: rotate(-6deg); } 33% { transform: rotate(3deg); } }
+
+.guide-card.on .needle { animation: seek 2.2s 0.2s cubic-bezier(0.34, 1.3, 0.64, 1) both; }
+@keyframes seek { 0% { transform: rotate(-70deg); } 40% { transform: rotate(28deg); } 70% { transform: rotate(-10deg); } 100% { transform: rotate(0); } }
+.scene-glow { position: absolute; inset: 22px; border-radius: 50%; box-shadow: 0 0 0 3px #e2b65a, 0 0 28px 6px rgba(226, 182, 90, 0.5); opacity: 0; }
+.guide-card.on .scene-glow { animation: glow 2.6s 2s ease-in-out infinite; }
+@keyframes glow { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.guide-card.on .scene-qibla .scene-icon { color: #fff; }
+
+.scene-pin { position: absolute; top: 18px; right: 34px; color: #e0634f; }
+.guide-card.on .scene-pin { animation: drop 2.6s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
+@keyframes drop { 0% { transform: translateY(-26px); opacity: 0; } 18%, 80% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+
+.scene-plane { position: absolute; top: 26px; left: 0; right: 0; display: flex; justify-content: center; color: #f7bd8f; }
+.guide-card.on .scene-plane { animation: fly 3.2s ease-in-out infinite; }
+@keyframes fly { 0% { transform: translateX(-60px) rotate(8deg); opacity: 0; } 25%, 70% { opacity: 1; } 100% { transform: translateX(60px) rotate(-8deg); opacity: 0; } }
+.guide-card.on .bag { animation: bob 1.6s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(6px); } 50% { transform: translateY(12px); } }
+.scene-travel .scene-icon { margin-top: 30px; }
+
+.scene-falak { position: relative; overflow: visible; }
+.scene-falak .ground { stroke: rgba(242, 238, 233, 0.4); stroke-width: 2; stroke-linecap: round; }
+.scene-falak .stick { stroke: #fff; stroke-width: 4; stroke-linecap: round; }
+.scene-falak .shadow { stroke: rgba(247, 189, 143, 0.6); stroke-width: 5; stroke-linecap: round; transform-origin: 60px 92px; transform-box: view-box; }
+.scene-falak .sun-arc { transform-origin: 60px 92px; transform-box: view-box; }
+.scene-falak .sun-arc circle { fill: #e2b65a; filter: drop-shadow(0 0 6px rgba(226, 182, 90, 0.8)); }
+.guide-card.on .scene-falak .sun-arc { animation: arc 5s ease-in-out infinite alternate; }
+.guide-card.on .scene-falak .shadow { animation: shade 5s ease-in-out infinite alternate; }
+@keyframes arc { from { transform: rotate(-62deg); } to { transform: rotate(62deg); } }
+@keyframes shade { from { transform: scaleX(1); } 50% { transform: scaleX(0.12); } to { transform: scaleX(-1); } }
+
+.guide-card.on .gear { animation: spin 10s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .guide, .guide-track, .guide-card > * { animation: none !important; transition: none !important; }
+  .guide-scene *, .guide-scene { animation: none !important; }
+  .guide-card > * { opacity: 1; transform: none; }
+  .scene-glow { opacity: 0.6; }
+}
+@media (max-height: 640px) {
+  .guide-scene { transform: scale(0.8); margin: -14px 0; }
+  .guide-title { font-size: 26px; }
+  .guide-body { font-size: 16px; }
+}

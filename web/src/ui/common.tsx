@@ -47,6 +47,7 @@ export type SheetKind =
   | { kind: 'places'; forHome?: boolean } | { kind: 'sanad'; day: PrayerDay } | { kind: 'calendar' } | { kind: 'makers'; placement: string }
   | { kind: 'journey' } | { kind: 'level' } | { kind: 'ar' } | { kind: 'alerts-help' } | { kind: 'credits' } | { kind: 'install' }
   | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup' }
+  | { kind: 'guide' }
 
 let current: SheetKind | null = null
 const listeners = new Set<() => void>()
