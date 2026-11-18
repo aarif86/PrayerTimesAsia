@@ -90,7 +90,6 @@ import java.time.temporal.ChronoUnit
  */
 
 private val RamadanPink = Color(0xFFE06C8A)
-private val Purple = Color(0xFF8E6BD8)
 private val oddNights = listOf(21, 23, 25, 27, 29)
 
 private fun dateText(d: LocalDate, pattern: String = "EEEE d MMMM", lang: RamadanContent.Lang = RamadanContent.Lang.EN): String =
@@ -431,7 +430,7 @@ private fun TarawihCounter(state: AppState) {
     val spoken = t(RamadanWordKey.tarawihProgress, "d" to minOf(done, total), "n" to total) + ". " +
         (if (complete) t(RamadanWordKey.tarawihDone) else t(RamadanWordKey.tarawihTapHint))
     Column(Modifier.fillMaxWidth().heightIn(min = 180.dp).clip(RoundedCornerShape(22.dp))
-        .background(if (complete) Palette.success.copy(alpha = 0.3f) else Purple.copy(alpha = 0.18f))
+        .background(if (complete) Palette.success.copy(alpha = 0.3f) else Palette.primary.copy(alpha = 0.06f))
         .clickable {
             done = Tarawih.tap(done, total)
             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)

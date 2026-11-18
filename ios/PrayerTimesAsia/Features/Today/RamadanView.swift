@@ -329,7 +329,7 @@ struct RamadanView: View {
                         Text(complete ? t(.tarawihDone) : t(.tarawihTapHint)).font(.subheadline)
                     }
                     .frame(maxWidth: .infinity, minHeight: 180)
-                    .background(complete ? Color.green.opacity(0.3) : Color.purple.opacity(0.18), in: RoundedRectangle(cornerRadius: 22))
+                    .background(complete ? Color.green.opacity(0.3) : Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 22))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
