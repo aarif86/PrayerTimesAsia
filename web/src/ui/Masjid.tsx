@@ -57,7 +57,10 @@ export function parseOverpass(json: { elements?: OsmElement[] }, center: Coordin
   return [...out.values()].sort((a, b) => a.distanceKm - b.distanceKm)
 }
 
-async function searchNearby(center: Coordinates): Promise<PrayerSpace[] | null> {
+async function searchNearby(center: Coordinates, country?: string | null): Promise<PrayerSpace[] | null> {
+  // The weekly ready-made list first: a small file, answered in about a second.
+  const listed = await listNearby(center, country).catch(() => null)
+  if (listed) return listed
   const lat = center.latitude.toFixed(4), lng = center.longitude.toFixed(4)
   // Remembered for a week per ~1 km square, so coming back is instant even when
   // the free OpenStreetMap servers are busy. Distances are worked out again from here.
@@ -71,9 +74,6 @@ async function searchNearby(center: Coordinates): Promise<PrayerSpace[] | null> 
         .sort((a, b) => a.distanceKm - b.distanceKm)
     }
   } catch { /* ignore */ }
-  // The weekly ready-made list first: a small file, answered in about a second.
-  const listed = await listNearby(center).catch(() => null)
-  if (listed) return listed
   const q = `[out:json][timeout:20];(nwr["amenity"="place_of_worship"]["religion"="muslim"](around:12000,${lat},${lng}););out center tags;`
   const ask = async (base: string) => {
     // Busy public servers can take 15-30 s to answer, so give each one time.
@@ -118,7 +118,7 @@ export default function MasjidScreen() {
     let cancelled = false
     setLoading(true); setFailed(false); setSlow(false)
     const slowTimer = setTimeout(() => setSlow(true), 8000)
-    searchNearby(place.coordinates).then((r) => {
+    searchNearby(place.coordinates, place.countryCode).then((r) => {
       clearTimeout(slowTimer)
       if (cancelled) return
       setLoading(false)
