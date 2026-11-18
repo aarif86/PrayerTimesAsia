@@ -555,15 +555,19 @@ private fun BandsPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () ->
 @Composable
 private fun BandsDateBar(f: TodayFrame, setOffset: (Int) -> Unit, openCalendar: () -> Unit) {
     val hijri = f.state.resolver.hijri(f.shown.time(Prayer.DHUHR))
-    // Arrows 36 dp wide and 48 dp tall, so the full date with the Hijri year still fits on one line.
-    Row(Modifier.fillMaxWidth().background(BandsPalette.dateBar).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(width = 36.dp, height = 48.dp).quietClick { setOffset(f.offset - 1) }.padding(horizontal = 6.dp, vertical = 12.dp), tint = Color.White)
-        Row(Modifier.weight(1f).heightIn(min = 48.dp).quietClick { if (f.offset == 0) openCalendar() else setOffset(0) },
+    // 48 dp arrows laid over the ends of the bar, so the full date with the Hijri year keeps its room.
+    Box(Modifier.fillMaxWidth().background(BandsPalette.dateBar).padding(horizontal = 4.dp), contentAlignment = Alignment.Center) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 40.dp).heightIn(min = 48.dp).quietClick { if (f.offset == 0) openCalendar() else setOffset(0) },
             horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             if (f.offset != 0) Icon(Icons.Filled.Undo, null, Modifier.size(14.dp).padding(end = 4.dp), tint = Color.White)
             Text("${dateText(f.state, f.shown, "d MMM yyyy")} · $hijri", style = Txt.headline, color = Color.White, maxLines = 1)
         }
-        Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(width = 36.dp, height = 48.dp).quietClick { setOffset(f.offset + 1) }.padding(horizontal = 6.dp, vertical = 12.dp), tint = Color.White)
+        Box(Modifier.align(Alignment.CenterStart).size(48.dp).quietClick { setOffset(f.offset - 1) }, contentAlignment = Alignment.Center) {
+            Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(28.dp), tint = Color.White)
+        }
+        Box(Modifier.align(Alignment.CenterEnd).size(48.dp).quietClick { setOffset(f.offset + 1) }, contentAlignment = Alignment.Center) {
+            Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(28.dp), tint = Color.White)
+        }
     }
 }
 

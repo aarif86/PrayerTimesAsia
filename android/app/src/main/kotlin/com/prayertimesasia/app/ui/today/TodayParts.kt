@@ -294,10 +294,10 @@ fun ShowMoreButton(state: AppState, modifier: Modifier = Modifier) {
 @Composable
 fun DateBlock(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) -> Unit, onCalendar: () -> Unit) {
     val r = state.resolver
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(width = 30.dp, height = 48.dp).quietClick { onOffset(offset - 1) }.padding(horizontal = 4.dp, vertical = 12.dp),
-            tint = Palette.primary.copy(alpha = 0.6f))
-        Column(Modifier.weight(1f).quietClick { if (offset == 0) onCalendar() else onOffset(0) }) {
+    // The arrows have full 48 dp touch areas laid over the edges of the date, so the date
+    // keeps the room it had and nothing is cut off next to the dial.
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp).quietClick { if (offset == 0) onCalendar() else onOffset(0) }) {
             Text(dayLabel(offset), style = Txt.caption2Heavy.copy(letterSpacing = 0.5.sp), color = Palette.accentText)
             Text(dateText(state, shown, "EEE d MMM"), style = Txt.headline, color = Palette.primary, maxLines = 1)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -305,8 +305,12 @@ fun DateBlock(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) ->
                 Icon(Icons.Filled.Event, null, Modifier.size(11.dp), tint = Palette.secondary)
             }
         }
-        Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(width = 30.dp, height = 48.dp).quietClick { onOffset(offset + 1) }.padding(horizontal = 4.dp, vertical = 12.dp),
-            tint = Palette.primary.copy(alpha = 0.6f))
+        Box(Modifier.align(Alignment.CenterStart).size(48.dp).quietClick { onOffset(offset - 1) }, contentAlignment = Alignment.CenterStart) {
+            Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(22.dp), tint = Palette.primary.copy(alpha = 0.6f))
+        }
+        Box(Modifier.align(Alignment.CenterEnd).size(48.dp).quietClick { onOffset(offset + 1) }, contentAlignment = Alignment.CenterEnd) {
+            Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(22.dp), tint = Palette.primary.copy(alpha = 0.6f))
+        }
     }
 }
 
