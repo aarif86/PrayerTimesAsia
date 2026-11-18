@@ -1,4 +1,5 @@
 import type { ComponentType } from 'preact'
+import { SiteHomeButton } from './SiteHome'
 import { lazy, Suspense } from 'preact/compat'
 import { useEffect, useLayoutEffect } from 'preact/hooks'
 import { Compass, Globe2, Plane } from 'lucide-preact'
@@ -123,6 +124,8 @@ export function App() {
       {bands && <div class="bands-backdrop" />}
       <div class="shell">
         <main class={`screen tab-${s.tab}`} id="main">
+          {/* Prayer and Masjid place the home button in their own top bars. */}
+          {s.tab !== 'today' && s.tab !== 'masjid' && <SiteHomeButton class="corner" />}
           {s.tab === 'today' && <TodayScreen />}
           {s.tab === 'qibla' && <QiblaScreen />}
           {s.tab === 'falak' && <FalakScreen />}

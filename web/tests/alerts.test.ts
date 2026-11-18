@@ -205,10 +205,10 @@ describe('calendar files', () => {
   })
 
   it('puts every alarm in the alarm calendar', () => {
-    // Early morning in Singapore, before today's Subuh, so no alarm has passed yet
-    // (run after Maghrib, today's two alarms are already gone and only 18 are left).
+    // Fixed clock, before Subuh in Singapore, so the count does not depend on
+    // what time of day the test runs (after Maghrib, today's alarms are gone).
     vi.useFakeTimers({ toFake: ['Date'] })
-    vi.setSystemTime(new Date('2026-11-17T03:00:00+08:00'))
+    vi.setSystemTime(sg(2026, 11, 16, 1))
     try {
       use(SG, { wakeUp: 'atFajr', maghribAlarm: 'atStart' })
       const ics = buildWakeICS(10)!
