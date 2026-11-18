@@ -263,11 +263,9 @@
   "Alarms for every prayer": "প্রতিটি নামাজের জন্য অ্যালার্ম",
   "Ready for Ramadan": "রমজানের জন্য প্রস্তুত",
   "An alert when each prayer starts, a reminder before it if you like, and Jumaat on Fridays": "প্রতিটি নামাজের সময় শুরু হলে সতর্কবার্তা, চাইলে তার আগে রিমাইন্ডার, আর শুক্রবারে জুমা",
-  "Prayer names in English, Malay, Arabic, Urdu, Bangla or French": "নামাজের নাম ইংরেজি, মালয়, আরবি, উর্দু, বাংলা বা ফরাসিতে",
   "A short hadith now and then to lift the heart, which you can turn off": "মাঝে মাঝে মন ছুঁয়ে যাওয়া একটি ছোট হাদিস, যা আপনি বন্ধ করতে পারেন",
   "Ramadan & Syawal": "রমজান ও শাওয়াল",
   "Ready for Ramadan, from sahur to Raya": "রমজানের জন্য প্রস্তুত, সাহরি থেকে ঈদ পর্যন্ত",
-  "When Ramadan comes, the app changes with it. It begins on the day your local religious authority announces, never on a guess.": "রমজান এলে অ্যাপও বদলে যায়। আপনার স্থানীয় ধর্মীয় কর্তৃপক্ষ যেদিন ঘোষণা করে সেদিনই শুরু হয়, অনুমানে নয়।",
   "Countdown to Imsak and Berbuka on the Prayer screen": "নামাজের স্ক্রিনে সাহরির শেষ সময় ও ইফতারের কাউন্টডাউন",
   "A sahur alarm, so you wake up in time to eat": "সাহরির অ্যালার্ম, যাতে খাওয়ার জন্য সময়মতো উঠতে পারেন",
   "A Tarawih counter for 8 or 20 rakaat": "তারাবিহ গণনা, ৮ বা ২০ রাকাত",
@@ -292,5 +290,6 @@
   "Prayer times on your home screen and lock screen, with alarms and reminders. Being tested now, and on its way to the App Store and Google Play.": "হোম স্ক্রিন ও লক স্ক্রিনে নামাজের সময়, অ্যালার্ম ও রিমাইন্ডারসহ। এখন পরীক্ষা চলছে, শিগগিরই App Store ও Google Play-তে আসছে।",
   "A clear prayer times screen for the masjid TV with azan and iqamah times, Jumaat and announcements, in six looks for a wide or tall screen. The masjid sets it up.": "মসজিদের টিভির জন্য নামাজের সময়ের পরিষ্কার স্ক্রিন, আজান ও ইকামতের সময়, জুমা আর ঘোষণাসহ, চওড়া বা লম্বা স্ক্রিনের জন্য ছয়টি চেহারায়। মসজিদ নিজেই এটি চালু করে।",
   "The Prayer screen in Ramadan, counting down to Berbuka": "রমজানে নামাজের স্ক্রিন, ইফতারের কাউন্টডাউনসহ",
-  "The Ramadan page with today's Imsak, Subuh and Berbuka times": "রমজানের পাতা, আজকের সাহরির শেষ সময়, ফজর ও ইফতারের সময়সহ"
+  "The Ramadan page with today's Imsak, Subuh and Berbuka times": "রমজানের পাতা, আজকের সাহরির শেষ সময়, ফজর ও ইফতারের সময়সহ",
+  "When Ramadan comes, the app changes with it. It follows the dates your local religious authority announces, and you can move the date by a day in Settings.": "রমজান এলে অ্যাপও বদলে যায়। আপনার স্থানীয় ধর্মীয় কর্তৃপক্ষ যে তারিখ ঘোষণা করে অ্যাপ তা মেনে চলে, আর সেটিংসে তারিখ এক দিন আগে পিছে করা যায়।"
 }

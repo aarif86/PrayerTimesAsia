@@ -263,11 +263,9 @@
   "Alarms for every prayer": "منبّه لكل صلاة",
   "Ready for Ramadan": "جاهز لرمضان",
   "An alert when each prayer starts, a reminder before it if you like, and Jumaat on Fridays": "تنبيه عند دخول كل صلاة، وتذكير قبلها إن شئت، وتذكير بالجمعة يوم الجمعة",
-  "Prayer names in English, Malay, Arabic, Urdu, Bangla or French": "أسماء الصلوات بالإنجليزية أو الملايوية أو العربية أو الأردية أو البنغالية أو الفرنسية",
   "A short hadith now and then to lift the heart, which you can turn off": "حديث قصير بين حين وآخر يرقّق القلب، ويمكنك إيقافه",
   "Ramadan & Syawal": "رمضان وشوال",
   "Ready for Ramadan, from sahur to Raya": "جاهز لرمضان، من السحور إلى العيد",
-  "When Ramadan comes, the app changes with it. It begins on the day your local religious authority announces, never on a guess.": "حين يأتي رمضان يتغيّر التطبيق معه. يبدأ في اليوم الذي تعلنه الجهة الدينية المحلية عندك، لا بالتخمين.",
   "Countdown to Imsak and Berbuka on the Prayer screen": "عدّ تنازلي إلى الإمساك والإفطار في شاشة الصلاة",
   "A sahur alarm, so you wake up in time to eat": "منبّه للسحور، لتستيقظ في وقت يكفي للأكل",
   "A Tarawih counter for 8 or 20 rakaat": "عدّاد للتراويح، ثماني ركعات أو عشرين",
@@ -292,5 +290,6 @@
   "Prayer times on your home screen and lock screen, with alarms and reminders. Being tested now, and on its way to the App Store and Google Play.": "مواقيت الصلاة على الشاشة الرئيسية وشاشة القفل، مع المنبهات والتذكيرات. قيد الاختبار الآن، وفي طريقه إلى App Store وGoogle Play.",
   "A clear prayer times screen for the masjid TV with azan and iqamah times, Jumaat and announcements, in six looks for a wide or tall screen. The masjid sets it up.": "شاشة واضحة لمواقيت الصلاة على تلفاز المسجد، فيها أوقات الأذان والإقامة والجمعة والإعلانات، بستة أشكال لشاشة عريضة أو طولية. والمسجد هو من يجهّزها.",
   "The Prayer screen in Ramadan, counting down to Berbuka": "شاشة الصلاة في رمضان، بعدّ تنازلي إلى الإفطار",
-  "The Ramadan page with today's Imsak, Subuh and Berbuka times": "صفحة رمضان بأوقات الإمساك والفجر والإفطار لهذا اليوم"
+  "The Ramadan page with today's Imsak, Subuh and Berbuka times": "صفحة رمضان بأوقات الإمساك والفجر والإفطار لهذا اليوم",
+  "When Ramadan comes, the app changes with it. It follows the dates your local religious authority announces, and you can move the date by a day in Settings.": "حين يأتي رمضان يتغيّر التطبيق معه. يتبع التواريخ التي تعلنها الجهة الدينية المحلية عندك، ويمكنك تقديم التاريخ أو تأخيره يومًا من الإعدادات."
 }
