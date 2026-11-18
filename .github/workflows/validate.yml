@@ -32,5 +32,7 @@ jobs:
         run: python3 tools/build_ramadan_words.py --check
       - name: Check the community cards match data/community-cards.json and our ad rules
         run: python3 tools/build_community_cards.py --check
+      - name: Check the shared app words in data/app-words
+        run: python3 tools/check_app_words.py
       - name: Compare with official timetables
         run: python3 tools/validate_official.py ${{ github.event.inputs.zones }}
