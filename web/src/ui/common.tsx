@@ -1,5 +1,5 @@
 import type { ComponentChildren, JSX } from 'preact'
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useRef, useState } from 'preact/hooks'
 import { Info, X } from 'lucide-preact'
 import type { PrayerDay } from '../core/engine'
 import { sourceAuthority } from '../core/official'
@@ -58,20 +58,38 @@ export function useSheet(): SheetKind | null {
   return current
 }
 
-export function Sheet({ title, children, full, onDone }: { title?: string; children: ComponentChildren; full?: boolean; onDone?: () => void }) {
+/** `label` names the sheet for screen readers when it has no visible title. */
+export function Sheet({ title, label, children, full, onDone }: { title?: string; label?: string; children: ComponentChildren; full?: boolean; onDone?: () => void }) {
   const done = onDone ?? closeSheet
+  const box = useRef<HTMLDivElement>(null)
+  // Keyboard and screen reader users land in the sheet, and go back where they were when it closes.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') done() }
+    const before = document.activeElement as HTMLElement | null
+    box.current?.focus({ preventScroll: true })
+    return () => { if (before?.isConnected) before.focus({ preventScroll: true }) }
+  }, [])
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { done(); return }
+      // Keep Tab inside the sheet while it is open.
+      if (e.key !== 'Tab' || !box.current) return
+      const items = [...box.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+        .filter((el) => !el.hasAttribute('disabled') && el.offsetParent !== null)
+      if (!items.length) return
+      const first = items[0], last = items[items.length - 1]
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === box.current)) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [done])
   return (
     <div class="sheet-backdrop" onClick={(e) => { if (e.target === e.currentTarget) done() }}>
-      <div class={`sheet ${full ? 'full' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
+      <div ref={box} tabIndex={-1} class={`sheet ${full ? 'full' : ''}`} role="dialog" aria-modal="true" aria-label={title || label}>
         <div class="grabber" />
         <div class="sheet-head">
           <span style={{ width: '64px' }} />
-          <h2>{title}</h2>
+          {title ? <h2>{title}</h2> : <span />}
           <button class="done" onClick={done}>Done</button>
         </div>
         {children}

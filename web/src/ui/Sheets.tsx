@@ -449,7 +449,7 @@ export function CreditsSheet() {
 }
 
 export function MakersSheet({ placement }: { placement: string }) {
-  return <Sheet title=""><MakersAbout placement={placement} /></Sheet>
+  return <Sheet label="About Prayer Times Asia"><MakersAbout placement={placement} /></Sheet>
 }
 
 
