@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Place } from '../src/core/place'
 import { zoned, zonedTime } from '../src/core/tz'
 import { decodePreferences, type Preferences } from '../src/services/prefs'
@@ -205,9 +205,17 @@ describe('calendar files', () => {
   })
 
   it('puts every alarm in the alarm calendar', () => {
-    use(SG, { wakeUp: 'atFajr', maghribAlarm: 'atStart' })
-    const ics = buildWakeICS(10)!
-    expect((ics.match(/BEGIN:VEVENT/g) ?? []).length).toBeGreaterThanOrEqual(19)
+    // Fixed at 1 am Singapore time: later in the day today's Subuh and Maghrib alarms
+    // have passed and drop out, so the count depended on when the test ran.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-06-15T17:00:00Z'))
+    try {
+      use(SG, { wakeUp: 'atFajr', maghribAlarm: 'atStart' })
+      const ics = buildWakeICS(10)!
+      expect((ics.match(/BEGIN:VEVENT/g) ?? []).length).toBeGreaterThanOrEqual(19)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
 
