@@ -295,7 +295,7 @@ fun ShowMoreButton(state: AppState, modifier: Modifier = Modifier) {
 fun DateBlock(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) -> Unit, onCalendar: () -> Unit) {
     val r = state.resolver
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(48.dp).quietClick { onOffset(offset - 1) }.padding(horizontal = 13.dp, vertical = 4.dp),
+        Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(width = 30.dp, height = 48.dp).quietClick { onOffset(offset - 1) }.padding(horizontal = 4.dp, vertical = 12.dp),
             tint = Palette.primary.copy(alpha = 0.6f))
         Column(Modifier.weight(1f).quietClick { if (offset == 0) onCalendar() else onOffset(0) }) {
             Text(dayLabel(offset), style = Txt.caption2Heavy.copy(letterSpacing = 0.5.sp), color = Palette.accentText)
@@ -305,7 +305,7 @@ fun DateBlock(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) ->
                 Icon(Icons.Filled.Event, null, Modifier.size(11.dp), tint = Palette.secondary)
             }
         }
-        Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(48.dp).quietClick { onOffset(offset + 1) }.padding(horizontal = 13.dp, vertical = 4.dp),
+        Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(width = 30.dp, height = 48.dp).quietClick { onOffset(offset + 1) }.padding(horizontal = 4.dp, vertical = 12.dp),
             tint = Palette.primary.copy(alpha = 0.6f))
     }
 }
