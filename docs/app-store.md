@@ -195,8 +195,7 @@ Precise location is used on-device only. Network requests: official timetables (
 JAKIM zone code or Kemenag regency name), data/mosques.json, config/analytics.json,
 Apple Maps search, the anonymous counts, and voluntary submissions. No analytics or
 crash SDKs (the counts are a plain HTTPS request). Privacy policy URL:
-https://aarif86.github.io/PrayerTimesAsia/privacy.html (prayertimes.asia/privacy.html
-once the domain is set up).
+https://prayertimes.asia/privacy.html
 
 ## Screenshots
 

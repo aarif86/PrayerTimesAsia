@@ -18,8 +18,8 @@ version is in [app-store.md](app-store.md); the build steps are in
 | Category | Lifestyle |
 | Tags | Religion, Travel, Reference (pick up to 5 that Play offers) |
 | Contact email | salam@prayertimes.asia |
-| Website | https://aarif86.github.io/PrayerTimesAsia/ (prayertimes.asia once the domain is set up) |
-| Privacy policy | https://aarif86.github.io/PrayerTimesAsia/privacy.html |
+| Website | https://prayertimes.asia/ |
+| Privacy policy | https://prayertimes.asia/privacy.html |
 
 ## Short description (78 / 80)
 

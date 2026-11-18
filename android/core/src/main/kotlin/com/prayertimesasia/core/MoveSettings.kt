@@ -237,7 +237,7 @@ data class MovedSettings(
         const val VERSION = 1
         const val PREFIX = "PTA1."
         /** The web app's address; a phone camera that scans the QR code opens it straight into "Bring in settings". */
-        const val LINK_BASE = "https://aarif86.github.io/PrayerTimesAsia/app/#move="
+        const val LINK_BASE = "https://prayertimes.asia/app/#move="
         /** Phone cameras read a QR code of this many characters off a screen without fuss. */
         const val QR_MAX_CHARACTERS = 1500
         /** How far back "this year's Ramadan record" reaches from its newest day: the month itself, Syawal and the replaced fasts after it. */
