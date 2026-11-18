@@ -248,6 +248,8 @@ fun Modifier.bleed(h: Dp): Modifier = layout { measurable, constraints ->
 @Composable
 private fun ClassicPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> Unit, openCalendar: () -> Unit, openSanad: (PrayerDay) -> Unit) {
     FillOrScroll(f, setOffset, 12.dp, top = {
+        // The buttons get their own line, so each keeps a full touch area.
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) { HeaderButtons(f.state) }
         // The Day Dial on the left; where, when and the source on the right.
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             val cur = f.current
@@ -257,7 +259,6 @@ private fun ClassicPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
                     Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 172.dp)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) { HeaderButtons(f.state) }
                 PlaceChip(f.state, openPlaces)
                 DateBlock(f.state, f.shown, f.offset, setOffset, openCalendar)
                 SourceBadge(f.state, f.shown, onClick = { openSanad(f.shown) })
@@ -283,7 +284,8 @@ private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -
                     Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 148.dp,
                     Modifier.align(Alignment.Center))
             }
-            Column(Modifier.align(Alignment.TopEnd).padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
+            // Each button has a 48 dp touch area, so they stack with no extra gap.
+            Column(Modifier.align(Alignment.TopEnd), verticalArrangement = Arrangement.spacedBy(0.dp),
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 if (f.state.prefs.musafirEnabled && f.state.prefs.musafirChipDismissed && f.state.resolver.musafirStatus(f.now)?.isTraveller == true) {
                     MusafirButton(f.state)
@@ -503,7 +505,7 @@ private fun BandsPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () ->
     androidx.compose.runtime.CompositionLocalProvider(LocalSkyScheme provides LocalSkyScheme.current.copy(dark = true, softNight = false)) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val blessed = state.resolver.blessedTimes(f.shown).filter { state.prefs.showMore || it.first == com.prayertimesasia.core.BlessedTime.IMSAK }
-            val bandsNatural = 64.dp * 6 + 52.dp * blessed.size + 44.dp
+            val bandsNatural = 64.dp * 6 + 52.dp * blessed.size + 48.dp
             val fill = maxHeight - headerH - footerH >= bandsNatural
             Column(Modifier.fillMaxSize().then(if (fill) Modifier else Modifier.verticalScroll(rememberScrollState()))) {
                 Column(
@@ -553,14 +555,14 @@ private fun BandsPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () ->
 @Composable
 private fun BandsDateBar(f: TodayFrame, setOffset: (Int) -> Unit, openCalendar: () -> Unit) {
     val hijri = f.state.resolver.hijri(f.shown.time(Prayer.DHUHR))
-    Row(Modifier.fillMaxWidth().background(BandsPalette.dateBar).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(36.dp, 40.dp).quietClick { setOffset(f.offset - 1) }.padding(6.dp), tint = Color.White)
-        Row(Modifier.weight(1f).quietClick { if (f.offset == 0) openCalendar() else setOffset(0) },
+    Row(Modifier.fillMaxWidth().background(BandsPalette.dateBar).padding(horizontal = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(48.dp).quietClick { setOffset(f.offset - 1) }.padding(10.dp), tint = Color.White)
+        Row(Modifier.weight(1f).heightIn(min = 48.dp).quietClick { if (f.offset == 0) openCalendar() else setOffset(0) },
             horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             if (f.offset != 0) Icon(Icons.Filled.Undo, null, Modifier.size(14.dp).padding(end = 4.dp), tint = Color.White)
             Text("${dateText(f.state, f.shown, "d MMM yyyy")} · $hijri", style = Txt.headline, color = Color.White, maxLines = 1)
         }
-        Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(36.dp, 40.dp).quietClick { setOffset(f.offset + 1) }.padding(6.dp), tint = Color.White)
+        Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(48.dp).quietClick { setOffset(f.offset + 1) }.padding(10.dp), tint = Color.White)
     }
 }
 

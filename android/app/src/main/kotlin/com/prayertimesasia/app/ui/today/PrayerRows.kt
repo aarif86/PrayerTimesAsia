@@ -6,6 +6,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -149,6 +152,16 @@ private fun PrayerRow(
     val trackable = p.trackerEnabled && prayer.isObligatory && time <= now
     val prayed = trackable && r.isPrayed(prayer, time)
     val rowShape = RoundedCornerShape(16.dp)
+    // Said in full on the row itself, so a screen reader has the words even when the row is only partly on screen.
+    val spoken = listOfNotNull(
+        r.prayerName(prayer, time),
+        r.localName(prayer, time),
+        r.formatted(time),
+        if (isCurrent) "now" else if (isNext && next != null) "in ${TimeFormat.short(next.second.secondsSince(now))}" else null,
+        day.jamaah[prayer]?.let { jamaahLine(r, day, prayer, it, now) },
+        day.alternate[prayer]?.let { o -> day.alternateSource?.let { "$it ${r.formatted(o)}" } },
+        if (prayed) "prayed" else null,
+    ).joinToString(", ")
     Box(
         Modifier
             .fillMaxWidth()
@@ -160,7 +173,8 @@ private fun PrayerRow(
                 if (isCurrent) Modifier.clip(rowShape).background(prayer.tint.copy(alpha = 0.16f), rowShape)
                     .border(1.dp, prayer.tint.copy(alpha = 0.45f), rowShape) else Modifier,
             )
-            .quietClick { if (trackable) state.togglePrayed(prayer, time) else onTap?.invoke() },
+            .quietClick { if (trackable) state.togglePrayed(prayer, time) else onTap?.invoke() }
+            .semantics { contentDescription = spoken },
     ) {
         Row(
             Modifier.fillMaxWidth().align(Alignment.Center)
@@ -168,7 +182,7 @@ private fun PrayerRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Column(Modifier.weight(1f).clearAndSetSemantics {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(r.prayerName(prayer, time), style = Txt.title3, color = Palette.primary, maxLines = 1,
                         modifier = Modifier.alignByBaseline())
@@ -193,11 +207,12 @@ private fun PrayerRow(
                     Text("$name ${r.formatted(other)}", style = Txt.caption.copy(fontWeight = FontWeight.Medium), color = SourceGrade.MASJID.tint)
                 }
             }
-            TimeText(r.timeParts(time), size = 27.sp)
-            Box(Modifier.size(30.dp, 34.dp).clip(CircleShape).quietClick { state.toggleNotify(prayer) }, contentAlignment = Alignment.Center) {
+            Box(Modifier.clearAndSetSemantics {}) { TimeText(r.timeParts(time), size = 27.sp) }
+            Box(Modifier.size(30.dp, 34.dp).clip(CircleShape).quietClick { state.toggleNotify(prayer) }
+                .semantics { contentDescription = if (notifying) "Turn off alert" else "Turn on alert" }, contentAlignment = Alignment.Center) {
                 Icon(
                     if (notifying) Icons.Filled.Notifications else Icons.Outlined.NotificationsOff,
-                    if (notifying) "Turn off alert" else "Turn on alert",
+                    null,
                     Modifier.size(18.dp), tint = Palette.primary.copy(alpha = if (notifying) 0.95f else 0.4f),
                 )
             }

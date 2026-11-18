@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -62,6 +63,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -72,6 +74,7 @@ import com.prayertimesasia.app.AppState
 import com.prayertimesasia.app.ui.components.CapsuleButton
 import com.prayertimesasia.app.ui.components.CircleIconButton
 import com.prayertimesasia.app.ui.components.GlassCard
+import com.prayertimesasia.app.ui.components.minTouch
 import com.prayertimesasia.app.ui.components.outlinedCapsule
 import com.prayertimesasia.app.ui.components.quietClick
 import com.prayertimesasia.app.ui.theme.AppIcons
@@ -126,7 +129,7 @@ fun StyleButton(state: AppState, background: Color = Palette.primary.copy(alpha 
     var menu by remember { mutableStateOf(false) }
     Box {
         Box(
-            Modifier.size(34.dp).clip(CircleShape).background(background, CircleShape)
+            Modifier.minTouch().clip(CircleShape)
                 .combinedClickable(
                     onClickLabel = "Next style",
                     onLongClickLabel = "Choose a style",
@@ -140,7 +143,9 @@ fun StyleButton(state: AppState, background: Color = Palette.primary.copy(alpha 
                 .semantics { contentDescription = "Prayer screen style: ${state.prefs.todayStyle.label}" },
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Filled.Palette, null, Modifier.size(17.dp), tint = Palette.primary)
+            Box(Modifier.size(34.dp).background(background, CircleShape), contentAlignment = Alignment.Center) {
+                Icon(Icons.Filled.Palette, null, Modifier.size(17.dp), tint = Palette.primary)
+            }
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
             TodayStyle.entries.forEach { style ->
@@ -160,15 +165,19 @@ fun StreakChip(state: AppState, background: Color = Palette.primary.copy(alpha =
     val r = state.resolver
     val excused = r.isExcused(state.now)
     val paused = state.prefs.trackerPausedSince != null
-    Row(
-        Modifier.clip(CircleShape).background(background, CircleShape).clickable { state.showTracker = true }
-            .padding(horizontal = 10.dp, vertical = 8.dp)
-            .semantics { contentDescription = "Prayer tracker: streak ${r.streak(state.now)} days${if (paused) ", paused" else if (excused) ", excused today" else ""}" },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    Box(
+        Modifier.minTouch().clip(CircleShape).clickable { state.showTracker = true }
+            .semantics(mergeDescendants = true) { contentDescription = "Prayer tracker: streak ${r.streak(state.now)} days${if (paused) ", paused" else if (excused) ", excused today" else ""}" },
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(if (paused) Icons.Filled.Pause else if (excused) Icons.Filled.Opacity else Icons.Filled.Whatshot, null, Modifier.size(16.dp), tint = Palette.primary)
-        Text("${r.streak(state.now)}", style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
+        Row(
+            Modifier.background(background, CircleShape).padding(horizontal = 10.dp, vertical = 8.dp).clearAndSetSemantics {},
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Icon(if (paused) Icons.Filled.Pause else if (excused) Icons.Filled.Opacity else Icons.Filled.Whatshot, null, Modifier.size(16.dp), tint = Palette.primary)
+            Text("${r.streak(state.now)}", style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
+        }
     }
 }
 
@@ -182,7 +191,8 @@ fun MusafirButton(state: AppState, background: Color = Palette.accent.copy(alpha
 /** Musafir, streak, appearance and style: the Prayer screen's buttons. */
 @Composable
 fun HeaderButtons(state: AppState, showMusafir: Boolean = true, background: Color = Palette.primary.copy(alpha = 0.1f)) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+    // Each button has a 48 dp touch area around its smaller disc, so they sit close and still look apart.
+    Row(horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
         if (showMusafir && state.prefs.musafirEnabled && state.resolver.musafirStatus(state.now)?.isTraveller == true) {
             MusafirButton(state, if (background == Palette.primary.copy(alpha = 0.1f)) Palette.accent.copy(alpha = 0.25f) else background)
         }
@@ -285,7 +295,7 @@ fun ShowMoreButton(state: AppState, modifier: Modifier = Modifier) {
 fun DateBlock(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) -> Unit, onCalendar: () -> Unit) {
     val r = state.resolver
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(22.dp, 40.dp).quietClick { onOffset(offset - 1) },
+        Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(48.dp).quietClick { onOffset(offset - 1) }.padding(horizontal = 13.dp, vertical = 4.dp),
             tint = Palette.primary.copy(alpha = 0.6f))
         Column(Modifier.weight(1f).quietClick { if (offset == 0) onCalendar() else onOffset(0) }) {
             Text(dayLabel(offset), style = Txt.caption2Heavy.copy(letterSpacing = 0.5.sp), color = Palette.accentText)
@@ -295,7 +305,7 @@ fun DateBlock(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) ->
                 Icon(Icons.Filled.Event, null, Modifier.size(11.dp), tint = Palette.secondary)
             }
         }
-        Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(22.dp, 40.dp).quietClick { onOffset(offset + 1) },
+        Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(48.dp).quietClick { onOffset(offset + 1) }.padding(horizontal = 13.dp, vertical = 4.dp),
             tint = Palette.primary.copy(alpha = 0.6f))
     }
 }
@@ -332,7 +342,7 @@ fun DayRow(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) -> Un
 @Composable
 fun DayNavigator(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int) -> Unit, onCalendar: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(40.dp).quietClick { onOffset(offset - 1) }.padding(8.dp),
+        Icon(Icons.Filled.ChevronLeft, "Previous day", Modifier.size(48.dp).quietClick { onOffset(offset - 1) }.padding(12.dp),
             tint = Palette.primary.copy(alpha = 0.6f))
         Column(Modifier.weight(1f).quietClick { if (offset == 0) onCalendar() else onOffset(0) }, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(dateText(state, shown, "EEEE d MMMM"), style = Txt.title3, color = Palette.primary, maxLines = 1)
@@ -341,7 +351,7 @@ fun DayNavigator(state: AppState, shown: PrayerDay, offset: Int, onOffset: (Int)
                 Icon(Icons.Filled.Event, null, Modifier.size(12.dp), tint = Palette.secondary)
             }
         }
-        Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(40.dp).quietClick { onOffset(offset + 1) }.padding(8.dp),
+        Icon(Icons.Filled.ChevronRight, "Next day", Modifier.size(48.dp).quietClick { onOffset(offset + 1) }.padding(12.dp),
             tint = Palette.primary.copy(alpha = 0.6f))
     }
 }
@@ -354,17 +364,21 @@ fun MusafirChip(state: AppState) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(
-            Modifier.weight(1f).clickable { state.showJourney = true }.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
+            Modifier.weight(1f).heightIn(min = 48.dp).clickable { state.showJourney = true }.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(AppIcons.journey, null, Modifier.size(18.dp), tint = Palette.primary)
             Text("Musafir. You may shorten and join", style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f), maxLines = 1)
             Icon(Icons.Filled.ChevronRight, null, Modifier.size(16.dp), tint = Palette.primary)
         }
-        Icon(Icons.Filled.Close, "Hide, keep the luggage button at the top",
-            Modifier.padding(end = 8.dp).size(30.dp).clip(CircleShape).background(Palette.primary.copy(alpha = 0.1f))
-                .clickable { state.update { it.copy(musafirChipDismissed = true) } }.padding(7.dp),
-            tint = Palette.primary)
+        Box(
+            Modifier.padding(end = 2.dp).size(48.dp).clip(CircleShape)
+                .clickable(onClickLabel = "Hide, keep the luggage button at the top") { state.update { it.copy(musafirChipDismissed = true) } },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Filled.Close, "Hide, keep the luggage button at the top",
+                Modifier.size(30.dp).background(Palette.primary.copy(alpha = 0.1f), CircleShape).padding(7.dp), tint = Palette.primary)
+        }
     }
 }
 
@@ -382,8 +396,8 @@ fun LongDaysNote(state: AppState, now: Instant) {
                 Text(w.title, style = Txt.headline, color = Palette.primary)
                 Text(w.body(Prayer.FAJR.name(r.naming), Prayer.ISHA.name(r.naming)), style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f))
             }
-            Icon(Icons.Filled.Close, w.close, Modifier.size(28.dp).clip(CircleShape)
-                .clickable { state.update { p -> p.copy(longDaysClosed = (p.longDaysClosed - key + key).takeLast(30)) } }.padding(6.dp), tint = Palette.primary)
+            Icon(Icons.Filled.Close, w.close, Modifier.size(48.dp).clip(CircleShape)
+                .clickable { state.update { p -> p.copy(longDaysClosed = (p.longDaysClosed - key + key).takeLast(30)) } }.padding(16.dp), tint = Palette.primary)
         }
     }
 }
@@ -406,8 +420,8 @@ fun ArrivalCard(state: AppState) {
                 )
                 Text(r.sourceShort, style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
             }
-            Icon(Icons.Filled.Close, "Dismiss", Modifier.size(28.dp).clip(CircleShape)
-                .clickable { state.update { it.copy(arrivalBannerDismissed = true) } }.padding(6.dp), tint = Palette.primary)
+            Icon(Icons.Filled.Close, "Dismiss", Modifier.size(48.dp).clip(CircleShape)
+                .clickable { state.update { it.copy(arrivalBannerDismissed = true) } }.padding(16.dp), tint = Palette.primary)
         }
         HorizontalDivider(Modifier.padding(vertical = 8.dp), color = Palette.primary.copy(alpha = 0.25f))
         Row(verticalAlignment = Alignment.CenterVertically) {
