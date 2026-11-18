@@ -174,5 +174,9 @@ class ScreenshotTest {
     @Test fun widget_bands() = widget("12b-widget-bands", TodayStyle.BANDS)
     @Test fun widget_dial() = widget("12c-widget-dial", TodayStyle.DIAL)
 
+    // Ramadan day 12, half an hour before Maghrib: the Berbuka countdown (store screenshot).
+    @Test fun ramadan() = shoot("14-ramadan-berbuka", DemoConfig(style = TodayStyle.CENTRE,
+        now = java.time.Instant.parse("2026-10-25T10:20:00Z"), season = com.prayertimesasia.core.SeasonPreview.RAMADAN))
+
     @Test fun onboarding() = shoot("00-onboarding", d(TodayStyle.LIST)) { it.update { p -> p.copy(hasOnboarded = false) } }
 }

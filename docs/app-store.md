@@ -1,6 +1,8 @@
 # App Store listing - Prayer Times Asia
 
-Copy-paste ready. Character limits checked.
+The text to paste (English, Malay, Indonesian) is in
+[store-listings/](store-listings/README.md). This page keeps the App Store
+settings, privacy answers, screenshots and the App Review note.
 
 | Field | Value | Limit |
 |---|---|---|
@@ -137,48 +139,10 @@ salat,shalat,adzan,kemenag,imsak,sahur,buka puasa,ramadhan,tarawih,lebaran,masji
 The Malay and Indonesian lines should be read once by a native speaker
 before they go live.
 
-## Promotional text (125 / 170)
+## Promotional text and description
 
-Land anywhere in Asia and know when to pray and which way to face. Official MUIS and JAKIM timetables, works offline, no ads.
-
-## Description
-
-Prayer times and qibla for Muslims living and travelling across Asia.
-
-Most prayer apps either stop working when you cross a border, or use one global setting for everyone. Prayer Times Asia knows how each country calculates its prayer times - and switches for you the moment you land.
-
-AT HOME, EXACT
-• Singapore: the official MUIS timetable
-• Malaysia: the official JAKIM e-Solat timetable for your zone (found automatically, or pick it yourself)
-• Indonesia: Kemenag's method
-Downloaded once a year and kept on your phone, so it works offline.
-
-ON THE ROAD, READY
-• Vietnam, Thailand, Japan, Korea, India, Türkiye, the Gulf and the rest of Asia - each with its local method, Asr school and prayer names
-• Calculated on your phone: no data roaming needed
-• A welcome card when you arrive tells you what changed
-
-MUSAFIR MADE SIMPLE
-• See how far you are from home and whether you may shorten (qasar) and combine (jamak) your prayers
-• Shafi'i (81 or 89 km, up to 3 days) and Hanafi (78 km, up to 15 days)
-• A log of the countries you've prayed in
-
-QIBLA IN ONE GLANCE
-• A calm compass that lights up and taps when you face the Kaaba
-• Bearing and distance to Makkah
-
-A SKY THAT MOVES WITH YOU
-• The background follows the real sun where you are - dawn rose at Subuh, gold at Asar, ember at Maghrib
-• Home Screen and Lock Screen widgets, and a Live Activity countdown in the Dynamic Island
-
-ALSO
-• Nearby masjid and musollah via Apple Maps
-• Prayer reminders, Jumaat on Fridays, Hijri date with ±2 day adjustment, 24-hour time
-
-PRIVATE BY DESIGN
-No third-party ads. No account. No tracking. Your exact location never leaves your phone.
-
-Musafir guidance is general information, not a fatwa - when unsure, follow your local religious authority.
+Moved to [store-listings/en.md](store-listings/en.md),
+[ms.md](store-listings/ms.md) and [id.md](store-listings/id.md).
 
 ## App Privacy (nutrition label)
 
@@ -201,22 +165,16 @@ once the domain is set up).
 ## Screenshots
 
 Apple needs two sets because the app also runs on iPad: 6.9" iPhone
-(1320 × 2868) and 13" iPad (2064 × 2752). Captioned, ready to drag in:
-`design/store/app-store/iphone-*.png` and `ipad-*.png`.
+(1320 × 2868) and 13" iPad (2064 × 2752). Captioned in each listing language,
+ready to drag in: `design/store/app-store/<en|ms|id>/iphone-*.png` and
+`ipad-*.png`.
 
 To redo them: Actions → **Store screenshots** → Run workflow (takes the raw
 shots on a Pro Max and an iPad Pro 13" simulator and puts them on the
 `store-screenshots-raw` branch), then
 `python3 tools/store_frames.py iphone RAW_DIR design/store/app-store` (and `ipad`).
-
-Captions, in order:
-1. "Know when to pray, wherever you land"
-2. "Switches the moment you arrive"
-3. "Jamak & qasar, worked out for you"
-4. "Face the Kaaba in one glance"
-5. "Find a masjid or musollah nearby"
-6. "Qibla Day and the shadow stick"
-7. "A sky that follows the sun"
+The captions live in `tools/store_frames.py` and match
+[store-listings/README.md](store-listings/README.md).
 
 ## App Review Information
 
