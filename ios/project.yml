@@ -74,6 +74,7 @@ targets:
     scheme:
       testTargets:
         - PrayerTimesAsiaTests
+        - PrayerTimesAsiaUITests
       gatherCoverageData: true
 
   PrayerTimesAsiaWidgets:
@@ -119,3 +120,17 @@ targets:
       - path: PrayerTimesAsiaTests
     dependencies:
       - target: PrayerTimesAsia
+
+  # Apple's accessibility audit on the main screens (AccessibilityAuditTests.swift).
+  PrayerTimesAsiaUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: PrayerTimesAsiaUITests
+    dependencies:
+      - target: PrayerTimesAsia
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: PrayerTimesAsia

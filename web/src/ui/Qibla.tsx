@@ -39,6 +39,10 @@ export function QiblaScreen() {
   const isAligned = demoAligned || aligned
   const instruction = delta == null ? `Face ${Math.round(bearing)}° from north`
     : isAligned ? "You're facing the Qibla" : delta > 0 ? `Turn right ${Math.round(Math.abs(delta))}°` : `Turn left ${Math.round(Math.abs(delta))}°`
+  // Spoken in steps of 10 degrees, so a screen reader is not interrupted at every degree.
+  const step = delta == null ? 0 : Math.max(10, Math.round(Math.abs(delta) / 10) * 10)
+  const spoken = delta == null ? instruction
+    : isAligned ? instruction : `${delta > 0 ? 'Turn right' : 'Turn left'}, about ${step}°`
   const hasCompass = demoAligned || compass.state === 'active'
   // iPhone Safari only shares the compass after a tap, so the tap goes first and big.
   const askFirst = compass.state === 'needs-permission' && !demoAligned
@@ -48,7 +52,8 @@ export function QiblaScreen() {
     <div class="page qibla">
       <div class="qibla-head">
         <h1 class="h-title">Qibla</h1>
-        <div class={`qibla-instruction ${isAligned ? 'ok' : ''}`} aria-live="polite">{instruction}</div>
+        <div class={`qibla-instruction ${isAligned ? 'ok' : ''}`} aria-hidden="true">{instruction}</div>
+        <span class="sr-only" aria-live="polite">{spoken}</span>
         {askFirst && (
             <button class="compass-on" onClick={turnOn}>
               <CompassIcon size={26} />
@@ -192,10 +197,12 @@ function QiblaDial({ bearing, heading, delta, aligned, onTap }: { bearing: numbe
             : <Navigation2 size={size * 0.08} style={{ opacity: 0.6 }} />}
       </div>
       {onTap && (
-        <button class="centre centre-tap" aria-hidden="true" tabIndex={-1} style={{ width: `${size * 0.42}px`, height: `${size * 0.42}px` }} onClick={onTap}>
+        // A plain tap area for fingers only: the big "Turn on the compass" button above is
+        // the one keyboard and screen reader users reach, and a button inside role="img" is not allowed.
+        <div class="centre centre-tap" aria-hidden="true" style={{ width: `${size * 0.42}px`, height: `${size * 0.42}px` }} onClick={onTap}>
           <CompassIcon size={size * 0.1} />
           <span>Tap to start</span>
-        </button>
+        </div>
       )}
     </div>
   )

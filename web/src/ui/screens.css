@@ -7,7 +7,7 @@
 .classic-header { display: flex; align-items: center; gap: 14px; }
 .classic-side { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .classic-side > * { max-width: 100%; }
-.controls-row { display: flex; align-self: stretch; justify-content: flex-end; gap: 8px; }
+.controls-row { position: relative; z-index: 1; display: flex; align-self: stretch; justify-content: flex-end; gap: 8px; }
 .controls-col { position: absolute; right: 0; top: 4px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
 .place-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; font-size: 15px; font-weight: 600; padding: 6px 10px;
@@ -155,7 +155,7 @@
 .band-name { font-size: 26px; font-weight: 700; white-space: nowrap; }
 .now-pill { font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.25); align-self: center; }
 .band-time { display: inline-flex; align-items: baseline; gap: 4px; font-size: 34px; font-weight: 300; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.band-time .sfx { font-size: 22px; }
+.band-time .sfx { font-size: 22px; font-weight: 700; }
 .band-time.small { font-size: 24px; }
 .band-time.small .sfx { font-size: 15px; }
 .blessed-band { display: flex; align-items: center; gap: 8px; padding: 6px var(--gutter); min-height: 52px; background: rgb(77, 77, 77); color: #fff; }
@@ -283,6 +283,7 @@
 .space-pin.musollah span { background: rgb(108, 132, 204); }
 .kaaba-pin span { display: block; width: 20px; height: 20px; background: #141419; border: 2px solid #F2C766; border-radius: 4px; }
 .leaflet-control-attribution { font-size: 10px; }
+.leaflet-container .leaflet-control-attribution a { color: #004766; }
 
 /* ---------- Settings & sheets ---------- */
 .settings { padding-bottom: 12px; }

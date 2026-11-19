@@ -11,6 +11,7 @@ struct PrayerLiveActivity: Widget {
                 Image(systemName: context.state.symbol)
                     .font(.title2)
                     .foregroundStyle(Self.glow)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(context.state.prayerName) at \(context.state.timeText)")
                         .font(.headline)
@@ -23,6 +24,8 @@ struct PrayerLiveActivity: Widget {
                     .font(.system(size: 30, weight: .semibold, design: .rounded))
             }
             .padding(16)
+            // VoiceOver reads it as one line: "Asar at 4:10 PM, Pasir Ris, 1:02:09".
+            .accessibilityElement(children: .combine)
             .foregroundStyle(.white)
             .activityBackgroundTint(Color(red: 0.07, green: 0.09, blue: 0.25).opacity(0.92))
             .activitySystemActionForegroundColor(.white)
@@ -45,12 +48,14 @@ struct PrayerLiveActivity: Widget {
                 }
             } compactLeading: {
                 Image(systemName: context.state.symbol).foregroundStyle(Self.glow)
+                    .accessibilityLabel(context.state.prayerName)
             } compactTrailing: {
                 countdown(context.state.time)
                     .frame(maxWidth: 52)
                     .font(.caption.weight(.semibold))
             } minimal: {
                 Image(systemName: context.state.symbol).foregroundStyle(Self.glow)
+                    .accessibilityLabel(context.state.prayerName)
             }
             .keylineTint(Self.glow)
         }
