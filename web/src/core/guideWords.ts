@@ -11,7 +11,7 @@ export const GUIDE_CARDS: readonly GuideCardId[] = GUIDE_CARD_IDS
 
 /** Which tab each card lives on, so the little tab bar under the card can light it up. */
 export const GUIDE_TAB: Record<GuideCardId, 'today' | 'qibla' | 'falak' | 'masjid' | 'settings'> = {
-  prayer: 'today', looks: 'today', alerts: 'today', qibla: 'qibla', masjid: 'masjid', travel: 'today', falak: 'falak', yours: 'settings',
+  prayer: 'today', buttons: 'today', looks: 'today', alerts: 'today', qibla: 'qibla', masjid: 'masjid', travel: 'today', falak: 'falak', yours: 'settings',
 }
 
 export function guideWord(lang: Lang3, key: GuideWordKey, args: Record<string, string | number> = {}): string {

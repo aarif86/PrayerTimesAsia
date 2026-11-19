@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The quick guide: eight swipe cards a new user sees once, right after choosing
+/// The quick guide: nine swipe cards a new user sees once, right after choosing
 /// their place. Skip at any time; Settings > Help opens it again. Same cards and
 /// words as the web and Android (data/guide-words.json).
 struct GuideView: View {
@@ -123,8 +123,10 @@ private struct GuideCard: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            GuideScene(id: id, on: on && !reduceMotion)
-                .padding(.top, 24)
+            Group {
+                if id == "buttons" { AnyView(ButtonsScene(lang: lang, on: on)) } else { AnyView(GuideScene(id: id, on: on && !reduceMotion)) }
+            }
+            .padding(.top, 24)
             if first {
                 Text(GuideWords.word(lang, "hello"))
                     .font(.subheadline.weight(.semibold))
@@ -143,8 +145,12 @@ private struct GuideCard: View {
                 .foregroundStyle(.white.opacity(0.88))
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: 380)
-            MiniTabs(lit: Self.tab(id))
-                .padding(.top, 24)
+            Text(GuideWords.word(lang, "find"))
+                .font(.footnote.weight(.bold))
+                .foregroundStyle(Self.gold)
+                .padding(.top, 22)
+            MiniTabs(lit: Self.tab(id), on: on && !reduceMotion)
+                .padding(.top, 14)
             if id == "yours" {
                 Text(GuideWords.word(lang, "again"))
                     .font(.footnote)
@@ -171,23 +177,39 @@ private struct GuideCard: View {
     }
 }
 
-/// The five tabs, small, with one lit, so people learn where each part lives.
+/// The five tabs with their names, one lit and pointed at, so people learn where each part lives.
 private struct MiniTabs: View {
     let lit: Int
+    let on: Bool
+    @State private var bob = false
+    private static let names = ["Prayer", "Qibla", "Falak", "Masjid", "Settings"]
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 4) {
             ForEach(0..<5, id: \.self) { n in
-                icon(n)
-                    .frame(width: 20, height: 20)
-                    .frame(width: 38, height: 34)
-                    .foregroundStyle(n == lit ? Color(red: 0.08, green: 0.10, blue: 0.27) : Color.white.opacity(0.4))
-                    .background(n == lit ? GuideCard.gold : Color.clear, in: Capsule())
+                VStack(spacing: 3) {
+                    icon(n).frame(width: 20, height: 20)
+                    Text(Self.names[n]).font(.system(size: 10.5, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
+                }
+                .frame(width: 56)
+                .padding(.vertical, 6)
+                .foregroundStyle(n == lit ? Color(red: 0.08, green: 0.10, blue: 0.27) : Color.white.opacity(0.45))
+                .background(n == lit ? GuideCard.gold : Color.clear, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay(alignment: .top) {
+                    if n == lit {
+                        Image(systemName: "arrowtriangle.down.fill").font(.system(size: 11))
+                            .foregroundStyle(GuideCard.gold)
+                            .offset(y: bob ? -10 : -14)
+                            .animation(on ? .easeInOut(duration: 0.6).repeatForever() : .default, value: bob)
+                    }
+                }
             }
         }
-        .padding(.horizontal, 12).padding(.vertical, 8)
-        .background(.white.opacity(0.07), in: Capsule())
+        .padding(.horizontal, 8).padding(.vertical, 6)
+        .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .accessibilityHidden(true)
+        .onAppear { bob = on }
+        .onChange(of: on) { _, now in bob = now }
     }
 
     @ViewBuilder private func icon(_ n: Int) -> some View {
@@ -198,6 +220,42 @@ private struct MiniTabs: View {
         case 3: Image("Tab-masjid").resizable().scaledToFit()
         default: Image(systemName: "gearshape.fill").resizable().scaledToFit()
         }
+    }
+}
+
+/// The round buttons from the top of the Prayer screen, each with what it does.
+private struct ButtonsScene: View {
+    let lang: RamadanContent.Lang
+    let on: Bool
+    private static let rows: [(symbol: String, asset: Bool, key: String)] = [
+        ("paintpalette.fill", false, "btn_look"),
+        ("circle.lefthalf.filled", false, "btn_light"),
+        ("alarm", false, "btn_alarm"),
+        ("flame.fill", false, "btn_streak"),
+        ("Tab-journey", true, "btn_travel"),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(Array(Self.rows.enumerated()), id: \.offset) { n, row in
+                HStack(spacing: 12) {
+                    Group {
+                        if row.asset { Image(row.symbol).resizable().scaledToFit().frame(width: 17, height: 17) }
+                        else { Image(systemName: row.symbol).font(.system(size: 16, weight: .semibold)) }
+                    }
+                    .foregroundStyle(Color(red: 0.08, green: 0.10, blue: 0.27))
+                    .frame(width: 38, height: 38)
+                    .background(Color(red: 0.91, green: 0.93, blue: 0.96), in: Circle())
+                    Text(GuideWords.word(lang, row.key)).font(.subheadline.weight(.semibold))
+                }
+                .opacity(on ? 1 : 0)
+                .offset(x: on ? 0 : -10)
+                .animation(.smooth(duration: 0.45).delay(0.1 + Double(n) * 0.08), value: on)
+            }
+        }
+        .padding(.horizontal, 16).padding(.vertical, 14)
+        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .accessibilityElement(children: .combine)
     }
 }
 

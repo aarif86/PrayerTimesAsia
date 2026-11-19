@@ -297,7 +297,7 @@ fun SettingsScreen(
                 }
             }
             item {
-                Section("Help", "Eight short cards that show where everything is.") {
+                Section("Help", "Nine short cards that show where everything is.") {
                     LinkRow("Show the quick guide", Icons.Filled.Lightbulb, openGuide)
                 }
             }

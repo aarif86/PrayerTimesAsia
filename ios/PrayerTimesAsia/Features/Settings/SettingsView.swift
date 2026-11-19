@@ -309,7 +309,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Help")
                 } footer: {
-                    Text("Eight short cards that show where everything is.")
+                    Text("Nine short cards that show where everything is.")
                 }
 
                 Section("Accuracy") {

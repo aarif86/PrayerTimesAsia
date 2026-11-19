@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks'
-import { AlarmClock, BellRing, CalendarDays, MapPin, Palette, Plane } from 'lucide-preact'
+import { AlarmClock, BellRing, CalendarDays, Contrast, Flame, MapPin, Palette, Plane } from 'lucide-preact'
 import centre from '../assets/guide/look-centre.webp'
 import list from '../assets/guide/look-list.webp'
 import dial from '../assets/guide/look-dial.webp'
@@ -15,6 +15,8 @@ import { navigatorLocale, store, TABS } from '../services/store'
 import { TabFalak, TabJourney, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 
 const LANGS: { id: Lang3; label: string }[] = [{ id: 'en', label: 'EN' }, { id: 'ms', label: 'BM' }, { id: 'id', label: 'ID' }]
+/** The names on the real tab bar, so the guide matches what people see. */
+const TAB_LABEL = { today: 'Prayer', qibla: 'Qibla', falak: 'Falak', masjid: 'Masjid', settings: 'Settings' }
 const TAB_ICON = { today: TabPrayer, qibla: TabQibla, falak: TabFalak, masjid: TabMasjid, settings: TabSettings }
 
 /**
@@ -76,11 +78,11 @@ export function Guide({ onClose }: { onClose: () => void }) {
         <div class={`guide-track ${drag ? 'dragging' : ''}`} style={{ transform: `translateX(calc(${-i * 100}% + ${drag}px))` }}>
           {GUIDE_CARDS.map((id, n) => (
             <section class={`guide-card ${n === i ? 'on' : ''}`} aria-hidden={n !== i} key={id} lang={lang}>
-              <Scene id={id} />
+              {id === 'buttons' ? <ButtonsScene t={t} /> : <Scene id={id} />}
               {n === 0 && <p class="guide-hello">{t('hello')}</p>}
               <h2 class="guide-title">{t(`${id}_title`)}</h2>
               <p class="guide-body">{t(`${id}_body`)}</p>
-              <MiniTabs lit={GUIDE_TAB[id]} />
+              <MiniTabs lit={GUIDE_TAB[id]} find={t('find')} />
               {id === 'yours' && <p class="guide-again">{t('again')}</p>}
             </section>
           ))}
@@ -99,14 +101,40 @@ export function Guide({ onClose }: { onClose: () => void }) {
 }
 
 /** The five tabs, small, with this card's one lit, so people learn where it lives. */
-function MiniTabs({ lit }: { lit: keyof typeof TAB_ICON }) {
+function MiniTabs({ lit, find }: { lit: keyof typeof TAB_ICON; find: string }) {
   return (
-    <div class="guide-tabs" aria-hidden="true">
-      {TABS.map((t) => {
-        const Icon = TAB_ICON[t]
-        return <span class={t === lit ? 'lit' : ''}><Icon size={20} /></span>
-      })}
+    <div class="guide-tabs-wrap">
+      <div class="guide-find">{find}</div>
+      <div class="guide-tabs" aria-hidden="true">
+        {TABS.map((t) => {
+          const Icon = TAB_ICON[t]
+          return (
+            <span class={t === lit ? 'lit' : ''}>
+              {t === lit && <i class="guide-pointer" />}
+              <Icon size={20} /><small>{TAB_LABEL[t]}</small>
+            </span>
+          )
+        })}
+      </div>
     </div>
+  )
+}
+
+/** The round buttons from the top of the Prayer screen, each with what it does. */
+function ButtonsScene({ t }: { t: (k: Parameters<typeof guideWord>[1]) => string }) {
+  const rows: [preact.JSX.Element, Parameters<typeof guideWord>[1]][] = [
+    [<Palette size={18} />, 'btn_look'],
+    [<Contrast size={18} />, 'btn_light'],
+    [<AlarmClock size={18} />, 'btn_alarm'],
+    [<Flame size={17} fill="currentColor" />, 'btn_streak'],
+    [<TabJourney size={17} />, 'btn_travel'],
+  ]
+  return (
+    <ul class="guide-buttons">
+      {rows.map(([icon, key], n) => (
+        <li style={{ transitionDelay: `${0.1 + n * 0.08}s` }}><span class="round">{icon}</span>{t(key)}</li>
+      ))}
+    </ul>
   )
 }
 

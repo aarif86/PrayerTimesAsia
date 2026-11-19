@@ -40,6 +40,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Contrast
+import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.NotificationsActive
@@ -97,7 +100,7 @@ private val Ring = Color(0xFF262B5E)
 private val Cream = Color(0xFFF2EEE9)
 
 /**
- * The quick guide: eight swipe cards a new user sees once, right after choosing
+ * The quick guide: nine swipe cards a new user sees once, right after choosing
  * their place. Skip at any time; Settings > Help opens it again. Same cards and
  * words as the web and iPhone (data/guide-words.json).
  */
@@ -184,7 +187,7 @@ private fun GuideCard(id: String, lang: RamadanContent.Lang, first: Boolean, on:
         },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Scene(id, on)
+        if (id == "buttons") ButtonsScene(lang, on) else Scene(id, on)
         if (first) {
             Text(GuideWords.word(lang, "hello"), fontFamily = Rounded, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Gold,
                 textAlign = TextAlign.Center, modifier = Modifier.padding(top = 18.dp))
@@ -193,7 +196,9 @@ private fun GuideCard(id: String, lang: RamadanContent.Lang, first: Boolean, on:
             modifier = Modifier.padding(top = if (first) 6.dp else 16.dp, bottom = 10.dp))
         Text(GuideWords.word(lang, "${id}_body"), fontSize = 17.sp, lineHeight = 25.sp, color = Color(0xFFEEF0FA).copy(alpha = 0.88f),
             textAlign = TextAlign.Center, modifier = Modifier.widthIn(max = 380.dp))
-        MiniTabs(when (id) { "qibla" -> 1; "falak" -> 2; "masjid" -> 3; "yours" -> 4; else -> 0 })
+        Text(GuideWords.word(lang, "find"), fontFamily = Rounded, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Gold,
+            modifier = Modifier.padding(top = 22.dp))
+        MiniTabs(when (id) { "qibla" -> 1; "falak" -> 2; "masjid" -> 3; "yours" -> 4; else -> 0 }, on)
         if (id == "yours") {
             Text(GuideWords.word(lang, "again"), fontSize = 14.sp, color = Color(0xFFEEF0FA).copy(alpha = 0.65f), textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 14.dp))
@@ -201,15 +206,48 @@ private fun GuideCard(id: String, lang: RamadanContent.Lang, first: Boolean, on:
     }
 }
 
-/** The five tabs, small, with one lit, so people learn where each part lives. */
+/** The five tabs with their names, one lit and pointed at, so people learn where each part lives. */
 @Composable
-private fun MiniTabs(lit: Int) {
-    val icons: List<ImageVector> = listOf(AppIcons.prayer, AppIcons.qibla, AppIcons.falak, AppIcons.masjid, Icons.Filled.Settings)
-    Row(Modifier.padding(top = 24.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.07f)).padding(horizontal = 12.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        icons.forEachIndexed { n, icon ->
-            Box(Modifier.size(38.dp, 34.dp).clip(CircleShape).background(if (n == lit) Gold else Color.Transparent), contentAlignment = Alignment.Center) {
-                Icon(icon, null, Modifier.size(20.dp), tint = if (n == lit) Navy else Color.White.copy(alpha = 0.4f))
+private fun MiniTabs(lit: Int, on: Boolean) {
+    val icons: List<Pair<ImageVector, String>> = listOf(AppIcons.prayer to "Prayer", AppIcons.qibla to "Qibla", AppIcons.falak to "Falak",
+        AppIcons.masjid to "Masjid", Icons.Filled.Settings to "Settings")
+    val bob by rememberInfiniteTransition(label = "pointer").animateFloat(0f, 4f,
+        infiniteRepeatable(tween(600, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "bob")
+    Row(Modifier.padding(top = 18.dp).clip(RoundedCornerShape(20.dp)).background(Color.White.copy(alpha = 0.08f)).padding(horizontal = 8.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        icons.forEachIndexed { n, (icon, name) ->
+            val tint = if (n == lit) Navy else Color.White.copy(alpha = 0.45f)
+            Box {
+                Column(Modifier.size(56.dp, 46.dp).clip(RoundedCornerShape(14.dp)).background(if (n == lit) Gold else Color.Transparent),
+                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Icon(icon, null, Modifier.size(20.dp), tint = tint)
+                    Text(name, fontFamily = Rounded, fontWeight = FontWeight.SemiBold, fontSize = 10.sp, color = tint, maxLines = 1)
+                }
+                if (n == lit) {
+                    Icon(Icons.Filled.ArrowDropDown, null, Modifier.align(Alignment.TopCenter).offset(y = (-22 + if (on) bob else 0f).dp).size(24.dp), tint = Gold)
+                }
+            }
+        }
+    }
+}
+
+/** The round buttons from the top of the Prayer screen, each with what it does. */
+@Composable
+private fun ButtonsScene(lang: RamadanContent.Lang, on: Boolean) {
+    val rows: List<Pair<ImageVector, String>> = listOf(
+        Icons.Filled.Palette to "btn_look", Icons.Filled.Contrast to "btn_light", Icons.Filled.Alarm to "btn_alarm",
+        Icons.Filled.LocalFireDepartment to "btn_streak", AppIcons.journey to "btn_travel",
+    )
+    Column(Modifier.clip(RoundedCornerShape(24.dp)).background(Color.White.copy(alpha = 0.07f)).padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        rows.forEachIndexed { n, (icon, key) ->
+            val shown by animateFloatAsState(if (on) 1f else 0f, tween(450, delayMillis = 100 + n * 80), label = "row")
+            Row(Modifier.graphicsLayer { alpha = shown; translationX = (1f - shown) * -24f }, verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.size(38.dp).clip(CircleShape).background(Color(0xFFE9ECF6)), contentAlignment = Alignment.Center) {
+                    Icon(icon, null, Modifier.size(18.dp), tint = Navy)
+                }
+                Text(GuideWords.word(lang, key), fontFamily = Rounded, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Color(0xFFEEF0FA))
             }
         }
     }
