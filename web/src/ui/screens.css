@@ -261,7 +261,9 @@
 .masjid-title .info { position: absolute; right: 16px; pointer-events: auto; background: rgba(0, 0, 0, 0.25); color: inherit; width: 38px; height: 38px; }
 :root[data-theme="light"] .masjid-title .info { background: rgba(255, 255, 255, 0.7); }
 .space-list { list-style: none; margin: 8px 0 0; padding: 0; }
-.space-list li { display: flex; align-items: center; border-bottom: 0.5px solid var(--stroke); }
+.space-list li { border-bottom: 0.5px solid var(--stroke); }
+.space-line { display: flex; align-items: center; }
+.space-row.static { cursor: default; }
 .space-row { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 0; text-align: left; }
 .space-row > svg { flex: none; width: 24px; }
 .space-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -288,6 +290,35 @@
 .space-chip { align-self: flex-start; margin-top: 3px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;
   background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
 .more-on-map { font-size: 14px; margin: 12px 2px 0; }
+.near-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.mode-switch { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--fill); }
+.mode-switch button { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--fg2); transition: background .2s ease, color .2s ease; }
+.mode-switch button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.open-chip { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--fill); font-size: 14px; font-weight: 600; }
+.open-chip.on { background: color-mix(in srgb, var(--green, #34c759) 26%, transparent); }
+.space-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 3px; }
+.space-chips .space-chip { margin-top: 0; }
+.space-chip.ok { background: color-mix(in srgb, #34c759 20%, transparent); color: inherit; }
+.space-chip.closed { background: var(--fill); color: var(--fg2); }
+.space-chip.plain { display: inline-flex; align-items: center; gap: 4px; background: var(--fill); color: inherit; font-weight: 500; padding: 4px 10px; }
+.space-list li.open { background: color-mix(in srgb, var(--fg) 4%, transparent); border-radius: 16px; padding: 0 10px; margin: 0 -10px; }
+.space-more { padding: 0 0 14px 36px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; animation: space-more-in .25s ease; }
+.space-more p { margin: 0; display: flex; align-items: center; gap: 6px; }
+@keyframes space-more-in { from { opacity: 0; transform: translateY(-4px); } }
+.space-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.space-actions .plain-btn { font-size: 14px; padding: 7px 12px; text-decoration: none; color: inherit; }
+.space-actions .plain-btn.quiet { background: transparent; color: var(--fg2); font-weight: 500; }
+.space-actions .plain-btn.done { color: var(--accent); }
+.accent-text { color: var(--accent); font-weight: 600; }
+.your-masjid { margin-bottom: 14px; padding: 14px 16px; border-radius: 22px; background: var(--glass); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); display: flex; flex-direction: column; gap: 6px; }
+.your-masjid-main { display: flex; align-items: center; gap: 12px; text-align: left; }
+.your-masjid-main > svg { flex: none; }
+.your-masjid .caps { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.your-masjid-line { margin: 0; font-size: 14px; line-height: 1.4; padding-left: 32px; }
+.your-masjid .space-actions { padding-left: 32px; }
+.pin-pop .pin-open { color: #1f8a3b; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .space-more { animation: none; } }
 .friday-card { margin-top: 22px; padding: 16px 16px 12px; border-radius: 22px; background: var(--glass); border: 1px solid var(--stroke);
   -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); }
 .friday-card.today { margin-top: 16px; border-color: color-mix(in srgb, var(--accent) 55%, transparent); }

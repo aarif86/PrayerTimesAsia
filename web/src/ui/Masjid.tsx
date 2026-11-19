@@ -1,7 +1,7 @@
 import { SiteHomeButton } from './SiteHome'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { ComponentChildren } from 'preact'
-import { CalendarDays, ChevronDown, Footprints, House, Info, LocateFixed, Loader2, MoonStar } from 'lucide-preact'
+import { Accessibility, Car, CalendarDays, ChevronDown, Clock, Droplets, Flag, Footprints, House, Info, LocateFixed, Loader2, MoonStar, ParkingCircle, Star, Users } from 'lucide-preact'
 import type { Coordinates } from '../core/engine'
 import { distanceKm } from '../core/geo'
 import { isGraveOrShrine, looksLikePrayerSpace } from '../core/official'
@@ -10,8 +10,12 @@ import { listNearby } from '../services/masjidList'
 import { useStore } from '../services/store'
 import { openSheet, Segmented } from './common'
 import { FRIDAY_SG, fridayMosqueAt, fridayNearest, inSingapore, type FridayMosque } from '../core/friday'
+import { currentEid, eidAt, type EidEvent, type EidMosque } from '../core/eid'
+import { hoursAt, localWeekMinute, type HoursNow } from '../core/openingHours'
+import { OBLIGATORY } from '../core/prayer'
+import type { MasjidLink } from '../core/masjidLink'
+import { store } from '../services/store'
 import { tint } from './Dials'
-import { MyMasjidGroup } from './MyMasjid'
 
 /**
  * Masjids and musollahs (surau, prayer rooms) near the active place, from
@@ -25,6 +29,10 @@ export interface PrayerSpace {
   coordinates: Coordinates
   distanceKm: number
   isMusollah: boolean
+  /** w women's space, a wheelchair, p parking, t toilets (from OpenStreetMap). */
+  facilities?: string
+  /** OpenStreetMap opening_hours, mostly on prayer rooms in malls. */
+  hours?: string
 }
 
 type Kind = 'all' | 'masjid' | 'musollah'
@@ -54,7 +62,11 @@ export function parseOverpass(json: { elements?: OsmElement[] }, center: Coordin
     if (out.has(key)) continue
     const address = [t['addr:street'] && `${t['addr:housenumber'] ? t['addr:housenumber'] + ' ' : ''}${t['addr:street']}`, t['addr:suburb'] || t['addr:city']]
       .filter(Boolean).join(', ')
-    out.set(key, { id: `${e.type}/${e.id}`, name: display, address, coordinates: c, distanceKm: km, isMusollah })
+    const yes = (v?: string) => ['yes', 'designated', 'limited', 'separate', 'only'].includes((v ?? '').toLowerCase())
+    const facilities = (yes(t.female) || yes(t.women) ? 'w' : '') + (yes(t.wheelchair) ? 'a' : '') +
+      (t.parking && t.parking !== 'no' ? 'p' : '') + (yes(t.toilets) ? 't' : '')
+    out.set(key, { id: `${e.type}/${e.id}`, name: display, address, coordinates: c, distanceKm: km, isMusollah,
+      ...(facilities ? { facilities } : {}), ...(t.opening_hours ? { hours: t.opening_hours } : {}) })
   }
   return [...out.values()].sort((a, b) => a.distanceKm - b.distanceKm)
 }
@@ -90,12 +102,20 @@ async function searchNearby(center: Coordinates, country?: string | null): Promi
   return spaces
 }
 
-function directionsURL(c: Coordinates): string {
+type Mode = 'walk' | 'drive'
+const MODE_KEY = 'ptasia.masjid.mode'
+
+function directionsURL(c: Coordinates, mode: Mode): string {
   const { latitude: la, longitude: lo } = c
   const apple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)
   return apple
-    ? `https://maps.apple.com/?daddr=${la},${lo}&dirflg=w`
-    : `https://www.google.com/maps/dir/?api=1&destination=${la},${lo}&travelmode=walking`
+    ? `https://maps.apple.com/?daddr=${la},${lo}&dirflg=${mode === 'walk' ? 'w' : 'd'}`
+    : `https://www.google.com/maps/dir/?api=1&destination=${la},${lo}&travelmode=${mode === 'walk' ? 'walking' : 'driving'}`
+}
+
+/** A note on OpenStreetMap at this spot, so a volunteer can fix or add the place. No sign up needed. */
+function reportURL(c: Coordinates): string {
+  return `https://www.openstreetmap.org/note/new#map=19/${c.latitude.toFixed(5)}/${c.longitude.toFixed(5)}`
 }
 
 /** How many places the list shows; the rest are pins on the map. */
@@ -105,11 +125,13 @@ function distanceText(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
 }
 
-/** About 5 km an hour on foot, shown only when walking is a sensible choice. */
-function walkText(km: number): string | null {
-  if (km > 2) return null
-  const min = Math.max(1, Math.round(km / 0.08))
-  return `${min} min walk`
+/**
+ * About 5 km an hour on foot, shown up to 2 km. By car, a rough town pace
+ * (about 30 km an hour plus a little for parking); the maps app shows the jams.
+ */
+function tripText(km: number, mode: Mode): string | null {
+  if (mode === 'walk') return km > 2 ? null : `${Math.max(1, Math.round(km / 0.08))} min walk`
+  return `${Math.max(2, Math.round(km * 2 + 2))} min drive`
 }
 
 const escapeHTML = (t: string) => t.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
@@ -119,6 +141,13 @@ function clock(hhmm: string, use24: boolean): string {
   const [h, m] = hhmm.split(':').map(Number)
   return `${((h + 11) % 12) + 1}${m ? ':' + String(m).padStart(2, '0') : ''} ${h < 12 ? 'AM' : 'PM'}`
 }
+
+function hoursText(h: HoursNow, use24: boolean): string {
+  if (h.open) return h.until ? `Open now, until ${clock(h.until, use24)}` : 'Open now, all day'
+  return h.opensAt ? `Closed now, opens ${clock(h.opensAt, use24)}` : 'Closed today'
+}
+
+const FACILITIES: [string, string, typeof Users][] = [['w', "Women's space", Users], ['a', 'Wheelchair access', Accessibility], ['p', 'Parking', ParkingCircle], ['t', 'Toilets', Droplets]]
 
 type Here = { coordinates: Coordinates; label: string; fromGps: boolean }
 
@@ -136,21 +165,38 @@ export default function MasjidScreen() {
   const [slow, setSlow] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const [kind, setKind] = useState<Kind>('all')
+  const [openOnly, setOpenOnly] = useState(false)
+  const [expanded, setExpanded] = useState<string | null>(null)
+  const [mode, setModeState] = useState<Mode>(() => { try { return localStorage.getItem(MODE_KEY) === 'drive' ? 'drive' : 'walk' } catch { return 'walk' } })
+  const setMode = (m: Mode) => { setModeState(m); try { localStorage.setItem(MODE_KEY, m) } catch { /* ignore */ } }
   const [allFriday, setAllFriday] = useState(false)
   const mapEl = useRef<HTMLDivElement>(null)
   const map = useRef<{ api: typeof import('./leafletMap'); map: import('leaflet').Map; layer: import('leaflet').LayerGroup; you: import('leaflet').Marker } | null>(null)
   const dark = document.documentElement.dataset.theme !== 'light'
   const use24 = s.prefs.use24Hour
+  const tz = place?.timeZoneID || Intl.DateTimeFormat().resolvedOptions().timeZone
 
   const lat = here?.coordinates.latitude, lng = here?.coordinates.longitude
   const singapore = here ? inSingapore(here.coordinates, nearMe ? null : place?.countryCode) : false
+  const tick = Math.floor(s.now() / 600_000)
   // Friday in Singapore until the second prayer is done (about 3 PM): the card goes to the top.
   const friday = useMemo(() => {
     const parts = new Intl.DateTimeFormat('en-US', { weekday: 'short', hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Singapore' }).formatToParts(new Date(s.now()))
     return parts.find((p) => p.type === 'weekday')?.value === 'Fri' && Number(parts.find((p) => p.type === 'hour')?.value) < 15
-  }, [Math.floor(s.now() / 600_000)])
+  }, [tick])
+  const eid: EidEvent | null = useMemo(() => {
+    if (!singapore) return null
+    const sample = !!s.demo && new URLSearchParams(location.search).get('eid') === 'sample'
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore' }).format(new Date(s.now()))
+    return currentEid(today, sample)
+  }, [tick, singapore])
+  const week = useMemo(() => localWeekMinute(s.now(), tz), [tick, tz])
+  const hoursOf = (sp: PrayerSpace) => sp.hours ? hoursAt(sp.hours, week.weekday, week.minute) : null
 
-  const visible = useMemo(() => kind === 'all' ? spaces : spaces.filter((x) => (kind === 'musollah') === x.isMusollah), [spaces, kind])
+  const visible = useMemo(() => spaces
+    .filter((x) => kind === 'all' || (kind === 'musollah') === x.isMusollah)
+    .filter((x) => !openOnly || hoursOf(x)?.open), [spaces, kind, openOnly, week])
+  const anyHours = useMemo(() => spaces.some((x) => hoursOf(x) != null), [spaces, week])
   const visibleRef = useRef(visible)
   visibleRef.current = visible
 
@@ -169,7 +215,6 @@ export default function MasjidScreen() {
     let cancelled = false
     setLoading(true); setFailed(false); setSlow(false)
     const slowTimer = setTimeout(() => setSlow(true), 8000)
-    // Your own spot gets the country from the place list when it is close by.
     const country = nearMe ? (inSingapore(nearMe) ? 'SG' : place?.countryCode) : place?.countryCode
     searchNearby(here.coordinates, country).then((r) => {
       clearTimeout(slowTimer)
@@ -202,13 +247,15 @@ export default function MasjidScreen() {
     m.layer.clearLayers()
     for (const sp of visibleRef.current) {
       const fri = singapore ? fridayMosqueAt(sp.coordinates) : null
+      const h = hoursOf(sp)
+      const trip = tripText(sp.distanceKm, mode)
       const pin = m.api.spaceMarker(sp.coordinates, sp.isMusollah, sp.name)
-      pin.bindPopup(`<div class="pin-pop"><b>${escapeHTML(sp.name)}</b><span>${distanceText(sp.distanceKm)} away</span>` +
+      pin.bindPopup(`<div class="pin-pop"><b>${escapeHTML(sp.name)}</b><span>${distanceText(sp.distanceKm)} away${trip ? ', ' + trip : ''}</span>` +
+        (h ? `<span class="${h.open ? 'pin-open' : ''}">${hoursText(h, use24)}</span>` : '') +
         (fri ? `<span class="pin-fri">Two Friday prayers, 2nd from ${clock(FRIDAY_SG.secondSessionFrom, use24)}</span>` : '') +
-        `<a href="${directionsURL(sp.coordinates)}" target="_blank" rel="noopener noreferrer">Directions</a></div>`, { closeButton: false, autoPanPaddingTopLeft: [16, 80] })
+        `<a href="${directionsURL(sp.coordinates, mode)}" target="_blank" rel="noopener noreferrer">Directions</a></div>`, { closeButton: false, autoPanPaddingTopLeft: [16, 80] })
       pin.addTo(m.layer)
     }
-    // You and the nearest few fill the map; the rest are a pinch or a drag away.
     const near = visibleRef.current.slice(0, SHOW).map((sp) => [sp.coordinates.latitude, sp.coordinates.longitude] as [number, number])
     if (near.length) {
       m.map.fitBounds(m.api.L.latLngBounds([[here.coordinates.latitude, here.coordinates.longitude], ...near]), { padding: [40, 40], maxZoom: 16, animate: false })
@@ -216,18 +263,19 @@ export default function MasjidScreen() {
       m.map.setView([here.coordinates.latitude, here.coordinates.longitude], 14, { animate: false })
     }
   }
-  useEffect(draw, [visible, lat, lng])
+  useEffect(draw, [visible, lat, lng, mode])
 
   const focus = (c: Coordinates) => {
     map.current?.map.flyTo([c.latitude, c.longitude], 16, { duration: 0.6 })
-    mapEl.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
 
   const top = visible.slice(0, SHOW)
   const more = visible.length - top.length
+  const mine = s.prefs.myMasjid
+  const isMine = (c: Coordinates) => !!mine && Math.abs(mine.lat - c.latitude) < 0.003 && Math.abs(mine.lng - c.longitude) < 0.003
 
   const fridayCard = singapore && here
-    ? <FridayCard from={here.coordinates} all={allFriday} onAll={() => setAllFriday((v) => !v)} today={friday} use24={use24} onFocus={focus} />
+    ? <FridayCard from={here.coordinates} all={allFriday} onAll={() => setAllFriday((v) => !v)} today={friday} use24={use24} mode={mode} onFocus={focus} />
     : null
 
   return (
@@ -243,77 +291,228 @@ export default function MasjidScreen() {
         </div>
       </div>
       <div class="page masjid-page">
-        <MyMasjidGroup />
+        {mine && here && <YourMasjid m={mine} from={here.coordinates} mode={mode} use24={use24} singapore={singapore} eid={eid} onFocus={focus} />}
         <button class="near-me-btn" onClick={findNearMe} disabled={locating === 'busy'}>
           {locating === 'busy' ? <Loader2 class="spin" size={20} /> : <LocateFixed size={20} />}
           <span>{locating === 'busy' ? 'Finding where you are…' : nearMe ? 'Search again from here' : 'Find prayer places near me'}</span>
         </button>
         {locating === 'denied' && <p class="near-me-note secondary">Location is turned off for this site. Showing places near {place?.name ?? 'your saved place'}.</p>}
         {locating === 'failed' && <p class="near-me-note secondary">Couldn't find where you are. Showing places near {place?.name ?? 'your saved place'}.</p>}
+        {eid && here && <EidCard e={eid} from={here.coordinates} spaces={spaces} use24={use24} />}
         {friday && fridayCard}
         <div class="near-head">
-          <h2>Nearest to {here?.fromGps ? 'you' : here?.label ?? 'you'}</h2>
+          <div class="near-title">
+            <h2>Nearest to {here?.fromGps ? 'you' : here?.label ?? 'you'}</h2>
+            <div class="mode-switch" role="group" aria-label="How you're going">
+              <button aria-pressed={mode === 'walk'} onClick={() => setMode('walk')}><Footprints size={15} /> Walk</button>
+              <button aria-pressed={mode === 'drive'} onClick={() => setMode('drive')}><Car size={15} /> Drive</button>
+            </div>
+          </div>
           <Segmented value={kind} onChange={setKind} options={[{ value: 'all', label: 'All' }, { value: 'masjid', label: 'Masjid' }, { value: 'musollah', label: 'Musollah' }]} />
+          {anyHours && (
+            <button class={`open-chip${openOnly ? ' on' : ''}`} aria-pressed={openOnly} onClick={() => setOpenOnly((v) => !v)}>
+              <Clock size={14} /> Open now only
+            </button>
+          )}
         </div>
+        {mode === 'drive' && <p class="near-me-note secondary">Drive times are a rough guide. Your maps app shows the traffic, so a masjid a little further away may be quicker.</p>}
         {!here && <Empty title="Choose a place" body="Tap the button above, or pick a city on the Prayer tab." />}
         {here && loading && spaces.length === 0 && <div class="masjid-loading"><Loader2 class="spin" size={22} /> {slow ? 'The free map server is busy. Still looking…' : 'Searching nearby…'}</div>}
         {here && !loading && visible.length === 0 && (
-          <Empty title={failed ? "Couldn't search" : 'Nothing listed nearby'}
-            body={failed ? "The free map servers didn't answer. Check your connection, or try again in a minute." : `OpenStreetMap has no ${kind === 'musollah' ? 'musollah' : 'masjid'} listed within 15 km. Use the Qibla tab to pray where you are.`}
+          <Empty title={failed ? "Couldn't search" : openOnly ? 'Nothing open right now' : 'Nothing listed nearby'}
+            body={failed ? "The free map servers didn't answer. Check your connection, or try again in a minute."
+              : openOnly ? 'Only places with opening hours on the map count here. Turn off Open now only to see the rest.'
+              : `OpenStreetMap has no ${kind === 'musollah' ? 'musollah' : 'masjid'} listed within 15 km. Use the Qibla tab to pray where you are.`}
             action={failed ? <button class="primary-btn" style={{ marginTop: 14 }} onClick={() => setAttempt((n) => n + 1)}>Try again</button> : undefined} />
         )}
         <ul class="space-list">
           {top.map((sp) => {
             const fri = singapore ? fridayMosqueAt(sp.coordinates) : null
-            const walk = walkText(sp.distanceKm)
+            const trip = tripText(sp.distanceKm, mode)
+            const h = hoursOf(sp)
+            const raya = eid ? eidAt(eid, sp.name, sp.coordinates) : null
+            const open = expanded === sp.id
             return (
-              <li>
-                <button class="space-row" onClick={() => focus(sp.coordinates)}>
-                  {sp.isMusollah ? <House size={20} style={{ color: tint('fajr') }} fill="currentColor" /> : <MoonStar size={20} class="accent" />}
-                  <span class="space-text">
-                    <span class="space-name">{sp.name}</span>
-                    {sp.address && <span class="space-addr">{sp.address}</span>}
-                    {fri && <span class="space-chip">2 Friday prayers</span>}
-                  </span>
-                  <span class="space-dist">
-                    <span class="mono">{distanceText(sp.distanceKm)}</span>
-                    {walk && <span class="space-walk">{walk}</span>}
-                  </span>
-                </button>
-                <a class="walk" href={directionsURL(sp.coordinates)} target="_blank" rel="noopener noreferrer" aria-label={`Walking directions to ${sp.name}`}><Footprints size={17} /></a>
+              <li class={open ? 'open' : ''}>
+                <div class="space-line">
+                  <button class="space-row" aria-expanded={open} onClick={() => { setExpanded(open ? null : sp.id); focus(sp.coordinates) }}>
+                    {sp.isMusollah ? <House size={20} style={{ color: tint('fajr') }} fill="currentColor" /> : <MoonStar size={20} class="accent" />}
+                    <span class="space-text">
+                      <span class="space-name">{isMine(sp.coordinates) && <Star size={14} class="accent" fill="currentColor" style={{ marginRight: 4 }} />}{sp.name}</span>
+                      {sp.address && <span class="space-addr">{sp.address}</span>}
+                      {(fri || h) && (
+                        <span class="space-chips">
+                          {fri && <span class="space-chip">2 Friday prayers</span>}
+                          {h && <span class={`space-chip ${h.open ? 'ok' : 'closed'}`}>{h.open ? 'Open now' : 'Closed now'}</span>}
+                        </span>
+                      )}
+                    </span>
+                    <span class="space-dist">
+                      <span class="mono">{distanceText(sp.distanceKm)}</span>
+                      {trip && <span class="space-walk">{trip}</span>}
+                    </span>
+                  </button>
+                  <a class="walk" href={directionsURL(sp.coordinates, mode)} target="_blank" rel="noopener noreferrer" aria-label={`${mode === 'walk' ? 'Walking' : 'Driving'} directions to ${sp.name}`}>{mode === 'walk' ? <Footprints size={17} /> : <Car size={17} />}</a>
+                </div>
+                {open && (
+                  <div class="space-more">
+                    <Facilities f={sp.facilities} />
+                    {h && <p><Clock size={14} /> {hoursText(h, use24)}</p>}
+                    {fri && <p class="accent-text">Second Friday prayer from {clock(FRIDAY_SG.secondSessionFrom, use24)}{fri.womenSession2 ? ", with space for women" : ''}.</p>}
+                    {raya && <p class="accent-text">{eid!.name.replace(/ \d+H$/, '')} prayer at {raya.sessions.map((x) => clock(x.time, use24)).join(', ')}.</p>}
+                    <div class="space-actions">
+                      <a class="plain-btn" href={directionsURL(sp.coordinates, mode)} target="_blank" rel="noopener noreferrer">{mode === 'walk' ? <Footprints size={15} /> : <Car size={15} />} Directions</a>
+                      {isMine(sp.coordinates)
+                        ? <span class="plain-btn done"><Star size={15} fill="currentColor" /> {sp.isMusollah ? 'Kept at the top' : 'Your masjid'}</span>
+                        : <button class="plain-btn" onClick={() => s.chooseMasjid(sp.name, sp.coordinates)}><Star size={15} /> {sp.isMusollah ? 'Keep it at the top' : 'Make it my masjid'}</button>}
+                      <a class="plain-btn quiet" href={reportURL(sp.coordinates)} target="_blank" rel="noopener noreferrer"><Flag size={15} /> Report a problem</a>
+                    </div>
+                  </div>
+                )}
               </li>
             )
           })}
         </ul>
         {more > 0 && <p class="more-on-map secondary">{more} more within 15 km are on the map. Tap a pin to see its name and directions.</p>}
+        {!mine && spaces.length > 0 && <p class="more-on-map secondary">Tap a place and choose Make it my masjid to keep it at the top.</p>}
         {!friday && fridayCard}
-        {spaces.length > 0 && <p class="footnote secondary" style={{ marginTop: '14px' }}>Places from OpenStreetMap contributors. Missing one? Anyone can add it at openstreetmap.org.</p>}
+        {here && (
+          <p class="footnote secondary" style={{ marginTop: '14px' }}>
+            Places from OpenStreetMap, kept by volunteers. Missing one, or a pin in the wrong spot? <a href={reportURL(here.coordinates)} target="_blank" rel="noopener noreferrer">Tell the map</a>, no sign up needed.
+          </p>
+        )}
       </div>
     </div>
   )
 }
 
+function Facilities({ f }: { f?: string }) {
+  const have = FACILITIES.filter(([k]) => f?.includes(k))
+  if (!have.length) return <p class="secondary">The map doesn't list this place's facilities yet.</p>
+  return <div class="space-chips">{have.map(([, label, Icon]) => <span class="space-chip plain"><Icon size={13} /> {label}</span>)}</div>
+}
+
+/** "Subuh +15, Zohor 1:15 PM", one line. */
+function iqamahLine(m: MasjidLink, use24: boolean): string | null {
+  const parts = OBLIGATORY.filter((p) => m.jamaah[p]).map((p) => {
+    const r = m.jamaah[p]!
+    return `${store.name(p)} ${r.fixed ? clock(r.fixed, use24) : `+${r.after} min`}`
+  })
+  if (m.jumuah) parts.push(`Jumaat ${clock(m.jumuah, use24)}`)
+  return parts.length ? parts.join(', ') : null
+}
+
+/** Your masjid, pinned at the top with how far it is and its iqamah times. */
+function YourMasjid({ m, from, mode, use24, singapore, eid, onFocus }: {
+  m: MasjidLink; from: Coordinates; mode: Mode; use24: boolean; singapore: boolean; eid: EidEvent | null; onFocus: (c: Coordinates) => void
+}) {
+  const s = useStore()
+  const c = { latitude: m.lat, longitude: m.lng }
+  const km = distanceKm(from, c)
+  const trip = tripText(km, mode)
+  const iq = iqamahLine(m, use24)
+  const fri = singapore ? fridayMosqueAt(c) : null
+  const raya = eid ? eidAt(eid, m.name, c) : null
+  return (
+    <section class="your-masjid">
+      <button class="your-masjid-main" onClick={() => onFocus(c)}>
+        <Star size={20} class="accent" fill="currentColor" />
+        <span class="space-text">
+          <span class="caps secondary">Your masjid</span>
+          <span class="space-name">{m.name}</span>
+          <span class="space-addr">{distanceText(km)} away{trip ? `, ${trip}` : ''}</span>
+        </span>
+      </button>
+      <p class="your-masjid-line">{iq ? `Iqamah ${iq}` : 'Iqamah times show here when your masjid puts up a Prayer Times Asia screen. Scan its QR code once.'}</p>
+      {fri && <p class="your-masjid-line accent-text">Second Friday prayer from {clock(FRIDAY_SG.secondSessionFrom, use24)}{fri.womenSession2 ? ", with space for women" : ''}.</p>}
+      {raya && <p class="your-masjid-line accent-text">{eid!.name.replace(/ \d+H$/, '')} prayer at {raya.sessions.map((x) => clock(x.time, use24)).join(', ')}.</p>}
+      {!raya && m.eid && <p class="your-masjid-line accent-text">Hari Raya prayer at {clock(m.eid, use24)}.</p>}
+      <div class="space-actions">
+        <a class="plain-btn" href={directionsURL(c, mode)} target="_blank" rel="noopener noreferrer">{mode === 'walk' ? <Footprints size={15} /> : <Car size={15} />} Directions</a>
+        <button class="plain-btn quiet" onClick={() => s.forgetMasjid()}>Remove</button>
+      </div>
+    </section>
+  )
+}
+
+/** Singapore, in the two weeks before Hari Raya: sessions at the nearest masjids, from MUIS. */
+function EidCard({ e, from, spaces, use24 }: { e: EidEvent; from: Coordinates; spaces: PrayerSpace[]; use24: boolean }) {
+  const [all, setAll] = useState(false)
+  // Place each listed masjid on the map list (by spot or name) to know how far it is.
+  const rows = e.mosques.map((m) => {
+    const c = m.lat != null && m.lng != null ? { latitude: m.lat, longitude: m.lng }
+      : spaces.find((sp) => eidAt({ ...e, mosques: [m] }, sp.name, sp.coordinates))?.coordinates
+    return { m, km: c ? distanceKm(from, c) : null }
+  }).sort((a, b) => (a.km ?? 1e9) - (b.km ?? 1e9))
+  const shown = all ? rows : rows.slice(0, 3)
+  const date = new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+  const sessionText = (m: EidMosque) => m.sessions.map((x) => `${clock(x.time, use24)}${x.khutbah ? ` (${x.khutbah})` : ''}`).join(', ')
+  return (
+    <section class="friday-card today eid-card">
+      <div class="friday-head">
+        <MoonStar size={20} class="accent" />
+        <div>
+          <h2>{e.name.replace(/ \d+H$/, '')} prayer</h2>
+          <p class="secondary">{date}. Prayer times at the masjids nearest you.</p>
+        </div>
+      </div>
+      <ul class="space-list">
+        {shown.map(({ m, km }) => (
+          <li>
+            <div class="space-line">
+              <div class="space-row static">
+                <MoonStar size={20} class="accent" />
+                <span class="space-text">
+                  <span class="space-name">{m.name}</span>
+                  <span class="space-addr">{sessionText(m)}</span>
+                  {(m.sessions.some((x) => x.women) || m.note) && (
+                    <span class="space-addr">{[m.sessions.some((x) => x.women) ? 'Space for women' : '', m.note ?? ''].filter(Boolean).join('. ')}</span>
+                  )}
+                </span>
+                {km != null && <span class="space-dist"><span class="mono">{distanceText(km)}</span></span>}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {rows.length > 3 && (
+        <button class="plain-btn friday-all" onClick={() => setAll((v) => !v)} aria-expanded={all}>
+          {all ? 'Show the nearest 3' : `See all ${rows.length}`} <ChevronDown size={16} style={{ transform: all ? 'rotate(180deg)' : undefined }} />
+        </button>
+      )}
+      <p class="footnote secondary">
+        From the Islamic Religious Council of Singapore (MUIS). <a href={e.sourceUrl} target="_blank" rel="noopener noreferrer">See the MUIS list</a>
+      </p>
+    </section>
+  )
+}
+
 /** Singapore only: masjids with a second Friday prayer, nearest first. */
-function FridayCard({ from, all, onAll, today, use24, onFocus }: {
-  from: Coordinates; all: boolean; onAll: () => void; today: boolean; use24: boolean; onFocus: (c: Coordinates) => void
+function FridayCard({ from, all, onAll, today, use24, mode, onFocus }: {
+  from: Coordinates; all: boolean; onAll: () => void; today: boolean; use24: boolean; mode: Mode; onFocus: (c: Coordinates) => void
 }) {
   const list = fridayNearest(from)
   const shown = all ? list : list.slice(0, 3)
   const t = clock(FRIDAY_SG.secondSessionFrom, use24)
   const updated = new Date(FRIDAY_SG.sourceUpdated + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-  const row = (m: FridayMosque & { km: number }) => (
-    <li>
-      <button class="space-row" onClick={() => onFocus({ latitude: m.lat, longitude: m.lng })}>
-        <MoonStar size={20} class="accent" />
-        <span class="space-text">
-          <span class="space-name">{m.name}</span>
-          <span class="space-addr">{m.district}{m.womenSession2 ? '. Space for women in the 2nd prayer' : ''}</span>
-        </span>
-        <span class="space-dist"><span class="mono">{distanceText(m.km)}</span></span>
-      </button>
-      <a class="walk" href={directionsURL({ latitude: m.lat, longitude: m.lng })} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${m.name}`}><Footprints size={17} /></a>
-    </li>
-  )
+  const row = (m: FridayMosque & { km: number }) => {
+    const trip = tripText(m.km, mode)
+    return (
+      <li>
+        <div class="space-line">
+          <button class="space-row" onClick={() => onFocus({ latitude: m.lat, longitude: m.lng })}>
+            <MoonStar size={20} class="accent" />
+            <span class="space-text">
+              <span class="space-name">{m.name}</span>
+              <span class="space-addr">{m.district}{m.womenSession2 ? '. Space for women in the 2nd prayer' : ''}</span>
+            </span>
+            <span class="space-dist"><span class="mono">{distanceText(m.km)}</span>{trip && <span class="space-walk">{trip}</span>}</span>
+          </button>
+          <a class="walk" href={directionsURL({ latitude: m.lat, longitude: m.lng }, mode)} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${m.name}`}>{mode === 'walk' ? <Footprints size={17} /> : <Car size={17} />}</a>
+        </div>
+      </li>
+    )
+  }
   return (
     <section class={`friday-card${today ? ' today' : ''}`}>
       <div class="friday-head">
