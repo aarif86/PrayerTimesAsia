@@ -1,6 +1,6 @@
 import { azanAvailable } from '../services/azan'
 import { useEffect, useState } from 'preact/hooks'
-import { AlarmClock, ArrowDownToLine, ArrowRightLeft, MoonStar, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, MapPinned, Mail, MapPinOff, Printer, Smartphone, Star } from 'lucide-preact'
+import { AlarmClock, ArrowDownToLine, ArrowRightLeft, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, Lightbulb, Mail, MapPinned, MapPinOff, MoonStar, Printer, Smartphone, Star } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
@@ -264,6 +264,12 @@ export function SettingsScreen() {
           </button>
         </Group>
       )}
+
+      <Group title="Help" foot="A short tour that taps the real buttons, so you know where everything is.">
+        <button class="item" onClick={() => openSheet({ kind: 'guide' })}>
+          <Lightbulb size={20} /><span class="label">Show the quick guide</span><ChevronRight size={16} class="secondary" />
+        </button>
+      </Group>
 
       <Group title="Accuracy">
         <p class="item footnote" style={{ display: 'block', lineHeight: 1.4 }}>

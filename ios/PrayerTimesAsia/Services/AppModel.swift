@@ -129,6 +129,8 @@ final class AppModel {
                          timeZoneID: "Asia/Singapore", coordinates: Coordinates(latitude: 1.3721, longitude: 103.9474))
         var p = Preferences()
         p.hasOnboarded = true
+        // Screenshots skip the quick guide unless they ask for it.
+        p.guideSeen = !args.contains("-guide")
         p.useGPS = false
         p.home = home
         p.homeConfirmed = true
