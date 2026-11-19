@@ -12,7 +12,7 @@ import { store, useNow, useStore } from '../services/store'
 import { Sheet, ToggleItem } from './common'
 import { Hadith } from './Hadith'
 import { phoneAppOffer } from './pwa'
-import { tr } from '../core/appWords'
+import { appLocale, tr } from '../core/appWords'
 
 /** The alarm clock on the Prayer screen: shows the next alarm's time when one is set. */
 export function WakeChip({ now, open }: { now: number; open: () => void }) {
@@ -20,13 +20,13 @@ export function WakeChip({ now, open }: { now: number; open: () => void }) {
   const fajr = store.name('fajr')
   if (!next) {
     return (
-      <button class="round-btn" onClick={open} aria-label={`Prayer alarms, wake up for ${fajr}: set an alarm`}>
+      <button class="round-btn" onClick={open} aria-label={tr('wake.chipLabel', { name: fajr })}>
         <AlarmClock size={18} />
       </button>
     )
   }
   return (
-    <button class="streak-chip wake-chip" onClick={open} aria-label={`Wake up alarm at ${store.formatted(next.at)}`}>
+    <button class="streak-chip wake-chip" onClick={open} aria-label={tr('wake.chipAt', { time: store.formatted(next.at) })}>
       <AlarmClockCheck size={16} />
       <span class="mono">{store.formatted(next.at).replace(/ ?[AP]M$/i, '')}</span>
     </button>
@@ -47,9 +47,9 @@ function soon(now: number, at: (d: PrayerDay) => number): string | null {
 function whenText(now: number, at: number): string {
   const tz = store.timeZone
   const key = (ms: number) => new Date(ms).toLocaleDateString('en-CA', { timeZone: tz })
-  if (key(at) === key(now)) return 'today'
-  if (key(at) === key(noonDaysAfter(now, 1, tz))) return 'tomorrow'
-  return new Date(at).toLocaleDateString('en-GB', { weekday: 'long', timeZone: tz })
+  if (key(at) === key(now)) return tr('common.today').toLocaleLowerCase(appLocale())
+  if (key(at) === key(noonDaysAfter(now, 1, tz))) return tr('common.tomorrow').toLocaleLowerCase(appLocale())
+  return new Date(at).toLocaleDateString(appLocale(), { weekday: 'long', timeZone: tz })
 }
 
 /**
@@ -99,7 +99,7 @@ export function WakeUpSheet() {
       <section>
         <div class="group">
           <p class="item">
-            <span class="label">{next ? <>Next alarm {whenText(now, next.at)} {s.formatted(next.at)}{nextFor}</> : <span class="secondary">{tr('wake.noneOn')}</span>}</span>
+            <span class="label">{next ? <>{tr('wake.next')} {whenText(now, next.at)} {s.formatted(next.at)}{nextFor}</> : <span class="secondary">{tr('wake.noneOn')}</span>}</span>
           </p>
           {anyAlarm(p) && (
             <button class="item" onClick={turnOffAll}>
@@ -116,7 +116,7 @@ export function WakeUpSheet() {
             <Choice label={wakeUpLabel(t, s.naming)} detail={soon(now, (d) => wakeUpTime(t, d))} on={p.wakeUp === t} pick={() => setWake(t)} />
           ))}
         </div>
-        <p class="group-foot">{p.wakeUp ? `Rings every morning and moves with ${fajr} wherever you are. Pick one time.` : `Turn on to wake up for ${fajr} every morning.`}</p>
+        <p class="group-foot">{p.wakeUp ? tr('wake.rings', { name: fajr }) : tr('wake.turnOnFor', { name: fajr })}</p>
       </section>
 
       <section>

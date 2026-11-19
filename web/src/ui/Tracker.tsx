@@ -5,7 +5,7 @@ import { ymdKey } from '../core/tz'
 import { useNow, useStore } from '../services/store'
 import { Sheet } from './common'
 import { Hadith } from './Hadith'
-import { tr } from '../core/appWords'
+import { tr, trWith } from '../core/appWords'
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const WEEK = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -38,17 +38,17 @@ export function TrackerSheet() {
         <div class="tracker-streak">
           {s.trackerPaused ? <Pause size={22} /> : <Flame size={22} fill="currentColor" />}
           <span class="mono big">{s.streak(now)}</span>
-          <span class="secondary">day streak</span>
+          <span class="secondary">{tr('tracker.streakLabel')}</span>
         </div>
         {s.trackerPaused ? (
           <>
-            <p class="caption secondary">Paused since {sinceLabel}. These days count as excused, so your streak waits for you.</p>
+            <p class="caption secondary">{tr('tracker.pausedSince', { date: sinceLabel })}</p>
             <Hadith id="illness" variant="line" />
             <button class="pill-btn" onClick={() => s.endTrackerPause(now)}><Play size={16} />{tr('tracker.endPause')}</button>
           </>
         ) : (
           <>
-            <p class="caption secondary">For haid, nifas or illness: pause the tracker and every day until you end it counts as excused.</p>
+            <p class="caption secondary">{tr('tracker.pauseHelp')}</p>
             <div class="tracker-actions">
               <button class="pill-btn" onClick={() => s.pauseTracker(now)}><Pause size={16} />{tr('tracker.pause')}</button>
               <button class={`pill-btn quiet ${s.isExcused(now) ? 'on' : ''}`} aria-pressed={s.isExcused(now)} onClick={() => s.toggleExcused(now)}>
@@ -87,8 +87,8 @@ export function TrackerSheet() {
           <span><Droplet size={11} fill="#e06c8a" color="#e06c8a" />{tr('tracker.excused')}</span>
         </div>
         <p class="tracker-sum">
-          {counted > 0 ? <><b class="mono">{prayed}</b> of {counted * OBLIGATORY.length} prayers ticked</> : tr('tracker.nothing')}
-          {excused > 0 && <span class="secondary"> · {excused} excused day{excused === 1 ? '' : 's'}</span>}
+          {counted > 0 ? <>{trWith('tracker.tickedOf', { n: <b class="mono">{prayed}</b>, total: counted * OBLIGATORY.length })}</> : tr('tracker.nothing')}
+          {excused > 0 && <span class="secondary"> · {tr('tracker.excusedDays', { n: excused })}</span>}
         </p>
       </div>
       <p class="caption secondary" style={{ padding: '0 20px 24px' }}>

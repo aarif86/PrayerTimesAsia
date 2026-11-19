@@ -22,7 +22,7 @@ import { TabJourney } from './icons'
 import { HijriMonthCard } from './HijriCalendar'
 import { MakersAbout } from './Makers'
 import { canInstall, install, isIOS } from './pwa'
-import { tr } from '../core/appWords'
+import { appLocale, tr, trWith } from '../core/appWords'
 
 // ---------- Places ----------
 
@@ -76,7 +76,7 @@ export function PlacesSheet({ forHome = false }: { forHome?: boolean } = {}) {
         <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: 'block' }}>{p.name}</span>{placeSubtitle(p) && <span class="sub">{placeSubtitle(p)}</span>}</span>
         {(forHome ? !!s.prefs.home && isNear(s.prefs.home, p) : !s.prefs.useGPS && !!s.prefs.manualPlace && isNear(s.prefs.manualPlace, p)) && <Check size={18} class="accent" />}
       </button>
-      {saved && <button aria-label={`Remove ${p.name}`} class="secondary" style={{ padding: '6px' }}
+      {saved && <button aria-label={tr('common.removeName', { name: p.name })} class="secondary" style={{ padding: '6px' }}
         onClick={() => store.update((x) => { x.savedPlaces = x.savedPlaces.filter((q) => q.id !== p.id) })}><Trash2 size={16} /></button>}
     </div>
   )
@@ -110,7 +110,7 @@ export function PlacesSheet({ forHome = false }: { forHome?: boolean } = {}) {
           <div class="group" style={{ marginTop: '14px' }}>
             <button class="item" onClick={() => { store.useGPS(); closeSheet() }}>
               <Navigation size={18} fill="currentColor" />
-              <span class="label">Current location{s.gpsPlace && <span class="sub">{s.gpsPlace.name}</span>}
+              <span class="label">{tr('places.current')}{s.gpsPlace && <span class="sub">{s.gpsPlace.name}</span>}
                 {s.gpsStatus === 'denied' && <span class="sub">{tr('places.locationBlocked')}</span>}</span>
               {s.gpsStatus === 'denied' ? <span class="value">{tr('common.off')}</span> : s.prefs.useGPS && <span class="value">{tr('common.on')}</span>}
             </button>
@@ -135,7 +135,7 @@ export function PlacesSheet({ forHome = false }: { forHome?: boolean } = {}) {
           {online && online.length === 0 && <p class="group-foot">{tr('places.nothingOnline')}</p>}
           <div style={{ marginTop: '14px' }}>
             <button class="plain-btn" onClick={() => void searchOnline()} disabled={searching}>
-              <Globe size={16} />{searching ? tr('common.searching') : `Search OpenStreetMap for "${query}"`}
+              <Globe size={16} />{searching ? tr('common.searching') : tr('places.searchOsm', { q: query })}
             </button>
             <p class="group-foot" style={{ marginLeft: 0 }}>{tr('places.osmNote')}</p>
           </div>
@@ -176,7 +176,7 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
         <div class="item" style={{ alignItems: 'flex-start' }}>
           <Icon size={28} style={{ color: GRADE_TINT[day.grade], flex: 'none' }} />
           <div>
-            <div class="headline">Grade {day.grade} · {GRADE_TITLE[day.grade]}</div>
+            <div class="headline">{tr('source.gradeName', { grade: day.grade, name: GRADE_TITLE[day.grade] })}</div>
             <div class="subhead">{day.officialSource ?? s.method.name}</div>
             <div class="footnote secondary" style={{ marginTop: '4px' }}>{detail}</div>
           </div>
@@ -186,14 +186,14 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
         <>
           <h3 class="group-title" style={{ fontSize: '15px' }}>{day.officialSource ?? tr('source.official')} · {day.alternateSource}</h3>
           <div class="group">{alternates.map((p) => <div class="item"><span class="label">{s.name(p, day.times.dhuhr)}</span><span class="value">{s.formatted(day.times[p])} · {s.formatted(day.alternate[p]!)}</span></div>)}</div>
-          <p class="group-foot">These two sources differ by more than 2 minutes. We show both rather than silently pick one; follow your local masjid's practice.</p>
+          <p class="group-foot">{tr('source.differ')}</p>
         </>
       )}
       {day.mosqueName && jamaah.length > 0 && (
         <>
-          <h3 class="group-title" style={{ fontSize: '15px' }}>Jamaah at {day.mosqueName}</h3>
+          <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('source.jamaahAt', { name: day.mosqueName ?? '' })}</h3>
           <div class="group">{jamaah.map((p) => <div class="item"><span class="label">{s.name(p, day.times.dhuhr)}</span><span class="value">{s.formatted(day.jamaah[p]!)}</span></div>)}</div>
-          <p class="group-foot">Prayer time begins at the times on the Prayer screen; these are when the congregation prays.</p>
+          <p class="group-foot">{tr('source.jamaahHelp')}</p>
         </>
       )}
       <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('source.grades')}</h3>
@@ -211,7 +211,7 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
           <span class="label">{tr('source.helpVerifySub')}</span>
         </a>
       </div>
-      <p class="group-foot">Submissions are checked by a person before they change anyone's times, and shared openly under CC-BY 4.0.</p>
+      <p class="group-foot">{tr('source.checked')}</p>
     </Sheet>
   )
 }
@@ -232,7 +232,7 @@ export function CalendarSheet() {
   return (
     <Sheet title={tr('calendar.title')} full>
       <HijriMonthCard />
-      <h3 class="group-title" style={{ fontSize: '15px', marginTop: '22px' }}>Ramadan and Raya, by authority</h3>
+      <h3 class="group-title" style={{ fontSize: '15px', marginTop: '22px' }}>{tr('calendar.byAuthority')}</h3>
       <div class="group">
         <label class="item">
           <span class="label">{tr('calendar.follows')}</span>
@@ -240,7 +240,7 @@ export function CalendarSheet() {
             const v = (e.target as HTMLSelectElement).value
             store.update((x) => { x.communityAuthority = v === 'auto' ? null : v })
           }}>
-            <option value="auto">Automatic · {mine ? authorityName(mine) : 'none'}</option>
+            <option value="auto">{tr('common.automaticWith', { name: mine ? authorityName(mine) : tr('common.none') })}</option>
             {AUTHORITIES.map((a) => <option value={a.id}>{a.name}</option>)}
           </select>
         </label>
@@ -252,10 +252,10 @@ export function CalendarSheet() {
         const announcedMine = entries.some((a) => a.authority === mine && a.status === 'announced')
         return (
           <section>
-            <h3 class="group-title" style={{ fontSize: '15px' }}>{eventTitle(u.event, s.naming)} {u.hijriYear} AH</h3>
+            <h3 class="group-title" style={{ fontSize: '15px' }}>{eventTitle(u.event, s.naming)} {u.hijriYear} {tr('calendar.ah')}</h3>
             <div class="group">
               <div class="item" style={{ alignItems: 'flex-start' }}>
-                <div class="label"><div class="subhead" style={{ fontWeight: 600 }}>{tr('calendar.expected')}</div><div class="caption secondary">Astronomical estimate (Umm al-Qura calendar). Local dates may differ by a day.</div></div>
+                <div class="label"><div class="subhead" style={{ fontWeight: 600 }}>{tr('calendar.expected')}</div><div class="caption secondary">{tr('calendar.estimateExplain')}</div></div>
                 <div style={{ textAlign: 'right' }}><div class="subhead mono" style={{ fontWeight: 600 }}>{fmtYMD(expectedDate(u.event, u.hijriYear))}</div><div class="caption secondary" style={{ fontWeight: 800 }}>{tr('calendar.estimate')}</div></div>
               </div>
               {entries.map((a) => (
@@ -271,12 +271,12 @@ export function CalendarSheet() {
                   </div>
                 </div>
               ))}
-              {!announcedMine && mine && <div class="item footnote secondary">{authorityName(mine)} hasn't announced yet. It usually does the evening before; this page updates within a few hours.</div>}
+              {!announcedMine && mine && <div class="item footnote secondary">{tr('calendar.notYet', { name: authorityName(mine) })}</div>}
             </div>
           </section>
         )
       })}
-      <p class="group-foot">Every date shows who set it and how: moon sighting, calculation, or following another authority. Dates are shared openly under CC-BY 4.0.</p>
+      <p class="group-foot">{tr('calendar.sanad')}</p>
     </Sheet>
   )
 }
@@ -298,7 +298,7 @@ export function JourneySheet() {
         {g && status ? (
           <>
             <div class="row" style={{ gap: '10px' }}>{status.kind === 'traveller' ? <span class="journey-badge"><TabJourney size={18} /></span> : <House size={28} />}<span style={{ fontSize: '22px', fontWeight: 700 }}>{g.title}</span></div>
-            {km != null && <div style={{ margin: '8px 0' }}><span class="display mono" style={{ fontSize: '48px', fontWeight: 600 }}>{Math.round(km).toLocaleString('en')} km</span><span class="headline">  from home</span></div>}
+            {km != null && <div style={{ margin: '8px 0' }}><span class="display mono" style={{ fontSize: '48px', fontWeight: 600 }}>{Math.round(km).toLocaleString(appLocale())}</span><span class="headline">  {tr('journey.fromHome', { km: '' }).trim()}</span></div>}
             <p style={{ margin: '6px 0', opacity: 0.9 }}>{g.body}</p>
             {status.kind === 'traveller' && (
               <div class="musafir-plan">
@@ -310,7 +310,7 @@ export function JourneySheet() {
                 ))}
               </div>
             )}
-            {s.prefs.arrivedAt != null && (status.kind === 'traveller' || status.kind === 'settled') && <div class="subhead" style={{ fontWeight: 600, opacity: 0.8 }}>Day {s.daysHere(now) + 1} in {s.profile.name || tr('journey.thisPlace')}</div>}
+            {s.prefs.arrivedAt != null && (status.kind === 'traveller' || status.kind === 'settled') && <div class="subhead" style={{ fontWeight: 600, opacity: 0.8 }}>{tr('journey.day', { n: s.daysHere(now) + 1 })} · {s.profile.name || tr('journey.thisPlace')}</div>}
           </>
         ) : (
           <><div style={{ fontSize: '22px', fontWeight: 700 }}>{tr('journey.setHome')}</div><p style={{ opacity: 0.85 }}>{tr('journey.setHomeHelp')}</p>
@@ -329,7 +329,7 @@ export function JourneySheet() {
           <div class="row"><span class="caps" style={{ opacity: 0.7 }}>{tr('journey.combined')}</span><span class="spacer" /><span class="caption" style={{ opacity: 0.6, fontWeight: 600 }}>{tr('falak.pendingReview')}</span></div>
           <div class="row headline" style={{ marginTop: '10px' }}><span>{s.name('dhuhr')} + {s.name('asr')}</span><span class="spacer" /><span class="mono">{s.formatted(today.times.dhuhr)} – {s.formatted(today.times.maghrib)}</span></div>
           <div class="row headline" style={{ marginTop: '6px' }}><span>{s.name('maghrib')} + {s.name('isha')}</span><span class="spacer" /><span class="mono">{s.formatted(today.times.maghrib)} – {s.formatted(tomorrow.times.fajr)}</span></div>
-          <p class="footnote" style={{ opacity: 0.85 }}>Jamak taqdim means praying both in the first prayer's time. Jamak ta'khir means praying both in the second prayer's time. {s.name('fajr')} is never joined.</p>
+          <p class="footnote" style={{ opacity: 0.85 }}>{tr('journey.jamakExplain')} {tr('journey.neverJoined', { name: s.name('fajr') })}</p>
         </div>
       )}
       <div class="glass card row" style={{ marginTop: '16px' }}>
@@ -388,8 +388,8 @@ export function AlertsHelpSheet() {
           <>
             <p class="headline">{tr('alertsHelp.iphone')}</p>
             <ol class="subhead">
-              <li>Tap <Share size={15} /> Share in Safari's toolbar.</li>
-              <li>Choose <SquarePlus size={15} /> Add to Home Screen, then Add.</li>
+              <li>{trWith('alertsHelp.step1', { icon: <Share size={15} /> })}</li>
+              <li>{trWith('alertsHelp.step2', { icon: <SquarePlus size={15} /> })}</li>
               <li>{tr('alertsHelp.step3')}</li>
             </ol>
           </>
@@ -397,7 +397,7 @@ export function AlertsHelpSheet() {
         {support === 'unsupported' && <p class="headline">{tr('alertsHelp.cant')}</p>}
         {support === 'supported' && <p class="headline">{tr('alertsHelp.blocked')}</p>}
         {support === 'supported' && <p class="subhead">{tr('alertsHelp.allow')}</p>}
-        <p class="subhead">Web alerts ring only while Prayer Times Asia is open. For alerts that ring when it's closed, use <b>Settings › Add the next 30 days to a calendar</b>. Your calendar app rings every prayer.</p>
+        <p class="subhead">{tr('alertsHelp.webOnly')} {tr('alertsHelp.calendarRings')}</p>
         <button class="primary-btn" onClick={closeSheet}>{tr('common.ok')}</button>
       </div>
     </Sheet>
@@ -410,14 +410,14 @@ export function InstallSheet() {
       <div class="help">
         {isIOS() ? (
           <ol class="subhead">
-            <li>Tap <Share size={15} /> Share in Safari's toolbar.</li>
-            <li>Choose <SquarePlus size={15} /> Add to Home Screen.</li>
+            <li>{trWith('alertsHelp.step1', { icon: <Share size={15} /> })}</li>
+            <li>{trWith('install.step2', { icon: <SquarePlus size={15} /> })}</li>
             <li>{tr('install.tapAdd')}</li>
           </ol>
         ) : canInstall() ? (
           <button class="primary-btn" onClick={() => void install().then(closeSheet)}>{tr('install.title')}</button>
         ) : (
-          <p class="subhead">Use your browser's menu: <b>{tr('install.app')}</b> or <b>Add to Home screen</b>. Once added, it opens like an app and works offline.</p>
+          <p class="subhead">{trWith('install.menuHow', { menu: tr('install.menu'), app: <b>{tr('install.app')}</b>, home: <b>{tr('install.addHome')}</b> })}</p>
         )}
       </div>
     </Sheet>
@@ -438,7 +438,7 @@ const CREDITS: [string, string, string | null][] = [
 
 export function CreditsSheet() {
   return (
-    <Sheet title="Sources & credits" full>
+    <Sheet title={tr('settings.sources')} full>
       <div class="group" style={{ marginTop: '10px' }}>
         {CREDITS.map(([t, d, u]) => (
           <div class="item" style={{ display: 'block' }}>
@@ -468,7 +468,7 @@ export function HomeQuestion() {
   if (!home || s.prefs.homeConfirmed) return null
   return (
     <div class="glass card home-question" style={{ marginTop: '10px' }}>
-      <div class="row" style={{ gap: '10px' }}><House size={28} /><span style={{ fontSize: '20px', fontWeight: 700 }}>Is {home.name} your home?</span></div>
+      <div class="row" style={{ gap: '10px' }}><House size={28} /><span style={{ fontSize: '20px', fontWeight: 700 }}>{tr('places.isHome', { place: home.name })}</span></div>
       <p class="subhead" style={{ opacity: 0.85 }}>{tr('places.isHomeHelp')}</p>
       <div class="row" style={{ gap: '10px', flexWrap: 'wrap' }}>
         <button class="pill-btn" onClick={() => store.confirmHome()}>{tr('places.yesHome')}</button>

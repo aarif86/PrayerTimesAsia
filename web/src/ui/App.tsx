@@ -157,7 +157,7 @@ export function App() {
         </main>
       </div>
       {/* Big screens have room beside the app: a way back to the website. */}
-      <a class="site-link" href="../" aria-label="Back to the prayertimes.asia website">
+      <a class="site-link" href="../" aria-label={tr('app.backToWebsite')}>
         <span class="site-link-arrow" aria-hidden="true">&larr;</span>
         <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" width="24" height="24" />
         <span>prayertimes.asia</span>
@@ -172,8 +172,8 @@ export function App() {
           )
         })}
         {/* Bigger screens: the bar sits at the side, and this arrow slides it across. Hidden on phones (bottom bar). */}
-        <button class="tabbar-move" aria-label={s.prefs.menuSide === 'right' ? 'Move the menu to the left' : 'Move the menu to the right'}
-          title={s.prefs.menuSide === 'right' ? 'Move to the left' : 'Move to the right'}
+        <button class="tabbar-move" aria-label={s.prefs.menuSide === 'right' ? tr('app.menuLeft') : tr('app.menuRight')}
+          title={s.prefs.menuSide === 'right' ? tr('app.toLeft') : tr('app.toRight')}
           onClick={() => store.update((p) => { p.menuSide = p.menuSide === 'right' ? 'left' : 'right' })}>
           {s.prefs.menuSide === 'right' ? <ChevronsLeft size={18} /> : <ChevronsRight size={18} />}
         </button>
@@ -212,9 +212,9 @@ function Onboarding() {
           <p class="onb-lead">{tr('welcome.tagline')}</p>
         </div>
         <div class="onb-features">
-          <Feature icon={<Globe2 size={24} />} title={tr('welcome.countryMethod')} detail="MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia, and sensible defaults everywhere else." />
-          <Feature icon={<Plane size={24} />} title={tr('welcome.travel')} detail="Switches when you land, works offline, and tells you when you can shorten and combine prayers." />
-          <Feature icon={<Compass size={24} />} title={tr('welcome.qiblaGlance')} detail="A calm compass that lights up when you're facing the Kaaba." />
+          <Feature icon={<Globe2 size={24} />} title={tr('welcome.countryMethod')} detail={tr('welcome.countryMethodDetail')} />
+          <Feature icon={<Plane size={24} />} title={tr('welcome.travel')} detail={tr('welcome.travelDetail')} />
+          <Feature icon={<Compass size={24} />} title={tr('welcome.qiblaGlance')} detail={tr('welcome.qiblaDetail')} />
         </div>
         <div class="spacer" />
         <div class="onb-actions">
