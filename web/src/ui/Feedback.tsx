@@ -1,7 +1,8 @@
 import { useState } from 'preact/hooks'
-import { Copy, Heart, Lightbulb, Clock, Wrench, Mail } from 'lucide-preact'
+import { Copy, Heart, Lightbulb, Clock, Wrench, Mail, Star, ChevronRight, MapPin } from 'lucide-preact'
+import { NATIVE_APPS, phonePlatform } from '../core/nativeApps'
 import { store, useStore } from '../services/store'
-import { closeSheet, Sheet, ToggleItem } from './common'
+import { closeSheet, openSheet, Sheet, ToggleItem } from './common'
 import { VERSION } from './version'
 
 /**
@@ -75,6 +76,48 @@ export function FeedbackSheet() {
         <a class="primary-btn" href={href} onClick={() => { store.update((x) => { x.feedbackSentAt = Date.now() }); setTimeout(closeSheet, 400) }}><Mail size={16} /> Send by email</a>
         <button class="plain-btn" onClick={() => void copy()}><Copy size={16} />{copied ? 'Copied' : 'No email app? Copy the note'}</button>
         <p class="footnote secondary">It goes to {FEEDBACK_EMAIL}. We reply within a few days, insyaAllah.</p>
+      </div>
+    </Sheet>
+  )
+}
+
+/** Nasar Digital's Google review page (Google Business Profile). */
+export const NASAR_GOOGLE_REVIEW = 'https://g.page/r/CSq5hZxhRs1BEBM/review'
+
+export interface ReviewLink { id: 'appstore' | 'play' | 'google'; title: string; sub: string; href: string }
+
+/**
+ * Where someone can leave a public review. A store shows only once the app is live
+ * there (NATIVE_APPS); on a phone only that phone's store shows. Exported for tests.
+ */
+export function reviewLinks(platform: 'ios' | 'android' | null, apps = NATIVE_APPS, showAllStores = false): ReviewLink[] {
+  const out: ReviewLink[] = []
+  const appStore = apps.ios.appStoreId || (showAllStores ? '0000000000' : '')
+  const play = apps.android.onGooglePlay || showAllStores
+  if (appStore && platform !== 'android') out.push({ id: 'appstore', title: 'Review on the App Store', sub: 'For the iPhone app', href: `https://apps.apple.com/app/id${appStore}?action=write-review` })
+  if (play && platform !== 'ios') out.push({ id: 'play', title: 'Review on Google Play', sub: 'For the Android app', href: `https://play.google.com/store/apps/details?id=${apps.packageName}&showAllReviews=true` })
+  out.push({ id: 'google', title: 'Review Nasar Digital on Google', sub: 'The team in Singapore who builds the app', href: NASAR_GOOGLE_REVIEW })
+  return out
+}
+
+export function ReviewSheet() {
+  const s = useStore()
+  const links = reviewLinks(phonePlatform(navigator.userAgent, navigator.platform, navigator.maxTouchPoints), NATIVE_APPS, s.demo != null && new URLSearchParams(location.search).get('stores') === 'on')
+  const tapped = () => store.update((x) => { x.reviewTappedAt = Date.now() })
+  return (
+    <Sheet title="Rate and review">
+      <div class="help feedback">
+        <p class="subhead">A few honest words help other Muslims find the app, and help Ustaz Aarif and the team keep going. Jazakallahu khairan.</p>
+        <div class="group review-links">
+          {links.map((l) => (
+            <a class="item" href={l.href} target="_blank" rel="noopener noreferrer" onClick={tapped}>
+              {l.id === 'google' ? <MapPin size={20} class="accent" /> : <Star size={20} class="accent" />}
+              <span class="label">{l.title}<span class="sub">{l.sub}</span></span>
+              <ChevronRight size={16} class="secondary" />
+            </a>
+          ))}
+        </div>
+        <button class="plain-btn" onClick={() => openSheet({ kind: 'feedback' })}><Mail size={16} /> Something not right? Send a private note</button>
       </div>
     </Sheet>
   )

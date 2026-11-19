@@ -539,3 +539,4 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .feedback .primary-btn { width: 100%; box-sizing: border-box; padding: 13px 16px; font-size: 16px; text-decoration: none; }
 .feedback .plain-btn { width: 100%; box-sizing: border-box; justify-content: center; margin-top: 8px; }
 .feedback .footnote { text-align: center; margin-top: 10px; }
+.review-links .item { text-decoration: none; color: inherit; gap: 12px; }

@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
   Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
-  CloudMoon, Contrast, Droplet, Flame, Heart, Pause, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
+  CloudMoon, Contrast, Droplet, Flame, Pause, Star, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
@@ -292,14 +292,14 @@ function AppPrompt() {
  */
 function NotePrompt({ c }: { c: Ctx }) {
   const p = store.prefs
-  if (c.offset !== 0 || p.noteCardDone || p.feedbackSentAt > 0 || p.openDayCount < 10) return null
+  if (c.offset !== 0 || p.noteCardDone || p.reviewTappedAt > 0 || p.openDayCount < 10) return null
   if (c.next && c.next.time - c.now < 15 * 60_000) return null
   const done = () => store.update((x) => { x.noteCardDone = true })
   return (
     <div class="alerts-prompt note-prompt">
-      <Heart size={18} class="accent" style={{ flex: 'none' }} />
-      <span class="text">Is the app helping you? Ustaz Aarif would love to hear.</span>
-      <button class="primary-btn" onClick={() => { done(); openSheet({ kind: 'feedback' }) }}>Write</button>
+      <Star size={18} class="accent" style={{ flex: 'none' }} />
+      <span class="text">Enjoying the app? A short review helps other Muslims find it.</span>
+      <button class="primary-btn" onClick={() => { done(); openSheet({ kind: 'review' }) }}>Review</button>
       <button class="x" aria-label="Not now" onClick={done}><X size={15} strokeWidth={3} /></button>
     </div>
   )

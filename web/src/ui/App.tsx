@@ -1,4 +1,4 @@
-import { FeedbackSheet } from './Feedback'
+import { FeedbackSheet, ReviewSheet } from './Feedback'
 import type { ComponentType } from 'preact'
 import { SiteHomeButton } from './SiteHome'
 import { lazy, Suspense } from 'preact/compat'
@@ -154,6 +154,7 @@ export function App() {
       {sheet?.kind === 'install' && <InstallSheet />}
       {sheet?.kind === 'credits' && <CreditsSheet />}
       {sheet?.kind === 'feedback' && <FeedbackSheet />}
+      {sheet?.kind === 'review' && <ReviewSheet />}
       {s.pendingMasjid && !sheet && <MasjidLinkSheet m={s.pendingMasjid} />}
       {sheet?.kind === 'move-out' && <MoveOutSheet />}
       {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}

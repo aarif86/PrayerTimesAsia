@@ -134,6 +134,8 @@ export interface Preferences {
   feedbackSentAt: number
   /** The one gentle "note to the makers" card was closed or used; it never comes back. */
   noteCardDone: boolean
+  /** When a public review link was last tapped (ms), 0 = never. */
+  reviewTappedAt: number
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -207,6 +209,7 @@ export const DEFAULT_PREFS: Preferences = {
   lastOpenDay: '',
   feedbackSentAt: 0,
   noteCardDone: false,
+  reviewTappedAt: 0,
 }
 
 const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat', 
