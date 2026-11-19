@@ -349,8 +349,8 @@ data class Preferences(
     val showOpening: Boolean = true,
     /**
      * The quick guide (swipe cards) was seen or skipped; Settings > Help opens it again.
-     * Missing (null) in settings saved before the guide came: decode() fills it in, so
-     * people already using the app don't get it pushed at them.
+     * Null until set. decode() turns it to true for settings saved before the guide came
+     * by someone already set up, so they don't get it pushed at them; anything not true shows it.
      */
     val guideSeen: Boolean? = null,
     /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
@@ -401,7 +401,8 @@ data class Preferences(
             // Isyak is open until Subuh: it has no "before it ends" alarm.
             ishaAlarm = ishaAlarm.takeIf { it != PrayerAlarmTiming.END_MINUS_30 },
             tarawihRakaat = tarawihRakaat?.takeIf { it in Tarawih.CHOICES },
-            guideSeen = guideSeen ?: hasOnboarded,
+            // Settings from before the guide came, already set up: count it as seen.
+            guideSeen = guideSeen ?: if (hasOnboarded) true else null,
         )
     }
 }

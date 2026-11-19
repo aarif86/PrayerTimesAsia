@@ -22,7 +22,7 @@ class GuideWordsTest {
 
     @Test fun peopleAlreadyUsingTheAppAreNotShownTheGuide() {
         assertTrue(Preferences.decode("""{"hasOnboarded":true}""").guideSeen == true)
-        assertTrue(Preferences.decode(null).guideSeen == false)
+        assertTrue(Preferences.decode(null).guideSeen != true)
         assertTrue(Preferences.decode("""{"hasOnboarded":true,"guideSeen":false}""").guideSeen == false)
     }
 }
