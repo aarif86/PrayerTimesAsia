@@ -26,7 +26,8 @@ import { CITIES, nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
 import { DEFAULT_PREFS, loadPreferences, savePreferences, TODAY_STYLES, type Preferences, type TodayStyle } from './prefs'
 import { fetchOK, readJSON, readString, writeJSON, writeString } from './storage'
-import { countAppOpen } from './usage'
+import { countAppOpen, countCard, tallyScreen, tallyStart, tallyStop, type CardFacts } from './usage'
+import { VERSION } from '../ui/version'
 
 export type Tab = 'today' | 'qibla' | 'falak' | 'masjid' | 'settings'
 export const TABS: Tab[] = ['today', 'qibla', 'falak', 'masjid', 'settings']
@@ -162,6 +163,7 @@ class AppStore {
   setTab(tab: Tab): void {
     this.tab = tab
     this.emit()
+    if (this.usageOn) tallyScreen(tab === 'today' ? 'prayer' : tab)
   }
 
   // MARK: Where and which rules
@@ -179,6 +181,26 @@ class AppStore {
     if (this.demo || !this.prefs.shareUsage || !this.prefs.hasOnboarded) return
     const p = this.activePlace
     countAppOpen(version, { city: p?.name, countryCode: p?.countryCode })
+  }
+
+  private get usageOn(): boolean { return !this.demo && this.prefs.shareUsage && this.prefs.hasOnboarded }
+
+  /** The app came on screen or left it: minutes and opens per day (services/usage.ts, App.daySummary). */
+  usageVisible(visible: boolean): void {
+    if (!this.usageOn) return
+    if (!visible) { tallyStop(); return }
+    const p = this.activePlace
+    tallyStart(VERSION.replace(' (web)', ''), { city: p?.name, countryCode: p?.countryCode })
+    tallyScreen(this.tab === 'today' ? 'prayer' : this.tab)
+  }
+
+  /** Anonymous count of a Barakah Picks card seen or tapped (docs/community-cards.md). */
+  countCard(event: 'Card.seen' | 'Card.tapped', card: CardFacts): void {
+    if (this.demo || !this.prefs.shareUsage) return
+    const p = this.activePlace
+    const d = new Date()
+    const today = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+    countCard(event, VERSION.replace(' (web)', ''), { city: p?.name, countryCode: p?.countryCode }, card, today)
   }
 
   /** Showing the last known place while the browser checks where we are now. */

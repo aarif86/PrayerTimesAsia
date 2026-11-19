@@ -21,7 +21,8 @@ import { WakeChip } from './WakeUp'
 import { fmtDate, openSheet, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
-import { featuredOffer, MakersCard } from './Makers'
+import { cardOfTheDay } from '../core/communityCards'
+import { MakersCard } from './Makers'
 import { appBannerShownByBrowser, phoneAppOffer } from './pwa'
 import { SiteHomeButton } from './SiteHome'
 import { TabJourney } from './icons'
@@ -255,9 +256,13 @@ function ShowMoreButton({ c, inline }: { c: Ctx; inline?: boolean }) {
   return inline ? btn : <div class="center-row">{btn}</div>
 }
 
+/** Today's one community card, below the times and only with Show more open (docs/community-cards.md). */
 function Offer({ c }: { c: Ctx }) {
   if (!store.prefs.showOffers || !c.showMore) return null
-  return <MakersCard offer={featuredOffer(store.offerCountry)} placement="prayer" compact />
+  // Never in the half hour before Berbuka in Ramadan.
+  if (c.next?.prayer === 'maghrib' && c.next.time - c.now < 30 * 60_000 && store.season(c.now).phase === 'ramadan') return null
+  const card = cardOfTheDay(store.offerCountry, new Date(c.now))
+  return card && <MakersCard card={card} placement="prayer" compact />
 }
 
 /** One prompt at a time: the phone app first, since its alerts ring even when it's closed. */

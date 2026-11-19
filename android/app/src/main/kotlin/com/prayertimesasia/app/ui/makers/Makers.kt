@@ -3,6 +3,8 @@ package com.prayertimesasia.app.ui.makers
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import com.prayertimesasia.app.AppState
+import com.prayertimesasia.app.data.UsageCounter
+import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.app.ui.components.HadithView
 import androidx.compose.foundation.Canvas
@@ -22,9 +24,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.CallMade
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,35 +51,21 @@ import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.display
 
 /**
- * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only promotion
- * in it is for the makers' own services - no ad networks, nothing tracked: each
- * card just opens the website, which has the WhatsApp contact.
+ * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
+ * The cards are our own services and, from time to time, a hand picked halal
+ * sponsor for the user's country ([CommunityCard], data/community-cards.json).
+ * No outside ads, nothing tracked: each card just opens the website.
  */
-enum class MakersOffer {
-    BADAL, DIGITAL;
 
-    val title: String get() = if (this == BADAL) "Badal Haji & Umrah" else "NasarDigital"
-    val subtitle: String
-        get() = if (this == BADAL) "Performed in Makkah for loved ones who have passed on or cannot go"
-        else "Digital marketing from the team behind this app"
-    val site: String get() = if (this == BADAL) "Badal.sg" else "nasardigital.com"
+/** The name of the card space. One place to change it (Makers.tsx and Makers.swift have the same). */
+const val PICKS_NAME = "Barakah Picks"
 
-    /** The website, tagged with where in the app it was tapped so visits show in the site's own analytics. The app records nothing. */
-    fun url(placement: String): String {
-        val base = if (this == BADAL) "https://badal.sg" else "https://nasardigital.com"
-        return "$base/?utm_source=prayertimesasia&utm_medium=app&utm_campaign=$placement"
-    }
-
-    companion object {
-        /** Badal is offered to Singaporeans for now (Badal.my is coming); everyone else sees NasarDigital. */
-        fun featured(country: String): MakersOffer = if (country == "SG") BADAL else DIGITAL
-    }
-}
-
-/** A slim card that opens the offer's website. */
+/** A slim card that opens the card's website. */
 @Composable
-fun MakersCard(offer: MakersOffer, placement: String, compact: Boolean = false, modifier: Modifier = Modifier) {
+fun MakersCard(card: CommunityCard, placement: String, compact: Boolean = false, modifier: Modifier = Modifier, state: AppState? = null) {
     val uri = LocalUriHandler.current
+    // Counted as seen once it is drawn on screen (once a day, see UsageCounter).
+    LaunchedEffect(card.id, placement) { state?.countCard(UsageCounter.CardEvent.SEEN, card, placement) }
     val shape = RoundedCornerShape(16.dp)
     Row(
         modifier
@@ -82,8 +73,11 @@ fun MakersCard(offer: MakersOffer, placement: String, compact: Boolean = false, 
             .clip(shape)
             .background(Palette.material, shape)
             .border(1.dp, Palette.primary.copy(alpha = 0.08f), shape)
-            .clickable { runCatching { uri.openUri(offer.url(placement)) } }
-            .semantics { contentDescription = "${offer.title}, opens ${offer.site}" }
+            .clickable {
+                state?.countCard(UsageCounter.CardEvent.TAPPED, card, placement)
+                runCatching { uri.openUri(card.url(placement)) }
+            }
+            .semantics { contentDescription = "$PICKS_NAME${if (card.isSponsor) ", sponsored" else ""}. ${card.title}, opens ${card.site}" }
             .padding(horizontal = 12.dp, vertical = if (compact) 6.dp else 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -93,18 +87,22 @@ fun MakersCard(offer: MakersOffer, placement: String, compact: Boolean = false, 
             Modifier.size(box).clip(RoundedCornerShape(10.dp)).background(Palette.accent.copy(alpha = 0.18f)),
             contentAlignment = Alignment.Center,
         ) {
-            when (offer) {
-                MakersOffer.BADAL -> KaabaGlyph(Modifier.size(if (compact) 15.dp else 18.dp))
-                MakersOffer.DIGITAL -> Icon(Icons.Filled.Language, null, Modifier.size(18.dp), tint = Palette.accent)
+            when (card.icon) {
+                CommunityCard.Icon.KAABA -> KaabaGlyph(Modifier.size(if (compact) 15.dp else 18.dp))
+                CommunityCard.Icon.GLOBE -> Icon(Icons.Filled.Language, null, Modifier.size(18.dp), tint = Palette.accent)
+                CommunityCard.Icon.SHOP -> Icon(Icons.Filled.Storefront, null, Modifier.size(18.dp), tint = Palette.accent)
+                CommunityCard.Icon.HEART -> Icon(Icons.Filled.FavoriteBorder, null, Modifier.size(18.dp), tint = Palette.accent)
             }
         }
         Column(Modifier.weight(1f)) {
-            Text(offer.title, style = Txt.subheadlineSemibold, color = Palette.primary, maxLines = 1)
+            Text((if (card.isSponsor) "$PICKS_NAME · Sponsored" else PICKS_NAME).uppercase(),
+                fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.6.sp, color = Palette.secondary)
+            Text(card.title, style = Txt.subheadlineSemibold, color = Palette.primary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (!compact) {
-                Text(offer.subtitle, style = Txt.caption, color = Palette.secondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(card.subtitle, style = Txt.caption, color = Palette.secondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
         }
-        Text(offer.site, style = Txt.captionSemibold, color = Palette.accentText)
+        Text(card.site, style = Txt.captionSemibold, color = Palette.accentText)
         Icon(Icons.Filled.CallMade, null, Modifier.size(13.dp), tint = Palette.accent)
     }
 }
@@ -115,9 +113,9 @@ fun MakersSheetContent(placement: String, state: AppState? = null) {
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Dims.gutter), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         state?.let { HadithView(it, HadithId.FIXED_TIMES, tag = "Al Quran") }
         Text("Built fisabilillah", style = display(26.sp, FontWeight.Bold), color = Palette.primary)
-        Text("Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).",
+        Text("Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).",
             style = Txt.body, color = Palette.secondary)
-        MakersOffer.entries.forEach { MakersCard(it, placement) }
+        CommunityCard.ours(state?.offerCountry ?: "").forEach { MakersCard(it, placement, state = state) }
         Spacer(Modifier.width(1.dp))
     }
 }

@@ -629,6 +629,37 @@ final class AppModel {
         }
     }
 
+    private var usageOn: Bool { prefs.shareUsage && prefs.hasOnboarded && !Self.isDemo }
+
+    /// Minutes on screen, opens and screens used today, sent as one summary the next day.
+    func usageVisible(_ visible: Bool) {
+        guard usageOn else { if !visible { UsageCounter.tallyStop() }; return }
+        if visible {
+            UsageCounter.tallyStart(place: activePlace)
+            usageScreen(selectedTab)
+        } else {
+            UsageCounter.tallyStop()
+        }
+    }
+
+    func usageScreen(_ tab: Tab) {
+        guard usageOn else { return }
+        switch tab {
+        case .today: UsageCounter.tallyScreen("prayer")
+        case .qibla: UsageCounter.tallyScreen("qibla")
+        case .falak: UsageCounter.tallyScreen("falak")
+        case .nearby: UsageCounter.tallyScreen("masjid")
+        case .settings: UsageCounter.tallyScreen("settings")
+        case .journey, .wakeup: break
+        }
+    }
+
+    /// Anonymous count of a Barakah Picks card seen (once a day) or tapped (docs/community-cards.md).
+    func countCard(_ event: UsageCounter.CardEvent, card: CommunityCard, placement: String) {
+        guard prefs.shareUsage, !Self.isDemo else { return }
+        UsageCounter.countCard(event, card: card, placement: placement, place: activePlace)
+    }
+
     private static var isDemo: Bool { ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") || $0 == "-widget-preview" } }
 
     /// Called when GPS moves. Reverse-geocodes when online; falls back to the

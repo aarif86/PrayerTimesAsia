@@ -68,7 +68,7 @@ fun OnboardingScreen(state: AppState, bringIn: () -> Unit = {}, chooseCity: () -
                     modifier = Modifier.clip(CircleShape).clickable(onClick = chooseCity).minTouchHeight().padding(horizontal = 12.dp))
                 Text("Bring in settings from another phone", style = Txt.footnote, color = Palette.primary.copy(alpha = 0.85f),
                     modifier = Modifier.clip(CircleShape).clickable(onClick = bringIn).minTouchHeight().padding(horizontal = 12.dp))
-                Text("No third-party ads. No account. Your location stays on your phone.", style = Txt.caption,
+                Text("No outside ads. No account. Your location stays on your phone.", style = Txt.caption,
                     color = Palette.primary.copy(alpha = 0.75f))
             }
         }

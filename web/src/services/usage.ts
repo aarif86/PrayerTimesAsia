@@ -27,7 +27,7 @@ export const SCREEN_EVERY_MS = 6 * 3_600_000
 export interface UsageConfig { telemetryDeckAppID: string; enabled: boolean }
 interface CachedConfig extends UsageConfig { fetchedAt: number }
 
-export type UsageEvent = 'App.installed' | 'App.opened' | 'Screen.running'
+export type UsageEvent = 'App.installed' | 'App.opened' | 'Screen.running' | 'Card.seen' | 'Card.tapped' | 'App.daySummary'
 export type Payload = Record<string, string | number | boolean>
 
 export interface Signal {
@@ -170,3 +170,128 @@ export function countScreenRunning(version: string, s: ScreenFacts): void {
 }
 
 const SCREEN_ID_KEY = 'ptasia.usage.screen'
+
+// MARK: Barakah Picks counts (docs/community-cards.md)
+
+const CARD_SEEN_KEY = 'ptasia.usage.cardSeen'
+
+export interface CardFacts { id: string; kind: string; placement: string }
+
+/** What a card count says: which card, where in the app, and the usual app keys. */
+export function cardPayload(version: string, where: Where, language: string, card: CardFacts): Payload {
+  const payload = basePayload('web', version, where, language)
+  payload['Card.id'] = card.id
+  payload['Card.kind'] = card.kind
+  payload['Card.placement'] = card.placement
+  return payload
+}
+
+/** A card counts as seen once a day on each device, however often it scrolls past. */
+export function shouldCountSeen(seen: Record<string, string> | null, cardId: string, today: string): boolean {
+  return seen?.[cardId] !== today
+}
+
+/**
+ * Counts a Barakah Picks card seen on screen (once a day) or tapped. Only the
+ * card and the usual anonymous keys are sent, never who tapped. The caller
+ * checks Settings first, the same as for app opens.
+ */
+export function countCard(event: 'Card.seen' | 'Card.tapped', version: string, where: Where, card: CardFacts, today: string): void {
+  if (event === 'Card.seen') {
+    const seen = readJSON<Record<string, string>>(CARD_SEEN_KEY)
+    if (!shouldCountSeen(seen, card.id, today)) return
+    // Keep only today's marks so the record stays tiny.
+    const next: Record<string, string> = Object.fromEntries(Object.entries(seen ?? {}).filter(([, d]) => d === today))
+    next[card.id] = today
+    writeJSON(CARD_SEEN_KEY, next)
+  }
+  const { id } = deviceId()
+  void send([event], cardPayload(version, where, navigator.language || 'en', card), id)
+}
+
+// MARK: A day's use, sent once the next day (App.daySummary)
+
+/**
+ * How long the app was on screen today, how many times it was opened and which
+ * screens were used. Kept on the device and sent as ONE count the next time the
+ * app opens on a later day, so a whole day costs one event. Same rules in
+ * UsageCounter.swift and UsageCounter.kt.
+ */
+export interface DayTally { day: string; seconds: number; opens: number; screens: string[] }
+
+/** One stretch on screen counts at most this long (a phone left open on a table). */
+export const MAX_STRETCH_S = 2 * 3600
+export const SCREENS = ['prayer', 'qibla', 'falak', 'masjid', 'settings'] as const
+
+export const emptyTally = (day: string): DayTally => ({ day, seconds: 0, opens: 0, screens: [] })
+
+/** Starts today's tally, handing back yesterday's (or older) if it has anything to send. */
+export function rollTally(t: DayTally | null, today: string): { tally: DayTally; finished: DayTally | null } {
+  if (t && t.day === today) return { tally: t, finished: null }
+  return { tally: emptyTally(today), finished: t && (t.seconds > 0 || t.opens > 0) ? t : null }
+}
+
+export function addStretch(t: DayTally, seconds: number): DayTally {
+  const s = Math.max(0, Math.min(MAX_STRETCH_S, Math.round(seconds)))
+  return { ...t, seconds: t.seconds + s }
+}
+
+export function addScreen(t: DayTally, screen: string): DayTally {
+  return t.screens.includes(screen) ? t : { ...t, screens: [...t.screens, screen] }
+}
+
+/** Rough bands for easy charts, next to the exact minutes. */
+export function minutesBand(minutes: number): string {
+  if (minutes < 1) return 'under 1'
+  if (minutes < 5) return '1 to 5'
+  if (minutes < 15) return '5 to 15'
+  if (minutes < 30) return '15 to 30'
+  if (minutes < 60) return '30 to 60'
+  return 'over 60'
+}
+
+export function dayPayload(base: Payload, t: DayTally): Payload {
+  const minutes = Math.round(t.seconds / 60)
+  const out: Payload = { ...base, 'Day.date': t.day, 'Day.minutes': minutes, 'Day.minutesBand': minutesBand(t.seconds / 60), 'Day.opens': t.opens, 'Day.screens': [...t.screens].sort().join(',') }
+  for (const s of SCREENS) out[`Used.${s}`] = t.screens.includes(s)
+  return out
+}
+
+const TALLY_KEY = 'ptasia.usage.day'
+let activeSince: number | null = null
+const localDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+function saveStretch(): void {
+  if (activeSince == null) return
+  const now = Date.now()
+  const t = rollTally(readJSON<DayTally>(TALLY_KEY), localDay()).tally
+  writeJSON(TALLY_KEY, addStretch(t, (now - activeSince) / 1000))
+  activeSince = now
+}
+
+/**
+ * The app came on screen. Counts one open for today, starts the clock and, on
+ * the first open of a new day, sends the last day's summary. The caller checks
+ * Settings first.
+ */
+export function tallyStart(version: string, where: Where): void {
+  const { tally, finished } = rollTally(readJSON<DayTally>(TALLY_KEY), localDay())
+  writeJSON(TALLY_KEY, { ...tally, opens: tally.opens + 1 })
+  activeSince = Date.now()
+  if (finished) {
+    const { id } = deviceId()
+    void send(['App.daySummary'], dayPayload(basePayload('web', version, where, navigator.language || 'en'), finished), id)
+  }
+}
+
+/** The app left the screen: adds the time since it came on. */
+export function tallyStop(): void {
+  saveStretch()
+  activeSince = null
+}
+
+/** A screen (tab) was used today. */
+export function tallyScreen(screen: string): void {
+  const t = rollTally(readJSON<DayTally>(TALLY_KEY), localDay()).tally
+  writeJSON(TALLY_KEY, addScreen(t, screen))
+}

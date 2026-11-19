@@ -75,7 +75,8 @@ import com.prayertimesasia.app.AppState
 import com.prayertimesasia.app.BuildConfig
 import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.makers.MakersCard
-import com.prayertimesasia.app.ui.makers.MakersOffer
+import com.prayertimesasia.app.ui.makers.PICKS_NAME
+import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.app.ui.theme.AppCard
 import com.prayertimesasia.app.ui.theme.AppIcons
 import com.prayertimesasia.app.ui.theme.LivingSkyBackground
@@ -313,18 +314,18 @@ fun SettingsScreen(
             }
             item {
                 Section("Privacy", "Usage counts tell us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept.") {
-                    LabelRow(Icons.Filled.PanTool, "No third-party ads, no accounts, no tracking across other apps.")
+                    LabelRow(Icons.Filled.PanTool, "No outside ads, no accounts, no tracking across other apps.")
                     LabelRow(Icons.Filled.LocationOff, "Your exact location never leaves your phone.")
                     LabelRow(Icons.Filled.Map, "Nearby masjid search sends only the search area to OpenStreetMap.")
                     SwitchRow("Share anonymous usage counts", p.shareUsage) { on -> state.update { it.copy(shareUsage = on) } }
                 }
             }
             item {
-                Section("From the makers", "Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own - no ad networks, nothing tracked.") {
+                Section(PICKS_NAME, "Barakah Picks is not a normal ad. It is one small space we check by hand for halal Muslim businesses and causes, safe for the whole family. No gambling, alcohol, riba or anything immodest, and never Google, Facebook or Instagram ads. Most picks are our own services, and paid ones are marked Sponsored. We keep only simple counts of how often each card is seen and tapped, never who you are.") {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        MakersOffer.entries.forEach { MakersCard(it, "settings") }
+                        CommunityCard.ours(state.offerCountry).forEach { MakersCard(it, "settings", state = state) }
                     }
-                    SwitchRow("Show offers on Prayer and Masjid", p.showOffers) { on -> state.update { it.copy(showOffers = on) } }
+                    SwitchRow("Show $PICKS_NAME", p.showOffers) { on -> state.update { it.copy(showOffers = on) } }
                 }
             }
             item {

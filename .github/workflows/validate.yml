@@ -34,6 +34,8 @@ jobs:
         run: python3 tools/gen_masjid_extras.py --check
       - name: Check the Ramadan words match data/ramadan-words.json
         run: python3 tools/build_ramadan_words.py --check
+      - name: Check the community cards match data/community-cards.json and our ad rules
+        run: python3 tools/build_community_cards.py --check
       - name: Check the quick guide words match data/guide-words.json
         run: python3 tools/build_guide_words.py --check
       - name: Check the shared app words in data/app-words

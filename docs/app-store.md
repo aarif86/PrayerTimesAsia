@@ -184,8 +184,12 @@ Musafir guidance is general information, not a fatwa - when unsure, follow your 
 
 **Data Not Linked to You**, none used for tracking:
 - *Usage Data → Product Interaction*, purpose **Analytics**: anonymous app-open
-  counts (UsageCounter.swift, TelemetryDeck), unless the user turns them off in
-  Settings → Privacy.
+  counts, a daily total of minutes used, opens and screens used (App.daySummary),
+  and taps on a Barakah Picks card (UsageCounter.swift, TelemetryDeck),
+  unless the user turns them off in Settings → Privacy.
+- *Usage Data → Advertising Data*, purpose **Analytics**: which Barakah Picks card
+  was shown (once a day) or tapped, so sponsors can be told their totals. Not linked
+  to the user, not used for tracking (docs/community-cards.md).
 - *Location → Coarse Location*, purpose **Analytics**: the city and country of the
   place in use, sent with those counts. Never coordinates.
 - Only if someone submits: *User Content → Photos* and *Other User Content* (a

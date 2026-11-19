@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_PREFS, decodePreferences } from '../src/services/prefs'
-import { featuredOffer, offerURL } from '../src/ui/Makers'
 
 describe('Preferences', () => {
   it('keep old values and default the new ones (iOS testOldPreferencesStillDecode)', () => {
@@ -19,14 +18,5 @@ describe('Preferences', () => {
     expect(prefs.todayStyle).toBe('bands')
     expect(prefs.use24Hour).toBe(false)
     expect(prefs.manualPlace).toBeNull()
-  })
-})
-
-describe('From the makers', () => {
-  it('offers Badal to Singapore and NasarDigital elsewhere, with the iOS utm tags', () => {
-    expect(featuredOffer('SG')).toBe('badal')
-    expect(featuredOffer('MY')).toBe('digital')
-    expect(offerURL('badal', 'prayer')).toBe('https://badal.sg/?utm_source=prayertimesasia&utm_medium=app&utm_campaign=prayer')
-    expect(offerURL('digital', 'masjid')).toBe('https://nasardigital.com/?utm_source=prayertimesasia&utm_medium=app&utm_campaign=masjid')
   })
 })

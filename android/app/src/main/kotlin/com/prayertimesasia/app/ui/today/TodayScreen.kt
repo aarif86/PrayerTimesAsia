@@ -64,7 +64,6 @@ import com.prayertimesasia.app.ui.components.CapsuleButton
 import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.components.quietClick
 import com.prayertimesasia.app.ui.makers.MakersCard
-import com.prayertimesasia.app.ui.makers.MakersOffer
 import com.prayertimesasia.app.ui.theme.BandsPalette
 import com.prayertimesasia.app.ui.theme.LivingSkyBackground
 import com.prayertimesasia.app.ui.theme.LocalSkyScheme
@@ -75,7 +74,11 @@ import com.prayertimesasia.app.ui.theme.display
 import com.prayertimesasia.app.ui.theme.textTint
 import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.Appearance
+import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.Season
+import java.time.Duration
+import java.time.LocalDate
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.TodayStyle
 import com.prayertimesasia.core.secondsSince
@@ -198,12 +201,18 @@ private fun ColumnScope.Prompts(f: TodayFrame, hadith: Boolean = false) {
     if (f.offset == 0) SeasonCard(f.state, f.now)
 }
 
+/** Today's one community card, below the times and only with Show more open (docs/community-cards.md). */
 @Composable
 private fun Makers(f: TodayFrame) {
     if (f.offset == 0) ReviewLine(f.state, f.now, f.current?.second, f.next?.second)
-    if (f.state.prefs.showOffers && f.state.prefs.showMore) {
-        MakersCard(MakersOffer.featured(f.state.offerCountry), "prayer", compact = true)
-    }
+    if (!f.state.prefs.showOffers || !f.state.prefs.showMore) return
+    val r = f.state.resolver
+    // Never in the half hour before Berbuka in Ramadan.
+    val next = f.next
+    if (next != null && next.first == Prayer.MAGHRIB && Duration.between(f.now, next.second).toMinutes() < 30 &&
+        r.season(f.now).phase == Season.Phase.RAMADAN) return
+    val card = CommunityCard.ofTheDay(f.state.offerCountry, LocalDate.ofInstant(f.now, r.zone)) ?: return
+    MakersCard(card, "prayer", compact = true, state = f.state)
 }
 
 /**
