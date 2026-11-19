@@ -3,7 +3,7 @@ import {
   Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
   CloudMoon, Contrast, Droplet, Flame, Pause, Star, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
-import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
+import { BLESSED_NAME, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
 import { parameterSummary } from '../core/methods'
 import { isInAsia, placeProfile } from '../core/place'
@@ -27,7 +27,7 @@ import { SiteHomeButton } from './SiteHome'
 import { TabJourney } from './icons'
 import { SeasonCard } from './Ramadan'
 import { Hadith } from './Hadith'
-import { appearanceLabel, styleLabel, tr } from '../core/appWords'
+import { appLocale, appearanceLabel, blessedNote, blessedShort, styleLabel, tr } from '../core/appWords'
 
 type Moment = { prayer: Prayer; time: number } | null
 
@@ -60,10 +60,11 @@ function toggleNotify(prayer: Prayer) {
 }
 
 function dayLabel(offset: number): string {
-  if (offset === 0) return 'TODAY'
-  if (offset === 1) return 'TOMORROW'
-  if (offset === -1) return 'YESTERDAY'
-  return offset > 0 ? `IN ${offset} DAYS` : `${-offset} DAYS AGO`
+  const up = (line: string) => line.toLocaleUpperCase(appLocale())
+  if (offset === 0) return up(tr('common.today'))
+  if (offset === 1) return up(tr('common.tomorrow'))
+  if (offset === -1) return up(tr('today.yesterday'))
+  return up(offset > 0 ? tr('today.inDays', { n: offset }) : tr('today.daysAgo', { n: -offset }))
 }
 
 export function TodayScreen() {
@@ -499,7 +500,7 @@ function BlessedRow({ b, t, now }: { b: BlessedTime; t: number; now: number }) {
       <span class="bar" />
       <div class="names">
         <div class="bname">{BLESSED_NAME[b]}</div>
-        <div class="bnote">{BLESSED_NOTE[b]}</div>
+        <div class="bnote">{blessedNote(b)}</div>
       </div>
       <TimeText ms={t} size={22} weight={500} />
       <span style={{ width: '30px', flex: 'none' }} />
@@ -576,12 +577,12 @@ export function countdown(now: number): { count: string; label: string; text: st
   const done = !!w && store.prefs.trackerEnabled && store.isPrayed(w.prayer, w.start)
   if (w && !done) {
     const count = short(w.end - now)
-    return { count, label: 'left to pray', text: `${count} left to pray`, urgent: w.prayer !== 'isha' && now >= nudgeAt(w), done }
+    return { count, label: tr('today.leftLabel'), text: tr('today.leftToPray', { time: count }), urgent: w.prayer !== 'isha' && now >= nudgeAt(w), done }
   }
   const next = store.next(now)
   if (!next) return { count: '', label: '', text: '', urgent: false, done }
   const count = short(next.time - now)
-  const label = `until ${store.name(next.prayer, next.time)}`
+  const label = tr('today.untilName', { name: store.name(next.prayer, next.time) })
   return { count, label, text: `${count} ${label}`, urgent: false, done }
 }
 
@@ -627,7 +628,7 @@ function SimplePage({ c }: { c: Ctx }) {
         <div class="simple-list">
           {store.blessed(day).map(([b, t]) => (
             <div class="simple-row blessed" style={{ opacity: t <= now ? 0.6 : 1 }}>
-              <span class="simple-name">{BLESSED_NAME[b]}<span class="simple-note">{BLESSED_NOTE[b]}</span></span>
+              <span class="simple-name">{BLESSED_NAME[b]}<span class="simple-note">{blessedNote(b)}</span></span>
               <span class="simple-time mono">{store.formatted(t)}</span>
             </div>
           ))}
@@ -798,9 +799,9 @@ function DialPrayerLabel({ p, t, now, size, day, isCurrent }: { p: Prayer; t: nu
 function DialBlessedLabel({ b, t, now, size }: { b: BlessedTime; t: number; now: number; size: number }) {
   const Icon = BLESSED_ICON[b]
   return (
-    <div class="dial-blessed" style={{ opacity: t <= now ? 0.55 : 1 }} aria-label={`${BLESSED_NAME[b]}, ${store.formatted(t)}. ${BLESSED_NOTE[b]}`}>
+    <div class="dial-blessed" style={{ opacity: t <= now ? 0.55 : 1 }} aria-label={`${BLESSED_NAME[b]}, ${store.formatted(t)}. ${blessedNote(b)}`}>
       <span class="secondary" style={{ fontSize: `${size * 0.028}px`, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
-        <Icon size={size * 0.03} />{BLESSED_SHORT[b]}
+        <Icon size={size * 0.03} />{blessedShort(b)}
       </span>
       <TimeText ms={t} size={size * 0.04} weight={500} style={{ opacity: 0.85 }} />
     </div>
@@ -937,7 +938,7 @@ function BlessedBand({ b, t, now }: { b: BlessedTime; t: number; now: number }) 
       <Icon size={17} style={{ opacity: 0.8, flex: 'none' }} />
       <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <span class="headline">{BLESSED_NAME[b]}</span>
-        <span class="caption" style={{ opacity: 0.7, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{BLESSED_NOTE[b]}</span>
+        <span class="caption" style={{ opacity: 0.7, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{blessedNote(b)}</span>
       </span>
       <span class="spacer" />
       <span class="band-time small"><span>{parts.time}</span>{parts.suffix && <span class="sfx">{parts.suffix}</span>}</span>

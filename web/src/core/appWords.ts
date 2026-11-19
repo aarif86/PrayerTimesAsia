@@ -75,3 +75,8 @@ export function trWith<T>(key: AppWordKey, slots: Record<string, T | string | nu
   if (last < line.length) out.push(line.slice(last))
   return out
 }
+
+/** Short names and notes for the blessed times, and the source grade names, in the current app language. */
+export function blessedShort(b: 'imsak' | 'dhuha' | 'midnight' | 'lastThird'): string { return tr(`today.${b}Short`) }
+export function blessedNote(b: 'imsak' | 'dhuha' | 'midnight' | 'lastThird'): string { return tr(`today.${b}Note`) }
+export function gradeTitle(g: 'A' | 'B' | 'C' | 'D' | 'F'): string { return tr(`source.grade${g}`) }

@@ -11,7 +11,7 @@ import { musafirDistanceCheck, musafirGuidance, musafirPlan } from '../core/musa
 import { isInAsia, isNear, placeProfile, placeSubtitle, type Place } from '../core/place'
 import { OBLIGATORY } from '../core/prayer'
 import { flag, profileFor, timeZoneForPlace } from '../core/regions'
-import { GRADE_EXPLANATION, GRADE_TITLE, mosqueMethod, type SourceGrade } from '../core/sources'
+import { GRADE_EXPLANATION, mosqueMethod, type SourceGrade } from '../core/sources'
 import { isValidTimeZone, noonDaysAfter } from '../core/tz'
 import { searchCities } from '../services/cities'
 import { alertSupport } from '../services/notifications'
@@ -22,7 +22,7 @@ import { TabJourney } from './icons'
 import { HijriMonthCard } from './HijriCalendar'
 import { MakersAbout } from './Makers'
 import { canInstall, install, isIOS } from './pwa'
-import { appLocale, tr, trWith } from '../core/appWords'
+import { appLocale, gradeTitle, tr, trWith } from '../core/appWords'
 
 // ---------- Places ----------
 
@@ -176,7 +176,7 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
         <div class="item" style={{ alignItems: 'flex-start' }}>
           <Icon size={28} style={{ color: GRADE_TINT[day.grade], flex: 'none' }} />
           <div>
-            <div class="headline">{tr('source.gradeName', { grade: day.grade, name: GRADE_TITLE[day.grade] })}</div>
+            <div class="headline">{tr('source.gradeName', { grade: day.grade, name: gradeTitle(day.grade) })}</div>
             <div class="subhead">{day.officialSource ?? s.method.name}</div>
             <div class="footnote secondary" style={{ marginTop: '4px' }}>{detail}</div>
           </div>
@@ -201,7 +201,7 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
         {(['A', 'B', 'C', 'D', 'F'] as SourceGrade[]).map((g) => (
           <div class="item" style={{ alignItems: 'flex-start' }}>
             <span class="grade-dot" style={{ background: GRADE_TINT[g] }}>{g}</span>
-            <div><div class="subhead" style={{ fontWeight: 600 }}>{GRADE_TITLE[g]}</div><div class="footnote secondary">{GRADE_EXPLANATION[g]}</div></div>
+            <div><div class="subhead" style={{ fontWeight: 600 }}>{gradeTitle(g)}</div><div class="footnote secondary">{GRADE_EXPLANATION[g]}</div></div>
           </div>
         ))}
       </div>

@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from 'preact/hooks'
 import { Info, X } from 'lucide-preact'
 import type { PrayerDay } from '../core/engine'
 import { sourceAuthority } from '../core/official'
-import { GRADE_TITLE, type SourceGrade } from '../core/sources'
+import type { SourceGrade } from '../core/sources'
 import { store } from '../services/store'
-import { appLocale, tr } from '../core/appWords'
+import { appLocale, gradeTitle, tr } from '../core/appWords'
 
 /** A time with its AM/PM set smaller on the same baseline. Never wraps. */
 export function TimeText({ ms, size = 28, weight = 600, class: cls, style }: { ms: number; size?: number; weight?: number; class?: string; style?: JSX.CSSProperties }) {
@@ -147,14 +147,14 @@ export function Segmented<T extends string | number>({ value, options, onChange 
 export function SourceBadge({ day, compact }: { day: PrayerDay; compact?: boolean }) {
   const grade = day.grade
   const shortSource = grade === 'A'
-    ? `${GRADE_TITLE[grade]} · ${store.officialSource && day.officialSource ? sourceAuthority(store.officialSource) : store.method.shortName}`
-    : grade === 'B' || grade === 'C' ? day.mosqueName ?? GRADE_TITLE[grade] : `${GRADE_TITLE[grade]} · ${store.method.shortName}`
+    ? `${gradeTitle(grade)} · ${store.officialSource && day.officialSource ? sourceAuthority(store.officialSource) : store.method.shortName}`
+    : grade === 'B' || grade === 'C' ? day.mosqueName ?? gradeTitle(grade) : `${gradeTitle(grade)} · ${store.method.shortName}`
   const sourceName = day.officialSource ?? `${store.method.shortName} method`
   return (
     <button class={`source-badge ${compact ? 'compact' : 'full'}`} onClick={() => openSheet({ kind: 'sanad', day })}
-      aria-label={tr('common.sourceBadge', { grade, name: GRADE_TITLE[grade], detail: sourceName })}>
+      aria-label={tr('common.sourceBadge', { grade, name: gradeTitle(grade), detail: sourceName })}>
       <span class="grade" style={{ background: GRADE_TINT[grade] }}>{grade}</span>
-      <span class="src">{compact ? shortSource : `${GRADE_TITLE[grade]} · ${sourceName}`}</span>
+      <span class="src">{compact ? shortSource : `${gradeTitle(grade)} · ${sourceName}`}</span>
       {!compact && <span class="spacer" />}
       <Info size={compact ? 12 : 15} style={{ opacity: 0.7, flex: 'none' }} />
     </button>
