@@ -1,28 +1,22 @@
 import { useMemo, useState } from 'preact/hooks'
 import { ChevronLeft, ChevronRight } from 'lucide-preact'
 import { authorityName } from '../core/calendarSanad'
-import { gregorianFromHijri, type HijriDate } from '../core/hijri'
-import { hijriCalWords, islamicDayName, islamicDaysOf } from '../core/islamicDays'
+import type { HijriDate } from '../core/hijri'
+import { hijriCalWords, islamicDayName, islamicDayShort, islamicDaysOf, hijriMonthShort } from '../core/islamicDays'
 import { hijriMonths } from '../core/prayer'
-import { addDays, daysApart, type CivilDay } from '../core/season'
+import { daysApart, type CivilDay } from '../core/season'
 import { store, useNow, useStore } from '../services/store'
 import { closeSheet, showDayOnPrayerScreen } from './common'
 
-/** The civil days of one Hijri month, as this community counts it. */
+/** The days of one Gregorian month, each with its Hijri date as this community counts it. */
 function monthDays(year: number, month: number): { g: CivilDay; h: HijriDate }[] {
-  const est = gregorianFromHijri(year, month, 1)
-  if (!est) return []
-  const out: { g: CivilDay; h: HijriDate }[] = []
-  let g = addDays(est, -4)
-  for (let i = 0; i < 40; i++, g = addDays(g, 1)) {
-    const h = store.hijriOfCivil(g)
-    if (h.year === year && h.month === month) out.push({ g, h })
-    else if (out.length) break
-  }
-  return out
+  const n = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  return Array.from({ length: n }, (_, i) => {
+    const g = { year, month, day: i + 1 }
+    return { g, h: store.hijriOfCivil(g) }
+  })
 }
 
-const GREG_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const shortAuthority = (id: string) => authorityName(id).replace(/\s*\(.*\)\s*$/, '')
 
 function fmtCivil(g: CivilDay, style: 'long' | 'short' = 'long'): string {
@@ -38,27 +32,23 @@ export function HijriMonthCard() {
   const now = useNow(60_000)
   const words = hijriCalWords(s.naming)
   const today = s.civil(now)
-  const todayH = s.hijriOfCivil(today)
-  const [shown, setShown] = useState({ y: todayH.year, m: todayH.month })
+  const [shown, setShown] = useState({ y: today.year, m: today.month })
   const [picked, setPicked] = useState<CivilDay | null>(null)
   const days = useMemo(() => monthDays(shown.y, shown.m), [shown.y, shown.m, s.prefs.hijriAdjustment, s.communityAuthority, s.calendar])
   const move = (d: number) => {
     setPicked(null)
     setShown(({ y, m }) => { const i = y * 12 + (m - 1) + d; return { y: Math.floor(i / 12), m: (i % 12) + 1 } })
   }
-  const isThisMonth = shown.y === todayH.year && shown.m === todayH.month
-  const first = days[0]?.g
-  const lead = first ? (new Date(Date.UTC(first.year, first.month - 1, first.day)).getUTCDay() + 6) % 7 : 0
+  const isThisMonth = shown.y === today.year && shown.m === today.month
+  const lead = new Date(Date.UTC(shown.y, shown.m - 1, 1)).getUTCDay() // Sunday first, like a wall calendar
+  const hMonths = hijriMonths(s.naming)
   const keyDays = days.flatMap(({ g, h }) => islamicDaysOf(h).filter((k) => k.major || k.kind === 'lastTen' && h.day === 21 || k.kind === 'tasyrik' && h.day === 11).map((k) => ({ g, h, k })))
-  const hasWhite = days.some(({ h }) => islamicDaysOf(h).some((k) => k.kind === 'whiteDay'))
-  const gregSpan = first && days.length
-    ? (() => {
-      const last = days[days.length - 1].g
-      return first.month === last.month ? `${GREG_MONTHS[first.month - 1]} ${first.year}`
-        : first.year === last.year ? `${GREG_MONTHS[first.month - 1]} and ${GREG_MONTHS[last.month - 1]} ${last.year}`
-          : `${GREG_MONTHS[first.month - 1]} ${first.year} and ${GREG_MONTHS[last.month - 1]} ${last.year}`
-    })()
-    : ''
+  const hijriSpan = (() => {
+    const a = days[0].h, z = days[days.length - 1].h
+    if (a.month === z.month) return `${hMonths[a.month - 1]} ${a.year}`
+    return a.year === z.year ? `${hMonths[a.month - 1]} ${words.and} ${hMonths[z.month - 1]} ${z.year}`
+      : `${hMonths[a.month - 1]} ${a.year} ${words.and} ${hMonths[z.month - 1]} ${z.year}`
+  })()
   const sel = picked ? days.find((d) => daysApart(d.g, picked) === 0) : null
   const authority = s.communityAuthority
   const adj = s.prefs.hijriAdjustment
@@ -67,31 +57,34 @@ export function HijriMonthCard() {
   return (
     <div class="glass card hcal" style={{ marginTop: '10px' }}>
       <div class="hcal-head">
-        <button class="round-btn hcal-prev" aria-label="Previous Hijri month" onClick={() => move(-1)}><ChevronLeft size={18} /></button>
+        <button class="round-btn hcal-prev" aria-label="Previous month" onClick={() => move(-1)}><ChevronLeft size={18} /></button>
         <div class="hcal-title">
-          <h3>{hijriMonths(s.naming)[shown.m - 1]} {shown.y}</h3>
-          <div class="caption secondary">{gregSpan}</div>
+          <h3>{words.months[shown.m - 1]} {shown.y}</h3>
+          <div class="hcal-hspan">{hijriSpan}</div>
         </div>
-        <button class="round-btn hcal-next" aria-label="Next Hijri month" onClick={() => move(1)}><ChevronRight size={18} /></button>
+        <button class="round-btn hcal-next" aria-label="Next month" onClick={() => move(1)}><ChevronRight size={18} /></button>
       </div>
       <div class="hcal-grid" role="grid">
         {words.week.map((w) => <span class="hcal-wd secondary" aria-hidden="true">{w}</span>)}
         {Array.from({ length: lead }, () => <span />)}
-        {days.map(({ g, h }) => {
+        {days.map(({ g, h }, i) => {
           const marks = islamicDaysOf(h)
-          const major = marks.some((k) => k.major)
+          const major = marks.find((k) => k.major)
           const quiet = !major && marks.some((k) => k.kind === 'lastTen' || k.kind === 'tasyrik')
           const white = marks.some((k) => k.kind === 'whiteDay')
           const isToday = daysApart(today, g) === 0
           const isPicked = sel && daysApart(sel.g, g) === 0
-          const showMonth = g.day === 1 || h.day === 1
-          const label = `${h.day} ${hijriMonths(s.naming)[h.month - 1]}, ${fmtCivil(g)}${marks.length ? `, ${marks.map((k) => islamicDayName(k.kind, s.naming)).join(', ')}` : ''}`
+          const newMonth = h.day === 1
+          const showMonth = newMonth || i === 0
+          const sunday = (lead + i) % 7 === 0
+          const label = `${fmtCivil(g)}, ${h.day} ${hMonths[h.month - 1]} ${h.year}${marks.length ? `, ${marks.map((k) => islamicDayName(k.kind, s.naming)).join(', ')}` : ''}`
           return (
-            <button class={`hcal-day${isToday ? ' is-today' : ''}${major ? ' major' : ''}${quiet ? ' quiet' : ''}${isPicked ? ' picked' : ''}`}
+            <button class={`hcal-day${isToday ? ' is-today' : ''}${major ? ' major' : ''}${quiet ? ' quiet' : ''}${isPicked ? ' picked' : ''}${sunday ? ' sun' : ''}${newMonth ? ' new-month' : ''}`}
               aria-label={label} aria-current={isToday ? 'date' : undefined} onClick={() => setPicked(isPicked ? null : g)}>
-              <span class="hd mono">{h.day}</span>
-              <span class="gd mono">{showMonth ? `${g.day} ${GREG_MONTHS[g.month - 1]}` : g.day}</span>
-              {white && <i class="white-dot" aria-hidden="true" />}
+              <span class="gd">{g.day}</span>
+              <span class="hd mono">{h.day}{white && <i class="white-dot" aria-hidden="true" />}</span>
+              {major ? <span class="ev">{islamicDayShort(major.kind, s.naming)}</span>
+                : showMonth ? <span class="hm">{hijriMonthShort(h.month, s.naming, hMonths[h.month - 1])}</span> : null}
             </button>
           )
         })}
@@ -99,7 +92,7 @@ export function HijriMonthCard() {
       {sel ? (
         <div class="hcal-picked">
           <div>
-            <div class="subhead" style={{ fontWeight: 600 }}>{sel.h.day} {hijriMonths(s.naming)[sel.h.month - 1]} {sel.h.year}</div>
+            <div class="subhead" style={{ fontWeight: 600 }}>{sel.h.day} {hMonths[sel.h.month - 1]} {sel.h.year}</div>
             <div class="caption secondary">{fmtCivil(sel.g)}</div>
             {islamicDaysOf(sel.h).map((k) => <div class="caption accent" style={{ fontWeight: 600 }}>{islamicDayName(k.kind, s.naming)}</div>)}
           </div>
@@ -107,15 +100,15 @@ export function HijriMonthCard() {
         </div>
       ) : (
         <div class="hcal-list">
-          {!isThisMonth && <button class="hcal-back caption accent" onClick={() => move((todayH.year - shown.y) * 12 + todayH.month - shown.m)}>{words.today}</button>}
+          {!isThisMonth && <button class="hcal-back caption accent" onClick={() => move((today.year - shown.y) * 12 + today.month - shown.m)}>{words.today}</button>}
           {keyDays.length ? keyDays.map(({ g, h, k }) => (
             <button class="hcal-row" onClick={() => setPicked(g)}>
-              <span class="mono hcal-row-h">{h.day}</span>
+              <span class="mono hcal-row-h">{g.day}</span>
               <span class="hcal-row-name">{islamicDayName(k.kind, s.naming)}</span>
-              <span class="caption secondary mono">{fmtCivil(g, 'short')}</span>
+              <span class="caption secondary mono">{h.day} {hMonths[h.month - 1]}</span>
             </button>
           )) : <p class="caption secondary" style={{ margin: '4px 0' }}>{words.none}</p>}
-          {hasWhite && keyDays.length > 0 && <div class="caption secondary hcal-legend"><i class="white-dot" aria-hidden="true" />{islamicDayName('whiteDay', s.naming)} 13, 14, 15</div>}
+          <div class="caption secondary hcal-legend"><i class="white-dot" aria-hidden="true" />{islamicDayName('whiteDay', s.naming)} 13, 14, 15</div>
         </div>
       )}
       <p class="caption secondary hcal-note">{words.note(authority ? shortAuthority(authority) : null)}</p>

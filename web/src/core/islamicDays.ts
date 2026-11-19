@@ -58,31 +58,49 @@ const NAMES: Record<IslamicDayKind, Record<Lang, string>> = {
 
 export const islamicDayName = (k: IslamicDayKind, s: NamingStyle): string => NAMES[k][lang(s)]
 
+/** Short names that fit inside a calendar day. */
+const SHORT: Partial<Record<IslamicDayKind, Record<Lang, string>>> = {
+  newYear: { en: 'New Year', ms: 'Maal Hijrah', id: 'Tahun Baru' },
+  ashura: { en: 'Ashura', ms: 'Asyura', id: 'Asyura' },
+  maulid: { en: 'Mawlid', ms: 'Maulid', id: 'Maulid' },
+  israMikraj: { en: "Isra Mi'raj", ms: 'Israk Mikraj', id: "Isra Mi'raj" },
+  nisfuSyaaban: { en: "Nisfu Sha'ban", ms: 'Nisfu Syaaban', id: "Nisfu Sya'ban" },
+  ramadanStart: { en: 'Ramadan', ms: 'Awal Ramadan', id: 'Awal Ramadan' },
+  nuzulQuran: { en: 'Nuzul Quran', ms: 'Nuzul Quran', id: 'Nuzulul Quran' },
+  aidilfitri: { en: 'Eid al-Fitr', ms: 'Aidilfitri', id: 'Idul Fitri' },
+  arafah: { en: 'Arafah', ms: 'Arafah', id: 'Arafah' },
+  aidiladha: { en: 'Eid al-Adha', ms: 'Aidiladha', id: 'Idul Adha' },
+}
+export const islamicDayShort = (k: IslamicDayKind, s: NamingStyle): string => SHORT[k]?.[lang(s)] ?? NAMES[k][lang(s)]
+
 /** Words for the calendar sheet, in the user's language. No colons or dashes. */
 export const HIJRI_CAL_WORDS: Record<Lang, {
-  title: string; today: string; keyDays: string; none: string; week: string[]
+  title: string; today: string; months: string[]; and: string; keyDays: string; none: string; week: string[]
   note: (authority: string | null) => string; adjust: string; adjustNone: string
   earlier: string; later: string; dayOff: string
 }> = {
   en: {
-    title: 'Hijri calendar', today: 'Today', keyDays: 'This month', none: 'No special days this month. The white days are the 13th, 14th and 15th.',
-    week: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    title: 'Hijri calendar', today: 'Today', and: 'and',
+    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], keyDays: 'This month', none: 'No special days this month.',
+    week: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     note: (a) => a
       ? `Ramadan and Eid al-Fitr follow ${a} once announced. Other days are worked out ahead and can be a day apart from your area. Follow your local religious authority.`
       : 'Dates are worked out ahead and can be a day apart from your area. Follow your local religious authority.',
     adjust: 'Move the Hijri date', adjustNone: 'Not moved', earlier: 'One day earlier', later: 'One day later', dayOff: 'day',
   },
   ms: {
-    title: 'Kalendar Hijrah', today: 'Hari ini', keyDays: 'Bulan ini', none: 'Tiada hari kebesaran bulan ini. Hari putih ialah 13, 14 dan 15 haribulan.',
-    week: ['Isn', 'Sel', 'Rab', 'Kha', 'Jum', 'Sab', 'Ahd'],
+    title: 'Kalendar Hijrah', today: 'Hari ini', and: 'dan',
+    months: ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'], keyDays: 'Bulan ini', none: 'Tiada hari kebesaran bulan ini.',
+    week: ['Ahd', 'Isn', 'Sel', 'Rab', 'Kha', 'Jum', 'Sab'],
     note: (a) => a
       ? `Ramadan dan Aidilfitri mengikut ${a} sebaik sahaja diumumkan. Tarikh lain dikira lebih awal dan mungkin berbeza sehari di tempat anda. Ikutlah pihak berkuasa agama tempatan anda.`
       : 'Tarikh dikira lebih awal dan mungkin berbeza sehari di tempat anda. Ikutlah pihak berkuasa agama tempatan anda.',
     adjust: 'Anjak tarikh Hijrah', adjustNone: 'Tidak dianjak', earlier: 'Sehari lebih awal', later: 'Sehari lebih lewat', dayOff: 'hari',
   },
   id: {
-    title: 'Kalender Hijriah', today: 'Hari ini', keyDays: 'Bulan ini', none: 'Tidak ada hari besar bulan ini. Ayyamul bidh jatuh pada tanggal 13, 14 dan 15.',
-    week: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+    title: 'Kalender Hijriah', today: 'Hari ini', and: 'dan',
+    months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'], keyDays: 'Bulan ini', none: 'Tidak ada hari besar bulan ini.',
+    week: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
     note: (a) => a
       ? `Awal Ramadan dan Idul Fitri mengikuti ${a} setelah diumumkan. Tanggal lain dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat.`
       : 'Tanggal dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat.',
@@ -91,3 +109,11 @@ export const HIJRI_CAL_WORDS: Record<Lang, {
 }
 
 export const hijriCalWords = (s: NamingStyle) => HIJRI_CAL_WORDS[lang(s)]
+
+/** Hijri month names short enough for a calendar day (English and Malay/Indonesian; others use the full name). */
+export function hijriMonthShort(month: number, s: NamingStyle, full: string): string {
+  const en = ['Muharram', 'Safar', 'Rabi I', 'Rabi II', 'Jumada I', 'Jumada II', 'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhul Qa'dah", 'Dhul Hijjah']
+  const ms = ['Muharram', 'Safar', 'Rabiul Awal', 'Rabiul Akhir', 'Jamadil Awal', 'Jamadil Akhir', 'Rejab', 'Syaaban', 'Ramadan', 'Syawal', 'Zulkaedah', 'Zulhijjah']
+  const i = Math.max(0, Math.min(11, month - 1))
+  return s === 'malay' || s === 'indonesian' ? ms[i] : ['turkish', 'arabicScript', 'urdu', 'bengali', 'french'].includes(s) ? full : en[i]
+}
