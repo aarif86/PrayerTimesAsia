@@ -35,13 +35,13 @@ export function MasjidLinkSheet({ m }: { m: MasjidLink }) {
       </div>
       <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('myMasjid.iqamah')}</h3>
       <div class="group"><Rules m={m} /></div>
-      {replacing && <p class="group-foot">This replaces {replacing}.</p>}
+      {replacing && <p class="group-foot">{tr('myMasjid.replaces', { name: replacing })}</p>}
       <div class="my-masjid-actions">
         <button class="primary-btn" onClick={() => s.followMasjid()}>{tr('myMasjid.add')}</button>
         <button class="plain-btn" onClick={() => s.dismissMasjid()}>{tr('common.notNow')}</button>
       </div>
       <p class="footnote secondary my-masjid-app">
-        Using the iPhone or Android app? <a href={`prayertimesasia://${masjidQuery(m)}`}>{tr('myMasjid.openInApp')}</a>.
+        {tr('myMasjid.usingAppAsk')} <a href={`prayertimesasia://${masjidQuery(m)}`}>{tr('myMasjid.openInApp')}</a>.
       </p>
     </Sheet>
   )

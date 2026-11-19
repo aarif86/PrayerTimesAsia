@@ -86,10 +86,10 @@ export function ARScreen() {
       <div class="ar-legend glass">
         <div class="subhead" style={{ fontWeight: 600 }}>{tr('falakTools.pointFloor')}</div>
         {compass.state === 'needs-permission' && <button class="primary-btn" onClick={() => void compass.enable()}>{tr('falakTools.useCompass')}</button>}
-        {compass.state === 'unavailable' && <div class="footnote" style={{ color: 'var(--warning)' }}>No compass on this device: the lines can't turn with you.</div>}
-        <div class="footnote gold">━ Gold line: the qibla</div>
-        <div class="footnote">━ Dark bar: where a stick's shadow falls right now</div>
-        <div class="caption" style={{ opacity: 0.85 }}>Outdoors in sunshine, real shadows should lie along the dark bar. If they don't, move away from metal and wave the phone in a figure-8 to recalibrate the compass. Never look at the sun.</div>
+        {compass.state === 'unavailable' && <div class="footnote" style={{ color: 'var(--warning)' }}>{tr('falakTools.noCompass')}</div>}
+        <div class="footnote gold">━ {tr('falakTools.goldLine')}</div>
+        <div class="footnote">━ {tr('falakTools.darkBar')}</div>
+        <div class="caption" style={{ opacity: 0.85 }}>{tr('falakTools.outdoors')}</div>
       </div>
     </div>
   )

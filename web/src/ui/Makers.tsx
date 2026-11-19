@@ -61,7 +61,7 @@ export function MakersAbout({ placement, country }: { placement: string; country
       <Hadith id="fixedTimes" tag="Al Quran" />
       <h3 class="display" style={{ fontSize: '26px', fontWeight: 700, margin: 0 }}>{tr('makers.title')}</h3>
       <p class="secondary" style={{ margin: 0 }}>
-        Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).
+        {tr('makers.body')}
       </p>
       {ourCards(country, new Date()).map((c) => <MakersCard card={c} placement={placement} />)}
     </div>

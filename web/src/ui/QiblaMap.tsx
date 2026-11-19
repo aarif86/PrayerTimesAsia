@@ -38,8 +38,7 @@ function QiblaMapView() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: 'calc(100% - 60px)' }}>
       <p class="subhead" style={{ margin: 0 }}>
-        The gold line runs from {place.name} to the Ka'bah: {Math.round(bearing)}° {compassPoint(bearing)} from true north. Line yourself up with a street or
-        building edge that runs the same way.
+        {tr('qibla.mapLine', { place: place.name, deg: `${Math.round(bearing)}° ${compassPoint(bearing)}` })}
       </p>
       <div ref={el} class="map-box" style={{ flex: 1, minHeight: '320px' }} />
       {failed && <p class="footnote secondary">{tr('qibla.mapOffline')}</p>}

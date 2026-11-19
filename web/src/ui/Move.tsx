@@ -41,17 +41,17 @@ export function MoveOutSheet() {
   return (
     <Sheet title={tr('move.title')}>
       <div class="help">
-        <p class="subhead">Your places, choices and tracker history, packed into one code. Nothing is uploaded: the settings are inside the code itself.</p>
+        <p class="subhead">{tr('move.intro')}</p>
         <div class="move-qr-wrap">{qr ? <QR text={qr.link} /> : <div class="move-qr" />}</div>
         <ol class="subhead">
-          <li>On the other phone, open Prayer Times Asia › Settings › <b>{tr('move.bringIn')}</b> and scan this code.</li>
-          <li>No app there? Point its camera at the code: it opens the web app with your settings.</li>
+          <li>{tr('move.otherPhone')}</li>
+          <li>{tr('move.noApp')}</li>
         </ol>
         {qr && (qr.keptDays != null || qr.ramadanTrimmed) && (
-          <p class="footnote secondary">The QR code carries {[
-            qr.keptDays != null ? `your last ${qr.keptDays} days of tracker history` : null,
+          <p class="footnote secondary">{tr('move.carries', { what: [
+            qr.keptDays != null ? tr('move.lastDays', { n: qr.keptDays }) : null,
             qr.ramadanTrimmed ? tr('move.ramadanOnly') : null,
-          ].filter(Boolean).join(' and ')}. To bring all of it, use Copy link or Share.</p>
+          ].filter(Boolean).join(` ${tr('common.and')} `) })}</p>
         )}
         <div class="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
           <button class="plain-btn" disabled={!full} onClick={() => void copy()}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? tr('common.copied') : tr('common.copyLink')}</button>
@@ -89,7 +89,7 @@ export function MoveInSheet({ code: initial }: { code?: string }) {
       <Sheet title={tr('move.bringIn')}>
         <div class="help">
           <p class="headline">{tr('move.arrived')}</p>
-          {moved?.notifyPrayers || moved?.reminderMinutesBefore ? <p class="subhead">Prayer alerts need permission on each device: turn them on in Settings › Alerts.</p> : null}
+          {moved?.notifyPrayers || moved?.reminderMinutesBefore ? <p class="subhead">{tr('move.alertsAgain')}</p> : null}
           <button class="primary-btn" onClick={closeSheet}>{tr('common.done')}</button>
         </div>
       </Sheet>
@@ -99,12 +99,12 @@ export function MoveInSheet({ code: initial }: { code?: string }) {
   return (
     <Sheet title={tr('move.bringIn')}>
       <div class="help">
-        <p class="subhead">On your other phone or browser, open Settings › <b>{tr('move.title')}</b>. Scan its QR code with this phone's camera, or paste its link here.</p>
+        <p class="subhead">{tr('move.bringHow')}</p>
         <textarea class="move-paste" rows={3} placeholder={tr('move.paste')} value={text} onInput={(e) => setText((e.target as HTMLTextAreaElement).value)} />
         {error && <p class="footnote" style={{ color: 'var(--danger, #e5484d)' }}>{tr('move.bad')}</p>}
         {moved && (
           <>
-            <p class="subhead" style={{ fontWeight: 600 }}>This will bring in:</p>
+            <p class="subhead" style={{ fontWeight: 600 }}>{tr('move.willBring')}</p>
             <ul class="subhead move-list">{describeMoved(moved).map((l) => <li>{l}</li>)}</ul>
             <p class="footnote secondary">{tr('move.replaceNote')}</p>
             <button class="primary-btn" onClick={bringIn}>{tr('move.bringIn')}</button>
