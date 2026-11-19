@@ -113,12 +113,12 @@ export function ToggleItem({ label, sub, on, onChange }: { label: string; sub?: 
   )
 }
 
-export function SelectItem<T extends string>({ label, value, options, onChange }: {
-  label: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void
+export function SelectItem<T extends string>({ label, value, options, onChange, sub }: {
+  label: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; sub?: string
 }) {
   return (
     <label class="item">
-      <span class="label">{label}</span>
+      <span class="label">{label}{sub && <span class="sub">{sub}</span>}</span>
       <select value={value} onChange={(e) => onChange((e.target as HTMLSelectElement).value as T)}>
         {options.map((o) => <option value={o.value}>{o.label}</option>)}
       </select>
