@@ -18,7 +18,7 @@ import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { WakeChip } from './WakeUp'
-import { fmtDate, openSheet, short, SourceBadge, Switch, TimeText } from './common'
+import { fmtDate, openSheet, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { featuredOffer, MakersCard } from './Makers'
@@ -69,6 +69,7 @@ export function TodayScreen() {
   const s = useStore()
   const now = useNow()
   const [offset, setOffset] = useState(0)
+  useDayRequests(setOffset)
   const [showMore, setShowMoreState] = useState(() => s.demo ? s.demo.more : readString('today.showMore') === '1')
   const [toast, showToast] = useToast()
   const setShowMore = (v: boolean) => { setShowMoreState(v); if (!s.demo) writeString('today.showMore', v ? '1' : '0') }
