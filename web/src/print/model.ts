@@ -12,8 +12,8 @@ import { LETTER_FOR, PAPER_SIZES, type LetterFor, type PaperSize } from './lette
  * place. Official table first, as everywhere in the app.
  */
 
-export type SheetKind = 'month' | 'ramadan' | 'stickers' | 'tracker' | 'fasting' | 'letter'
-export const SHEETS: readonly SheetKind[] = ['month', 'ramadan', 'stickers', 'tracker', 'fasting', 'letter']
+export type SheetKind = 'month' | 'year' | 'ramadan' | 'stickers' | 'tracker' | 'fasting' | 'letter'
+export const SHEETS: readonly SheetKind[] = ['month', 'year', 'ramadan', 'stickers', 'tracker', 'fasting', 'letter']
 
 export interface PrintOptions {
   sheet: SheetKind
@@ -131,9 +131,10 @@ const ID_MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli
 
 export const PRINT_WORDS: Record<ScreenLanguage, PrintWords> = {
   en: {
-    sheetName: { month: 'Monthly timetable', ramadan: 'Ramadan timetable', stickers: 'Sticker calendar', tracker: 'Kids\' prayer tracker', fasting: 'Kids\' fasting chart', letter: 'Letter for work or school' },
+    sheetName: { month: 'Monthly timetable', year: 'Islamic year calendar', ramadan: 'Ramadan timetable', stickers: 'Sticker calendar', tracker: 'Kids\' prayer tracker', fasting: 'Kids\' fasting chart', letter: 'Letter for work or school' },
     sheetHint: {
       month: 'One A4 page for the fridge, the office or the masjid notice board.',
+      year: 'The whole year on one A4 page, with the Hijri date under every day and the important Islamic days marked and listed.',
       ramadan: 'Imsak and iftar for every day of Ramadan, with a box to tick each fast.',
       stickers: 'A tile for every day. Print on A4 sticker paper (or plain paper and glue), cut along the dashed lines, and stick today\'s times on the fridge, a planner or a desk.',
       tracker: 'Children colour in a circle after each prayer. Stick it on the wall and count the stars at the end of the month.',
@@ -154,9 +155,10 @@ export const PRINT_WORDS: Record<ScreenLanguage, PrintWords> = {
     myFasts: 'My Ramadan fasts', colourStar: 'Colour a star for each day you fast', syawalSix: 'Six days of Syawal', fastsKept: 'Stars coloured',
   },
   ms: {
-    sheetName: { month: 'Jadual bulanan', ramadan: 'Jadual Ramadan', stickers: 'Kalendar pelekat', tracker: 'Carta solat kanak-kanak', fasting: 'Carta puasa kanak-kanak', letter: 'Surat untuk kerja atau sekolah' },
+    sheetName: { month: 'Jadual bulanan', year: 'Kalendar Islam setahun', ramadan: 'Jadual Ramadan', stickers: 'Kalendar pelekat', tracker: 'Carta solat kanak-kanak', fasting: 'Carta puasa kanak-kanak', letter: 'Surat untuk kerja atau sekolah' },
     sheetHint: {
       month: 'Satu muka surat A4 untuk peti sejuk, pejabat atau papan notis masjid.',
+      year: 'Setahun penuh dalam satu muka surat A4, dengan tarikh Hijrah di bawah setiap hari dan hari kebesaran Islam ditanda serta disenaraikan.',
       ramadan: 'Imsak dan berbuka untuk setiap hari Ramadan, dengan kotak untuk menanda setiap puasa.',
       stickers: 'Satu petak untuk setiap hari. Cetak pada kertas pelekat A4 (atau kertas biasa dan gam), gunting di garisan putus-putus, dan lekatkan waktu hari ini di peti sejuk, diari atau meja.',
       tracker: 'Kanak-kanak mewarna satu bulatan selepas setiap solat. Lekatkan di dinding dan kira bintang di hujung bulan.',
@@ -177,9 +179,10 @@ export const PRINT_WORDS: Record<ScreenLanguage, PrintWords> = {
     myFasts: 'Puasaku bulan Ramadan', colourStar: 'Warnakan satu bintang untuk setiap hari berpuasa', syawalSix: 'Puasa enam Syawal', fastsKept: 'Bintang diwarna',
   },
   id: {
-    sheetName: { month: 'Jadwal bulanan', ramadan: 'Jadwal Ramadan', stickers: 'Kalender stiker', tracker: 'Lembar sholat anak', fasting: 'Lembar puasa anak', letter: 'Surat untuk kantor atau sekolah' },
+    sheetName: { month: 'Jadwal bulanan', year: 'Kalender Islam setahun', ramadan: 'Jadwal Ramadan', stickers: 'Kalender stiker', tracker: 'Lembar sholat anak', fasting: 'Lembar puasa anak', letter: 'Surat untuk kantor atau sekolah' },
     sheetHint: {
       month: 'Satu halaman A4 untuk kulkas, kantor atau papan pengumuman masjid.',
+      year: 'Satu tahun penuh dalam satu halaman A4, dengan tanggal Hijriah di bawah setiap hari dan hari besar Islam ditandai serta didaftar.',
       ramadan: 'Imsak dan berbuka setiap hari Ramadan, dengan kotak untuk mencentang setiap puasa.',
       stickers: 'Satu kotak untuk setiap hari. Cetak di kertas stiker A4 (atau kertas biasa dan lem), gunting di garis putus-putus, lalu tempel jadwal hari ini di kulkas, agenda atau meja.',
       tracker: 'Anak mewarnai satu lingkaran setiap selesai sholat. Tempel di dinding dan hitung bintangnya di akhir bulan.',

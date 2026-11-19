@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'preact/hooks'
-import { ChevronLeft, ChevronRight } from 'lucide-preact'
+import { ChevronLeft, ChevronRight, Printer } from 'lucide-preact'
 import { authorityName } from '../core/calendarSanad'
 import type { HijriDate } from '../core/hijri'
 import { hijriCalWords, islamicDayName, islamicDayShort, islamicDaysOf, hijriMonthShort } from '../core/islamicDays'
@@ -42,7 +42,7 @@ export function HijriMonthCard() {
   const isThisMonth = shown.y === today.year && shown.m === today.month
   const lead = new Date(Date.UTC(shown.y, shown.m - 1, 1)).getUTCDay() // Sunday first, like a wall calendar
   const hMonths = hijriMonths(s.naming)
-  const keyDays = days.flatMap(({ g, h }) => islamicDaysOf(h).filter((k) => k.major || k.kind === 'lastTen' && h.day === 21 || k.kind === 'tasyrik' && h.day === 11).map((k) => ({ g, h, k })))
+  const keyDays = days.flatMap(({ g, h }) => islamicDaysOf(h).filter((k) => k.major || k.kind === 'lastTen' && h.day === 21 || k.kind === 'tasyrik' && h.day === 11 || k.kind === 'zulhijjahTen' && h.day === 1).map((k) => ({ g, h, k })))
   const hijriSpan = (() => {
     const a = days[0].h, z = days[days.length - 1].h
     if (a.month === z.month) return `${hMonths[a.month - 1]} ${a.year}`
@@ -70,7 +70,7 @@ export function HijriMonthCard() {
         {days.map(({ g, h }, i) => {
           const marks = islamicDaysOf(h)
           const major = marks.find((k) => k.major)
-          const quiet = !major && marks.some((k) => k.kind === 'lastTen' || k.kind === 'tasyrik')
+          const quiet = !major && marks.some((k) => k.kind === 'lastTen' || k.kind === 'tasyrik' || k.kind === 'zulhijjahTen')
           const white = marks.some((k) => k.kind === 'whiteDay')
           const isToday = daysApart(today, g) === 0
           const isPicked = sel && daysApart(sel.g, g) === 0
@@ -111,6 +111,7 @@ export function HijriMonthCard() {
           <div class="caption secondary hcal-legend"><i class="white-dot" aria-hidden="true" />{islamicDayName('whiteDay', s.naming)} 13, 14, 15</div>
         </div>
       )}
+      <a class="hcal-print caption accent" href={`print/#sheet=year&m=${shown.y}-01`}><Printer size={14} />{words.print} {shown.y}</a>
       <p class="caption secondary hcal-note">{words.note(authority ? shortAuthority(authority) : null)}</p>
       <div class="hcal-adjust">
         <span class="caption">{words.adjust}</span>

@@ -9,7 +9,8 @@ import type { NamingStyle } from './prayer'
  * Same list in ios Core/IslamicDays.swift and android core IslamicDays.kt.
  */
 export type IslamicDayKind =
-  | 'newYear' | 'ashura' | 'maulid' | 'israMikraj' | 'nisfuSyaaban'
+  | 'newYear' | 'tasua' | 'ashura' | 'maulid' | 'rejabStart' | 'israMikraj' | 'nisfuSyaaban'
+  | 'sightingRamadan' | 'sightingSyawal' | 'zulhijjahTen' | 'tarwiyah'
   | 'ramadanStart' | 'nuzulQuran' | 'lastTen' | 'aidilfitri'
   | 'arafah' | 'aidiladha' | 'tasyrik' | 'whiteDay'
 
@@ -21,14 +22,20 @@ export function islamicDaysOf(h: HijriDate): IslamicDay[] {
   const add = (kind: IslamicDayKind, major = true) => out.push({ kind, major })
   const { month: m, day: d } = h
   if (m === 1 && d === 1) add('newYear')
+  if (m === 1 && d === 9) add('tasua')
   if (m === 1 && d === 10) add('ashura')
   if (m === 3 && d === 12) add('maulid')
+  if (m === 7 && d === 1) add('rejabStart')
   if (m === 7 && d === 27) add('israMikraj')
   if (m === 8 && d === 15) add('nisfuSyaaban')
+  if (m === 8 && d === 29) add('sightingRamadan')
   if (m === 9 && d === 1) add('ramadanStart')
   if (m === 9 && d === 17) add('nuzulQuran')
   if (m === 9 && d >= 21) add('lastTen', false)
+  if (m === 9 && d === 29) add('sightingSyawal')
   if (m === 10 && d === 1) add('aidilfitri')
+  if (m === 12 && d >= 1 && d <= 7) add('zulhijjahTen', false)
+  if (m === 12 && d === 8) add('tarwiyah')
   if (m === 12 && d === 9) add('arafah')
   if (m === 12 && d === 10) add('aidiladha')
   if (m === 12 && d >= 11 && d <= 13) add('tasyrik', false)
@@ -42,7 +49,13 @@ const lang = (s: NamingStyle): Lang => (s === 'malay' ? 'ms' : s === 'indonesian
 
 const NAMES: Record<IslamicDayKind, Record<Lang, string>> = {
   newYear: { en: 'Islamic New Year', ms: 'Awal Muharram', id: 'Tahun Baru Islam' },
+  tasua: { en: "Day of Tasu'a", ms: "Hari Tasu'a", id: "Hari Tasu'a" },
   ashura: { en: 'Day of Ashura', ms: 'Hari Asyura', id: 'Hari Asyura' },
+  rejabStart: { en: 'Rajab begins, a sacred month', ms: 'Awal Rejab, bulan haram', id: 'Awal Rajab, bulan haram' },
+  sightingRamadan: { en: 'Moon sighting for Ramadan', ms: 'Rukyah awal Ramadan', id: 'Rukyatul hilal Ramadan' },
+  sightingSyawal: { en: 'Moon sighting for Shawwal', ms: 'Rukyah awal Syawal', id: 'Rukyatul hilal Syawal' },
+  zulhijjahTen: { en: 'First ten days of Dhul Hijjah', ms: 'Sepuluh hari awal Zulhijjah', id: 'Sepuluh hari awal Zulhijjah' },
+  tarwiyah: { en: 'Day of Tarwiyah', ms: 'Hari Tarwiyah', id: 'Hari Tarwiyah' },
   maulid: { en: 'Birth of the Prophet ﷺ', ms: 'Maulidur Rasul', id: 'Maulid Nabi' },
   israMikraj: { en: "Isra and Mi'raj", ms: 'Israk dan Mikraj', id: "Isra Mi'raj" },
   nisfuSyaaban: { en: "Middle of Sha'ban", ms: 'Nisfu Syaaban', id: "Nisfu Sya'ban" },
@@ -61,7 +74,12 @@ export const islamicDayName = (k: IslamicDayKind, s: NamingStyle): string => NAM
 /** Short names that fit inside a calendar day. */
 const SHORT: Partial<Record<IslamicDayKind, Record<Lang, string>>> = {
   newYear: { en: 'New Year', ms: 'Maal Hijrah', id: 'Tahun Baru' },
+  tasua: { en: "Tasu'a", ms: "Tasu'a", id: "Tasu'a" },
   ashura: { en: 'Ashura', ms: 'Asyura', id: 'Asyura' },
+  rejabStart: { en: 'Rajab', ms: 'Awal Rejab', id: 'Awal Rajab' },
+  sightingRamadan: { en: 'Moon sighting', ms: 'Rukyah', id: 'Rukyat' },
+  sightingSyawal: { en: 'Moon sighting', ms: 'Rukyah', id: 'Rukyat' },
+  tarwiyah: { en: 'Tarwiyah', ms: 'Tarwiyah', id: 'Tarwiyah' },
   maulid: { en: 'Mawlid', ms: 'Maulid', id: 'Maulid' },
   israMikraj: { en: "Isra Mi'raj", ms: 'Israk Mikraj', id: "Isra Mi'raj" },
   nisfuSyaaban: { en: "Nisfu Sha'ban", ms: 'Nisfu Syaaban', id: "Nisfu Sya'ban" },
@@ -77,7 +95,7 @@ export const islamicDayShort = (k: IslamicDayKind, s: NamingStyle): string => SH
 export const HIJRI_CAL_WORDS: Record<Lang, {
   title: string; today: string; months: string[]; and: string; keyDays: string; none: string; week: string[]
   note: (authority: string | null) => string; adjust: string; adjustNone: string
-  earlier: string; later: string; dayOff: string
+  earlier: string; later: string; dayOff: string; print: string
 }> = {
   en: {
     title: 'Hijri calendar', today: 'Today', and: 'and',
@@ -86,7 +104,7 @@ export const HIJRI_CAL_WORDS: Record<Lang, {
     note: (a) => a
       ? `Ramadan and Eid al-Fitr follow ${a} once announced. Other days are worked out ahead and can be a day apart from your area. Follow your local religious authority.`
       : 'Dates are worked out ahead and can be a day apart from your area. Follow your local religious authority.',
-    adjust: 'Move the Hijri date', adjustNone: 'Not moved', earlier: 'One day earlier', later: 'One day later', dayOff: 'day',
+    print: 'Print the whole year', adjust: 'Move the Hijri date', adjustNone: 'Not moved', earlier: 'One day earlier', later: 'One day later', dayOff: 'day',
   },
   ms: {
     title: 'Kalendar Hijrah', today: 'Hari ini', and: 'dan',
@@ -95,7 +113,7 @@ export const HIJRI_CAL_WORDS: Record<Lang, {
     note: (a) => a
       ? `Ramadan dan Aidilfitri mengikut ${a} sebaik sahaja diumumkan. Tarikh lain dikira lebih awal dan mungkin berbeza sehari di tempat anda. Ikutlah pihak berkuasa agama tempatan anda.`
       : 'Tarikh dikira lebih awal dan mungkin berbeza sehari di tempat anda. Ikutlah pihak berkuasa agama tempatan anda.',
-    adjust: 'Anjak tarikh Hijrah', adjustNone: 'Tidak dianjak', earlier: 'Sehari lebih awal', later: 'Sehari lebih lewat', dayOff: 'hari',
+    print: 'Cetak kalendar setahun', adjust: 'Anjak tarikh Hijrah', adjustNone: 'Tidak dianjak', earlier: 'Sehari lebih awal', later: 'Sehari lebih lewat', dayOff: 'hari',
   },
   id: {
     title: 'Kalender Hijriah', today: 'Hari ini', and: 'dan',
@@ -104,7 +122,7 @@ export const HIJRI_CAL_WORDS: Record<Lang, {
     note: (a) => a
       ? `Awal Ramadan dan Idul Fitri mengikuti ${a} setelah diumumkan. Tanggal lain dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat.`
       : 'Tanggal dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat.',
-    adjust: 'Geser tanggal Hijriah', adjustNone: 'Tidak digeser', earlier: 'Sehari lebih awal', later: 'Sehari lebih lambat', dayOff: 'hari',
+    print: 'Cetak kalender setahun', adjust: 'Geser tanggal Hijriah', adjustNone: 'Tidak digeser', earlier: 'Sehari lebih awal', later: 'Sehari lebih lambat', dayOff: 'hari',
   },
 }
 

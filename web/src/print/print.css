@@ -227,3 +227,33 @@ button.link { background: none; border: 0; padding: 0; min-height: 32px; color: 
 .letter-sign { display: flex; gap: 8mm; margin-top: 8mm; }
 .letter-sign div { display: flex; flex-direction: column; gap: 1mm; }
 .letter-sign small { font-size: 8.5pt; color: var(--ink2); }
+
+/* MARK: Islamic year calendar */
+.sheet-year { padding: 9mm 10mm 7mm; gap: 2.2mm; }
+.year-head { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: .5mm solid var(--night); padding-bottom: 2mm; }
+.year-head .eyebrow { margin: 0; font-size: 8.5pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+.year-head h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 26pt; line-height: 1; color: var(--night); }
+.year-span { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 15pt; color: var(--gold); }
+.year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6mm 5mm; }
+.mini h3 { margin: 0 0 1mm; display: flex; justify-content: space-between; align-items: baseline; gap: 1mm; font-family: var(--font-display); font-size: 10pt; color: var(--night); }
+.mini h3 span { font-family: var(--font); font-size: 6pt; font-weight: 600; color: var(--gold); text-align: right; }
+.mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: .4mm; font-variant-numeric: tabular-nums; }
+.mini-grid .wd { text-align: center; font-size: 6pt; font-weight: 700; color: var(--ink2); }
+.mini-grid .wd.sun, .mini-grid .day.sun b { color: var(--t-maghrib); }
+.mini-grid .day { display: flex; flex-direction: column; align-items: center; height: 6.1mm; padding-top: .3mm; border-radius: 1mm; line-height: 1.05; }
+.mini-grid .day b { font-size: 7.5pt; }
+.mini-grid .day i { font-style: normal; font-size: 5.5pt; color: var(--ink2); position: relative; }
+.mini-grid .day.new i { color: var(--gold); font-weight: 800; }
+.mini-grid .day.quiet { background: var(--lastten); }
+.mini-grid .day.major { background: var(--gold); }
+.mini-grid .day.major b, .mini-grid .day.major i { color: #fff; }
+.mini-grid .dot { position: absolute; right: -1.2mm; top: .4mm; width: .9mm; height: .9mm; border-radius: 50%; background: var(--ink3); }
+.year-keys h2 { margin: 0 0 1mm; font-family: var(--font-display); font-size: 10pt; color: var(--night); }
+.year-keys ol { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 6mm; font-size: 6.6pt; }
+.year-keys li { display: flex; gap: 2mm; break-inside: avoid; padding: .25mm 0; border-bottom: .2mm solid var(--rule); }
+.year-keys li b { width: 11mm; flex: none; color: var(--night); }
+.year-keys li span { flex: 1; }
+.year-keys li i { font-style: normal; color: var(--ink2); }
+.year-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; }
+.year-foot p { margin: 0; font-size: 7pt; color: var(--ink2); max-width: 135mm; }
+.year-foot .dot { display: inline-block; width: 1.4mm; height: 1.4mm; border-radius: 50%; background: var(--ink3); vertical-align: middle; }
