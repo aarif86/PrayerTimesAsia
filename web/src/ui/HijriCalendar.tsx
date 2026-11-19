@@ -55,6 +55,7 @@ export function HijriMonthCard() {
   const sel = picked ? days.find((d) => daysApart(d.g, picked) === 0) : null
   const authority = s.communityAuthority
   const adj = s.prefs.hijriAdjustment
+  const published = !!authority && !!publishedHijri(days[0].g, s.calendar.month_starts, authority)
   const goTo = (g: CivilDay) => { showDayOnPrayerScreen(daysApart(today, g)); closeSheet() }
 
   return (
@@ -122,15 +123,16 @@ export function HijriMonthCard() {
         </div>
       )}
       <a class="hcal-print caption accent" href={`print/#sheet=year&m=${shown.y}-01`}><Printer size={14} />{words.print} {shown.y}</a>
-      <p class="caption secondary hcal-note">{authority && publishedHijri(days[0].g, s.calendar.month_starts, authority) ? words.notePublished(shortAuthority(authority)) : words.note(authority ? shortAuthority(authority) : null)}</p>
-      <div class="hcal-adjust">
+      <p class="caption secondary hcal-note">{published ? words.notePublished(shortAuthority(authority!)) : words.note(authority ? shortAuthority(authority) : null)}</p>
+      {/* A published calendar (MUIS) already gives the local dates, so there is nothing to move. */}
+      {!published && <div class="hcal-adjust">
         <span class="caption">{words.adjust}</span>
         <span class="caption secondary mono">{adj === 0 ? words.adjustNone : `${adj > 0 ? '+' : ''}${adj} ${words.dayOff}`}</span>
         <span class="stepper">
           <button aria-label={words.earlier} disabled={adj <= -2} onClick={() => store.update((x) => { x.hijriAdjustment = Math.max(-2, x.hijriAdjustment - 1) })}>−</button>
           <button aria-label={words.later} disabled={adj >= 2} onClick={() => store.update((x) => { x.hijriAdjustment = Math.min(2, x.hijriAdjustment + 1) })}>+</button>
         </span>
-      </div>
+      </div>}
     </div>
   )
 }

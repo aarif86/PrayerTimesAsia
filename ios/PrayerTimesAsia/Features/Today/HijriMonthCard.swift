@@ -56,7 +56,7 @@ struct HijriMonthCard: View {
                         .foregroundStyle(i == 0 ? Self.sunday : i == 5 ? Theme.gold : .secondary)
                         .accessibilityHidden(true)
                 }
-                ForEach(0..<lead, id: \.self) { i in Color.clear.frame(height: 1).id("lead\(i)") }
+                ForEach(100..<(100 + lead), id: \.self) { _ in Color.clear.frame(height: 1) }
                 ForEach(Array(cells.enumerated()), id: \.element.id) { i, c in
                     dayCell(c, first: i == 0, today: today, picked: sel?.g == c.g, style: style)
                 }
@@ -112,6 +112,8 @@ struct HijriMonthCard: View {
             Text(note(w, authority: authority, starts: starts, first: cells.first?.g))
                 .font(.footnote).foregroundStyle(.secondary)
 
+            // A published calendar (MUIS) already gives the local dates, so there is nothing to move.
+            if !published(authority: authority, starts: starts, first: cells.first?.g) {
             HStack {
                 Text(w.adjust).font(.subheadline)
                 Spacer()
@@ -120,8 +122,11 @@ struct HijriMonthCard: View {
                                                   set: { model.prefs.hijriAdjustment = max(-2, min(2, $0)) }), in: -2...2)
                     .labelsHidden()
             }
+            }
         }
         .padding(.vertical, 6)
+        // Inside a List row: only the buttons themselves take taps, not the whole card.
+        .buttonStyle(.borderless)
     }
 
     // MARK: Pieces
@@ -224,6 +229,11 @@ struct HijriMonthCard: View {
         if a.month == z.month { return "\(n(a.month)) \(String(a.year))" }
         return a.year == z.year ? "\(n(a.month)) \(and) \(n(z.month)) \(String(z.year))"
             : "\(n(a.month)) \(String(a.year)) \(and) \(n(z.month)) \(String(z.year))"
+    }
+
+    private func published(authority: String?, starts: [MonthStart]?, first: CivilDay?) -> Bool {
+        guard let authority, let first else { return false }
+        return Season.publishedHijri(first, starts: starts, authority: authority) != nil
     }
 
     private func note(_ w: IslamicDays.Words, authority: String?, starts: [MonthStart]?, first: CivilDay?) -> String {

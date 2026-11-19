@@ -70,10 +70,6 @@ object Season {
     }
 
     /**
-     * The Hijri date of a civil day for this community: around Ramadan and Syawal
-     * it follows the authority's first days; elsewhere it is the adjusted estimate.
-     */
-    /**
      * The Hijri date of a civil day from the authority's published Islamic calendar
      * (its month starts in data/calendar.json), or null when it hasn't published that far.
      */
@@ -95,6 +91,10 @@ object Season {
         return null
     }
 
+    /**
+     * The Hijri date of a civil day for this community: around Ramadan and Syawal
+     * it follows the authority's first days; elsewhere it is the adjusted estimate.
+     */
     fun communityHijri(g: LocalDate, adjustment: Int, list: List<CalendarAnnouncement>, authority: String?,
                        monthStarts: List<MonthStart> = emptyList()): Hijri.HijriDate {
         val base = publishedHijri(g, monthStarts, authority) ?: baseHijri(g, adjustment)

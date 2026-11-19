@@ -166,7 +166,8 @@ fun HijriMonthCard(state: AppState, onShowDay: ((Int) -> Unit)?) {
         val published = authority != null && Season.publishedHijri(first, state.directories.calendar.monthStarts, authority) != null
         Text(if (published && short != null) w.notePublished(short) else w.note(short), style = Txt.footnote, color = Palette.secondary,
             modifier = Modifier.padding(vertical = 8.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // A published calendar (MUIS) already gives the local dates, so there is nothing to move.
+        if (!published) Row(verticalAlignment = Alignment.CenterVertically) {
             Text(w.adjust, style = Txt.subheadline, color = Palette.primary, modifier = Modifier.weight(1f))
             Text(if (adj == 0) w.adjustNone else "${if (adj > 0) "+" else ""}$adj ${w.dayOff}", style = Txt.footnote, color = Palette.secondary)
             Spacer(Modifier.width(10.dp))
