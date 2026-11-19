@@ -19,8 +19,14 @@ places than last week's file, keeps last week's file, so one bad night on the
 servers never empties a list.
 
 Place format, kept small (arrays; five decimals is about 1 m):
-    [id, lat, lon, name, address, musollah 0/1]
+    [id, lat, lon, name, address, musollah 0/1, facilities, opening_hours]
 An empty name means OpenStreetMap has none; the apps call it Masjid or Musollah.
+The last two are left off when OpenStreetMap has neither. facilities is a short
+string of letters, one for each thing the map says the place has:
+    w  space for women      a  wheelchair access
+    p  parking              t  toilets
+opening_hours is OpenStreetMap's own text ("Mo-Su 10:00-22:00"), mostly on
+prayer rooms in malls and offices.
 """
 import datetime
 import glob
@@ -114,6 +120,23 @@ def is_musollah(name: str, tags: dict) -> bool:
     return any(w in lower for w in MUSOLLAH_WORDS) or kind in MUSOLLAH_KINDS
 
 
+YES = {"yes", "designated", "limited", "separate", "only"}
+
+
+def facilities(tags: dict) -> str:
+    """What the map says the place has, as letters (see the place format above)."""
+    f = ""
+    if any((tags.get(k) or "").lower() in YES for k in ("female", "women", "prayer_room:female", "female_prayer_room")):
+        f += "w"
+    if (tags.get("wheelchair") or "").lower() in YES:
+        f += "a"
+    if (tags.get("parking") or "").lower() not in ("", "no") or (tags.get("capacity:parking") or "").strip("0 "):
+        f += "p"
+    if (tags.get("toilets") or "").lower() in YES:
+        f += "t"
+    return f
+
+
 def places(elements: list) -> list:
     out, seen = [], set()
     for e in elements:
@@ -129,7 +152,13 @@ def places(elements: list) -> list:
         if pid in seen:
             continue
         seen.add(pid)
-        out.append([pid, round(lat, 5), round(lon, 5), name, address, 1 if is_musollah(name, tags) else 0])
+        row = [pid, round(lat, 5), round(lon, 5), name, address, 1 if is_musollah(name, tags) else 0]
+        extra, hours = facilities(tags), (tags.get("opening_hours") or "").strip()[:120]
+        if extra or hours:
+            row.append(extra)
+        if hours:
+            row.append(hours)
+        out.append(row)
     out.sort(key=lambda p: (p[1], p[2]))
     return out
 

@@ -96,6 +96,21 @@ final class AppModel {
 
     func forgetMasjid() { prefs.myMasjid = nil }
 
+    /// "Make it my masjid" on the Masjid tab. Saved on this phone only, like every
+    /// setting. Keeps the iqamah times when it's already the masjid from its QR code.
+    func chooseMasjid(name: String, coordinates c: Coordinates) {
+        if let m = prefs.myMasjid, abs(m.lat - c.latitude) < 0.003, abs(m.lng - c.longitude) < 0.003 { return }
+        prefs.myMasjid = MasjidLink(name: String(name.prefix(80)), lat: c.latitude, lng: c.longitude,
+                                    tz: activePlace?.timeZoneID ?? TimeZone.current.identifier,
+                                    cc: activePlace?.countryCode, jamaah: [:], jumuah: nil)
+    }
+
+    /// True when this spot is your masjid (within about 300 m).
+    func isMyMasjid(_ c: Coordinates) -> Bool {
+        guard let m = prefs.myMasjid else { return false }
+        return abs(m.lat - c.latitude) < 0.003 && abs(m.lng - c.longitude) < 0.003
+    }
+
     /// Your masjid, when the place shown is within reach of it (not while travelling).
     var myMasjidHere: MasjidLink? {
         guard let m = prefs.myMasjid, let place = activePlace,

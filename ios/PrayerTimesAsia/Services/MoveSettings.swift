@@ -72,7 +72,7 @@ struct MovedSettings: Codable, Equatable {
     static let version = 1
     static let prefix = "PTA1."
     /// The web app's address; a phone camera that scans the QR code opens it straight into "Bring in settings".
-    static let linkBase = "https://aarif86.github.io/PrayerTimesAsia/app/#move="
+    static let linkBase = "https://prayertimes.asia/app/#move="
     /// Phone cameras read a QR code of this many characters off a screen without fuss.
     static let qrMaxCharacters = 1500
 

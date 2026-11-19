@@ -154,7 +154,11 @@ export function App() {
         </main>
       </div>
       {/* Big screens have room beside the app: a way back to the website. */}
-      <a class="site-link" href="../">&larr; prayertimes.asia</a>
+      <a class="site-link" href="../" aria-label="Back to the prayertimes.asia website">
+        <span class="site-link-arrow" aria-hidden="true">&larr;</span>
+        <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" width="24" height="24" />
+        <span>prayertimes.asia</span>
+      </a>
       <nav class="tabbar" aria-label="Sections">
         {TABS.map((t) => {
           const Icon = TAB_ICON[t]

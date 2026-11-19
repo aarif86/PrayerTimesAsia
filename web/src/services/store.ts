@@ -107,6 +107,18 @@ class AppStore {
     this.emit()
   }
 
+  /** Picked from the Masjid tab: pinned at the top. Keeps iqamah times a QR code already gave it. */
+  chooseMasjid(name: string, c: { latitude: number; longitude: number }): void {
+    const old = this.prefs.myMasjid
+    const same = old && Math.abs(old.lat - c.latitude) < 0.003 && Math.abs(old.lng - c.longitude) < 0.003
+    this.update((p) => {
+      p.myMasjid = same ? old : {
+        name: name.slice(0, 80), lat: +c.latitude.toFixed(4), lng: +c.longitude.toFixed(4),
+        tz: this.activePlace?.timeZoneID ?? deviceTimeZone(), cc: this.activePlace?.countryCode ?? null, jamaah: {}, jumuah: null,
+      }
+    })
+  }
+
   forgetMasjid(): void {
     this.update((p) => { p.myMasjid = null })
   }

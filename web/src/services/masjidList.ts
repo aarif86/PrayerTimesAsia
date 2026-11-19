@@ -1,5 +1,6 @@
 import type { Coordinates } from '../core/engine'
 import { distanceKm } from '../core/geo'
+import { isGraveOrShrine } from '../core/official'
 import { fetchOK } from './storage'
 
 /**
@@ -12,7 +13,8 @@ import { fetchOK } from './storage'
 export const LIST_BASE = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/masjids/'
 const WEEK = 7 * 86_400_000
 
-export interface ListPlace { id: string; name: string; address: string; coordinates: Coordinates; isMusollah: boolean }
+/** facilities: letters from the weekly list, w women's space, a wheelchair, p parking, t toilets. */
+export interface ListPlace { id: string; name: string; address: string; coordinates: Coordinates; isMusollah: boolean; facilities?: string; hours?: string }
 
 /** The squares a circle of [km] around here touches (one to four), as "lat_lon". */
 export function tilesAround(c: Coordinates, km = 15): string[] {
@@ -31,7 +33,7 @@ export function tilesAround(c: Coordinates, km = 15): string[] {
   return keys
 }
 
-/** `{"places": [[id, lat, lon, name, address, musollah 0/1], ...]}` */
+/** `{"places": [[id, lat, lon, name, address, musollah 0/1, facilities?, opening_hours?], ...]}` */
 export function parseTile(json: unknown): ListPlace[] | null {
   const rows = (json as { places?: unknown })?.places
   if (!Array.isArray(rows)) return null
@@ -42,12 +44,16 @@ export function parseTile(json: unknown): ListPlace[] | null {
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue
     const musollah = Number(row[5]) === 1
     const name = typeof row[3] === 'string' && row[3] ? row[3] : (musollah ? 'Musollah' : 'Masjid')
-    out.push({ id: row[0], name, address: typeof row[4] === 'string' ? row[4] : '', coordinates: { latitude: lat, longitude: lon }, isMusollah: musollah })
+    if (isGraveOrShrine(name)) continue
+    const place: ListPlace = { id: row[0], name, address: typeof row[4] === 'string' ? row[4] : '', coordinates: { latitude: lat, longitude: lon }, isMusollah: musollah }
+    if (typeof row[6] === 'string' && row[6]) place.facilities = row[6]
+    if (typeof row[7] === 'string' && row[7]) place.hours = row[7]
+    out.push(place)
   }
   return out
 }
 
-type Row = [string, number, number, string, string, number]
+type Row = [string, number, number, string, string, number, string?, string?]
 interface Index { tiles: string[]; countries: string[] }
 interface Saved<T> { at: number; data: T }
 

@@ -10,8 +10,8 @@ no accounts, no tracking; location never leaves the device.
 |---|---|---|
 | [`ios/`](ios/) | The iPhone app (SwiftUI) with widgets and Live Activity | On TestFlight |
 | [`android/`](android/) | The Android app (Kotlin + Jetpack Compose) with widgets | Debug APK from CI |
-| [`web/`](web/) | The web app: installable, works offline | Live at aarif86.github.io/PrayerTimesAsia/app/ |
-| [`site/`](site/) | The promo website for prayertimes.asia: features, how to try it, masjid partners | Live at aarif86.github.io/PrayerTimesAsia/ |
+| [`web/`](web/) | The web app: installable, works offline | Live at prayertimes.asia/app/ |
+| [`site/`](site/) | The promo website for prayertimes.asia: features, how to try it, masjid partners | Live at prayertimes.asia |
 | `data/`, `config/` | Shared data every app downloads: masjid profiles, Ramadan/Eid announcements, official-source settings. **Don't move these** - apps already on phones read them from these paths. | |
 | `design/` | App icon and design sources | |
 | `docs/` | Changelog, roadmap, build log (for the website), App Store copy, falak review sheet | |
