@@ -121,6 +121,9 @@ function reportURL(c: Coordinates): string {
 /** How many places the list shows; the rest are pins on the map. */
 const SHOW = 5
 
+/** Distance rings around you on the map. */
+const RINGS_KM = [1, 2, 5]
+
 function distanceText(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
 }
@@ -232,7 +235,7 @@ export default function MasjidScreen() {
     import('./leafletMap').then((api) => {
       if (cancelled || !mapEl.current) return
       const m = api.createMap(mapEl.current, here.coordinates, dark, 13)
-      const you = api.youMarker(here.coordinates).addTo(m)
+      const you = api.youMarker(here.coordinates, true).addTo(m)
       const layer = api.L.layerGroup().addTo(m)
       map.current = { api, map: m, layer, you }
       draw()
@@ -245,6 +248,10 @@ export default function MasjidScreen() {
     if (!m || !here) return
     m.you.setLatLng([here.coordinates.latitude, here.coordinates.longitude])
     m.layer.clearLayers()
+    m.api.distanceRings(here.coordinates, RINGS_KM.map((km) => {
+      const trip = tripText(km, mode)
+      return { km, label: trip ? `${km} km, ${trip.replace(/ (walk|drive)$/, '')}` : `${km} km` }
+    })).addTo(m.layer)
     for (const sp of visibleRef.current) {
       const fri = singapore ? fridayMosqueAt(sp.coordinates) : null
       const h = hoursOf(sp)
@@ -257,11 +264,10 @@ export default function MasjidScreen() {
       pin.addTo(m.layer)
     }
     const near = visibleRef.current.slice(0, SHOW).map((sp) => [sp.coordinates.latitude, sp.coordinates.longitude] as [number, number])
-    if (near.length) {
-      m.map.fitBounds(m.api.L.latLngBounds([[here.coordinates.latitude, here.coordinates.longitude], ...near]), { padding: [40, 40], maxZoom: 16, animate: false })
-    } else {
-      m.map.setView([here.coordinates.latitude, here.coordinates.longitude], 14, { animate: false })
-    }
+    // Always show at least the 1 km ring, so the nearest pins have something to measure against.
+    const { latitude: la, longitude: lo } = here.coordinates
+    const d = 1 / 111.2, dl = d / Math.max(0.2, Math.cos(la * Math.PI / 180))
+    m.map.fitBounds(m.api.L.latLngBounds([[la - d, lo - dl], [la + d, lo + dl], ...near]), { padding: [36, 36], maxZoom: 16, animate: false })
   }
   useEffect(draw, [visible, lat, lng, mode])
 
