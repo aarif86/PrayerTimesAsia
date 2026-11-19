@@ -216,7 +216,7 @@ private fun Overlays(state: AppState, overlay: Overlay?, set: (Overlay?) -> Unit
     when (overlay) {
         null -> {}
         Overlay.Places -> AppSheet(close) { PlacesSheetContent(state, onDone = close) }
-        Overlay.Calendar -> AppSheet(close) { CalendarSheetContent(state) }
+        Overlay.Calendar -> AppSheet(close) { CalendarSheetContent(state, onShowDay = { state.showDayRequest = it; close() }) }
         is Overlay.Sanad -> AppSheet(close) { SanadSheetContent(state, overlay.day) }
         Overlay.About -> AppSheet(close) { MakersSheetContent("masjid", state) }
         Overlay.Credits -> AppSheet(close) { CreditsContent() }

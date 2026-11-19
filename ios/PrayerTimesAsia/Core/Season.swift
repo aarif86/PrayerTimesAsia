@@ -114,10 +114,33 @@ enum Season {
         return (day, pick.status == .announced)
     }
 
-    /// The Hijri date of a civil day for this community: around Ramadan and Syawal
-    /// it follows the authority's first days; elsewhere it is the adjusted estimate.
-    static func communityHijri(_ g: CivilDay, adjustment: Int, announcements list: [CalendarAnnouncement], authority: String?) -> Hijri.HijriDate {
-        let base = baseHijri(g, adjustment: adjustment)
+    /// The Hijri date of a civil day from the authority's published Islamic calendar
+    /// (its month starts in data/calendar.json), or nil when it hasn't published that far.
+    static func publishedHijri(_ g: CivilDay, starts: [MonthStart]?, authority: String?) -> Hijri.HijriDate? {
+        guard let authority, let starts, !starts.isEmpty else { return nil }
+        let n = g.dayNumber
+        let mine = starts.filter { $0.authority == authority }
+            .compactMap { m in CivilDay(m.date).map { (m: m, n: $0.dayNumber) } }
+            .sorted { $0.n < $1.n }
+        for i in stride(from: mine.count - 1, through: 0, by: -1) {
+            if mine[i].n > n { continue }
+            let day = n - mine[i].n + 1
+            let next = i + 1 < mine.count ? mine[i + 1] : nil
+            // The last listed month: its length is unknown, so trust it for 29 days only.
+            let fits = next.map { n < $0.n && day <= 30 } ?? (day <= 29)
+            if fits {
+                return .init(day: day, month: mine[i].m.hijriMonth, year: mine[i].m.hijriYear)
+            }
+            return nil
+        }
+        return nil
+    }
+
+    /// The Hijri date of a civil day for this community: the authority's published
+    /// calendar where it has one, else the adjusted estimate; around Ramadan and
+    /// Syawal the authority's announced first days win.
+    static func communityHijri(_ g: CivilDay, adjustment: Int, announcements list: [CalendarAnnouncement], authority: String?, monthStarts: [MonthStart]? = nil) -> Hijri.HijriDate {
+        let base = publishedHijri(g, starts: monthStarts, authority: authority) ?? baseHijri(g, adjustment: adjustment)
         guard (8...10).contains(base.month) else { return base }
         let y = base.year, n = g.dayNumber
         let r = authorityDate(list, authority: authority, event: .ramadan, hijriYear: y)

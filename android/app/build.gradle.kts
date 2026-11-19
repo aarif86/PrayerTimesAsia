@@ -70,6 +70,12 @@ android {
             all {
                 it.maxHeapSize = "4g"
                 it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
+                // Print the whole failure (accessibility results list every problem) in the build log.
+                it.testLogging {
+                    events("failed")
+                    exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                    showStackTraces = false
+                }
             }
         }
     }
@@ -119,6 +125,7 @@ dependencies {
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.roborazzi.junit.rule)
+    testImplementation(libs.roborazzi.accessibility.check)
     testImplementation(platform(libs.compose.bom))
     testImplementation(libs.compose.ui.test.junit4)
     testImplementation(libs.androidx.test.core)

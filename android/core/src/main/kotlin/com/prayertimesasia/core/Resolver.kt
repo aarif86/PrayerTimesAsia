@@ -26,6 +26,8 @@ class Resolver(
     private val systemZone: ZoneId = ZoneId.systemDefault(),
     /** Ramadan and Eid announcements from data/calendar.json. */
     val announcements: List<CalendarAnnouncement> = emptyList(),
+    /** The authority's published Islamic calendar (month starts) from data/calendar.json. */
+    val monthStarts: List<MonthStart> = emptyList(),
 ) {
     val activePlace: Place? get() = if (prefs.useGPS) gpsPlace ?: prefs.manualPlace else prefs.manualPlace
 
@@ -270,7 +272,7 @@ class Resolver(
     /** The Hijri date of a civil day as this community counts it. */
     fun hijriOf(g: LocalDate): Hijri.HijriDate =
         if (isSeasonPreview) Season.baseHijri(g.plusDays(seasonShift.toLong()))
-        else Season.communityHijri(g, prefs.hijriAdjustment, announcements, communityAuthority)
+        else Season.communityHijri(g, prefs.hijriAdjustment, announcements, communityAuthority, monthStarts)
 
     fun hijriOf(instant: Instant): Hijri.HijriDate = hijriOf(civil(instant))
 

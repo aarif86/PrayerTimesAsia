@@ -1,4 +1,4 @@
-import type { CalendarAnnouncement, HijriEvent } from './calendarSanad'
+import type { CalendarAnnouncement, HijriEvent, MonthStart } from './calendarSanad'
 import { gregorianFromHijri, hijriDate, type HijriDate } from './hijri'
 
 /**
@@ -59,11 +59,33 @@ export function authorityDate(list: CalendarAnnouncement[], authority: string | 
 }
 
 /**
- * The Hijri date of a civil day for this community. Around Ramadan and Syawal it
- * follows the authority's first days; elsewhere it is the adjusted estimate.
+ * The Hijri date of a civil day from the authority's own published calendar
+ * (data/calendar.json month_starts), or null outside the months it covers.
  */
-export function communityHijri(g: CivilDay, adjustment: number, list: CalendarAnnouncement[], authority: string | null): HijriDate {
-  const base = baseHijri(g, adjustment)
+export function publishedHijri(g: CivilDay, starts: MonthStart[] | undefined, authority: string | null): HijriDate | null {
+  if (!authority || !starts?.length) return null
+  const n = dayNumber(g)
+  const mine = starts.filter((m) => m.authority === authority)
+    .map((m) => ({ m, n: dayNumber(parseCivil(m.date) ?? { year: 0, month: 1, day: 1 }) }))
+    .sort((a, b) => a.n - b.n)
+  for (let i = mine.length - 1; i >= 0; i--) {
+    if (mine[i].n > n) continue
+    const day = n - mine[i].n + 1
+    const next = mine[i + 1]
+    // The last listed month: its length is unknown, so trust it for 29 days only.
+    if (next ? n < next.n && day <= 30 : day <= 29) return { year: mine[i].m.hijri_year, month: mine[i].m.hijri_month, day }
+    return null
+  }
+  return null
+}
+
+/**
+ * The Hijri date of a civil day for this community. The authority's published
+ * calendar first where it has one; around Ramadan and Syawal its announced first
+ * days; elsewhere the adjusted estimate.
+ */
+export function communityHijri(g: CivilDay, adjustment: number, list: CalendarAnnouncement[], authority: string | null, starts?: MonthStart[]): HijriDate {
+  const base = publishedHijri(g, starts, authority) ?? baseHijri(g, adjustment)
   if (base.month < 8 || base.month > 10) return base
   const y = base.year
   const n = dayNumber(g)

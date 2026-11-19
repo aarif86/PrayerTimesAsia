@@ -98,6 +98,7 @@ struct SanadSheet: View {
                         Image(systemName: day.grade.symbol)
                             .font(.title2)
                             .foregroundStyle(day.grade.tint)
+                            .accessibilityHidden(true)
                             .frame(width: 32)
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Grade \(day.grade.rawValue) · \(day.grade.title)").font(.headline)

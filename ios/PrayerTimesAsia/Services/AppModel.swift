@@ -745,7 +745,8 @@ final class AppModel {
     /// The Hijri date of a civil day as this community counts it (Core/Season.swift).
     func hijri(of g: CivilDay) -> Hijri.HijriDate {
         if isSeasonPreview { return Season.baseHijri(g.adding(seasonShift)) }
-        return Season.communityHijri(g, adjustment: prefs.hijriAdjustment, announcements: hijriCalendar.dataset.announcements, authority: communityAuthority)
+        return Season.communityHijri(g, adjustment: prefs.hijriAdjustment, announcements: hijriCalendar.dataset.announcements,
+                                     authority: communityAuthority, monthStarts: hijriCalendar.dataset.monthStarts)
     }
 
     func hijri(of date: Date) -> Hijri.HijriDate { hijri(of: civil(date)) }

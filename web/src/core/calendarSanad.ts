@@ -32,7 +32,18 @@ export interface CalendarAnnouncement {
   announced_at?: string | null
 }
 
-export interface CalendarDataset { version: number; licence: string; announcements: CalendarAnnouncement[] }
+/** The first day of a Hijri month as an authority's published calendar has it (MUIS's Islamic calendar, for example). */
+export interface MonthStart {
+  authority: string
+  country: string
+  hijri_year: number
+  hijri_month: number
+  /** "yyyy-MM-dd" (Gregorian, local). */
+  date: string
+  source_url?: string | null
+}
+
+export interface CalendarDataset { version: number; licence: string; announcements: CalendarAnnouncement[]; month_starts?: MonthStart[] }
 
 export function basisLabel(basis: string): string {
   switch (basis) {

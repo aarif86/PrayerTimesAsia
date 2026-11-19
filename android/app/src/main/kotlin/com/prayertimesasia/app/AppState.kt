@@ -80,6 +80,8 @@ class AppState(
     var showRamadan by mutableStateOf(false)
     /** Wake up for Subuh (the alarm clock on the Prayer screen, or Settings). */
     var showWakeUp by mutableStateOf(false)
+    /** A day picked in the month calendar, to show on the Prayer screen (days from today). */
+    var showDayRequest by mutableStateOf<Int?>(null)
     /** A masjid from a screen's QR code, waiting for the user to say yes. */
     var pendingMasjid by mutableStateOf<MasjidLink?>(null)
     var locationRequested by mutableStateOf(false)
@@ -92,7 +94,7 @@ class AppState(
     /** The rules and times for right now. Cheap to build; read it fresh each time. */
     val resolver: Resolver
         get() = Resolver(prefs, gpsPlace, { s, y, m, d -> official.times(s, y, m, d) }, directories.mosques, locale,
-            announcements = directories.calendar.announcements)
+            announcements = directories.calendar.announcements, monthStarts = directories.calendar.monthStarts)
 
     fun tick() {
         if (fixedNow == null) now = Instant.now()

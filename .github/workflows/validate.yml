@@ -26,6 +26,8 @@ jobs:
         run: python3 tools/check_mosques.py
       - name: Check data/calendar.json
         run: python3 tools/check_calendar.py
+      - name: Check the apps carry the latest data/calendar.json
+        run: python3 tools/build_bundled_calendar.py --check
       - name: Check the country tables match data/countries.json
         run: python3 tools/gen_countries.py --check
       - name: Check the Ramadan words match data/ramadan-words.json
