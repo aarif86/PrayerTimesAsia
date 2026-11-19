@@ -254,10 +254,16 @@ input, select, textarea { font: inherit; color: inherit; }
 /* Back to the website, only where there is room beside the app and it isn't installed. */
 .site-link { display: none; }
 @media (min-width: 900px) and (display-mode: browser) {
-  .site-link { display: block; position: fixed; top: 18px; left: 22px; z-index: 5; padding: 8px 14px; border-radius: 999px;
-    color: var(--fg); text-decoration: none; font-weight: 600; font-size: 15px; opacity: .8;
-    background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-  .site-link:hover { opacity: 1; }
+  /* The app's own icon and a soft gold edge, so the way back is easy to spot but stays quiet. */
+  .site-link { display: flex; align-items: center; gap: 8px; position: fixed; top: 18px; left: 22px; z-index: 5; padding: 5px 14px 5px 10px; border-radius: 999px;
+    color: var(--gold-text); text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: .1px;
+    background: var(--glass-strong); border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .12); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    transition: border-color .2s, transform .2s; }
+  .site-link img { width: 24px; height: 24px; border-radius: 50%; flex: none; }
+  .site-link-arrow { font-size: 15px; opacity: .8; transition: transform .2s; }
+  .site-link:hover { border-color: var(--gold); }
+  .site-link:hover .site-link-arrow { transform: translateX(-3px); }
 }
 /* Prayer tracker sheet */
 .tracker-top { display: flex; flex-direction: column; gap: 10px; }
