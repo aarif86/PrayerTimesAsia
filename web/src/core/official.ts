@@ -274,6 +274,7 @@ export function matchKemenagCity(names: string[], list: { id: string; name: stri
  * results whose name says what they are. (Port of NearbySearch.looksLikePrayerSpace.)
  */
 export function looksLikePrayerSpace(name: string): boolean {
+  if (isGraveOrShrine(name)) return false
   const n = name.toLowerCase()
   const transport = [' stop', 'bus ', 'station', 'mrt', 'lrt', 'car park', 'carpark', ' exit', 'halte']
   if (transport.some((t) => n.includes(t))) return false
@@ -284,4 +285,15 @@ export function looksLikePrayerSpace(name: string): boolean {
     'prayer', 'jami', 'islamic cent', 'islamic center', 'camii', 'cami ', 'masjed', 'مسجد',
     '清真寺', 'モスク', '모스크', 'nhà thờ hồi giáo', 'มัสยิด']
   return words.some((w) => n.includes(w))
+}
+
+/**
+ * Graves and shrines that OpenStreetMap tags as places of worship (Kubur Kassim,
+ * Keramat Radin Mas). They are not places to pray in, so the masjid list leaves
+ * them out, unless the name also says it is a masjid or surau.
+ */
+export function isGraveOrShrine(name: string): boolean {
+  const n = name.toLowerCase()
+  if (!/\b(kubur|keramat|makam|maqam|tomb|grave|cemetery|perkuburan|dargah|shrine)\b/.test(n)) return false
+  return !/\b(masjid|mosque|surau|musolla|musalla|musholla|mushola|prayer)\b/.test(n)
 }

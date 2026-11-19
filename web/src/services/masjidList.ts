@@ -1,5 +1,6 @@
 import type { Coordinates } from '../core/engine'
 import { distanceKm } from '../core/geo'
+import { isGraveOrShrine } from '../core/official'
 import { fetchOK } from './storage'
 
 /**
@@ -42,6 +43,7 @@ export function parseTile(json: unknown): ListPlace[] | null {
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue
     const musollah = Number(row[5]) === 1
     const name = typeof row[3] === 'string' && row[3] ? row[3] : (musollah ? 'Musollah' : 'Masjid')
+    if (isGraveOrShrine(name)) continue
     out.push({ id: row[0], name, address: typeof row[4] === 'string' ? row[4] : '', coordinates: { latitude: lat, longitude: lon }, isMusollah: musollah })
   }
   return out

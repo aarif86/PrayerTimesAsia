@@ -273,6 +273,45 @@
 .spin { animation: spin 1s linear infinite; }
 .empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 12px; text-align: center; }
 
+.masjid-page { padding-top: 14px; display: flex; flex-direction: column; }
+.near-me-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 52px; padding: 12px 18px; border-radius: 18px;
+  background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 17px; box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: transform .15s ease, box-shadow .2s ease; }
+.near-me-btn:hover { transform: translateY(-1px); }
+.near-me-btn:active { transform: scale(.98); }
+.near-me-btn:disabled { opacity: .85; }
+.near-me-note { font-size: 13px; margin: 8px 4px 0; }
+.near-head { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.near-head h2, .friday-head h2 { font-size: 20px; font-weight: 700; margin: 0; }
+.space-dist { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.space-walk { font-size: 12px; color: var(--fg2); }
+.space-chip { align-self: flex-start; margin-top: 3px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+.more-on-map { font-size: 14px; margin: 12px 2px 0; }
+.friday-card { margin-top: 22px; padding: 16px 16px 12px; border-radius: 22px; background: var(--glass); border: 1px solid var(--stroke);
+  -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); }
+.friday-card.today { margin-top: 16px; border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.friday-head { display: flex; gap: 12px; align-items: flex-start; }
+.friday-head > svg { flex: none; margin-top: 3px; }
+.friday-head p { margin: 4px 0 0; font-size: 14px; line-height: 1.4; }
+.friday-card .space-list li:last-child { border-bottom: none; }
+.friday-card .space-name { font-size: 16px; }
+.friday-all { margin: 6px 0 8px; font-size: 14px; }
+.friday-card .footnote { margin: 4px 0 0; line-height: 1.4; }
+.friday-card .footnote a { color: var(--accent); }
+.pin-pop { display: flex; flex-direction: column; gap: 2px; font-size: 13px; line-height: 1.35; min-width: 160px; max-width: 220px; }
+.pin-pop b { font-size: 14px; }
+.friday-card .space-addr, .friday-card .space-name { white-space: normal; }
+.pin-pop span { color: #555; }
+.pin-pop .pin-fri { color: rgb(178, 84, 31); font-weight: 600; }
+.pin-pop a { margin-top: 4px; font-weight: 700; color: rgb(178, 84, 31); }
+/* Laptops: the map fills the left, the nearest places sit beside it. */
+@media (min-width: 1100px) and (min-height: 500px) {
+  .screen.tab-masjid { --col-pad: max(var(--rail-room, 0px), calc((100% - 1080px) / 2)); }
+  .masjid { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 24px; align-items: start; }
+  .masjid-map-wrap { position: sticky; top: 16px; margin-top: 16px; height: calc(100vh - 32px); border-radius: 26px; overflow: hidden; }
+  .masjid-page { padding: 16px 0 40px; }
+}
 .leaflet-container.masjid-map, .leaflet-container.map-box { font: inherit; background: #1b1f3a; }
 :root[data-theme="light"] .leaflet-container.masjid-map, :root[data-theme="light"] .leaflet-container.map-box { background: #e8eaf2; }
 .leaflet-layer.night-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.85) saturate(0.5); }
