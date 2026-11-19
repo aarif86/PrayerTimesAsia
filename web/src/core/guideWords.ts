@@ -1,5 +1,5 @@
 import type { Lang3 } from './ramadanContent'
-import { GUIDE_CARD_IDS, GUIDE_WORDS_DATA, type GuideWordKey } from './guideWordsData'
+import { GUIDE_CARD_IDS, GUIDE_STEPS_DATA, GUIDE_WORDS_DATA, type GuideWordKey } from './guideWordsData'
 
 /**
  * The quick guide new users see once, after choosing their location (and again
@@ -9,10 +9,10 @@ import { GUIDE_CARD_IDS, GUIDE_WORDS_DATA, type GuideWordKey } from './guideWord
 export type GuideCardId = (typeof GUIDE_CARD_IDS)[number]
 export const GUIDE_CARDS: readonly GuideCardId[] = GUIDE_CARD_IDS
 
-/** Which tab each card lives on, so the little tab bar under the card can light it up. */
-export const GUIDE_TAB: Record<GuideCardId, 'today' | 'qibla' | 'falak' | 'masjid' | 'settings'> = {
-  prayer: 'today', buttons: 'today', looks: 'today', alerts: 'today', qibla: 'qibla', masjid: 'masjid', travel: 'today', falak: 'falak', yours: 'settings',
-}
+/** One moment on a card's little phone: an app screen, the box the finger points at
+ * (fractions of the screen), the words under it, and whether the finger taps. */
+export type GuideStep = (typeof GUIDE_STEPS_DATA)[GuideCardId][number]
+export const GUIDE_STEPS: Record<GuideCardId, readonly GuideStep[]> = GUIDE_STEPS_DATA
 
 export function guideWord(lang: Lang3, key: GuideWordKey, args: Record<string, string | number> = {}): string {
   const line: string = GUIDE_WORDS_DATA[lang][key] ?? GUIDE_WORDS_DATA.en[key]

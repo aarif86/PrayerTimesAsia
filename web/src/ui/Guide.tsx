@@ -1,34 +1,27 @@
 import { useEffect, useRef, useState } from 'preact/hooks'
-import { AlarmClock, BellRing, CalendarDays, Contrast, Flame, MapPin, Palette, Plane } from 'lucide-preact'
-import centre from '../assets/guide/look-centre.webp'
-import list from '../assets/guide/look-list.webp'
-import dial from '../assets/guide/look-dial.webp'
-import sunPath from '../assets/guide/look-sunPath.webp'
-import bands from '../assets/guide/look-bands.webp'
-import simple from '../assets/guide/look-simple.webp'
-
-/** Real screenshots of the six Prayer screen looks, shown one after another on the Looks card. */
-const LOOKS = [centre, list, dial, sunPath, bands, simple]
-import { GUIDE_CARDS, GUIDE_TAB, guideLang, guideWord, type GuideCardId } from '../core/guideWords'
+import { Pointer } from 'lucide-preact'
+import { GUIDE_CARDS, GUIDE_STEPS, guideLang, guideWord, type GuideCardId } from '../core/guideWords'
 import { lang3, type Lang3 } from '../core/ramadanContent'
-import { navigatorLocale, store, TABS } from '../services/store'
-import { TabFalak, TabJourney, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
+import { navigatorLocale, store } from '../services/store'
+
+/** Real app screens for the little phone, by name (made by scripts/guide-shots.mjs). */
+const SHOTS = Object.fromEntries(Object.entries(import.meta.glob('../assets/guide/steps/*.webp', { eager: true, import: 'default' }))
+  .map(([path, url]) => [path.split('/').pop()!.replace('.webp', ''), url as string]))
 
 const LANGS: { id: Lang3; label: string }[] = [{ id: 'en', label: 'EN' }, { id: 'ms', label: 'BM' }, { id: 'id', label: 'ID' }]
-/** The names on the real tab bar, so the guide matches what people see. */
-const TAB_LABEL = { today: 'Prayer', qibla: 'Qibla', falak: 'Falak', masjid: 'Masjid', settings: 'Settings' }
-const TAB_ICON = { today: TabPrayer, qibla: TabQibla, falak: TabFalak, masjid: TabMasjid, settings: TabSettings }
+type Say = (k: Parameters<typeof guideWord>[1], a?: Record<string, number>) => string
 
 /**
- * The quick guide: eight swipe cards a new user sees once, right after choosing
- * their location. Skip at any time; Settings opens it again.
+ * The quick guide: nine swipe cards a new user sees once, right after choosing
+ * their location. Each card is a small phone showing the real app, with a finger
+ * that taps the exact button. Skip at any time; Settings opens it again.
  */
 export function Guide({ onClose }: { onClose: () => void }) {
   const [lang, setLang] = useState<Lang3>(() => guideLang(lang3(store.naming), navigatorLocale()))
   const [i, setI] = useState(0)
   const [drag, setDrag] = useState(0)
-  const start = useRef<{ x: number; y: number; w: number } | null>(null)
-  const t = (k: Parameters<typeof guideWord>[1], a?: Record<string, number>) => guideWord(lang, k, a)
+  const start = useRef<{ x: number; y: number; w: number; moved: boolean } | null>(null)
+  const t: Say = (k, a) => guideWord(lang, k, a)
   const last = i === GUIDE_CARDS.length - 1
 
   const go = (n: number) => { setI(Math.max(0, Math.min(GUIDE_CARDS.length - 1, n))); setDrag(0) }
@@ -45,23 +38,27 @@ export function Guide({ onClose }: { onClose: () => void }) {
   }, [i])
 
   const onDown = (e: PointerEvent) => {
-    start.current = { x: e.clientX, y: e.clientY, w: (e.currentTarget as HTMLElement).clientWidth }
+    start.current = { x: e.clientX, y: e.clientY, w: (e.currentTarget as HTMLElement).clientWidth, moved: false }
   }
   const onMove = (e: PointerEvent) => {
     if (!start.current) return
     const dx = e.clientX - start.current.x
     if (Math.abs(dx) < Math.abs(e.clientY - start.current.y)) return
+    if (Math.abs(dx) > 8) start.current.moved = true
     // A little resistance past the first and last card.
     setDrag((i === 0 && dx > 0) || (last && dx < 0) ? dx / 3 : dx)
   }
   const onUp = () => {
     if (!start.current) return
     const limit = start.current.w * 0.18
+    swiped.current = start.current.moved
     start.current = null
     if (drag < -limit) go(i + 1)
     else if (drag > limit) go(i - 1)
     else setDrag(0)
   }
+  /** A swipe should not also count as a tap on the phone. */
+  const swiped = useRef(false)
 
   return (
     <div class="guide" role="dialog" aria-modal="true" aria-label={t('label')}>
@@ -78,12 +75,11 @@ export function Guide({ onClose }: { onClose: () => void }) {
         <div class={`guide-track ${drag ? 'dragging' : ''}`} style={{ transform: `translateX(calc(${-i * 100}% + ${drag}px))` }}>
           {GUIDE_CARDS.map((id, n) => (
             <section class={`guide-card ${n === i ? 'on' : ''}`} aria-hidden={n !== i} key={id} lang={lang}>
-              {id === 'buttons' ? <ButtonsScene t={t} /> : <Scene id={id} />}
               {n === 0 && <p class="guide-hello">{t('hello')}</p>}
               <h2 class="guide-title">{t(`${id}_title`)}</h2>
-              <p class="guide-body">{t(`${id}_body`)}</p>
-              <MiniTabs lit={GUIDE_TAB[id]} find={t('find')} />
-              {id === 'yours' && <p class="guide-again">{t('again')}</p>}
+              {Math.abs(n - i) <= 1
+                ? <PhoneDemo id={id} on={n === i} t={t} swiped={swiped} />
+                : <div class="guide-demo" />}
             </section>
           ))}
         </div>
@@ -100,85 +96,47 @@ export function Guide({ onClose }: { onClose: () => void }) {
   )
 }
 
-/** The five tabs, small, with this card's one lit, so people learn where it lives. */
-function MiniTabs({ lit, find }: { lit: keyof typeof TAB_ICON; find: string }) {
-  return (
-    <div class="guide-tabs-wrap">
-      <div class="guide-find">{find}</div>
-      <div class="guide-tabs" aria-hidden="true">
-        {TABS.map((t) => {
-          const Icon = TAB_ICON[t]
-          return (
-            <span class={t === lit ? 'lit' : ''}>
-              {t === lit && <i class="guide-pointer" />}
-              <Icon size={20} /><small>{TAB_LABEL[t]}</small>
-            </span>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
+const quiet = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
 
-/** The round buttons from the top of the Prayer screen, each with what it does. */
-function ButtonsScene({ t }: { t: (k: Parameters<typeof guideWord>[1]) => string }) {
-  const rows: [preact.JSX.Element, Parameters<typeof guideWord>[1]][] = [
-    [<Palette size={18} />, 'btn_look'],
-    [<Contrast size={18} />, 'btn_light'],
-    [<AlarmClock size={18} />, 'btn_alarm'],
-    [<Flame size={17} fill="currentColor" />, 'btn_streak'],
-    [<TabJourney size={17} />, 'btn_travel'],
-  ]
-  return (
-    <ul class="guide-buttons">
-      {rows.map(([icon, key], n) => (
-        <li style={{ transitionDelay: `${0.1 + n * 0.08}s` }}><span class="round">{icon}</span>{t(key)}</li>
-      ))}
-    </ul>
-  )
-}
+/**
+ * A small phone playing the real app: a gold box lights the button, a finger
+ * glides to it and taps, and the next screen shows what the tap does. It plays
+ * by itself; tapping the phone moves on a step.
+ */
+function PhoneDemo({ id, on, t, swiped }: { id: GuideCardId; on: boolean; t: Say; swiped: { current: boolean } }) {
+  const steps = GUIDE_STEPS[id]
+  const [k, setK] = useState(0)
+  const [press, setPress] = useState(false)
+  const s = steps[k]
 
-/** A small moving picture for each card. Still when the device asks for less motion. */
-function Scene({ id }: { id: GuideCardId }) {
+  useEffect(() => { if (!on) { setK(0); setPress(false) } }, [on])
+  useEffect(() => {
+    if (!on) return
+    setPress(false)
+    const slow = quiet() ? 1.8 : 1
+    const tap = s.tap ? setTimeout(() => setPress(true), 1250 * slow) : 0
+    const next = setTimeout(() => setK((k + 1) % steps.length), (s.tap ? 2300 : 2700) * slow)
+    return () => { clearTimeout(tap); clearTimeout(next) }
+  }, [on, k])
+
+  // The fingertip rests just under the box, so the button itself stays in sight;
+  // on the tab bar at the very bottom it rests on the button instead.
+  const low = s.y + s.h > 0.9
+  const cx = (s.x + s.w / 2) * 100, cy = (low ? s.y + s.h / 2 : s.y + s.h) * 100 + (low ? 0 : 0.6)
+  const step = () => { if (swiped.current) { swiped.current = false; return } setK((k + 1) % steps.length) }
   return (
-    <div class={`guide-scene scene-${id}`} aria-hidden="true">
-      <div class="scene-ring" />
-      {id === 'prayer' && <>
-        <span class="scene-orbit"><span class="sun" /></span>
-        <TabPrayer size={78} class="scene-icon" />
-      </>}
-      {id === 'looks' && <>
-        <span class="scene-phone">{LOOKS.map((src, n) => <img src={src} alt="" style={{ animationDelay: `${n * 1.6}s` }} />)}</span>
-        <span class="scene-badge"><Palette size={26} strokeWidth={1.8} /></span>
-      </>}
-      {id === 'alerts' && <>
-        <BellRing size={70} class="scene-icon bell" strokeWidth={1.6} />
-        <span class="scene-badge"><AlarmClock size={26} strokeWidth={1.8} /></span>
-      </>}
-      {id === 'qibla' && <>
-        <TabQibla size={92} class="scene-icon needle" />
-        <span class="scene-glow" />
-      </>}
-      {id === 'masjid' && <>
-        <TabMasjid size={84} class="scene-icon" />
-        <span class="scene-pin"><MapPin size={30} strokeWidth={2} /></span>
-      </>}
-      {id === 'travel' && <>
-        <span class="scene-plane"><Plane size={30} strokeWidth={1.8} /></span>
-        <TabJourney size={74} class="scene-icon bag" />
-      </>}
-      {id === 'falak' && (
-        <svg class="scene-falak" viewBox="0 0 120 120" width="120" height="120">
-          <g class="sun-arc"><circle cx="60" cy="22" r="8" /></g>
-          <line x1="12" y1="92" x2="108" y2="92" class="ground" />
-          <line x1="60" y1="92" x2="104" y2="92" class="shadow" />
-          <line x1="60" y1="92" x2="60" y2="62" class="stick" />
-        </svg>
-      )}
-      {id === 'yours' && <>
-        <TabSettings size={80} class="scene-icon gear" />
-        <span class="scene-badge"><CalendarDays size={26} strokeWidth={1.8} /></span>
-      </>}
+    <div class="guide-demo">
+      <button class="guide-phone" onClick={step} aria-label={t('next')} tabIndex={on ? 0 : -1}>
+        {steps.map((st, n) => (
+          <img src={SHOTS[st.shot]} alt="" draggable={false} class={n === k || (n === 0 && !on) ? 'on' : ''} />
+        ))}
+        <span class={`guide-spot ${press ? 'press' : ''}`} style={{ left: `${s.x * 100}%`, top: `${s.y * 100}%`, width: `${s.w * 100}%`, height: `${s.h * 100}%` }}><i class="guide-ripple" /></span>
+        <span class={`guide-finger ${press ? 'press' : ''}`} style={{ left: `${cx}%`, top: `${cy}%` }}>
+          <Pointer size={34} strokeWidth={1.6} fill="#fff" />
+        </span>
+      </button>
+      <p class="guide-say" aria-live="polite" key={`${k}-${s.say}`}>{t(s.say)}</p>
+      <div class="guide-steps" aria-hidden="true">{steps.map((_, n) => <i class={n === k ? 'on' : ''} />)}</div>
     </div>
   )
 }
