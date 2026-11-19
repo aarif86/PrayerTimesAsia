@@ -969,6 +969,7 @@ struct TodayView: View {
             .foregroundStyle(.black.opacity(0.8))
             Button { withAnimation { model.prefs.alertsPromptDismissed = true } } label: {
                 Image(systemName: "xmark").font(.caption.weight(.bold)).opacity(0.6).frame(width: 44, height: 44).contentShape(Rectangle())
+                    .padding(.vertical, -10)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Not now")
@@ -1108,6 +1109,8 @@ private struct PrayerList: View {
                         .opacity(notifying ? 0.95 : 0.4)
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
+                        // 44 pt to tap, but laid out at the old 30 by 34 so rows keep their height.
+                        .padding(.horizontal, -7).padding(.vertical, -5)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(notifying ? "Turn off alert" : "Turn on alert")
