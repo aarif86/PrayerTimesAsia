@@ -4,7 +4,7 @@ import { authorityName } from '../core/calendarSanad'
 import type { HijriDate } from '../core/hijri'
 import { hijriCalWords, islamicDayName, islamicDayShort, islamicDaysOf, hijriMonthShort } from '../core/islamicDays'
 import { hijriMonths } from '../core/prayer'
-import { daysApart, type CivilDay } from '../core/season'
+import { daysApart, publishedHijri, type CivilDay } from '../core/season'
 import { store, useNow, useStore } from '../services/store'
 import { closeSheet, showDayOnPrayerScreen } from './common'
 
@@ -112,7 +112,7 @@ export function HijriMonthCard() {
         </div>
       )}
       <a class="hcal-print caption accent" href={`print/#sheet=year&m=${shown.y}-01`}><Printer size={14} />{words.print} {shown.y}</a>
-      <p class="caption secondary hcal-note">{words.note(authority ? shortAuthority(authority) : null)}</p>
+      <p class="caption secondary hcal-note">{authority && publishedHijri(days[0].g, s.calendar.month_starts, authority) ? words.notePublished(shortAuthority(authority)) : words.note(authority ? shortAuthority(authority) : null)}</p>
       <div class="hcal-adjust">
         <span class="caption">{words.adjust}</span>
         <span class="caption secondary mono">{adj === 0 ? words.adjustNone : `${adj > 0 ? '+' : ''}${adj} ${words.dayOff}`}</span>

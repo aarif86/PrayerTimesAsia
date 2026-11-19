@@ -56,7 +56,7 @@ const NAMES: Record<IslamicDayKind, Record<Lang, string>> = {
   sightingSyawal: { en: 'Moon sighting for Shawwal', ms: 'Rukyah awal Syawal', id: 'Rukyatul hilal Syawal' },
   zulhijjahTen: { en: 'First ten days of Dhul Hijjah', ms: 'Sepuluh hari awal Zulhijjah', id: 'Sepuluh hari awal Zulhijjah' },
   tarwiyah: { en: 'Day of Tarwiyah', ms: 'Hari Tarwiyah', id: 'Hari Tarwiyah' },
-  maulid: { en: 'Birth of the Prophet ﷺ', ms: 'Maulidur Rasul', id: 'Maulid Nabi' },
+  maulid: { en: "Prophet Muhammad's Birthday", ms: 'Maulidur Rasul', id: 'Maulid Nabi' },
   israMikraj: { en: "Isra and Mi'raj", ms: 'Israk dan Mikraj', id: "Isra Mi'raj" },
   nisfuSyaaban: { en: "Middle of Sha'ban", ms: 'Nisfu Syaaban', id: "Nisfu Sya'ban" },
   ramadanStart: { en: 'First day of Ramadan', ms: 'Awal Ramadan', id: 'Awal Ramadan' },
@@ -94,7 +94,7 @@ export const islamicDayShort = (k: IslamicDayKind, s: NamingStyle): string => SH
 /** Words for the calendar sheet, in the user's language. No colons or dashes. */
 export const HIJRI_CAL_WORDS: Record<Lang, {
   title: string; today: string; months: string[]; and: string; keyDays: string; none: string; week: string[]
-  note: (authority: string | null) => string; adjust: string; adjustNone: string
+  note: (authority: string | null) => string; notePublished: (authority: string) => string; adjust: string; adjustNone: string
   earlier: string; later: string; dayOff: string; print: string
 }> = {
   en: {
@@ -104,6 +104,7 @@ export const HIJRI_CAL_WORDS: Record<Lang, {
     note: (a) => a
       ? `Ramadan and Eid al-Fitr follow ${a} once announced. Other days are worked out ahead and can be a day apart from your area. Follow your local religious authority.`
       : 'Dates are worked out ahead and can be a day apart from your area. Follow your local religious authority.',
+    notePublished: (a) => `These dates follow the ${a} Islamic calendar. Ramadan and Eid follow its announcement. Follow your local religious authority.`,
     print: 'Print the whole year', adjust: 'Move the Hijri date', adjustNone: 'Not moved', earlier: 'One day earlier', later: 'One day later', dayOff: 'day',
   },
   ms: {
@@ -113,6 +114,7 @@ export const HIJRI_CAL_WORDS: Record<Lang, {
     note: (a) => a
       ? `Ramadan dan Aidilfitri mengikut ${a} sebaik sahaja diumumkan. Tarikh lain dikira lebih awal dan mungkin berbeza sehari di tempat anda. Ikutlah pihak berkuasa agama tempatan anda.`
       : 'Tarikh dikira lebih awal dan mungkin berbeza sehari di tempat anda. Ikutlah pihak berkuasa agama tempatan anda.',
+    notePublished: (a) => `Tarikh ini mengikut takwim Islam ${a}. Ramadan dan Hari Raya mengikut pengumumannya. Ikutlah pihak berkuasa agama tempatan anda.`,
     print: 'Cetak kalendar setahun', adjust: 'Anjak tarikh Hijrah', adjustNone: 'Tidak dianjak', earlier: 'Sehari lebih awal', later: 'Sehari lebih lewat', dayOff: 'hari',
   },
   id: {
@@ -122,6 +124,7 @@ export const HIJRI_CAL_WORDS: Record<Lang, {
     note: (a) => a
       ? `Awal Ramadan dan Idul Fitri mengikuti ${a} setelah diumumkan. Tanggal lain dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat.`
       : 'Tanggal dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat.',
+    notePublished: (a) => `Tanggal ini mengikuti kalender Islam ${a}. Awal Ramadan dan Lebaran mengikuti pengumumannya. Ikuti otoritas keagamaan setempat.`,
     print: 'Cetak kalender setahun', adjust: 'Geser tanggal Hijriah', adjustNone: 'Tidak digeser', earlier: 'Sehari lebih awal', later: 'Sehari lebih lambat', dayOff: 'hari',
   },
 }
