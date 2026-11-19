@@ -9,7 +9,7 @@ import simple from '../assets/guide/look-simple.webp'
 
 /** Real screenshots of the six Prayer screen looks, shown one after another on the Looks card. */
 const LOOKS = [centre, list, dial, sunPath, bands, simple]
-import { GUIDE_CARDS, GUIDE_TAB, GUIDE_WORDS, guideLang, type GuideCardId } from '../core/guideWords'
+import { GUIDE_CARDS, GUIDE_TAB, guideLang, guideWord, type GuideCardId } from '../core/guideWords'
 import { lang3, type Lang3 } from '../core/ramadanContent'
 import { navigatorLocale, store, TABS } from '../services/store'
 import { TabFalak, TabJourney, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
@@ -26,7 +26,7 @@ export function Guide({ onClose }: { onClose: () => void }) {
   const [i, setI] = useState(0)
   const [drag, setDrag] = useState(0)
   const start = useRef<{ x: number; y: number; w: number } | null>(null)
-  const w = GUIDE_WORDS[lang]
+  const t = (k: Parameters<typeof guideWord>[1], a?: Record<string, number>) => guideWord(lang, k, a)
   const last = i === GUIDE_CARDS.length - 1
 
   const go = (n: number) => { setI(Math.max(0, Math.min(GUIDE_CARDS.length - 1, n))); setDrag(0) }
@@ -62,14 +62,14 @@ export function Guide({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div class="guide" role="dialog" aria-modal="true" aria-label={w.label}>
+    <div class="guide" role="dialog" aria-modal="true" aria-label={t('label')}>
       <div class="guide-top">
         <div class="guide-langs" role="group" aria-label="Language">
           {LANGS.map((l) => (
             <button aria-pressed={lang === l.id} onClick={() => setLang(l.id)} lang={l.id}>{l.label}</button>
           ))}
         </div>
-        {!last && <button class="guide-skip" onClick={finish}>{w.skip}</button>}
+        {!last && <button class="guide-skip" onClick={finish}>{t('skip')}</button>}
       </div>
 
       <div class="guide-viewport" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onPointerLeave={onUp}>
@@ -77,22 +77,22 @@ export function Guide({ onClose }: { onClose: () => void }) {
           {GUIDE_CARDS.map((id, n) => (
             <section class={`guide-card ${n === i ? 'on' : ''}`} aria-hidden={n !== i} key={id} lang={lang}>
               <Scene id={id} />
-              {n === 0 && <p class="guide-hello">{w.hello}</p>}
-              <h2 class="guide-title">{w.cards[id].title}</h2>
-              <p class="guide-body">{w.cards[id].body}</p>
+              {n === 0 && <p class="guide-hello">{t('hello')}</p>}
+              <h2 class="guide-title">{t(`${id}_title`)}</h2>
+              <p class="guide-body">{t(`${id}_body`)}</p>
               <MiniTabs lit={GUIDE_TAB[id]} />
-              {id === 'yours' && <p class="guide-again">{w.again}</p>}
+              {id === 'yours' && <p class="guide-again">{t('again')}</p>}
             </section>
           ))}
         </div>
       </div>
 
       <div class="guide-foot">
-        <button class="guide-back" onClick={() => go(i - 1)} style={{ visibility: i === 0 ? 'hidden' : 'visible' }}>{w.back}</button>
-        <div class="guide-dots" aria-label={w.of.replace('{n}', String(i + 1)).replace('{t}', String(GUIDE_CARDS.length))}>
-          {GUIDE_CARDS.map((id, n) => <button aria-label={w.cards[id].title} class={n === i ? 'on' : ''} onClick={() => go(n)} />)}
+        <button class="guide-back" onClick={() => go(i - 1)} style={{ visibility: i === 0 ? 'hidden' : 'visible' }}>{t('back')}</button>
+        <div class="guide-dots" aria-label={t('of', { n: i + 1, t: GUIDE_CARDS.length })}>
+          {GUIDE_CARDS.map((id, n) => <button aria-label={t(`${id}_title`)} class={n === i ? 'on' : ''} onClick={() => go(n)} />)}
         </div>
-        <button class="guide-next" onClick={() => (last ? finish() : go(i + 1))}>{last ? w.start : w.next}</button>
+        <button class="guide-next" onClick={() => (last ? finish() : go(i + 1))}>{last ? t('start') : t('next')}</button>
       </div>
     </div>
   )

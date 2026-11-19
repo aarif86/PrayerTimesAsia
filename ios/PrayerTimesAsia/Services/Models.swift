@@ -397,6 +397,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var largeText = false
     /// The moving opening screen. Off goes straight to the app; it still shows the first time.
     var showOpening = true
+    /// The quick guide (swipe cards) was seen or skipped. Settings > Help opens it again.
+    var guideSeen = false
     /// Fridays: a reminder this many minutes before Jumaat (0 = off).
     var jumuahReminderMinutes = 0
     static let jumuahReminderChoices = [0, 20, 30, 45, 60, 90]
@@ -485,6 +487,8 @@ struct Preferences: Codable, Equatable, Sendable {
         buzzOnly = v(.buzzOnly, d.buzzOnly)
         largeText = v(.largeText, d.largeText)
         showOpening = v(.showOpening, d.showOpening)
+        // People already using the app before the quick guide came don't get it pushed at them; it waits in Settings.
+        guideSeen = v(.guideSeen, hasOnboarded)
         jumuahReminderMinutes = v(.jumuahReminderMinutes, d.jumuahReminderMinutes)
         if !Self.jumuahReminderChoices.contains(jumuahReminderMinutes) { jumuahReminderMinutes = 0 }
         showHadith = v(.showHadith, d.showHadith)
