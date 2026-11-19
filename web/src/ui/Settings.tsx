@@ -265,7 +265,7 @@ export function SettingsScreen() {
         </Group>
       )}
 
-      <Group title="Help" foot="Seven short cards that show where everything is.">
+      <Group title="Help" foot="Eight short cards that show where everything is.">
         <button class="item" onClick={() => openSheet({ kind: 'guide' })}>
           <Lightbulb size={20} /><span class="label">Show the quick guide</span><ChevronRight size={16} class="secondary" />
         </button>

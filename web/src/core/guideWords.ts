@@ -5,12 +5,12 @@ import type { Lang3 } from './ramadanContent'
  * from Settings). English, Malay (bahasa baku) and Indonesian. Plain words, no
  * colons or dashes, the same rule as the website.
  */
-export type GuideCardId = 'prayer' | 'alerts' | 'qibla' | 'masjid' | 'travel' | 'falak' | 'yours'
-export const GUIDE_CARDS: GuideCardId[] = ['prayer', 'alerts', 'qibla', 'masjid', 'travel', 'falak', 'yours']
+export type GuideCardId = 'prayer' | 'looks' | 'alerts' | 'qibla' | 'masjid' | 'travel' | 'falak' | 'yours'
+export const GUIDE_CARDS: GuideCardId[] = ['prayer', 'looks', 'alerts', 'qibla', 'masjid', 'travel', 'falak', 'yours']
 
 /** Which tab each card lives on, so the little tab bar under the card can light it up. */
 export const GUIDE_TAB: Record<GuideCardId, 'today' | 'qibla' | 'falak' | 'masjid' | 'settings'> = {
-  prayer: 'today', alerts: 'today', qibla: 'qibla', masjid: 'masjid', travel: 'today', falak: 'falak', yours: 'settings',
+  prayer: 'today', looks: 'today', alerts: 'today', qibla: 'qibla', masjid: 'masjid', travel: 'today', falak: 'falak', yours: 'settings',
 }
 
 interface Card { title: string; body: string }
@@ -29,7 +29,11 @@ export const GUIDE_WORDS: Record<Lang3, Words> = {
     cards: {
       prayer: {
         title: 'Your prayer times',
-        body: 'The next prayer is always at the top, with the time left to pray. Use the arrows to see other days. The round button changes how your day looks.',
+        body: 'The next prayer is always at the top, with the time left to pray. Use the arrows to see other days.',
+      },
+      looks: {
+        title: 'Pick your look',
+        body: 'Six ways to see your day, from a big dial to large simple times. Tap the paint palette at the top to try the next look, or hold it to choose one. The moon button picks Light, Dark, or Automatic, which follows the sky.',
       },
       alerts: {
         title: 'Never miss a prayer',
@@ -66,7 +70,11 @@ export const GUIDE_WORDS: Record<Lang3, Words> = {
     cards: {
       prayer: {
         title: 'Waktu solat anda',
-        body: 'Solat yang seterusnya sentiasa di bahagian atas, bersama baki masa untuk menunaikannya. Tekan anak panah untuk melihat hari lain. Butang bulat menukar paparan hari anda.',
+        body: 'Solat yang seterusnya sentiasa di bahagian atas, bersama baki masa untuk menunaikannya. Tekan anak panah untuk melihat hari lain.',
+      },
+      looks: {
+        title: 'Pilih paparan anda',
+        body: 'Enam cara untuk melihat hari anda, daripada dail besar hingga waktu yang besar dan ringkas. Tekan ikon palet di bahagian atas untuk mencuba paparan seterusnya, atau tekan lama untuk memilih. Butang bulan memilih Terang, Gelap atau Automatik yang mengikut langit.',
       },
       alerts: {
         title: 'Jangan terlepas solat',
@@ -103,7 +111,11 @@ export const GUIDE_WORDS: Record<Lang3, Words> = {
     cards: {
       prayer: {
         title: 'Waktu salat Anda',
-        body: 'Salat berikutnya selalu ada di bagian atas, bersama sisa waktu untuk menunaikannya. Ketuk panah untuk melihat hari lain. Tombol bulat mengubah tampilan hari Anda.',
+        body: 'Salat berikutnya selalu ada di bagian atas, bersama sisa waktu untuk menunaikannya. Ketuk panah untuk melihat hari lain.',
+      },
+      looks: {
+        title: 'Pilih tampilan Anda',
+        body: 'Enam cara melihat hari Anda, dari dial besar sampai waktu besar yang sederhana. Ketuk ikon palet di bagian atas untuk mencoba tampilan berikutnya, atau tekan lama untuk memilih. Tombol bulan memilih Terang, Gelap, atau Otomatis yang mengikuti langit.',
       },
       alerts: {
         title: 'Jangan lewatkan salat',

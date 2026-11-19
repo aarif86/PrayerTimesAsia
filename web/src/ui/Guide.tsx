@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from 'preact/hooks'
-import { AlarmClock, BellRing, CalendarDays, MapPin, Plane } from 'lucide-preact'
+import { AlarmClock, BellRing, CalendarDays, MapPin, Palette, Plane } from 'lucide-preact'
+import centre from '../assets/guide/look-centre.webp'
+import list from '../assets/guide/look-list.webp'
+import dial from '../assets/guide/look-dial.webp'
+import sunPath from '../assets/guide/look-sunPath.webp'
+import bands from '../assets/guide/look-bands.webp'
+import simple from '../assets/guide/look-simple.webp'
+
+/** Real screenshots of the six Prayer screen looks, shown one after another on the Looks card. */
+const LOOKS = [centre, list, dial, sunPath, bands, simple]
 import { GUIDE_CARDS, GUIDE_TAB, GUIDE_WORDS, guideLang, type GuideCardId } from '../core/guideWords'
 import { lang3, type Lang3 } from '../core/ramadanContent'
 import { navigatorLocale, store, TABS } from '../services/store'
@@ -9,7 +18,7 @@ const LANGS: { id: Lang3; label: string }[] = [{ id: 'en', label: 'EN' }, { id: 
 const TAB_ICON = { today: TabPrayer, qibla: TabQibla, falak: TabFalak, masjid: TabMasjid, settings: TabSettings }
 
 /**
- * The quick guide: seven swipe cards a new user sees once, right after choosing
+ * The quick guide: eight swipe cards a new user sees once, right after choosing
  * their location. Skip at any time; Settings opens it again.
  */
 export function Guide({ onClose }: { onClose: () => void }) {
@@ -109,6 +118,10 @@ function Scene({ id }: { id: GuideCardId }) {
       {id === 'prayer' && <>
         <span class="scene-orbit"><span class="sun" /></span>
         <TabPrayer size={78} class="scene-icon" />
+      </>}
+      {id === 'looks' && <>
+        <span class="scene-phone">{LOOKS.map((src, n) => <img src={src} alt="" style={{ animationDelay: `${n * 1.6}s` }} />)}</span>
+        <span class="scene-badge"><Palette size={26} strokeWidth={1.8} /></span>
       </>}
       {id === 'alerts' && <>
         <BellRing size={70} class="scene-icon bell" strokeWidth={1.6} />
