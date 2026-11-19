@@ -55,6 +55,7 @@ import com.prayertimesasia.app.Tab
 import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.falak.FalakCameraScreen
 import com.prayertimesasia.app.ui.falak.FalakScreen
+import com.prayertimesasia.app.ui.guide.GuideDialog
 import com.prayertimesasia.app.ui.falak.LevelScreen
 import com.prayertimesasia.app.ui.journey.JourneyScreen
 import com.prayertimesasia.app.ui.makers.MakersSheetContent
@@ -99,6 +100,7 @@ sealed class Overlay {
     data object Camera : Overlay()
     data object MoveOut : Overlay()
     data object MoveIn : Overlay()
+    data object Guide : Overlay()
 }
 
 /** The app's theme: dark or light from the sky (Automatic) or as chosen, and the soft night. */
@@ -188,6 +190,8 @@ private fun RootContent(state: AppState) {
             state.pendingMasjid?.let { link ->
                 AppSheet({ state.pendingMasjid = null }) { MasjidLinkSheetContent(state, link) }
             }
+            // New users see the quick guide once, right after choosing their place.
+            if (state.prefs.guideSeen == false && overlay == null && state.pendingMasjid == null) GuideDialog(state) {}
         }
     }
 }
@@ -201,7 +205,8 @@ fun TabContent(state: AppState, open: (Overlay) -> Unit) {
         Tab.FALAK -> FalakScreen(state, openCamera = { open(Overlay.Camera) }, openLevel = { open(Overlay.Level) })
         Tab.MASJID -> MasjidScreen(state, openAbout = { open(Overlay.About) })
         Tab.SETTINGS -> SettingsScreen(state, openPlaces = { open(Overlay.Places) }, openWidgetPreview = { open(Overlay.WidgetPreview) },
-            openCredits = { open(Overlay.Credits) }, openMoveOut = { open(Overlay.MoveOut) }, openMoveIn = { open(Overlay.MoveIn) })
+            openCredits = { open(Overlay.Credits) }, openMoveOut = { open(Overlay.MoveOut) }, openMoveIn = { open(Overlay.MoveIn) },
+            openGuide = { open(Overlay.Guide) })
     }
 }
 
@@ -222,6 +227,7 @@ private fun Overlays(state: AppState, overlay: Overlay?, set: (Overlay?) -> Unit
         Overlay.Camera -> Dialog(onDismissRequest = close, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             FalakCameraScreen(state, close)
         }
+        Overlay.Guide -> GuideDialog(state, close)
     }
 }
 

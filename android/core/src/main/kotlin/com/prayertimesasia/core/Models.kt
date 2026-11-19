@@ -347,6 +347,12 @@ data class Preferences(
     val largeText: Boolean = false,
     /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
     val showOpening: Boolean = true,
+    /**
+     * The quick guide (swipe cards) was seen or skipped; Settings > Help opens it again.
+     * Missing (null) in settings saved before the guide came: decode() fills it in, so
+     * people already using the app don't get it pushed at them.
+     */
+    val guideSeen: Boolean? = null,
     /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
     val jumuahReminderMinutes: Int = 0,
     /** Short hadith and ayat on some screens (HadithContent.kt). */
@@ -395,6 +401,7 @@ data class Preferences(
             // Isyak is open until Subuh: it has no "before it ends" alarm.
             ishaAlarm = ishaAlarm.takeIf { it != PrayerAlarmTiming.END_MINUS_30 },
             tarawihRakaat = tarawihRakaat?.takeIf { it in Tarawih.CHOICES },
+            guideSeen = guideSeen ?: hasOnboarded,
         )
     }
 }

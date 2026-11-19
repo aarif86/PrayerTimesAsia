@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.LocationOff
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.Remove
@@ -101,6 +102,7 @@ fun SettingsScreen(
     listState: LazyListState = rememberLazyListState(),
     openMoveOut: () -> Unit = {},
     openMoveIn: () -> Unit = {},
+    openGuide: () -> Unit = {},
 ) {
     val r = state.resolver
     val p = state.prefs
@@ -292,6 +294,11 @@ fun SettingsScreen(
                 Section("Moving to another phone", "Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. Works between Android, iPhone and the web. Setting up a new Android phone from your Google backup brings them too.") {
                     LinkRow("Move my settings", Icons.Filled.SwapHoriz, openMoveOut)
                     LinkRow("Bring in settings", Icons.Filled.Download, openMoveIn)
+                }
+            }
+            item {
+                Section("Help", "Eight short cards that show where everything is.") {
+                    LinkRow("Show the quick guide", Icons.Filled.Lightbulb, openGuide)
                 }
             }
             item {
