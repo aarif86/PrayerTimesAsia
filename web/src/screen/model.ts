@@ -1,5 +1,5 @@
 import { computeFor, type PrayerDay } from '../core/engine'
-import { defaultAuthority, type CalendarAnnouncement, type HijriEvent } from '../core/calendarSanad'
+import { defaultAuthority, type CalendarAnnouncement, type HijriEvent, type MonthStart } from '../core/calendarSanad'
 import { gregorianFromHijri, type HijriDate } from '../core/hijri'
 import { qiblaDays, sunPosition } from '../core/falak'
 import { addDays, authorityDate, baseHijri, civilKey, communityHijri, daysApart, previewShift, type CivilDay } from '../core/season'
@@ -40,7 +40,8 @@ export interface ScreenDay {
 
 /** Ramadan and Eid announcements the screen has downloaded (data/calendar.json). */
 let announcements: CalendarAnnouncement[] = []
-export function setScreenAnnouncements(list: CalendarAnnouncement[]): void { announcements = list }
+let monthStarts: MonthStart[] = []
+export function setScreenAnnouncements(list: CalendarAnnouncement[], starts: MonthStart[] = []): void { announcements = list; monthStarts = starts }
 
 /** The masjid's Hijri date for its civil day, with the committee's preview when on. */
 let clock = () => Date.now()
@@ -57,7 +58,7 @@ export function screenHijri(c: ScreenConfig, y: number, m: number, d: number): H
     if (shift == null) { shift = previewShift({ year: z.year, month: z.month, day: z.day }, c.ramadan.preview); shiftCache.set(key, shift) }
     return baseHijri(addDays(g, shift))
   }
-  return communityHijri(g, c.hijriAdj, announcements, defaultAuthority(c.place?.cc ?? '') ?? null)
+  return communityHijri(g, c.hijriAdj, announcements, defaultAuthority(c.place?.cc ?? '') ?? null, monthStarts)
 }
 
 export function asPlace(p: ScreenPlace): Place {
@@ -231,7 +232,7 @@ export function occasionDate(c: ScreenConfig, o: typeof OCCASIONS[number], hijri
 export function nextOccasion(now: number, c: ScreenConfig): NextOccasion | null {
   if (!c.place) return null
   const today = civilOf(now, c.place.tz)
-  const key = `${civilKey(today)}|${c.place.cc}|${c.hijriAdj}|${c.ramadan.preview}|${announcements.length}`
+  const key = `${civilKey(today)}|${c.place.cc}|${c.hijriAdj}|${c.ramadan.preview}|${announcements.length}|${monthStarts.length}`
   if (occasionCache.has(key)) return occasionCache.get(key)!
   const h = screenHijri(c, today.year, today.month, today.day)
   let best: NextOccasion | null = null

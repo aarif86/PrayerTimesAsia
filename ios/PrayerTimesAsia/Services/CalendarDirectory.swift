@@ -7,7 +7,8 @@ import Observation
 @MainActor
 @Observable
 final class CalendarDirectory {
-    private(set) var dataset = CalendarDataset(version: 1, licence: "CC-BY-4.0", announcements: [])
+    /// Starts from the copy inside the app (tools/build_bundled_calendar.py), so it works offline from the first open.
+    private(set) var dataset = BundledCalendar.dataset
 
     static let url = URL(string: "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/main/data/calendar.json")!
     private static var cacheURL: URL {
@@ -19,7 +20,7 @@ final class CalendarDirectory {
     init() {
         if let data = try? Data(contentsOf: Self.cacheURL),
            let cached = try? JSONDecoder().decode(CalendarDataset.self, from: data) {
-            dataset = cached
+            dataset = cached.withBundled()
         }
     }
 
@@ -36,7 +37,7 @@ final class CalendarDirectory {
         guard let result = try? await URLSession.shared.data(for: request),
               (result.1 as? HTTPURLResponse)?.statusCode == 200,
               let fresh = try? JSONDecoder().decode(CalendarDataset.self, from: result.0) else { return }
-        dataset = fresh
+        dataset = fresh.withBundled()
         UserDefaults.standard.set(Date.now, forKey: Self.refreshedKey)
         try? FileManager.default.createDirectory(at: Self.cacheURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? result.0.write(to: Self.cacheURL, options: .atomic)

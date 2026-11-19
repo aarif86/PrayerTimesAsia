@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -85,17 +87,25 @@ fun CircleIconButton(
     size: Dp = 34.dp,
     onClick: () -> Unit,
 ) {
+    // The disc is small, but the touch area around it is a full 48 dp.
     Box(
         modifier
-            .size(size)
+            .minTouch()
             .clip(CircleShape)
-            .background(background, CircleShape)
             .clickable(onClickLabel = description, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, description, Modifier.size(size * 0.5f), tint = tint)
+        Box(Modifier.size(size).background(background, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(icon, description, Modifier.size(size * 0.5f), tint = tint)
+        }
     }
 }
+
+/** At least 48 dp wide and tall, so a small button is easy to tap. Put it before clickable. */
+fun Modifier.minTouch(): Modifier = this.sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+
+/** At least 48 dp tall with the content centred, for a tappable line of text. */
+fun Modifier.minTouchHeight(): Modifier = this.sizeIn(minHeight = 48.dp).wrapContentSize()
 
 /** A time with its AM/PM set smaller on the same baseline. Never wraps. */
 @Composable

@@ -30,6 +30,10 @@ enum Theme {
     static func display(_ size: CGFloat, _ weight: Font.Weight = .semibold) -> Font {
         .system(size: size, weight: weight, design: .rounded)
     }
+
+    /// A screen's big title ("Qibla", "Falak", "Journey"): 34 pt like before, and it
+    /// grows with the phone's text size setting.
+    static let screenTitle = Font.system(.largeTitle, design: .rounded, weight: .bold)
 }
 
 /// Frosted card used on top of the sky.
@@ -53,7 +57,7 @@ struct Chip: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            if let systemImage { Image(systemName: systemImage) }
+            if let systemImage { Image(systemName: systemImage).accessibilityHidden(true) }
             Text(text)
         }
         .font(.footnote.weight(.semibold))

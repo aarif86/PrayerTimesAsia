@@ -281,7 +281,8 @@ textarea { resize: vertical; }
 /* MARK: Looks from the app's Prayer screen styles */
 
 /* Bands: each prayer a full-width band in its own colour on the app's charcoal (Bands style). */
-.scr-look-bands { --bg: rgb(43, 43, 43); --glass: rgb(61, 61, 61); --fill: rgba(255, 255, 255, 0.12); }
+.scr-look-bands { --bg: rgb(43, 43, 43); --glass: rgb(61, 61, 61); --fill: rgba(255, 255, 255, 0.12); --fg3: rgba(255, 255, 255, 0.6); }
+.scr-look-bands .scr-next-name { color: #fff; }
 .scr-look-bands .scr-grid { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: 1fr; grid-auto-rows: 1fr; gap: 0; }
 .landscape .scr-look-bands { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 4.4); }
 .landscape .scr-look-bands .scr-head { grid-column: 1; grid-row: 1; }
@@ -297,9 +298,9 @@ textarea { resize: vertical; }
   border: 0; border-radius: 0; color: #fff; background: var(--band); -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 .scr-look-bands .p-fajr { --band: rgb(33, 110, 92); }
-.scr-look-bands .p-sunrise { --band: rgb(143, 168, 82); }
-.scr-look-bands .p-dhuhr { --band: rgb(217, 171, 33); }
-.scr-look-bands .p-asr { --band: rgb(227, 148, 82); }
+.scr-look-bands .p-sunrise { --band: rgb(131, 154, 75); }
+.scr-look-bands .p-dhuhr { --band: rgb(179, 141, 27); }
+.scr-look-bands .p-asr { --band: rgb(220, 119, 36); }
 .scr-look-bands .p-maghrib { --band: rgb(224, 110, 84); }
 .scr-look-bands .p-isha { --band: rgb(219, 79, 89); }
 .scr-look-bands .scr-imsak { --band: rgb(75, 75, 82); }

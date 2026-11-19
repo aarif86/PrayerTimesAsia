@@ -18,11 +18,12 @@ import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { WakeChip } from './WakeUp'
-import { fmtDate, openSheet, short, SourceBadge, Switch, TimeText } from './common'
+import { fmtDate, openSheet, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { featuredOffer, MakersCard } from './Makers'
 import { appBannerShownByBrowser, phoneAppOffer } from './pwa'
+import { SiteHomeButton } from './SiteHome'
 import { TabJourney } from './icons'
 import { SeasonCard } from './Ramadan'
 import { Hadith } from './Hadith'
@@ -68,6 +69,7 @@ export function TodayScreen() {
   const s = useStore()
   const now = useNow()
   const [offset, setOffset] = useState(0)
+  useDayRequests(setOffset)
   const [showMore, setShowMoreState] = useState(() => s.demo ? s.demo.more : readString('today.showMore') === '1')
   const [toast, showToast] = useToast()
   const setShowMore = (v: boolean) => { setShowMoreState(v); if (!s.demo) writeString('today.showMore', v ? '1' : '0') }
@@ -192,6 +194,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
   if (order === 'column') {
     return (
       <div class="controls-col">
+        <SiteHomeButton />
         <JourneyButton now={c.now} withChip />
         <StyleButton c={c} />
         <AppearanceButton c={c} />
@@ -207,6 +210,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
       {store.prefs.trackerEnabled && <StreakChip now={c.now} />}
       <AppearanceButton c={c} />
       <StyleButton c={c} />
+      <SiteHomeButton />
     </>
   )
 }
@@ -800,6 +804,7 @@ function SunPathPage({ c }: { c: Ctx }) {
         {store.prefs.trackerEnabled && <StreakChip now={now} />}
         <AppearanceButton c={c} />
         <StyleButton c={c} />
+        <SiteHomeButton />
       </div>
       <div class="sunpath-wrap" ref={wrap}>
         <SunPath width={width} height={96} now={now} day={c.day} tz={store.timeZone} />
@@ -823,8 +828,8 @@ function SunPathPage({ c }: { c: Ctx }) {
 // ---------- Colour Bands ----------
 
 const BAND: Record<Prayer, string> = {
-  fajr: 'rgb(33, 110, 92)', sunrise: 'rgb(143, 168, 82)', dhuhr: 'rgb(217, 171, 33)',
-  asr: 'rgb(227, 148, 82)', maghrib: 'rgb(224, 110, 84)', isha: 'rgb(219, 79, 89)',
+  fajr: 'rgb(33, 110, 92)', sunrise: 'rgb(131, 154, 75)', dhuhr: 'rgb(179, 141, 27)',
+  asr: 'rgb(220, 119, 36)', maghrib: 'rgb(224, 110, 84)', isha: 'rgb(219, 79, 89)',
 }
 
 function BandsPage({ c }: { c: Ctx }) {

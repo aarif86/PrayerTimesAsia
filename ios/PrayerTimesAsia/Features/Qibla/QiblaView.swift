@@ -63,7 +63,7 @@ struct QiblaView: View {
 
     private func header(delta: Double?, bearing: Double) -> some View {
         VStack(spacing: 8) {
-            Text("Qibla").font(Theme.display(34, .bold))
+            Text("Qibla").font(Theme.screenTitle)
                 .accessibilityAddTraits(.isHeader)
             Text(instruction(delta, bearing: bearing))
                 .font(.title3.weight(.semibold))

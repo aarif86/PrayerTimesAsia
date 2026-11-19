@@ -79,7 +79,7 @@ struct FalakView: View {
                 Image("Tab-falak").resizable().frame(width: 38, height: 38)
                     .foregroundStyle(Theme.accentText)
                     .accessibilityHidden(true)
-                Text("Falak").font(Theme.display(34, .bold)).accessibilityAddTraits(.isHeader)
+                Text("Falak").font(Theme.screenTitle).accessibilityAddTraits(.isHeader)
             }
             Text("Read the time and the qibla from the sun and its shadow, the way the muwaqqit did - no signal needed.")
                 .font(.subheadline).opacity(0.9)
@@ -132,6 +132,7 @@ struct SunSafetyCard: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "eye.trianglebadge.exclamationmark.fill")
                 .font(.title2).foregroundStyle(Theme.warning)
+                .accessibilityHidden(true)
             Text("Never look at the sun - not briefly, not through sunglasses, binoculars or your phone's camera. Look only at the shadow on the ground.")
                 .font(.footnote.weight(.semibold))
         }

@@ -6,6 +6,8 @@ struct JourneyView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var pickingHome = false
+    /// The big distance, 48 pt at the usual text size, larger when the phone asks for bigger text.
+    @ScaledMetric(relativeTo: .largeTitle) private var distanceSize: CGFloat = 48
 
     var body: some View {
         NavigationStack {
@@ -13,7 +15,7 @@ struct JourneyView: View {
                 SkyNow()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Journey").font(Theme.display(34, .bold)).padding(.top, 8)
+                        Text("Journey").font(Theme.screenTitle).accessibilityAddTraits(.isHeader).padding(.top, 8)
                         if model.prefs.home != nil, !model.prefs.homeConfirmed {
                             HomeQuestionCard()
                         } else {
@@ -58,7 +60,7 @@ struct JourneyView: View {
                     }
                     if let km = distance(status) {
                         Text("\(Int(km.rounded()).formatted()) km")
-                            .font(Theme.display(48)).monospacedDigit()
+                            .font(Theme.display(distanceSize)).monospacedDigit()
                         + Text("  from home").font(.headline)
                     }
                     Text(g.body).font(.body).opacity(0.9).fixedSize(horizontal: false, vertical: true)

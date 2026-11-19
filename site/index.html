@@ -215,6 +215,23 @@
     @font-face { font-family: "Twemoji Country Flags"; src: url("fonts/TwemojiCountryFlags.woff2") format("woff2"); unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E007F; font-display: swap; }
     .chip { font-family: "Twemoji Country Flags", var(--font); background: rgba(255,255,255,0.06); border: 1px solid var(--card-line); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; color: var(--text); }
 
+    /* Printable Islamic calendar */
+    .printcal { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .printcal ul { margin: 22px 0 0; padding: 0; list-style: none; }
+    .printcal li { padding: 10px 0 10px 30px; position: relative; border-bottom: 1px solid var(--card-line); color: var(--text); }
+    .printcal li:last-child { border-bottom: 0; }
+    .printcal li::before { content: ""; position: absolute; left: 4px; top: 18px; width: 9px; height: 9px; border-radius: 50%; background: #E2B65A; }
+    .printcal .note { font-size: 0.85rem; margin-top: 16px; }
+    .sheets { position: relative; height: 470px; }
+    .sheets img { position: absolute; width: 300px; height: auto; border-radius: 6px; box-shadow: 0 30px 60px -20px #000c, 0 0 0 1px #ffffff14;
+      transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+    .sheets .cover { left: 8%; top: 10px; transform: rotate(-6deg); }
+    .sheets .month { right: 6%; top: 40px; transform: rotate(4deg); }
+    .sheets:hover .cover { transform: rotate(-9deg) translateX(-14px); }
+    .sheets:hover .month { transform: rotate(2deg) translateY(-8px); }
+    @media (max-width: 860px) { .printcal { grid-template-columns: 1fr; gap: 28px; } .sheets { height: 360px; } .sheets img { width: 220px; } .sheets .cover { left: 2%; } .sheets .month { right: 2%; } }
+    @media (prefers-reduced-motion: reduce) { .sheets img { transition: none; } }
+
     /* Masjid partner band */
     .partner { background: linear-gradient(135deg, #1d2160, #2b1a4f 60%, #3d1f3f); border: 1px solid var(--card-line); border-radius: 30px;
       padding: 48px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; }
@@ -493,6 +510,8 @@
         <li>Official timetables where they exist</li>
         <li>143 countries</li>
         <li>Works offline</li>
+        <li>Alarms for every prayer</li>
+        <li>Ready for Ramadan</li>
         <li>Switches country for you</li>
         <li>Exact location stays on your phone</li>
         <li>Free, no ads</li>
@@ -634,9 +653,10 @@
           <ul>
             <li>Singapore uses the official MUIS times, Malaysia uses JAKIM for your zone, and Indonesia uses Kemenag for your area</li>
             <li>Prayer names in the way you say them, Subuh or Fajr, Zohor or Dhuhr</li>
-            <li>A reminder when each prayer time starts, and Jumaat on Fridays</li>
+            <li>An alert when each prayer starts, a reminder before it if you like, and Jumaat on Fridays</li>
             <li>Hijri date, Dhuha and the special night times</li>
             <li>Prayer times on your home screen and lock screen, on iPhone and Android</li>
+            <li>A short hadith now and then to lift the heart, which you can turn off</li>
           </ul>
           <p class="tribute">The Colour Bands look is our tribute to prayertime.sg &amp; my, the Singapore app many of us grew up with.</p>
         </div>
@@ -692,6 +712,68 @@
           <div class="phone"><img src="img/widget.webp" alt="The big Home Screen widget with today's prayer times" loading="lazy" width="603" height="1311" /></div>
         </div>
       </div>
+
+      <div class="feature">
+        <div class="copy">
+          <span class="tag live">Ramadan &amp; Syawal</span>
+          <h3>Ready for Ramadan, from sahur to Raya</h3>
+          <p class="muted">When Ramadan comes, the app changes with it. It follows the dates your local religious authority announces, and you can move the date by a day in Settings.</p>
+          <ul>
+            <li>Countdown to Imsak and Berbuka on the Prayer screen</li>
+            <li>A sahur alarm, so you wake up in time to eat</li>
+            <li>A Tarawih counter for 8 or 20 rakaat</li>
+            <li>Your fasts this month, with the days still to replace</li>
+            <li>The six days of Syawal after Raya</li>
+          </ul>
+          <p class="muted"><a href="ramadan.html">See everything for Ramadan</a>.</p>
+        </div>
+        <div class="shot">
+          <div class="phone"><img src="img/ramadan-berbuka.webp" alt="The Prayer screen in Ramadan, counting down to Berbuka" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-ramadan.webp" alt="The Ramadan page with today's Imsak, Subuh and Berbuka times" loading="lazy" width="603" height="1347" /></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="everyday">
+    <div class="wrap">
+      <div class="center">
+        <span class="eyebrow">New in the app</span>
+        <h2>Small things that help you pray on time.</h2>
+        <p class="lead">Added over the last few weeks on iPhone and Android, and most of it in the web app too.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M5 3L2 6M19 3l3 3"/></svg></div>
+          <h3>Alarms for every prayer</h3>
+          <p>Wake up for Subuh with a real alarm, not just a quiet alert. Set one for any of the five prayers, pick the sound, and tap Snooze for five more minutes. There is a tahajjud alarm too.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14M5 2h14M17 22v-4.2a2 2 0 0 0-.6-1.4L12 12l-4.4 4.4a2 2 0 0 0-.6 1.4V22M7 2v4.2a2 2 0 0 0 .6 1.4L12 12l4.4-4.4a2 2 0 0 0 .6-1.4V2"/></svg></div>
+          <h3>Time left to pray</h3>
+          <p>A short line tells you how long is left, like 19m left to pray, so you know if you can still make Zohor before your next meeting. Quiet hours and buzz only alerts help at work.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></div>
+          <h3>Big and Simple</h3>
+          <p>Large, clear times with nothing extra on the screen. Made for our parents and grandparents, and for anyone who wants the times easy to read.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg></div>
+          <h3>Opens straight away</h3>
+          <p>The app opens on your last place at once, then quietly checks where you are. A short moving clock greets you, and you can turn it off in Settings.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h2v2H9zM13 7h2v2h-2zM9 11h2v2H9zM15 13v2h-2M11 18h2"/></svg></div>
+          <h3>New phone, same settings</h3>
+          <p>Delete the app or change phones, and your home, alarms and look come back. Or move everything with a QR code, with nothing to sign up for.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg></div>
+          <h3>Print it out</h3>
+          <p>A monthly prayer calendar for the fridge or the surau wall, and a short letter that explains prayer breaks to your boss or your school. <a href="app/print/">Make one</a>.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -740,7 +822,7 @@
           <span class="tag beta">Testing now</span>
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div>
           <h3>iPhone and Android</h3>
-          <p>Prayer times on your home screen and lock screen, and prayer reminders. Being tested now, coming soon to the App Store and Google Play.</p>
+          <p>Prayer times on your home screen and lock screen, with alarms and reminders. Being tested now, and on its way to the App Store and Google Play.</p>
         </div>
         <div class="card">
           <span class="tag plan">Planned</span>
@@ -764,7 +846,34 @@
           <span class="tag live">Live</span>
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c-2 2-4 3.5-4 6h8c0-2.5-2-4-4-6zM4 22V12h16v10M9 22v-5a3 3 0 0 1 6 0v5M2 22h20"/></svg></div>
           <h3>Masjid display screens</h3>
-          <p>A clear prayer times screen for the masjid TV with azan and iqamah times, Jumaat and announcements. The masjid sets it up. <a href="app/screen/#setup">Set one up</a>.</p>
+          <p>A clear prayer times screen for the masjid TV with azan and iqamah times, Jumaat and announcements, in six looks for a wide or tall screen. The masjid sets it up. <a href="app/screen/#setup">Set one up</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="calendar">
+    <div class="wrap">
+      <div class="printcal">
+        <div class="sheets" aria-hidden="true">
+          <img class="cover" src="img/print-wall-cover.webp" alt="" width="560" height="792" loading="lazy" />
+          <img class="month" src="img/print-wall-month.webp" alt="" width="560" height="793" loading="lazy" />
+        </div>
+        <div>
+          <span class="eyebrow">Free to print</span>
+          <h2>An Islamic calendar worth hanging on your wall.</h2>
+          <p class="muted">Print a full Islamic calendar for the year at home, free. Calm A4 pages with big dates, the Hijri date under every day, and the important days of the year marked for you.</p>
+          <ul>
+            <li>A wall calendar with a cover and one page for each month</li>
+            <li>The whole Islamic year on one page</li>
+            <li>Monthly prayer timetables, a Ramadan timetable and charts for children</li>
+            <li>For your own town, in English, Malay or Indonesian</li>
+          </ul>
+          <div class="btns" style="margin-top: 24px">
+            <a class="btn btn-primary" href="app/print/#sheet=wall">Print your calendar</a>
+            <a class="btn btn-ghost" href="app/print/">See everything you can print</a>
+          </div>
+          <p class="muted note">Hijri dates can differ by a day from place to place. Follow your local religious authority.</p>
         </div>
       </div>
     </div>
@@ -987,7 +1096,7 @@
 
     // Sections rise into view as you scroll, a little after each other.
     var groups = ['main section .center', '.chapter', '.trip-photo', '.letter', '.feature', '.grid > .card', '.countries > .card',
-      '.steps > .card', '.partner', '.faq details', '.ask-band'];
+      '.steps > .card', '.partner', '.printcal', '.faq details', '.ask-band'];
     var items = document.querySelectorAll(groups.join(','));
     items.forEach(function (el) {
       el.classList.add('reveal');

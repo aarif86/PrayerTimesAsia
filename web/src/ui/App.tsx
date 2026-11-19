@@ -1,7 +1,8 @@
 import type { ComponentType } from 'preact'
+import { SiteHomeButton } from './SiteHome'
 import { lazy, Suspense } from 'preact/compat'
 import { useEffect, useLayoutEffect } from 'preact/hooks'
-import { Compass, Globe2, Plane } from 'lucide-preact'
+import { ChevronsLeft, ChevronsRight, Compass, Globe2, Plane } from 'lucide-preact'
 import { scheduleAlerts } from '../services/notifications'
 import { store, TABS, useNow, useStore, type Tab } from '../services/store'
 import { openSheet, useSheet } from './common'
@@ -45,6 +46,23 @@ function later<P extends object>(load: () => Promise<ComponentType<P>>, fallback
   return (p: P) => <Suspense fallback={fallback}><Lazy {...p} /></Suspense>
 }
 
+/**
+ * Once the Prayer screen is up and the phone is idle, quietly load the other
+ * screens too, so the first tap on Qibla, Falak, Masjid or Settings opens at
+ * once instead of showing an empty page while its file arrives.
+ */
+function warmUpScreens(): ReturnType<typeof setTimeout> {
+  return setTimeout(() => {
+    const load = () => {
+      for (const get of [() => import('./Qibla'), () => import('./Masjid'), () => import('./Settings'), () => import('./Falak'), () => import('./Tracker')]) {
+        get().catch(() => { /* offline or a new version: the screen loads on its tap as before */ })
+      }
+    }
+    const idle = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback
+    if (idle) idle(load, { timeout: 4000 }); else load()
+  }, 2500)
+}
+
 const TAB_LABEL: Record<Tab, string> = { today: 'Prayer', qibla: 'Qibla', falak: 'Falak', masjid: 'Masjid', settings: 'Settings' }
 const TAB_ICON: Record<Tab, (p: { size?: number }) => preact.JSX.Element> = {
   today: TabPrayer, qibla: TabQibla, falak: TabFalak, masjid: TabMasjid, settings: TabSettings,
@@ -77,9 +95,10 @@ export function App() {
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = scheme
     document.documentElement.toggleAttribute('data-large-text', s.prefs.largeText)
+    document.documentElement.dataset.menu = s.prefs.menuSide
     const meta = document.querySelector('meta[name="theme-color"]')
     meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
-  }, [scheme, bands, s.prefs.largeText])
+  }, [scheme, bands, s.prefs.largeText, s.prefs.menuSide])
 
   useEffect(() => {
     const moved = takeMoveFromLink()
@@ -94,7 +113,8 @@ export function App() {
     // On moon sighting nights the announcement can arrive while the app is open.
     const poll = setInterval(() => { void s.refreshData() }, 10 * 60_000)
     document.addEventListener('visibilitychange', onVisible)
-    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll) }
+    const warm = warmUpScreens()
+    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll); clearTimeout(warm) }
   }, [])
 
   // Re-arm the next prayer alert whenever anything changes.
@@ -117,6 +137,8 @@ export function App() {
       {bands && <div class="bands-backdrop" />}
       <div class="shell">
         <main class={`screen tab-${s.tab}`} id="main">
+          {/* Prayer and Masjid place the home button in their own top bars. */}
+          {s.tab !== 'today' && s.tab !== 'masjid' && <SiteHomeButton class="corner" />}
           {s.tab === 'today' && <TodayScreen />}
           {s.tab === 'qibla' && <QiblaScreen />}
           {s.tab === 'falak' && <FalakScreen />}
@@ -135,6 +157,12 @@ export function App() {
             </button>
           )
         })}
+        {/* Bigger screens: the bar sits at the side, and this arrow slides it across. Hidden on phones (bottom bar). */}
+        <button class="tabbar-move" aria-label={s.prefs.menuSide === 'right' ? 'Move the menu to the left' : 'Move the menu to the right'}
+          title={s.prefs.menuSide === 'right' ? 'Move to the left' : 'Move to the right'}
+          onClick={() => store.update((p) => { p.menuSide = p.menuSide === 'right' ? 'left' : 'right' })}>
+          {s.prefs.menuSide === 'right' ? <ChevronsLeft size={18} /> : <ChevronsRight size={18} />}
+        </button>
       </nav>
       {sheet?.kind === 'places' && <PlacesSheet forHome={sheet.forHome} />}
       {sheet?.kind === 'sanad' && <SanadSheet day={sheet.day} />}
