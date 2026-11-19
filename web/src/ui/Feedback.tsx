@@ -103,16 +103,27 @@ export function reviewLinks(platform: 'ios' | 'android' | null, apps = NATIVE_AP
 export function ReviewSheet() {
   const s = useStore()
   const links = reviewLinks(phonePlatform(navigator.userAgent, navigator.platform, navigator.maxTouchPoints), NATIVE_APPS, s.demo != null && new URLSearchParams(location.search).get('stores') === 'on')
-  const tapped = () => store.update((x) => { x.reviewTappedAt = Date.now() })
+  const [words, setWords] = useState(s.prefs.reviewDraft)
+  const [copiedFor, setCopiedFor] = useState<string | null>(null)
+  // Write once, use everywhere: each review button copies the words first, so they
+  // only need a paste on the store page (no store lets an app fill the review in).
+  const tapped = (id: string) => {
+    store.update((x) => { x.reviewTappedAt = Date.now(); x.reviewDraft = words })
+    if (words.trim()) { navigator.clipboard?.writeText(words.trim()).then(() => setCopiedFor(id), () => undefined) }
+  }
   return (
     <Sheet title="Rate and review">
       <div class="help feedback">
         <p class="subhead">A few honest words help other Muslims find the app, and help Ustaz Aarif and the team keep going. Jazakallahu khairan.</p>
+        <textarea class="feedback-text review-words" rows={4} aria-label="Your review"
+          placeholder="Write your review once here, in your own words. We copy it for you, so you just paste it in each place."
+          value={words} onInput={(e) => { setWords((e.target as HTMLTextAreaElement).value); setCopiedFor(null) }}
+          onBlur={() => store.update((x) => { x.reviewDraft = words })} />
         <div class="group review-links">
           {links.map((l) => (
-            <a class="item" href={l.href} target="_blank" rel="noopener noreferrer" onClick={tapped}>
+            <a class="item" href={l.href} target="_blank" rel="noopener noreferrer" onClick={() => tapped(l.id)}>
               {l.id === 'google' ? <MapPin size={20} class="accent" /> : <Star size={20} class="accent" />}
-              <span class="label">{l.title}<span class="sub">{l.sub}</span></span>
+              <span class="label">{l.title}<span class="sub">{copiedFor === l.id ? 'Copied. Tap and hold in the review box, then Paste.' : l.sub}</span></span>
               <ChevronRight size={16} class="secondary" />
             </a>
           ))}

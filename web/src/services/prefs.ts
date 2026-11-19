@@ -136,6 +136,8 @@ export interface Preferences {
   noteCardDone: boolean
   /** When a public review link was last tapped (ms), 0 = never. */
   reviewTappedAt: number
+  /** The review words written once in Rate and review, kept on this device to paste in each store. */
+  reviewDraft: string
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -210,6 +212,7 @@ export const DEFAULT_PREFS: Preferences = {
   feedbackSentAt: 0,
   noteCardDone: false,
   reviewTappedAt: 0,
+  reviewDraft: '',
 }
 
 const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat', 
