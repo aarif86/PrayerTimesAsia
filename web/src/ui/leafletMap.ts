@@ -22,11 +22,32 @@ export function createMap(el: HTMLElement, center: Coordinates, dark: boolean, z
   return map
 }
 
-export function youMarker(c: Coordinates): L.Marker {
+export function youMarker(c: Coordinates, beam = false): L.Marker {
+  const html = beam ? '<i class="you-beam"></i><i class="you-beam late"></i><span></span>' : '<span></span>'
   return L.marker([c.latitude, c.longitude], {
-    icon: L.divIcon({ className: 'you-pin', html: '<span></span>', iconSize: [18, 18], iconAnchor: [9, 9] }),
-    keyboard: false, interactive: false,
+    icon: L.divIcon({ className: `you-pin${beam ? ' beaming' : ''}`, html, iconSize: [18, 18], iconAnchor: [9, 9] }),
+    keyboard: false, interactive: false, zIndexOffset: 1000,
   })
+}
+
+/**
+ * Rings around you at these distances, each labelled at its bottom, so a pin
+ * inside the 1 km ring reads as near and one past 5 km as far.
+ */
+export function distanceRings(c: Coordinates, rings: { km: number; label: string }[]): L.LayerGroup {
+  const group = L.layerGroup()
+  rings.forEach(({ km, label }, i) => {
+    L.circle([c.latitude, c.longitude], {
+      radius: km * 1000, interactive: false, className: 'dist-ring',
+      color: '#2f7cf6', weight: 1.5, opacity: 0.55, dashArray: '5 7',
+      fill: i === 0, fillColor: '#2f7cf6', fillOpacity: 0.07,
+    }).addTo(group)
+    L.marker([c.latitude - km / 111.2, c.longitude], {
+      icon: L.divIcon({ className: 'ring-label', html: `<span>${label}</span>`, iconSize: [0, 0], iconAnchor: [0, 0] }),
+      interactive: false, keyboard: false,
+    }).addTo(group)
+  })
+  return group
 }
 
 const MASJID_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z" fill="currentColor" stroke="none"/></svg>'
