@@ -1,7 +1,7 @@
 # Prayer Times Asia
 
 Prayer times and qibla for Muslims living and travelling across Asia: on iPhone,
-Android and the web. Free, built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). No third-party ads,
+Android and the web. Free, built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). No outside ads,
 no accounts, no tracking; location never leaves the device.
 
 ## What's where
@@ -10,8 +10,8 @@ no accounts, no tracking; location never leaves the device.
 |---|---|---|
 | [`ios/`](ios/) | The iPhone app (SwiftUI) with widgets and Live Activity | On TestFlight |
 | [`android/`](android/) | The Android app (Kotlin + Jetpack Compose) with widgets | Debug APK from CI |
-| [`web/`](web/) | The web app: installable, works offline | Live at aarif86.github.io/PrayerTimesAsia/app/ |
-| [`site/`](site/) | The promo website for prayertimes.asia: features, how to try it, masjid partners | Live at aarif86.github.io/PrayerTimesAsia/ |
+| [`web/`](web/) | The web app: installable, works offline | Live at prayertimes.asia/app/ |
+| [`site/`](site/) | The promo website for prayertimes.asia: features, how to try it, masjid partners | Live at prayertimes.asia |
 | `data/`, `config/` | Shared data every app downloads: masjid profiles, Ramadan/Eid announcements, official-source settings. **Don't move these** - apps already on phones read them from these paths. | |
 | `design/` | App icon and design sources | |
 | `docs/` | Changelog, roadmap, build log (for the website), App Store copy, falak review sheet | |
@@ -40,6 +40,6 @@ Each app has its own README with how to build and run it.
 
 ## Licence and promises
 
-Free forever, no ads, no selling data, always open source: [docs/stewardship.md](docs/stewardship.md).
+Free forever, no outside ads, no selling data, always open source: [docs/stewardship.md](docs/stewardship.md).
 Code: GNU AGPL 3.0 with an app store permission ([NOTICE.md](NOTICE.md)). Data in `data/`: CC-BY 4.0.
 The name and icon: [TRADEMARKS.md](TRADEMARKS.md).

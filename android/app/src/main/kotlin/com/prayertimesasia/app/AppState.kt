@@ -13,7 +13,9 @@ import com.prayertimesasia.app.data.PrefsStore
 import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
+import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Appearance
+import com.prayertimesasia.core.Coordinates
 import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
@@ -74,7 +76,10 @@ class AppState(
     val isCheckingLocation: Boolean
         get() = prefs.useGPS && location.hasPermission && !hasFreshFix && gpsPlace != null
     var now by mutableStateOf(fixedNow ?: Instant.now())
-    var selectedTab by mutableStateOf(Tab.PRAYER)
+    private var tab by mutableStateOf(Tab.PRAYER)
+    var selectedTab: Tab
+        get() = tab
+        set(value) { tab = value; usageScreen(value) }
     var showJourney by mutableStateOf(false)
     var showTracker by mutableStateOf(false)
     var showRamadan by mutableStateOf(false)
@@ -207,6 +212,17 @@ class AppState(
     }
 
     fun forgetMasjid() = update { it.copy(myMasjid = null) }
+
+    /** Picked on the Masjid tab: pinned at the top. Keeps iqamah times a QR code already gave the same masjid. */
+    fun chooseMasjid(name: String, c: Coordinates) {
+        val old = prefs.myMasjid
+        if (old != null && kotlin.math.abs(old.lat - c.latitude) < 0.003 && kotlin.math.abs(old.lng - c.longitude) < 0.003) return
+        val place = resolver.activePlace
+        update {
+            it.copy(myMasjid = MasjidLink(name.take(80), Math.round(c.latitude * 10_000) / 10_000.0, Math.round(c.longitude * 10_000) / 10_000.0,
+                place?.timeZoneId ?: java.time.ZoneId.systemDefault().id, place?.countryCode))
+        }
+    }
 
     /** Travel mode: notice a new country, remember when we got here, show the welcome card. */
     private fun arrived(place: Place) {
@@ -425,6 +441,26 @@ class AppState(
             delay(8_000)
             if (prefs.shareUsage) usage.countOpen(resolver.activePlace)
         }
+    }
+
+    private val usageOn: Boolean get() = prefs.shareUsage && prefs.hasOnboarded && sideEffects && fixedNow == null
+
+    /** Minutes on screen, opens and screens used today, sent as one summary the next day. */
+    fun usageVisible(visible: Boolean) {
+        if (!visible) { if (sideEffects) usage.tallyStop(); return }
+        if (!usageOn) return
+        scope.launch { usage.tallyStart(resolver.activePlace) }
+        usageScreen(selectedTab)
+    }
+
+    private fun usageScreen(tab: Tab) {
+        if (usageOn) usage.tallyScreen(tab.name.lowercase())
+    }
+
+    /** Anonymous count of a Barakah Picks card seen (once a day) or tapped (docs/community-cards.md). */
+    fun countCard(event: UsageCounter.CardEvent, card: CommunityCard, placement: String) {
+        if (!prefs.shareUsage || !sideEffects || fixedNow != null) return
+        scope.launch { usage.countCard(event, card, placement, resolver.activePlace) }
     }
 
     /** The day [offset] days from today, or today. */

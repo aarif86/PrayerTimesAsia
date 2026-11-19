@@ -141,7 +141,7 @@ struct TodayView: View {
             showMoreButton
             if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                CommunityCardSlot(now: now, next: next)
             }
         }
         .padding(.horizontal, Theme.gutter)
@@ -299,7 +299,7 @@ struct TodayView: View {
             showMoreButton
             if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                CommunityCardSlot(now: now, next: next)
             }
         }
         .padding(.horizontal, Theme.gutter)
@@ -535,7 +535,7 @@ struct TodayView: View {
                 }
                 if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore {
-                    MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                    CommunityCardSlot(now: now, next: next)
                 }
             }
             .padding(.horizontal, Theme.gutter)
@@ -627,7 +627,7 @@ struct TodayView: View {
             }
             if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                CommunityCardSlot(now: now, next: next)
             }
         }
         .padding(.horizontal, Theme.gutter)
@@ -669,7 +669,7 @@ struct TodayView: View {
                 SourceBadge(day: shown)
                 if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore {
-                    MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                    CommunityCardSlot(now: now, next: next)
                 }
             }
             .padding(.horizontal, Theme.gutter)

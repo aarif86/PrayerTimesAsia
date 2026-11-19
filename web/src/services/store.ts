@@ -26,7 +26,8 @@ import { CITIES, nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
 import { DEFAULT_PREFS, loadPreferences, savePreferences, TODAY_STYLES, type Preferences, type TodayStyle } from './prefs'
 import { fetchOK, readJSON, readString, writeJSON, writeString } from './storage'
-import { countAppOpen } from './usage'
+import { countAppOpen, countCard, tallyScreen, tallyStart, tallyStop, type CardFacts } from './usage'
+import { VERSION } from '../ui/version'
 
 export type Tab = 'today' | 'qibla' | 'falak' | 'masjid' | 'settings'
 export const TABS: Tab[] = ['today', 'qibla', 'falak', 'masjid', 'settings']
@@ -106,6 +107,18 @@ class AppStore {
     this.emit()
   }
 
+  /** Picked from the Masjid tab: pinned at the top. Keeps iqamah times a QR code already gave it. */
+  chooseMasjid(name: string, c: { latitude: number; longitude: number }): void {
+    const old = this.prefs.myMasjid
+    const same = old && Math.abs(old.lat - c.latitude) < 0.003 && Math.abs(old.lng - c.longitude) < 0.003
+    this.update((p) => {
+      p.myMasjid = same ? old : {
+        name: name.slice(0, 80), lat: +c.latitude.toFixed(4), lng: +c.longitude.toFixed(4),
+        tz: this.activePlace?.timeZoneID ?? deviceTimeZone(), cc: this.activePlace?.countryCode ?? null, jamaah: {}, jumuah: null,
+      }
+    })
+  }
+
   forgetMasjid(): void {
     this.update((p) => { p.myMasjid = null })
   }
@@ -150,6 +163,7 @@ class AppStore {
   setTab(tab: Tab): void {
     this.tab = tab
     this.emit()
+    if (this.usageOn) tallyScreen(tab === 'today' ? 'prayer' : tab)
   }
 
   // MARK: Where and which rules
@@ -167,6 +181,26 @@ class AppStore {
     if (this.demo || !this.prefs.shareUsage || !this.prefs.hasOnboarded) return
     const p = this.activePlace
     countAppOpen(version, { city: p?.name, countryCode: p?.countryCode })
+  }
+
+  private get usageOn(): boolean { return !this.demo && this.prefs.shareUsage && this.prefs.hasOnboarded }
+
+  /** The app came on screen or left it: minutes and opens per day (services/usage.ts, App.daySummary). */
+  usageVisible(visible: boolean): void {
+    if (!this.usageOn) return
+    if (!visible) { tallyStop(); return }
+    const p = this.activePlace
+    tallyStart(VERSION.replace(' (web)', ''), { city: p?.name, countryCode: p?.countryCode })
+    tallyScreen(this.tab === 'today' ? 'prayer' : this.tab)
+  }
+
+  /** Anonymous count of a Barakah Picks card seen or tapped (docs/community-cards.md). */
+  countCard(event: 'Card.seen' | 'Card.tapped', card: CardFacts): void {
+    if (this.demo || !this.prefs.shareUsage) return
+    const p = this.activePlace
+    const d = new Date()
+    const today = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+    countCard(event, VERSION.replace(' (web)', ''), { city: p?.name, countryCode: p?.countryCode }, card, today)
   }
 
   /** Showing the last known place while the browser checks where we are now. */
@@ -749,7 +783,7 @@ class AppStore {
   }
 }
 
-function navigatorLocale(): string {
+export function navigatorLocale(): string {
   // A language picked on our website (same address) comes first, then the browser's.
   try {
     const site = localStorage.getItem('pta-lang')
@@ -799,6 +833,8 @@ function demoPreferences(demo: Demo): Preferences {
   p.manualPlace = PASIR_RIS
   p.lastCountryCode = 'SG'
   p.trackerEnabled = true
+  // Screenshots skip the quick guide unless they ask for it (?guide=1).
+  p.guideSeen = q.get('guide') !== '1'
   for (let back = 1; back <= 3; back++) {
     p.prayedLog[dayKey(now - back * 86_400_000, 'Asia/Singapore')] = [...OBLIGATORY]
   }

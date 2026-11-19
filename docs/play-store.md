@@ -20,8 +20,8 @@ version is in [app-store.md](app-store.md); the build steps are in
 | Category | Lifestyle |
 | Tags | Religion, Travel, Reference (pick up to 5 that Play offers) |
 | Contact email | salam@prayertimes.asia |
-| Website | https://aarif86.github.io/PrayerTimesAsia/ (prayertimes.asia once the domain is set up) |
-| Privacy policy | https://aarif86.github.io/PrayerTimesAsia/privacy.html |
+| Website | https://prayertimes.asia/ |
+| Privacy policy | https://prayertimes.asia/privacy.html |
 
 ## Short and full description
 
@@ -62,12 +62,12 @@ Answer each card like this:
 *Which account creation methods does your app support?* **My app does not allow users to create an account.**
 *Data deletion:* not needed (no accounts; counts are anonymous).
 
-Data types collected (for each: **Collected** yes, **Shared** no, **Processed ephemerally** no, **Required or optional** *Users can choose whether this data is collected*, **Purpose** *Analytics*):
+Data types collected (for each: **Collected** yes, **Shared** no (sponsors only get totals, which is not sharing user data), **Processed ephemerally** no, **Required or optional** *Users can choose whether this data is collected*, **Purpose** *Analytics*):
 
 | Section | Data type | Why |
 |---|---|---|
 | Location | Approximate location | The city and country of the place in use, sent with the usage counts. Never coordinates. |
-| App activity | App interactions | Anonymous app-open counts (TelemetryDeck). |
+| App activity | App interactions | Anonymous app-open counts, a daily total of minutes used, opens and which screens were used, and which Barakah Picks card was shown or tapped (TelemetryDeck). |
 | Device or other IDs | Device or other IDs | The random number made on the phone to count people, not visits. |
 
 Not collected: precise location (used on the phone only), personal info, photos (the camera is used only on the phone for the Falak shadow stick and scanning a settings QR code), contacts, messages, files, health, financial info.

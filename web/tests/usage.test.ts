@@ -47,3 +47,27 @@ describe('anonymous usage counts', () => {
     expect(typeof config.enabled).toBe('boolean')
   })
 })
+
+describe('a day of use (App.daySummary)', async () => {
+  const { addScreen, addStretch, dayPayload, emptyTally, MAX_STRETCH_S, minutesBand, rollTally } = await import('../src/services/usage')
+  it('keeps today going and hands back an earlier day once', () => {
+    const t = { ...emptyTally('2026-11-17'), opens: 2, seconds: 300 }
+    expect(rollTally(t, '2026-11-17')).toEqual({ tally: t, finished: null })
+    expect(rollTally(t, '2026-11-18')).toEqual({ tally: emptyTally('2026-11-18'), finished: t })
+    expect(rollTally(emptyTally('2026-11-17'), '2026-11-18').finished).toBeNull()
+    expect(rollTally(null, '2026-11-18').finished).toBeNull()
+  })
+  it('adds time, caps a phone left open, and lists each screen once', () => {
+    let t = addStretch(emptyTally('d'), 90.4)
+    t = addStretch(t, 99_999)
+    expect(t.seconds).toBe(90 + MAX_STRETCH_S)
+    t = addScreen(addScreen(addScreen(t, 'qibla'), 'prayer'), 'qibla')
+    expect(t.screens).toEqual(['qibla', 'prayer'])
+  })
+  it('sends minutes, opens and screens, nothing else about the person', () => {
+    const p = dayPayload({ 'App.platform': 'web' }, { day: '2026-11-17', seconds: 610, opens: 4, screens: ['qibla', 'prayer'] })
+    expect(p).toMatchObject({ 'Day.date': '2026-11-17', 'Day.minutes': 10, 'Day.minutesBand': '5 to 15', 'Day.opens': 4, 'Day.screens': 'prayer,qibla', 'Used.qibla': true, 'Used.falak': false })
+    expect(minutesBand(0.5)).toBe('under 1')
+    expect(minutesBand(75)).toBe('over 60')
+  })
+})

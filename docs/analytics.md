@@ -36,6 +36,9 @@ file and commit.
 | New installs (including people adding the web app to their Home Screen) | `App.installed` (the first open on a device), plus `Web.installedToHomeScreen` |
 | Which masjids run the screen, and whether each is still on | `Screen.running` with `Masjid.name` (sent at start and every 6 hours; a masjid missing for a day means its TV is off or offline) |
 | How masjids set up their screen | `Screen.look`, `Screen.language`, `Screen.orientation` |
+| How many minutes a day people use it, how many times a day they open it, and which screens they use | `App.daySummary`, one per device per day used, sent on the next open: `Day.date`, `Day.minutes`, `Day.minutesBand` (under 1, 1 to 5, 5 to 15, 15 to 30, 30 to 60, over 60), `Day.opens` (every time the app comes on screen), `Day.screens` and `Used.prayer`, `Used.qibla`, `Used.falak`, `Used.masjid`, `Used.settings` (true or false) |
+| Roughly how many people have it open now | `App.opened` in the last hour (the nearest to live; nothing is sent while the app sits open) |
+| How often each Barakah Picks card is seen and tapped | `Card.seen` (once a day per card per device) and `Card.tapped`, with `Card.id`, `Card.kind`, `Card.placement` |
 
 ### Charts worth making first
 
@@ -48,6 +51,16 @@ In the TelemetryDeck dashboard, add an Insight for each. Filter by **signal type
 3. **New installs**: `App.installed`, count per week, broken down by `App.platform`.
 4. **Masjid screens on today**: `Screen.running`, last 24 hours, broken down by `Masjid.name`.
 5. **App versions in use**: `App.opened`, broken down by `App.version`.
+
+6. **Barakah Picks**: `Card.seen` and `Card.tapped`, broken down by `Card.id`. How to
+   turn these into a sponsor report is in [community-cards.md](community-cards.md).
+7. **Minutes a day**: `App.daySummary`, last 30 days, average of `Day.minutes`, and a
+   second chart counted by user and broken down by `Day.minutesBand`.
+8. **Opens a day**: `App.daySummary`, average of `Day.opens`.
+9. **Which screens get used**: `App.daySummary`, users, filtered to `Used.qibla` is
+   `true` (one chart per screen), or broken down by `Day.screens`.
+10. **Open in the last hour**: `App.opened`, last hour, users. This is as close to
+    "open right now" as the counts get.
 
 Events from test builds and from a computer on your home network are marked as tests.
 TelemetryDeck hides them unless you switch on "Test mode".
@@ -64,9 +77,11 @@ Global Privacy Control are never counted. All of this is on the public
 
 ## How far the free plan goes
 
-Each app open is one event (two on the very first open), and each masjid screen sends
-about 4 a day. As a rough guide, 50,000 a month covers about 1,000 people opening the
-app most days plus 30 masjid screens. When the limit is reached, TelemetryDeck stops
+Each app open is one event (two on the very first open), each day of use adds one
+`App.daySummary`, a Barakah Picks card adds about one more, and each masjid screen sends
+about 4 a day. As a rough guide, 50,000 a month covers about 500 people opening the
+app most days plus 30 masjid screens. Past that a paid plan is needed (see
+telemetrydeck.com/pricing). When the limit is reached, TelemetryDeck stops
 counting until the next month or an upgrade. Nothing breaks in the apps.
 
 ## Official install numbers

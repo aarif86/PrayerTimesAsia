@@ -4,6 +4,7 @@ struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
     @State private var showRamadan = false
+    @State private var showGuide = false
     @State private var showReview = false
     @State private var showNote = false
     @Environment(\.dismiss) private var dismiss
@@ -303,13 +304,23 @@ struct SettingsView: View {
                     Text("Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. Works between iPhone, Android and the web. Restoring a new iPhone from an iCloud backup brings them too.")
                 }
 
+                Section {
+                    Button { showGuide = true } label: {
+                        Label("Show the quick guide", systemImage: "lightbulb")
+                    }
+                } header: {
+                    Text("Help")
+                } footer: {
+                    Text("A short tour that taps the real buttons, so you know where everything is.")
+                }
+
                 Section("Accuracy") {
                     Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.")
                         .font(.footnote)
                 }
 
                 Section {
-                    Label("No third-party ads, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
+                    Label("No outside ads, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
                     Label("Your exact location never leaves your phone.", systemImage: "location.slash.fill")
                     Label("Nearby masjid search goes through Apple Maps and OpenStreetMap (only the area is sent).", systemImage: "map.fill")
                     Toggle("Share anonymous usage counts", isOn: $model.prefs.shareUsage)
@@ -321,15 +332,15 @@ struct SettingsView: View {
                 .font(.footnote)
 
                 Section {
-                    ForEach(MakersOffer.allCases) { offer in
-                        MakersCard(offer: offer, placement: "settings")
+                    ForEach(CommunityCard.ours(for: model.offerCountry)) { card in
+                        MakersCard(card: card, placement: "settings")
                             .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
                     }
-                    Toggle("Show offers on Prayer and Masjid", isOn: $model.prefs.showOffers)
+                    Toggle("Show \(picksName)", isOn: $model.prefs.showOffers)
                 } header: {
-                    Text("From the makers").id("makers")
+                    Text(picksName).id("makers")
                 } footer: {
-                    Text("Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own - no ad networks, nothing tracked.")
+                    Text("Barakah Picks is not a normal ad. It is one small space we check by hand for halal Muslim businesses and causes, safe for the whole family. No gambling, alcohol, riba or anything immodest, and never Google, Facebook or Instagram ads. Most picks are our own services, and paid ones are marked Sponsored. We keep only simple counts of how often each card is seen and tapped, never who you are. [Our rules for Barakah Picks](https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md)")
                 }
 
                 Section {
@@ -355,6 +366,7 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
             .sheet(isPresented: $showRamadan) { RamadanView() }
+            .fullScreenCover(isPresented: $showGuide) { GuideView() }
             .sheet(isPresented: $showReview) { ReviewView() }
             .sheet(isPresented: $showNote) { NoteView() }
             .toolbar {

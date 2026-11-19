@@ -58,7 +58,6 @@ page = f'''<!doctype html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="robots" content="noindex, nofollow" />
 <title>Where our times come from | Prayer Times Asia</title>
 <meta name="description" content="Every country in Prayer Times Asia, whose prayer times it follows and the method it uses. Your local religious authority first." />
 <link rel="icon" href="img/favicon-32.png" sizes="32x32" />

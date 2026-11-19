@@ -96,6 +96,21 @@ final class AppModel {
 
     func forgetMasjid() { prefs.myMasjid = nil }
 
+    /// "Make it my masjid" on the Masjid tab. Saved on this phone only, like every
+    /// setting. Keeps the iqamah times when it's already the masjid from its QR code.
+    func chooseMasjid(name: String, coordinates c: Coordinates) {
+        if let m = prefs.myMasjid, abs(m.lat - c.latitude) < 0.003, abs(m.lng - c.longitude) < 0.003 { return }
+        prefs.myMasjid = MasjidLink(name: String(name.prefix(80)), lat: c.latitude, lng: c.longitude,
+                                    tz: activePlace?.timeZoneID ?? TimeZone.current.identifier,
+                                    cc: activePlace?.countryCode, jamaah: [:], jumuah: nil)
+    }
+
+    /// True when this spot is your masjid (within about 300 m).
+    func isMyMasjid(_ c: Coordinates) -> Bool {
+        guard let m = prefs.myMasjid else { return false }
+        return abs(m.lat - c.latitude) < 0.003 && abs(m.lng - c.longitude) < 0.003
+    }
+
     /// Your masjid, when the place shown is within reach of it (not while travelling).
     var myMasjidHere: MasjidLink? {
         guard let m = prefs.myMasjid, let place = activePlace,
@@ -114,6 +129,8 @@ final class AppModel {
                          timeZoneID: "Asia/Singapore", coordinates: Coordinates(latitude: 1.3721, longitude: 103.9474))
         var p = Preferences()
         p.hasOnboarded = true
+        // Screenshots skip the quick guide unless they ask for it.
+        p.guideSeen = !args.contains("-guide")
         p.useGPS = false
         p.home = home
         p.homeConfirmed = true
@@ -610,6 +627,37 @@ final class AppModel {
             guard prefs.shareUsage else { return }
             UsageCounter.countOpen(place: activePlace)
         }
+    }
+
+    private var usageOn: Bool { prefs.shareUsage && prefs.hasOnboarded && !Self.isDemo }
+
+    /// Minutes on screen, opens and screens used today, sent as one summary the next day.
+    func usageVisible(_ visible: Bool) {
+        guard usageOn else { if !visible { UsageCounter.tallyStop() }; return }
+        if visible {
+            UsageCounter.tallyStart(place: activePlace)
+            usageScreen(selectedTab)
+        } else {
+            UsageCounter.tallyStop()
+        }
+    }
+
+    func usageScreen(_ tab: Tab) {
+        guard usageOn else { return }
+        switch tab {
+        case .today: UsageCounter.tallyScreen("prayer")
+        case .qibla: UsageCounter.tallyScreen("qibla")
+        case .falak: UsageCounter.tallyScreen("falak")
+        case .nearby: UsageCounter.tallyScreen("masjid")
+        case .settings: UsageCounter.tallyScreen("settings")
+        case .journey, .wakeup: break
+        }
+    }
+
+    /// Anonymous count of a Barakah Picks card seen (once a day) or tapped (docs/community-cards.md).
+    func countCard(_ event: UsageCounter.CardEvent, card: CommunityCard, placement: String) {
+        guard prefs.shareUsage, !Self.isDemo else { return }
+        UsageCounter.countCard(event, card: card, placement: placement, place: activePlace)
     }
 
     static var isDemo: Bool { ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") || $0 == "-widget-preview" } }

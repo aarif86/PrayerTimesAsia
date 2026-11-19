@@ -54,7 +54,7 @@ object MasjidLists {
         )
     }.getOrNull()
 
-    /** `{"places": [[id, lat, lon, name, address, musollah 0/1], ...]}`; null when unreadable. */
+    /** `{"places": [[id, lat, lon, name, address, musollah 0/1, facilities?, opening_hours?], ...]}`; null when unreadable. */
     fun parse(text: String): List<PrayerSpace>? = runCatching {
         Json.parseToJsonElement(text).jsonObject["places"]!!.jsonArray.mapNotNull { row ->
             val r = row as? JsonArray ?: return@mapNotNull null
@@ -63,6 +63,7 @@ object MasjidLists {
             val lon = (r[2] as? JsonPrimitive)?.doubleOrNull ?: return@mapNotNull null
             val musollah = (r[5] as? JsonPrimitive)?.intOrNull == 1
             val name = (r[3] as? JsonPrimitive)?.contentOrNull.orEmpty()
+            if (PrayerSpaces.isGraveOrShrine(name)) return@mapNotNull null
             PrayerSpace(
                 id = "osm/" + ((r[0] as? JsonPrimitive)?.contentOrNull ?: "$lat,$lon"),
                 name = name.ifEmpty { if (musollah) "Musollah" else "Masjid" },
@@ -70,6 +71,8 @@ object MasjidLists {
                 coordinates = Coordinates(lat, lon),
                 distanceKm = 0.0,
                 isMusollah = musollah,
+                facilities = (r.getOrNull(6) as? JsonPrimitive)?.contentOrNull.orEmpty(),
+                hours = (r.getOrNull(7) as? JsonPrimitive)?.contentOrNull?.takeIf { it.isNotBlank() },
             )
         }
     }.getOrNull()

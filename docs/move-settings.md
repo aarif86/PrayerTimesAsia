@@ -43,9 +43,9 @@ record as it is.
 
     PTA1.<base64url, no padding, of raw DEFLATE (RFC 1951) of a JSON object>
 
-The QR code and links hold `https://aarif86.github.io/PrayerTimesAsia/app/#move=` +
-the code. Every app finds `PTA1.` anywhere in the text, so a pasted message or a
-future address (prayertimes.asia) still works.
+The QR code and links hold `https://prayertimes.asia/app/#move=` + the code (the
+web app uses whatever address it is opened on). Every app finds `PTA1.` anywhere in
+the text, so a pasted message or an older github.io link still works.
 
 The JSON uses the web app's names and only lists settings that differ from a fresh
 install; a missing key means the default. `"v": 1` is always there.

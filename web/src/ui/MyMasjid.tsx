@@ -1,5 +1,5 @@
 import { MoonStar } from 'lucide-preact'
-import { masjidQuery, MY_MASJID_RADIUS_KM, type MasjidLink } from '../core/masjidLink'
+import { masjidQuery, type MasjidLink } from '../core/masjidLink'
 import { OBLIGATORY } from '../core/prayer'
 import { store, useStore } from '../services/store'
 import { Sheet } from './common'
@@ -43,47 +43,5 @@ export function MasjidLinkSheet({ m }: { m: MasjidLink }) {
         Using the iPhone or Android app? <a href={`prayertimesasia://${masjidQuery(m)}`}>Open this in the app</a>.
       </p>
     </Sheet>
-  )
-}
-
-/** "Subuh +15 · Zohor +10 · … · Jumu'ah 1:00 PM", for one line. */
-function summary(m: MasjidLink): string {
-  const parts = OBLIGATORY.filter((p) => m.jamaah[p]).map((p) => {
-    const r = m.jamaah[p]!
-    return `${store.name(p)} ${r.fixed ? clock(r.fixed) : `+${r.after}`}`
-  })
-  if (m.jumuah) parts.push(`Jumu'ah ${clock(m.jumuah)}`)
-  return parts.length ? `Iqamah: ${parts.join(' · ')}` : 'No iqamah times set yet'
-}
-
-/** On the Masjid tab: your masjid in one row, or how to add one. */
-export function MyMasjidGroup() {
-  const s = useStore()
-  const m = s.prefs.myMasjid
-  if (!m) {
-    return (
-      <p class="footnote secondary my-masjid-hint">
-        Your masjid has a Prayer Times Asia screen? Scan its QR code with your phone's camera to see its iqamah times on your Prayer screen.
-      </p>
-    )
-  }
-  const here = s.myMasjidHere != null
-  return (
-    <div class="my-masjid-row">
-      <div class="group">
-        <div class="item" style={{ alignItems: 'flex-start' }}>
-          <MoonStar size={22} class="accent" style={{ flex: 'none', marginTop: '2px' }} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div class="caps secondary">Your masjid</div>
-            <div class="headline">{m.name}</div>
-            <div class="footnote secondary" style={{ marginTop: '2px' }}>{summary(m)}</div>
-            <div class="footnote secondary" style={{ marginTop: '4px' }}>
-              {here ? 'Shown as "Jamaah" on your Prayer screen.' : `Shown on your Prayer screen when you're within ${MY_MASJID_RADIUS_KM} km.`}
-            </div>
-          </div>
-          <button class="plain-btn" onClick={() => s.forgetMasjid()}>Remove</button>
-        </div>
-      </div>
-    </div>
   )
 }

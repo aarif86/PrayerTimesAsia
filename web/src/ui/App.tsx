@@ -6,7 +6,7 @@ import { useEffect, useLayoutEffect } from 'preact/hooks'
 import { ChevronsLeft, ChevronsRight, Compass, Globe2, Plane } from 'lucide-preact'
 import { scheduleAlerts } from '../services/notifications'
 import { store, TABS, useNow, useStore, type Tab } from '../services/store'
-import { openSheet, useSheet } from './common'
+import { closeSheet, openSheet, useSheet } from './common'
 import { TabFalak, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 import { LivingSky } from './LivingSky'
 import { takeMoveFromLink } from './moveLink'
@@ -28,6 +28,7 @@ const TrackerSheet = later(() => import('./Tracker').then((m) => m.TrackerSheet)
 const MasjidLinkSheet = later(() => import('./MyMasjid').then((m) => m.MasjidLinkSheet))
 const MoveInSheet = later(() => import('./Move').then((m) => m.MoveInSheet))
 const MoveOutSheet = later(() => import('./Move').then((m) => m.MoveOutSheet))
+const Guide = later(() => import('./Guide').then((m) => m.Guide))
 
 /**
  * A lazy piece failed to download: usually a new version went live and its old
@@ -110,12 +111,18 @@ export function App() {
     // Counted a few seconds in, so the GPS place has usually arrived.
     const count = () => { s.countOpenDay(); setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000) }
     count()
-    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); void s.refreshData(); scheduleAlerts(); count() } }
+    s.usageVisible(true)
+    const onVisible = () => {
+      s.usageVisible(document.visibilityState === 'visible')
+      if (document.visibilityState === 'visible') { s.refreshOfficial(); void s.refreshData(); scheduleAlerts(); count() }
+    }
+    const onHide = () => s.usageVisible(false)
+    addEventListener('pagehide', onHide)
     // On moon sighting nights the announcement can arrive while the app is open.
     const poll = setInterval(() => { void s.refreshData() }, 10 * 60_000)
     document.addEventListener('visibilitychange', onVisible)
     const warm = warmUpScreens()
-    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll); clearTimeout(warm) }
+    return () => { document.removeEventListener('visibilitychange', onVisible); removeEventListener('pagehide', onHide); clearInterval(poll); clearTimeout(warm) }
   }, [])
 
   // Re-arm the next prayer alert whenever anything changes.
@@ -148,7 +155,11 @@ export function App() {
         </main>
       </div>
       {/* Big screens have room beside the app: a way back to the website. */}
-      <a class="site-link" href="../">&larr; prayertimes.asia</a>
+      <a class="site-link" href="../" aria-label="Back to the prayertimes.asia website">
+        <span class="site-link-arrow" aria-hidden="true">&larr;</span>
+        <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" width="24" height="24" />
+        <span>prayertimes.asia</span>
+      </a>
       <nav class="tabbar" aria-label="Sections">
         {TABS.map((t) => {
           const Icon = TAB_ICON[t]
@@ -183,6 +194,8 @@ export function App() {
       {s.pendingMasjid && !sheet && <MasjidLinkSheet m={s.pendingMasjid} />}
       {sheet?.kind === 'move-out' && <MoveOutSheet />}
       {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
+      {/* New users see the quick guide once, right after choosing their place. */}
+      {(sheet?.kind === 'guide' || (!s.prefs.guideSeen && !sheet && !s.pendingMasjid)) && <Guide onClose={closeSheet} />}
     </>
   )
 }
@@ -206,7 +219,7 @@ function Onboarding() {
           <button class="onb-primary" onClick={() => { store.update((p) => { p.hasOnboarded = true }); store.useGPS() }}>Use my location</button>
           <button class="onb-secondary" onClick={() => { store.update((p) => { p.hasOnboarded = true; p.useGPS = false }); openSheet({ kind: 'places' }) }}>Choose a city instead</button>
           <button class="onb-secondary" onClick={() => openSheet({ kind: 'move-in' })}>Bring in settings from another phone</button>
-          <p class="caption" style={{ opacity: 0.75, textAlign: 'center' }}>No third-party ads. No account. Your location stays on your device.</p>
+          <p class="caption" style={{ opacity: 0.75, textAlign: 'center' }}>No outside ads. No account. Your location stays on your device.</p>
         </div>
       </div>
     </div>
