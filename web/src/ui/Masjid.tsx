@@ -6,6 +6,7 @@ import type { Coordinates } from '../core/engine'
 import { distanceKm } from '../core/geo'
 import { looksLikePrayerSpace } from '../core/official'
 import { fetchOK } from '../services/storage'
+import { listNearby } from '../services/masjidList'
 import { useStore } from '../services/store'
 import { openSheet, Segmented } from './common'
 import { tint } from './Dials'
@@ -56,7 +57,10 @@ export function parseOverpass(json: { elements?: OsmElement[] }, center: Coordin
   return [...out.values()].sort((a, b) => a.distanceKm - b.distanceKm)
 }
 
-async function searchNearby(center: Coordinates): Promise<PrayerSpace[] | null> {
+async function searchNearby(center: Coordinates, country?: string | null): Promise<PrayerSpace[] | null> {
+  // The weekly ready-made list first: a small file, answered in about a second.
+  const listed = await listNearby(center, country).catch(() => null)
+  if (listed) return listed
   const lat = center.latitude.toFixed(4), lng = center.longitude.toFixed(4)
   // Remembered for a week per ~1 km square, so coming back is instant even when
   // the free OpenStreetMap servers are busy. Distances are worked out again from here.
@@ -114,7 +118,7 @@ export default function MasjidScreen() {
     let cancelled = false
     setLoading(true); setFailed(false); setSlow(false)
     const slowTimer = setTimeout(() => setSlow(true), 8000)
-    searchNearby(place.coordinates).then((r) => {
+    searchNearby(place.coordinates, place.countryCode).then((r) => {
       clearTimeout(slowTimer)
       if (cancelled) return
       setLoading(false)

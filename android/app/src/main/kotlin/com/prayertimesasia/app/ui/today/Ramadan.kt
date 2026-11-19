@@ -59,6 +59,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prayertimesasia.app.AppState
@@ -89,7 +90,6 @@ import java.time.temporal.ChronoUnit
  */
 
 private val RamadanPink = Color(0xFFE06C8A)
-private val Purple = Color(0xFF8E6BD8)
 private val oddNights = listOf(21, 23, 25, 27, 29)
 
 private fun dateText(d: LocalDate, pattern: String = "EEEE d MMMM", lang: RamadanContent.Lang = RamadanContent.Lang.EN): String =
@@ -430,7 +430,7 @@ private fun TarawihCounter(state: AppState) {
     val spoken = t(RamadanWordKey.tarawihProgress, "d" to minOf(done, total), "n" to total) + ". " +
         (if (complete) t(RamadanWordKey.tarawihDone) else t(RamadanWordKey.tarawihTapHint))
     Column(Modifier.fillMaxWidth().heightIn(min = 180.dp).clip(RoundedCornerShape(22.dp))
-        .background(if (complete) Palette.success.copy(alpha = 0.3f) else Purple.copy(alpha = 0.18f))
+        .background(if (complete) Palette.success.copy(alpha = 0.3f) else Palette.primary.copy(alpha = 0.06f))
         .clickable {
             done = Tarawih.tap(done, total)
             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -472,10 +472,14 @@ private fun LastTen(state: AppState, year: Int) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp), maxItemsInEachRow = if (big) 2 else 5) {
         oddNights.filter { it - 2 < days.size }.forEach { n ->
             val eve = days[n - 2]
-            Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (eve == today) Palette.gold.copy(alpha = 0.35f) else Purple.copy(alpha = 0.18f))
-                .padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("$n", style = Txt.title3, color = Palette.primary)
-                Text(if (eve == today) t(RamadanWordKey.tonight) else dateText(eve, "d MMM", t.lang), style = Txt.caption2, color = Palette.primary)
+            // Same tile as Imsak and Subuh above: night, weekday, date, each on one line.
+            val tonight = eve == today
+            Column(Modifier.weight(1f).clip(RoundedCornerShape(14.dp)).background(if (tonight) Palette.gold.copy(alpha = 0.2f) else Palette.primary.copy(alpha = 0.06f))
+                .padding(vertical = 10.dp, horizontal = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("$n", style = Txt.title3, color = if (tonight) Palette.goldText else Palette.primary, maxLines = 1)
+                Text(if (tonight) t(RamadanWordKey.tonight) else dateText(eve, "EEE", t.lang), style = if (tonight) Txt.caption2Heavy else Txt.caption2,
+                    color = if (tonight) Palette.goldText else Palette.secondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(dateText(eve, "d MMM", t.lang), style = Txt.caption2, color = Palette.primary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }

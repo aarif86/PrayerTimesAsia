@@ -119,6 +119,7 @@ const context = await browser.newContext({
 await context.route(/data\.gov\.sg|e-solat|myquran/, (r) => r.abort())
 await context.route(/raw\.githubusercontent\.com\/aarif86\/PrayerTimesAsia\/feeds\/sg-muis\.ics/, (r) =>
   feed ? r.fulfill({ status: 200, contentType: 'text/plain', body: feed, headers: { 'access-control-allow-origin': '*' } }) : r.continue())
+await context.route(/PrayerTimesAsia\/masjids\//, (r) => r.fulfill({ status: 404, body: '' }))
 await context.route(/overpass/, (r) => r.fulfill({ status: 200, contentType: 'application/json', body: overpass, headers: { 'access-control-allow-origin': '*' } }))
 if (process.env.OFFLINE_TILES) await context.route(/tile\.openstreetmap\.org/, (r) => r.abort())
 
