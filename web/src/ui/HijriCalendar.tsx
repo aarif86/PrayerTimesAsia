@@ -102,7 +102,7 @@ export function HijriMonthCard() {
             <div class="caption secondary">{fmtCivil(sel.g)}</div>
             {islamicDaysOf(sel.h).map((k) => <div class="caption accent" style={{ fontWeight: 600 }}>{islamicDayName(k.kind, s.naming)}</div>)}
           </div>
-          <button class="pill-btn quiet" onClick={() => goTo(sel.g)}>{s.naming === 'malay' ? 'Waktu solat' : s.naming === 'indonesian' ? 'Jadwal salat' : tr('today.title')}</button>
+          <button class="pill-btn quiet" onClick={() => goTo(sel.g)}>{tr('today.title')}</button>
         </div>
       ) : (
         <div class="hcal-list">

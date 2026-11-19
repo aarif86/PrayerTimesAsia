@@ -248,7 +248,7 @@ function SunPlaceChip({ offset }: { offset: number }) {
 function ShowMoreButton({ c, inline }: { c: Ctx; inline?: boolean }) {
   const btn = (
     <button class="capsule-btn" onClick={() => c.setShowMore(!c.showMore)} aria-expanded={c.showMore}
-      aria-label={`${c.showMore ? tr('common.showLess') : tr('common.showMore')}: Dhuha and the blessed times of the night`}>
+      aria-label={`${c.showMore ? tr('common.showLess') : tr('common.showMore')}, ${tr('today.blessedTimes', { name: store.name('sunrise') })}`}>
       {(c.showMore ? tr('common.showLess') : tr('common.showMore')).toLocaleUpperCase()}
       {c.showMore ? <ChevronUp size={14} strokeWidth={3} /> : <ChevronDown size={14} strokeWidth={3} />}
     </button>
@@ -477,7 +477,7 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: n
       <div class="names">
         <div class="name-line">
           <span class="pname">{store.name(p, t)}</span>
-          {local && <span class="local" aria-label={`called ${local} here`}>{local}</span>}
+          {local && <span class="local" aria-label={tr('today.calledHere', { name: local })}>{local}</span>}
           {prayed && <CheckCircle2 size={16} class="check" fill="var(--green)" color="var(--bg-check, #fff)" />}
         </div>
         {isCurrent && <div class="now-tag">{tr('today.now')}</div>}

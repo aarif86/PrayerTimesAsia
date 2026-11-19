@@ -72,7 +72,7 @@ export function TrackerSheet() {
             const d = s.trackerDay(k)
             const future = k > today
             const full = d.prayed >= OBLIGATORY.length
-            const label = `${Number(k.slice(8))} ${MONTHS[shown.m - 1]}: ${future ? tr('tracker.notYet') : d.excused ? 'excused' : `${d.prayed} of 5 prayers`}`
+            const label = `${Number(k.slice(8))} ${MONTHS[shown.m - 1]}: ${future ? tr('tracker.notYet') : d.excused ? 'excused' : tr('tracker.ofFive', { n: d.prayed })}`
             return (
               <span class={`tracker-day ${k === today ? 'is-today' : ''} ${future ? 'future' : ''} ${full ? 'full' : ''} ${d.excused ? 'excused' : ''}`}
                 style={{ '--fill': `${(d.prayed / OBLIGATORY.length) * 360}deg` }} role="img" aria-label={label}>

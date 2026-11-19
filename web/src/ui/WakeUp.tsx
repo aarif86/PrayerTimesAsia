@@ -111,7 +111,7 @@ export function WakeUpSheet() {
 
       <section>
         <div class="group">
-          <ToggleItem label={`${fajr} alarm`} on={!!p.wakeUp} onChange={(v) => setWake(v ? 'atFajr' : null)} />
+          <ToggleItem label={tr('wake.alarmFor', { name: fajr })} on={!!p.wakeUp} onChange={(v) => setWake(v ? 'atFajr' : null)} />
           {p.wakeUp && WAKE_UP_TIMINGS.map((t) => (
             <Choice label={wakeUpLabel(t, s.naming)} detail={soon(now, (d) => wakeUpTime(t, d))} on={p.wakeUp === t} pick={() => setWake(t)} />
           ))}
@@ -160,7 +160,7 @@ export function WakeUpSheet() {
             return (
               <label class="item">
                 <span class="label">{name}{value && <span class="sub mono">{prayerSoon(prayer, value)}</span>}</span>
-                <select class="inline-select" value={value ?? 'off'} aria-label={`${name} alarm`}
+                <select class="inline-select" value={value ?? 'off'} aria-label={tr('wake.alarmFor', { name })}
                   onChange={(e) => { const v = (e.target as HTMLSelectElement).value; setPrayer(prayer, v === 'off' ? null : (v as PrayerAlarmTiming)) }}>
                   <option value="off">{tr('common.off')}</option>
                   {prayerAlarmChoices(prayer).map((t) => <option value={t}>{prayerAlarmLabel(t)}</option>)}
@@ -178,7 +178,7 @@ export function WakeUpSheet() {
           {ALARM_SOUNDS.filter((x) => x !== 'phone').map((sound) => {
             const on = (p.alarmSound === 'phone' ? 'classic' : p.alarmSound) === sound
             return (
-              <button class="item choice" onClick={() => setSound(sound)} aria-pressed={on} aria-label={`${ALARM_SOUND_LABEL[sound]}, tap to hear it`}>
+              <button class="item choice" onClick={() => setSound(sound)} aria-pressed={on} aria-label={tr('wake.soundTap', { name: ALARM_SOUND_LABEL[sound] })}>
                 <Play size={14} class="secondary" />
                 <span class="label">{ALARM_SOUND_LABEL[sound]}</span>
                 <Check size={18} class="choice-tick" style={{ opacity: on ? 1 : 0 }} />

@@ -42,10 +42,10 @@ export function MakersCard({ card, placement, compact }: { card: CommunityCard; 
   return (
     <a ref={ref} class={`makers-card glass ${compact ? 'compact' : ''}`} href={cardURL(card, placement)} target="_blank" rel="noopener noreferrer sponsored"
       onClick={() => store.countCard('Card.tapped', facts)}
-      aria-label={`${PICKS_NAME}${sponsor ? ', sponsored' : ''}. ${card.title}, opens ${card.site}`}>
+      aria-label={`${PICKS_NAME}${sponsor ? `, ${tr('makers.sponsored')}` : ''}. ${tr('makers.opens', { name: card.title, site: card.site })}`}>
       <span class="makers-icon"><CardIcon card={card} compact={compact} /></span>
       <span class="makers-text">
-        <span class="makers-tag">{sponsor ? `${PICKS_NAME} · Sponsored` : PICKS_NAME}</span>
+        <span class="makers-tag">{sponsor ? `${PICKS_NAME} · ${tr('makers.sponsored')}` : PICKS_NAME}</span>
         <span class="makers-title">{card.title}</span>
         {!compact && <span class="makers-sub">{card.subtitle}</span>}
       </span>

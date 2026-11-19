@@ -196,7 +196,7 @@ export function SettingsScreen() {
         <ToggleItem label={tr('settings.hour24')} on={p.use24Hour} onChange={(v) => store.update((x) => { x.use24Hour = v })} />
         <div class="item">
           <span class="label">{tr('settings.hijriAdjust')}</span>
-          <span class="value">{p.hijriAdjustment === 0 ? tr('common.none') : `${p.hijriAdjustment > 0 ? '+' : ''}${p.hijriAdjustment} day`}</span>
+          <span class="value">{p.hijriAdjustment === 0 ? tr('common.none') : `${p.hijriAdjustment > 0 ? '+' : ''}${tr('settings.days', { n: p.hijriAdjustment })}`}</span>
           <span class="stepper">
             <button aria-label={tr('settings.dayEarlier')} disabled={p.hijriAdjustment <= -2} onClick={() => store.update((x) => { x.hijriAdjustment = Math.max(-2, x.hijriAdjustment - 1) })}>−</button>
             <button aria-label={tr('settings.dayLater')} disabled={p.hijriAdjustment >= 2} onClick={() => store.update((x) => { x.hijriAdjustment = Math.min(2, x.hijriAdjustment + 1) })}>+</button>
@@ -215,13 +215,13 @@ export function SettingsScreen() {
         <ToggleItem label={tr('settings.reminder')} on={reminderOn} onChange={(v) => void setReminder(v)} />
         {reminderOn && (
           <SelectItem label={tr('settings.remindMe')} value={String(p.reminderMinutesBefore)}
-            options={REMINDER_CHOICES.map((m) => ({ value: String(m), label: `${m} min before` }))}
+            options={REMINDER_CHOICES.map((m) => ({ value: String(m), label: tr('common.minBefore', { n: m }) }))}
             onChange={(v) => store.update((x) => { x.reminderMinutesBefore = parseInt(v, 10) })} />
         )}
         {(p.notificationsEnabled || p.reminderMinutesBefore > 0) && perm === 'granted' && (
           <>
             {PRAYERS.map((pr: Prayer) => (
-              <ToggleItem label={pr === 'sunrise' ? `${s.name(pr)} (${s.name('fajr')} ends)` : s.name(pr)} on={p.notifyPrayers.includes(pr)}
+              <ToggleItem label={pr === 'sunrise' ? tr('settings.ends', { name: s.name(pr), end: s.name('fajr') }) : s.name(pr)} on={p.notifyPrayers.includes(pr)}
                 onChange={(v) => store.update((x) => { x.notifyPrayers = v ? [...new Set([...x.notifyPrayers, pr])] : x.notifyPrayers.filter((q) => q !== pr) })} />
             ))}
             <button class="item" onClick={testAlert}><BellRing size={20} /><span class="label">{tr('settings.testAlert')}</span></button>

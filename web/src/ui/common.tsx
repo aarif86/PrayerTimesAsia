@@ -152,7 +152,7 @@ export function SourceBadge({ day, compact }: { day: PrayerDay; compact?: boolea
   const sourceName = day.officialSource ?? `${store.method.shortName} method`
   return (
     <button class={`source-badge ${compact ? 'compact' : 'full'}`} onClick={() => openSheet({ kind: 'sanad', day })}
-      aria-label={`Source: grade ${grade}, ${GRADE_TITLE[grade]}, ${sourceName}. Shows where these times come from.`}>
+      aria-label={tr('common.sourceBadge', { grade, name: GRADE_TITLE[grade], detail: sourceName })}>
       <span class="grade" style={{ background: GRADE_TINT[grade] }}>{grade}</span>
       <span class="src">{compact ? shortSource : `${GRADE_TITLE[grade]} · ${sourceName}`}</span>
       {!compact && <span class="spacer" />}

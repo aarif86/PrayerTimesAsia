@@ -133,7 +133,7 @@ export function LevelSheet() {
         {motion.state === 'needs-permission' && <button class="primary-btn" onClick={() => void motion.enable()}>{tr('falakTools.useMotion')}</button>}
         <p class="footnote" style={{ textAlign: 'center', opacity: 0.75 }}>
           {mode === 'flat' ? tr('falakTools.groundHow') : tr('falakTools.stickHow')}
-          {' '}A tilt of 1° moves a 1 m stick's shadow tip by about 1.7 cm, enough to shift a reading by a minute.
+          {' '}{tr('falakTools.tilt')}
         </p>
       </div>
     </Sheet>
