@@ -387,9 +387,10 @@ function LastTenNights({ now, year }: { now: number; year: number }) {
             if (!eve) return null
             const tonight = civilKey(eve) === civilKey(today)
             return (
-              <div class={`odd-night ${tonight ? 'tonight' : ''}`}>
-                <span class="mono big">{n}</span>
-                <span class="caption">{tonight ? t('tonight') : fmtCivil(eve, { weekday: 'short', day: 'numeric', month: 'short' }, lang)}</span>
+              <div class={`odd-night ${tonight ? 'tonight' : ''}`} role="img" aria-label={`${n}, ${tonight ? t('tonight') : fmtCivil(eve, { weekday: 'long', day: 'numeric', month: 'long' }, lang)}`}>
+                <span class="mono big" aria-hidden="true">{n}</span>
+                <span class="caption secondary od-day" aria-hidden="true">{tonight ? t('tonight') : fmtCivil(eve, { weekday: 'short' }, lang)}</span>
+                <span class="caption od-date" aria-hidden="true">{fmtCivil(eve, { day: 'numeric', month: 'short' }, lang)}</span>
               </div>
             )
           })}

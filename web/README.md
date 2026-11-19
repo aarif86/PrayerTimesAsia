@@ -89,7 +89,7 @@ badge says "Calculated".
   steps; asks for compass permission on iPhone Safari; without a compass, the bearing plus **the qibla line on a map**.
 - Falak: shadow right now, Qibla Day, rashdul qiblat, shadow stick (tongkat istiwa') with readings, sky signs; camera
   view and spirit level.
-- Masjid: OpenStreetMap map and list (Overpass), All/Masjid/Musollah, walking directions in the phone's maps app,
+- Masjid: OpenStreetMap map and list (weekly ready-made list, Overpass as fallback), All/Masjid/Musollah, walking directions in the phone's maps app,
   the (i) "Built fisabilillah" sheet.
 - From the makers: Badal.sg for Singapore users, NasarDigital otherwise; on the Prayer screen only under Show more; (i)
   on Masjid; Settings "From the makers" with the Show offers switch. Same links and utm parameters as iOS. Nothing is tracked.

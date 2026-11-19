@@ -3,6 +3,7 @@ package com.prayertimesasia.app.ui.onboarding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import com.prayertimesasia.app.ui.components.minTouchHeight
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -64,9 +65,9 @@ fun OnboardingScreen(state: AppState, bringIn: () -> Unit = {}, chooseCity: () -
                         state.update { it.copy(hasOnboarded = true) }
                     }.padding(vertical = 16.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 Text("Choose a city instead", style = Txt.subheadlineSemibold, color = Palette.primary,
-                    modifier = Modifier.clip(CircleShape).clickable(onClick = chooseCity).padding(8.dp))
+                    modifier = Modifier.clip(CircleShape).clickable(onClick = chooseCity).minTouchHeight().padding(horizontal = 12.dp))
                 Text("Bring in settings from another phone", style = Txt.footnote, color = Palette.primary.copy(alpha = 0.85f),
-                    modifier = Modifier.clip(CircleShape).clickable(onClick = bringIn).padding(6.dp))
+                    modifier = Modifier.clip(CircleShape).clickable(onClick = bringIn).minTouchHeight().padding(horizontal = 12.dp))
                 Text("No outside ads. No account. Your location stays on your phone.", style = Txt.caption,
                     color = Palette.primary.copy(alpha = 0.75f))
             }

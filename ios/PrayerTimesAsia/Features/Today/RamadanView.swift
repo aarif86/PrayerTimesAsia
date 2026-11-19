@@ -329,7 +329,7 @@ struct RamadanView: View {
                         Text(complete ? t(.tarawihDone) : t(.tarawihTapHint)).font(.subheadline)
                     }
                     .frame(maxWidth: .infinity, minHeight: 180)
-                    .background(complete ? Color.green.opacity(0.3) : Color.purple.opacity(0.18), in: RoundedRectangle(cornerRadius: 22))
+                    .background(complete ? Color.green.opacity(0.3) : Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 22))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -455,12 +455,19 @@ struct RamadanView: View {
                     ForEach(oddNights, id: \.self) { n in
                         if n - 2 < days.count {
                             let eve = days[n - 2]
-                            VStack(spacing: 2) {
+                            // Same tile as Imsak and Subuh above: night, weekday, date, each on one line.
+                            VStack(spacing: 1) {
                                 Text("\(n)").font(.title3.weight(.bold)).monospacedDigit()
-                                Text(eve == today ? t(.tonight) : dateText(eve, "d MMM", lang)).font(.caption2)
+                                Text(eve == today ? t(.tonight) : dateText(eve, "EEE", lang))
+                                    .font(.caption2.weight(eve == today ? .bold : .regular))
+                                    .foregroundStyle(eve == today ? goldText : .secondary)
+                                Text(dateText(eve, "d MMM", lang)).font(.caption2.weight(.semibold))
                             }
-                            .frame(maxWidth: .infinity).padding(.vertical, 8)
-                            .background(eve == today ? gold.opacity(0.35) : Color.purple.opacity(0.18), in: RoundedRectangle(cornerRadius: 12))
+                            .lineLimit(1).minimumScaleFactor(0.8)
+                            .frame(maxWidth: .infinity).padding(.vertical, 10)
+                            .background(eve == today ? gold.opacity(0.2) : Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 14))
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("\(n), \(eve == today ? t(.tonight) : dateText(eve, "EEEE d MMMM", lang))")
                         }
                     }
                 }

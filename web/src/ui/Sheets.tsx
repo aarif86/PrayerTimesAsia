@@ -426,7 +426,7 @@ const CREDITS: [string, string, string | null][] = [
   ['Kemenag - Indonesia', 'Kementerian Agama (Bimas Islam) schedules via the myquran.com community API.', 'https://api.myquran.com'],
   ['JAKIM zone boundaries', 'District-to-zone mapping from mptwaktusolat/malaysia.geojson; one reference point per district is used.', 'https://github.com/mptwaktusolat/malaysia.geojson'],
   ['Calculation', 'In-browser solar calculation after praytimes.org; method presets as published by MUIS, JAKIM, Kemenag, the Muslim World League, Karachi, Umm al-Qura, Diyanet and others.', 'https://praytimes.org/wiki/Calculation_Methods'],
-  ['Maps and places', 'Map data © OpenStreetMap contributors (ODbL), tiles © CARTO, masjid search through the Overpass API, place search through Nominatim.', 'https://www.openstreetmap.org/copyright'],
+  ['Maps and places', 'Map data © OpenStreetMap contributors (ODbL), tiles © CARTO, masjid lists built weekly from OpenStreetMap with the Overpass API, place search through Nominatim.', 'https://www.openstreetmap.org/copyright'],
   ['Icons and fonts', 'Lucide icons (ISC); Inter and Nunito (SIL Open Font Licence).', 'https://lucide.dev'],
   ['Community data', 'Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.', 'https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md'],
   ['This app', 'Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.', 'https://github.com/aarif86/PrayerTimesAsia'],
@@ -449,7 +449,7 @@ export function CreditsSheet() {
 }
 
 export function MakersSheet({ placement }: { placement: string }) {
-  return <Sheet title=""><MakersAbout placement={placement} country={store.offerCountry} /></Sheet>
+  return <Sheet label="About Prayer Times Asia"><MakersAbout placement={placement} country={store.offerCountry} /></Sheet>
 }
 
 
