@@ -124,6 +124,8 @@ export interface Preferences {
   menuSide: MenuSide
   /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
   showOpening: boolean
+  /** The quick guide (seven swipe cards) was seen or skipped. Settings opens it again. */
+  guideSeen: boolean
   /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
   jumuahReminderMinutes: number
   /** Short hadith and ayat on some screens (see core/hadith.ts). */
@@ -210,6 +212,7 @@ export const DEFAULT_PREFS: Preferences = {
   largeText: false,
   menuSide: 'auto',
   showOpening: true,
+  guideSeen: false,
   jumuahReminderMinutes: 0,
   showHadith: true,
   hadithInAlerts: true,
@@ -286,6 +289,8 @@ export function decodePreferences(raw: unknown): Preferences {
   if (!JUMUAH_REMINDER_CHOICES.includes(out.jumuahReminderMinutes)) out.jumuahReminderMinutes = 0
   // Isyak is open until Subuh: it has no "before it ends" alarm.
   if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
+  // People already using the app before the quick guide came don't get it pushed at them; it waits in Settings.
+  if (!('guideSeen' in r) && out.hasOnboarded) out.guideSeen = true
   return out
 }
 

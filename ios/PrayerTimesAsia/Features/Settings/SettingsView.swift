@@ -4,6 +4,7 @@ struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
     @State private var showRamadan = false
+    @State private var showGuide = false
     @State private var showReview = false
     @State private var showNote = false
     @Environment(\.dismiss) private var dismiss
@@ -303,6 +304,16 @@ struct SettingsView: View {
                     Text("Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. Works between iPhone, Android and the web. Restoring a new iPhone from an iCloud backup brings them too.")
                 }
 
+                Section {
+                    Button { showGuide = true } label: {
+                        Label("Show the quick guide", systemImage: "lightbulb")
+                    }
+                } header: {
+                    Text("Help")
+                } footer: {
+                    Text("A short tour that taps the real buttons, so you know where everything is.")
+                }
+
                 Section("Accuracy") {
                     Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.")
                         .font(.footnote)
@@ -355,6 +366,7 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
             .sheet(isPresented: $showRamadan) { RamadanView() }
+            .fullScreenCover(isPresented: $showGuide) { GuideView() }
             .sheet(isPresented: $showReview) { ReviewView() }
             .sheet(isPresented: $showNote) { NoteView() }
             .toolbar {

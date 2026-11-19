@@ -6,7 +6,7 @@ import { useEffect, useLayoutEffect } from 'preact/hooks'
 import { ChevronsLeft, ChevronsRight, Compass, Globe2, Plane } from 'lucide-preact'
 import { scheduleAlerts } from '../services/notifications'
 import { store, TABS, useNow, useStore, type Tab } from '../services/store'
-import { openSheet, useSheet } from './common'
+import { closeSheet, openSheet, useSheet } from './common'
 import { TabFalak, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 import { LivingSky } from './LivingSky'
 import { takeMoveFromLink } from './moveLink'
@@ -28,6 +28,7 @@ const TrackerSheet = later(() => import('./Tracker').then((m) => m.TrackerSheet)
 const MasjidLinkSheet = later(() => import('./MyMasjid').then((m) => m.MasjidLinkSheet))
 const MoveInSheet = later(() => import('./Move').then((m) => m.MoveInSheet))
 const MoveOutSheet = later(() => import('./Move').then((m) => m.MoveOutSheet))
+const Guide = later(() => import('./Guide').then((m) => m.Guide))
 
 /**
  * A lazy piece failed to download: usually a new version went live and its old
@@ -193,6 +194,8 @@ export function App() {
       {s.pendingMasjid && !sheet && <MasjidLinkSheet m={s.pendingMasjid} />}
       {sheet?.kind === 'move-out' && <MoveOutSheet />}
       {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
+      {/* New users see the quick guide once, right after choosing their place. */}
+      {(sheet?.kind === 'guide' || (!s.prefs.guideSeen && !sheet && !s.pendingMasjid)) && <Guide onClose={closeSheet} />}
     </>
   )
 }

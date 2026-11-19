@@ -88,6 +88,10 @@ struct RootView: View {
             .sheet(isPresented: $model.showJourney) { JourneyView() }
             .sheet(isPresented: $model.showWakeUp) { WakeUpView() }
             .sheet(item: $model.pendingMasjid) { MasjidLinkSheet(link: $0) }
+            // New users see the quick guide once, right after choosing their place.
+            .fullScreenCover(isPresented: Binding(
+                get: { !model.prefs.guideSeen && opening != true },
+                set: { if !$0 { model.prefs.guideSeen = true } })) { GuideView() }
             .alert("Welcome back", isPresented: $model.showWelcomeBack) {
                 Button("OK") {}
             } message: {
