@@ -46,6 +46,23 @@ function later<P extends object>(load: () => Promise<ComponentType<P>>, fallback
   return (p: P) => <Suspense fallback={fallback}><Lazy {...p} /></Suspense>
 }
 
+/**
+ * Once the Prayer screen is up and the phone is idle, quietly load the other
+ * screens too, so the first tap on Qibla, Falak, Masjid or Settings opens at
+ * once instead of showing an empty page while its file arrives.
+ */
+function warmUpScreens(): ReturnType<typeof setTimeout> {
+  return setTimeout(() => {
+    const load = () => {
+      for (const get of [() => import('./Qibla'), () => import('./Masjid'), () => import('./Settings'), () => import('./Falak'), () => import('./Tracker')]) {
+        get().catch(() => { /* offline or a new version: the screen loads on its tap as before */ })
+      }
+    }
+    const idle = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback
+    if (idle) idle(load, { timeout: 4000 }); else load()
+  }, 2500)
+}
+
 const TAB_LABEL: Record<Tab, string> = { today: 'Prayer', qibla: 'Qibla', falak: 'Falak', masjid: 'Masjid', settings: 'Settings' }
 const TAB_ICON: Record<Tab, (p: { size?: number }) => preact.JSX.Element> = {
   today: TabPrayer, qibla: TabQibla, falak: TabFalak, masjid: TabMasjid, settings: TabSettings,
@@ -78,9 +95,10 @@ export function App() {
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = scheme
     document.documentElement.toggleAttribute('data-large-text', s.prefs.largeText)
+    document.documentElement.dataset.menu = s.prefs.menuSide
     const meta = document.querySelector('meta[name="theme-color"]')
     meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
-  }, [scheme, bands, s.prefs.largeText])
+  }, [scheme, bands, s.prefs.largeText, s.prefs.menuSide])
 
   useEffect(() => {
     const moved = takeMoveFromLink()
@@ -95,7 +113,8 @@ export function App() {
     // On moon sighting nights the announcement can arrive while the app is open.
     const poll = setInterval(() => { void s.refreshData() }, 10 * 60_000)
     document.addEventListener('visibilitychange', onVisible)
-    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll) }
+    const warm = warmUpScreens()
+    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll); clearTimeout(warm) }
   }, [])
 
   // Re-arm the next prayer alert whenever anything changes.
