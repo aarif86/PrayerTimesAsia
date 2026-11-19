@@ -331,5 +331,5 @@ function AppCard() {
 
 /** Laptop, tablet or a wide browser window: where the menu bar can sit at the side. */
 function wideScreen(): boolean {
-  try { return window.matchMedia('(min-width: 700px)').matches } catch { return false }
+  try { return window.matchMedia('(min-width: 700px) and (min-height: 500px)').matches } catch { return false }
 }
