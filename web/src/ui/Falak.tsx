@@ -12,6 +12,7 @@ import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { fmtDate, openSheet } from './common'
 import { TabFalak } from './icons'
+import { tr } from '../core/appWords'
 
 const ymd = (ms: number) => { const z = zoned(ms, store.timeZone); return [z.year, z.month, z.day] as const }
 const longDate = (ms: number) => fmtDate(ms, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -26,29 +27,29 @@ export function FalakScreen() {
   const s = useStore()
   const now = useNow(30_000)
   const place = s.activePlace
-  if (!place) return <div class="page"><p class="headline" style={{ textAlign: 'center', marginTop: '40vh' }}>Choose a place first.</p></div>
+  if (!place) return <div class="page"><p class="headline" style={{ textAlign: 'center', marginTop: '40vh' }}>{tr('falak.choosePlace')}</p></div>
   return (
     <div class="page falak">
       <div class="falak-head">
         <div class="row" style={{ gap: '12px' }}>
           <TabFalak size={38} class="accent" />
-          <h1 class="h-title">Falak</h1>
+          <h1 class="h-title">{tr('falak.title')}</h1>
         </div>
-        <p class="subhead" style={{ margin: '8px 0', opacity: 0.9 }}>Read the time and the qibla from the sun and its shadow, the way the muwaqqit did. No signal needed.</p>
+        <p class="subhead" style={{ margin: '8px 0', opacity: 0.9 }}>{tr('falak.intro')}</p>
         <div class="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
-          <span class="chip"><SunDim size={15} />Grade F · Falak</span>
-          <span class="chip"><Hourglass size={14} />Pending shariah review</span>
+          <span class="chip"><SunDim size={15} />{tr('falak.grade')}</span>
+          <span class="chip"><Hourglass size={14} />{tr('falak.pendingReview')}</span>
         </div>
       </div>
       <div class="tools">
         <button class="tool glass" onClick={() => openSheet({ kind: 'ar' })}>
           <ScanEye size={28} class="accent" strokeWidth={2} />
-          <span class="headline">Camera</span>
+          <span class="headline">{tr('falak.camera')}</span>
           <span class="caption" style={{ opacity: 0.75 }}>AR qibla &amp; shadow</span>
         </button>
         <button class="tool glass" onClick={() => openSheet({ kind: 'level' })}>
           <LevelGlyph />
-          <span class="headline">Level</span>
+          <span class="headline">{tr('falak.level')}</span>
           <span class="caption" style={{ opacity: 0.75 }}>Ground &amp; stick</span>
         </button>
       </div>
@@ -75,7 +76,7 @@ export function SunSafety() {
   return (
     <div class="safety">
       <TriangleAlert size={26} style={{ color: 'var(--warning)', flex: 'none' }} />
-      <div class="footnote" style={{ fontWeight: 600 }}>Never look at the sun, not briefly, not through sunglasses, binoculars or your phone's camera. Look only at the shadow on the ground.</div>
+      <div class="footnote" style={{ fontWeight: 600 }}>{tr('falak.neverLook')}</div>
     </div>
   )
 }
@@ -91,7 +92,7 @@ function ShadowCompassCard({ place, now }: { place: Place; now: number }) {
   const shadowBearing = fix(sun.azimuth + 180, 360)
   return (
     <div class="glass card">
-      <CardTitle icon={<Sun size={20} fill="currentColor" />} title="The shadow right now" />
+      <CardTitle icon={<Sun size={20} fill="currentColor" />} title={tr('falak.shadowNow')} />
       <div class="row" style={{ gap: '16px', marginTop: '12px' }}>
         <ShadowDial qibla={qibla} shadow={shadowBearing} altitude={sun.altitude} />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -102,8 +103,8 @@ function ShadowCompassCard({ place, now }: { place: Place; now: number }) {
             </>
           ) : (
             <>
-              <div class="subhead" style={{ fontWeight: 600 }}>The sun is below the horizon.</div>
-              <div class="footnote" style={{ opacity: 0.85 }}>Shadow readings start after sunrise. See the sky signs below.</div>
+              <div class="subhead" style={{ fontWeight: 600 }}>{tr('falak.sunBelow')}</div>
+              <div class="footnote" style={{ opacity: 0.85 }}>{tr('falak.afterSunrise')}</div>
             </>
           )}
           <div class="footnote gold" style={{ fontWeight: 600, display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -146,16 +147,16 @@ function QiblaDayCard({ place, now }: { place: Place; now: number }) {
   const days = daysBetween(now, day, store.timeZone)
   return (
     <div class="glass card">
-      <CardTitle icon={<Sun size={20} />} title="Qibla Day" />
+      <CardTitle icon={<Sun size={20} />} title={tr('falak.qiblaDay')} />
       <div class="row" style={{ alignItems: 'baseline', gap: '8px', marginTop: '6px' }}>
-        <span class="display mono" style={{ fontSize: '44px', fontWeight: 700 }}>{days <= 0 ? 'Today' : days}</span>
+        <span class="display mono" style={{ fontSize: '44px', fontWeight: 700 }}>{days <= 0 ? tr('common.today') : days}</span>
         {days > 0 && <span class="headline" style={{ opacity: 0.85 }}>{days === 1 ? 'day to go' : 'days to go'}</span>}
       </div>
       <div class="subhead" style={{ fontWeight: 600 }}>{longDate(day)} at {store.formatted(day)} your time</div>
       <p class="footnote" style={{ opacity: 0.85 }}>Twice a year the sun stands directly over the Ka'bah at Makkah noon (istiwa' a'zam). At that minute, every upright shadow wherever the sun is up points straight away from the Ka'bah - the most exact qibla check there is, with nothing but a stick.</p>
       {sun.altitude > 3
         ? <div class="footnote icon-line"><CheckCircle2 size={16} />Visible from here: the sun will be {Math.round(sun.altitude)}° up. Stand a straight stick upright on level ground and face from the shadow's tip to its base. The day before and after also work within about half a degree.</div>
-        : <div class="footnote icon-line"><Moon size={16} />The sun is down here at that moment. Use the daily rashdul qiblat below, or the next Qibla Day.</div>}
+        : <div class="footnote icon-line"><Moon size={16} />{tr('falak.qiblaDayDown')}</div>}
     </div>
   )
 }
@@ -172,12 +173,12 @@ function RashdulCard({ place, now }: { place: Place; now: number }) {
   }
   return (
     <div class="glass card">
-      <CardTitle icon={<Sparkles size={20} />} title="Rashdul qiblat today" />
-      <p class="footnote" style={{ opacity: 0.85 }}>The moments the sun lines up with the qibla from where you are, so any upright shadow lies along the qibla line.</p>
+      <CardTitle icon={<Sparkles size={20} />} title={tr('falak.rashdulToday')} />
+      <p class="footnote" style={{ opacity: 0.85 }}>{tr('falak.rashdulExplain')}</p>
       {today.length === 0 ? (
         <div class="subhead" style={{ fontWeight: 600 }}>
           {next ? `No alignment with the sun high enough today. Next: ${longDate(next.time)} at ${store.formatted(next.time)}.`
-            : "The sun doesn't line up with the qibla from here in the coming weeks. Use the compass or Qibla Day."}
+            : tr('falak.rashdulNever')}
         </div>
       ) : (
         <>
@@ -217,26 +218,26 @@ function ShadowStickCard({ place, now }: { place: Place; now: number }) {
   const dhuhrName = store.name('dhuhr')
   return (
     <div class="glass card">
-      <CardTitle icon={<Ruler size={20} />} title="Tongkat istiwa' (shadow stick)" />
-      <p class="footnote" style={{ opacity: 0.85 }}>Stand a straight stick upright on level ground. A pen on a table works. Measure the stick and its shadow in centimetres.</p>
-      <label class="field-row"><span>Stick height</span>
+      <CardTitle icon={<Ruler size={20} />} title={tr('falak.stickTitle')} />
+      <p class="footnote" style={{ opacity: 0.85 }}>{tr('falak.stickHow')}</p>
+      <label class="field-row"><span>{tr('falak.stickHeight')}</span>
         <input type="number" inputMode="decimal" min="1" step="0.5" value={height} onInput={(e) => { const v = parseFloat((e.target as HTMLInputElement).value); if (v > 0) setHeight(v) }} /> <span class="unit">cm</span></label>
-      <div class="subhead" style={{ fontWeight: 600, marginTop: '10px' }}>Today, for this stick</div>
-      <PlanRow label="Zawal (shortest shadow)" time={store.formatted(plan.noon)} detail={`${cm(Falak.noonShadow(plan, height))} pointing ${compassPoint(plan.noonShadowBearing)}`} />
-      {plan.asrShafii != null && <PlanRow label="Asr, Shafi'i (+1× stick)" time={store.formatted(plan.asrShafii)} detail={cm(Falak.asrShadow(plan, height, 'standard'))} />}
-      {plan.asrHanafi != null && <PlanRow label="Asr, Hanafi (+2× stick)" time={store.formatted(plan.asrHanafi)} detail={cm(Falak.asrShadow(plan, height, 'hanafi'))} />}
+      <div class="subhead" style={{ fontWeight: 600, marginTop: '10px' }}>{tr('falak.forStick')}</div>
+      <PlanRow label={tr('falak.zawal')} time={store.formatted(plan.noon)} detail={`${cm(Falak.noonShadow(plan, height))} pointing ${compassPoint(plan.noonShadowBearing)}`} />
+      {plan.asrShafii != null && <PlanRow label={tr('falak.asrShafii')} time={store.formatted(plan.asrShafii)} detail={cm(Falak.asrShadow(plan, height, 'standard'))} />}
+      {plan.asrHanafi != null && <PlanRow label={tr('falak.asrHanafi')} time={store.formatted(plan.asrHanafi)} detail={cm(Falak.asrShadow(plan, height, 'hanafi'))} />}
       <p class="caption" style={{ opacity: 0.75 }}>{dhuhrName} begins once the shadow stops shrinking and starts to grow. Asr begins when the shadow is the noon shadow plus the stick's height (twice it, for Hanafi).</p>
       {official && <p class="caption" style={{ opacity: 0.75 }}>Your timetable: {dhuhrName} {store.formatted(official.times.dhuhr)}, Asr {store.formatted(official.times.asr)}. Timetables add a few minutes of ihtiyat (precaution) on top of the sun's geometry.</p>}
       <hr />
-      <div class="subhead" style={{ fontWeight: 600 }}>Check a reading</div>
-      <label class="field-row"><span>Shadow length</span>
+      <div class="subhead" style={{ fontWeight: 600 }}>{tr('falak.checkReading')}</div>
+      <label class="field-row"><span>{tr('falak.shadowLength')}</span>
         <input type="number" inputMode="decimal" min="0" step="0.5" placeholder="cm" value={shadow ?? ''} onInput={(e) => { const v = parseFloat((e.target as HTMLInputElement).value); setShadow(v > 0 ? v : null) }} /> <span class="unit">cm</span></label>
-      <label class="field-row"><span>Measured at</span>
+      <label class="field-row"><span>{tr('falak.measuredAt')}</span>
         <input type="time" value={timeValue} onInput={(e) => {
           const [hh, mm] = (e.target as HTMLInputElement).value.split(':').map(Number)
           if (!Number.isNaN(hh)) setMeasured(zonedTime(z.year, z.month, z.day, hh, mm || 0, 0, store.timeZone))
         }} />
-        <button class="plain-btn" style={{ padding: '6px 12px' }} onClick={() => setMeasured(null)}>Now</button></label>
+        <button class="plain-btn" style={{ padding: '6px 12px' }} onClick={() => setMeasured(null)}>{tr('common.now')}</button></label>
       {r && shadow != null && <ReadingResult r={r} plan={plan} height={height} />}
     </div>
   )
@@ -253,15 +254,15 @@ function PlanRow({ label, time, detail }: { label: string; time: string; detail:
 
 function ReadingResult({ r, plan, height }: { r: Falak.Reading; plan: Falak.ShadowDay; height: number }) {
   const school = store.asrSchool
-  const schoolName = school === 'hanafi' ? 'Hanafi' : "Shafi'i"
+  const schoolName = school === 'hanafi' ? tr('settings.hanafi') : tr('settings.shafii')
   const off = r.offsetMinutes, pm = r.uncertaintyMinutes
   return (
     <div class="reading">
-      <span class="chip"><SunDim size={14} />Grade F · your observation</span>
+      <span class="chip"><SunDim size={14} />{tr('falak.gradeObservation')}</span>
       <div class="subhead" style={{ fontWeight: 600 }}>The sun is {r.altitude.toFixed(1)}° up by your shadow.</div>
       {r.sunTime != null && off != null && pm != null ? (
         <>
-          <div class="footnote">That puts the sun's time at {store.formatted(r.sunTime)} (±{Math.ceil(pm)} min), which {Math.abs(off) <= pm ? 'matches the clock' : off > 0 ? `is ${minutesText(off)} ahead of the clock` : `is ${minutesText(off)} behind the clock`}.</div>
+          <div class="footnote">That puts the sun's time at {store.formatted(r.sunTime)} (±{Math.ceil(pm)} min), which {Math.abs(off) <= pm ? tr('falak.matches') : off > 0 ? `is ${minutesText(off)} ahead of the clock` : `is ${minutesText(off)} behind the clock`}.</div>
           {Math.abs(off) > pm && <div class="caption" style={{ opacity: 0.75 }}>Usual causes: the stick isn't vertical, the ground isn't level, or the shadow tip was hard to see. Try again with a plumb line.</div>}
         </>
       ) : <div class="footnote">The sun never gets that low on this side of noon today. Re-measure, or check the time.</div>}
@@ -285,7 +286,7 @@ function SkySignsCard({ now }: { now: number }) {
   )
   return (
     <div class="glass card">
-      <CardTitle icon={<Sparkles size={20} />} title="Signs in the sky" />
+      <CardTitle icon={<Sparkles size={20} />} title={tr('falak.skySigns')} />
       <p class="footnote" style={{ opacity: 0.85 }}>What the prayer times describe, so you can see them for yourself. Informational: city lights, haze and buildings hide these signs, and scholars differ on how to read dawn and twilight. Pray by your timetable.</p>
       {sign('maghrib', <Sunset size={22} />, "The whole disc of the sun has gone below the horizon and its upper edge has disappeared. Best seen over the sea or open land; behind hills or buildings it vanishes early, so don't pray by that.")}
       {sign('isha', <MoonStar size={22} />, "The red glow (shafaq ahmar) has gone from the western sky. This is the view of the Shafi'i, Maliki and Hanbali schools. Imam Abu Hanifah held it is the white glow that follows it. Timetables use the sun's depth below the horizon (about 17°-18°) instead.")}

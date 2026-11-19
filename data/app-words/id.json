@@ -357,6 +357,8 @@
   "settings.nudge": "Pengingat sebelum waktu habis",
   "settings.nudgeSub": "Satu pemberitahuan lembut sekitar 30 menit sebelum waktu salat habis, hanya jika belum dicentang. Tidak untuk {name}, yang waktunya berlanjut sampai {until}. Tidak berbunyi saat dijeda.",
   "settings.display": "Tampilan",
+  "settings.language": "Bahasa",
+  "settings.languageFoot": "Tulisan di setiap layar. Nama salat punya pengaturan sendiri.",
   "settings.appearance": "Tampilan warna",
   "settings.prayerScreen": "Layar salat",
   "settings.biggerText": "Teks lebih besar",

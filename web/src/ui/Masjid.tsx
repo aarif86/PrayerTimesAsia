@@ -16,6 +16,7 @@ import { OBLIGATORY } from '../core/prayer'
 import type { MasjidLink } from '../core/masjidLink'
 import { store } from '../services/store'
 import { tint } from './Dials'
+import { tr } from '../core/appWords'
 
 /**
  * Masjids and musollahs (surau, prayer rooms) near the active place, from
@@ -57,7 +58,7 @@ export function parseOverpass(json: { elements?: OsmElement[] }, center: Coordin
     const c = { latitude: lat, longitude: lon }
     const km = distanceKm(center, c)
     if (km > 15) continue
-    const display = name || (isMusollah ? 'Musollah' : 'Masjid')
+    const display = name || (isMusollah ? tr('masjid.musollah') : tr('masjid.masjid'))
     const key = `${display.toLowerCase()}|${Math.round(lat * 2000)}|${Math.round(lon * 2000)}`
     if (out.has(key)) continue
     const address = [t['addr:street'] && `${t['addr:housenumber'] ? t['addr:housenumber'] + ' ' : ''}${t['addr:street']}`, t['addr:suburb'] || t['addr:city']]
@@ -293,14 +294,14 @@ export default function MasjidScreen() {
           <span class="spacer" />
           <h1>Masjid &amp; Musollah</h1>
           <span class="spacer" />
-          <button class="round-btn info" aria-label="About this app" onClick={() => openSheet({ kind: 'makers', placement: 'masjid' })}><Info size={20} /></button>
+          <button class="round-btn info" aria-label={tr('masjid.about')} onClick={() => openSheet({ kind: 'makers', placement: 'masjid' })}><Info size={20} /></button>
         </div>
       </div>
       <div class="page masjid-page">
         {mine && here && <YourMasjid m={mine} from={here.coordinates} mode={mode} use24={use24} singapore={singapore} eid={eid} onFocus={focus} />}
         <button class="near-me-btn" onClick={findNearMe} disabled={locating === 'busy'}>
           {locating === 'busy' ? <Loader2 class="spin" size={20} /> : <LocateFixed size={20} />}
-          <span>{locating === 'busy' ? 'Finding where you are…' : nearMe ? 'Search again from here' : 'Find prayer places near me'}</span>
+          <span>{locating === 'busy' ? tr('today.finding') : nearMe ? 'Search again from here' : 'Find prayer places near me'}</span>
         </button>
         {locating === 'denied' && <p class="near-me-note secondary">Location is turned off for this site. Showing places near {place?.name ?? 'your saved place'}.</p>}
         {locating === 'failed' && <p class="near-me-note secondary">Couldn't find where you are. Showing places near {place?.name ?? 'your saved place'}.</p>}
@@ -314,7 +315,7 @@ export default function MasjidScreen() {
               <button aria-pressed={mode === 'drive'} onClick={() => setMode('drive')}><Car size={15} /> Drive</button>
             </div>
           </div>
-          <Segmented value={kind} onChange={setKind} options={[{ value: 'all', label: 'All' }, { value: 'masjid', label: 'Masjid' }, { value: 'musollah', label: 'Musollah' }]} />
+          <Segmented value={kind} onChange={setKind} options={[{ value: 'all', label: tr('masjid.all') }, { value: 'masjid', label: tr('masjid.masjid') }, { value: 'musollah', label: tr('masjid.musollah') }]} />
           {anyHours && (
             <button class={`open-chip${openOnly ? ' on' : ''}`} aria-pressed={openOnly} onClick={() => setOpenOnly((v) => !v)}>
               <Clock size={14} /> Open now only
@@ -322,14 +323,14 @@ export default function MasjidScreen() {
           )}
         </div>
         {mode === 'drive' && <p class="near-me-note secondary">Drive times are a rough guide. Your maps app shows the traffic, so a masjid a little further away may be quicker.</p>}
-        {!here && <Empty title="Choose a place" body="Tap the button above, or pick a city on the Prayer tab." />}
-        {here && loading && spaces.length === 0 && <div class="masjid-loading"><Loader2 class="spin" size={22} /> {slow ? 'The free map server is busy. Still looking…' : 'Searching nearby…'}</div>}
+        {!here && <Empty title={tr('masjid.choosePlace')} body="Tap the button above, or pick a city on the Prayer tab." />}
+        {here && loading && spaces.length === 0 && <div class="masjid-loading"><Loader2 class="spin" size={22} /> {slow ? tr('masjid.busy') : tr('masjid.searching')}</div>}
         {here && !loading && visible.length === 0 && (
-          <Empty title={failed ? "Couldn't search" : openOnly ? 'Nothing open right now' : 'Nothing listed nearby'}
-            body={failed ? "The free map servers didn't answer. Check your connection, or try again in a minute."
+          <Empty title={failed ? tr('masjid.failed') : openOnly ? 'Nothing open right now' : tr('masjid.nothing')}
+            body={failed ? tr('masjid.failedHelp')
               : openOnly ? 'Only places with opening hours on the map count here. Turn off Open now only to see the rest.'
               : `OpenStreetMap has no ${kind === 'musollah' ? 'musollah' : 'masjid'} listed within 15 km. Use the Qibla tab to pray where you are.`}
-            action={failed ? <button class="primary-btn" style={{ marginTop: 14 }} onClick={() => setAttempt((n) => n + 1)}>Try again</button> : undefined} />
+            action={failed ? <button class="primary-btn" style={{ marginTop: 14 }} onClick={() => setAttempt((n) => n + 1)}>{tr('common.tryAgain')}</button> : undefined} />
         )}
         <ul class="space-list">
           {top.map((sp) => {
@@ -369,7 +370,7 @@ export default function MasjidScreen() {
                     <div class="space-actions">
                       <a class="plain-btn" href={directionsURL(sp.coordinates, mode)} target="_blank" rel="noopener noreferrer">{mode === 'walk' ? <Footprints size={15} /> : <Car size={15} />} Directions</a>
                       {isMine(sp.coordinates)
-                        ? <span class="plain-btn done"><Star size={15} fill="currentColor" /> {sp.isMusollah ? 'Kept at the top' : 'Your masjid'}</span>
+                        ? <span class="plain-btn done"><Star size={15} fill="currentColor" /> {sp.isMusollah ? 'Kept at the top' : tr('myMasjid.title')}</span>
                         : <button class="plain-btn" onClick={() => s.chooseMasjid(sp.name, sp.coordinates)}><Star size={15} /> {sp.isMusollah ? 'Keep it at the top' : 'Make it my masjid'}</button>}
                       <a class="plain-btn quiet" href={reportURL(sp.coordinates)} target="_blank" rel="noopener noreferrer"><Flag size={15} /> Report a problem</a>
                     </div>
@@ -424,7 +425,7 @@ function YourMasjid({ m, from, mode, use24, singapore, eid, onFocus }: {
       <button class="your-masjid-main" onClick={() => onFocus(c)}>
         <Star size={20} class="accent" fill="currentColor" />
         <span class="space-text">
-          <span class="caps secondary">Your masjid</span>
+          <span class="caps secondary">{tr('myMasjid.title')}</span>
           <span class="space-name">{m.name}</span>
           <span class="space-addr">{distanceText(km)} away{trip ? `, ${trip}` : ''}</span>
         </span>
@@ -435,7 +436,7 @@ function YourMasjid({ m, from, mode, use24, singapore, eid, onFocus }: {
       {!raya && m.eid && <p class="your-masjid-line accent-text">Hari Raya prayer at {clock(m.eid, use24)}.</p>}
       <div class="space-actions">
         <a class="plain-btn" href={directionsURL(c, mode)} target="_blank" rel="noopener noreferrer">{mode === 'walk' ? <Footprints size={15} /> : <Car size={15} />} Directions</a>
-        <button class="plain-btn quiet" onClick={() => s.forgetMasjid()}>Remove</button>
+        <button class="plain-btn quiet" onClick={() => s.forgetMasjid()}>{tr('common.remove')}</button>
       </div>
     </section>
   )

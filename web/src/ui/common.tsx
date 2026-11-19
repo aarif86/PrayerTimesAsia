@@ -5,6 +5,7 @@ import type { PrayerDay } from '../core/engine'
 import { sourceAuthority } from '../core/official'
 import { GRADE_TITLE, type SourceGrade } from '../core/sources'
 import { store } from '../services/store'
+import { tr } from '../core/appWords'
 
 /** A time with its AM/PM set smaller on the same baseline. Never wraps. */
 export function TimeText({ ms, size = 28, weight = 600, class: cls, style }: { ms: number; size?: number; weight?: number; class?: string; style?: JSX.CSSProperties }) {
@@ -98,7 +99,7 @@ export function Sheet({ title, label, children, full, onDone }: { title?: string
         <div class="sheet-head">
           <span style={{ width: '64px' }} />
           {title ? <h2>{title}</h2> : <span />}
-          <button class="done" onClick={done}>Done</button>
+          <button class="done" onClick={done}>{tr('common.done')}</button>
         </div>
         {children}
       </div>
@@ -160,7 +161,7 @@ export function SourceBadge({ day, compact }: { day: PrayerDay; compact?: boolea
   )
 }
 
-export function CloseButton({ onClick, label = 'Close' }: { onClick: () => void; label?: string }) {
+export function CloseButton({ onClick, label = tr('common.close') }: { onClick: () => void; label?: string }) {
   return <button class="round-btn" onClick={onClick} aria-label={label}><X size={16} /></button>
 }
 

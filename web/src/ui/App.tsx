@@ -16,6 +16,7 @@ import { TodayScreen } from './Today'
 import { RamadanSheet } from './Ramadan'
 import { VERSION } from './version'
 import { WakeUpSheet } from './WakeUp'
+import { tr } from '../core/appWords'
 
 const MasjidScreen = lazy(() => import('./Masjid'))
 // Screens and sheets the first screen never shows load when first opened (and are kept offline like the rest).
@@ -65,7 +66,7 @@ function warmUpScreens(): ReturnType<typeof setTimeout> {
   }, 2500)
 }
 
-const TAB_LABEL: Record<Tab, string> = { today: 'Prayer', qibla: 'Qibla', falak: 'Falak', masjid: 'Masjid', settings: 'Settings' }
+const tabLabel = (tab: Tab): string => ({ today: tr('tab.prayer'), qibla: tr('tab.qibla'), falak: tr('tab.falak'), masjid: tr('tab.masjid'), settings: tr('tab.settings') })[tab]
 const TAB_ICON: Record<Tab, (p: { size?: number }) => preact.JSX.Element> = {
   today: TabPrayer, qibla: TabQibla, falak: TabFalak, masjid: TabMasjid, settings: TabSettings,
 }
@@ -98,9 +99,10 @@ export function App() {
     document.documentElement.dataset.theme = scheme
     document.documentElement.toggleAttribute('data-large-text', s.prefs.largeText)
     document.documentElement.dataset.menu = s.prefs.menuSide
+    document.documentElement.lang = s.appLang
     const meta = document.querySelector('meta[name="theme-color"]')
     meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
-  }, [scheme, bands, s.prefs.largeText, s.prefs.menuSide])
+  }, [scheme, bands, s.prefs.largeText, s.prefs.menuSide, s.appLang])
 
   useEffect(() => {
     const moved = takeMoveFromLink()
@@ -160,12 +162,12 @@ export function App() {
         <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" width="24" height="24" />
         <span>prayertimes.asia</span>
       </a>
-      <nav class="tabbar" aria-label="Sections">
+      <nav class="tabbar" aria-label={tr('app.sections')}>
         {TABS.map((t) => {
           const Icon = TAB_ICON[t]
           return (
             <button aria-current={s.tab === t ? 'page' : undefined} onClick={() => { s.setTab(t); document.getElementById('main')?.scrollTo({ top: 0 }) }}>
-              <Icon size={25} /><span>{TAB_LABEL[t]}</span>
+              <Icon size={25} /><span>{tabLabel(t)}</span>
             </button>
           )
         })}
@@ -207,19 +209,19 @@ function Onboarding() {
         <div class="spacer" />
         <div>
           <h1 class="display onb-title">Prayer Times<br />Asia</h1>
-          <p class="onb-lead">Wherever you land, know when to pray and which way to face.</p>
+          <p class="onb-lead">{tr('welcome.tagline')}</p>
         </div>
         <div class="onb-features">
-          <Feature icon={<Globe2 size={24} />} title="Every country's own method" detail="MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia, and sensible defaults everywhere else." />
-          <Feature icon={<Plane size={24} />} title="Built for travel" detail="Switches when you land, works offline, and tells you when you can shorten and combine prayers." />
-          <Feature icon={<Compass size={24} />} title="Qibla in one glance" detail="A calm compass that lights up when you're facing the Kaaba." />
+          <Feature icon={<Globe2 size={24} />} title={tr('welcome.countryMethod')} detail="MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia, and sensible defaults everywhere else." />
+          <Feature icon={<Plane size={24} />} title={tr('welcome.travel')} detail="Switches when you land, works offline, and tells you when you can shorten and combine prayers." />
+          <Feature icon={<Compass size={24} />} title={tr('welcome.qiblaGlance')} detail="A calm compass that lights up when you're facing the Kaaba." />
         </div>
         <div class="spacer" />
         <div class="onb-actions">
-          <button class="onb-primary" onClick={() => { store.update((p) => { p.hasOnboarded = true }); store.useGPS() }}>Use my location</button>
-          <button class="onb-secondary" onClick={() => { store.update((p) => { p.hasOnboarded = true; p.useGPS = false }); openSheet({ kind: 'places' }) }}>Choose a city instead</button>
-          <button class="onb-secondary" onClick={() => openSheet({ kind: 'move-in' })}>Bring in settings from another phone</button>
-          <p class="caption" style={{ opacity: 0.75, textAlign: 'center' }}>No outside ads. No account. Your location stays on your device.</p>
+          <button class="onb-primary" onClick={() => { store.update((p) => { p.hasOnboarded = true }); store.useGPS() }}>{tr('welcome.useLocation')}</button>
+          <button class="onb-secondary" onClick={() => { store.update((p) => { p.hasOnboarded = true; p.useGPS = false }); openSheet({ kind: 'places' }) }}>{tr('welcome.chooseCity')}</button>
+          <button class="onb-secondary" onClick={() => openSheet({ kind: 'move-in' })}>{tr('welcome.bringIn')}</button>
+          <p class="caption" style={{ opacity: 0.75, textAlign: 'center' }}>{tr('welcome.privacy')}</p>
         </div>
       </div>
     </div>

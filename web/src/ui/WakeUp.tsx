@@ -12,6 +12,7 @@ import { store, useNow, useStore } from '../services/store'
 import { Sheet, ToggleItem } from './common'
 import { Hadith } from './Hadith'
 import { phoneAppOffer } from './pwa'
+import { tr } from '../core/appWords'
 
 /** The alarm clock on the Prayer screen: shows the next alarm's time when one is set. */
 export function WakeChip({ now, open }: { now: number; open: () => void }) {
@@ -94,15 +95,15 @@ export function WakeUpSheet() {
   )
 
   return (
-    <Sheet title="Prayer alarms" full>
+    <Sheet title={tr('settings.alarms')} full>
       <section>
         <div class="group">
           <p class="item">
-            <span class="label">{next ? <>Next alarm {whenText(now, next.at)} {s.formatted(next.at)}{nextFor}</> : <span class="secondary">No alarms are on</span>}</span>
+            <span class="label">{next ? <>Next alarm {whenText(now, next.at)} {s.formatted(next.at)}{nextFor}</> : <span class="secondary">{tr('wake.noneOn')}</span>}</span>
           </p>
           {anyAlarm(p) && (
             <button class="item" onClick={turnOffAll}>
-              <span class="label">Turn off all alarms</span>
+              <span class="label">{tr('wake.allOff')}</span>
             </button>
           )}
         </div>
@@ -120,17 +121,17 @@ export function WakeUpSheet() {
 
       <section>
         <div class="group">
-          <ToggleItem label="Sahur alarm" on={!!p.sahurAlarm} onChange={(v) => setSahur(v ? SAHUR_TIMINGS[0] : null)} />
+          <ToggleItem label={tr('wake.sahur')} on={!!p.sahurAlarm} onChange={(v) => setSahur(v ? SAHUR_TIMINGS[0] : null)} />
           {p.sahurAlarm && SAHUR_TIMINGS.map((t) => (
             <Choice label={sahurLabel(t, s.naming)} detail={soon(now, (d) => sahurTime(t, d))} on={p.sahurAlarm === t} pick={() => setSahur(t)} />
           ))}
         </div>
-        <p class="group-foot">An earlier alarm to eat sahur before a fast, or for a longer night prayer.</p>
+        <p class="group-foot">{tr('wake.sahurSub')}</p>
       </section>
 
       {p.sahurAlarm && (
         <section>
-          <h2 class="group-title">Sahur alarm rings on</h2>
+          <h2 class="group-title">{tr('wake.sahurOn')}</h2>
           <div class="group">
             {SAHUR_DAYS.map((d) => {
               const everyDay = p.sahurDays.includes('everyDay') && d !== 'everyDay'
@@ -146,12 +147,12 @@ export function WakeUpSheet() {
               )
             })}
           </div>
-          <p class="group-foot">Ramadan and the white days follow the Hijri date in the app. Please follow your local religious authority for the start of Ramadan.</p>
+          <p class="group-foot">{tr('wake.hijriNote')}</p>
         </section>
       )}
 
       <section>
-        <h2 class="group-title">Other prayers</h2>
+        <h2 class="group-title">{tr('wake.otherPrayers')}</h2>
         <div class="group">
           {ALARM_PRAYERS.map((prayer) => {
             const name = s.name(prayer)
@@ -161,18 +162,18 @@ export function WakeUpSheet() {
                 <span class="label">{name}{value && <span class="sub mono">{prayerSoon(prayer, value)}</span>}</span>
                 <select class="inline-select" value={value ?? 'off'} aria-label={`${name} alarm`}
                   onChange={(e) => { const v = (e.target as HTMLSelectElement).value; setPrayer(prayer, v === 'off' ? null : (v as PrayerAlarmTiming)) }}>
-                  <option value="off">Off</option>
+                  <option value="off">{tr('common.off')}</option>
                   {prayerAlarmChoices(prayer).map((t) => <option value={t}>{prayerAlarmLabel(t)}</option>)}
                 </select>
               </label>
             )
           })}
         </div>
-        <p class="group-foot">An alarm rings loudly until you stop it. If it rings at the very start of a prayer, it takes the place of that prayer's alert.</p>
+        <p class="group-foot">{tr('wake.loud')}</p>
       </section>
 
       <section>
-        <h2 class="group-title">Alarm sound</h2>
+        <h2 class="group-title">{tr('wake.sound')}</h2>
         <div class="group">
           {ALARM_SOUNDS.filter((x) => x !== 'phone').map((sound) => {
             const on = (p.alarmSound === 'phone' ? 'classic' : p.alarmSound) === sound
@@ -185,7 +186,7 @@ export function WakeUpSheet() {
             )
           })}
         </div>
-        <p class="group-foot">Tap a sound to hear it. Every alarm plays this sound. The azan will join the list once the recordings are ready.</p>
+        <p class="group-foot">{tr('wake.soundHelp')}</p>
       </section>
 
       <div class="glass card wake-hadith">
@@ -205,17 +206,17 @@ export function WakeUpSheet() {
         <section>
           <div class="group">
             <button class="item" onClick={downloadWakeICS}>
-              <Download size={20} /><span class="label">Add the next 30 days to a calendar<span class="sub">Your phone's calendar rings each alarm, even with this page closed</span></span>
+              <Download size={20} /><span class="label">{tr('settings.add30')}<span class="sub">{tr('wake.calendarRings')}</span></span>
             </button>
             {app && (
               <a class="item" href={app.href} target="_blank" rel="noopener">
-                <Smartphone size={20} /><span class="label">{app.title}<span class="sub">For an alarm that rings even on silent</span></span>
+                <Smartphone size={20} /><span class="label">{app.title}<span class="sub">{tr('wake.silent')}</span></span>
               </a>
             )}
           </div>
         </section>
       )}
-      <p class="group-foot">On the web an alarm can ring only while Prayer Times Asia is open. For every morning, add it to your calendar or use the iPhone or Android app.</p>
+      <p class="group-foot">{tr('wake.webOnly')}</p>
     </Sheet>
   )
 }

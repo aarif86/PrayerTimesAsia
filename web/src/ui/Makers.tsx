@@ -4,6 +4,7 @@ import { store } from '../services/store'
 import { cardURL, ourCards, type CommunityCard } from '../core/communityCards'
 import { Hadith } from './Hadith'
 import { Kaaba } from './icons'
+import { tr } from '../core/appWords'
 
 /**
  * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
@@ -58,7 +59,7 @@ export function MakersAbout({ placement, country }: { placement: string; country
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '8px' }}>
       <Hadith id="fixedTimes" tag="Al Quran" />
-      <h3 class="display" style={{ fontSize: '26px', fontWeight: 700, margin: 0 }}>Built fisabilillah</h3>
+      <h3 class="display" style={{ fontSize: '26px', fontWeight: 700, margin: 0 }}>{tr('makers.title')}</h3>
       <p class="secondary" style={{ margin: 0 }}>
         Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).
       </p>
