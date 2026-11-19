@@ -28,6 +28,8 @@ jobs:
         run: python3 tools/check_calendar.py
       - name: Check the country tables match data/countries.json
         run: python3 tools/gen_countries.py --check
+      - name: Check the phone copies of the Friday and Raya masjid lists
+        run: python3 tools/gen_masjid_extras.py --check
       - name: Check the Ramadan words match data/ramadan-words.json
         run: python3 tools/build_ramadan_words.py --check
       - name: Check the shared app words in data/app-words

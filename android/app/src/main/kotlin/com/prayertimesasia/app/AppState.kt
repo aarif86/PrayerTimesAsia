@@ -14,6 +14,7 @@ import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
 import com.prayertimesasia.core.Appearance
+import com.prayertimesasia.core.Coordinates
 import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
@@ -201,6 +202,17 @@ class AppState(
     }
 
     fun forgetMasjid() = update { it.copy(myMasjid = null) }
+
+    /** Picked on the Masjid tab: pinned at the top. Keeps iqamah times a QR code already gave the same masjid. */
+    fun chooseMasjid(name: String, c: Coordinates) {
+        val old = prefs.myMasjid
+        if (old != null && kotlin.math.abs(old.lat - c.latitude) < 0.003 && kotlin.math.abs(old.lng - c.longitude) < 0.003) return
+        val place = resolver.activePlace
+        update {
+            it.copy(myMasjid = MasjidLink(name.take(80), Math.round(c.latitude * 10_000) / 10_000.0, Math.round(c.longitude * 10_000) / 10_000.0,
+                place?.timeZoneId ?: java.time.ZoneId.systemDefault().id, place?.countryCode))
+        }
+    }
 
     /** Travel mode: notice a new country, remember when we got here, show the welcome card. */
     private fun arrived(place: Place) {

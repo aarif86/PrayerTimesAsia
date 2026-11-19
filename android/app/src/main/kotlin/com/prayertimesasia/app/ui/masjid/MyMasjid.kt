@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.prayertimesasia.app.AppState
 import com.prayertimesasia.app.ui.components.CapsuleButton
 import com.prayertimesasia.app.ui.components.Dims
-import com.prayertimesasia.app.ui.components.GlassCard
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.today.SectionHeader
@@ -74,37 +73,6 @@ fun MasjidLinkSheetContent(state: AppState, link: MasjidLink) {
             CapsuleButton("Add my masjid", style = Txt.subheadlineSemibold, background = Palette.accent,
                 contentColor = Color.Black.copy(alpha = 0.82f)) { state.followPendingMasjid() }
             CapsuleButton("Not now", style = Txt.subheadlineSemibold) { state.pendingMasjid = null }
-        }
-    }
-}
-
-/** On the Masjid tab: your masjid in one card, or how to add one. */
-@Composable
-fun MyMasjidCard(state: AppState) {
-    val m = state.prefs.myMasjid
-    if (m == null) {
-        Text("Your masjid has a Prayer Times Asia screen? Scan its QR code with your camera to see its iqamah times on your Prayer screen.",
-            style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = Dims.gutter))
-        return
-    }
-    val h24 = state.prefs.use24Hour
-    val naming = state.resolver.naming
-    val parts = Prayer.obligatory.mapNotNull { p ->
-        m.jamaah[p.raw]?.let { r -> "${p.name(naming)} ${r.fixed?.let { clock(it, h24) } ?: "+${r.after}"}" }
-    } + listOfNotNull(m.jumuah?.let { "Jumu'ah ${clock(it, h24)}" })
-    GlassCard(Modifier.fillMaxWidth().padding(horizontal = Dims.gutter), padding = 14.dp) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-            Icon(Icons.Filled.Brightness2, null, Modifier.size(22.dp), tint = Palette.accent)
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("YOUR MASJID", style = Txt.caption2Heavy, color = Palette.secondary)
-                Text(m.name, style = Txt.bodySemibold, color = Palette.primary)
-                Text(if (parts.isEmpty()) "No iqamah times set yet" else "Iqamah: " + parts.joinToString(" · "),
-                    style = Txt.caption, color = Palette.secondary)
-                Text(if (state.resolver.myMasjidHere != null) "Shown as “Jamaah” on your Prayer screen."
-                    else "Shown on your Prayer screen when you're within ${MasjidLink.RADIUS_KM.toInt()} km.",
-                    style = Txt.caption, color = Palette.secondary)
-            }
-            CapsuleButton("Remove", style = Txt.footnoteSemibold) { state.forgetMasjid() }
         }
     }
 }
