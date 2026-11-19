@@ -2,7 +2,8 @@ name: App Store listing
 
 # Fills the App Store listing (text in EN/MS/ID, screenshots, App Review note,
 # build) from docs/store-listings and design/store/app-store. Never submits
-# for review. Run with mode "read" first to see what is there.
+# for review. Runs in write mode when this file changes on a pull request;
+# run by hand with mode "read" to see what is there.
 
 on:
   workflow_dispatch:
@@ -27,7 +28,7 @@ jobs:
       - run: pip install --quiet pyjwt cryptography
       - name: App Store Connect
         env:
-          MODE: ${{ github.event.inputs.mode || 'read' }}
+          MODE: ${{ github.event.inputs.mode || 'write' }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
           APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}

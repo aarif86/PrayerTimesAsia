@@ -144,6 +144,10 @@ def main():
         "type": "appInfos", "id": info_id, "relationships": {
             "primaryCategory": {"data": {"type": "appCategories", "id": "REFERENCE"}},
             "secondaryCategory": {"data": {"type": "appCategories", "id": "TRAVEL"}}}}}))
+    # Masjid lists come from OpenStreetMap (credited) and times follow public
+    # authority timetables, so the honest answer is "uses third party content".
+    attempt("content rights", lambda: call("PATCH", f"/v1/apps/{app_id}", {"data": {
+        "type": "apps", "id": app_id, "attributes": {"contentRightsDeclaration": "USES_THIRD_PARTY_CONTENT"}}}))
     attempt("version copyright", lambda: call("PATCH", f"/v1/appStoreVersions/{vid}", {"data": {
         "type": "appStoreVersions", "id": vid, "attributes": {"copyright": "2026 Nasar Pte Ltd"}}}))
 
