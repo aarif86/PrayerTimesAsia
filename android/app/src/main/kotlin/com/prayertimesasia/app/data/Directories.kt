@@ -21,7 +21,8 @@ class Directories(context: Context) {
 
     var mosques by mutableStateOf(load("mosques.json") { MosqueDataset.decode(it) } ?: MosqueDataset.empty)
         private set
-    var calendar by mutableStateOf(load("calendar.json") { CalendarDataset.decode(it) } ?: CalendarDataset.empty)
+    // Starts from the copy inside the app (tools/build_bundled_calendar.py), so it works offline from the first open.
+    var calendar by mutableStateOf((load("calendar.json") { CalendarDataset.decode(it) } ?: CalendarDataset.empty).withBundled())
         private set
 
     private fun <T> load(name: String, decode: (String) -> T): T? {
@@ -48,7 +49,7 @@ class Directories(context: Context) {
                 val fresh = CalendarDataset.decode(text)
                 File(dir, "calendar.json").writeText(text)
                 sp.edit().putLong("calendar", now).apply()
-                withContext(Dispatchers.Main) { calendar = fresh }
+                withContext(Dispatchers.Main) { calendar = fresh.withBundled() }
             }
         }
     }

@@ -210,7 +210,7 @@ fun SanadSheetContent(state: AppState, day: PrayerDay) {
 
 /** Ramadan, Eid and the new year with a source for every date. */
 @Composable
-fun CalendarSheetContent(state: AppState) {
+fun CalendarSheetContent(state: AppState, onShowDay: ((Int) -> Unit)? = null) {
     val r = state.resolver
     val uri = LocalUriHandler.current
     val mine = r.communityAuthority
@@ -220,6 +220,7 @@ fun CalendarSheetContent(state: AppState) {
     LazyColumn(Modifier.fillMaxWidth().padding(horizontal = Dims.gutter)) {
         item {
             Text("Calendar", style = Txt.headline, color = Palette.primary)
+            HijriMonthCard(state, onShowDay)
             SectionHeader("My community follows")
             Row(Modifier.fillMaxWidth().clickable { picking = !picking }.padding(vertical = 8.dp)) {
                 Text(if (state.prefs.communityAuthority == null) "Automatic · ${mine?.let(CalendarSanad::authorityName) ?: "none"}"

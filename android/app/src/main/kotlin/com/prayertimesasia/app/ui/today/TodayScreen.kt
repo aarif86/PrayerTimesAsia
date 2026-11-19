@@ -110,6 +110,9 @@ fun TodayScreen(state: AppState, openPlaces: () -> Unit, openCalendar: () -> Uni
     val r = state.resolver
     val day = r.day(now)
     var offset by rememberSaveable { mutableIntStateOf(0) }
+    LaunchedEffect(state.showDayRequest) {
+        state.showDayRequest?.let { offset = it; state.showDayRequest = null }
+    }
     if (day == null) {
         NoPlace(state, openPlaces)
         return

@@ -25,7 +25,7 @@ struct TodayView: View {
             }
         }
         .sheet(isPresented: $showPlaces) { PlacesView() }
-        .sheet(isPresented: $showCalendar) { CalendarSanadView() }
+        .sheet(isPresented: $showCalendar) { CalendarSanadView { days in withAnimation(.snappy) { dayOffset = days } } }
         .sheet(isPresented: $showTracker) { TrackerView() }
         .onAppear {
             // Demo screenshots: Show more only when asked, never carried over from a previous run.
