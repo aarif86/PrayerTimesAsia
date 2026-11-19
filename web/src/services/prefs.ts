@@ -11,12 +11,9 @@ import {
 
 export type Appearance = 'system' | 'light' | 'dark'
 export const APPEARANCES: Appearance[] = ['system', 'light', 'dark']
-/** Where the Sections bar sits on bigger screens (laptop, tablet). Phones always keep it at the bottom. */
+/** Where the Sections bar sits on bigger screens (laptop, tablet): the arrow on the bar moves it. Phones always keep it at the bottom. */
 export const MENU_SIDES = ['auto', 'bottom', 'left', 'right'] as const
 export type MenuSide = (typeof MENU_SIDES)[number]
-export const MENU_SIDE_LABEL: Record<MenuSide, string> = {
-  auto: 'Automatic (left)', bottom: 'Bottom', left: 'Left side', right: 'Right side',
-}
 
 export const APPEARANCE_LABEL: Record<Appearance, string> = {
   system: 'Automatic (follows the sky)', light: 'Light', dark: 'Dark',

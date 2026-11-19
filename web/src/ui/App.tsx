@@ -2,7 +2,7 @@ import type { ComponentType } from 'preact'
 import { SiteHomeButton } from './SiteHome'
 import { lazy, Suspense } from 'preact/compat'
 import { useEffect, useLayoutEffect } from 'preact/hooks'
-import { Compass, Globe2, Plane } from 'lucide-preact'
+import { ChevronsLeft, ChevronsRight, Compass, Globe2, Plane } from 'lucide-preact'
 import { scheduleAlerts } from '../services/notifications'
 import { store, TABS, useNow, useStore, type Tab } from '../services/store'
 import { openSheet, useSheet } from './common'
@@ -157,6 +157,12 @@ export function App() {
             </button>
           )
         })}
+        {/* Bigger screens: the bar sits at the side, and this arrow slides it across. Hidden on phones (bottom bar). */}
+        <button class="tabbar-move" aria-label={s.prefs.menuSide === 'right' ? 'Move the menu to the left' : 'Move the menu to the right'}
+          title={s.prefs.menuSide === 'right' ? 'Move to the left' : 'Move to the right'}
+          onClick={() => store.update((p) => { p.menuSide = p.menuSide === 'right' ? 'left' : 'right' })}>
+          {s.prefs.menuSide === 'right' ? <ChevronsLeft size={18} /> : <ChevronsRight size={18} />}
+        </button>
       </nav>
       {sheet?.kind === 'places' && <PlacesSheet forHome={sheet.forHome} />}
       {sheet?.kind === 'sanad' && <SanadSheet day={sheet.day} />}

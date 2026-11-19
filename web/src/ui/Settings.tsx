@@ -7,7 +7,7 @@ import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
 import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, prayerName, type NamingStyle, type Prayer } from '../core/prayer'
 import { flag, profileMethod } from '../core/regions'
 import { alertSupport, downloadICS, anyAlarm, nextWakeUp, permission, requestPermission, testAlert, WORK_PRAYERS } from '../services/notifications'
-import { APPEARANCE_LABEL, APPEARANCES, MENU_SIDE_LABEL, MENU_SIDES, type MenuSide, DEFAULT_REMINDER_MINUTES, JUMUAH_REMINDER_CHOICES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
+import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, JUMUAH_REMINDER_CHOICES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
 import { store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
 import { MakersCard, OFFERS } from './Makers'
@@ -180,11 +180,6 @@ export function SettingsScreen() {
           onChange={(v) => store.update((x) => { x.appearance = v as Appearance })} />
         <SelectItem label="Prayer screen" value={p.todayStyle} options={TODAY_STYLES.map((t) => ({ value: t, label: TODAY_STYLE_LABEL[t] }))}
           onChange={(v) => store.update((x) => { x.todayStyle = v as TodayStyle })} />
-        {wideScreen() && (
-          <SelectItem label="Menu bar" value={p.menuSide} options={MENU_SIDES.map((m) => ({ value: m, label: MENU_SIDE_LABEL[m] }))}
-            onChange={(v) => store.update((x) => { x.menuSide = v as MenuSide })}
-            sub="Where the menu sits on a laptop or tablet. On a phone it stays at the bottom, where your thumb reaches." />
-        )}
         <ToggleItem label="Bigger text" on={p.largeText} onChange={(v) => store.update((x) => { x.largeText = v })}
           sub="Makes every word and time larger. For the clearest screen, pick Big and Simple as the Prayer screen too." />
         <ToggleItem label="Opening screen" on={p.showOpening} onChange={(v) => store.update((x) => { x.showOpening = v })}
@@ -329,7 +324,3 @@ function AppCard() {
   )
 }
 
-/** Laptop, tablet or a wide browser window: where the menu bar can sit at the side. */
-function wideScreen(): boolean {
-  try { return window.matchMedia('(min-width: 700px) and (min-height: 500px)').matches } catch { return false }
-}
