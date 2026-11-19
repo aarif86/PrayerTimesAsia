@@ -4,6 +4,15 @@ import Foundation
 /// Settings). The words live in data/guide-words.json and are written into
 /// GuideWordsData.swift by tools/build_guide_words.py.
 enum GuideWords {
+    /// One moment on a card's little phone: an app screen, the box the finger points at
+    /// (fractions of the screen), the words under it, and whether the finger taps.
+    struct Step: Equatable {
+        let shot: String
+        let x: Double, y: Double, w: Double, h: Double
+        let say: String
+        let tap: Bool
+    }
+
     /// The line for this key in this language, with its {holes} filled in.
     static func word(_ lang: RamadanContent.Lang, _ key: String, _ args: [String: String] = [:]) -> String {
         var line = data[lang]?[key] ?? data[.en]?[key] ?? key

@@ -229,4 +229,62 @@ internal object GuideWordsData {
             "label" to "Panduan singkat",
         ),
     )
+
+    /** Each card's little phone: the app screen, where the finger points (fractions of the screen), the words, and whether it taps. */
+    val steps: Map<String, List<GuideStep>> = mapOf(
+        "prayer" to listOf(
+            GuideStep("home", 0.051f, 0.016f, 0.898f, 0.174f, "prayer_1", false),
+            GuideStep("home_next", 0.847f, 0.527f, 0.102f, 0.047f, "prayer_2", true),
+            GuideStep("tomorrow", 0.153f, 0.262f, 0.695f, 0.056f, "prayer_3", false),
+        ),
+        "buttons" to listOf(
+            GuideStep("btn_look", 0.863f, 0.07f, 0.087f, 0.04f, "btn_look", false),
+            GuideStep("btn_light", 0.863f, 0.12f, 0.087f, 0.04f, "btn_light", false),
+            GuideStep("btn_alarm", 0.863f, 0.169f, 0.087f, 0.04f, "btn_alarm", false),
+            GuideStep("btn_streak", 0.825f, 0.218f, 0.124f, 0.04f, "btn_streak", false),
+        ),
+        "looks" to listOf(
+            GuideStep("look_centre", 0.863f, 0.07f, 0.087f, 0.04f, "looks_1", true),
+            GuideStep("look_list", 0.756f, 0.016f, 0.087f, 0.04f, "looks_2", true),
+            GuideStep("look_dial", 0.811f, 0.018f, 0.087f, 0.04f, "looks_2", true),
+            GuideStep("look_sunPath", 0.756f, 0.023f, 0.087f, 0.04f, "looks_2", true),
+            GuideStep("look_bands", 0.756f, 0.021f, 0.087f, 0.04f, "looks_3", true),
+            GuideStep("look_simple", 0.801f, 0.026f, 0.087f, 0.04f, "looks_4", false),
+            GuideStep("look_light", 0.649f, 0.016f, 0.087f, 0.04f, "looks_5", true),
+            GuideStep("look_lightOn", 0.649f, 0.016f, 0.087f, 0.04f, "looks_6", false),
+        ),
+        "alerts" to listOf(
+            GuideStep("bell", 0.835f, 0.608f, 0.076f, 0.04f, "alerts_1", true),
+            GuideStep("alarm", 0.863f, 0.169f, 0.087f, 0.04f, "alerts_2", true),
+            GuideStep("alarm_sheet", 0.776f, 0.219f, 0.13f, 0.036f, "alerts_3", true),
+        ),
+        "qibla" to listOf(
+            GuideStep("qibla_tab", 0.229f, 0.921f, 0.181f, 0.063f, "qibla_1", true),
+            GuideStep("qibla", 0.102f, 0.2f, 0.796f, 0.367f, "qibla_2", false),
+        ),
+        "masjid" to listOf(
+            GuideStep("masjid_tab", 0.59f, 0.921f, 0.181f, 0.063f, "masjid_1", true),
+            GuideStep("masjid", 0.051f, 0.506f, 0.796f, 0.075f, "masjid_2", false),
+        ),
+        "travel" to listOf(
+            GuideStep("settings_tab", 0.771f, 0.921f, 0.181f, 0.063f, "travel_1", true),
+            GuideStep("musafir_switch", 0.776f, 0.481f, 0.13f, 0.036f, "travel_2", true),
+            GuideStep("musafir_line", 0.051f, 0.474f, 0.796f, 0.051f, "travel_3", true),
+            GuideStep("journey", 0.196f, 0.135f, 0.474f, 0.034f, "travel_4", false),
+        ),
+        "falak" to listOf(
+            GuideStep("falak_tab", 0.41f, 0.921f, 0.181f, 0.063f, "falak_1", true),
+            GuideStep("falak", 0.094f, 0.605f, 0.356f, 0.164f, "falak_2", false),
+        ),
+        "print" to listOf(
+            GuideStep("settings_tab", 0.771f, 0.921f, 0.181f, 0.063f, "travel_1", true),
+            GuideStep("print_row", 0.053f, 0.453f, 0.893f, 0.093f, "print_2", true),
+            GuideStep("print_page", 0.041f, 0.185f, 0.919f, 0.265f, "print_3", false),
+        ),
+        "yours" to listOf(
+            GuideStep("date", 0.153f, 0.522f, 0.695f, 0.056f, "yours_1", true),
+            GuideStep("calendar", 0.051f, 0.309f, 0.898f, 0.22f, "yours_2", false),
+            GuideStep("help", 0.176f, 0.487f, 0.659f, 0.026f, "yours_3", true),
+        ),
+    )
 }

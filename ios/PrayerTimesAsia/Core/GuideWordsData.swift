@@ -227,4 +227,62 @@ extension GuideWords {
             "label": "Panduan singkat",
         ],
     ]
+
+    /// Each card's little phone: the app screen, where the finger points (fractions of the screen), the words, and whether it taps.
+    static let steps: [String: [Step]] = [
+        "prayer": [
+            Step(shot: "home", x: 0.051, y: 0.016, w: 0.898, h: 0.174, say: "prayer_1", tap: false),
+            Step(shot: "home_next", x: 0.847, y: 0.527, w: 0.102, h: 0.047, say: "prayer_2", tap: true),
+            Step(shot: "tomorrow", x: 0.153, y: 0.262, w: 0.695, h: 0.056, say: "prayer_3", tap: false),
+        ],
+        "buttons": [
+            Step(shot: "btn_look", x: 0.863, y: 0.07, w: 0.087, h: 0.04, say: "btn_look", tap: false),
+            Step(shot: "btn_light", x: 0.863, y: 0.12, w: 0.087, h: 0.04, say: "btn_light", tap: false),
+            Step(shot: "btn_alarm", x: 0.863, y: 0.169, w: 0.087, h: 0.04, say: "btn_alarm", tap: false),
+            Step(shot: "btn_streak", x: 0.825, y: 0.218, w: 0.124, h: 0.04, say: "btn_streak", tap: false),
+        ],
+        "looks": [
+            Step(shot: "look_centre", x: 0.863, y: 0.07, w: 0.087, h: 0.04, say: "looks_1", tap: true),
+            Step(shot: "look_list", x: 0.756, y: 0.016, w: 0.087, h: 0.04, say: "looks_2", tap: true),
+            Step(shot: "look_dial", x: 0.811, y: 0.018, w: 0.087, h: 0.04, say: "looks_2", tap: true),
+            Step(shot: "look_sunPath", x: 0.756, y: 0.023, w: 0.087, h: 0.04, say: "looks_2", tap: true),
+            Step(shot: "look_bands", x: 0.756, y: 0.021, w: 0.087, h: 0.04, say: "looks_3", tap: true),
+            Step(shot: "look_simple", x: 0.801, y: 0.026, w: 0.087, h: 0.04, say: "looks_4", tap: false),
+            Step(shot: "look_light", x: 0.649, y: 0.016, w: 0.087, h: 0.04, say: "looks_5", tap: true),
+            Step(shot: "look_lightOn", x: 0.649, y: 0.016, w: 0.087, h: 0.04, say: "looks_6", tap: false),
+        ],
+        "alerts": [
+            Step(shot: "bell", x: 0.835, y: 0.608, w: 0.076, h: 0.04, say: "alerts_1", tap: true),
+            Step(shot: "alarm", x: 0.863, y: 0.169, w: 0.087, h: 0.04, say: "alerts_2", tap: true),
+            Step(shot: "alarm_sheet", x: 0.776, y: 0.219, w: 0.13, h: 0.036, say: "alerts_3", tap: true),
+        ],
+        "qibla": [
+            Step(shot: "qibla_tab", x: 0.229, y: 0.921, w: 0.181, h: 0.063, say: "qibla_1", tap: true),
+            Step(shot: "qibla", x: 0.102, y: 0.2, w: 0.796, h: 0.367, say: "qibla_2", tap: false),
+        ],
+        "masjid": [
+            Step(shot: "masjid_tab", x: 0.59, y: 0.921, w: 0.181, h: 0.063, say: "masjid_1", tap: true),
+            Step(shot: "masjid", x: 0.051, y: 0.506, w: 0.796, h: 0.075, say: "masjid_2", tap: false),
+        ],
+        "travel": [
+            Step(shot: "settings_tab", x: 0.771, y: 0.921, w: 0.181, h: 0.063, say: "travel_1", tap: true),
+            Step(shot: "musafir_switch", x: 0.776, y: 0.481, w: 0.13, h: 0.036, say: "travel_2", tap: true),
+            Step(shot: "musafir_line", x: 0.051, y: 0.474, w: 0.796, h: 0.051, say: "travel_3", tap: true),
+            Step(shot: "journey", x: 0.196, y: 0.135, w: 0.474, h: 0.034, say: "travel_4", tap: false),
+        ],
+        "falak": [
+            Step(shot: "falak_tab", x: 0.41, y: 0.921, w: 0.181, h: 0.063, say: "falak_1", tap: true),
+            Step(shot: "falak", x: 0.094, y: 0.605, w: 0.356, h: 0.164, say: "falak_2", tap: false),
+        ],
+        "print": [
+            Step(shot: "settings_tab", x: 0.771, y: 0.921, w: 0.181, h: 0.063, say: "travel_1", tap: true),
+            Step(shot: "print_row", x: 0.053, y: 0.453, w: 0.893, h: 0.093, say: "print_2", tap: true),
+            Step(shot: "print_page", x: 0.041, y: 0.185, w: 0.919, h: 0.265, say: "print_3", tap: false),
+        ],
+        "yours": [
+            Step(shot: "date", x: 0.153, y: 0.522, w: 0.695, h: 0.056, say: "yours_1", tap: true),
+            Step(shot: "calendar", x: 0.051, y: 0.309, w: 0.898, h: 0.22, say: "yours_2", tap: false),
+            Step(shot: "help", x: 0.176, y: 0.487, w: 0.659, h: 0.026, say: "yours_3", tap: true),
+        ],
+    ]
 }

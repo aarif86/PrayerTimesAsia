@@ -72,6 +72,15 @@ for lang in LANGS:
     sw.append(f"        .{lang}: [")
     sw += [f"            {q(k)}: {q(v)}," for k, v in DATA[lang].items()]
     sw.append("        ],")
+sw += ["    ]", "",
+       "    /// Each card's little phone: the app screen, where the finger points (fractions of the screen), the words, and whether it taps.",
+       "    static let steps: [String: [Step]] = ["]
+for c, steps in STEPS.items():
+    sw.append(f"        {q(c)}: [")
+    for shot, say, tap in steps:
+        b = SHOTS[shot]
+        sw.append(f"            Step(shot: {q(shot)}, x: {b['x']}, y: {b['y']}, w: {b['w']}, h: {b['h']}, say: {q(say)}, tap: {'true' if tap else 'false'}),")
+    sw.append("        ],")
 sw += ["    ]", "}", ""]
 swift = "\n".join(sw)
 
@@ -83,6 +92,15 @@ for lang in LANGS:
     kt.append(f"        RamadanContent.Lang.{lang.upper()} to mapOf(")
     kt += [f"            {q(k)} to {kotlin(v)}," for k, v in DATA[lang].items()]
     kt.append("        ),")
+kt += ["    )", "",
+       "    /** Each card's little phone: the app screen, where the finger points (fractions of the screen), the words, and whether it taps. */",
+       "    val steps: Map<String, List<GuideStep>> = mapOf("]
+for c, steps in STEPS.items():
+    kt.append(f"        {q(c)} to listOf(")
+    for shot, say, tap in steps:
+        b = SHOTS[shot]
+        kt.append(f"            GuideStep({q(shot)}, {b['x']}f, {b['y']}f, {b['w']}f, {b['h']}f, {q(say)}, {'true' if tap else 'false'}),")
+    kt.append("        ),")
 kt += ["    )", "}", ""]
 android = "\n".join(kt)
 
@@ -92,7 +110,43 @@ OUT = {
     "android/core/src/main/kotlin/com/prayertimesasia/core/GuideWordsData.kt": android,
 }
 
+# The phone pictures: web keeps the .webp files; iPhone gets a .jpg asset each and Android a drawable.
+SHOT_NAMES = sorted({shot for steps in STEPS.values() for shot, _, _ in steps})
+ASSETS = ROOT / "ios/PrayerTimesAsia/Resources/Assets.xcassets"
+DRAWABLES = ROOT / "android/app/src/main/res/drawable-nodpi"
+
+
+def ios_set(shot):
+    return ASSETS / f"Guide-step-{shot}.imageset"
+
+
+def android_file(shot):
+    return DRAWABLES / f"guide_step_{shot.lower()}.webp"
+
+
+def write_images():
+    from PIL import Image
+    import shutil
+    for old in ASSETS.glob("Guide-step-*.imageset"):
+        if old.name[len("Guide-step-"):-len(".imageset")] not in SHOT_NAMES:
+            shutil.rmtree(old)
+    for old in DRAWABLES.glob("guide_step_*.webp"):
+        if old.stem[len("guide_step_"):] not in {s.lower() for s in SHOT_NAMES}:
+            old.unlink()
+    for shot in SHOT_NAMES:
+        src = ROOT / f"web/src/assets/guide/steps/{shot}.webp"
+        d = ios_set(shot)
+        d.mkdir(exist_ok=True)
+        Image.open(src).convert("RGB").save(d / f"{shot}.jpg", quality=80)
+        (d / "Contents.json").write_text(json.dumps({"images": [{"filename": f"{shot}.jpg", "idiom": "universal"}],
+                                                     "info": {"author": "xcode", "version": 1}}, indent=2) + "\n")
+        shutil.copyfile(src, android_file(shot))
+
+
 if "--check" in sys.argv:
+    missing = [str(p) for shot in SHOT_NAMES for p in (ios_set(shot) / f"{shot}.jpg", android_file(shot)) if not p.exists()]
+    if missing:
+        sys.exit(f"Guide pictures missing, run python3 tools/build_guide_words.py: {', '.join(missing)}")
     stale = [p for p, text in OUT.items() if not (ROOT / p).exists() or (ROOT / p).read_text(encoding="utf-8") != text]
     if stale:
         sys.exit(f"Out of date, run python3 tools/build_guide_words.py: {', '.join(stale)}")
@@ -100,4 +154,5 @@ if "--check" in sys.argv:
 else:
     for p, text in OUT.items():
         (ROOT / p).write_text(text, encoding="utf-8")
+    write_images()
     print(f"Wrote {len(CARDS)} guide cards in {len(LANGS)} languages")
