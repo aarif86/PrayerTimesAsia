@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { BellRing, CircleDot, Palette, Pointer, Printer } from 'lucide-preact'
-import { GUIDE_CARDS, GUIDE_STEPS, guideLang, guideWord, type GuideCardId } from '../core/guideWords'
-import { lang3, type Lang3 } from '../core/ramadanContent'
-import { navigatorLocale, store } from '../services/store'
+import { GUIDE_CARDS, GUIDE_STEPS, guideWord, type GuideCardId } from '../core/guideWords'
+import { type Lang3 } from '../core/ramadanContent'
+import { store } from '../services/store'
 import { TabFalak, TabJourney, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 
 /** Real app screens for the little phone, by name (made by scripts/guide-shots.mjs). */
@@ -23,7 +23,7 @@ type Say = (k: Parameters<typeof guideWord>[1], a?: Record<string, number>) => s
  * that taps the exact button. Skip at any time; Settings opens it again.
  */
 export function Guide({ onClose }: { onClose: () => void }) {
-  const [lang, setLang] = useState<Lang3>(() => guideLang(lang3(store.naming), navigatorLocale()))
+  const [lang, setLang] = useState<Lang3>(() => store.appLang)
   const [i, setI] = useState(0)
   const [drag, setDrag] = useState(0)
   const start = useRef<{ x: number; y: number; w: number; moved: boolean } | null>(null)

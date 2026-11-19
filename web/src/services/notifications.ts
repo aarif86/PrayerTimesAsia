@@ -8,7 +8,6 @@ import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
 import { playAzan } from './azan'
 import { playAlarm } from './alarmSound'
 import { hadithAlertLine, type HadithId } from '../core/hadith'
-import { lang3 } from '../core/ramadanContent'
 import { alertLine } from '../core/alertLines'
 import { store } from './store'
 
@@ -133,7 +132,7 @@ export function upcomingAlerts(now: number): Alert[] {
         out.push({ id, title: `Time to berbuka · ${name} ${store.formatted(time)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu`, at: time, prayer, silent })
         continue
       }
-      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: alertLine(lang3(store.naming), prayer, store.isFriday(time), day.year, day.month, day.day, name), at: time, prayer, silent })
+      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: alertLine(store.appLang, prayer, store.isFriday(time), day.year, day.month, day.day, name), at: time, prayer, silent })
     }
   }
   return [...out, ...wake].filter((a) => a.at > now).sort((a, b) => a.at - b.at)
@@ -142,7 +141,7 @@ export function upcomingAlerts(now: number): Alert[] {
 
 /** "\n“...” al Bukhari" under a wake-up alert, or nothing when Settings, Hadith, alerts is off. */
 function alertHadith(id: HadithId): string {
-  return store.prefs.hadithInAlerts ? `\n${hadithAlertLine(id, lang3(store.naming))}` : ''
+  return store.prefs.hadithInAlerts ? `\n${hadithAlertLine(id, store.appLang)}` : ''
 }
 
 export interface WakeUp { id: string; title: string; body: string; at: number; sahur: boolean; prayer?: AlarmPrayer }

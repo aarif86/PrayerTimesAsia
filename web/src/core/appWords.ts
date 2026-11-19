@@ -52,3 +52,7 @@ export function appLocale(): string { return APP_LOCALE[current] }
 export function tr(key: AppWordKey, args?: AppWordArgs): string {
   return appWord(current, key, args)
 }
+
+/** Appearance and Prayer screen style names in the current app language. */
+export function appearanceLabel(a: 'system' | 'light' | 'dark'): string { return tr(`appearance.${a}`) }
+export function styleLabel(s: 'list' | 'centre' | 'dial' | 'sunPath' | 'bands' | 'simple'): string { return tr(`style.${s}`) }

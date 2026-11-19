@@ -232,8 +232,14 @@ class AppStore {
   /** The same in one sentence or two, for the welcome card. */
   get sourceShort(): string { return officialSummary(this.officialSource, true) ?? sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true) }
   get asrSchool(): AsrSchool { return this.prefs.asrOverride ?? this.profile.asr }
-  /** The language of the app's words: the user's pick in Settings, else the browser's language (English unless Malay or Indonesian). */
-  get appLang(): Lang3 { return this.prefs.appLanguageOverride ?? appLangFromLocales(browserLocales()) }
+  /** The language of the app's words: the user's pick in Settings, else Malay or Indonesian prayer names if picked, else the browser's language (English unless Malay or Indonesian). */
+  get appLang(): Lang3 {
+    if (this.prefs.appLanguageOverride) return this.prefs.appLanguageOverride
+    // Someone who already picked Malay or Indonesian prayer names keeps the Ramadan page and alerts in that language.
+    if (this.prefs.namingOverride === 'malay') return 'ms'
+    if (this.prefs.namingOverride === 'indonesian') return 'id'
+    return appLangFromLocales(browserLocales())
+  }
   get personalNaming(): NamingStyle { return personalNaming(navigatorLocale()) }
   /** Your names, from your browser's language (English unless it has names in it), not from where you are. */
   get naming(): NamingStyle { return this.prefs.namingOverride ?? this.personalNaming }

@@ -9,12 +9,11 @@ import { parameterSummary } from '../core/methods'
 import { isInAsia, placeProfile } from '../core/place'
 import { isObligatory, PRAYERS, type Prayer } from '../core/prayer'
 import { LONG_DAYS_WORDS } from '../core/longDays'
-import { lang3 } from '../core/ramadanContent'
 import { flag } from '../core/regions'
 import { noonDaysAfter } from '../core/tz'
 import { nudgeAt } from '../core/window'
 import { alertSupport, requestPermission } from '../services/notifications'
-import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '../services/prefs'
+import { APPEARANCES, TODAY_STYLES } from '../services/prefs'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { WakeChip } from './WakeUp'
@@ -28,7 +27,7 @@ import { SiteHomeButton } from './SiteHome'
 import { TabJourney } from './icons'
 import { SeasonCard } from './Ramadan'
 import { Hadith } from './Hadith'
-import { tr } from '../core/appWords'
+import { appearanceLabel, styleLabel, tr } from '../core/appWords'
 
 type Moment = { prayer: Prayer; time: number } | null
 
@@ -85,7 +84,7 @@ export function TodayScreen() {
   const style = s.prefs.todayStyle
   return (
     <div class={`today style-${style}`} data-theme-local={style === 'bands' ? 'dark' : undefined}>
-      <h1 class="sr-only">Prayer times{s.activePlace ? ` in ${s.activePlace.name}` : ''}</h1>
+      <h1 class="sr-only">{s.activePlace ? tr('today.titleIn', { place: s.activePlace.name }) : tr('today.title')}</h1>
       {style === 'list' && <ClassicPage c={ctx} />}
       {style === 'centre' && <CentrePage c={ctx} />}
       {style === 'dial' && <DialPage c={ctx} />}
@@ -114,11 +113,11 @@ function AppearanceButton({ c }: { c: Ctx }) {
   if (store.prefs.todayStyle === 'bands') return null
   const Icon = a === 'system' ? Contrast : a === 'light' ? Sun : Moon
   return (
-    <button class="round-btn" aria-label={`Appearance: ${APPEARANCE_LABEL[a]}. Switches between Automatic, Light and Dark.`}
+    <button class="round-btn" aria-label={tr('today.appearanceButton', { name: appearanceLabel(a) })}
       onClick={() => {
         const next = APPEARANCES[(APPEARANCES.indexOf(a) + 1) % APPEARANCES.length]
         store.update((p) => { p.appearance = next })
-        c.showToast(next === 'system' ? 'Automatic: follows the sky' : APPEARANCE_LABEL[next])
+        c.showToast(next === 'system' ? tr('today.followsSky') : appearanceLabel(next))
       }}>
       <Icon size={17} strokeWidth={2.4} fill={a === 'system' ? 'none' : 'currentColor'} />
     </button>
@@ -137,11 +136,11 @@ function StyleButton({ c }: { c: Ctx }) {
   }
   const pick = (style: (typeof TODAY_STYLES)[number]) => {
     store.update((p) => { p.todayStyle = style })
-    c.showToast(TODAY_STYLE_LABEL[style])
+    c.showToast(styleLabel(style))
   }
   return (
     <>
-      <button ref={ref} class="round-btn" aria-label={`Prayer screen style: ${TODAY_STYLE_LABEL[store.prefs.todayStyle]}. Switches to the next style; touch and hold to choose one.`}
+      <button ref={ref} class="round-btn" aria-label={tr('today.styleButton', { name: styleLabel(store.prefs.todayStyle) })}
         onPointerDown={() => { held.current = false; hold.current = setTimeout(() => { held.current = true; openMenu() }, 500) }}
         onPointerUp={() => clearTimeout(hold.current)} onPointerLeave={() => clearTimeout(hold.current)}
         onContextMenu={(e) => { e.preventDefault(); openMenu() }}
@@ -158,7 +157,7 @@ function StyleButton({ c }: { c: Ctx }) {
             {TODAY_STYLES.map((st) => (
               <button role="menuitem" onClick={() => { setMenu(null); pick(st) }}>
                 <span style={{ width: '16px' }}>{st === store.prefs.todayStyle && <CircleCheck size={16} />}</span>
-                {TODAY_STYLE_LABEL[st]}
+                {styleLabel(st)}
               </button>
             ))}
           </div>
@@ -173,7 +172,7 @@ function StreakChip({ now }: { now: number }) {
   const paused = store.trackerPaused
   return (
     <button class="streak-chip" onClick={() => openSheet({ kind: 'tracker' })}
-      aria-label={`Prayer tracker: streak ${store.streak(now)} days${paused ? tr('today.trackerPaused') : excused ? tr('today.trackerExcused') : ''}`}>
+      aria-label={tr('today.trackerButton', { n: store.streak(now), extra: paused ? tr('today.trackerPaused') : excused ? tr('today.trackerExcused') : '' })}>
       {paused ? <Pause size={15} /> : excused ? <Droplet size={15} fill="currentColor" /> : <Flame size={15} fill="currentColor" />}
       <span class="mono">{store.streak(now)}</span>
     </button>
@@ -186,7 +185,7 @@ function JourneyButton({ now, withChip = false }: { now: number; withChip?: bool
   if (withChip && !store.prefs.musafirChipDismissed) return null
   return (
     <button class="round-btn" style={{ background: 'color-mix(in srgb, var(--accent) 25%, transparent)' }}
-      aria-label="Musafir: you may shorten and combine prayers" onClick={() => openSheet({ kind: 'journey' })}>
+      aria-label={tr('today.musafirButton')} onClick={() => openSheet({ kind: 'journey' })}>
       <TabJourney size={18} />
     </button>
   )
@@ -250,7 +249,7 @@ function ShowMoreButton({ c, inline }: { c: Ctx; inline?: boolean }) {
   const btn = (
     <button class="capsule-btn" onClick={() => c.setShowMore(!c.showMore)} aria-expanded={c.showMore}
       aria-label={`${c.showMore ? tr('common.showLess') : tr('common.showMore')}: Dhuha and the blessed times of the night`}>
-      {c.showMore ? 'SHOW LESS' : 'SHOW MORE'}
+      {(c.showMore ? tr('common.showLess') : tr('common.showMore')).toLocaleUpperCase()}
       {c.showMore ? <ChevronUp size={14} strokeWidth={3} /> : <ChevronDown size={14} strokeWidth={3} />}
     </button>
   )
@@ -272,7 +271,7 @@ function PrayerHadith({ c }: { c: Ctx }) {
   if (c.offset !== 0 || !store.prefs.showHadith) return null
   const n = c.next?.prayer
   if (n !== 'fajr' && n !== 'asr') return null
-  return <Hadith id="coolPrayers" tag={`Before ${store.name(n, c.next!.time)}`} />
+  return <Hadith id="coolPrayers" tag={tr('today.before', { name: store.name(n, c.next!.time) })} />
 }
 
 function TopPrompt() {
@@ -305,8 +304,8 @@ function NotePrompt({ c }: { c: Ctx }) {
   return (
     <div class="alerts-prompt note-prompt">
       <Star size={18} class="accent" style={{ flex: 'none' }} />
-      <span class="text">Enjoying the app? A short review helps other Muslims find it.</span>
-      <button class="primary-btn" onClick={() => { done(); openSheet({ kind: 'review' }) }}>Review</button>
+      <span class="text">{tr('today.reviewAsk')}</span>
+      <button class="primary-btn" onClick={() => { done(); openSheet({ kind: 'review' }) }}>{tr('today.review')}</button>
       <button class="x" aria-label={tr('common.notNow')} onClick={done}><X size={15} strokeWidth={3} /></button>
     </div>
   )
@@ -329,7 +328,7 @@ function AlertsPrompt() {
 function LongDaysNote({ now }: { now: number }) {
   const key = store.longDaysNote(now)
   if (!key) return null
-  const w = LONG_DAYS_WORDS[lang3(store.naming)]
+  const w = LONG_DAYS_WORDS[store.appLang]
   return (
     <div class="glass card arrival long-days" role="note">
       <div class="row" style={{ alignItems: 'flex-start', gap: '12px' }}>
@@ -353,10 +352,10 @@ function ArrivalCard() {
       <div class="row" style={{ alignItems: 'flex-start', gap: '12px' }}>
         <span style={{ fontSize: '34px', lineHeight: 1 }}>{profile.code ? flag(profile.code) : '🌏'}</span>
         <div style={{ flex: 1 }}>
-          <div class="headline">{profile.code ? `Welcome to ${profile.name}` : tr('today.welcome')}</div>
+          <div class="headline">{profile.code ? tr('today.welcomeTo', { place: profile.name }) : tr('today.welcome')}</div>
           <div class="subhead" style={{ opacity: 0.85, marginTop: '4px' }}>
-            {store.isMethodAutomatic ? `Switched to ${method.name} (${parameterSummary(method)}), local time. Works offline.`
-              : `Local time applied. You've pinned ${method.shortName} in Settings.`}
+            {store.isMethodAutomatic ? tr('today.switched', { method: method.name, country: parameterSummary(method) })
+              : tr('today.pinned', { method: method.shortName })}
           </div>
           <div class="caption" style={{ opacity: 0.75, marginTop: '6px' }}>
             {store.sourceShort}
@@ -380,7 +379,7 @@ function ArrivalCard() {
         <span class="subhead" style={{ fontWeight: 600, flex: 1 }}>{tr('settings.asr')}</span>
         <select class="inline-select" value={store.prefs.asrOverride ?? 'auto'}
           onChange={(e) => { const v = (e.target as HTMLSelectElement).value; store.update((p) => { p.asrOverride = v === 'auto' ? null : (v as 'standard' | 'hanafi') }) }}>
-          <option value="auto">{store.asrSchool === 'hanafi' ? tr('today.asrHanafi') : tr('today.asrShafii')} · Automatic</option>
+          <option value="auto">{tr('common.nameAutomatic', { name: store.asrSchool === 'hanafi' ? tr('today.asrHanafi') : tr('today.asrShafii') })}</option>
           <option value="standard">{tr('today.asrShafii')}</option>
           <option value="hanafi">{tr('today.asrHanafi')}</option>
         </select>
@@ -482,7 +481,7 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: n
           {prayed && <CheckCircle2 size={16} class="check" fill="var(--green)" color="var(--bg-check, #fff)" />}
         </div>
         {isCurrent && <div class="now-tag">{tr('today.now')}</div>}
-        {!isCurrent && next && <div class="in-tag mono">in {short(next.time - now)}</div>}
+        {!isCurrent && next && <div class="in-tag mono">{tr('today.inTime', { time: short(next.time - now) })}</div>}
         {jamaah && <div class="extra">{jamaah}</div>}
         {other != null && day.alternateSource && <div class="extra alt">{day.alternateSource} {store.formatted(other)}</div>}
       </div>
@@ -783,7 +782,7 @@ function DialPrayerLabel({ p, t, now, size, day, isCurrent }: { p: Prayer; t: nu
   const name = local ? `${own} · ${local}` : own
   return (
     <button class={`dial-mark ${isCurrent ? 'current' : ''}`} style={{ '--tint': tint(p), '--tint-soft': tint(p, 0.16), '--tint-line': tint(p, 0.5), opacity: passed && !prayed ? 0.55 : 1, borderRadius: `${size * 0.035}px` }}
-      aria-label={`${name}, ${store.formatted(t)}${isCurrent ? ', now' : ''}${prayed ? tr('today.prayed') : ''}`}
+      aria-label={`${name}, ${store.formatted(t)}${isCurrent ? tr('today.isNow') : ''}${prayed ? tr('today.prayed') : ''}`}
       onClick={() => (trackable ? store.togglePrayed(p, t) : toggleNotify(p))}>
       <span class="dm-name" style={{ fontSize: `${size * 0.034}px`, fontWeight: isCurrent ? 700 : 600 }}>
         {name}
@@ -819,7 +818,7 @@ function SunPathPage({ c }: { c: Ctx }) {
     <div class="today-page page sunpath-page">
       <div class="row" style={{ alignItems: 'flex-start', gap: '8px', paddingTop: '6px' }}>
         {current && next && (
-          <div class="sun-status" aria-label={`Now ${store.name(current.prayer, current.time)}. ${nextName} at ${store.formatted(next.time)}.`}>
+          <div class="sun-status" aria-label={tr('today.nowNext', { now: store.name(current.prayer, current.time), next: nextName, time: store.formatted(next.time) })}>
             <div class="row" style={{ gap: '8px' }}>
               <span class="dot" style={{ background: tint(current.prayer) }} />
               <span class="display" style={{ fontSize: '30px', fontWeight: 700 }}>{store.name(current.prayer, current.time)}</span>
@@ -874,7 +873,7 @@ function BandsPage({ c }: { c: Ctx }) {
           <Controls c={c} />
         </div>
         {current && next && offset === 0 && (
-          <div class="bands-status mono">{store.name(current.prayer, current.time)} now · {countdown(now).text}</div>
+          <div class="bands-status mono">{tr('today.nameNow', { name: store.name(current.prayer, current.time) })} · {countdown(now).text}</div>
         )}
         <TopPrompt />
         <ArrivalCard />
@@ -911,7 +910,7 @@ function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: numb
   const local = store.localName(p, t)
   return (
     <button class={`band ${isCurrent ? 'current' : ''}`} style={{ background: BAND[p] }}
-      aria-label={`${store.name(p, t)}, ${store.formatted(t)}${isCurrent ? ', now' : ''}${prayed ? tr('today.prayed') : ''}`}
+      aria-label={`${store.name(p, t)}, ${store.formatted(t)}${isCurrent ? tr('today.isNow') : ''}${prayed ? tr('today.prayed') : ''}`}
       onClick={() => (trackable ? store.togglePrayed(p, t) : toggleNotify(p))}>
       <span class="band-names">
         <span class="row" style={{ gap: '8px', alignItems: 'baseline' }}>
@@ -920,8 +919,8 @@ function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: numb
           {isCurrent && <span class="now-pill">{tr('today.now')}</span>}
           {prayed && <CheckCircle2 size={16} />}
         </span>
-        {next && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>in {short(next.time - now)}</span>}
-        {isCurrent && jamaah != null && t <= now && now < jamaah && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>Jamaah in {short(jamaah - now)}</span>}
+        {next && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>{tr('today.inTime', { time: short(next.time - now) })}</span>}
+        {isCurrent && jamaah != null && t <= now && now < jamaah && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>{tr('today.jamaahIn', { time: short(jamaah - now) })}</span>}
       </span>
       <span class="spacer" />
       <span class="band-time"><span>{parts.time}</span>{parts.suffix && <span class="sfx">{parts.suffix}</span>}</span>

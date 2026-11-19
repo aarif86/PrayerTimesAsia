@@ -7,7 +7,7 @@ import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
 import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, prayerName, type NamingStyle, type Prayer } from '../core/prayer'
 import { flag, profileMethod } from '../core/regions'
 import { alertSupport, downloadICS, anyAlarm, nextWakeUp, permission, requestPermission, testAlert, WORK_PRAYERS } from '../services/notifications'
-import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, JUMUAH_REMINDER_CHOICES, REMINDER_CHOICES, APP_LANGUAGES, type AppLanguage, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
+import { APPEARANCES, DEFAULT_REMINDER_MINUTES, JUMUAH_REMINDER_CHOICES, REMINDER_CHOICES, APP_LANGUAGES, type AppLanguage, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
 import { browserLocales, store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
 import { ourCards } from '../core/communityCards'
@@ -18,7 +18,7 @@ import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../co
 import { daysToRamadan } from './Ramadan'
 
 import { VERSION } from './version'
-import { APP_LANGUAGE_LABEL, appLangFromLocales, tr } from '../core/appWords'
+import { APP_LANGUAGE_LABEL, appearanceLabel, appLangFromLocales, styleLabel, tr } from '../core/appWords'
 export { VERSION }
 
 /** Every half hour of the day, in minutes past midnight. */
@@ -95,8 +95,8 @@ export function SettingsScreen() {
       </Group>
 
       <Group title={tr('settings.ramadan')} foot={<>
-        Ramadan mode turns on by itself on the first day your authority announces, and Syawal follows on Raya. {(() => { const d = daysToRamadan(s.now()); return d != null && d > 0 && !s.isSeasonPreview ? `About ${d} days to Ramadan.` : '' })()}
-        {' '}Try Ramadan lets testers see every part of it now. It only changes this {s.demo ? tr('settings.demo') : tr('settings.browser')}, and the real dates come back when you turn it off.
+        {tr('settings.ramadanFoot')} {(() => { const d = daysToRamadan(s.now()); return d != null && d > 0 && !s.isSeasonPreview ? tr('settings.aboutDays', { n: d }) : '' })()}
+        {' '}{tr('settings.tryRamadanFoot', { where: s.demo ? tr('settings.demo') : tr('settings.browser') })}
       </>}>
         <button class="item" onClick={() => openSheet({ kind: 'ramadan' })}>
           <MoonStar size={20} /><span class="label">{tr('settings.ramadanPage')}<span class="sub">{tr('settings.ramadanPageSub')}</span></span><ChevronRight size={16} class="secondary" />
@@ -109,7 +109,7 @@ export function SettingsScreen() {
         <ToggleItem label={tr('settings.qiyam')} sub={tr('settings.qiyamSub')} on={p.qiyamAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.qiyamAlert = v }) }} />
       </Group>
 
-      <Group title="Wake-up" foot={tr('settings.wakeUpFoot')}>
+      <Group title={tr('settings.wakeUp')} foot={tr('settings.wakeUpFoot')}>
         <button class="item" onClick={() => openSheet({ kind: 'wakeup' })}>
           <AlarmClock size={20} /><span class="label">{tr('settings.alarms')}</span>
           <span class="value">{wakeValue}</span><ChevronRight size={16} class="secondary" />
@@ -123,29 +123,29 @@ export function SettingsScreen() {
         )}
       </Group>
 
-      <Group title={tr('settings.calculation')} foot={<>{s.sourceSummary} Automatic follows the country you're in, so landing in a new country switches it for you. {s.method.note}</>}>
+      <Group title={tr('settings.calculation')} foot={<>{s.sourceSummary} {tr('settings.calculationFoot')} {s.method.note}</>}>
         <SelectItem label={tr('settings.method')} value={p.methodOverrideID ?? 'auto'}
-          options={[{ value: 'auto', label: `Automatic · ${profileMethod(s.profile).shortName}` }, ...ALL_METHODS.map((m) => ({ value: m.id, label: m.name }))]}
+          options={[{ value: 'auto', label: tr('common.automaticWith', { name: profileMethod(s.profile).shortName }) }, ...ALL_METHODS.map((m) => ({ value: m.id, label: m.name }))]}
           onChange={(v) => store.update((x) => { x.methodOverrideID = v === 'auto' ? null : v })} />
         <SelectItem label={tr('settings.asr')} value={p.asrOverride ?? 'auto'}
-          options={[{ value: 'auto', label: `Automatic · ${s.profile.asr === 'hanafi' ? tr('settings.hanafi') : tr('settings.shafii')}` }, { value: 'standard', label: tr('settings.shafiiStandard') }, { value: 'hanafi', label: tr('settings.hanafi') }]}
+          options={[{ value: 'auto', label: tr('common.automaticWith', { name: s.profile.asr === 'hanafi' ? tr('settings.hanafi') : tr('settings.shafii') }) }, { value: 'standard', label: tr('settings.shafiiStandard') }, { value: 'hanafi', label: tr('settings.hanafi') }]}
           onChange={(v) => store.update((x) => { x.asrOverride = v === 'auto' ? null : (v as 'standard' | 'hanafi') })} />
         {s.method.id === 'jakim' && place && (
           <SelectItem label={tr('settings.jakimZone')} value={p.jakimZoneOverride ?? 'auto'}
-            options={[{ value: 'auto', label: `Automatic · ${nearestJakimZone(place.coordinates)}` }, ...JAKIM_ZONES.map((z) => ({ value: z.id, label: `${z.id} · ${z.areas}` }))]}
+            options={[{ value: 'auto', label: tr('common.automaticWith', { name: nearestJakimZone(place.coordinates) }) }, ...JAKIM_ZONES.map((z) => ({ value: z.id, label: `${z.id} · ${z.areas}` }))]}
             onChange={(v) => store.update((x) => { x.jakimZoneOverride = v === 'auto' ? null : v })} />
         )}
         <div class="item"><span class="label">{tr('settings.timetable')}</span><span class="value">{timetable}</span></div>
         {feed && (
           <a class="item" href={`webcal://${FEEDS_BASE.replace('https://', '')}${feed}.ics`}>
-            <CalendarPlus size={20} /><span class="label">{tr('settings.subscribe')}<span class="sub">The official {source?.kind === 'muis' ? 'MUIS' : 'JAKIM'} times as a calendar feed</span></span>
+            <CalendarPlus size={20} /><span class="label">{tr('settings.subscribe')}<span class="sub">{tr('settings.subscribeSub', { name: source?.kind === 'muis' ? 'MUIS' : 'JAKIM' })}</span></span>
           </a>
         )}
         <button class="item" onClick={() => downloadICS()}>
-          <Download size={20} /><span class="label">{tr('settings.add30')}<span class="sub">An .ics file with an alert at every prayer, for {place?.name ?? tr('settings.yourPlace')}</span></span>
+          <Download size={20} /><span class="label">{tr('settings.add30')}<span class="sub">{tr('settings.add30Sub', { place: place?.name ?? tr('settings.yourPlace') })}</span></span>
         </button>
         <button class="item" onClick={() => downloadICS(WORK_PRAYERS)}>
-          <Briefcase size={20} /><span class="label">Only {s.name('dhuhr')} and {s.name('asr')}, for a work calendar<span class="sub">{tr('settings.workCalendarSub')}</span></span>
+          <Briefcase size={20} /><span class="label">{tr('settings.workCalendar', { names: `${s.name('dhuhr')} ${tr('common.and')} ${s.name('asr')}` })}<span class="sub">{tr('settings.workCalendarSub')}</span></span>
         </button>
         <a class="item" href="print/">
           <Printer size={20} /><span class="label">{tr('settings.print')}<span class="sub">{tr('settings.printSub')}</span></span>
@@ -164,7 +164,7 @@ export function SettingsScreen() {
 
       <Group title={tr('settings.names')} foot={tr('settings.namesFoot')}>
         <SelectItem label={tr('settings.names')} value={p.namingOverride ?? 'auto'}
-          options={[{ value: 'auto', label: `Automatic · ${NAMING_LANGUAGE[s.personalNaming]}` }, ...NAMING_STYLES.map((n) => ({ value: n, label: NAMING_LABEL[n] }))]}
+          options={[{ value: 'auto', label: tr('common.automaticWith', { name: NAMING_LANGUAGE[s.personalNaming] }) }, ...NAMING_STYLES.map((n) => ({ value: n, label: NAMING_LABEL[n] }))]}
           onChange={(v) => store.update((x) => { x.namingOverride = v === 'auto' ? null : (v as NamingStyle) })} />
         <ToggleItem label={tr('settings.localNames')} on={p.showLocalNames} onChange={(v) => store.update((x) => { x.showLocalNames = v })} />
       </Group>
@@ -172,7 +172,7 @@ export function SettingsScreen() {
       <Group title={tr('settings.hadith')} foot={tr('settings.hadithFoot')}>
         <ToggleItem label={tr('settings.showHadith')} sub={tr('settings.showHadithSub')} on={p.showHadith}
           onChange={(v) => store.update((x) => { x.showHadith = v; if (v) x.hiddenHadith = [] })} />
-        <ToggleItem label="Add a hadith to wake-up alerts" sub={tr('settings.wakeHadithSub')} on={p.hadithInAlerts}
+        <ToggleItem label={tr('settings.wakeHadith')} sub={tr('settings.wakeHadithSub')} on={p.hadithInAlerts}
           onChange={(v) => store.update((x) => { x.hadithInAlerts = v })} />
       </Group>
 
@@ -180,20 +180,20 @@ export function SettingsScreen() {
         <ToggleItem label={tr('settings.trackerOn')} on={p.trackerEnabled} onChange={(v) => store.update((x) => { x.trackerEnabled = v })} />
         {p.trackerEnabled && (
           <ToggleItem label={tr('settings.nudge')} on={p.windowNudge} onChange={(v) => store.update((x) => { x.windowNudge = v })}
-            sub={`One gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for ${s.name('isha')}, which stays open until ${s.name('fajr')}. Never while paused.`} />
+            sub={tr('settings.nudgeSub', { name: s.name('isha'), until: s.name('fajr') })} />
         )}
       </Group>
 
       <Group title={tr('settings.display')}>
-        <SelectItem label={tr('settings.appearance')} value={p.appearance} options={APPEARANCES.map((a) => ({ value: a, label: APPEARANCE_LABEL[a] }))}
+        <SelectItem label={tr('settings.appearance')} value={p.appearance} options={APPEARANCES.map((a) => ({ value: a, label: appearanceLabel(a) }))}
           onChange={(v) => store.update((x) => { x.appearance = v as Appearance })} />
-        <SelectItem label={tr('settings.prayerScreen')} value={p.todayStyle} options={TODAY_STYLES.map((t) => ({ value: t, label: TODAY_STYLE_LABEL[t] }))}
+        <SelectItem label={tr('settings.prayerScreen')} value={p.todayStyle} options={TODAY_STYLES.map((t) => ({ value: t, label: styleLabel(t) }))}
           onChange={(v) => store.update((x) => { x.todayStyle = v as TodayStyle })} />
         <ToggleItem label={tr('settings.biggerText')} on={p.largeText} onChange={(v) => store.update((x) => { x.largeText = v })}
           sub={tr('settings.biggerTextSub')} />
         <ToggleItem label={tr('settings.opening')} on={p.showOpening} onChange={(v) => store.update((x) => { x.showOpening = v })}
           sub={tr('settings.openingSub')} />
-        <ToggleItem label="24-hour time" on={p.use24Hour} onChange={(v) => store.update((x) => { x.use24Hour = v })} />
+        <ToggleItem label={tr('settings.hour24')} on={p.use24Hour} onChange={(v) => store.update((x) => { x.use24Hour = v })} />
         <div class="item">
           <span class="label">{tr('settings.hijriAdjust')}</span>
           <span class="value">{p.hijriAdjustment === 0 ? tr('common.none') : `${p.hijriAdjustment > 0 ? '+' : ''}${p.hijriAdjustment} day`}</span>
@@ -205,9 +205,8 @@ export function SettingsScreen() {
       </Group>
 
       <Group title={tr('settings.alerts')} foot={<>
-        Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it. Turn on either or both. <b>On the web, they ring only while Prayer Times Asia is open</b>, in a tab or as an installed app.
-        For alerts when it's closed, add the times to your calendar above: your calendar rings them, reminder included.
-        {perm === 'denied' && ' Notifications are blocked for this site in your browser settings.'}
+        {tr('settings.alertsFoot')} <b>{tr('settings.alertsWeb')}</b>
+        {perm === 'denied' && ` ${tr('settings.blocked')}`}
       </>}>
         <ToggleItem label={tr('settings.prayerAlerts')} on={p.notificationsEnabled && perm === 'granted'} onChange={(v) => void setAlerts(v)} />
         {p.notificationsEnabled && perm === 'granted' && azanAvailable() && (
@@ -230,7 +229,7 @@ export function SettingsScreen() {
         )}
       </Group>
 
-      <Group title={tr('settings.quiet')} foot={`For shift workers sleeping in the day, a baby asleep in the room, or simply a calm night. Alerts still come, but they only buzz. ${s.name('fajr')} keeps its sound so it can wake you.`}>
+      <Group title={tr('settings.quiet')} foot={tr('settings.quietFoot', { name: s.name('fajr') })}>
         <ToggleItem label={tr('settings.buzzOnly')} on={p.buzzOnly} onChange={(v) => store.update((x) => { x.buzzOnly = v })} />
         <ToggleItem label={tr('settings.quietHours')} on={p.quietHours} onChange={(v) => store.update((x) => { x.quietHours = v })} />
         {p.quietHours && (
@@ -243,9 +242,9 @@ export function SettingsScreen() {
         )}
       </Group>
 
-      <Group title={friday} foot={`A reminder on Fridays to get ready and leave in time. It uses your masjid's own ${friday} time when you have set one in the Masjid tab, otherwise the start of ${s.name('dhuhr')}. ${friday} is not required of women, travellers or the sick, who pray ${s.name('dhuhr')} instead.`}>
+      <Group title={friday} foot={tr('settings.jumuahFoot', { jumuah: friday, dhuhr: s.name('dhuhr'), friday, prayer: s.name('dhuhr') })}>
         <SelectItem label={tr('settings.leave')} value={String(p.jumuahReminderMinutes)}
-          options={JUMUAH_REMINDER_CHOICES.map((m) => ({ value: String(m), label: m === 0 ? tr('common.off') : `${m} min before` }))}
+          options={JUMUAH_REMINDER_CHOICES.map((m) => ({ value: String(m), label: m === 0 ? tr('common.off') : tr('common.minBefore', { n: m }) }))}
           onChange={(v) => void setJumuah(parseInt(v, 10))} />
       </Group>
 
@@ -274,38 +273,34 @@ export function SettingsScreen() {
         </Group>
       )}
 
-      <Group title="Help" foot="A short tour that taps the real buttons, so you know where everything is.">
+      <Group title={tr('settings.help')} foot={tr('settings.helpFoot')}>
         <button class="item" onClick={() => openSheet({ kind: 'guide' })}>
-          <Lightbulb size={20} /><span class="label">Show the quick guide</span><ChevronRight size={16} class="secondary" />
+          <Lightbulb size={20} /><span class="label">{tr('settings.showGuide')}</span><ChevronRight size={16} class="secondary" />
         </button>
       </Group>
 
       <Group title={tr('settings.accuracy')}>
-        <p class="item footnote" style={{ display: 'block', lineHeight: 1.4 }}>
-          Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times.
-          In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it in this browser for offline use; if an authority is down, the app's own calendar feeds (built weekly from the same tables) stand in.
-          Everywhere else, and before that download, times are calculated in your browser with the country's own method, the same engine as the iOS app, checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.
-        </p>
+        <p class="item footnote" style={{ display: 'block', lineHeight: 1.4 }}>{tr('settings.accuracyFoot')}</p>
       </Group>
 
       <Group title={tr('settings.privacy')} foot={<a href="../privacy.html">{tr('settings.privacyFull')}</a>}>
         <div class="item footnote"><Hand size={18} />{tr('settings.privacy1')}</div>
-        <div class="item footnote"><MapPinOff size={18} />Your exact location stays in this browser. The place name comes from a built-in list, not a server.</div>
+        <div class="item footnote"><MapPinOff size={18} />{tr('settings.privacy2')}</div>
         <ToggleItem label={tr('settings.usage')} on={p.shareUsage} onChange={(v) => store.update((x) => { x.shareUsage = v })}
-          sub="Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept." />
-        <div class="item footnote"><MapPinned size={18} />The Masjid map and list use OpenStreetMap data. The map tiles, our weekly masjid list on GitHub and Overpass see only the area you look at.</div>
+          sub={tr('settings.usageSub')} />
+        <div class="item footnote"><MapPinned size={18} />{tr('settings.osm')}</div>
       </Group>
 
-      <Group id="makers" title={PICKS_NAME} foot={<>Barakah Picks is not a normal ad. It is one small space we check by hand for halal Muslim businesses and causes, safe for the whole family. No gambling, alcohol, riba or anything immodest, and never Google, Facebook or Instagram ads. Most picks are our own services, and paid ones are marked Sponsored. We keep only simple counts of how often each card is seen and tapped, never who you are. <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md" target="_blank" rel="noopener noreferrer">Our rules for Barakah Picks</a></>}>
+      <Group id="makers" title={PICKS_NAME} foot={<>{tr('settings.picksFoot')} <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md" target="_blank" rel="noopener noreferrer">{tr('settings.picksRules')}</a></>}>
         <div class="makers-list">{ourCards(store.offerCountry, new Date()).map((c) => <MakersCard card={c} placement="settings" />)}</div>
-        <ToggleItem label="Show Barakah Picks" on={p.showOffers} onChange={(v) => store.update((x) => { x.showOffers = v })} />
+        <ToggleItem label={tr('settings.showPicks')} on={p.showOffers} onChange={(v) => store.update((x) => { x.showOffers = v })} />
       </Group>
 
       <Group foot={tr('settings.motto')}>
         <a class="item" href="../"><span class="label">{tr('settings.aboutApp')}</span><ChevronRight size={16} class="secondary" /></a>
-        <button class="item" onClick={() => openSheet({ kind: 'review' })}><Star size={18} class="accent" /><span class="label">Rate and review</span><ChevronRight size={16} class="secondary" /></button>
-        <button class="item" onClick={() => openSheet({ kind: 'feedback' })}><Mail size={18} class="accent" /><span class="label">Send a note to the makers</span><ChevronRight size={16} class="secondary" /></button>
-        <button class="item" onClick={() => openSheet({ kind: 'credits' })}><span class="label">Sources &amp; credits</span><ChevronRight size={16} class="secondary" /></button>
+        <button class="item" onClick={() => openSheet({ kind: 'review' })}><Star size={18} class="accent" /><span class="label">{tr('settings.rate')}</span><ChevronRight size={16} class="secondary" /></button>
+        <button class="item" onClick={() => openSheet({ kind: 'feedback' })}><Mail size={18} class="accent" /><span class="label">{tr('settings.sendNote')}</span><ChevronRight size={16} class="secondary" /></button>
+        <button class="item" onClick={() => openSheet({ kind: 'credits' })}><span class="label">{tr('settings.sources')}</span><ChevronRight size={16} class="secondary" /></button>
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><span class="label">{tr('settings.helpVerify')}</span><ChevronRight size={16} class="secondary" /></a>
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md" target="_blank" rel="noopener noreferrer"><span class="label">{tr('settings.designLook')}</span><ChevronRight size={16} class="secondary" /></a>
         <div class="item"><span class="label">{tr('settings.version')}</span><span class="value">{VERSION}</span></div>
@@ -317,7 +312,7 @@ export function SettingsScreen() {
 /** The app's own card: the icon on the navy compass-ring colour, kawung batik and cream stitching. */
 function AppCard() {
   return (
-    <a class="app-card" href="../" aria-label={`About Prayer Times Asia, version ${VERSION}`}>
+    <a class="app-card" href="../" aria-label={tr('settings.aboutVersion', { v: VERSION })}>
       <svg class="app-card-batik" aria-hidden="true">
         <defs>
           <pattern id="kawung-card" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45) scale(0.45)">
@@ -334,7 +329,7 @@ function AppCard() {
       <span class="app-card-text">
         <span class="app-card-name">Prayer Times Asia</span>
         <span class="app-card-line">{tr('settings.builtIn')}</span>
-        <span class="app-card-version">Version {VERSION}</span>
+        <span class="app-card-version">{tr('settings.versionN', { v: VERSION })}</span>
       </span>
       <ChevronRight size={18} class="app-card-chevron" />
     </a>

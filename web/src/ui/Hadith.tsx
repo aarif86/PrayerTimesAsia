@@ -1,7 +1,6 @@
 import { X } from 'lucide-preact'
 import { useEffect, useState } from 'preact/hooks'
 import { HADITH, type HadithId } from '../core/hadith'
-import { lang3 } from '../core/ramadanContent'
 import { store, useStore } from '../services/store'
 import { tr } from '../core/appWords'
 
@@ -30,7 +29,7 @@ export function Hadith({ id, tag, variant = 'card' }: { id: HadithId; tag?: stri
     )
   }
   const h = HADITH[id]
-  const lang = lang3(s.naming)
+  const lang = s.appLang
   const close = () => { store.update((p) => { if (!p.hiddenHadith.includes(id)) p.hiddenHadith = [...p.hiddenHadith, id] }); setJustHidden(true) }
   return (
     <div class={variant === 'card' ? 'glass card hadith-card' : 'hadith-line'}>
