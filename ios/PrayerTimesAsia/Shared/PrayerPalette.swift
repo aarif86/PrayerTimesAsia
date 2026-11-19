@@ -16,16 +16,17 @@ extension Prayer {
     }
 }
 
-/// The colours of the classic Singapore timetable, a shade calmer.
+/// The colours of the classic Singapore timetable, a shade calmer. Sunrise, Dhuhr and Asr
+/// are a little deeper so white writing reads well (same as the web, owner OK 2026-11-19).
 enum BandsPalette {
     static let header = Color(white: 0.17)
     static let dateBar = Color(white: 0.24)
     static func color(_ prayer: Prayer) -> Color {
         switch prayer {
         case .fajr: Color(red: 0.13, green: 0.43, blue: 0.36)
-        case .sunrise: Color(red: 0.56, green: 0.66, blue: 0.32)
-        case .dhuhr: Color(red: 0.85, green: 0.67, blue: 0.13)
-        case .asr: Color(red: 0.89, green: 0.58, blue: 0.32)
+        case .sunrise: Color(red: 0.51, green: 0.60, blue: 0.29)
+        case .dhuhr: Color(red: 0.70, green: 0.55, blue: 0.11)
+        case .asr: Color(red: 0.86, green: 0.47, blue: 0.14)
         case .maghrib: Color(red: 0.88, green: 0.43, blue: 0.33)
         case .isha: Color(red: 0.86, green: 0.31, blue: 0.35)
         }

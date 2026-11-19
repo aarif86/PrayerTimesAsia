@@ -129,7 +129,7 @@ struct NextPrayerView: View {
         let nextLine = Self.nextLine(s, next: next, fastTime: fast?.time)
         let small = VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
-                Image(systemName: symbol)
+                Image(systemName: symbol).accessibilityHidden(true)
                 Text(s.placeName).lineLimit(1)
             }
             .font(.caption2.weight(.semibold))
@@ -155,6 +155,8 @@ struct NextPrayerView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        // One VoiceOver stop: place, prayer, time, time left.
+        .accessibilityElement(children: .combine)
 
         if family == .systemMedium {
             HStack(spacing: 0) {
@@ -172,6 +174,8 @@ struct NextPrayerView: View {
                             .padding(.vertical, 2)
                             .background(p == current ? Color.white.opacity(0.22) : .clear, in: Capsule())
                             .opacity(day.time(p) < entry.date && p != current ? 0.65 : 1)
+                            .accessibilityElement(children: .combine)
+                            .accessibilityAddTraits(p == current ? .isSelected : [])
                         }
                     }
                     .padding(.vertical, 12)
@@ -214,10 +218,12 @@ struct LockScreenView: View {
                 ZStack {
                     AccessoryWidgetBackground()
                     VStack(spacing: 0) {
-                        Image(systemName: next.symbol).font(.caption2)
+                        Image(systemName: next.symbol).font(.caption2).accessibilityHidden(true)
                         Text(shortTime)
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
                             .minimumScaleFactor(0.6)
+                            // The circle drops AM and PM to fit; VoiceOver says the name and the full time.
+                            .accessibilityLabel("\(name), \(s.format(next.time))")
                         Text(timerInterval: entry.date...max(entry.date, next.time), countsDown: true)
                             .font(.system(size: 10, weight: .medium, design: .rounded)).monospacedDigit()
                             .multilineTextAlignment(.center)
@@ -225,6 +231,7 @@ struct LockScreenView: View {
                     }
                     .lineLimit(1)
                     .padding(.horizontal, 6)
+                    .accessibilityElement(children: .combine)
                 }
             case .accessoryInline:
                 Label {
@@ -240,6 +247,7 @@ struct LockScreenView: View {
                         .font(.caption.monospacedDigit())
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityElement(children: .combine)
             }
         } else {
             Text("Open the app")

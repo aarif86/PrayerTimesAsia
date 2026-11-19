@@ -828,8 +828,8 @@ function SunPathPage({ c }: { c: Ctx }) {
 // ---------- Colour Bands ----------
 
 const BAND: Record<Prayer, string> = {
-  fajr: 'rgb(33, 110, 92)', sunrise: 'rgb(143, 168, 82)', dhuhr: 'rgb(217, 171, 33)',
-  asr: 'rgb(227, 148, 82)', maghrib: 'rgb(224, 110, 84)', isha: 'rgb(219, 79, 89)',
+  fajr: 'rgb(33, 110, 92)', sunrise: 'rgb(131, 154, 75)', dhuhr: 'rgb(179, 141, 27)',
+  asr: 'rgb(220, 119, 36)', maghrib: 'rgb(224, 110, 84)', isha: 'rgb(219, 79, 89)',
 }
 
 function BandsPage({ c }: { c: Ctx }) {
