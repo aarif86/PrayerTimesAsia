@@ -151,19 +151,18 @@ def main():
     attempt("version copyright", lambda: call("PATCH", f"/v1/appStoreVersions/{vid}", {"data": {
         "type": "appStoreVersions", "id": vid, "attributes": {"copyright": "2026 Nasar Pte Ltd"}}}))
 
-    # Age rating, every question answered with none.
+    # Age rating, every question answered with none / no.
     if age:
-        attrs = {}
-        for k, v in age["attributes"].items():
-            if isinstance(v, bool) or k in ("gambling", "unrestrictedWebAccess", "seventeenPlus",
-                                            "lootBox", "messagingAndChat", "parentalControls",
-                                            "ageAssurance", "userGeneratedContent", "advertising",
-                                            "healthOrWellnessTopics"):
-                attrs[k] = False
-            elif isinstance(v, str) or v is None:
-                if k in ("kidsAgeBand", "ageRatingOverride", "koreaAgeRatingOverride", "ageRatingOverrideV2"):
-                    continue
-                attrs[k] = "NONE"
+        yes_no = ("advertising", "gambling", "healthOrWellnessTopics", "lootBox", "messagingAndChat",
+                  "parentalControls", "ageAssurance", "socialMedia", "socialMediaAgeRestricted",
+                  "unrestrictedWebAccess", "userGeneratedContent", "seventeenPlus")
+        levels = ("alcoholTobaccoOrDrugUseOrReferences", "contests", "gamblingSimulated",
+                  "gunsOrOtherWeapons", "medicalOrTreatmentInformation", "profanityOrCrudeHumor",
+                  "sexualContentGraphicAndNudity", "sexualContentOrNudity", "horrorOrFearThemes",
+                  "matureOrSuggestiveThemes", "violenceCartoonOrFantasy",
+                  "violenceRealisticProlongedGraphicOrSadistic", "violenceRealistic")
+        attrs = {k: False for k in yes_no if k in age["attributes"]}
+        attrs.update({k: "NONE" for k in levels if k in age["attributes"]})
         attempt("age rating all none", lambda: call("PATCH", f"/v1/ageRatingDeclarations/{age['id']}", {"data": {
             "type": "ageRatingDeclarations", "id": age["id"], "attributes": attrs}}))
 
@@ -215,9 +214,16 @@ def main():
         attempt("App Review note", lambda: call("PATCH", f"/v1/appStoreReviewDetails/{rd['id']}", {"data": {
             "type": "appStoreReviewDetails", "id": rd["id"], "attributes": ra}}))
     else:
-        attempt("App Review note (new)", lambda: call("POST", "/v1/appStoreReviewDetails", {"data": {
+        # Apple wants a phone number with the contact name. Without one, save
+        # the note alone; the contact is added by hand on the version page.
+        made = attempt("App Review note (new)", lambda: call("POST", "/v1/appStoreReviewDetails", {"data": {
             "type": "appStoreReviewDetails", "attributes": ra,
             "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": vid}}}}}))
+        if not made:
+            problems.pop()
+            attempt("App Review note only (contact phone to add by hand)", lambda: call("POST", "/v1/appStoreReviewDetails", {"data": {
+                "type": "appStoreReviewDetails", "attributes": {"notes": REVIEW_NOTES, "demoAccountRequired": False},
+                "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": vid}}}}}))
 
     print("\nDone. Nothing was submitted for review.")
     if problems:
