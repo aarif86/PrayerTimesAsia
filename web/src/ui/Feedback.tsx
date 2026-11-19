@@ -115,8 +115,13 @@ export function ReviewSheet() {
     <Sheet title="Rate and review">
       <div class="help feedback">
         <p class="subhead">A few honest words help other Muslims find the app, and help Ustaz Aarif and the team keep going. Jazakallahu khairan.</p>
+        <ol class="review-steps">
+          <li><b>Write once</b> in the box below, in your own words.</li>
+          <li><b>Tap a place</b> to review. We copy your words for you.</li>
+          <li><b>Tap and hold</b> in their review box, then <b>Paste</b>. Come back and do the same for the next one.</li>
+        </ol>
         <textarea class="feedback-text review-words" rows={4} aria-label="Your review"
-          placeholder="Write your review once here, in your own words. We copy it for you, so you just paste it in each place."
+          placeholder="What has the app helped you with?"
           value={words} onInput={(e) => { setWords((e.target as HTMLTextAreaElement).value); setCopiedFor(null) }}
           onBlur={() => store.update((x) => { x.reviewDraft = words })} />
         <div class="group review-links">
