@@ -33,6 +33,10 @@ data class DemoConfig(
     val now: Instant? = null,
     val showMore: Boolean = false,
     val aligned: Boolean = false,
+    /** --ez review true: ten days of use, so the gentle review line shows. */
+    val review: Boolean = false,
+    /** --ez reviewstores true: show the Google Play review button before the app is live. */
+    val reviewStores: Boolean = false,
     /** --es season ramadan (or sighting, last_ten, raya, syawal): the tester's Ramadan preview. */
     val season: com.prayertimesasia.core.SeasonPreview = com.prayertimesasia.core.SeasonPreview.OFF,
 ) {
@@ -49,6 +53,7 @@ data class DemoConfig(
             hasOnboarded = true, guideSeen = true, useGPS = false, home = pasirRis, homeConfirmed = true, manualPlace = pasirRis, lastCountryCode = "SG",
             trackerEnabled = true, prayedLog = log, appearance = appearance, todayStyle = style, showMore = showMore,
         )
+        if (review) p = p.copy(openDayCount = 10)
         if (season != com.prayertimesasia.core.SeasonPreview.OFF) {
             p = p.copy(seasonPreview = season, khatamPlan = true,
                 fastLog = (1..10).associate { back ->
@@ -122,6 +127,8 @@ data class DemoConfig(
                 now = intent.getStringExtra("now")?.let { runCatching { ZonedDateTime.parse(it).toInstant() }.getOrNull() },
                 showMore = intent.getBooleanExtra("more", false),
                 aligned = intent.getBooleanExtra("aligned", false),
+                review = intent.getBooleanExtra("review", false),
+                reviewStores = intent.getBooleanExtra("reviewstores", false),
                 season = pick(com.prayertimesasia.core.SeasonPreview.entries.toTypedArray(), intent.getStringExtra("season")) {
                     listOf(it.name, it.name.replace("_", ""))
                 } ?: com.prayertimesasia.core.SeasonPreview.OFF,

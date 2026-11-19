@@ -107,6 +107,8 @@ struct DayDial: View {
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
                 .padding(.horizontal, size * 0.18)
+                // Sized to the dial, not to the text size setting: it has to fit inside the circle.
+                .accessibilityIdentifier("dial-centre")
             }
             .frame(width: size, height: size)
             .position(x: geo.size.width / 2, y: geo.size.height / 2)

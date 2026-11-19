@@ -361,6 +361,18 @@ data class Preferences(
     val hadithInAlerts: Boolean = true,
     /** Hadith closed with their X, by key. Turning Show hadith back on brings them all back. */
     val hiddenHadith: List<String> = emptyList(),
+    /** Separate days the app was opened, for the one gentle review line and Google's star box. */
+    val openDayCount: Int = 0,
+    /** "yyyy-M-d" of the last counted open. */
+    val lastOpenDay: String = "",
+    /** The one gentle review line was closed or used; it never comes back. */
+    val noteCardDone: Boolean = false,
+    /** When a public review link was last tapped (epoch ms), 0 = never. */
+    val reviewTappedAt: Long = 0,
+    /** The review words written once in Rate and review, kept to paste in each place. */
+    val reviewDraft: String = "",
+    /** When Google's own star box was last asked for (epoch ms), 0 = never. */
+    val starBoxAskedAt: Long = 0,
 ) {
     fun encode(): String = CoreJson.encodeToString(serializer(), this)
 

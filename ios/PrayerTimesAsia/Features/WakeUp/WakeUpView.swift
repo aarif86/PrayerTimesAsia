@@ -38,6 +38,7 @@ struct WakeUpView: View {
                     if model.prefs.anyAlarm {
                         Button(role: .destructive) { turnOffAll() } label: {
                             Label("Turn off all alarms", systemImage: "alarm.waves.left.and.right")
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                 }

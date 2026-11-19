@@ -1,5 +1,5 @@
 import type { ComponentChildren, JSX } from 'preact'
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useRef, useState } from 'preact/hooks'
 import { Info, X } from 'lucide-preact'
 import type { PrayerDay } from '../core/engine'
 import { sourceAuthority } from '../core/official'
@@ -47,32 +47,57 @@ export type SheetKind =
   | { kind: 'places'; forHome?: boolean } | { kind: 'sanad'; day: PrayerDay } | { kind: 'calendar' } | { kind: 'makers'; placement: string }
   | { kind: 'journey' } | { kind: 'level' } | { kind: 'ar' } | { kind: 'alerts-help' } | { kind: 'credits' } | { kind: 'install' }
   | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup' }
-  | { kind: 'guide' }
+  | { kind: 'guide' } | { kind: 'feedback' } | { kind: 'review' }
 
 let current: SheetKind | null = null
 const listeners = new Set<() => void>()
 export function openSheet(s: SheetKind) { current = s; listeners.forEach((f) => f()) }
 export function closeSheet() { current = null; listeners.forEach((f) => f()) }
+/** Ask the Prayer screen to show the day `offset` days from today (from the Hijri calendar). */
+const dayListeners = new Set<(offset: number) => void>()
+export function showDayOnPrayerScreen(offset: number) { dayListeners.forEach((f) => f(offset)) }
+export function useDayRequests(set: (offset: number) => void) {
+  useEffect(() => { dayListeners.add(set); return () => { dayListeners.delete(set) } }, [set])
+}
+
 export function useSheet(): SheetKind | null {
   const [, set] = useState(0)
   useEffect(() => { const f = () => set((x) => x + 1); listeners.add(f); return () => { listeners.delete(f) } }, [])
   return current
 }
 
-export function Sheet({ title, children, full, onDone }: { title?: string; children: ComponentChildren; full?: boolean; onDone?: () => void }) {
+/** `label` names the sheet for screen readers when it has no visible title. */
+export function Sheet({ title, label, children, full, onDone }: { title?: string; label?: string; children: ComponentChildren; full?: boolean; onDone?: () => void }) {
   const done = onDone ?? closeSheet
+  const box = useRef<HTMLDivElement>(null)
+  // Keyboard and screen reader users land in the sheet, and go back where they were when it closes.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') done() }
+    const before = document.activeElement as HTMLElement | null
+    box.current?.focus({ preventScroll: true })
+    return () => { if (before?.isConnected) before.focus({ preventScroll: true }) }
+  }, [])
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { done(); return }
+      // Keep Tab inside the sheet while it is open.
+      if (e.key !== 'Tab' || !box.current) return
+      const items = [...box.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+        .filter((el) => !el.hasAttribute('disabled') && el.offsetParent !== null)
+      if (!items.length) return
+      const first = items[0], last = items[items.length - 1]
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === box.current)) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [done])
   return (
     <div class="sheet-backdrop" onClick={(e) => { if (e.target === e.currentTarget) done() }}>
-      <div class={`sheet ${full ? 'full' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
+      <div ref={box} tabIndex={-1} class={`sheet ${full ? 'full' : ''}`} role="dialog" aria-modal="true" aria-label={title || label}>
         <div class="grabber" />
         <div class="sheet-head">
           <span style={{ width: '64px' }} />
-          <h2>{title}</h2>
+          {title ? <h2>{title}</h2> : <span />}
           <button class="done" onClick={done}>Done</button>
         </div>
         {children}
@@ -96,12 +121,12 @@ export function ToggleItem({ label, sub, on, onChange }: { label: string; sub?: 
   )
 }
 
-export function SelectItem<T extends string>({ label, value, options, onChange }: {
-  label: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void
+export function SelectItem<T extends string>({ label, value, options, onChange, sub }: {
+  label: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; sub?: string
 }) {
   return (
     <label class="item">
-      <span class="label">{label}</span>
+      <span class="label">{label}{sub && <span class="sub">{sub}</span>}</span>
       <select value={value} onChange={(e) => onChange((e.target as HTMLSelectElement).value as T)}>
         {options.map((o) => <option value={o.value}>{o.label}</option>)}
       </select>

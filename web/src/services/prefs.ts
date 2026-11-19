@@ -11,6 +11,10 @@ import {
 
 export type Appearance = 'system' | 'light' | 'dark'
 export const APPEARANCES: Appearance[] = ['system', 'light', 'dark']
+/** Where the Sections bar sits on bigger screens (laptop, tablet): the arrow on the bar moves it. Phones always keep it at the bottom. */
+export const MENU_SIDES = ['auto', 'bottom', 'left', 'right'] as const
+export type MenuSide = (typeof MENU_SIDES)[number]
+
 export const APPEARANCE_LABEL: Record<Appearance, string> = {
   system: 'Automatic (follows the sky)', light: 'Light', dark: 'Dark',
 }
@@ -116,6 +120,8 @@ export interface Preferences {
   buzzOnly: boolean
   /** Bigger text everywhere, for older eyes. */
   largeText: boolean
+  /** Web only: where the Sections bar sits on bigger screens. */
+  menuSide: MenuSide
   /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
   showOpening: boolean
   /** The quick guide (seven swipe cards) was seen or skipped. Settings opens it again. */
@@ -128,6 +134,18 @@ export interface Preferences {
   hadithInAlerts: boolean
   /** Hadith closed with their ✕, by id. Turning Show hadith back on brings them all back. */
   hiddenHadith: string[]
+  /** Separate days the app was opened, for the one gentle "note to the makers" card. */
+  openDayCount: number
+  /** "yyyy-MM-dd" of the last counted open. */
+  lastOpenDay: string
+  /** When a note to the makers was last started (ms), 0 = never. */
+  feedbackSentAt: number
+  /** The one gentle "note to the makers" card was closed or used; it never comes back. */
+  noteCardDone: boolean
+  /** When a public review link was last tapped (ms), 0 = never. */
+  reviewTappedAt: number
+  /** The review words written once in Rate and review, kept on this device to paste in each store. */
+  reviewDraft: string
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -192,12 +210,19 @@ export const DEFAULT_PREFS: Preferences = {
   quietTo: 6 * 60,
   buzzOnly: false,
   largeText: false,
+  menuSide: 'auto',
   showOpening: true,
   guideSeen: false,
   jumuahReminderMinutes: 0,
   showHadith: true,
   hadithInAlerts: true,
   hiddenHadith: [],
+  openDayCount: 0,
+  lastOpenDay: '',
+  feedbackSentAt: 0,
+  noteCardDone: false,
+  reviewTappedAt: 0,
+  reviewDraft: '',
 }
 
 const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat', 
@@ -208,6 +233,7 @@ const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat',
 
 const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   appearance: ['system', 'light', 'dark'],
+  menuSide: MENU_SIDES,
   todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands', 'simple'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,

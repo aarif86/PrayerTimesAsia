@@ -5,6 +5,8 @@ struct SettingsView: View {
     @State private var showPlaces = false
     @State private var showRamadan = false
     @State private var showGuide = false
+    @State private var showReview = false
+    @State private var showNote = false
     @Environment(\.dismiss) private var dismiss
     /// A main tab (no Done button) rather than a sheet.
     var isTab = false
@@ -342,6 +344,8 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Button { showReview = true } label: { Label("Rate and review", systemImage: "star") }
+                    Button { showNote = true } label: { Label("Send a note to the makers", systemImage: "envelope") }
                     NavigationLink("Sources & credits") { CreditsView() }
                     Link("Help verify times where you are", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md")!)
                     Link("Design a new look", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md")!)
@@ -363,6 +367,8 @@ struct SettingsView: View {
             .sheet(isPresented: $showPlaces) { PlacesView() }
             .sheet(isPresented: $showRamadan) { RamadanView() }
             .fullScreenCover(isPresented: $showGuide) { GuideView() }
+            .sheet(isPresented: $showReview) { ReviewView() }
+            .sheet(isPresented: $showNote) { NoteView() }
             .toolbar {
                 if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             }
