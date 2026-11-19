@@ -16,7 +16,7 @@ import { OBLIGATORY } from '../core/prayer'
 import type { MasjidLink } from '../core/masjidLink'
 import { store } from '../services/store'
 import { tint } from './Dials'
-import { tr } from '../core/appWords'
+import { appLocale, tr } from '../core/appWords'
 
 /**
  * Masjids and musollahs (surau, prayer rooms) near the active place, from
@@ -452,7 +452,7 @@ function EidCard({ e, from, spaces, use24 }: { e: EidEvent; from: Coordinates; s
     return { m, km: c ? distanceKm(from, c) : null }
   }).sort((a, b) => (a.km ?? 1e9) - (b.km ?? 1e9))
   const shown = all ? rows : rows.slice(0, 3)
-  const date = new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+  const date = new Date(e.date + 'T00:00:00').toLocaleDateString(appLocale(), { weekday: 'long', day: 'numeric', month: 'long' })
   const sessionText = (m: EidMosque) => m.sessions.map((x) => `${clock(x.time, use24)}${x.khutbah ? ` (${x.khutbah})` : ''}`).join(', ')
   return (
     <section class="friday-card today eid-card">
@@ -501,7 +501,7 @@ function FridayCard({ from, all, onAll, today, use24, mode, onFocus }: {
   const list = fridayNearest(from)
   const shown = all ? list : list.slice(0, 3)
   const t = clock(FRIDAY_SG.secondSessionFrom, use24)
-  const updated = new Date(FRIDAY_SG.sourceUpdated + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  const updated = new Date(FRIDAY_SG.sourceUpdated + 'T00:00:00').toLocaleDateString(appLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
   const row = (m: FridayMosque & { km: number }) => {
     const trip = tripText(m.km, mode)
     return (

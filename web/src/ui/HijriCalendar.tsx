@@ -7,7 +7,7 @@ import { hijriMonths } from '../core/prayer'
 import { daysApart, publishedHijri, type CivilDay } from '../core/season'
 import { store, useNow, useStore } from '../services/store'
 import { closeSheet, showDayOnPrayerScreen } from './common'
-import { tr } from '../core/appWords'
+import { appLocale, tr } from '../core/appWords'
 
 /** The days of one Gregorian month, each with its Hijri date as this community counts it. */
 function monthDays(year: number, month: number): { g: CivilDay; h: HijriDate }[] {
@@ -21,7 +21,7 @@ function monthDays(year: number, month: number): { g: CivilDay; h: HijriDate }[]
 const shortAuthority = (id: string) => authorityName(id).replace(/\s*\(.*\)\s*$/, '')
 
 function fmtCivil(g: CivilDay, style: 'long' | 'short' = 'long'): string {
-  return new Intl.DateTimeFormat('en-GB', {
+  return new Intl.DateTimeFormat(appLocale(), {
     timeZone: 'UTC', weekday: style === 'long' ? 'long' : 'short', day: 'numeric', month: style === 'long' ? 'long' : 'short',
     ...(style === 'long' ? { year: 'numeric' } : {}),
   }).format(new Date(Date.UTC(g.year, g.month - 1, g.day))).replace(',', '')

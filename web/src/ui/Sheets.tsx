@@ -220,7 +220,7 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
 
 function fmtYMD(d: { year: number; month: number; day: number } | null): string {
   if (!d) return '-'
-  return new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+  return new Intl.DateTimeFormat(appLocale(), { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
     .format(new Date(Date.UTC(d.year, d.month - 1, d.day))).replace(',', '')
 }
 

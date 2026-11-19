@@ -5,7 +5,7 @@ import type { PrayerDay } from '../core/engine'
 import { sourceAuthority } from '../core/official'
 import { GRADE_TITLE, type SourceGrade } from '../core/sources'
 import { store } from '../services/store'
-import { tr } from '../core/appWords'
+import { appLocale, tr } from '../core/appWords'
 
 /** A time with its AM/PM set smaller on the same baseline. Never wraps. */
 export function TimeText({ ms, size = 28, weight = 600, class: cls, style }: { ms: number; size?: number; weight?: number; class?: string; style?: JSX.CSSProperties }) {
@@ -167,5 +167,5 @@ export function CloseButton({ onClick, label = tr('common.close') }: { onClick: 
 
 /** Formats a date in the place's zone. */
 export function fmtDate(ms: number, opts: Intl.DateTimeFormatOptions): string {
-  return new Intl.DateTimeFormat('en-GB', { timeZone: store.timeZone, ...opts }).format(new Date(ms)).replace(',', '')
+  return new Intl.DateTimeFormat(appLocale(), { timeZone: store.timeZone, ...opts }).format(new Date(ms)).replace(',', '')
 }

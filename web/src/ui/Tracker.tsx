@@ -5,7 +5,7 @@ import { ymdKey } from '../core/tz'
 import { useNow, useStore } from '../services/store'
 import { Sheet } from './common'
 import { Hadith } from './Hadith'
-import { tr, trWith } from '../core/appWords'
+import { appLocale, tr, trWith } from '../core/appWords'
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const WEEK = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -28,7 +28,7 @@ export function TrackerSheet() {
   const move = (d: number) => setShown(({ y, m }) => { const t = new Date(Date.UTC(y, m - 1 + d, 1)); return { y: t.getUTCFullYear(), m: t.getUTCMonth() + 1 } })
   const isThisMonth = shown.y === ty && shown.m === tm
   const since = s.prefs.trackerPausedSince
-  const sinceLabel = since ? new Date(`${since}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }) : ''
+  const sinceLabel = since ? new Date(`${since}T12:00:00Z`).toLocaleDateString(appLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' }) : ''
 
   return (
     <Sheet title={tr('settings.trackerOn')} full>
