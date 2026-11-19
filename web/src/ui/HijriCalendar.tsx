@@ -67,7 +67,7 @@ export function HijriMonthCard() {
         </div>
         <button class="round-btn hcal-next" aria-label="Next month" onClick={() => move(1)}><ChevronRight size={18} /></button>
       </div>
-      <div class="hcal-grid" role="grid">
+      <div class="hcal-grid">
         {words.week.map((w, i) => <span class={`hcal-wd secondary${i === 5 ? ' fri' : ''}`} aria-hidden="true">{w}</span>)}
         {Array.from({ length: lead }, () => <span />)}
         {days.map(({ g, h }, i) => {
