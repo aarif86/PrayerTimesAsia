@@ -132,6 +132,22 @@ class ScreenshotTest {
         ).sortedBy { it.distanceKm }
         shoot("09-masjid", d(TodayStyle.LIST, tab = Tab.MASJID))
     }
+    @Test fun masjid_yours() {
+        masjid_places()
+        shoot("09b-masjid-yours", d(TodayStyle.LIST, tab = Tab.MASJID)) { it.pendingMasjid = masjidLink; it.followPendingMasjid() }
+    }
+    private fun masjid_places() {
+        val home = Coordinates(1.3721, 103.9474)
+        fun at(name: String, lat: Double, lng: Double, musollah: Boolean, address: String, f: String = "", h: String? = null) =
+            Coordinates(lat, lng).let { PrayerSpace(name, name, address, it, Geo.distanceKm(home, it), musollah, f, h) }
+        NearbyCache.around = home
+        NearbyCache.spaces = listOf(
+            at("Musollah@Pasir Ris Mall", 1.3735, 103.9495, true, "Pasir Ris Drive 3", "wt", "Mo-Su 10:00-22:00"),
+            at("Masjid Al-Istighfar", 1.37106, 103.96412, false, "Pasir Ris Walk", "wap"),
+            at("Masjid Darul Ghufran", 1.3554, 103.93991, false, "Tampines Avenue 5"),
+            at("Masjid Al-Ansar", 1.3285, 103.9200, false, "Bedok North Avenue 1"),
+        ).sortedBy { it.distanceKm }
+    }
     private val masjidLink = MasjidLink.parse(
         "prayertimesasia://masjid?n=Example+Masjid,+Pasir+Ris&ll=1.3735,103.9490&tz=Asia/Singapore&cc=SG&i=15,10,10,5,10&j=13:00")!!
 
