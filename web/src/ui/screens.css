@@ -493,7 +493,7 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .tarawih-choice .pill-btn { flex: 1; justify-content: center; min-height: 48px; font-size: 17px; }
 .tarawih-choice .pill-btn.quiet.on { background: color-mix(in srgb, var(--green) 85%, transparent); color: #fff; }
 .tarawih-tap { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 180px;
-  border-radius: 22px; background: color-mix(in srgb, #3a2a7a 30%, transparent); color: inherit; touch-action: manipulation; }
+  border-radius: 22px; background: color-mix(in srgb, var(--fg) 6%, transparent); color: inherit; touch-action: manipulation; }
 .tarawih-tap:active { transform: scale(.98); }
 .tarawih-tap.complete { background: color-mix(in srgb, var(--green) 35%, transparent); }
 .tarawih-count { font-size: 56px; font-weight: 700; line-height: 1; }
