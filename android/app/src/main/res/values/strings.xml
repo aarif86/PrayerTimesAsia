@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<!-- The widget names stay English until they move to data/app-words. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">Prayer Times Asia</string>
     <string name="widget_next_name">Next prayer</string>
     <string name="widget_next_description">Countdown to the next prayer, under your Living Sky.</string>

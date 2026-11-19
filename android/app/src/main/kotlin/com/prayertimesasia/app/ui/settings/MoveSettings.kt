@@ -78,6 +78,8 @@ import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.core.MovedSettings
 import java.util.concurrent.Executors
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /** Settings › Move my settings: a QR code (and link) holding everything the user chose. Nothing is uploaded. */
 @Composable
@@ -92,7 +94,7 @@ fun MoveOutContent(state: AppState) {
     var copied by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Dims.gutter),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Text("Move my settings", style = Txt.headline, color = Palette.primary)
+        Text(tr(R.string.move_title), style = Txt.headline, color = Palette.primary)
         Text("Your places, choices and tracker history, packed into one code. Nothing is uploaded: the settings are inside the code itself.",
             style = Txt.subheadline, color = Palette.primary)
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -115,7 +117,7 @@ fun MoveOutContent(state: AppState) {
                 copied = true
             }
         }
-        Text("The code includes your saved places, so only send it to yourself.", style = Txt.footnote, color = Palette.secondary)
+        Text(tr(R.string.move_private), style = Txt.footnote, color = Palette.secondary)
         Box(Modifier.height(24.dp))
     }
 }
@@ -130,27 +132,27 @@ fun MoveInContent(state: AppState, close: () -> Unit) {
     val moved = remember(text) { if (text.isBlank()) null else MovedSettings.fromCode(text) }
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Dims.gutter),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Text("Bring in settings", style = Txt.headline, color = Palette.primary)
+        Text(tr(R.string.move_bringIn), style = Txt.headline, color = Palette.primary)
         if (done) {
-            Text("Your settings are here.", style = Txt.subheadlineSemibold, color = Palette.primary)
+            Text(tr(R.string.move_arrived), style = Txt.subheadlineSemibold, color = Palette.primary)
             Text("Prayer alerts need permission on each phone: turn them on in Settings › Alerts.", style = Txt.footnote, color = Palette.secondary)
             Pill(null, "Done", close)
         } else {
-            Text("On your other phone or browser, open Settings › Move my settings. It shows a QR code and a link.",
+            Text(tr(R.string.phone_bringHow),
                 style = Txt.subheadline, color = Palette.primary)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Pill(Icons.Filled.QrCodeScanner, "Scan the QR code") { scanning = true }
                 Pill(Icons.Filled.ContentPaste, "Paste") { clipboard.getText()?.text?.let { text = it } }
             }
-            OutlinedTextField(text, { text = it }, Modifier.fillMaxWidth(), placeholder = { Text("Or type or paste the link") },
+            OutlinedTextField(text, { text = it }, Modifier.fillMaxWidth(), placeholder = { Text(tr(R.string.phone_orPaste)) },
                 textStyle = Txt.footnote.copy(fontFamily = FontFamily.Monospace), maxLines = 4)
             if (text.isNotBlank()) {
                 if (moved == null) {
-                    Text("That doesn't look like a settings code. Copy the whole link and try again.", style = Txt.footnote, color = Color(0xFFE5484D))
+                    Text(tr(R.string.move_bad), style = Txt.footnote, color = Color(0xFFE5484D))
                 } else {
                     Text("This will bring in:", style = Txt.subheadlineSemibold, color = Palette.primary)
                     moved.summary.forEach { Text("•  $it", style = Txt.subheadline, color = Palette.primary) }
-                    Text("Your settings here are replaced. Tracker history is added to what's already here.", style = Txt.footnote, color = Palette.secondary)
+                    Text(tr(R.string.move_replaceNote), style = Txt.footnote, color = Palette.secondary)
                     Pill(null, "Bring in settings") {
                         state.update { moved.appliedTo(it) }
                         if (state.prefs.useGPS) state.useGPS()
@@ -199,7 +201,7 @@ private fun QrScannerScreen(state: AppState, onFound: (String) -> Unit, onClose:
         if (granted) {
             QrCameraPreview(onFound)
         } else {
-            Text("Bring in settings needs the camera to scan the QR code. Nothing is recorded. You can paste the link instead.",
+            Text(tr(R.string.phone_cameraForScan),
                 fontSize = 15.sp, color = Color.White, modifier = Modifier.align(Alignment.Center).padding(32.dp))
         }
         Box(Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(16.dp).size(40.dp).clip(RoundedCornerShape(20.dp))

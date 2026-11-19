@@ -63,6 +63,8 @@ import com.prayertimesasia.core.WakeUpTiming
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /** The alarm clock on the Prayer screen: shows the next alarm's time when one is set. */
 @Composable
@@ -107,7 +109,7 @@ fun WakeUpSheetContent(state: AppState) {
     val snoozed = remember(state.snoozeTick, state.now) { AlarmScheduler.hasSnooze(context) }
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
         Column(Modifier.padding(horizontal = 32.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Prayer alarms", style = Txt.title3, color = Palette.primary)
+            Text(tr(R.string.settings_alarms), style = Txt.title3, color = Palette.primary)
             val next = AlarmScheduler.nextWakeUp(r, state.now)
             if (next != null) {
                 val forPrayer = Prayer.entries.firstOrNull { next.id.endsWith("-${it.raw}-alarm") }
@@ -119,7 +121,7 @@ fun WakeUpSheetContent(state: AppState) {
                 Text("Next alarm ${whenText(state, next.at)} ${r.formatted(next.at)}$what",
                     style = Txt.subheadlineSemibold, color = Palette.sunArc, modifier = Modifier.padding(top = 4.dp))
             } else {
-                Text("No alarms are on", style = Txt.subheadlineSemibold, color = Palette.secondary, modifier = Modifier.padding(top = 4.dp))
+                Text(tr(R.string.wake_noneOn), style = Txt.subheadlineSemibold, color = Palette.secondary, modifier = Modifier.padding(top = 4.dp))
             }
         }
         if (snoozed || p.anyAlarm) {
@@ -139,7 +141,7 @@ fun WakeUpSheetContent(state: AppState) {
         }
 
         Section(null, "An earlier alarm to eat sahur before a fast, or for a longer night prayer.") {
-            SwitchRow("Sahur alarm", p.sahurAlarm != null) { on -> if (on) state.setSahurAlarm(SahurTiming.entries.first()) else state.turnOffSahurAlarm() }
+            SwitchRow(tr(R.string.wake_sahur), p.sahurAlarm != null) { on -> if (on) state.setSahurAlarm(SahurTiming.entries.first()) else state.turnOffSahurAlarm() }
             if (p.sahurAlarm != null) {
                 SahurTiming.entries.forEach { t ->
                     ChoiceRow(t.label(r.naming), timeSoon(state) { t.date(it) }, p.sahurAlarm == t) { state.setSahurAlarm(t) }
@@ -148,7 +150,7 @@ fun WakeUpSheetContent(state: AppState) {
         }
 
         if (p.sahurAlarm != null) {
-            Section("Sahur alarm rings on", "Ramadan and the white days follow the Hijri date in the app. Please follow your local religious authority for the start of Ramadan.") {
+            Section(tr(R.string.wake_sahurOn), tr(R.string.wake_hijriNote)) {
                 SahurDay.entries.forEach { d ->
                     val everyDay = SahurDay.EVERY_DAY in p.sahurDays && d != SahurDay.EVERY_DAY
                     SwitchRow(d.label, d in p.sahurDays || everyDay) { on ->
@@ -162,7 +164,7 @@ fun WakeUpSheetContent(state: AppState) {
             }
         }
 
-        Section("Other prayers", "An alarm rings loudly until you stop it. If it rings at the very start of a prayer, it takes the place of that prayer's alert.") {
+        Section(tr(R.string.wake_otherPrayers), tr(R.string.wake_loud)) {
             PrayerAlarmTiming.prayers.forEach { prayer -> PrayerAlarmRow(state, prayer) }
         }
 
@@ -215,7 +217,7 @@ private fun PrayerAlarmRow(state: AppState, prayer: Prayer) {
             Icon(Icons.Filled.ArrowDropDown, null, Modifier.size(20.dp), tint = Palette.secondary)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(text = { Text("Off") }, onClick = { open = false; state.setPrayerAlarm(prayer, null) })
+            DropdownMenuItem(text = { Text(tr(R.string.common_off)) }, onClick = { open = false; state.setPrayerAlarm(prayer, null) })
             PrayerAlarmTiming.choices(prayer).forEach { t ->
                 DropdownMenuItem(text = { Text(t.label) }, onClick = { open = false; state.setPrayerAlarm(prayer, t) })
             }
@@ -238,7 +240,7 @@ private fun AlarmSoundSection(state: AppState) {
     val ringtoneName = p.alarmRingtone?.let { raw ->
         runCatching { android.media.RingtoneManager.getRingtone(context, android.net.Uri.parse(raw))?.getTitle(context) }.getOrNull()
     }
-    Section("Alarm sound", "Tap a sound to hear it. Every alarm plays this sound. The azan will join the list once the recordings are ready.") {
+    Section(tr(R.string.wake_sound), tr(R.string.wake_soundHelp)) {
         listOf(AlarmSound.CLASSIC, AlarmSound.CHIME, AlarmSound.BELLS, AlarmSound.BEEPS).forEach { sound ->
             SoundRow(sound.label, null, p.alarmSound == sound) {
                 state.update { it.copy(alarmSound = sound) }

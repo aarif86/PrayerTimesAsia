@@ -86,6 +86,8 @@ import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /**
  * Qibla compass. The dial turns with the phone so the Kaaba marker always sits
@@ -98,7 +100,7 @@ fun QiblaScreen(state: AppState) {
     Box(Modifier.fillMaxSize()) {
         LivingSkyBackground(state.skyNow)
         if (place == null) {
-            Text("Choose a place to find the qibla.", style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
+            Text(tr(R.string.qibla_choosePlace), style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
         } else {
             QiblaContent(state, place)
         }
@@ -137,7 +139,7 @@ private fun QiblaContent(state: AppState, place: Place) {
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         Column(Modifier.padding(top = 12.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Qibla", style = display(34.sp, FontWeight.Bold), color = Palette.primary)
+            Text(tr(R.string.tab_qibla), style = display(34.sp, FontWeight.Bold), color = Palette.primary)
             val instruction = when {
                 delta == null -> "Face ${bearing.roundToInt()}° from north"
                 aligned -> "You're facing the Qibla"
@@ -236,7 +238,7 @@ private fun QiblaDial(bearing: Double, heading: Double, delta: Double?, aligned:
             when {
                 aligned -> Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Icon(Icons.Filled.Check, null, Modifier.size(size * 0.14f), tint = green)
-                    Text("Aligned", style = Txt.subheadlineSemibold, color = primary)
+                    Text(tr(R.string.qibla_aligned), style = Txt.subheadlineSemibold, color = primary)
                 }
                 delta != null -> Icon(Icons.Filled.Navigation, "Points to the qibla", Modifier.size(size * 0.16f).rotate(delta.toFloat()), tint = gold)
                 else -> Icon(Icons.Filled.Navigation, null, Modifier.size(size * 0.09f), tint = primary.copy(alpha = 0.6f))
@@ -282,7 +284,7 @@ private fun Stat(value: String, label: String, modifier: Modifier) {
 private fun Steps(hasCompass: Boolean, heading: Heading?) {
     GlassCard {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("How to find the qibla", style = Txt.headline, color = Palette.primary)
+            Text(tr(R.string.qibla_howTo), style = Txt.headline, color = Palette.primary)
             if (!hasCompass) {
                 Step(null, Icons.Filled.Map, "This phone has no compass. Use the qibla bearing above with a map, or the sun in Falak.")
             } else {

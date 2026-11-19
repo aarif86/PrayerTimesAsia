@@ -357,6 +357,8 @@
   "settings.nudge": "Nudge before time runs out",
   "settings.nudgeSub": "One gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for {name}, which stays open until {until}. Never while paused.",
   "settings.display": "Display",
+  "settings.language": "Language",
+  "settings.languageFoot": "The words on every screen. Prayer names have their own setting.",
   "settings.appearance": "Appearance",
   "settings.prayerScreen": "Prayer screen",
   "settings.biggerText": "Bigger text",

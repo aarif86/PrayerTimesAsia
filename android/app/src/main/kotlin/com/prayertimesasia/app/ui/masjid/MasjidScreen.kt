@@ -117,6 +117,8 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 private enum class Kind(val label: String) { ALL("All"), MASJID("Masjid"), MUSOLLAH("Musollah") }
 
@@ -331,7 +333,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                 loading && spaces.isEmpty() -> item {
                     Column(Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         CircularProgressIndicator(color = Palette.accent)
-                        Text("Searching nearby…", style = Txt.subheadline, color = Palette.primary)
+                        Text(tr(R.string.masjid_searching), style = Txt.subheadline, color = Palette.primary)
                     }
                 }
                 visible.isEmpty() -> item {
@@ -630,7 +632,7 @@ private fun Empty(title: String, body: String, onRetry: (() -> Unit)? = null) {
         Icon(Icons.Filled.Brightness2, null, Modifier.size(36.dp), tint = Palette.secondary)
         Text(title, style = Txt.headline, color = Palette.primary)
         Text(body, style = Txt.subheadline, color = Palette.secondary, textAlign = TextAlign.Center)
-        if (onRetry != null) OutlinedButton(onClick = onRetry) { Text("Try again") }
+        if (onRetry != null) OutlinedButton(onClick = onRetry) { Text(tr(R.string.common_tryAgain)) }
     }
 }
 
