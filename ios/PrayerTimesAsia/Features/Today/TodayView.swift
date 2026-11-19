@@ -4,6 +4,7 @@ import SwiftUI
 /// path, then the day's times - large, colour-coded, AM/PM never wrapping.
 struct TodayView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var showPlaces = false
     @State private var showCalendar = false
     @State private var showTracker = false
@@ -24,8 +25,9 @@ struct TodayView: View {
             }
         }
         .sheet(isPresented: $showPlaces) { PlacesView() }
-        .sheet(isPresented: $showCalendar) { CalendarSanadView() }
+        .sheet(isPresented: $showCalendar) { CalendarSanadView { days in withAnimation(.snappy) { dayOffset = days } } }
         .sheet(isPresented: $showTracker) { TrackerView() }
+        .asksForStarsWhenCalm()
         .onAppear {
             // Demo screenshots: Show more only when asked, never carried over from a previous run.
             let args = ProcessInfo.processInfo.arguments
@@ -137,6 +139,7 @@ struct TodayView: View {
                     withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
                 })
             showMoreButton
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
@@ -222,7 +225,7 @@ struct TodayView: View {
             HStack(spacing: 5) {
                 Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                     .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
+                Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1).minimumScaleFactor(0.8)
                 if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                 Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
             }
@@ -294,6 +297,7 @@ struct TodayView: View {
                 })
             dayRow(shown)
             showMoreButton
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
@@ -312,7 +316,7 @@ struct TodayView: View {
                 HStack(spacing: 5) {
                     Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                         .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
+                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1).minimumScaleFactor(0.8)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                 }
@@ -429,6 +433,8 @@ struct TodayView: View {
             .lineLimit(1)
             .minimumScaleFactor(0.6)
             .accessibilityElement(children: .combine)
+            // Sized to the dial, not to the text size setting: it has to fit inside the circle.
+            .accessibilityIdentifier("dial-centre")
         } else {
             Image(systemName: "moon.stars").font(.system(size: size * 0.08, weight: .light)).opacity(0.5)
         }
@@ -467,7 +473,7 @@ struct TodayView: View {
                         HStack(spacing: 5) {
                             Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                                 .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                            Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
+                            Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
                             if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                             Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                         }
@@ -527,6 +533,7 @@ struct TodayView: View {
                     Spacer(minLength: 8)
                     showMoreButton.fixedSize()
                 }
+                if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore {
                     MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
                 }
@@ -618,6 +625,7 @@ struct TodayView: View {
                 Spacer(minLength: 8)
                 showMoreButton.fixedSize()
             }
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
@@ -659,6 +667,7 @@ struct TodayView: View {
                     })
                 showMoreButton
                 SourceBadge(day: shown)
+                if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore {
                     MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
                 }
@@ -700,7 +709,7 @@ struct TodayView: View {
                 HStack(spacing: 5) {
                     Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                         .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
+                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                 }
@@ -725,7 +734,8 @@ struct TodayView: View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Circle().fill(current.prayer.tint).frame(width: 9, height: 9)
-                Text(currentName).font(Theme.display(30, .bold))
+                Text(currentName).font(.system(.title, design: .rounded, weight: .bold))
+                    .lineLimit(1).minimumScaleFactor(0.5)
             }
             Text(count.text)
                 .font(.subheadline.weight(.semibold))
@@ -947,9 +957,10 @@ struct TodayView: View {
 
     private var alertsPrompt: some View {
         HStack(spacing: 10) {
-            Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText)
+            Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText).accessibilityHidden(true)
             Text("Get an alert when each prayer begins").font(.subheadline.weight(.semibold))
-                .lineLimit(2).minimumScaleFactor(0.85)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 2).minimumScaleFactor(0.85)
+                .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
             Spacer(minLength: 4)
             Button("Turn on") {
                 Task {
@@ -963,7 +974,8 @@ struct TodayView: View {
             .tint(Theme.sunArc)
             .foregroundStyle(.black.opacity(0.8))
             Button { withAnimation { model.prefs.alertsPromptDismissed = true } } label: {
-                Image(systemName: "xmark").font(.caption.weight(.bold)).opacity(0.6).frame(width: 24, height: 24)
+                Image(systemName: "xmark").font(.caption.weight(.bold)).opacity(0.6).frame(width: 44, height: 44).contentShape(Rectangle())
+                    .padding(.vertical, -10)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Not now")
@@ -1101,7 +1113,10 @@ private struct PrayerList: View {
                     Image(systemName: notifying ? "bell.fill" : "bell.slash")
                         .font(.subheadline)
                         .opacity(notifying ? 0.95 : 0.4)
-                        .frame(width: 30, height: 34)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                        // 44 pt to tap, but laid out at the old 30 by 34 so rows keep their height.
+                        .padding(.horizontal, -7).padding(.vertical, -5)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(notifying ? "Turn off alert" : "Turn on alert")
@@ -1309,6 +1324,7 @@ private struct BlessedMark: View {
 /// on, to tick it off.
 private struct PrayerBand: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     let prayer: Prayer
     let time: Date
     let now: Date
@@ -1357,7 +1373,7 @@ private struct PrayerBand: View {
                 Spacer(minLength: 6)
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(parts.time).font(.system(size: 34, weight: .light)).monospacedDigit()
-                    if let suffix = parts.suffix { Text(suffix).font(.system(size: 22, weight: .light)) }
+                    if let suffix = parts.suffix { Text(suffix).font(.system(size: 22, weight: .bold)) }
                 }
                 .fixedSize()
                 if model.prefs.notificationsEnabled && !notifying && prayer.isObligatory {
@@ -1366,7 +1382,7 @@ private struct PrayerBand: View {
             }
             .foregroundStyle(.white)
             .padding(.horizontal, Theme.gutter)
-            .frame(maxWidth: .infinity, minHeight: 64, maxHeight: fill ? .infinity : 64)
+            .frame(maxWidth: .infinity, minHeight: 64, maxHeight: fill || typeSize.isAccessibilitySize ? .infinity : 64)
             .background(BandsPalette.color(prayer))
             .overlay(alignment: .leading) {
                 if isCurrent { Rectangle().fill(.white).frame(width: 5) }
@@ -1459,7 +1475,7 @@ private struct LongDaysNote: View {
                     }
                     Spacer(minLength: 0)
                     Button { withAnimation(.snappy) { model.closeLongDaysNote(key) } } label: {
-                        Image(systemName: "xmark").font(.footnote.weight(.bold)).padding(6)
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(w.close)
@@ -1494,7 +1510,7 @@ private struct ArrivalCard: View {
                     }
                     Spacer(minLength: 0)
                     Button { model.prefs.arrivalBannerDismissed = true } label: {
-                        Image(systemName: "xmark").font(.footnote.weight(.bold)).padding(6)
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss")

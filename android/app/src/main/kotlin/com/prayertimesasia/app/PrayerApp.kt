@@ -32,5 +32,6 @@ object Demo {
         state.selectedTab = demo.tab
         state.demoAligned = demo.aligned
         state.demoMode = true
+        state.demoShowsStores = demo.reviewStores
     }
 }

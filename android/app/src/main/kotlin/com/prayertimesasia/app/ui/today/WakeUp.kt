@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
@@ -68,19 +69,26 @@ import java.util.Locale
 fun WakeChip(state: AppState, background: Color = Palette.primary.copy(alpha = 0.1f)) {
     val next = AlarmScheduler.nextWakeUp(state.resolver, state.now)
     val fajr = Prayer.FAJR.name(state.resolver.naming)
-    Row(
-        Modifier.sizeIn(minWidth = 34.dp, minHeight = 34.dp).clip(CircleShape)
-            .background(if (next == null) background else Palette.sunArc.copy(alpha = 0.3f), CircleShape)
+    // A 48 dp touch area around the smaller chip.
+    Box(
+        Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).clip(CircleShape)
             .clickable { state.showWakeUp = true }
-            .padding(horizontal = if (next == null) 0.dp else 10.dp)
-            .semantics { contentDescription = next?.let { "Next alarm at ${state.resolver.formatted(it.at)}" } ?: "Prayer alarms, wake up for $fajr: set an alarm" },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+            .semantics(mergeDescendants = true) { contentDescription = next?.let { "Next alarm at ${state.resolver.formatted(it.at)}" } ?: "Prayer alarms, wake up for $fajr: set an alarm" },
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(if (next == null) Icons.Filled.Alarm else Icons.Filled.AlarmOn, null, Modifier.size(17.dp), tint = Palette.primary)
-        if (next != null) {
-            Text(state.resolver.formatted(next.at).removeSuffix(" AM").removeSuffix(" PM"),
-                style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
+        Row(
+            Modifier.sizeIn(minWidth = 34.dp, minHeight = 34.dp)
+                .background(if (next == null) background else Palette.sunArc.copy(alpha = 0.3f), CircleShape)
+                .padding(horizontal = if (next == null) 0.dp else 10.dp)
+                .clearAndSetSemantics {},
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+        ) {
+            Icon(if (next == null) Icons.Filled.Alarm else Icons.Filled.AlarmOn, null, Modifier.size(17.dp), tint = Palette.primary)
+            if (next != null) {
+                Text(state.resolver.formatted(next.at).removeSuffix(" AM").removeSuffix(" PM"),
+                    style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
+            }
         }
     }
 }

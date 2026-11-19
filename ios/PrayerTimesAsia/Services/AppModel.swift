@@ -133,6 +133,8 @@ final class AppModel {
         // -arrival: the Welcome card at home too (as after a reinstall).
         if args.contains("-arrival") { p.arrivalBannerDismissed = false }
         if args.contains("-largetext") { p.largeText = true }
+        // `-review` (screenshots): ten days of use, so the gentle review line shows.
+        if args.contains("-review") { p.openDayCount = 10 }
         // -season ramadan (or sighting, lastTen, raya, syawal): the tester's Ramadan preview.
         if let i = args.firstIndex(of: "-season"), i + 1 < args.count, let season = SeasonPreview(rawValue: args[i + 1]) {
             p.seasonPreview = season
@@ -578,6 +580,26 @@ final class AppModel {
         }
         scheduleNotifications()
         countOpen()
+        countOpenDay()
+    }
+
+    /// Counts separate days the app was opened, on this phone only (for the review line and star box).
+    private func countOpenDay() {
+        guard prefs.hasOnboarded, !Self.isDemo else { return }
+        let c = Calendar.current.dateComponents([.year, .month, .day], from: .now)
+        let key = "\(c.year ?? 0)-\(c.month ?? 0)-\(c.day ?? 0)"
+        guard prefs.lastOpenDay != key else { return }
+        prefs.lastOpenDay = key
+        prefs.openDayCount += 1
+    }
+
+    /// A calm moment for a review line or Apple's star box: today, after `days` days of
+    /// use, not within 15 minutes before a prayer or 15 minutes after one began.
+    func isCalmForReview(at now: Date, days: Int) -> Bool {
+        guard prefs.openDayCount >= days else { return false }
+        if let n = next(after: now), n.time.timeIntervalSince(now) < 15 * 60 { return false }
+        if let c = current(at: now), now.timeIntervalSince(c.time) < 15 * 60 { return false }
+        return true
     }
 
     /// Anonymous count of this open, a few seconds in so the GPS place has usually arrived.
@@ -723,7 +745,8 @@ final class AppModel {
     /// The Hijri date of a civil day as this community counts it (Core/Season.swift).
     func hijri(of g: CivilDay) -> Hijri.HijriDate {
         if isSeasonPreview { return Season.baseHijri(g.adding(seasonShift)) }
-        return Season.communityHijri(g, adjustment: prefs.hijriAdjustment, announcements: hijriCalendar.dataset.announcements, authority: communityAuthority)
+        return Season.communityHijri(g, adjustment: prefs.hijriAdjustment, announcements: hijriCalendar.dataset.announcements,
+                                     authority: communityAuthority, monthStarts: hijriCalendar.dataset.monthStarts)
     }
 
     func hijri(of date: Date) -> Hijri.HijriDate { hijri(of: civil(date)) }

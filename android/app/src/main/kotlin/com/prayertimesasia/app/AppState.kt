@@ -80,6 +80,8 @@ class AppState(
     var showRamadan by mutableStateOf(false)
     /** Wake up for Subuh (the alarm clock on the Prayer screen, or Settings). */
     var showWakeUp by mutableStateOf(false)
+    /** A day picked in the month calendar, to show on the Prayer screen (days from today). */
+    var showDayRequest by mutableStateOf<Int?>(null)
     /** A masjid from a screen's QR code, waiting for the user to say yes. */
     var pendingMasjid by mutableStateOf<MasjidLink?>(null)
     var locationRequested by mutableStateOf(false)
@@ -88,11 +90,13 @@ class AppState(
     var demoAligned = false
     /** Screenshots: a Ramadan preview without the testers' PREVIEW tag (store pictures). */
     var demoMode = false
+    /** Screenshots: show the Google Play review button before the app is live. */
+    var demoShowsStores = false
 
     /** The rules and times for right now. Cheap to build; read it fresh each time. */
     val resolver: Resolver
         get() = Resolver(prefs, gpsPlace, { s, y, m, d -> official.times(s, y, m, d) }, directories.mosques, locale,
-            announcements = directories.calendar.announcements)
+            announcements = directories.calendar.announcements, monthStarts = directories.calendar.monthStarts)
 
     fun tick() {
         if (fixedNow == null) now = Instant.now()
@@ -400,6 +404,16 @@ class AppState(
         }
         rescheduleAlerts()
         countOpen()
+        countOpenDay()
+    }
+
+    /** Counts separate days the app was opened, on this phone only (for the review line and star box). */
+    private fun countOpenDay() {
+        if (!prefs.hasOnboarded) return
+        val d = java.time.LocalDate.now()
+        val key = "${d.year}-${d.monthValue}-${d.dayOfMonth}"
+        if (prefs.lastOpenDay == key) return
+        update { it.copy(lastOpenDay = key, openDayCount = it.openDayCount + 1) }
     }
 
     private val usage by lazy { UsageCounter(context) }

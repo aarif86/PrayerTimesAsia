@@ -70,11 +70,34 @@ object Season {
     }
 
     /**
+     * The Hijri date of a civil day from the authority's published Islamic calendar
+     * (its month starts in data/calendar.json), or null when it hasn't published that far.
+     */
+    fun publishedHijri(g: LocalDate, starts: List<MonthStart>, authority: String?): Hijri.HijriDate? {
+        if (authority == null || starts.isEmpty()) return null
+        val n = g.toEpochDay()
+        val mine = starts.filter { it.authority == authority }
+            .mapNotNull { m -> runCatching { LocalDate.parse(m.date) }.getOrNull()?.let { m to it.toEpochDay() } }
+            .sortedBy { it.second }
+        for (i in mine.indices.reversed()) {
+            val (m, start) = mine[i]
+            if (start > n) continue
+            val day = (n - start + 1).toInt()
+            val next = mine.getOrNull(i + 1)
+            // The last listed month: its length is unknown, so trust it for 29 days only.
+            val fits = if (next != null) n < next.second && day <= 30 else day <= 29
+            return if (fits) Hijri.HijriDate(day, m.hijriMonth, m.hijriYear) else null
+        }
+        return null
+    }
+
+    /**
      * The Hijri date of a civil day for this community: around Ramadan and Syawal
      * it follows the authority's first days; elsewhere it is the adjusted estimate.
      */
-    fun communityHijri(g: LocalDate, adjustment: Int, list: List<CalendarAnnouncement>, authority: String?): Hijri.HijriDate {
-        val base = baseHijri(g, adjustment)
+    fun communityHijri(g: LocalDate, adjustment: Int, list: List<CalendarAnnouncement>, authority: String?,
+                       monthStarts: List<MonthStart> = emptyList()): Hijri.HijriDate {
+        val base = publishedHijri(g, monthStarts, authority) ?: baseHijri(g, adjustment)
         if (base.month !in 8..10) return base
         val y = base.year
         val n = g.toEpochDay()

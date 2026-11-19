@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
   Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
-  CloudMoon, Contrast, Droplet, Flame, Pause, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
+  CloudMoon, Contrast, Droplet, Flame, Pause, Star, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
@@ -18,11 +18,12 @@ import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { WakeChip } from './WakeUp'
-import { fmtDate, openSheet, short, SourceBadge, Switch, TimeText } from './common'
+import { fmtDate, openSheet, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { featuredOffer, MakersCard } from './Makers'
 import { appBannerShownByBrowser, phoneAppOffer } from './pwa'
+import { SiteHomeButton } from './SiteHome'
 import { TabJourney } from './icons'
 import { SeasonCard } from './Ramadan'
 import { Hadith } from './Hadith'
@@ -68,6 +69,7 @@ export function TodayScreen() {
   const s = useStore()
   const now = useNow()
   const [offset, setOffset] = useState(0)
+  useDayRequests(setOffset)
   const [showMore, setShowMoreState] = useState(() => s.demo ? s.demo.more : readString('today.showMore') === '1')
   const [toast, showToast] = useToast()
   const setShowMore = (v: boolean) => { setShowMoreState(v); if (!s.demo) writeString('today.showMore', v ? '1' : '0') }
@@ -192,6 +194,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
   if (order === 'column') {
     return (
       <div class="controls-col">
+        <SiteHomeButton />
         <JourneyButton now={c.now} withChip />
         <StyleButton c={c} />
         <AppearanceButton c={c} />
@@ -207,6 +210,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
       {store.prefs.trackerEnabled && <StreakChip now={c.now} />}
       <AppearanceButton c={c} />
       <StyleButton c={c} />
+      <SiteHomeButton />
     </>
   )
 }
@@ -279,6 +283,25 @@ function AppPrompt() {
       <span class="text">{offer.title}</span>
       <a class="primary-btn" href={offer.href} target={offer.kind === 'ask' ? undefined : '_blank'} rel="noopener">{offer.action}</a>
       <button class="x" aria-label="Not now" onClick={() => store.update((p) => { p.appPromptDismissed = true })}><X size={15} strokeWidth={3} /></button>
+    </div>
+  )
+}
+
+/**
+ * Once ever, after ten separate days of use: a quiet line asking for a note to the
+ * makers. Never close to a prayer, never twice. Closing it or using it ends it.
+ */
+function NotePrompt({ c }: { c: Ctx }) {
+  const p = store.prefs
+  if (c.offset !== 0 || p.noteCardDone || p.reviewTappedAt > 0 || p.openDayCount < 10) return null
+  if (c.next && c.next.time - c.now < 15 * 60_000) return null
+  const done = () => store.update((x) => { x.noteCardDone = true })
+  return (
+    <div class="alerts-prompt note-prompt">
+      <Star size={18} class="accent" style={{ flex: 'none' }} />
+      <span class="text">Enjoying the app? A short review helps other Muslims find it.</span>
+      <button class="primary-btn" onClick={() => { done(); openSheet({ kind: 'review' }) }}>Review</button>
+      <button class="x" aria-label="Not now" onClick={done}><X size={15} strokeWidth={3} /></button>
     </div>
   )
 }
@@ -528,6 +551,7 @@ function ClassicPage({ c }: { c: Ctx }) {
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <PrayerList c={c} fill />
       <ShowMoreButton c={c} />
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -656,6 +680,7 @@ function CentrePage({ c }: { c: Ctx }) {
       <DayNavigator c={c} />
       <PrayerList c={c} fill />
       <div class="row foot-row"><SourceBadge day={c.shown} compact /><span class="spacer" /><ShowMoreButton c={c} inline /></div>
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -735,6 +760,7 @@ function DialPage({ c }: { c: Ctx }) {
         <button class="round-btn big" aria-label="Next day" onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={18} strokeWidth={2.4} /></button>
       </div>
       <ShowMoreButton c={c} />
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -800,6 +826,7 @@ function SunPathPage({ c }: { c: Ctx }) {
         {store.prefs.trackerEnabled && <StreakChip now={now} />}
         <AppearanceButton c={c} />
         <StyleButton c={c} />
+        <SiteHomeButton />
       </div>
       <div class="sunpath-wrap" ref={wrap}>
         <SunPath width={width} height={96} now={now} day={c.day} tz={store.timeZone} />
@@ -815,6 +842,7 @@ function SunPathPage({ c }: { c: Ctx }) {
       <PrayerList c={c} fill={false} />
       <ShowMoreButton c={c} />
       <SourceBadge day={c.shown} />
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -823,8 +851,8 @@ function SunPathPage({ c }: { c: Ctx }) {
 // ---------- Colour Bands ----------
 
 const BAND: Record<Prayer, string> = {
-  fajr: 'rgb(33, 110, 92)', sunrise: 'rgb(143, 168, 82)', dhuhr: 'rgb(217, 171, 33)',
-  asr: 'rgb(227, 148, 82)', maghrib: 'rgb(224, 110, 84)', isha: 'rgb(219, 79, 89)',
+  fajr: 'rgb(33, 110, 92)', sunrise: 'rgb(131, 154, 75)', dhuhr: 'rgb(179, 141, 27)',
+  asr: 'rgb(220, 119, 36)', maghrib: 'rgb(224, 110, 84)', isha: 'rgb(219, 79, 89)',
 }
 
 function BandsPage({ c }: { c: Ctx }) {
@@ -861,7 +889,8 @@ function BandsPage({ c }: { c: Ctx }) {
       </div>
       <div class="bands-foot page">
         <div class="row foot-row"><SourceBadge day={shown} compact /><span class="spacer" /><ShowMoreButton c={c} inline /></div>
-        <Offer c={c} />
+        <NotePrompt c={c} />
+      <Offer c={c} />
       </div>
     </div>
   )

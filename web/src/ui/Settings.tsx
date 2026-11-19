@@ -1,6 +1,6 @@
 import { azanAvailable } from '../services/azan'
 import { useEffect, useState } from 'preact/hooks'
-import { AlarmClock, ArrowDownToLine, ArrowRightLeft, MoonStar, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, MapPinned, Mail, MapPinOff, Printer, Smartphone } from 'lucide-preact'
+import { AlarmClock, ArrowDownToLine, ArrowRightLeft, MoonStar, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, MapPinned, Mail, MapPinOff, Printer, Smartphone, Star } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
@@ -278,7 +278,7 @@ export function SettingsScreen() {
         <div class="item footnote"><MapPinOff size={18} />Your exact location stays in this browser. The place name comes from a built-in list, not a server.</div>
         <ToggleItem label="Share anonymous usage counts" on={p.shareUsage} onChange={(v) => store.update((x) => { x.shareUsage = v })}
           sub="Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept." />
-        <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (map tiles and Overpass), which see the area you look at.</div>
+        <div class="item footnote"><MapPinned size={18} />The Masjid map and list use OpenStreetMap data. The map tiles, our weekly masjid list on GitHub and Overpass see only the area you look at.</div>
       </Group>
 
       <Group id="makers" title="From the makers" foot="Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own. No ad networks, nothing tracked.">
@@ -288,6 +288,8 @@ export function SettingsScreen() {
 
       <Group foot="Prayer Times Asia. Built in Asia, made for Muslims everywhere.">
         <a class="item" href="../"><span class="label">About Prayer Times Asia</span><ChevronRight size={16} class="secondary" /></a>
+        <button class="item" onClick={() => openSheet({ kind: 'review' })}><Star size={18} class="accent" /><span class="label">Rate and review</span><ChevronRight size={16} class="secondary" /></button>
+        <button class="item" onClick={() => openSheet({ kind: 'feedback' })}><Mail size={18} class="accent" /><span class="label">Send a note to the makers</span><ChevronRight size={16} class="secondary" /></button>
         <button class="item" onClick={() => openSheet({ kind: 'credits' })}><span class="label">Sources &amp; credits</span><ChevronRight size={16} class="secondary" /></button>
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><span class="label">Help verify times where you are</span><ChevronRight size={16} class="secondary" /></a>
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md" target="_blank" rel="noopener noreferrer"><span class="label">Design a new look</span><ChevronRight size={16} class="secondary" /></a>
@@ -323,3 +325,4 @@ function AppCard() {
     </a>
   )
 }
+

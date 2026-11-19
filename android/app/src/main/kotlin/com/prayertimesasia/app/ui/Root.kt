@@ -1,5 +1,7 @@
 package com.prayertimesasia.app.ui
 
+import com.prayertimesasia.app.ui.makers.NoteContent
+import com.prayertimesasia.app.ui.makers.ReviewContent
 import android.app.Activity
 import android.provider.Settings
 import androidx.compose.foundation.background
@@ -99,6 +101,8 @@ sealed class Overlay {
     data object Camera : Overlay()
     data object MoveOut : Overlay()
     data object MoveIn : Overlay()
+    data object Review : Overlay()
+    data object Note : Overlay()
 }
 
 /** The app's theme: dark or light from the sky (Automatic) or as chosen, and the soft night. */
@@ -201,7 +205,8 @@ fun TabContent(state: AppState, open: (Overlay) -> Unit) {
         Tab.FALAK -> FalakScreen(state, openCamera = { open(Overlay.Camera) }, openLevel = { open(Overlay.Level) })
         Tab.MASJID -> MasjidScreen(state, openAbout = { open(Overlay.About) })
         Tab.SETTINGS -> SettingsScreen(state, openPlaces = { open(Overlay.Places) }, openWidgetPreview = { open(Overlay.WidgetPreview) },
-            openCredits = { open(Overlay.Credits) }, openMoveOut = { open(Overlay.MoveOut) }, openMoveIn = { open(Overlay.MoveIn) })
+            openCredits = { open(Overlay.Credits) }, openMoveOut = { open(Overlay.MoveOut) }, openMoveIn = { open(Overlay.MoveIn) },
+            openReview = { open(Overlay.Review) }, openNote = { open(Overlay.Note) })
     }
 }
 
@@ -211,7 +216,7 @@ private fun Overlays(state: AppState, overlay: Overlay?, set: (Overlay?) -> Unit
     when (overlay) {
         null -> {}
         Overlay.Places -> AppSheet(close) { PlacesSheetContent(state, onDone = close) }
-        Overlay.Calendar -> AppSheet(close) { CalendarSheetContent(state) }
+        Overlay.Calendar -> AppSheet(close) { CalendarSheetContent(state, onShowDay = { state.showDayRequest = it; close() }) }
         is Overlay.Sanad -> AppSheet(close) { SanadSheetContent(state, overlay.day) }
         Overlay.About -> AppSheet(close) { MakersSheetContent("masjid", state) }
         Overlay.Credits -> AppSheet(close) { CreditsContent() }
@@ -219,6 +224,8 @@ private fun Overlays(state: AppState, overlay: Overlay?, set: (Overlay?) -> Unit
         Overlay.WidgetPreview -> AppSheet(close) { WidgetPreviewContent(state) }
         Overlay.MoveOut -> AppSheet(close) { MoveOutContent(state) }
         Overlay.MoveIn -> AppSheet(close) { MoveInContent(state, close) }
+        Overlay.Review -> AppSheet(close) { ReviewContent(state) { set(Overlay.Note) } }
+        Overlay.Note -> AppSheet(close) { NoteContent(state) }
         Overlay.Camera -> Dialog(onDismissRequest = close, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             FalakCameraScreen(state, close)
         }

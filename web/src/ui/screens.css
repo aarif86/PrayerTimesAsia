@@ -7,7 +7,7 @@
 .classic-header { display: flex; align-items: center; gap: 14px; }
 .classic-side { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .classic-side > * { max-width: 100%; }
-.controls-row { display: flex; align-self: stretch; justify-content: flex-end; gap: 8px; }
+.controls-row { position: relative; z-index: 1; display: flex; align-self: stretch; justify-content: flex-end; gap: 8px; }
 .controls-col { position: absolute; right: 0; top: 4px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
 .place-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; font-size: 15px; font-weight: 600; padding: 6px 10px;
@@ -155,7 +155,7 @@
 .band-name { font-size: 26px; font-weight: 700; white-space: nowrap; }
 .now-pill { font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.25); align-self: center; }
 .band-time { display: inline-flex; align-items: baseline; gap: 4px; font-size: 34px; font-weight: 300; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.band-time .sfx { font-size: 22px; }
+.band-time .sfx { font-size: 22px; font-weight: 700; }
 .band-time.small { font-size: 24px; }
 .band-time.small .sfx { font-size: 15px; }
 .blessed-band { display: flex; align-items: center; gap: 8px; padding: 6px var(--gutter); min-height: 52px; background: rgb(77, 77, 77); color: #fff; }
@@ -283,6 +283,7 @@
 .space-pin.musollah span { background: rgb(108, 132, 204); }
 .kaaba-pin span { display: block; width: 20px; height: 20px; background: #141419; border: 2px solid #F2C766; border-radius: 4px; }
 .leaflet-control-attribution { font-size: 10px; }
+.leaflet-container .leaflet-control-attribution a { color: #004766; }
 
 /* ---------- Settings & sheets ---------- */
 .settings { padding-bottom: 12px; }
@@ -396,10 +397,13 @@
 .fast-day.is-today { outline: 2px solid var(--accent); outline-offset: 1px; }
 .fast-day[disabled] { opacity: .4; }
 .fast-reason { position: absolute; bottom: 2px; right: 5px; font-size: 11px; font-weight: 800; }
-.odd-nights { display: grid; grid-template-columns: repeat(auto-fit, minmax(48px, 1fr)); gap: 6px; margin: 8px 0; }
-.odd-night { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; border-radius: 12px; background: color-mix(in srgb, #3a2a7a 30%, transparent); }
-.odd-night .big { font-size: 22px; font-weight: 700; }
-.odd-night.tonight { background: color-mix(in srgb, #f3c969 35%, transparent); }
+.odd-nights { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 10px 0; }
+.odd-night { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 0; padding: 10px 2px; border-radius: 14px; background: color-mix(in srgb, var(--fg) 6%, transparent); text-align: center; }
+.odd-night .big { font-size: clamp(20px, 6vw, 26px); font-weight: 700; line-height: 1.1; }
+.odd-night .od-day, .odd-night .od-date { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 12px; line-height: 1.3; }
+.odd-night .od-date { font-weight: 600; }
+.odd-night.tonight { background: color-mix(in srgb, #f3c969 20%, transparent); color: var(--gold-text); }
+.odd-night.tonight .od-day { color: inherit; font-weight: 700; }
 .doa-body { padding: 4px 16px 14px 48px; }
 .doa-body p { margin: 6px 0; line-height: 1.5; }
 .doa-body .arabic { font-size: 24px; line-height: 1.9; text-align: right; font-family: 'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', serif; }
@@ -490,7 +494,7 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .tarawih-choice .pill-btn { flex: 1; justify-content: center; min-height: 48px; font-size: 17px; }
 .tarawih-choice .pill-btn.quiet.on { background: color-mix(in srgb, var(--green) 85%, transparent); color: #fff; }
 .tarawih-tap { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 180px;
-  border-radius: 22px; background: color-mix(in srgb, #3a2a7a 30%, transparent); color: inherit; touch-action: manipulation; }
+  border-radius: 22px; background: color-mix(in srgb, var(--fg) 6%, transparent); color: inherit; touch-action: manipulation; }
 .tarawih-tap:active { transform: scale(.98); }
 .tarawih-tap.complete { background: color-mix(in srgb, var(--green) 35%, transparent); }
 .tarawih-count { font-size: 56px; font-weight: 700; line-height: 1; }
@@ -505,3 +509,42 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .checking-location { animation: checking-location 1.4s ease-in-out infinite; }
 @keyframes checking-location { 50% { opacity: 0.3; } }
 @media (prefers-reduced-motion: reduce) { .checking-location { animation: none; opacity: 0.6; } }
+/* Qibla: the big "Turn on the compass" button iPhone Safari needs before it shares the compass. */
+.compass-on { display: flex; align-items: center; gap: 12px; margin-top: 4px; padding: 14px 22px 14px 18px; border-radius: 22px; text-align: left;
+  background: var(--accent); color: var(--on-accent); box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent); position: relative; }
+/* The soft pulse is a ring that grows and fades (moved by the graphics chip), not a shadow repainted every frame. */
+.compass-on::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 45%, transparent); opacity: 0; transform: scale(.94);
+  animation: compass-on-glow 2.4s ease-out infinite; will-change: transform, opacity; }
+.compass-on:active { transform: scale(.97); }
+.compass-on-text { display: flex; flex-direction: column; gap: 2px; }
+.compass-on-title { font-size: 19px; font-weight: 800; }
+.compass-on-line { font-size: 14px; font-weight: 600; opacity: .8; }
+@keyframes compass-on-glow {
+  0% { opacity: .9; transform: scale(.94); }
+  60%, 100% { opacity: 0; transform: scale(1.04); }
+}
+.qibla-dial .centre-tap { z-index: 4; flex-direction: column; gap: 4px; color: var(--accent); font-weight: 700; font-size: 14px; cursor: pointer;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 70%, transparent); }
+@media (prefers-reduced-motion: reduce) { .compass-on::after { animation: none; } }
+/* A way back to the website from every tab (web only). Quiet, like the other round buttons. */
+.home-site-btn { text-decoration: none; color: inherit; }
+.home-site-btn.corner { position: absolute; z-index: 3; top: calc(var(--safe-top) + 14px); right: 16px; opacity: .85; }
+@media (min-width: 700px) { .home-site-btn.corner { right: calc(var(--col-pad, 0px) + 16px); } }
+.masjid-title .masjid-home { position: absolute; left: 16px; pointer-events: auto; background: rgba(0, 0, 0, 0.25); width: 38px; height: 38px; }
+:root[data-theme="light"] .masjid-title .masjid-home { background: rgba(255, 255, 255, 0.7); }
+@media (min-width: 900px) and (display-mode: browser) { .home-site-btn { display: none !important; } }
+
+/* A note to the makers */
+.feedback-kinds { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.feedback-kinds .chip { cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; color: inherit; }
+.feedback-kinds .chip.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.feedback-text { width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 14px; border: 0; background: var(--fill); font-size: 16px; resize: vertical; min-height: 110px; }
+.feedback .group { margin: 12px 0; }
+.feedback .primary-btn { width: 100%; box-sizing: border-box; padding: 13px 16px; font-size: 16px; text-decoration: none; }
+.feedback .plain-btn { width: 100%; box-sizing: border-box; justify-content: center; margin-top: 8px; }
+.feedback .footnote { text-align: center; margin-top: 10px; }
+.review-links .item { text-decoration: none; color: inherit; gap: 12px; }
+.review-steps { margin: 10px 0 12px; padding: 12px 14px 12px 34px; border-radius: 14px; background: var(--fill); font-size: 15px; line-height: 1.45; }
+.review-steps li { margin: 3px 0; }
+.review-steps li::marker { color: var(--accent); font-weight: 800; }
