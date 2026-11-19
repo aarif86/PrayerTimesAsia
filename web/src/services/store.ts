@@ -154,6 +154,14 @@ class AppStore {
 
   // MARK: Where and which rules
 
+  /** Counts separate days the app was opened, on this device only (for the one gentle note card). */
+  countOpenDay(): void {
+    if (this.demo || !this.prefs.hasOnboarded) return
+    const d = new Date(), key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+    if (this.prefs.lastOpenDay === key) return
+    this.update((p) => { p.lastOpenDay = key; p.openDayCount += 1 })
+  }
+
   /** Anonymous count of this open, once the place is known (see services/usage.ts). */
   countOpen(version: string): void {
     if (this.demo || !this.prefs.shareUsage || !this.prefs.hasOnboarded) return
@@ -832,6 +840,8 @@ function demoPreferences(demo: Demo): Preferences {
   p.appPromptDismissed = q.get('appprompt') !== 'on'
   if (q.get('masjid') === 'on') p.myMasjid = DEMO_MASJID
   if (q.get('large') === '1') p.largeText = true
+  // ?note=on: ten days of use, so the one gentle "note to the makers" line shows (screenshots).
+  if (q.get('note') === 'on') p.openDayCount = 10
   const naming = q.get('naming') as NamingStyle | null
   if (naming) p.namingOverride = naming
   if (demo.variant === 'visitor') {

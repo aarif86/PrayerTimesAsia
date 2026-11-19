@@ -88,6 +88,8 @@ class AppState(
     var permissions: Permissions? = null
     /** Screenshots: pretend the phone faces the qibla. */
     var demoAligned = false
+    /** Screenshots: show the Google Play review button before the app is live. */
+    var demoShowsStores = false
 
     /** The rules and times for right now. Cheap to build; read it fresh each time. */
     val resolver: Resolver
@@ -400,6 +402,16 @@ class AppState(
         }
         rescheduleAlerts()
         countOpen()
+        countOpenDay()
+    }
+
+    /** Counts separate days the app was opened, on this phone only (for the review line and star box). */
+    private fun countOpenDay() {
+        if (!prefs.hasOnboarded) return
+        val d = java.time.LocalDate.now()
+        val key = "${d.year}-${d.monthValue}-${d.dayOfMonth}"
+        if (prefs.lastOpenDay == key) return
+        update { it.copy(lastOpenDay = key, openDayCount = it.openDayCount + 1) }
     }
 
     private val usage by lazy { UsageCounter(context) }
