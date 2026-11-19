@@ -41,6 +41,10 @@ object Palette {
     val gold: Color @Composable @ReadOnlyComposable get() = gold(LocalSkyScheme.current.dark)
     val success: Color @Composable @ReadOnlyComposable get() = if (LocalSkyScheme.current.dark) successDark else successLight
 
+    /** Gold for words and numbers (Ramadan labels, countdowns): deep gold on light skies so it passes contrast. */
+    val goldText: Color @Composable @ReadOnlyComposable
+        get() = if (LocalSkyScheme.current.dark) goldDark else Color(0xFF583900)
+
     /** The peach for words (labels, countdowns): deeper on light skies so it reads. */
     val accentText: Color @Composable @ReadOnlyComposable
         get() = if (LocalSkyScheme.current.dark) sunArcDark else rgb(0.70, 0.33, 0.12)
@@ -89,16 +93,17 @@ fun readableOnLight(c: Color): Color {
     return Color(gam(lin(c.red) * k), gam(lin(c.green) * k), gam(lin(c.blue) * k), c.alpha)
 }
 
-/** The colours of the classic Singapore timetable, a shade calmer. */
+/** The colours of the classic Singapore timetable, a shade calmer. Sunrise, Dhuhr and Asr are a
+ *  little deeper so white writing reads well (same as the web, owner OK 2026-11-19). */
 object BandsPalette {
     val header = Color(0.17f, 0.17f, 0.17f)
     val dateBar = Color(0.24f, 0.24f, 0.24f)
     val blessed = Color(0.3f, 0.3f, 0.3f)
     fun color(prayer: Prayer): Color = when (prayer) {
         Prayer.FAJR -> rgb(0.13, 0.43, 0.36)
-        Prayer.SUNRISE -> rgb(0.56, 0.66, 0.32)
-        Prayer.DHUHR -> rgb(0.85, 0.67, 0.13)
-        Prayer.ASR -> rgb(0.89, 0.58, 0.32)
+        Prayer.SUNRISE -> rgb(0.51, 0.60, 0.29)
+        Prayer.DHUHR -> rgb(0.70, 0.55, 0.11)
+        Prayer.ASR -> rgb(0.86, 0.47, 0.14)
         Prayer.MAGHRIB -> rgb(0.88, 0.43, 0.33)
         Prayer.ISHA -> rgb(0.86, 0.31, 0.35)
     }

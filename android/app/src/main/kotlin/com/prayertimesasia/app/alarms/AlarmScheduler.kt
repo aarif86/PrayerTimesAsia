@@ -1,6 +1,7 @@
 package com.prayertimesasia.app.alarms
 
 import com.prayertimesasia.core.RamadanContent
+import com.prayertimesasia.core.AlertLines
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.core.Hadith
 import android.app.AlarmManager
@@ -88,13 +89,13 @@ object AlarmScheduler {
                         // meeting or work would otherwise run past the time.
                         val title = if (prayer == Prayer.SUNRISE) "${Prayer.FAJR.name(r.naming)} ends in $early min" else "$name in $early min"
                         val at = time.minusSeconds(early * 60L)
-                        out += Alert("$id-early", title, "$name at ${r.formatted(time)} · $here", at, Kind.EARLY, silent = r.isSilent(at, prayer))
+                        out += Alert("$id-early", title, "$name at ${r.formatted(time)}", at, Kind.EARLY, silent = r.isSilent(at, prayer))
                     }
                     if (!p.notificationsEnabled) continue
                     // An alarm at the same minute rings instead, so it doesn't sound twice.
                     if (p.alarmAtStart(prayer)) continue
                     if (prayer == Prayer.SUNRISE) {
-                        out += Alert(id, "$name · ${r.formatted(time)}", "${Prayer.FAJR.name(r.naming)} has ended. $here", time, Kind.PRAYER,
+                        out += Alert(id, "$name · ${r.formatted(time)}", "${Prayer.FAJR.name(r.naming)} has ended.", time, Kind.PRAYER,
                             silent = r.isSilent(time, prayer))
                         continue
                     }
@@ -104,11 +105,11 @@ object AlarmScheduler {
                         else -> Sound.AZAN
                     }
                     if (prayer == Prayer.MAGHRIB && r.isRamadanDay(time)) {
-                        out += Alert(id, "Time to berbuka · $name ${r.formatted(time)}", "$BERBUKA_DOA · $here", time, Kind.PRAYER, sound,
+                        out += Alert(id, "Time to berbuka · $name ${r.formatted(time)}", BERBUKA_DOA, time, Kind.PRAYER, sound,
                             silent = r.isSilent(time, prayer))
                         continue
                     }
-                    out += Alert(id, "$name · ${r.formatted(time)}", "It's time for $name in $here${hadithLine(r, HadithId.AZAN)}", time, Kind.PRAYER, sound,
+                    out += Alert(id, "$name · ${r.formatted(time)}", AlertLines.line(RamadanContent.lang(r.naming), prayer, r.isFriday(time), day.year, day.month, day.day, name), time, Kind.PRAYER, sound,
                         silent = r.isSilent(time, prayer))
                 }
             }
@@ -117,6 +118,8 @@ object AlarmScheduler {
         }
         // Widgets move on at each prayer even with alerts off.
         r.next(now)?.let { (_, t) -> out += Alert("refresh", "", "", t, Kind.REFRESH) }
+        // In Ramadan the widget also switches at Imsak and Berbuka, which are not prayer times.
+        r.fastingMoment(now)?.let { (_, t) -> out += Alert("refresh-fast", "", "", t, Kind.REFRESH) }
         return out.filter { it.at > now }.sortedBy { it.at }.take(48)
     }
 
@@ -148,7 +151,8 @@ object AlarmScheduler {
         return out
     }
 
-    /** Settings, Hadith: one line under the alert, or nothing when it is off. */
+
+    /** Settings, Hadith: one line under a wake-up alert, or nothing when it is off. */
     private fun hadithLine(r: Resolver, id: HadithId): String =
         if (r.prefs.hadithInAlerts) "\n" + Hadith.of(id).alertLine(RamadanContent.lang(r.naming)) else ""
 
@@ -222,6 +226,48 @@ object AlarmScheduler {
             }
         }
         sp.edit().putStringSet(KEY, codes.map { it.toString() }.toSet()).apply()
+        // Every alarm Off: nothing may ring again, not even a snooze.
+        if (!r.prefs.anyAlarm) stopRinging(context)
+    }
+
+    private const val SNOOZE_KEY = "snoozes"
+
+    /**
+     * Stops every alarm that is ringing now and every snooze waiting to ring
+     * again. Used when an alarm is turned Off and by "Turn off all alarms".
+     */
+    fun stopRinging(context: Context) {
+        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
+        val sp = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        sp.getStringSet(SNOOZE_KEY, emptySet())!!.forEach { raw ->
+            val parts = raw.split('|', limit = 2)
+            val code = parts[0].toIntOrNull() ?: return@forEach
+            pending(context, code, null)?.let { am?.cancel(it); it.cancel() }
+        }
+        sp.edit().remove(SNOOZE_KEY).apply()
+        val nm = context.getSystemService(android.app.NotificationManager::class.java) ?: return
+        nm.activeNotifications.filter { it.notification.category == android.app.Notification.CATEGORY_ALARM }
+            .forEach { nm.cancel(it.id) }
+    }
+
+    /** Is an alarm snoozed (waiting to ring again)? */
+    fun hasSnooze(context: Context, now: Instant = Instant.now()): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getStringSet(SNOOZE_KEY, emptySet())!!
+            .any { (it.split('|').getOrNull(1)?.toLongOrNull() ?: 0L) > now.toEpochMilli() }
+
+    /** Is this snooze still meant to ring (not stopped since it was set)? */
+    fun isSnoozeWaiting(context: Context, id: String): Boolean {
+        val code = id.hashCode().toString()
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getStringSet(SNOOZE_KEY, emptySet())!!
+            .any { it.substringBefore('|') == code }
+    }
+
+    /** A snooze has rung (or been stopped with I'm up): it no longer waits. */
+    fun forgetSnooze(context: Context, id: String) {
+        val code = id.hashCode().toString()
+        val sp = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val left = sp.getStringSet(SNOOZE_KEY, emptySet())!!.filterNot { it.substringBefore('|') == code }.toSet()
+        sp.edit().putStringSet(SNOOZE_KEY, left).apply()
     }
 
     const val SNOOZE_SUFFIX = "-snooze"
@@ -229,13 +275,18 @@ object AlarmScheduler {
 
     /**
      * Rings this alarm again in [SNOOZE_MINUTES]. It is kept apart from the
-     * planned alarms, so re-planning never cancels it.
+     * planned alarms, so re-planning never cancels it, but it is remembered so
+     * that turning the alarm Off (or every alarm Off) stops it.
      */
     fun snooze(context: Context, id: String, title: String, body: String, now: Instant = Instant.now()) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager? ?: return
         val alert = Alert(id + SNOOZE_SUFFIX, title, body, now.plusSeconds(SNOOZE_MINUTES * 60), Kind.WAKE)
         val pi = pending(context, alert.id.hashCode(), alert) ?: return
         val t = alert.at.toEpochMilli()
+        val sp = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val code = alert.id.hashCode().toString()
+        val snoozes = sp.getStringSet(SNOOZE_KEY, emptySet())!!.filterNot { it.substringBefore('|') == code }.toSet() + "$code|$t"
+        sp.edit().putStringSet(SNOOZE_KEY, snoozes).apply()
         val exact = Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms()
         try {
             if (exact) am.setAlarmClock(AlarmManager.AlarmClockInfo(t, openApp(context)), pi)

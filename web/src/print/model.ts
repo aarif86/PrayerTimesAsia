@@ -3,6 +3,7 @@ import { hijriMonths, type NamingStyle } from '../core/prayer'
 import { zoned, zonedTime } from '../core/tz'
 import { sanitize, type ScreenConfig, type ScreenLanguage } from '../screen/config'
 import { screenDay, type RowLookup, type ScreenDay } from '../screen/model'
+import { LETTER_FOR, PAPER_SIZES, type LetterFor, type PaperSize } from './letter'
 
 /**
  * Printable sheets, worked out without the DOM. They reuse the masjid screen's
@@ -11,14 +12,18 @@ import { screenDay, type RowLookup, type ScreenDay } from '../screen/model'
  * place. Official table first, as everywhere in the app.
  */
 
-export type SheetKind = 'month' | 'ramadan' | 'stickers' | 'tracker' | 'fasting'
-export const SHEETS: readonly SheetKind[] = ['month', 'ramadan', 'stickers', 'tracker', 'fasting']
+export type SheetKind = 'month' | 'wall' | 'year' | 'ramadan' | 'stickers' | 'tracker' | 'fasting' | 'letter'
+export const SHEETS: readonly SheetKind[] = ['month', 'wall', 'year', 'ramadan', 'stickers', 'tracker', 'fasting', 'letter']
 
 export interface PrintOptions {
   sheet: SheetKind
   /** The month shown by month, stickers and tracker. */
   year: number
   month: number
+  /** The prayer break letter: who it is for (work when missing). */
+  for?: LetterFor
+  /** The prayer break letter: A4 or US Letter paper (A4 when missing). */
+  paper?: PaperSize
 }
 
 export interface SheetDay {
@@ -49,11 +54,18 @@ export function daysInMonth(year: number, month: number): number {
 }
 
 /** Every day of a Gregorian month at the configured place. */
-export function monthDays(c: ScreenConfig, year: number, month: number, lookup: RowLookup): SheetDay[] {
+export function monthDays(c: ScreenConfig, year: number, month: number, lookup: RowLookup, hijriOf?: HijriOf): SheetDay[] {
   if (!c.place) return []
   const out: SheetDay[] = []
-  for (let d = 1; d <= daysInMonth(year, month); d++) out.push(sheetDay(noon(year, month, d, c.place.tz), c, lookup))
+  for (let d = 1; d <= daysInMonth(year, month); d++) out.push(sheetDay(noon(year, month, d, c.place.tz), c, lookup, hijriOf))
   return out
+}
+
+/** Today at the configured place, for the prayer break letter. */
+export function todayDay(c: ScreenConfig, now: number, lookup: RowLookup): SheetDay[] {
+  if (!c.place) return []
+  const z = zoned(now, c.place.tz)
+  return [sheetDay(noon(z.year, z.month, z.day, c.place.tz), c, lookup)]
 }
 
 /**
@@ -119,13 +131,16 @@ const ID_MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli
 
 export const PRINT_WORDS: Record<ScreenLanguage, PrintWords> = {
   en: {
-    sheetName: { month: 'Monthly timetable', ramadan: 'Ramadan timetable', stickers: 'Sticker calendar', tracker: 'Kids\' prayer tracker', fasting: 'Kids\' fasting chart' },
+    sheetName: { month: 'Monthly timetable', wall: 'Islamic wall calendar', year: 'Islamic year on one page', ramadan: 'Ramadan timetable', stickers: 'Sticker calendar', tracker: 'Kids\' prayer tracker', fasting: 'Kids\' fasting chart', letter: 'Letter for work or school' },
     sheetHint: {
       month: 'One A4 page for the fridge, the office or the masjid notice board.',
+      wall: 'A cover and one page for every month, made to hang on the wall. Each day shows the Hijri date, and the important Islamic days of the month are set out at the top. Print on thick paper and bind or clip at the top.',
+      year: 'The whole year on one A4 page, with the Hijri date under every day and the important Islamic days marked and listed.',
       ramadan: 'Imsak and iftar for every day of Ramadan, with a box to tick each fast.',
       stickers: 'A tile for every day. Print on A4 sticker paper (or plain paper and glue), cut along the dashed lines, and stick today\'s times on the fridge, a planner or a desk.',
       tracker: 'Children colour in a circle after each prayer. Stick it on the wall and count the stars at the end of the month.',
       fasting: 'A star for every day of Ramadan. Children colour one for each fast (a half fast counts too), then six more in Syawal.',
+      letter: 'A short, friendly letter for your employer or teacher. It explains that each prayer takes about 10 minutes, roughly when they fall, and what Friday prayer needs, with today\'s times. Sign it and hand it over.',
     },
     date: 'Date', day: 'Day', hijri: 'Hijri', fast: 'Fast', imsak: 'Imsak', iftar: 'Iftar',
     weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
@@ -141,13 +156,16 @@ export const PRINT_WORDS: Record<ScreenLanguage, PrintWords> = {
     myFasts: 'My Ramadan fasts', colourStar: 'Colour a star for each day you fast', syawalSix: 'Six days of Syawal', fastsKept: 'Stars coloured',
   },
   ms: {
-    sheetName: { month: 'Jadual bulanan', ramadan: 'Jadual Ramadan', stickers: 'Kalendar pelekat', tracker: 'Carta solat kanak-kanak', fasting: 'Carta puasa kanak-kanak' },
+    sheetName: { month: 'Jadual bulanan', wall: 'Kalendar dinding Islam', year: 'Setahun dalam satu muka surat', ramadan: 'Jadual Ramadan', stickers: 'Kalendar pelekat', tracker: 'Carta solat kanak-kanak', fasting: 'Carta puasa kanak-kanak', letter: 'Surat untuk kerja atau sekolah' },
     sheetHint: {
       month: 'Satu muka surat A4 untuk peti sejuk, pejabat atau papan notis masjid.',
+      wall: 'Satu kulit hadapan dan satu muka surat untuk setiap bulan, untuk digantung di dinding. Setiap hari menunjukkan tarikh Hijrah, dan hari kebesaran Islam bulan itu disenaraikan di atas. Cetak pada kertas tebal dan klip di bahagian atas.',
+      year: 'Setahun penuh dalam satu muka surat A4, dengan tarikh Hijrah di bawah setiap hari dan hari kebesaran Islam ditanda serta disenaraikan.',
       ramadan: 'Imsak dan berbuka untuk setiap hari Ramadan, dengan kotak untuk menanda setiap puasa.',
       stickers: 'Satu petak untuk setiap hari. Cetak pada kertas pelekat A4 (atau kertas biasa dan gam), gunting di garisan putus-putus, dan lekatkan waktu hari ini di peti sejuk, diari atau meja.',
       tracker: 'Kanak-kanak mewarna satu bulatan selepas setiap solat. Lekatkan di dinding dan kira bintang di hujung bulan.',
       fasting: 'Satu bintang untuk setiap hari Ramadan. Kanak-kanak mewarna satu untuk setiap puasa (puasa separuh hari pun dikira), kemudian enam lagi dalam Syawal.',
+      letter: 'Surat ringkas untuk majikan atau guru anda. Ia menerangkan bahawa setiap solat mengambil masa kira-kira 10 minit, bila waktunya dan keperluan solat Jumaat, berserta waktu solat hari ini. Tandatangan dan serahkan.',
     },
     date: 'Tarikh', day: 'Hari', hijri: 'Hijrah', fast: 'Puasa', imsak: 'Imsak', iftar: 'Berbuka',
     weekdays: ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'],
@@ -163,13 +181,16 @@ export const PRINT_WORDS: Record<ScreenLanguage, PrintWords> = {
     myFasts: 'Puasaku bulan Ramadan', colourStar: 'Warnakan satu bintang untuk setiap hari berpuasa', syawalSix: 'Puasa enam Syawal', fastsKept: 'Bintang diwarna',
   },
   id: {
-    sheetName: { month: 'Jadwal bulanan', ramadan: 'Jadwal Ramadan', stickers: 'Kalender stiker', tracker: 'Lembar sholat anak', fasting: 'Lembar puasa anak' },
+    sheetName: { month: 'Jadwal bulanan', wall: 'Kalender dinding Islam', year: 'Setahun dalam satu halaman', ramadan: 'Jadwal Ramadan', stickers: 'Kalender stiker', tracker: 'Lembar sholat anak', fasting: 'Lembar puasa anak', letter: 'Surat untuk kantor atau sekolah' },
     sheetHint: {
       month: 'Satu halaman A4 untuk kulkas, kantor atau papan pengumuman masjid.',
+      wall: 'Satu sampul dan satu halaman untuk setiap bulan, untuk digantung di dinding. Setiap hari menunjukkan tanggal Hijriah, dan hari besar Islam bulan itu tercantum di atas. Cetak di kertas tebal lalu jepit di bagian atas.',
+      year: 'Satu tahun penuh dalam satu halaman A4, dengan tanggal Hijriah di bawah setiap hari dan hari besar Islam ditandai serta didaftar.',
       ramadan: 'Imsak dan berbuka setiap hari Ramadan, dengan kotak untuk mencentang setiap puasa.',
       stickers: 'Satu kotak untuk setiap hari. Cetak di kertas stiker A4 (atau kertas biasa dan lem), gunting di garis putus-putus, lalu tempel jadwal hari ini di kulkas, agenda atau meja.',
       tracker: 'Anak mewarnai satu lingkaran setiap selesai sholat. Tempel di dinding dan hitung bintangnya di akhir bulan.',
       fasting: 'Satu bintang untuk setiap hari Ramadan. Anak mewarnai satu setiap kali berpuasa (puasa setengah hari juga dihitung), lalu enam lagi di bulan Syawal.',
+      letter: 'Surat singkat untuk atasan atau guru Anda. Isinya menjelaskan bahwa setiap sholat memakan waktu sekitar 10 menit, kapan waktunya dan kebutuhan sholat Jumat, beserta jadwal hari ini. Tanda tangani lalu serahkan.',
     },
     date: 'Tanggal', day: 'Hari', hijri: 'Hijriah', fast: 'Puasa', imsak: 'Imsak', iftar: 'Berbuka',
     weekdays: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
@@ -193,6 +214,8 @@ export function printHash(c: ScreenConfig, o: Partial<PrintOptions>, encode: (c:
   const parts = [`c=${encode(c)}`]
   if (o.sheet) parts.push(`sheet=${o.sheet}`)
   if (o.year && o.month) parts.push(`m=${o.year}-${String(o.month).padStart(2, '0')}`)
+  if (o.sheet === 'letter' && o.for && o.for !== 'work') parts.push(`for=${o.for}`)
+  if (o.sheet === 'letter' && o.paper && o.paper !== 'a4') parts.push(`paper=${o.paper}`)
   return `#${parts.join('&')}`
 }
 
@@ -201,11 +224,19 @@ export function optionsFromHash(hash: string, now: number, tz: string): PrintOpt
   const m = /(?:^#|&)m=(\d{4})-(\d{2})/.exec(hash)
   const z = zoned(now, tz)
   const month = m ? parseInt(m[2], 10) : z.month
-  return {
+  const out: PrintOptions = {
     sheet: sheet && SHEETS.includes(sheet) ? sheet : 'month',
     year: m && month >= 1 && month <= 12 ? parseInt(m[1], 10) : z.year,
     month: month >= 1 && month <= 12 ? month : z.month,
   }
+  // Only the letter has these, so other sheets' links stay as they were.
+  if (out.sheet === 'letter') {
+    const to = /(?:^#|&)for=([a-z]+)/.exec(hash)?.[1] as LetterFor | undefined
+    const paper = /(?:^#|&)paper=([a-z0-9]+)/.exec(hash)?.[1] as PaperSize | undefined
+    out.for = to && LETTER_FOR.includes(to) ? to : 'work'
+    out.paper = paper && PAPER_SIZES.includes(paper) ? paper : 'a4'
+  }
+  return out
 }
 
 /**

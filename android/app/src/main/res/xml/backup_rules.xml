@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older. Google's app backup keeps your settings (and
+     prayer tracker) so deleting and reinstalling the app brings them back.
+     Downloaded caches and this install's own flags are left out. -->
+<full-backup-content>
+    <include domain="sharedpref" path="prayertimesasia.xml" />
+</full-backup-content>

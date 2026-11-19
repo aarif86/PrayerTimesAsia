@@ -4,6 +4,7 @@ import SwiftUI
 /// path, then the day's times - large, colour-coded, AM/PM never wrapping.
 struct TodayView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var showPlaces = false
     @State private var showCalendar = false
     @State private var showTracker = false
@@ -24,8 +25,9 @@ struct TodayView: View {
             }
         }
         .sheet(isPresented: $showPlaces) { PlacesView() }
-        .sheet(isPresented: $showCalendar) { CalendarSanadView() }
+        .sheet(isPresented: $showCalendar) { CalendarSanadView { days in withAnimation(.snappy) { dayOffset = days } } }
         .sheet(isPresented: $showTracker) { TrackerView() }
+        .asksForStarsWhenCalm()
         .onAppear {
             // Demo screenshots: Show more only when asked, never carried over from a previous run.
             let args = ProcessInfo.processInfo.arguments
@@ -38,7 +40,7 @@ struct TodayView: View {
         let sky = SkyColors.at(now, day: day)
         let next = model.next(after: now)
         let current = model.current(at: now)
-        let shown = dayOffset == 0 ? day : (model.day(containing: now.addingTimeInterval(Double(dayOffset) * 86_400)) ?? day)
+        let shown = dayOffset == 0 ? day : (model.day(containing: model.noon(now, plus: dayOffset)) ?? day)
 
         ZStack {
             LivingSkyBackground(colors: sky)
@@ -56,12 +58,12 @@ struct TodayView: View {
                 }
                 .scrollIndicators(.hidden)
             } else if model.prefs.todayStyle == .sunPath {
-                sunPathPage(now: now, day: day, shown: shown, current: current, next: next)
+                AnyView(sunPathPage(now: now, day: day, shown: shown, current: current, next: next))
             } else if model.prefs.todayStyle == .bands {
                 ViewThatFits(in: .vertical) {
-                    bandsPage(now: now, shown: shown, current: current, next: next, fill: true)
+                    AnyView(bandsPage(now: now, shown: shown, current: current, next: next, fill: true))
                     ScrollView {
-                        bandsPage(now: now, shown: shown, current: current, next: next, fill: false)
+                        AnyView(bandsPage(now: now, shown: shown, current: current, next: next, fill: false))
                     }
                     .scrollIndicators(.hidden)
                 }
@@ -70,19 +72,19 @@ struct TodayView: View {
             } else {
             ViewThatFits(in: .vertical) {
                 if model.prefs.todayStyle == .centre {
-                    centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                    AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
                 } else if model.prefs.todayStyle == .dial {
-                    dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                    AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
                 } else {
-                    page(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+                    AnyView(page(now: now, day: day, shown: shown, current: current, next: next, fill: true))
                 }
                 ScrollView {
                     if model.prefs.todayStyle == .centre {
-                        centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                        AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
                     } else if model.prefs.todayStyle == .dial {
-                        dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                        AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
                     } else {
-                        page(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                        AnyView(page(now: now, day: day, shown: shown, current: current, next: next, fill: false))
                     }
                 }
                 .scrollIndicators(.hidden)
@@ -126,7 +128,7 @@ struct TodayView: View {
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             prayerHadith(next)
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-            if dayOffset == 0 { SeasonCard(now: now) }
+            if dayOffset == 0 { TodayNotes(now: now) }
             PrayerList(day: shown, now: now,
                        current: dayOffset == 0 ? current?.prayer : nil,
                        next: dayOffset == 0 ? next : nil,
@@ -137,6 +139,7 @@ struct TodayView: View {
                     withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
                 })
             showMoreButton
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
@@ -149,51 +152,91 @@ struct TodayView: View {
     // MARK: Top
 
     /// The Day Dial on the left; where, when and the source on the right.
+    /// When the buttons need more room (an alarm time, the streak, the luggage button,
+    /// bigger text) the dial gets smaller, and if that is still not enough the buttons
+    /// move to their own row above. The row must never be wider than the screen: that
+    /// pushed the whole Prayer page sideways, cut off on the left.
     private func header(now: Date, day: PrayerDay, shown: PrayerDay,
-                        current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
-        HStack(alignment: .center, spacing: 14) {
-            if let current, let next, let tomorrow = model.day(containing: now.addingTimeInterval(86_400)) {
-                DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
-                        currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
-                        currentPrayer: current.prayer,
-                        countdown: PrayerCountdown(now: now, next: next, model: model).count,
-                        label: PrayerCountdown(now: now, next: next, model: model).label)
-                    .frame(width: 172, height: 172)
-            }
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    Spacer(minLength: 0)
-                    if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
-                        Button { model.showJourney = true } label: {
-                            Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
-                                .frame(width: 34, height: 34)
-                                .background(Theme.accent.opacity(0.25), in: Circle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Musafir: you may shorten and combine prayers")
-                    }
-                    wakeChip(now)
-                    if model.prefs.trackerEnabled { streakChip(now) }
-                    appearanceButton
-                    styleButton
+                        current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> AnyView {
+        // AnyView on purpose. The three layouts below make a very deep SwiftUI type, and
+        // on a real iPhone (1 MB main thread stack) looking that type up when the Prayer
+        // screen opened ran out of stack and crashed the app at launch (build 30).
+        // The Simulator has a bigger stack, so CI never saw it.
+        AnyView(ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 14) {
+                headerDial(now: now, day: day, current: current, next: next, size: 172)
+                VStack(alignment: .leading, spacing: 10) {
+                    headerButtons(now)
+                    headerPlaceAndDay(shown)
                 }
-                Button { showPlaces = true } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
-                        Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
-                        if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
-                        Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
-                    }
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 10).padding(.vertical, 6)
-                    .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.7), lineWidth: 1))
+            }
+            HStack(alignment: .center, spacing: 10) {
+                headerDial(now: now, day: day, current: current, next: next, size: 140)
+                VStack(alignment: .leading, spacing: 10) {
+                    headerButtons(now)
+                    headerPlaceAndDay(shown)
+                }
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                headerButtons(now)
+                HStack(alignment: .center, spacing: 10) {
+                    headerDial(now: now, day: day, current: current, next: next, size: 140)
+                    VStack(alignment: .leading, spacing: 10) { headerPlaceAndDay(shown) }
+                }
+            }
+        })
+    }
+
+    @ViewBuilder
+    private func headerDial(now: Date, day: PrayerDay, current: (prayer: Prayer, time: Date)?,
+                            next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
+        if let current, let next, let tomorrow = model.day(containing: model.noon(now, plus: 1)) {
+            DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
+                    currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
+                    currentPrayer: current.prayer,
+                    countdown: PrayerCountdown(now: now, next: next, model: model).count,
+                    label: PrayerCountdown(now: now, next: next, model: model).label)
+                .frame(width: size, height: size)
+        }
+    }
+
+    private func headerButtons(_ now: Date) -> some View {
+        HStack(spacing: 8) {
+            Spacer(minLength: 0)
+            if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
+                Button { model.showJourney = true } label: {
+                    Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
+                        .frame(width: 34, height: 34)
+                        .background(Theme.accent.opacity(0.25), in: Circle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityHint("Change location")
-                dateBlock(shown)
-                SourceBadge(day: shown, compact: true)
+                .accessibilityLabel("Musafir: you may shorten and combine prayers")
             }
+            wakeChip(now)
+            if model.prefs.trackerEnabled { streakChip(now) }
+            appearanceButton
+            styleButton
         }
+    }
+
+    @ViewBuilder
+    private func headerPlaceAndDay(_ shown: PrayerDay) -> some View {
+        Button { showPlaces = true } label: {
+            HStack(spacing: 5) {
+                Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
+                    .symbolEffect(.pulse, isActive: model.isCheckingLocation)
+                Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1).minimumScaleFactor(0.8)
+                if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
+                Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
+            }
+            .font(.subheadline.weight(.semibold))
+            .padding(.horizontal, 10).padding(.vertical, 6)
+            .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.7), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Change location")
+        dateBlock(shown)
+        SourceBadge(day: shown, compact: true)
     }
 
     /// "TODAY / Fri 23 Oct / 12 Jamadilawal 1448" with ‹ › to move between days.
@@ -242,7 +285,7 @@ struct TodayView: View {
             topBar(now)
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-            if dayOffset == 0 { SeasonCard(now: now) }
+            if dayOffset == 0 { TodayNotes(now: now) }
             dateHeader(shown)
             dial(now: now, shown: shown, current: current, next: next)
                 .padding(.horizontal, 8 - Theme.gutter)
@@ -254,6 +297,7 @@ struct TodayView: View {
                 })
             dayRow(shown)
             showMoreButton
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
@@ -271,7 +315,8 @@ struct TodayView: View {
             Button { showPlaces = true } label: {
                 HStack(spacing: 5) {
                     Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1).minimumScaleFactor(0.8)
+                        .symbolEffect(.pulse, isActive: model.isCheckingLocation)
+                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1).minimumScaleFactor(0.8)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                 }
@@ -388,6 +433,8 @@ struct TodayView: View {
             .lineLimit(1)
             .minimumScaleFactor(0.6)
             .accessibilityElement(children: .combine)
+            // Sized to the dial, not to the text size setting: it has to fit inside the circle.
+            .accessibilityIdentifier("dial-centre")
         } else {
             Image(systemName: "moon.stars").font(.system(size: size * 0.08, weight: .light)).opacity(0.5)
         }
@@ -425,7 +472,8 @@ struct TodayView: View {
                     Button { showPlaces = true } label: {
                         HStack(spacing: 5) {
                             Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
-                            Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
+                                .symbolEffect(.pulse, isActive: model.isCheckingLocation)
+                            Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
                             if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                             Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                         }
@@ -455,7 +503,7 @@ struct TodayView: View {
                 }
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-                if dayOffset == 0 { SeasonCard(now: now) }
+                if dayOffset == 0 { TodayNotes(now: now) }
             }
             .padding(.horizontal, Theme.gutter)
             .padding(.top, 4).padding(.bottom, 12)
@@ -485,6 +533,7 @@ struct TodayView: View {
                     Spacer(minLength: 8)
                     showMoreButton.fixedSize()
                 }
+                if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore {
                     MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
                 }
@@ -535,7 +584,7 @@ struct TodayView: View {
                             current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             ZStack(alignment: .topTrailing) {
-                if let current, let next, let tomorrow = model.day(containing: now.addingTimeInterval(86_400)) {
+                if let current, let next, let tomorrow = model.day(containing: model.noon(now, plus: 1)) {
                     DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
                             currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
                             currentPrayer: current.prayer,
@@ -559,7 +608,7 @@ struct TodayView: View {
             if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
             prayerHadith(next)
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-            if dayOffset == 0 { SeasonCard(now: now) }
+            if dayOffset == 0 { TodayNotes(now: now) }
             if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
             sunDayNavigator(shown)
             PrayerList(day: shown, now: now,
@@ -576,6 +625,7 @@ struct TodayView: View {
                 Spacer(minLength: 8)
                 showMoreButton.fixedSize()
             }
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
@@ -604,7 +654,7 @@ struct TodayView: View {
                 if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
                 prayerHadith(next)
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
-                if dayOffset == 0 { SeasonCard(now: now) }
+                if dayOffset == 0 { TodayNotes(now: now) }
                 if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
                 sunDayNavigator(shown)
                 PrayerList(day: shown, now: now,
@@ -617,6 +667,7 @@ struct TodayView: View {
                     })
                 showMoreButton
                 SourceBadge(day: shown)
+                if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore {
                     MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
                 }
@@ -657,7 +708,8 @@ struct TodayView: View {
                 Rectangle().fill(Color.primary.opacity(0.3)).frame(width: 1, height: 12)
                 HStack(spacing: 5) {
                     Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(1)
+                        .symbolEffect(.pulse, isActive: model.isCheckingLocation)
+                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                 }
@@ -682,7 +734,8 @@ struct TodayView: View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Circle().fill(current.prayer.tint).frame(width: 9, height: 9)
-                Text(currentName).font(Theme.display(30, .bold))
+                Text(currentName).font(.system(.title, design: .rounded, weight: .bold))
+                    .lineLimit(1).minimumScaleFactor(0.5)
             }
             Text(count.text)
                 .font(.subheadline.weight(.semibold))
@@ -904,9 +957,10 @@ struct TodayView: View {
 
     private var alertsPrompt: some View {
         HStack(spacing: 10) {
-            Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText)
+            Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText).accessibilityHidden(true)
             Text("Get an alert when each prayer begins").font(.subheadline.weight(.semibold))
-                .lineLimit(2).minimumScaleFactor(0.85)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 2).minimumScaleFactor(0.85)
+                .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
             Spacer(minLength: 4)
             Button("Turn on") {
                 Task {
@@ -920,7 +974,8 @@ struct TodayView: View {
             .tint(Theme.sunArc)
             .foregroundStyle(.black.opacity(0.8))
             Button { withAnimation { model.prefs.alertsPromptDismissed = true } } label: {
-                Image(systemName: "xmark").font(.caption.weight(.bold)).opacity(0.6).frame(width: 24, height: 24)
+                Image(systemName: "xmark").font(.caption.weight(.bold)).opacity(0.6).frame(width: 44, height: 44).contentShape(Rectangle())
+                    .padding(.vertical, -10)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Not now")
@@ -1058,7 +1113,10 @@ private struct PrayerList: View {
                     Image(systemName: notifying ? "bell.fill" : "bell.slash")
                         .font(.subheadline)
                         .opacity(notifying ? 0.95 : 0.4)
-                        .frame(width: 30, height: 34)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                        // 44 pt to tap, but laid out at the old 30 by 34 so rows keep their height.
+                        .padding(.horizontal, -7).padding(.vertical, -5)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(notifying ? "Turn off alert" : "Turn on alert")
@@ -1266,6 +1324,7 @@ private struct BlessedMark: View {
 /// on, to tick it off.
 private struct PrayerBand: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     let prayer: Prayer
     let time: Date
     let now: Date
@@ -1314,7 +1373,7 @@ private struct PrayerBand: View {
                 Spacer(minLength: 6)
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(parts.time).font(.system(size: 34, weight: .light)).monospacedDigit()
-                    if let suffix = parts.suffix { Text(suffix).font(.system(size: 22, weight: .light)) }
+                    if let suffix = parts.suffix { Text(suffix).font(.system(size: 22, weight: .bold)) }
                 }
                 .fixedSize()
                 if model.prefs.notificationsEnabled && !notifying && prayer.isObligatory {
@@ -1323,7 +1382,7 @@ private struct PrayerBand: View {
             }
             .foregroundStyle(.white)
             .padding(.horizontal, Theme.gutter)
-            .frame(maxWidth: .infinity, minHeight: 64, maxHeight: fill ? .infinity : 64)
+            .frame(maxWidth: .infinity, minHeight: 64, maxHeight: fill || typeSize.isAccessibilitySize ? .infinity : 64)
             .background(BandsPalette.color(prayer))
             .overlay(alignment: .leading) {
                 if isCurrent { Rectangle().fill(.white).frame(width: 5) }
@@ -1385,6 +1444,47 @@ private struct BlessedBand: View {
     }
 }
 
+/// The long summer days note, then the Ramadan and Syawal card. One view, so the
+/// Prayer pages' types stay as shallow as before.
+private struct TodayNotes: View {
+    let now: Date
+
+    var body: some View {
+        LongDaysNote(now: now)
+        SeasonCard(now: now)
+    }
+}
+
+/// Far from the equator in summer: why Fajr and Isha look unusual. Once per place and summer, closable.
+private struct LongDaysNote: View {
+    @Environment(AppModel.self) private var model
+    let now: Date
+
+    var body: some View {
+        if let key = model.longDaysNote(now) {
+            let w = LongDays.words(RamadanContent.lang(model.naming))
+            GlassCard {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "sun.max.fill").font(.title2).foregroundStyle(Theme.accent)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(w.title).font(.headline)
+                        Text(w.body(Prayer.fajr.name(model.naming), Prayer.isha.name(model.naming)))
+                            .font(.subheadline)
+                            .opacity(0.85)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                    Button { withAnimation(.snappy) { model.closeLongDaysNote(key) } } label: {
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(w.close)
+                }
+            }
+        }
+    }
+}
+
 private struct ArrivalCard: View {
     @Environment(AppModel.self) private var model
 
@@ -1410,7 +1510,7 @@ private struct ArrivalCard: View {
                     }
                     Spacer(minLength: 0)
                     Button { model.prefs.arrivalBannerDismissed = true } label: {
-                        Image(systemName: "xmark").font(.footnote.weight(.bold)).padding(6)
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss")
@@ -1435,6 +1535,9 @@ private struct ArrivalCard: View {
                     }
                     .tint(Theme.accent)
                     .padding(.top, 6)
+                    if model.prefs.musafirEnabled, !model.prefs.homeConfirmed {
+                        HomeQuestionCard().padding(.top, 6)
+                    }
                 }
                 HStack {
                     Text("Asr").font(.subheadline.weight(.semibold))

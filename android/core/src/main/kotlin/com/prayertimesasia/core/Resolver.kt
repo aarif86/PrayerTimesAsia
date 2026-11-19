@@ -26,6 +26,8 @@ class Resolver(
     private val systemZone: ZoneId = ZoneId.systemDefault(),
     /** Ramadan and Eid announcements from data/calendar.json. */
     val announcements: List<CalendarAnnouncement> = emptyList(),
+    /** The authority's published Islamic calendar (month starts) from data/calendar.json. */
+    val monthStarts: List<MonthStart> = emptyList(),
 ) {
     val activePlace: Place? get() = if (prefs.useGPS) gpsPlace ?: prefs.manualPlace else prefs.manualPlace
 
@@ -36,20 +38,22 @@ class Resolver(
 
     val isMethodAutomatic: Boolean get() = prefs.methodOverrideId == null
     /** Whose times these are, in plain words (official timetable, the authority's method, or a standard one). */
-    val sourceSummary: String get() = profile.sourceSummary(method, pinned = !isMethodAutomatic)
+    val sourceSummary: String get() = Official.summary(officialSource) ?: profile.sourceSummary(method, pinned = !isMethodAutomatic)
     /** The same in one sentence or two, for the welcome card. */
-    val sourceShort: String get() = profile.sourceSummary(method, pinned = !isMethodAutomatic, short = true)
+    val sourceShort: String get() = Official.summary(officialSource, short = true) ?: profile.sourceSummary(method, pinned = !isMethodAutomatic, short = true)
     val asrSchool: AsrSchool get() = prefs.asrOverride ?: profile.asr
 
-    /** Your prayer names - from your home or your phone, not from where you are. */
+    /** Your prayer names, from your phone's language (English unless it has names in it), not from where you are. */
     val naming: NamingStyle get() = prefs.namingOverride ?: personalNaming
-    val personalNaming: NamingStyle get() = NamingStyle.personal(prefs.home?.countryCode, locale)
+    val personalNaming: NamingStyle get() = NamingStyle.personal(locale)
     /** The words used where you are (the masjid's signs). */
     val localNaming: NamingStyle get() = profile.naming
 
     /** The local word for a prayer, when it differs from yours. */
     fun localName(prayer: Prayer, time: Instant): String? {
         if (!prefs.showLocalNames || localNaming == naming) return null
+        // At home you already know the local words; the hint is for travel.
+        if (prefs.home?.countryCode == profile.code) return null
         val local = prayer.name(localNaming, isFriday(time))
         return if (local == prayer.name(naming, isFriday(time))) null else local
     }
@@ -69,8 +73,10 @@ class Resolver(
         return max(0, ChronoUnit.DAYS.between(Instant.ofEpochMilli(arrived).atZone(systemZone), now.atZone(systemZone)).toInt())
     }
 
+    /** Null until home is set and confirmed, so a guessed home never says "traveller" or "home" by mistake. */
     fun musafirStatus(now: Instant): Musafir.Status? {
         val place = activePlace ?: return null
+        if (!prefs.homeConfirmed) return null
         return Musafir.status(prefs.home?.coordinates, place.coordinates, daysHere(now), musafirRules)
     }
 
@@ -135,7 +141,7 @@ class Resolver(
     fun next(after: Instant): Pair<Prayer, Instant>? {
         val today = day(after) ?: return null
         today.ordered.firstOrNull { it.second > after }?.let { return it }
-        val tomorrow = day(after.plusSeconds(86_400)) ?: return null
+        val tomorrow = day(after, 1) ?: return null
         return Prayer.FAJR to tomorrow.time(Prayer.FAJR)
     }
 
@@ -143,11 +149,14 @@ class Resolver(
     fun current(at: Instant): Pair<Prayer, Instant>? {
         val today = day(at) ?: return null
         today.ordered.lastOrNull { it.second <= at }?.let { return it }
-        val yesterday = day(at.minusSeconds(86_400)) ?: return null
+        val yesterday = day(at, -1) ?: return null
         return Prayer.ISHA to yesterday.time(Prayer.ISHA)
     }
 
-    /** The prayer day [offset] local days from the one containing [now]. */
+    /**
+     * The prayer day [offset] local days from the one containing [now]. Steps by
+     * calendar day, so a 23 or 25 hour day (clocks changing) is never skipped or counted twice.
+     */
     fun day(now: Instant, offset: Int): PrayerDay? {
         if (offset == 0) return day(now)
         val local = now.atZone(zone).toLocalDate().plusDays(offset.toLong())
@@ -240,6 +249,21 @@ class Resolver(
 
     fun civil(instant: Instant): LocalDate = instant.atZone(zone).toLocalDate()
 
+    /**
+     * The long summer days note: its key when today's Fajr and Isha come from a high
+     * latitude rule (twilight lasts all night) and the note for this place and summer
+     * hasn't been closed. Only for calculated times; an official timetable sets its own.
+     */
+    fun longDaysNote(now: Instant): String? {
+        val place = activePlace ?: return null
+        if (officialSource != null) return null
+        val d = civil(now)
+        val c = place.coordinates
+        if (!LongDays.twilightLastsAllNight(d.year, d.monthValue, d.dayOfMonth, c.latitude, method)) return null
+        val key = LongDays.key(d.year, d.monthValue, c.latitude, c.longitude, place.countryCode)
+        return if (key in prefs.longDaysClosed) null else key
+    }
+
     val isSeasonPreview: Boolean get() = prefs.seasonPreview != SeasonPreview.OFF
 
     /** Days the tester's "Try Ramadan" moves the calendar by (0 when off). */
@@ -248,7 +272,7 @@ class Resolver(
     /** The Hijri date of a civil day as this community counts it. */
     fun hijriOf(g: LocalDate): Hijri.HijriDate =
         if (isSeasonPreview) Season.baseHijri(g.plusDays(seasonShift.toLong()))
-        else Season.communityHijri(g, prefs.hijriAdjustment, announcements, communityAuthority)
+        else Season.communityHijri(g, prefs.hijriAdjustment, announcements, communityAuthority, monthStarts)
 
     fun hijriOf(instant: Instant): Hijri.HijriDate = hijriOf(civil(instant))
 
@@ -280,7 +304,7 @@ class Resolver(
             if (now < imsak(today)) return FastingKind.IMSAK to imsak(today)
             if (now < today.time(Prayer.MAGHRIB)) return FastingKind.BERBUKA to today.time(Prayer.MAGHRIB)
         }
-        val tomorrow = day(now.plusSeconds(86_400)) ?: return null
+        val tomorrow = day(now, 1) ?: return null
         return if (isRamadanDay(tomorrow.time(Prayer.DHUHR))) FastingKind.IMSAK to imsak(tomorrow) else null
     }
 
@@ -288,7 +312,16 @@ class Resolver(
         Season.monthDays(hijriYear, month, if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
 
     fun fastSummary(hijriYear: Int, today: LocalDate): Season.FastSummary =
-        Season.fastSummary(hijriYear, today, prefs.fastLog, if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
+        Season.fastSummary(hijriYear, today, womensDays.effectiveLog(today.toString(), ::isRamadanKey), if (isSeasonPreview) seasonShift else 0) { hijriOf(it) }
+
+    /** The fast record and the tracker pause, kept in step by [WomensDays]. */
+    val womensDays: WomensDays get() = WomensDays(prefs.fastLog, prefs.excusedDays, prefs.trackerPausedSince)
+
+    /** Is this "yyyy-MM-dd" a Ramadan day for this community. */
+    fun isRamadanKey(key: String): Boolean = runCatching { LocalDate.parse(key) }.getOrNull()?.let { hijriOf(it).month == 9 } ?: false
+
+    /** How a fast day went. An unmarked Ramadan day inside a tracker pause reads as "Period". */
+    fun fastMark(key: String, now: Instant = Instant.now()): FastMark? = womensDays.mark(key, dayKey(now), ::isRamadanKey)
 
     companion object {
         /** Prayers where [other] differs from [day] by more than 2 minutes. */

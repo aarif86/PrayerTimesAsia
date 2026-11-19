@@ -17,7 +17,7 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 - [ ] **Google Play account** - US$25 one-time at play.google.com/console (personal or Nasar Pte Ltd).
 - [ ] *(Optional)* Move the repo into a Nasar Pte Ltd GitHub organisation.
 - [ ] **Worldwide times, check the country list** - [docs/worldwide-times.md](docs/worldwide-times.md) lists whose times the app follows in each country. Please read it (and ideally the falak committee too) and tell Claude anything to change.
-- [ ] **London Unified Prayer Timetable** - free sign-up for an API key at londonprayertimes.com/api, then give it to Claude so London shows the exact timetable most London masjids follow.
+- [ ] **London Unified Prayer Timetable** - key received. Add it as the repository secret `LONDON_PRAYER_TIMES_KEY` (GitHub, Settings, Secrets and variables, Actions, New repository secret), then run the "Calendar feeds" workflow once. The key is never put in the code.
 - [ ] **Check prayer names in each language** - the apps now show prayer names in Arabic, Urdu, Bangla and French too (picked from the phone's language, changeable in Settings → Prayer names). Ask a native speaker of each to look at the names and Hijri months in `web/src/core/prayer.ts` and tell Claude any fixes.
 - [ ] **Diyanet timetable account** *(later)* - a free account at awqatsalah.diyanet.gov.tr lets the app download Diyanet's exact tables for Türkiye and Turkish masjids in Europe, like MUIS and JAKIM today.
 
@@ -29,4 +29,5 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 - [ ] Google Play release build (after the account exists).
 - [ ] App Store release (listing, screenshots, review).
 - [x] One shared set of "expected prayer times" in a shared folder that the iPhone, Android and web tests all read - done: [`testdata/`](testdata/). The iPhone and Android tests now also check every day of 2026, like the web.
+- [ ] Hari Raya Aidilfitri 1448 prayer sessions: when MUIS posts its list (about 1 to 2 weeks before Raya, early March 2027), type it into `data/eid-sg.json`. Also recheck the second Friday prayer list in `data/friday-sg.json` against the MUIS Friday prayers page.
 - [ ] Tidy old work branches once the owner is happy (keep `design-dial-header`, the saved earlier design).

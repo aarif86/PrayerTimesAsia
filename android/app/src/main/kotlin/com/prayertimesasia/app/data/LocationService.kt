@@ -43,11 +43,13 @@ class LocationService(private val context: Context) {
         if (!hasPermission) return
         stop()
         val providers = runCatching { lm.getProviders(true) }.getOrDefault(emptyList())
+        // The last known fix can be days old and from another town or country;
+        // alerts are written days ahead with its times, so only a recent one.
         providers.mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
-            .maxByOrNull { it.time }?.let(onLocation)
+            .maxByOrNull { it.time }?.takeIf { usable(it) }?.let(onLocation)
         val l = object : LocationListener {
             override fun onLocationChanged(location: Location) {
-                onLocation(location)
+                if (usable(location)) onLocation(location)
                 if (location.hasAccuracy() && location.accuracy < 1000) stop()
             }
 
@@ -62,6 +64,13 @@ class LocationService(private val context: Context) {
         }
     }
 
+    /** Fresh (10 minutes) and, with precise location allowed, within 3 km: a rough cell guess can land across a border. */
+    private fun usable(location: Location): Boolean {
+        if (System.currentTimeMillis() - location.time > 10 * 60_000L) return false
+        val precise = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        return !(precise && location.hasAccuracy() && location.accuracy > 3000)
+    }
+
     fun stop() {
         listener?.let { l -> runCatching { manager?.removeUpdates(l) } }
         listener = null
@@ -71,9 +80,7 @@ class LocationService(private val context: Context) {
     suspend fun place(location: Location): Place {
         val coords = Coordinates(location.latitude, location.longitude)
         val tz = TimeZone.getDefault().id
-        val guess = AsiaRegions.countryCode(tz)
-        val offline = Place(name = "Current location", countryCode = guess, countryName = AsiaRegions.profile(guess)?.name,
-            timeZoneId = tz, coordinates = coords)
+        val offline = offlinePlace(location)
         val address = reverse(location.latitude, location.longitude) ?: return offline
         val code = address.countryCode
         return Place(
@@ -85,6 +92,14 @@ class LocationService(private val context: Context) {
             coordinates = coords,
             district = address.subAdminArea,
         )
+    }
+
+    /** A quick guess with no network: the fix, and the country from the phone's time zone. */
+    fun offlinePlace(location: Location): Place {
+        val tz = TimeZone.getDefault().id
+        val guess = AsiaRegions.countryCode(tz)
+        return Place(name = "Current location", countryCode = guess, countryName = AsiaRegions.profile(guess)?.name,
+            timeZoneId = tz, coordinates = Coordinates(location.latitude, location.longitude))
     }
 
     private suspend fun reverse(lat: Double, lng: Double): Address? {

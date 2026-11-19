@@ -30,6 +30,10 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +46,8 @@ import com.prayertimesasia.app.ui.components.CapsuleButton
 import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.components.GlassCard
 import com.prayertimesasia.app.ui.theme.AppIcons
+import com.prayertimesasia.app.ui.today.AppSheet
+import com.prayertimesasia.app.ui.today.PlacesSheetContent
 import com.prayertimesasia.app.ui.theme.LivingSkyBackground
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
@@ -66,6 +72,8 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
     val r = state.resolver
     val now = state.now
     val status = r.musafirStatus(now)
+    var pickingHome by remember { mutableStateOf(false) }
+    if (pickingHome) AppSheet(onDismiss = { pickingHome = false }) { PlacesSheetContent(state, forHome = true) { pickingHome = false } }
     Box(Modifier.fillMaxSize()) {
         LivingSkyBackground(state.skyNow)
         Column(
@@ -76,7 +84,8 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                 CapsuleButton("Done", Modifier.align(Alignment.CenterEnd), style = Txt.headline, onClick = onDone)
             }
             Text("Journey", style = display(34.sp, FontWeight.Bold), color = Palette.primary)
-            GlassCard(padding = 20.dp) {
+            if (state.prefs.home != null && !state.prefs.homeConfirmed) HomeQuestionCard(state)
+            else GlassCard(padding = 20.dp) {
                 if (status != null) {
                     val (title, body) = Musafir.guidance(status, r.musafirRules, r.naming)
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -99,9 +108,12 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                         }
                     }
                 } else {
-                    Text("Set your home", style = Txt.title2, color = Palette.primary)
-                    Text("Tell us where home is and we'll work out when you count as a traveller.", style = Txt.body,
-                        color = Palette.primary.copy(alpha = 0.85f))
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("Set your home", style = Txt.title2, color = Palette.primary)
+                        Text("Tell us where home is and we'll work out when you count as a traveller.", style = Txt.body,
+                            color = Palette.primary.copy(alpha = 0.85f))
+                        CapsuleButton("Set home", style = Txt.subheadlineSemibold, background = Palette.primary.copy(alpha = 0.12f)) { pickingHome = true }
+                    }
                 }
             }
             if (status?.isTraveller == true && r.isRamadanDay(now)) {
@@ -132,16 +144,14 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                 }
             }
             GlassCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("HOME", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Palette.primary.copy(alpha = 0.7f))
                         Text(state.prefs.home?.let { "${it.profile.flag} ${it.name}" } ?: "Not set", style = Txt.headline, color = Palette.primary)
                         state.prefs.home?.subtitle?.takeIf { it.isNotEmpty() }?.let { Text(it, style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.75f)) }
                     }
-                    val place = r.activePlace
-                    if (place != null && state.prefs.home?.isNear(place) != true) {
-                        CapsuleButton("Set to here", style = Txt.subheadlineSemibold, background = Palette.primary.copy(alpha = 0.12f)) { state.setHome(place) }
-                    }
+                    CapsuleButton(if (state.prefs.home == null) "Set home" else "Change home", style = Txt.subheadlineSemibold,
+                        background = Palette.primary.copy(alpha = 0.12f)) { pickingHome = true }
                 }
             }
             GlassCard {
@@ -232,5 +242,32 @@ private fun Window(state: AppState, a: Prayer, b: Prayer, from: Instant, to: Ins
     Row {
         Text("${a.name(r.naming)} + ${b.name(r.naming)}", style = Txt.headline, color = Palette.primary, modifier = Modifier.weight(1f))
         Text("${r.formatted(from)} – ${r.formatted(to)}", style = Txt.headline.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
+    }
+}
+
+/**
+ * "Is Kuala Lumpur your home?" for a home the app only guessed (from where the
+ * phone was when the app was first opened). Until it is answered, Journey and
+ * the musafir line say nothing about travelling.
+ */
+@Composable
+fun HomeQuestionCard(state: AppState) {
+    val home = state.prefs.home ?: return
+    if (state.prefs.homeConfirmed) return
+    var pickingHome by remember { mutableStateOf(false) }
+    if (pickingHome) AppSheet(onDismiss = { pickingHome = false }) { PlacesSheetContent(state, forHome = true) { pickingHome = false } }
+    GlassCard(padding = 20.dp) {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Icon(Icons.Filled.Home, null, Modifier.size(30.dp), tint = Palette.primary)
+                Text("Is ${home.name} your home?", style = Txt.title3, color = Palette.primary)
+            }
+            Text("We guessed it from where your phone was when you first opened the app. Home is used to work out when you count as a traveller, so please check it.",
+                style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                CapsuleButton("Yes, this is home", style = Txt.subheadlineSemibold, background = Palette.primary.copy(alpha = 0.2f)) { state.confirmHome() }
+                CapsuleButton("Change home", style = Txt.subheadlineSemibold, background = Palette.primary.copy(alpha = 0.08f)) { pickingHome = true }
+            }
+        }
     }
 }

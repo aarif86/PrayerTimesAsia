@@ -1,11 +1,12 @@
 import { AlarmClock, AlarmClockCheck, Check, Download, Play, Smartphone } from 'lucide-preact'
 import type { PrayerDay } from '../core/engine'
+import { noonDaysAfter } from '../core/tz'
 import {
   ALARM_KEY, ALARM_PRAYERS, ALARM_SOUND_LABEL, ALARM_SOUNDS, prayerAlarmChoices, prayerAlarmLabel, prayerAlarmTime,
-  SAHUR_DAY_LABEL, SAHUR_DAYS, SAHUR_TIMINGS, sahurLabel, sahurTime, WAKE_PARTS, WAKE_UP_TIMINGS, wakePart, wakeUpLabel, wakeUpTime,
+  SAHUR_DAY_LABEL, SAHUR_DAYS, SAHUR_TIMINGS, sahurLabel, sahurTime, WAKE_UP_TIMINGS, wakeUpLabel, wakeUpTime,
   type AlarmPrayer, type AlarmSound, type PrayerAlarmTiming, type SahurTiming, type WakeUpTiming,
 } from '../core/wakeup'
-import { previewAlarm } from '../services/alarmSound'
+import { previewAlarm, stopAlarm } from '../services/alarmSound'
 import { alertSupport, anyAlarm, downloadWakeICS, nextWakeUp, requestPermission } from '../services/notifications'
 import { store, useNow, useStore } from '../services/store'
 import { Sheet, ToggleItem } from './common'
@@ -34,7 +35,7 @@ export function WakeChip({ now, open }: { now: number; open: () => void }) {
 /** When this choice would next ring: this morning if it is still ahead, else tomorrow. */
 function soon(now: number, at: (d: PrayerDay) => number): string | null {
   for (let offset = 0; offset < 2; offset++) {
-    const day = store.day(now + offset * 86_400_000)
+    const day = store.day(noonDaysAfter(now, offset, store.timeZone))
     if (!day) continue
     const t = at(day)
     if (t > now) return store.formatted(t)
@@ -46,7 +47,7 @@ function whenText(now: number, at: number): string {
   const tz = store.timeZone
   const key = (ms: number) => new Date(ms).toLocaleDateString('en-CA', { timeZone: tz })
   if (key(at) === key(now)) return 'today'
-  if (key(at) === key(now + 86_400_000)) return 'tomorrow'
+  if (key(at) === key(noonDaysAfter(now, 1, tz))) return 'tomorrow'
   return new Date(at).toLocaleDateString('en-GB', { weekday: 'long', timeZone: tz })
 }
 
@@ -64,9 +65,18 @@ export function WakeUpSheet() {
   const app = phoneAppOffer()
 
   const ask = async () => { if (alertSupport() === 'supported') await requestPermission() }
-  const setWake = (t: WakeUpTiming | null) => { store.update((x) => { x.wakeUp = t }); if (t) void ask() }
-  const setSahur = (t: SahurTiming | null) => { store.update((x) => { x.sahurAlarm = t }); if (t) void ask() }
-  const setPrayer = (prayer: AlarmPrayer, t: PrayerAlarmTiming | null) => { store.update((x) => { x[ALARM_KEY[prayer]] = t }); if (t) void ask() }
+  const setWake = (t: WakeUpTiming | null) => { store.update((x) => { x.wakeUp = t }); if (t) void ask(); else stopAlarm() }
+  const setSahur = (t: SahurTiming | null) => { store.update((x) => { x.sahurAlarm = t }); if (t) void ask(); else stopAlarm() }
+  const setPrayer = (prayer: AlarmPrayer, t: PrayerAlarmTiming | null) => { store.update((x) => { x[ALARM_KEY[prayer]] = t }); if (t) void ask(); else stopAlarm() }
+  /** Every alarm Off in one tap, and anything ringing stops now. */
+  const turnOffAll = () => {
+    store.update((x) => {
+      x.wakeUp = null
+      x.sahurAlarm = null
+      for (const prayer of ALARM_PRAYERS) x[ALARM_KEY[prayer]] = null
+    })
+    stopAlarm()
+  }
   const setSound = (sound: AlarmSound) => { store.update((x) => { x.alarmSound = sound }); previewAlarm(sound) }
   /** When a prayer's alarm would next ring. */
   const prayerSoon = (prayer: AlarmPrayer, t: PrayerAlarmTiming) => soon(now, (d) => {
@@ -85,32 +95,33 @@ export function WakeUpSheet() {
 
   return (
     <Sheet title="Prayer alarms" full>
-      <div class="glass card wake-hadith">
-        <p class="arabic" dir="rtl" lang="ar">اللَّهُمَّ بَارِكْ لِأُمَّتِي فِي بُكُورِهَا</p>
-        <p class="quote">“O Allah, bless my ummah in their early mornings.”</p>
-        <p class="caption secondary">The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi</p>
-        {next && <p class="next">Next alarm {whenText(now, next.at)} {s.formatted(next.at)}{nextFor}</p>}
-      </div>
-
-      {WAKE_PARTS.map((part) => (
-        <section>
-          <h2 class="group-title">{part === 'beforeFajr' ? `${fajr} alarm` : part === 'fromFajr' ? `From ${fajr}` : `Before ${s.name('sunrise')}`}</h2>
-          <div class="group">
-            {part === 'beforeFajr' && <Choice label="Off" on={!p.wakeUp} pick={() => setWake(null)} />}
-            {WAKE_UP_TIMINGS.filter((t) => wakePart(t) === part).map((t) => (
-              <Choice label={wakeUpLabel(t, s.naming)} detail={soon(now, (d) => wakeUpTime(t, d))} on={p.wakeUp === t} pick={() => setWake(t)} />
-            ))}
-          </div>
-          {part === 'beforeFajr' && <div class="hadith-after-group"><Hadith id="nightPrayer" variant="line" /></div>}
-          {part === 'beforeSunrise' && <p class="group-foot">Rings every morning and moves with {fajr} wherever you are.</p>}
-        </section>
-      ))}
+      <section>
+        <div class="group">
+          <p class="item">
+            <span class="label">{next ? <>Next alarm {whenText(now, next.at)} {s.formatted(next.at)}{nextFor}</> : <span class="secondary">No alarms are on</span>}</span>
+          </p>
+          {anyAlarm(p) && (
+            <button class="item" onClick={turnOffAll}>
+              <span class="label">Turn off all alarms</span>
+            </button>
+          )}
+        </div>
+      </section>
 
       <section>
-        <h2 class="group-title">Sahur alarm</h2>
         <div class="group">
-          <Choice label="Off" on={!p.sahurAlarm} pick={() => setSahur(null)} />
-          {SAHUR_TIMINGS.map((t) => (
+          <ToggleItem label={`${fajr} alarm`} on={!!p.wakeUp} onChange={(v) => setWake(v ? 'atFajr' : null)} />
+          {p.wakeUp && WAKE_UP_TIMINGS.map((t) => (
+            <Choice label={wakeUpLabel(t, s.naming)} detail={soon(now, (d) => wakeUpTime(t, d))} on={p.wakeUp === t} pick={() => setWake(t)} />
+          ))}
+        </div>
+        <p class="group-foot">{p.wakeUp ? `Rings every morning and moves with ${fajr} wherever you are. Pick one time.` : `Turn on to wake up for ${fajr} every morning.`}</p>
+      </section>
+
+      <section>
+        <div class="group">
+          <ToggleItem label="Sahur alarm" on={!!p.sahurAlarm} onChange={(v) => setSahur(v ? SAHUR_TIMINGS[0] : null)} />
+          {p.sahurAlarm && SAHUR_TIMINGS.map((t) => (
             <Choice label={sahurLabel(t, s.naming)} detail={soon(now, (d) => sahurTime(t, d))} on={p.sahurAlarm === t} pick={() => setSahur(t)} />
           ))}
         </div>
@@ -134,10 +145,6 @@ export function WakeUpSheet() {
                   }} />
               )
             })}
-          </div>
-          <div class="hadith-after-group">
-            <Hadith id="monThu" variant="line" />
-            <Hadith id="whiteDays" variant="line" />
           </div>
           <p class="group-foot">Ramadan and the white days follow the Hijri date in the app. Please follow your local religious authority for the start of Ramadan.</p>
         </section>
@@ -180,6 +187,19 @@ export function WakeUpSheet() {
         </div>
         <p class="group-foot">Tap a sound to hear it. Every alarm plays this sound. The azan will join the list once the recordings are ready.</p>
       </section>
+
+      <div class="glass card wake-hadith">
+        <p class="arabic" dir="rtl" lang="ar">اللَّهُمَّ بَارِكْ لِأُمَّتِي فِي بُكُورِهَا</p>
+        <p class="quote">“O Allah, bless my ummah in their early mornings.”</p>
+        <p class="caption secondary">The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi</p>
+      </div>
+      {(p.wakeUp === 'fajrMinus30' || p.sahurAlarm) && (
+        <div class="hadith-after-group">
+          {p.wakeUp === 'fajrMinus30' && <Hadith id="nightPrayer" variant="line" />}
+          {p.sahurAlarm && <Hadith id="monThu" variant="line" />}
+          {p.sahurAlarm && <Hadith id="whiteDays" variant="line" />}
+        </div>
+      )}
 
       {anyAlarm(p) && (
         <section>

@@ -40,4 +40,15 @@ class WorldTest {
         assertEquals("Europe/London", london.zone)
         assertEquals("America/Toronto", Cities.search("Toronto").first().zone)
     }
+
+    @Test fun londonUnifiedInLondonOnly() {
+        fun gb(lat: Double, lng: Double) = Place(name = "x", countryCode = "GB", timeZoneId = "Europe/London", coordinates = Coordinates(lat, lng))
+        assertEquals(OfficialSource.London, Official.source(gb(51.515, -0.072), CalculationMethod.MOONSIGHTING, null))
+        assertEquals(null, Official.source(gb(52.4862, -1.8904), CalculationMethod.MOONSIGHTING, null)) // Birmingham
+        assertEquals(null, Official.source(gb(51.515, -0.072), CalculationMethod.MWL, null))
+        val table = Official.parseLondon(
+            """{"times":{"2026-11-11":{"fajr":"05:43","sunrise":"07:13","dhuhr":"11:53","asr":"13:57","maghrib":"16:17","isha":"17:51"},"2026-11-12":{"fajr":"05:45"}}}""")
+        assertEquals(setOf("2026-11-11"), table.keys)
+        assertEquals("16:17", table["2026-11-11"]?.get("maghrib"))
+    }
 }

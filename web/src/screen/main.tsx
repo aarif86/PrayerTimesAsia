@@ -15,6 +15,7 @@ import { officialSourceForScreen, setScreenAnnouncements, setScreenClock, WORDS 
 import type { CalendarDataset } from '../core/calendarSanad'
 import { fetchOK } from '../services/storage'
 import { Setup } from './Setup'
+import { withBundled } from '../core/bundledCalendar'
 import './screen.css'
 
 const STORAGE = 'ptasia.screen'
@@ -27,7 +28,7 @@ if (fixedNow != null) setScreenClock(() => fixedNow)
 
 /** Ramadan and Raya announcements: the saved copy at once, then the latest every 15 minutes (moon sighting nights). */
 const CALENDAR_URL = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/main/data/calendar.json'
-setScreenAnnouncements(readJSON<CalendarDataset>('ptasia.calendar')?.announcements ?? [])
+setScreenAnnouncements(withBundled(readJSON<CalendarDataset>('ptasia.calendar')).announcements, withBundled(readJSON<CalendarDataset>('ptasia.calendar')).month_starts ?? [])
 async function refreshAnnouncements(): Promise<boolean> {
   if (query.has('demo')) return false
   const r = await fetchOK(CALENDAR_URL)
@@ -36,7 +37,7 @@ async function refreshAnnouncements(): Promise<boolean> {
     const data = (await r.json()) as CalendarDataset
     if (!Array.isArray(data.announcements)) return false
     writeJSON('ptasia.calendar', data)
-    setScreenAnnouncements(data.announcements)
+    setScreenAnnouncements(data.announcements, withBundled(data).month_starts ?? [])
     return true
   } catch { return false }
 }
@@ -80,6 +81,8 @@ function App() {
   const [config, setConfig] = useState<ScreenConfig | null>(initialConfig)
   const [editing, setEditing] = useState(() => !config || location.hash.includes('setup') || query.has('setup'))
   const now = useClock()
+  // The setup page is in English; the screen speaks its chosen language (screen readers, TV translation prompts).
+  useEffect(() => { document.documentElement.lang = editing || !config ? 'en' : config.lang }, [editing, config])
 
   if (editing || !config) {
     return <Setup initial={config ?? DEFAULT_CONFIG} now={now} onOpen={(c) => {

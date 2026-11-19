@@ -57,6 +57,13 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let latest = locations.last, latest.horizontalAccuracy >= 0 else { return }
+        // iOS often hands back its last cached fix first, which can be from
+        // another town or country days ago. Alerts are written days ahead with
+        // that place's times, so wait for a fresh fix instead.
+        if latest.timestamp.timeIntervalSinceNow < -600 { return }
+        // A rough cell tower guess can land across a border (Pasir Ris read as
+        // Johor). Wait for a better one, unless the user chose approximate location.
+        if latest.horizontalAccuracy > 3000 && manager.accuracyAuthorization == .fullAccuracy { return }
         location = latest
         // One good fix is enough for prayer times; stop to save battery.
         if latest.horizontalAccuracy < 1000 { manager.stopUpdatingLocation() }

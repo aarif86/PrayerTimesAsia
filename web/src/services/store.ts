@@ -6,18 +6,21 @@ import { openWindow, type PrayerWindow } from '../core/window'
 import { distanceKm, KAABA } from '../core/geo'
 import { formatHijriDate, gregorianFromHijri, type HijriDate } from '../core/hijri'
 import { MISSED, type FastMark } from '../core/ramadanContent'
+import { endPauseLinked, fastMarkFor, pauseLinked, setFastLinked, toggleExcusedLinked } from '../core/womensDays'
+import { BUNDLED_CALENDAR, withBundled } from '../core/bundledCalendar'
 import { addDays, authorityDate, baseHijri, civilKey, communityHijri, daysApart, parseCivil, previewShift, seasonFor, type CivilDay, type Season } from '../core/season'
 import { masjidProfile, MY_MASJID_RADIUS_KM, parseMasjidLink, type MasjidLink } from '../core/masjidLink'
 import { methodWithId, type CalculationMethod } from '../core/methods'
+import { longDaysKey, twilightLastsAllNight } from '../core/longDays'
 import { musafirStatus, type MusafirRules, type MusafirStatus } from '../core/musafir'
-import { officialSourceFor, sourceLabel, type OfficialSource } from '../core/official'
+import { officialSourceFor, officialSummary, sourceLabel, type OfficialSource } from '../core/official'
 import { isNear, newPlaceId, placeProfile, type Place } from '../core/place'
 import { OBLIGATORY, PRAYERS, prayerName, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
 import { countryForTimeZone, FALLBACK_PROFILE, methodHere, personalNaming, profileFor, profileMethod, sourceSummary, type CountryProfile } from '../core/regions'
 import {
   disagreements, jamaahTimes, mosqueAsr, mosqueMethod, mosqueNear, type MosqueDataset, type MosqueProfile,
 } from '../core/sources'
-import { dayKey, daysBetween, deviceTimeZone, ymdKey, zoned, zonedTime } from '../core/tz'
+import { dayKey, daysBetween, deviceTimeZone, noonDaysAfter, ymdKey, zoned, zonedTime } from '../core/tz'
 export { parseCivil, civilKey }
 import { CITIES, nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
@@ -41,6 +44,9 @@ export interface Demo {
 
 const DATA_BASE = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/main/data/'
 
+/** The last place GPS found (stays in this browser). */
+const LAST_GPS_KEY = 'ptasia.lastGpsPlace'
+
 class AppStore {
   prefs: Preferences
   demo: Demo | null
@@ -49,7 +55,7 @@ class AppStore {
   tab: Tab = 'today'
   showJourney = false
   mosques: MosqueDataset = { version: 1, licence: 'CC-BY-4.0', mosques: [] }
-  calendar: CalendarDataset = { version: 1, licence: 'CC-BY-4.0', announcements: [] }
+  calendar: CalendarDataset = BUNDLED_CALENDAR
   /** A masjid from a screen's QR code, waiting for the user to say yes. */
   pendingMasjid: MasjidLink | null = null
   /** Bumped on every change, so views re-read. */
@@ -65,7 +71,10 @@ class AppStore {
     const m = readJSON<MosqueDataset>('ptasia.mosques')
     if (m?.mosques) this.mosques = m
     const c = readJSON<CalendarDataset>('ptasia.calendar')
-    if (c?.announcements) this.calendar = c
+    this.calendar = withBundled(c)
+    // Open on the last place GPS found, so the times show at once instead of
+    // "Finding where you are" while the browser gets a fresh fix.
+    if (!this.demo) this.gpsPlace = readJSON<Place>(LAST_GPS_KEY)
     if (this.demo && new URLSearchParams(location.search).get('masjid') === 'link') this.pendingMasjid = DEMO_MASJID
     if (typeof location !== 'undefined' && !this.demo) {
       this.readMasjidLink()
@@ -95,6 +104,18 @@ class AppStore {
     this.pendingMasjid = null
     if (!this.demo) this.clearMasjidHash()
     this.emit()
+  }
+
+  /** Picked from the Masjid tab: pinned at the top. Keeps iqamah times a QR code already gave it. */
+  chooseMasjid(name: string, c: { latitude: number; longitude: number }): void {
+    const old = this.prefs.myMasjid
+    const same = old && Math.abs(old.lat - c.latitude) < 0.003 && Math.abs(old.lng - c.longitude) < 0.003
+    this.update((p) => {
+      p.myMasjid = same ? old : {
+        name: name.slice(0, 80), lat: +c.latitude.toFixed(4), lng: +c.longitude.toFixed(4),
+        tz: this.activePlace?.timeZoneID ?? deviceTimeZone(), cc: this.activePlace?.countryCode ?? null, jamaah: {}, jumuah: null,
+      }
+    })
   }
 
   forgetMasjid(): void {
@@ -145,11 +166,24 @@ class AppStore {
 
   // MARK: Where and which rules
 
+  /** Counts separate days the app was opened, on this device only (for the one gentle note card). */
+  countOpenDay(): void {
+    if (this.demo || !this.prefs.hasOnboarded) return
+    const d = new Date(), key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+    if (this.prefs.lastOpenDay === key) return
+    this.update((p) => { p.lastOpenDay = key; p.openDayCount += 1 })
+  }
+
   /** Anonymous count of this open, once the place is known (see services/usage.ts). */
   countOpen(version: string): void {
     if (this.demo || !this.prefs.shareUsage || !this.prefs.hasOnboarded) return
     const p = this.activePlace
     countAppOpen(version, { city: p?.name, countryCode: p?.countryCode })
+  }
+
+  /** Showing the last known place while the browser checks where we are now. */
+  get isCheckingLocation(): boolean {
+    return this.prefs.useGPS && this.gpsStatus === 'locating' && this.gpsPlace != null
   }
 
   get activePlace(): Place | null {
@@ -168,12 +202,12 @@ class AppStore {
 
   get isMethodAutomatic(): boolean { return this.prefs.methodOverrideID == null }
   /** Whose times these are, in plain words (official timetable, the authority's method, or a standard one). */
-  get sourceSummary(): string { return sourceSummary(this.profile, this.method, !this.isMethodAutomatic) }
+  get sourceSummary(): string { return officialSummary(this.officialSource) ?? sourceSummary(this.profile, this.method, !this.isMethodAutomatic) }
   /** The same in one sentence or two, for the welcome card. */
-  get sourceShort(): string { return sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true) }
+  get sourceShort(): string { return officialSummary(this.officialSource, true) ?? sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true) }
   get asrSchool(): AsrSchool { return this.prefs.asrOverride ?? this.profile.asr }
-  get personalNaming(): NamingStyle { return personalNaming(this.prefs.home?.countryCode, navigatorLocale()) }
-  /** Your names - from your home or your browser, not from where you are. */
+  get personalNaming(): NamingStyle { return personalNaming(navigatorLocale()) }
+  /** Your names, from your browser's language (English unless it has names in it), not from where you are. */
   get naming(): NamingStyle { return this.prefs.namingOverride ?? this.personalNaming }
   /** The words used where you are (the masjid's signs). */
   get localNaming(): NamingStyle { return this.profile.naming }
@@ -185,6 +219,8 @@ class AppStore {
   /** The local word for a prayer, when it differs from yours. */
   localName(p: Prayer, at: number): string | null {
     if (!this.prefs.showLocalNames || this.localNaming === this.naming) return null
+    // At home you already know the local words; the hint is for travel.
+    if (this.prefs.home && placeProfile(this.prefs.home).code === this.profile.code) return null
     const friday = this.isFriday(at)
     const local = prayerName(p, this.localNaming, friday)
     return local === prayerName(p, this.naming, friday) ? null : local
@@ -210,7 +246,8 @@ class AppStore {
 
   musafirStatus(now = this.now()): MusafirStatus | null {
     const place = this.activePlace
-    if (!place) return null
+    // A guessed home never says "traveller" or "home" until the user confirms it.
+    if (!place || !this.prefs.homeConfirmed) return null
     return musafirStatus(this.prefs.home?.coordinates, place.coordinates, this.daysHere(now), this.musafirRules)
   }
 
@@ -293,7 +330,7 @@ class AppStore {
     if (!today) return null
     const upcoming = ordered(today).find((x) => x.time > now)
     if (upcoming) return upcoming
-    const tomorrow = this.day(now + 86_400_000)
+    const tomorrow = this.day(noonDaysAfter(now, 1, this.timeZone))
     return tomorrow ? { prayer: 'fajr', time: tomorrow.times.fajr } : null
   }
 
@@ -303,15 +340,15 @@ class AppStore {
     if (!today) return null
     const passed = ordered(today).filter((x) => x.time <= now).pop()
     if (passed) return passed
-    const yesterday = this.day(now - 86_400_000)
+    const yesterday = this.day(noonDaysAfter(now, -1, this.timeZone))
     return yesterday ? { prayer: 'isha', time: yesterday.times.isha } : null
   }
 
   /** The prayer open now and when its time runs out; null between sunrise and Zohor. */
   window(now: number): PrayerWindow | null {
     const today = this.day(now)
-    const yesterday = this.day(now - 86_400_000)
-    const tomorrow = this.day(now + 86_400_000)
+    const yesterday = this.day(noonDaysAfter(now, -1, this.timeZone))
+    const tomorrow = this.day(noonDaysAfter(now, 1, this.timeZone))
     return today && yesterday && tomorrow ? openWindow(now, yesterday, today, tomorrow) : null
   }
 
@@ -320,6 +357,26 @@ class AppStore {
     const nextDay = this.nextDay(day)
     if (!place || !nextDay) return []
     return computeBlessed(day, nextDay, place.coordinates, this.isRamadanDay(day.times.dhuhr))
+  }
+
+  /**
+   * The long summer days note: its key when today's Fajr and Isha come from a
+   * high latitude rule (twilight lasts all night) and the note for this place and
+   * summer hasn't been closed. Only for calculated times; an official timetable
+   * already sets its own.
+   */
+  longDaysNote(now: number): string | null {
+    const place = this.activePlace
+    if (!place || this.officialSource) return null
+    const { latitude: lat, longitude: lng } = place.coordinates
+    const d = this.civil(now)
+    if (!twilightLastsAllNight(d.year, d.month, d.day, lat, this.method)) return null
+    const key = longDaysKey(d.year, d.month, lat, lng, place.countryCode ?? '')
+    return this.prefs.longDaysClosed.includes(key) ? null : key
+  }
+
+  closeLongDaysNote(key: string): void {
+    this.update((p) => { p.longDaysClosed = [...p.longDaysClosed.filter((k) => k !== key), key].slice(-30) })
   }
 
   // MARK: Ramadan and Syawal
@@ -340,7 +397,7 @@ class AppStore {
   /** The Hijri date of a civil day as this community counts it (see core/season.ts). */
   hijriOfCivil(g: CivilDay): HijriDate {
     if (this.isSeasonPreview) return baseHijri(addDays(g, this.seasonShift))
-    return communityHijri(g, this.prefs.hijriAdjustment, this.calendar.announcements, this.communityAuthority)
+    return communityHijri(g, this.prefs.hijriAdjustment, this.calendar.announcements, this.communityAuthority, this.calendar.month_starts)
   }
 
   hijriOf(ms: number): HijriDate { return this.hijriOfCivil(this.civil(ms)) }
@@ -383,18 +440,29 @@ class AppStore {
       if (now < imsak) return { kind: 'imsak', time: imsak }
       if (now < today.times.maghrib) return { kind: 'berbuka', time: today.times.maghrib }
     }
-    const tomorrow = this.day(now + 86_400_000)
+    const tomorrow = this.day(noonDaysAfter(now, 1, this.timeZone))
     if (tomorrow && this.isRamadanDay(tomorrow.times.dhuhr)) return { kind: 'imsak', time: this.imsak(tomorrow) }
     return null
   }
 
   // Fasting log, kept on this device only.
 
-  fastMark(key: string): FastMark | null { return this.prefs.fastLog[key] ?? null }
+  /** How a fast day went. An unmarked Ramadan day inside a tracker pause reads as "Period" (core/womensDays.ts). */
+  fastMark(key: string): FastMark | null {
+    return fastMarkFor(this.prefs, key, this.dayKey(this.now()), this.isRamadanKey)
+  }
 
+  /** Is this "yyyy-MM-dd" a Ramadan day for this community. */
+  readonly isRamadanKey = (key: string): boolean => {
+    const g = parseCivil(key)
+    return !!g && this.hijriOfCivil(g).month === 9
+  }
+
+  /** Marking "Period" pauses the tracker too, and changing it back undoes both. */
   setFast(key: string, mark: FastMark | null): void {
+    const today = this.dayKey(this.now())
     this.update((p) => {
-      if (mark) p.fastLog[key] = mark; else delete p.fastLog[key]
+      setFastLinked(p, key, mark, today, this.isRamadanKey)
       const keys = Object.keys(p.fastLog).sort()
       if (keys.length > 800) delete p.fastLog[keys[0]]
     })
@@ -433,7 +501,7 @@ class AppStore {
     for (const d of days) {
       const k = civilKey(d)
       if (k > todayKey) break
-      const m = this.prefs.fastLog[k]
+      const m = this.fastMark(k)
       if (m === 'fasted') fasted++
       else if (m && MISSED.includes(m)) missed++
     }
@@ -517,34 +585,29 @@ class AppStore {
   get trackerPaused(): boolean { return !!this.prefs.trackerPausedSince }
 
   /** Pause for haid, nifas or illness: today and every day until it's ended count as excused, so the streak waits. */
+  /** In Ramadan the paused days read as "Period" in the fast record too. */
   pauseTracker(ms: number): void {
     const key = this.dayKey(ms)
-    this.update((p) => { p.trackerPausedSince = key })
+    this.update((p) => { pauseLinked(p, key) })
   }
 
-  /** End the pause: the paused days are kept as excused days, today included. */
+  /** End the pause: the paused days are kept as excused days, today included, and as "Period" fasts in Ramadan. */
   endTrackerPause(ms: number): void {
-    const since = this.prefs.trackerPausedSince
-    if (!since) return
+    if (!this.prefs.trackerPausedSince) return
     const today = this.dayKey(ms)
-    this.update((p) => {
-      p.excusedDays = [...new Set([...p.excusedDays, ...daysFrom(since, today)])].sort()
-      p.trackerPausedSince = null
-    })
+    this.update((p) => { endPauseLinked(p, today, this.isRamadanKey) })
   }
 
   toggleExcused(ms: number): void {
     const key = this.dayKey(ms)
-    this.update((p) => {
-      p.excusedDays = p.excusedDays.includes(key) ? p.excusedDays.filter((k) => k !== key) : [...p.excusedDays, key]
-    })
+    this.update((p) => { toggleExcusedLinked(p, key, this.isRamadanKey) })
   }
 
   /** Consecutive days with all five prayers marked (or excused); an unfinished today doesn't break it. */
   streak(now = this.now()): number {
     let count = 0
     for (let i = 0; i < 400; i++) {
-      const key = this.dayKey(now - i * 86_400_000)
+      const key = this.dayKey(noonDaysAfter(now, -i, this.timeZone))
       const complete = this.isExcusedKey(key) || (this.prefs.prayedLog[key]?.length ?? 0) >= OBLIGATORY.length
       if (complete) count++
       else if (i > 0) break
@@ -589,6 +652,7 @@ class AppStore {
       district: city?.district ?? null,
     }
     this.gpsPlace = place
+    writeJSON(LAST_GPS_KEY, place)
     this.gpsStatus = 'ok'
     if (this.prefs.useGPS) this.arrived(place)
     else this.emit()
@@ -611,8 +675,14 @@ class AppStore {
     this.arrived(chosen)
   }
 
+  /** Home, picked by the user. Also counts as saying "this is home". */
   setHome(place: Place): void {
-    this.update((p) => { p.home = place })
+    this.update((p) => { p.home = place; p.homeConfirmed = true })
+  }
+
+  /** "Yes, this is home" for the home the app guessed. */
+  confirmHome(): void {
+    this.update((p) => { p.homeConfirmed = true })
   }
 
   /** Travel mode: notice a new country, remember when we got here, show the welcome card. */
@@ -675,7 +745,7 @@ class AppStore {
       if (r) {
         try {
           const data = (await r.json()) as CalendarDataset
-          if (Array.isArray(data.announcements)) { this.calendar = data; writeJSON('ptasia.calendar', data); writeString('ptasia.calendar.at', String(Date.now())); this.emit() }
+          if (Array.isArray(data.announcements)) { this.calendar = withBundled(data); writeJSON('ptasia.calendar', data); writeString('ptasia.calendar.at', String(Date.now())); this.emit() }
         } catch { /* keep the cached copy */ }
       }
     }
@@ -691,7 +761,7 @@ class AppStore {
   }
 }
 
-function navigatorLocale(): string {
+export function navigatorLocale(): string {
   // A language picked on our website (same address) comes first, then the browser's.
   try {
     const site = localStorage.getItem('pta-lang')
@@ -737,9 +807,12 @@ function demoPreferences(demo: Demo): Preferences {
   p.hasOnboarded = true
   p.useGPS = false
   p.home = PASIR_RIS
+  p.homeConfirmed = true
   p.manualPlace = PASIR_RIS
   p.lastCountryCode = 'SG'
   p.trackerEnabled = true
+  // Screenshots skip the quick guide unless they ask for it (?guide=1).
+  p.guideSeen = q.get('guide') !== '1'
   for (let back = 1; back <= 3; back++) {
     p.prayedLog[dayKey(now - back * 86_400_000, 'Asia/Singapore')] = [...OBLIGATORY]
   }
@@ -770,6 +843,8 @@ function demoPreferences(demo: Demo): Preferences {
     }
     p.tarawihLog = [dayKey(now - 86_400_000, 'Asia/Singapore')]
     p.khatamPlan = season === 'ramadan' || season === 'lastTen'
+    // &preview=off: a real Ramadan date is in ?now, so keep the marks but not the tester's preview (website pictures).
+    if (q.get('preview') === 'off') p.seasonPreview = 'off'
   }
   const appearance = q.get('appearance')
   p.appearance = appearance === 'light' || appearance === 'dark' || appearance === 'system' ? appearance : 'dark'
@@ -779,7 +854,12 @@ function demoPreferences(demo: Demo): Preferences {
   p.appPromptDismissed = q.get('appprompt') !== 'on'
   if (q.get('masjid') === 'on') p.myMasjid = DEMO_MASJID
   if (q.get('large') === '1') p.largeText = true
+  // ?note=on: ten days of use, so the one gentle "note to the makers" line shows (screenshots).
+  if (q.get('note') === 'on') p.openDayCount = 10
+  const naming = q.get('naming') as NamingStyle | null
+  if (naming) p.namingOverride = naming
   if (demo.variant === 'visitor') {
+    p.homeConfirmed = true
     p.home = { id: 'demo-sydney', name: 'Sydney', countryCode: 'AU', countryName: 'Australia', timeZoneID: 'Australia/Sydney', coordinates: { latitude: -33.8688, longitude: 151.2093 } }
     p.manualPlace = { id: 'demo-kl', name: 'Kuala Lumpur', countryCode: 'MY', countryName: 'Malaysia', timeZoneID: 'Asia/Kuala_Lumpur', coordinates: { latitude: 3.139, longitude: 101.6869 } }
     p.lastCountryCode = 'MY'

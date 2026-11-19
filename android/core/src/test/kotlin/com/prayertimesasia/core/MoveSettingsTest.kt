@@ -106,4 +106,51 @@ class MoveSettingsTest {
         assertTrue((kept ?: 0) > 0)
         assertNotNull(MovedSettings.fromCode(link)?.prayedLog?.get("2026-06-23"))
     }
+
+    @Test fun ramadanRecordRoundTrip() {
+        val moved = cases.first { it.name.startsWith("Ramadan record") }.settings
+        val prefs = moved.appliedTo(Preferences())
+        assertEquals(FastMark.PERIOD, prefs.fastLog["2026-02-25"])
+        assertEquals(FastMark.QADHA, prefs.fastLog["2026-04-10"])
+        assertEquals(setOf("2026-02-17", "2026-02-18", "2026-03-16"), prefs.tarawihLog)
+        assertEquals(setOf("2026-02-18", "2026-02-19"), prefs.quranLog)
+        val back = MovedSettings.from(prefs)
+        assertEquals(moved, back)
+        assertEquals(moved, MovedSettings.fromCode(back.code))
+        assertTrue("Your Ramadan record of fasts, Tarawih and juz" in back.summary)
+    }
+
+    @Test fun ramadanRecordIsAdded() {
+        val here = Preferences(fastLog = mapOf("2026-02-18" to FastMark.SICK, "2025-03-01" to FastMark.FASTED), tarawihLog = setOf("2025-03-01"))
+        val moved = MovedSettings(fastLog = mapOf("2026-02-18" to "fasted", "bad" to "fasted", "2026-02-19" to "someday"), tarawihLog = listOf("2026-02-18", "x"))
+        val prefs = moved.appliedTo(here)
+        assertEquals(mapOf("2026-02-18" to FastMark.FASTED, "2025-03-01" to FastMark.FASTED), prefs.fastLog)
+        assertEquals(setOf("2025-03-01", "2026-02-18"), prefs.tarawihLog)
+    }
+
+    @Test fun olderCodeKeepsThisPhonesRamadanRecord() {
+        val here = Preferences(fastLog = mapOf("2026-02-18" to FastMark.FASTED), tarawihLog = setOf("2026-02-18"), quranLog = setOf("2026-02-19"))
+        val old = MovedSettings.fromCode(cases[1].code)!!
+        val prefs = old.appliedTo(here)
+        assertEquals("Singapore", prefs.home?.name)
+        assertEquals(mapOf("2026-02-18" to FastMark.FASTED), prefs.fastLog)
+        assertEquals(setOf("2026-02-18"), prefs.tarawihLog)
+        assertEquals(setOf("2026-02-19"), prefs.quranLog)
+    }
+
+    @Test fun qrKeepsOnlyThisYearsRamadanRecord() {
+        val days = (2020..2026).flatMap { y -> (1..30).map { d -> LocalDate.of(y, 3, d).toString() } }
+        val moved = MovedSettings(fastLog = days.associateWith { "fasted" }, tarawihLog = days, quranLog = days)
+        val full = moved.link()
+        val qr = moved.qrLink(maxCharacters = full.length - 1)
+        assertTrue(qr.ramadanTrimmed)
+        assertNull(qr.keptDays)
+        val back = MovedSettings.fromCode(qr.link)!!
+        assertTrue(back.fastLog!!.keys.all { it.startsWith("2026-") })
+        assertEquals(30, back.tarawihLog!!.size)
+        assertFalse(moved.qrLink(maxCharacters = full.length).ramadanTrimmed)
+        assertEquals("The QR code carries only this year's Ramadan record. To bring all of it, share the link instead.",
+            MovedSettings.trimNote(null, true))
+        assertNull(MovedSettings.trimNote(null, false))
+    }
 }

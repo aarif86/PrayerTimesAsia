@@ -210,7 +210,7 @@ fun SanadSheetContent(state: AppState, day: PrayerDay) {
 
 /** Ramadan, Eid and the new year with a source for every date. */
 @Composable
-fun CalendarSheetContent(state: AppState) {
+fun CalendarSheetContent(state: AppState, onShowDay: ((Int) -> Unit)? = null) {
     val r = state.resolver
     val uri = LocalUriHandler.current
     val mine = r.communityAuthority
@@ -220,6 +220,7 @@ fun CalendarSheetContent(state: AppState) {
     LazyColumn(Modifier.fillMaxWidth().padding(horizontal = Dims.gutter)) {
         item {
             Text("Calendar", style = Txt.headline, color = Palette.primary)
+            HijriMonthCard(state, onShowDay)
             SectionHeader("My community follows")
             Row(Modifier.fillMaxWidth().clickable { picking = !picking }.padding(vertical = 8.dp)) {
                 Text(if (state.prefs.communityAuthority == null) "Automatic · ${mine?.let(CalendarSanad::authorityName) ?: "none"}"
@@ -284,7 +285,9 @@ private fun CalendarRow(title: String, date: String, detail: String, status: Cal
 
 /** Current location, saved places and search (built-in cities worldwide, then the phone's geocoder). */
 @Composable
-fun PlacesSheetContent(state: AppState, onDone: () -> Unit) {
+fun PlacesSheetContent(state: AppState, forHome: Boolean = false, onDone: () -> Unit) {
+    // Home: the picked place becomes home. Otherwise it is where times are shown.
+    val pick: (Place) -> Unit = { place -> if (forHome) state.setHome(place) else state.choose(place); onDone() }
     var query by remember { mutableStateOf("") }
     var results by remember { mutableStateOf<List<Place>>(emptyList()) }
     LaunchedEffect(query) {
@@ -293,7 +296,7 @@ fun PlacesSheetContent(state: AppState, onDone: () -> Unit) {
         results = state.location.search(query)
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = Dims.gutter)) {
-        Text("Location", style = Txt.headline, color = Palette.primary)
+        Text(if (forHome) "Where is home?" else "Location", style = Txt.headline, color = Palette.primary)
         Spacer(Modifier.height(10.dp))
         OutlinedTextField(
             value = query, onValueChange = { query = it }, singleLine = true,
@@ -305,7 +308,32 @@ fun PlacesSheetContent(state: AppState, onDone: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         )
         LazyColumn(Modifier.fillMaxWidth()) {
-            if (query.isBlank()) {
+            if (query.isBlank() && forHome) {
+                (state.gpsPlace ?: state.resolver.activePlace)?.let { here ->
+                    item {
+                        Row(Modifier.fillMaxWidth().clickable { pick(here) }.padding(vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Icon(Icons.Filled.MyLocation, null, tint = Palette.accent)
+                            Column(Modifier.weight(1f)) {
+                                Text("Where I am now", style = Txt.body, color = Palette.primary)
+                                Text(here.name + (here.countryName?.let { ", $it" } ?: ""), style = Txt.caption, color = Palette.secondary)
+                            }
+                        }
+                        HorizontalDivider(color = Palette.primary.copy(alpha = 0.1f))
+                    }
+                }
+                val saved = state.prefs.savedPlaces.filter { it.name != "Current location" }
+                if (saved.isNotEmpty()) {
+                    item { SectionHeader("Saved places") }
+                    items(saved, key = { it.id }) { place ->
+                        PlaceRow(place, selected = state.prefs.home?.isNear(place) == true, onRemove = null) { pick(place) }
+                    }
+                }
+                item {
+                    Text("Search the town or area where you live, like Tampines, Shah Alam or Bandung. Home is used to work out when you count as a traveller.",
+                        style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(vertical = 16.dp))
+                }
+            } else if (query.isBlank()) {
                 item {
                     Row(Modifier.fillMaxWidth().clickable { state.useGPS(); onDone() }.padding(vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -332,7 +360,7 @@ fun PlacesSheetContent(state: AppState, onDone: () -> Unit) {
                         style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(vertical = 16.dp))
                 }
             } else {
-                items(results, key = { it.id }) { place -> PlaceRow(place, false, null) { state.choose(place); onDone() } }
+                items(results, key = { it.id }) { place -> PlaceRow(place, false, null) { pick(place) } }
             }
             item { Spacer(Modifier.height(40.dp)) }
         }

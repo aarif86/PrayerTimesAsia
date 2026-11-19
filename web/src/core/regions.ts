@@ -2,6 +2,9 @@ import { METHODS, methodWithId, withHighLatitude, type CalculationMethod } from 
 import type { NamingStyle } from './prayer'
 
 import { COUNTRY_ROWS, TZ_COUNTRY, WORLD_CITIES, type CountryRow, type TimesSource } from './countries'
+import { distanceKm } from './geo'
+import { deviceTimeZone, isValidTimeZone } from './tz'
+import { ZONE_ANCHORS } from './zoneAnchors'
 
 /**
  * What the app does by default in each country: whose times it follows, which
@@ -78,11 +81,18 @@ export function timeZoneForCountry(code: string | null | undefined): string | un
 
 /**
  * The zone for a searched place (web addition: the iOS app gets it from Apple
- * Maps). Countries spanning several zones are split by longitude.
+ * Maps). Countries spanning several zones are split by where the place is:
+ * with its latitude, the nearest listed city or zone point (core/zoneAnchors.ts)
+ * in that country; without it, the listed city nearest in longitude.
  */
-export function timeZoneForPlace(code: string | null | undefined, longitude: number): string | undefined {
+export function timeZoneForPlace(code: string | null | undefined, longitude: number, latitude?: number): string | undefined {
   const c = code?.toUpperCase()
-  if (c === 'ID') return longitude < 114.5 ? 'Asia/Jakarta' : longitude < 127.0 ? 'Asia/Makassar' : 'Asia/Jayapura'
+  const near = latitude != null && Number.isFinite(latitude) && c ? nearestZone(c, latitude, longitude) : undefined
+  if (c === 'ID') {
+    // Indonesia's three zones mostly follow longitude; the anchors only fix the places near a border that doesn't.
+    if (near && near.km < 150) return near.tz
+    return longitude < 114.5 ? 'Asia/Jakarta' : longitude < 127.0 ? 'Asia/Makassar' : 'Asia/Jayapura'
+  }
   if (c === 'MY') return longitude < 109 ? 'Asia/Kuala_Lumpur' : 'Asia/Kuching'
   if (c === 'KZ') return 'Asia/Almaty'
   if (c === 'CN') return 'Asia/Shanghai'
@@ -92,6 +102,7 @@ export function timeZoneForPlace(code: string | null | undefined, longitude: num
   if (c === 'MM') return 'Asia/Yangon'
   if (c === 'PS') return 'Asia/Hebron'
   if (!c) return undefined
+  if (near) return near.tz
   // Elsewhere, a country with several zones: the zone of the listed city nearest in longitude.
   const zones = new Set(Object.keys(TZ_COUNTRY).filter((k) => TZ_COUNTRY[k] === c))
   if (zones.size > 1) {
@@ -106,21 +117,39 @@ export function timeZoneForPlace(code: string | null | undefined, longitude: num
   return timeZoneForCountry(c)
 }
 
+/** The zone of the nearest listed city or zone point, for countries with more than one zone. */
+function nearestZone(c: string, lat: number, lng: number): { tz: string; km: number } | undefined {
+  const points: [number, number, string][] = ZONE_ANCHORS.filter((a) => a[0] === c).map(([, la, lo, tz]) => [la, lo, tz])
+  const several = points.length > 0 || Object.keys(TZ_COUNTRY).filter((k) => TZ_COUNTRY[k] === c).length > 1
+  if (!several) return undefined
+  for (const [, , cc, la, lo, tz] of WORLD_CITIES) if (cc === c) points.push([la, lo, tz])
+  let best: { tz: string; km: number } | undefined
+  for (const [la, lo, tz] of points) {
+    const km = distanceKm({ latitude: lat, longitude: lng }, { latitude: la, longitude: lo })
+    if ((!best || km < best.km) && isValidTimeZone(tz)) best = { tz, km }
+  }
+  return best
+}
+
+/**
+ * The zone for a place found by GPS: the device's own zone when it belongs to
+ * that country (the phone is there, so its clock is right, Indiana or Arizona
+ * included), otherwise worked out from where the place is.
+ */
+export function timeZoneForLocated(code: string | null | undefined, latitude: number, longitude: number, device = deviceTimeZone()): string | undefined {
+  if (code && isValidTimeZone(device) && countryForTimeZone(device) === code.toUpperCase()) return device
+  return timeZoneForPlace(code, longitude, latitude)
+}
+
 /**
  * Your names, when you haven't picked any: your browser's language when we
- * have names in it, else your home country's, else your region's, else
- * International. Read from the device only, never from your IP address.
+ * have names in it, else English (International). Your home country does not
+ * change them, so a Singapore user on an English browser sees Fajr, and picks
+ * Malay in Settings for Subuh. Read from the device only, never from your IP
+ * address.
  */
-export function personalNaming(homeCountry: string | null | undefined, locale: string): NamingStyle {
-  const parts = locale.replace(/_/g, '-').split('-')
-  const lang = parts[0]
-  const region = parts.slice(1).find((s) => /^[A-Za-z]{2}$/.test(s))
-  const spoken = namingForLanguage(lang)
-  if (spoken) return spoken
-  // A home with its own spelling wins over an English browser.
-  const home = profileFor(homeCountry)
-  if (home && home.naming !== 'arabic') return home.naming
-  return profileFor(region)?.naming ?? 'arabic'
+export function personalNaming(locale: string): NamingStyle {
+  return namingForLanguage(locale.replace(/_/g, '-').split('-')[0]) ?? 'arabic'
 }
 
 /** The names that go with a language code (ISO 639; old Android/Java code "in" is Indonesian). */

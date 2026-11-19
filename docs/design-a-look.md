@@ -2,10 +2,10 @@
 
 Anyone can suggest the next look, and you do **not** need to code. There are two places a look can go:
 
-- **The app's Prayer screen** (iPhone, Android and [web](https://aarif86.github.io/PrayerTimesAsia/app/)). It has five
+- **The app's Prayer screen** (iPhone, Android and [web](https://prayertimes.asia/app/)). It has five
   styles today: Centre Dial, Side Dial, Day Dial, Sun Path and Colour Bands, each in light and dark.
   Change them in **Settings → Prayer screen**, or touch and hold the style button on the Prayer screen.
-- **The masjid TV screen** ([try it](https://aarif86.github.io/PrayerTimesAsia/app/screen/#setup)). It has six looks today:
+- **The masjid TV screen** ([try it](https://prayertimes.asia/app/screen/#setup)). It has six looks today:
   Night, Day, Board, Bands, Day Dial and Sun Path.
 
 A whole new style, or a colour theme for an existing one (for example "Ramadan night", "Kampung green"), is welcome for either.

@@ -14,10 +14,10 @@ import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
 import com.prayertimesasia.core.Appearance
+import com.prayertimesasia.core.Coordinates
 import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
-import com.prayertimesasia.core.trackerDays
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.Preferences
 import com.prayertimesasia.core.Resolver
@@ -61,9 +61,19 @@ class AppState(
 
     var prefs by mutableStateOf(initialPrefs)
         private set
-    /** The place resolved from the latest GPS fix. */
-    var gpsPlace by mutableStateOf<Place?>(null)
+    /**
+     * The place resolved from the latest GPS fix. Starts on the last one saved, so the
+     * times show at once instead of "Finding where you are" while the phone gets a fresh fix.
+     */
+    var gpsPlace by mutableStateOf<Place?>(if (sideEffects) store?.lastGpsPlace() else null)
         private set
+    /** A fresh fix has arrived since the app started (until then the place is the last saved one). */
+    var hasFreshFix by mutableStateOf(false)
+        private set
+
+    /** Showing the last known place while the phone checks where it is now. */
+    val isCheckingLocation: Boolean
+        get() = prefs.useGPS && location.hasPermission && !hasFreshFix && gpsPlace != null
     var now by mutableStateOf(fixedNow ?: Instant.now())
     var selectedTab by mutableStateOf(Tab.PRAYER)
     var showJourney by mutableStateOf(false)
@@ -71,17 +81,21 @@ class AppState(
     var showRamadan by mutableStateOf(false)
     /** Wake up for Subuh (the alarm clock on the Prayer screen, or Settings). */
     var showWakeUp by mutableStateOf(false)
+    /** A day picked in the month calendar, to show on the Prayer screen (days from today). */
+    var showDayRequest by mutableStateOf<Int?>(null)
     /** A masjid from a screen's QR code, waiting for the user to say yes. */
     var pendingMasjid by mutableStateOf<MasjidLink?>(null)
     var locationRequested by mutableStateOf(false)
     var permissions: Permissions? = null
     /** Screenshots: pretend the phone faces the qibla. */
     var demoAligned = false
+    /** Screenshots: show the Google Play review button before the app is live. */
+    var demoShowsStores = false
 
     /** The rules and times for right now. Cheap to build; read it fresh each time. */
     val resolver: Resolver
         get() = Resolver(prefs, gpsPlace, { s, y, m, d -> official.times(s, y, m, d) }, directories.mosques, locale,
-            announcements = directories.calendar.announcements)
+            announcements = directories.calendar.announcements, monthStarts = directories.calendar.monthStarts)
 
     fun tick() {
         if (fixedNow == null) now = Instant.now()
@@ -101,9 +115,9 @@ class AppState(
         store?.save(prefs)
         // Ticking a prayer in the tracker shouldn't reschedule every alarm.
         val a = prefs.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false,
-            fastLog = emptyMap(), tarawihLog = emptySet(), quranLog = emptySet(), zakatPaid = emptySet())
+            fastLog = emptyMap(), tarawihLog = emptySet(), tarawihRakaat = null, quranLog = emptySet(), zakatPaid = emptySet())
         val b = old.copy(prayedLog = emptyMap(), excusedDays = emptySet(), trackerPausedSince = null, showMore = false,
-            fastLog = emptyMap(), tarawihLog = emptySet(), quranLog = emptySet(), zakatPaid = emptySet())
+            fastLog = emptyMap(), tarawihLog = emptySet(), tarawihRakaat = null, quranLog = emptySet(), zakatPaid = emptySet())
         if (a == b) return
         refreshOfficialTimetable()
         rescheduleAlerts()
@@ -129,15 +143,24 @@ class AppState(
     // MARK: Places
 
     fun onLocation(location: Location) {
+        hasFreshFix = true
+        // Show times at once with an offline guess (the phone's time zone gives the
+        // country) when we've moved, then refine with the geocoder's town name.
+        val guess = this.location.offlinePlace(location)
+        val before = gpsPlace
+        if (before == null || !before.isNear(guess)) adoptGps(guess)
         scope.launch {
             val place = this@AppState.location.place(location)
             val previous = gpsPlace
-            if (previous == null || !previous.isNear(place) || previous.name != place.name) {
-                gpsPlace = place
-                if (prefs.useGPS) arrived(place)
-                refreshOfficialTimetable()
-            }
+            if (previous == null || !previous.isNear(place) || previous.name != place.name) adoptGps(place)
         }
+    }
+
+    private fun adoptGps(place: Place) {
+        gpsPlace = place
+        if (sideEffects) store?.saveLastGpsPlace(place)
+        if (prefs.useGPS) arrived(place)
+        refreshOfficialTimetable()
     }
 
     fun choose(place: Place) {
@@ -164,7 +187,11 @@ class AppState(
         if (sideEffects && prefs.useGPS && location.hasPermission) location.refresh { onLocation(it) }
     }
 
-    fun setHome(place: Place) = update { it.copy(home = place) }
+    /** Home, picked by the user. Also counts as saying "this is home". */
+    fun setHome(place: Place) = update { it.copy(home = place, homeConfirmed = true) }
+
+    /** "Yes, this is home" for the home the app guessed. */
+    fun confirmHome() = update { it.copy(homeConfirmed = true) }
 
     /** prayertimesasia://masjid?... from a masjid screen's QR code (or the web app's "Open in the app"). */
     fun openLink(uri: String?) {
@@ -179,6 +206,17 @@ class AppState(
     }
 
     fun forgetMasjid() = update { it.copy(myMasjid = null) }
+
+    /** Picked on the Masjid tab: pinned at the top. Keeps iqamah times a QR code already gave the same masjid. */
+    fun chooseMasjid(name: String, c: Coordinates) {
+        val old = prefs.myMasjid
+        if (old != null && kotlin.math.abs(old.lat - c.latitude) < 0.003 && kotlin.math.abs(old.lng - c.longitude) < 0.003) return
+        val place = resolver.activePlace
+        update {
+            it.copy(myMasjid = MasjidLink(name.take(80), Math.round(c.latitude * 10_000) / 10_000.0, Math.round(c.longitude * 10_000) / 10_000.0,
+                place?.timeZoneId ?: java.time.ZoneId.systemDefault().id, place?.countryCode))
+        }
+    }
 
     /** Travel mode: notice a new country, remember when we got here, show the welcome card. */
     private fun arrived(place: Place) {
@@ -208,29 +246,38 @@ class AppState(
         p.copy(prayedLog = log)
     }
 
-    /** Pause for haid, nifas or illness: today and every day until it's ended count as excused, so the streak waits. */
+    /** Pause for haid, nifas or illness: today and every day until it's ended count as excused, so the streak waits.
+     *  In Ramadan the paused days read as "Period" in the fast record too. */
     fun pauseTracker(on: Instant) = update { it.copy(trackerPausedSince = resolver.dayKey(on)) }
 
-    /** End the pause: the paused days are kept as excused days, today included. */
+    /** End the pause: the paused days are kept as excused days, today included, and as "Period" fasts in Ramadan. */
     fun endTrackerPause(on: Instant) = update { p ->
-        val since = p.trackerPausedSince ?: return@update p
-        p.copy(excusedDays = p.excusedDays + trackerDays(since, resolver.dayKey(on)), trackerPausedSince = null)
+        if (p.trackerPausedSince == null) return@update p
+        p.withWomensDays(womensDays(p).endPause(resolver.dayKey(on), resolver::isRamadanKey))
     }
 
+    /** "Just today": in Ramadan it marks that fast "Period" too, and again undoes both. */
     fun toggleExcused(on: Instant) = update { p ->
-        val key = resolver.dayKey(on)
-        p.copy(excusedDays = if (key in p.excusedDays) p.excusedDays - key else p.excusedDays + key)
+        p.withWomensDays(womensDays(p).toggleExcused(resolver.dayKey(on), resolver::isRamadanKey))
     }
 
     // MARK: Ramadan
 
-    /** Marks how a day's fast went; null clears it. Keeps about two years. */
+    /** Marks how a day's fast went; null clears it. "Period" pauses the tracker too, and changing it back undoes both. Keeps about two years. */
     fun setFast(key: String, mark: com.prayertimesasia.core.FastMark?) = update { p ->
-        var log = if (mark == null) p.fastLog - key else p.fastLog + (key to mark)
+        val w = womensDays(p).setFast(key, mark, resolver.dayKey(Instant.now()), resolver::isRamadanKey)
+        var log = w.fastLog
         if (log.size > 800) log = log - log.keys.min()
-        p.copy(fastLog = log)
+        p.withWomensDays(w.copy(fastLog = log))
     }
 
+    private fun womensDays(p: Preferences) = com.prayertimesasia.core.WomensDays(p.fastLog, p.excusedDays, p.trackerPausedSince)
+    private fun Preferences.withWomensDays(w: com.prayertimesasia.core.WomensDays) =
+        copy(fastLog = w.fastLog, excusedDays = w.excusedDays, trackerPausedSince = w.trackerPausedSince)
+
+    fun setTarawihRakaat(n: Int) = update { it.copy(tarawihRakaat = n.takeIf { v -> v in com.prayertimesasia.core.Tarawih.CHOICES }) }
+    /** The counter reached the total: tick tonight's Tarawih (never unticks). */
+    fun markTarawih(key: String) = update { p -> if (key in p.tarawihLog) p else p.copy(tarawihLog = p.tarawihLog + key) }
     fun toggleTarawih(key: String) = update { p -> p.copy(tarawihLog = if (key in p.tarawihLog) p.tarawihLog - key else p.tarawihLog + key) }
     fun toggleJuz(key: String) = update { p -> p.copy(quranLog = if (key in p.quranLog) p.quranLog - key else p.quranLog + key) }
 
@@ -282,10 +329,39 @@ class AppState(
     /** An alarm for one of the other four prayers, as [setWakeUp]; null turns it off. */
     fun setPrayerAlarm(prayer: com.prayertimesasia.core.Prayer, timing: com.prayertimesasia.core.PrayerAlarmTiming?) {
         scope.launch {
-            if (timing != null) permissions?.notifications()
+            if (timing != null) permissions?.notifications() else stopRinging()
             update { it.withAlarm(prayer, timing) }
         }
     }
+
+    /** Subuh alarm Off; anything ringing or snoozed stops too. */
+    fun turnOffWakeUp() {
+        stopRinging()
+        update { it.copy(wakeUp = null) }
+    }
+
+    /** Sahur alarm Off; anything ringing or snoozed stops too. */
+    fun turnOffSahurAlarm() {
+        stopRinging()
+        update { it.copy(sahurAlarm = null) }
+    }
+
+    /** Every alarm Off in one tap, and anything ringing or snoozed stops now. */
+    fun turnOffAllAlarms() {
+        stopRinging()
+        update { p ->
+            com.prayertimesasia.core.PrayerAlarmTiming.prayers.fold(p.copy(wakeUp = null, sahurAlarm = null)) { acc, prayer -> acc.withAlarm(prayer, null) }
+        }
+    }
+
+    /** Stops what is ringing or snoozed (the planned alarms stay). */
+    fun stopRinging() {
+        if (sideEffects) AlarmScheduler.stopRinging(context)
+        snoozeTick++
+    }
+
+    /** Bumped when a snooze is stopped, so the alarm sheet looks again. */
+    var snoozeTick by mutableStateOf(0)
 
     /** "Leave for Jumaat": asks for notification permission, then reminds [minutes] before Jumaat on Fridays. */
     fun enableJumuahReminder(minutes: Int) {
@@ -338,6 +414,16 @@ class AppState(
         }
         rescheduleAlerts()
         countOpen()
+        countOpenDay()
+    }
+
+    /** Counts separate days the app was opened, on this phone only (for the review line and star box). */
+    private fun countOpenDay() {
+        if (!prefs.hasOnboarded) return
+        val d = java.time.LocalDate.now()
+        val key = "${d.year}-${d.monthValue}-${d.dayOfMonth}"
+        if (prefs.lastOpenDay == key) return
+        update { it.copy(lastOpenDay = key, openDayCount = it.openDayCount + 1) }
     }
 
     private val usage by lazy { UsageCounter(context) }

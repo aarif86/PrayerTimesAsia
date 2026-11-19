@@ -28,9 +28,11 @@ struct HadithView: View {
             Text(h.arabic)
                 .font(.system(size: style == .card ? 22 : 19))
                 .lineSpacing(6)
+                // Arabic letters already run right to left on their own. A right to left
+                // layout here pushed the whole Prayer screen sideways on some iPhones.
                 .multilineTextAlignment(.trailing)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .environment(\.layoutDirection, .rightToLeft)
                 .padding(.leading, style == .line ? 28 : 0)
             Text("“\(h.meaning(lang))”")
                 .font(style == .card ? Font.body.italic() : Font.subheadline)

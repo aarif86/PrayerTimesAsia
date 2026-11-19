@@ -29,12 +29,15 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.LocationOff
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.Remove
@@ -101,6 +104,9 @@ fun SettingsScreen(
     listState: LazyListState = rememberLazyListState(),
     openMoveOut: () -> Unit = {},
     openMoveIn: () -> Unit = {},
+    openGuide: () -> Unit = {},
+    openReview: () -> Unit = {},
+    openNote: () -> Unit = {},
 ) {
     val r = state.resolver
     val p = state.prefs
@@ -186,7 +192,7 @@ fun SettingsScreen(
                 }
             }
             item {
-                Section("Prayer names", "Your names stay the same wherever you are: Automatic uses your home country's words, or your phone's language. When you travel somewhere that uses different words, the local name appears small beside it - \"Fajr\" with \"Subuh\" in Kuala Lumpur - so the masjid's signs make sense. Spellings follow each authority's own timetable.") {
+                Section("Prayer names", "Automatic shows English names like Fajr and Isha, or your phone's language if we have it. Pick Malay for Subuh and Isyak. Your names stay the same wherever you go. When you travel somewhere that uses other words, the local name shows small beside it, like Subuh in Kuala Lumpur, so the masjid's signs make sense. Spellings follow each authority's own timetable.") {
                     PickerRow("Prayer names", p.namingOverride?.language ?: "Automatic · ${r.personalNaming.language}",
                         listOf<Pair<String, NamingStyle?>>("Automatic · ${r.personalNaming.language}" to null) + NamingStyle.entries.map { it.label to it },
                         p.namingOverride) { n -> state.update { it.copy(namingOverride = n) } }
@@ -198,7 +204,7 @@ fun SettingsScreen(
                     SwitchRow("Show hadith in the app", p.showHadith) { on ->
                         state.update { it.copy(showHadith = on, hiddenHadith = if (on) emptyList() else it.hiddenHadith) }
                     }
-                    SwitchRow("Add a hadith to alerts", p.hadithInAlerts) { on -> state.update { it.copy(hadithInAlerts = on) } }
+                    SwitchRow("Add a hadith to wake-up alerts", p.hadithInAlerts) { on -> state.update { it.copy(hadithInAlerts = on) } }
                 }
             }
             item {
@@ -224,6 +230,10 @@ fun SettingsScreen(
                         state.update { it.copy(todayStyle = s) }
                     }
                     SwitchRow("Bigger text", p.largeText) { on -> state.update { it.copy(largeText = on) } }
+                    SwitchRow("Opening screen", p.showOpening,
+                        "The moving dial you see as the app opens. Turn it off to go straight to your prayer times. It always shows the first time.") { on ->
+                        state.update { it.copy(showOpening = on) }
+                    }
                     SwitchRow("24-hour time", p.use24Hour) { on -> state.update { it.copy(use24Hour = on) } }
                     StepperRow("Hijri date adjustment", if (p.hijriAdjustment == 0) "None" else String.format(java.util.Locale.ROOT, "%+d day", p.hijriAdjustment),
                         canDown = p.hijriAdjustment > -2, canUp = p.hijriAdjustment < 2,
@@ -291,6 +301,11 @@ fun SettingsScreen(
                 }
             }
             item {
+                Section("Help", "A short tour that taps the real buttons, so you know where everything is.") {
+                    LinkRow("Show the quick guide", Icons.Filled.Lightbulb, openGuide)
+                }
+            }
+            item {
                 Section("Accuracy") {
                     Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.",
                         style = Txt.footnote, color = Palette.primary, modifier = Modifier.padding(16.dp))
@@ -314,6 +329,8 @@ fun SettingsScreen(
             }
             item {
                 Section(null, "Prayer Times Asia. Built in Asia, made for Muslims everywhere.") {
+                    LinkRow("Rate and review", Icons.Outlined.StarOutline, openReview)
+                    LinkRow("Send a note to the makers", Icons.Outlined.Email, openNote)
                     LinkRow("Sources & credits", null, openCredits)
                     LinkRow("Help verify times where you are", null) {
                         runCatching { uri.openUri("https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md") }
@@ -399,8 +416,11 @@ fun ValueRow(label: String, value: String, onClick: (() -> Unit)? = null) = RowS
 }
 
 @Composable
-fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) = RowShell({ onChange(!checked) }) {
-    Text(label, style = Txt.body, color = Palette.primary, modifier = Modifier.weight(1f))
+fun SwitchRow(label: String, checked: Boolean, sub: String? = null, onChange: (Boolean) -> Unit) = RowShell({ onChange(!checked) }) {
+    Column(Modifier.weight(1f)) {
+        Text(label, style = Txt.body, color = Palette.primary)
+        if (sub != null) Text(sub, style = Txt.footnote, color = Palette.secondary)
+    }
     Switch(checked, onChange, colors = SwitchDefaults.colors(checkedTrackColor = Palette.success, checkedThumbColor = Color.White,
         uncheckedTrackColor = Palette.primary.copy(alpha = 0.16f), uncheckedThumbColor = Color.White, uncheckedBorderColor = Color.Transparent))
 }

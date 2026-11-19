@@ -4,6 +4,9 @@ struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var showPlaces = false
     @State private var showRamadan = false
+    @State private var showGuide = false
+    @State private var showReview = false
+    @State private var showNote = false
     @Environment(\.dismiss) private var dismiss
     /// A main tab (no Done button) rather than a sheet.
     var isTab = false
@@ -145,7 +148,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Prayer names")
                 } footer: {
-                    Text("Your names stay the same wherever you are: Automatic uses your home country's words, or your phone's language. When you travel somewhere that uses different words, the local name appears small underneath - \"Fajr\" with \"Subuh here\" in Kuala Lumpur - so the masjid's signs make sense. Spellings follow each authority's own timetable.")
+                    Text("Automatic shows English names like Fajr and Isha, or your phone's language if we have it. Pick Malay for Subuh and Isyak. Your names stay the same wherever you go. When you travel somewhere that uses other words, the local name shows small underneath, like Subuh in Kuala Lumpur, so the masjid's signs make sense. Spellings follow each authority's own timetable.")
                 }
 
                 Section {
@@ -158,8 +161,8 @@ struct SettingsView: View {
                     }
                     Toggle(isOn: $model.prefs.hadithInAlerts) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Add a hadith to alerts")
-                            Text("One short line under each prayer alert").font(.caption).foregroundStyle(.secondary)
+                            Text("Add a hadith to wake-up alerts")
+                            Text("One short line under the Subuh and tahajjud alerts").font(.caption).foregroundStyle(.secondary)
                         }
                     }
                 } header: {
@@ -196,6 +199,10 @@ struct SettingsView: View {
                         ForEach(TodayStyle.allCases) { Text($0.label).tag($0) }
                     }
                     Toggle("Bigger text", isOn: $model.prefs.largeText)
+                    Toggle(isOn: $model.prefs.showOpening) {
+                        Text("Opening screen")
+                        Text("The moving dial you see as the app opens. Turn it off to go straight to your prayer times. It always shows the first time.")
+                    }
                     Toggle("24-hour time", isOn: $model.prefs.use24Hour)
                     Stepper(value: $model.prefs.hijriAdjustment, in: -2...2) {
                         LabeledContent("Hijri date adjustment",
@@ -297,6 +304,16 @@ struct SettingsView: View {
                     Text("Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. Works between iPhone, Android and the web. Restoring a new iPhone from an iCloud backup brings them too.")
                 }
 
+                Section {
+                    Button { showGuide = true } label: {
+                        Label("Show the quick guide", systemImage: "lightbulb")
+                    }
+                } header: {
+                    Text("Help")
+                } footer: {
+                    Text("A short tour that taps the real buttons, so you know where everything is.")
+                }
+
                 Section("Accuracy") {
                     Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.")
                         .font(.footnote)
@@ -327,6 +344,8 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Button { showReview = true } label: { Label("Rate and review", systemImage: "star") }
+                    Button { showNote = true } label: { Label("Send a note to the makers", systemImage: "envelope") }
                     NavigationLink("Sources & credits") { CreditsView() }
                     Link("Help verify times where you are", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md")!)
                     Link("Design a new look", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md")!)
@@ -347,6 +366,9 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
             .sheet(isPresented: $showRamadan) { RamadanView() }
+            .fullScreenCover(isPresented: $showGuide) { GuideView() }
+            .sheet(isPresented: $showReview) { ReviewView() }
+            .sheet(isPresented: $showNote) { NoteView() }
             .toolbar {
                 if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             }

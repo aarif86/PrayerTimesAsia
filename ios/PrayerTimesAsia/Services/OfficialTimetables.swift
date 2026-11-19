@@ -13,12 +13,16 @@ final class OfficialTimetables {
         case jakim(zone: String)
         /// Kemenag regency/city, by the name Apple gives for where you are.
         case kemenag(regency: String)
+        /// London Unified Prayer Timetable (East London Mosque), from the app's
+        /// own published copy, so the API key stays in the repo's Actions secrets.
+        case london
 
         var label: String {
             switch self {
             case .muis: "MUIS official timetable"
             case .jakim(let zone): "JAKIM e-Solat · zone \(zone)"
             case .kemenag(let regency): "Kemenag · \(regency)"
+            case .london: "London Unified Prayer Timetable"
             }
         }
 
@@ -28,6 +32,7 @@ final class OfficialTimetables {
             case .muis: "MUIS"
             case .jakim: "JAKIM"
             case .kemenag: "Kemenag"
+            case .london: "London Unified"
             }
         }
 
@@ -38,7 +43,7 @@ final class OfficialTimetables {
             switch self {
             case .muis: name = "sg-muis"
             case .jakim(let zone): name = "my-\(zone.lowercased())"
-            case .kemenag: return nil
+            case .kemenag, .london: return nil
             }
             return URL(string: "webcal://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/\(name).ics")
         }
@@ -48,6 +53,7 @@ final class OfficialTimetables {
             case .muis: "muis-\(year)"
             case .jakim(let zone): "jakim-\(zone)-\(year)"
             case .kemenag(let regency): "kemenag-\(OfficialTimetables.kemenagCore(regency).core)-\(year)"
+            case .london: "london-\(year)"
             }
         }
     }
@@ -86,8 +92,23 @@ final class OfficialTimetables {
             guard let name = place.district ?? place.region ?? (place.name == "Current location" ? nil : place.name)
             else { return nil }
             return .kemenag(regency: name)
+        case ("GB", "moonsighting") where Geo.distanceKm(place.coordinates, londonCentre) <= londonRadiusKm:
+            return .london
         default: return nil
         }
+    }
+
+    static let londonFeed = URL(string: "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/gb-london.json")!
+    /// Central London; the timetable is for Greater London.
+    static let londonCentre = Coordinates(latitude: 51.5074, longitude: -0.1278)
+    static let londonRadiusKm = 35.0
+
+    /// Plain words for the source line when a table other than the country's own applies.
+    static func summary(_ source: Source?, short: Bool = false) -> String? {
+        guard case .london = source else { return nil }
+        return short
+            ? "London Unified Prayer Timetable from East London Mosque, followed by many London masjids."
+            : "London Unified Prayer Timetable from East London Mosque, followed by many London masjids. When it can't be downloaded, the app uses the Moonsighting Committee method. Your local masjid may differ by a few minutes."
     }
 
     static func nearestJakimZone(to c: Coordinates) -> String {
@@ -135,6 +156,8 @@ final class OfficialTimetables {
                 table = try await Self.fetchJAKIM(zone: zone, year: year)
             case .kemenag(let regency):
                 table = try await fetchKemenag(regency: regency, year: year)
+            case .london:
+                table = try Self.parseLondon(try await Self.get(Self.londonFeed)).filter { $0.key.hasPrefix("\(year)-") }
             }
             // A year is ~365 rows; Kemenag comes month by month, so accept a
             // partial year (missing days fall back to the calculation).
@@ -233,6 +256,21 @@ final class OfficialTimetables {
                 row[prayer.rawValue] = t
             }
             if row.count == 6 { out[String(date)] = row }
+        }
+        return out
+    }
+
+    /// gb-london.json (tools/fetch_london.py): {"times":{"2026-11-11":{"fajr":"05:43","sunrise":"07:13",...}}}
+    static func parseLondon(_ data: Data) throws -> [String: [String: String]] {
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let days = json["times"] as? [String: [String: Any]] else { throw URLError(.cannotParseResponse) }
+        var out: [String: [String: String]] = [:]
+        for (date, r) in days where date.count == 10 {
+            var row: [String: String] = [:]
+            for prayer in Prayer.allCases {
+                if let raw = r[prayer.rawValue] as? String, let t = hhmm(raw) { row[prayer.rawValue] = t }
+            }
+            if row.count == 6 { out[date] = row }
         }
         return out
     }

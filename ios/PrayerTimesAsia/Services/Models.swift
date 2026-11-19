@@ -247,6 +247,9 @@ struct Preferences: Codable, Equatable, Sendable {
     var manualPlace: Place?
     var savedPlaces: [Place] = []
     var home: Place?
+    /// The user said this is home (or picked it). Until then home is only the
+    /// app's guess from where the phone first was, and Journey asks about it.
+    var homeConfirmed = false
 
     var methodOverrideID: String?
     var asrOverride: AsrSchool?
@@ -275,6 +278,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var arrivalBannerDismissed = true
     /// The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival.
     var musafirChipDismissed = false
+    /// Long summer days notes closed, one per place and summer (Core/LongDays.swift). Stays on this phone.
+    var longDaysClosed: [String] = []
     var trip: [TripStop] = []
 
     /// Keep a Live Activity countdown to the next prayer on the Lock Screen.
@@ -374,6 +379,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var fastLog: [String: FastMark] = [:]
     /// Days Tarawih was prayed.
     var tarawihLog: Set<String> = []
+    /// How many rakaat of Tarawih the user prays (8 or 20), for the counter; nil until they choose.
+    var tarawihRakaat: Int?
     /// Days the day's juz was read.
     var quranLog: Set<String> = []
     /// Hijri years zakat fitrah was paid.
@@ -388,6 +395,10 @@ struct Preferences: Codable, Equatable, Sendable {
     var buzzOnly = false
     /// Bigger text everywhere, for older eyes.
     var largeText = false
+    /// The moving opening screen. Off goes straight to the app; it still shows the first time.
+    var showOpening = true
+    /// The quick guide (swipe cards) was seen or skipped. Settings > Help opens it again.
+    var guideSeen = false
     /// Fridays: a reminder this many minutes before Jumaat (0 = off).
     var jumuahReminderMinutes = 0
     static let jumuahReminderChoices = [0, 20, 30, 45, 60, 90]
@@ -397,6 +408,18 @@ struct Preferences: Codable, Equatable, Sendable {
     var hadithInAlerts = true
     /// Hadith closed with their ✕, by id. Turning Show hadith back on brings them all back.
     var hiddenHadith: [String] = []
+    /// Separate days the app was opened, for the one gentle review line and Apple's star box.
+    var openDayCount = 0
+    /// "yyyy-MM-dd" of the last counted open.
+    var lastOpenDay = ""
+    /// The one gentle review line was closed or used; it never comes back.
+    var noteCardDone = false
+    /// When a public review link was last tapped (seconds since 1970), 0 = never.
+    var reviewTappedAt: Double = 0
+    /// The review words written once in Rate and review, kept to paste in each place.
+    var reviewDraft = ""
+    /// When Apple's own star box was last asked for (seconds since 1970), 0 = never.
+    var starBoxAskedAt: Double = 0
 
     private static let key = "preferences.v1"
 
@@ -415,6 +438,7 @@ struct Preferences: Codable, Equatable, Sendable {
         manualPlace = v(.manualPlace, d.manualPlace)
         savedPlaces = v(.savedPlaces, d.savedPlaces)
         home = v(.home, d.home)
+        homeConfirmed = v(.homeConfirmed, d.homeConfirmed)
         methodOverrideID = v(.methodOverrideID, d.methodOverrideID)
         asrOverride = v(.asrOverride, d.asrOverride)
         namingOverride = v(.namingOverride, d.namingOverride)
@@ -430,6 +454,7 @@ struct Preferences: Codable, Equatable, Sendable {
         arrivedAt = v(.arrivedAt, d.arrivedAt)
         arrivalBannerDismissed = v(.arrivalBannerDismissed, d.arrivalBannerDismissed)
         musafirChipDismissed = v(.musafirChipDismissed, d.musafirChipDismissed)
+        longDaysClosed = v(.longDaysClosed, d.longDaysClosed)
         trip = v(.trip, d.trip)
         liveActivityEnabled = v(.liveActivityEnabled, d.liveActivityEnabled)
         trackerEnabled = v(.trackerEnabled, d.trackerEnabled)
@@ -461,6 +486,8 @@ struct Preferences: Codable, Equatable, Sendable {
         khatamPlan = v(.khatamPlan, d.khatamPlan)
         fastLog = v(.fastLog, d.fastLog)
         tarawihLog = v(.tarawihLog, d.tarawihLog)
+        tarawihRakaat = v(.tarawihRakaat, d.tarawihRakaat)
+        if let n = tarawihRakaat, !Tarawih.choices.contains(n) { tarawihRakaat = nil }
         quranLog = v(.quranLog, d.quranLog)
         zakatPaid = v(.zakatPaid, d.zakatPaid)
         windowNudge = v(.windowNudge, d.windowNudge)
@@ -471,22 +498,46 @@ struct Preferences: Codable, Equatable, Sendable {
         if !(0..<1440).contains(quietTo) { quietTo = d.quietTo }
         buzzOnly = v(.buzzOnly, d.buzzOnly)
         largeText = v(.largeText, d.largeText)
+        showOpening = v(.showOpening, d.showOpening)
+        // People already using the app before the quick guide came don't get it pushed at them; it waits in Settings.
+        guideSeen = v(.guideSeen, hasOnboarded)
         jumuahReminderMinutes = v(.jumuahReminderMinutes, d.jumuahReminderMinutes)
         if !Self.jumuahReminderChoices.contains(jumuahReminderMinutes) { jumuahReminderMinutes = 0 }
         showHadith = v(.showHadith, d.showHadith)
         hadithInAlerts = v(.hadithInAlerts, d.hadithInAlerts)
         hiddenHadith = v(.hiddenHadith, d.hiddenHadith)
+        openDayCount = v(.openDayCount, d.openDayCount)
+        lastOpenDay = v(.lastOpenDay, d.lastOpenDay)
+        noteCardDone = v(.noteCardDone, d.noteCardDone)
+        reviewTappedAt = v(.reviewTappedAt, d.reviewTappedAt)
+        reviewDraft = v(.reviewDraft, d.reviewDraft)
+        starBoxAskedAt = v(.starBoxAskedAt, d.starBoxAskedAt)
     }
 
+    /// Set when `load()` brought settings back from the keychain copy.
+    nonisolated(unsafe) static var didRestore = false
+
+    /// This phone's settings. On a fresh install (nothing saved yet) they come
+    /// back from the keychain copy, so deleting the app loses nothing.
     static func load() -> Preferences {
-        guard let data = UserDefaults.standard.data(forKey: key),
-              let prefs = try? JSONDecoder().decode(Preferences.self, from: data) else { return Preferences() }
-        return prefs
+        if let data = UserDefaults.standard.data(forKey: key),
+           let prefs = try? JSONDecoder().decode(Preferences.self, from: data) {
+            return prefs
+        }
+        if let data = SettingsBackup.load(),
+           var prefs = try? JSONDecoder().decode(Preferences.self, from: data), prefs.hasOnboarded {
+            prefs.seasonPreview = .off
+            didRestore = true
+            UserDefaults.standard.set(data, forKey: key)
+            return prefs
+        }
+        return Preferences()
     }
 
     func save() {
         if let data = try? JSONEncoder().encode(self) {
             UserDefaults.standard.set(data, forKey: Self.key)
+            SettingsBackup.save(data)
         }
     }
 }

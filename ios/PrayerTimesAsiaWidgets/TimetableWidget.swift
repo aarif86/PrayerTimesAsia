@@ -67,13 +67,7 @@ struct TimetableProvider: AppIntentTimelineProvider {
     func timeline(for configuration: TimetableStyleIntent, in context: Context) async -> Timeline<TimetableEntry> {
         let snapshot = WidgetSnapshot.load()
         let style = configuration.style.resolved(snapshot)
-        let now = Date.now
-        var dates = Set<Date>([now])
-        for i in 1...96 { dates.insert(now.addingTimeInterval(Double(i) * 900)) }
-        for item in snapshot?.timeline ?? [] where item.time > now && item.time < now.addingTimeInterval(86_400) {
-            dates.insert(item.time)
-        }
-        return Timeline(entries: dates.sorted().map { TimetableEntry(date: $0, snapshot: snapshot, style: style) },
+        return Timeline(entries: WidgetSnapshot.entryDates(snapshot).map { TimetableEntry(date: $0, snapshot: snapshot, style: style) },
                         policy: .atEnd)
     }
 }

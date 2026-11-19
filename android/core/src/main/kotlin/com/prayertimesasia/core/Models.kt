@@ -238,6 +238,8 @@ data class Preferences(
     val manualPlace: Place? = null,
     val savedPlaces: List<Place> = emptyList(),
     val home: Place? = null,
+    /** The user said this is home (or picked it). Until then home is only a guess and Journey asks about it. */
+    val homeConfirmed: Boolean = false,
 
     val methodOverrideId: String? = null,
     val asrOverride: AsrSchool? = null,
@@ -263,6 +265,8 @@ data class Preferences(
     val arrivalBannerDismissed: Boolean = true,
     /** The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival. */
     val musafirChipDismissed: Boolean = false,
+    /** Long summer days notes closed, one per place and summer ([LongDays.key]). Stays on this phone. */
+    val longDaysClosed: List<String> = emptyList(),
     val trip: List<TripStop> = emptyList(),
 
     // Prayer tracker (opt-in)
@@ -325,6 +329,8 @@ data class Preferences(
     val fastLog: Map<String, FastMark> = emptyMap(),
     /** Days Tarawih was prayed. */
     val tarawihLog: Set<String> = emptySet(),
+    /** How many rakaat of Tarawih the user prays (8 or 20), for the counter; null until they choose. */
+    val tarawihRakaat: Int? = null,
     /** Days the day's juz was read. */
     val quranLog: Set<String> = emptySet(),
     /** Hijri years zakat fitrah was paid. */
@@ -339,6 +345,14 @@ data class Preferences(
     val buzzOnly: Boolean = false,
     /** Bigger text everywhere, for older eyes. */
     val largeText: Boolean = false,
+    /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
+    val showOpening: Boolean = true,
+    /**
+     * The quick guide (swipe cards) was seen or skipped; Settings > Help opens it again.
+     * Null until set. decode() turns it to true for settings saved before the guide came
+     * by someone already set up, so they don't get it pushed at them; anything not true shows it.
+     */
+    val guideSeen: Boolean? = null,
     /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
     val jumuahReminderMinutes: Int = 0,
     /** Short hadith and ayat on some screens (HadithContent.kt). */
@@ -347,6 +361,18 @@ data class Preferences(
     val hadithInAlerts: Boolean = true,
     /** Hadith closed with their X, by key. Turning Show hadith back on brings them all back. */
     val hiddenHadith: List<String> = emptyList(),
+    /** Separate days the app was opened, for the one gentle review line and Google's star box. */
+    val openDayCount: Int = 0,
+    /** "yyyy-M-d" of the last counted open. */
+    val lastOpenDay: String = "",
+    /** The one gentle review line was closed or used; it never comes back. */
+    val noteCardDone: Boolean = false,
+    /** When a public review link was last tapped (epoch ms), 0 = never. */
+    val reviewTappedAt: Long = 0,
+    /** The review words written once in Rate and review, kept to paste in each place. */
+    val reviewDraft: String = "",
+    /** When Google's own star box was last asked for (epoch ms), 0 = never. */
+    val starBoxAskedAt: Long = 0,
 ) {
     fun encode(): String = CoreJson.encodeToString(serializer(), this)
 
@@ -386,6 +412,9 @@ data class Preferences(
             jumuahReminderMinutes = jumuahReminderMinutes.takeIf { it in PrayerWindow.JUMUAH_REMINDER_CHOICES } ?: 0,
             // Isyak is open until Subuh: it has no "before it ends" alarm.
             ishaAlarm = ishaAlarm.takeIf { it != PrayerAlarmTiming.END_MINUS_30 },
+            tarawihRakaat = tarawihRakaat?.takeIf { it in Tarawih.CHOICES },
+            // Settings from before the guide came, already set up: count it as seen.
+            guideSeen = guideSeen ?: if (hasOnboarded) true else null,
         )
     }
 }

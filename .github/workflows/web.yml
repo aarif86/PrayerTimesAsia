@@ -11,9 +11,9 @@ name: Web
 on:
   push:
     branches: [main]
-    paths: ['web/**', 'site/**', 'testdata/**', 'config/analytics.json', '.github/workflows/web.yml']
+    paths: ['web/**', 'site/**', 'testdata/**', 'data/ramadan-words.json', 'data/app-words/**', 'config/analytics.json', '.github/workflows/web.yml']
   pull_request:
-    paths: ['web/**', 'site/**', 'testdata/**', 'config/analytics.json', '.github/workflows/web.yml']
+    paths: ['web/**', 'site/**', 'testdata/**', 'data/ramadan-words.json', 'data/app-words/**', 'config/analytics.json', '.github/workflows/web.yml']
   workflow_dispatch:
 
 permissions:
@@ -73,6 +73,16 @@ jobs:
         run: npm run build
         env:
           BASE_PATH: ${{ steps.pages.outputs.base }}app/
+      - name: Accessibility check (axe on every screen, Light and Dark, every look, keyboard)
+        working-directory: web
+        run: |
+          # The runner's own Google Chrome (Playwright cannot install its Chromium on every runner image).
+          chrome=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)
+          if [ -z "$chrome" ]; then npx playwright install chromium; fi
+          echo "Browser: ${chrome:-Playwright Chromium}"
+          CHROMIUM_PATH="$chrome" npm run a11y
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base }}app/
       - name: Put the promo site and the app together
         env:
           BASE: ${{ steps.pages.outputs.base }}
@@ -112,6 +122,7 @@ jobs:
           for lang in ms id ar ur bn tr fr; do test -f "_site/$lang/index.html"; done
           test -f _site/sources.html
           test -f _site/press.html
+          test -f _site/ramadan.html
           ! grep -q "__TELEMETRYDECK_APP_ID__" _site/index.html _site/ms/index.html _site/id/index.html _site/ar/index.html _site/ur/index.html _site/bn/index.html _site/tr/index.html _site/fr/index.html
           # Every image and page the promo page links to is there.
           for f in $(grep -oE '(src|href)="[^"#:]+"' _site/index.html | sed -E 's/^[a-z]+="//; s/"$//' | sort -u); do

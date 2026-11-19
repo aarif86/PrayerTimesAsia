@@ -3,24 +3,22 @@ import XCTest
 
 /// Your names follow you; the local word only shows when it differs.
 final class NamingTests: XCTestCase {
-    func testPersonalNamesComeFromHomeThenPhone() {
-        let english = Locale(identifier: "en_AU")
-        XCTAssertEqual(NamingStyle.personal(homeCountry: "SG", locale: english), .malay)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: "ID", locale: english), .indonesian)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: "TR", locale: english), .turkish)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: nil, locale: english), .international)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: nil, locale: Locale(identifier: "ms_MY")), .malay)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: nil, locale: Locale(identifier: "en_PK")), .southAsian)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: "AU", locale: Locale(identifier: "id_ID")), .indonesian)
+    func testPersonalNamesAreEnglishUnlessThePhoneSpeaksAnother() {
+        // Home country no longer decides; an English phone in Singapore sees Fajr.
+        XCTAssertEqual(NamingStyle.personal(locale: Locale(identifier: "en_SG")), .international)
+        XCTAssertEqual(NamingStyle.personal(locale: Locale(identifier: "en_PK")), .international)
+        XCTAssertEqual(NamingStyle.personal(locale: Locale(identifier: "en_AU")), .international)
+        XCTAssertEqual(NamingStyle.international.language, "English")
+        XCTAssertEqual(NamingStyle.personal(locale: Locale(identifier: "ms_MY")), .malay)
+        XCTAssertEqual(NamingStyle.personal(locale: Locale(identifier: "id_ID")), .indonesian)
     }
 
     func testPhoneLanguageComesFirstInItsOwnScript() {
-        XCTAssertEqual(NamingStyle.personal(homeCountry: nil, locale: Locale(identifier: "ar_SA")), .arabicScript)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: "PK", locale: Locale(identifier: "ur_PK")), .urdu)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: "BD", locale: Locale(identifier: "bn_BD")), .bengali)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: "FR", locale: Locale(identifier: "fr_FR")), .french)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: "SG", locale: Locale(identifier: "tr_TR")), .turkish)
-        XCTAssertEqual(NamingStyle.personal(homeCountry: "PK", locale: Locale(identifier: "en_PK")), .southAsian)
+        XCTAssertEqual(NamingStyle.personal(locale: Locale(identifier: "ar_SA")), .arabicScript)
+        XCTAssertEqual(NamingStyle.personal(locale: Locale(identifier: "ur_PK")), .urdu)
+        XCTAssertEqual(NamingStyle.personal(locale: Locale(identifier: "bn_BD")), .bengali)
+        XCTAssertEqual(NamingStyle.personal(locale: Locale(identifier: "fr_FR")), .french)
+        XCTAssertEqual(NamingStyle.personal(locale: Locale(identifier: "tr_TR")), .turkish)
     }
 
     func testEveryLanguageHasEveryName() {

@@ -1,3 +1,4 @@
+import { TARAWIH_RAKAAT } from '../core/tarawih'
 import type { MasjidLink } from '../core/masjidLink'
 import type { Place } from '../core/place'
 import type { FastMark } from '../core/ramadanContent'
@@ -10,6 +11,10 @@ import {
 
 export type Appearance = 'system' | 'light' | 'dark'
 export const APPEARANCES: Appearance[] = ['system', 'light', 'dark']
+/** Where the Sections bar sits on bigger screens (laptop, tablet): the arrow on the bar moves it. Phones always keep it at the bottom. */
+export const MENU_SIDES = ['auto', 'bottom', 'left', 'right'] as const
+export type MenuSide = (typeof MENU_SIDES)[number]
+
 export const APPEARANCE_LABEL: Record<Appearance, string> = {
   system: 'Automatic (follows the sky)', light: 'Light', dark: 'Dark',
 }
@@ -33,6 +38,8 @@ export interface Preferences {
   manualPlace: Place | null
   savedPlaces: Place[]
   home: Place | null
+  /** The user said this is home (or picked it). Until then home is only a guess and Journey asks about it. */
+  homeConfirmed: boolean
   methodOverrideID: string | null
   asrOverride: AsrSchool | null
   namingOverride: NamingStyle | null
@@ -51,6 +58,8 @@ export interface Preferences {
   arrivalBannerDismissed: boolean
   /** The big "Musafir" line was closed for this trip; the luggage button stays with the other buttons. Reset on each new arrival. */
   musafirChipDismissed: boolean
+  /** Long summer days notes closed, one per place and summer (core/longDays.ts longDaysKey). Stays on this device. */
+  longDaysClosed: string[]
   trip: TripStop[]
   trackerEnabled: boolean
   prayedLog: Record<string, Prayer[]>
@@ -95,6 +104,8 @@ export interface Preferences {
   fastLog: Record<string, FastMark>
   /** Days Tarawih was prayed. */
   tarawihLog: string[]
+  /** How many rakaat of Tarawih the user prays, for the counter; null until they choose. */
+  tarawihRakaat: 8 | 20 | null
   /** Days the day's juz was read. */
   quranLog: string[]
   /** Hijri years zakat fitrah was paid. */
@@ -109,6 +120,12 @@ export interface Preferences {
   buzzOnly: boolean
   /** Bigger text everywhere, for older eyes. */
   largeText: boolean
+  /** Web only: where the Sections bar sits on bigger screens. */
+  menuSide: MenuSide
+  /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
+  showOpening: boolean
+  /** The quick guide (seven swipe cards) was seen or skipped. Settings opens it again. */
+  guideSeen: boolean
   /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
   jumuahReminderMinutes: number
   /** Short hadith and ayat on some screens (see core/hadith.ts). */
@@ -117,6 +134,18 @@ export interface Preferences {
   hadithInAlerts: boolean
   /** Hadith closed with their ✕, by id. Turning Show hadith back on brings them all back. */
   hiddenHadith: string[]
+  /** Separate days the app was opened, for the one gentle "note to the makers" card. */
+  openDayCount: number
+  /** "yyyy-MM-dd" of the last counted open. */
+  lastOpenDay: string
+  /** When a note to the makers was last started (ms), 0 = never. */
+  feedbackSentAt: number
+  /** The one gentle "note to the makers" card was closed or used; it never comes back. */
+  noteCardDone: boolean
+  /** When a public review link was last tapped (ms), 0 = never. */
+  reviewTappedAt: number
+  /** The review words written once in Rate and review, kept on this device to paste in each store. */
+  reviewDraft: string
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -125,6 +154,7 @@ export const DEFAULT_PREFS: Preferences = {
   manualPlace: null,
   savedPlaces: [],
   home: null,
+  homeConfirmed: false,
   methodOverrideID: null,
   asrOverride: null,
   namingOverride: null,
@@ -140,6 +170,7 @@ export const DEFAULT_PREFS: Preferences = {
   arrivedAt: null,
   arrivalBannerDismissed: true,
   musafirChipDismissed: false,
+  longDaysClosed: [],
   trip: [],
   trackerEnabled: false,
   prayedLog: {},
@@ -170,6 +201,7 @@ export const DEFAULT_PREFS: Preferences = {
   khatamPlan: false,
   fastLog: {},
   tarawihLog: [],
+  tarawihRakaat: null,
   quranLog: [],
   zakatPaid: [],
   windowNudge: true,
@@ -178,13 +210,22 @@ export const DEFAULT_PREFS: Preferences = {
   quietTo: 6 * 60,
   buzzOnly: false,
   largeText: false,
+  menuSide: 'auto',
+  showOpening: true,
+  guideSeen: false,
   jumuahReminderMinutes: 0,
   showHadith: true,
   hadithInAlerts: true,
   hiddenHadith: [],
+  openDayCount: 0,
+  lastOpenDay: '',
+  feedbackSentAt: 0,
+  noteCardDone: false,
+  reviewTappedAt: 0,
+  reviewDraft: '',
 }
 
-const NULLABLE = new Set<keyof Preferences>([
+const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat', 
   'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'jakimZoneOverride',
   'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
   'dhuhrAlarm', 'asrAlarm', 'maghribAlarm', 'ishaAlarm',
@@ -192,6 +233,7 @@ const NULLABLE = new Set<keyof Preferences>([
 
 const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   appearance: ['system', 'light', 'dark'],
+  menuSide: MENU_SIDES,
   todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands', 'simple'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,
@@ -226,6 +268,7 @@ export function decodePreferences(raw: unknown): Preferences {
       if (key === 'arrivedAt' && typeof v !== 'number') continue
       if (key === 'myMasjid' && !isMasjid(v)) continue
       if (['methodOverrideID', 'jakimZoneOverride', 'lastCountryCode', 'communityAuthority'].includes(key) && typeof v !== 'string') continue
+      if (key === 'tarawihRakaat' && !TARAWIH_RAKAAT.includes(v as 8 | 20)) continue
       if (key === 'trackerPausedSince' && !(typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v))) continue
       ;(out as unknown as Record<string, unknown>)[key] = v
       continue
@@ -233,6 +276,7 @@ export function decodePreferences(raw: unknown): Preferences {
     if (Array.isArray(d)) {
       if (!Array.isArray(v)) continue
       if (key === 'savedPlaces') (out as unknown as Record<string, unknown>)[key] = v.filter(isPlace)
+      else if (key === 'longDaysClosed') (out as unknown as Record<string, unknown>)[key] = v.filter((x) => typeof x === 'string').slice(-30)
       else if (key === 'sahurDays') (out as unknown as Record<string, unknown>)[key] = SAHUR_DAYS.filter((d) => v.includes(d))
       else (out as unknown as Record<string, unknown>)[key] = v
       continue
@@ -245,6 +289,8 @@ export function decodePreferences(raw: unknown): Preferences {
   if (!JUMUAH_REMINDER_CHOICES.includes(out.jumuahReminderMinutes)) out.jumuahReminderMinutes = 0
   // Isyak is open until Subuh: it has no "before it ends" alarm.
   if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
+  // People already using the app before the quick guide came don't get it pushed at them; it waits in Settings.
+  if (!('guideSeen' in r) && out.hasOnboarded) out.guideSeen = true
   return out
 }
 

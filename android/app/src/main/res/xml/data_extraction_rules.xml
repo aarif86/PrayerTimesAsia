@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12 and newer. Google's app backup (and moving to a new phone)
+     keeps your settings and prayer tracker, so deleting and reinstalling the
+     app brings them back with no account. Downloaded caches (masjid lists,
+     official timetables), alarm bookkeeping and the "install" flag that
+     spots a reinstall are left out. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="prayertimesasia.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="prayertimesasia.xml" />
+    </device-transfer>
+</data-extraction-rules>

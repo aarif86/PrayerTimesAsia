@@ -6,7 +6,8 @@
 
 .classic-header { display: flex; align-items: center; gap: 14px; }
 .classic-side { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
-.controls-row { display: flex; align-self: stretch; justify-content: flex-end; gap: 8px; }
+.classic-side > * { max-width: 100%; }
+.controls-row { position: relative; z-index: 1; display: flex; align-self: stretch; justify-content: flex-end; gap: 8px; }
 .controls-col { position: absolute; right: 0; top: 4px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
 .place-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; font-size: 15px; font-weight: 600; padding: 6px 10px;
@@ -21,6 +22,7 @@
 .date-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 1px; }
 .caps-day { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; }
 .date-line { font-size: 17px; font-weight: 600; }
+.date-main .hijri-line { white-space: normal; max-width: 100%; }
 .hijri-line { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--fg2); white-space: nowrap; }
 
 .source-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; background: var(--fill); max-width: 100%; }
@@ -137,14 +139,15 @@
 
 /* Colour Bands - always on a dark timetable, like the classic Singapore one */
 .bands-backdrop { position: fixed; inset: 0; z-index: 0; background: rgb(43, 43, 43); }
-.bands-page { color: #fff; gap: 0; --fg: #fff; --fg2: rgba(235, 235, 245, 0.82); --fill: rgba(255, 255, 255, 0.12); --accent: rgb(247, 189, 143);
+.bands-page { color: #fff; gap: 0; --fg: #fff; --fg2: rgba(235, 235, 245, 0.82); --fill: rgba(255, 255, 255, 0.12); --accent: rgb(247, 189, 143); --on-accent: rgba(0, 0, 0, 0.82); --gold-text: rgb(255, 214, 128);
   --glass: rgba(60, 60, 60, 0.6); --stroke: rgba(255, 255, 255, 0.1); --grade-d: rgba(255, 255, 255, 0.75); }
 .bands-top { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; padding-bottom: 12px; }
 .bands-place { display: inline-flex; align-items: center; gap: 5px; font-size: 20px; font-weight: 700; min-width: 0; }
 .bands-status { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.75); }
 .bands-date { display: flex; align-items: center; gap: 4px; padding: 0 8px; background: rgb(61, 61, 61); font-size: 17px; font-weight: 600; }
 .bands-date > button:first-child, .bands-date > button:last-child { width: 36px; height: 40px; display: flex; align-items: center; justify-content: center; }
-.bands-date-main { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; }
+.bands-date-main { flex: 1; min-width: 0; display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 6px; padding: 4px 0; line-height: 1.25; text-align: center; }
+.bands-date-main > span { white-space: nowrap; }
 .bands { flex: 1; display: flex; flex-direction: column; touch-action: pan-y; }
 .band { position: relative; display: flex; align-items: center; gap: 8px; padding: 0 var(--gutter); min-height: 64px; flex: 1 1 64px; color: #fff; text-align: left; width: 100%; }
 .band.current::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: #fff; }
@@ -152,7 +155,7 @@
 .band-name { font-size: 26px; font-weight: 700; white-space: nowrap; }
 .now-pill { font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.25); align-self: center; }
 .band-time { display: inline-flex; align-items: baseline; gap: 4px; font-size: 34px; font-weight: 300; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.band-time .sfx { font-size: 22px; }
+.band-time .sfx { font-size: 22px; font-weight: 700; }
 .band-time.small { font-size: 24px; }
 .band-time.small .sfx { font-size: 15px; }
 .blessed-band { display: flex; align-items: center; gap: 8px; padding: 6px var(--gutter); min-height: 52px; background: rgb(77, 77, 77); color: #fff; }
@@ -258,7 +261,9 @@
 .masjid-title .info { position: absolute; right: 16px; pointer-events: auto; background: rgba(0, 0, 0, 0.25); color: inherit; width: 38px; height: 38px; }
 :root[data-theme="light"] .masjid-title .info { background: rgba(255, 255, 255, 0.7); }
 .space-list { list-style: none; margin: 8px 0 0; padding: 0; }
-.space-list li { display: flex; align-items: center; border-bottom: 0.5px solid var(--stroke); }
+.space-list li { border-bottom: 0.5px solid var(--stroke); }
+.space-line { display: flex; align-items: center; }
+.space-row.static { cursor: default; }
 .space-row { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 0; text-align: left; }
 .space-row > svg { flex: none; width: 24px; }
 .space-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -270,6 +275,74 @@
 .spin { animation: spin 1s linear infinite; }
 .empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 12px; text-align: center; }
 
+.masjid-page { padding-top: 14px; display: flex; flex-direction: column; }
+.near-me-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 52px; padding: 12px 18px; border-radius: 18px;
+  background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 17px; box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: transform .15s ease, box-shadow .2s ease; }
+.near-me-btn:hover { transform: translateY(-1px); }
+.near-me-btn:active { transform: scale(.98); }
+.near-me-btn:disabled { opacity: .85; }
+.near-me-note { font-size: 13px; margin: 8px 4px 0; }
+.near-head { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.near-head h2, .friday-head h2 { font-size: 20px; font-weight: 700; margin: 0; }
+.space-dist { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.space-walk { font-size: 12px; color: var(--fg2); }
+.space-chip { align-self: flex-start; margin-top: 3px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+.more-on-map { font-size: 14px; margin: 12px 2px 0; }
+.near-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.mode-switch { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--fill); }
+.mode-switch button { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--fg2); transition: background .2s ease, color .2s ease; }
+.mode-switch button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.open-chip { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--fill); font-size: 14px; font-weight: 600; }
+.open-chip.on { background: color-mix(in srgb, var(--green, #34c759) 26%, transparent); }
+.space-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 3px; }
+.space-chips .space-chip { margin-top: 0; }
+.space-chip.ok { background: color-mix(in srgb, #34c759 20%, transparent); color: inherit; }
+.space-chip.closed { background: var(--fill); color: var(--fg2); }
+.space-chip.plain { display: inline-flex; align-items: center; gap: 4px; background: var(--fill); color: inherit; font-weight: 500; padding: 4px 10px; }
+.space-list li.open { background: color-mix(in srgb, var(--fg) 4%, transparent); border-radius: 16px; padding: 0 10px; margin: 0 -10px; }
+.space-more { padding: 0 0 14px 36px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; animation: space-more-in .25s ease; }
+.space-more p { margin: 0; display: flex; align-items: center; gap: 6px; }
+@keyframes space-more-in { from { opacity: 0; transform: translateY(-4px); } }
+.space-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.space-actions .plain-btn { font-size: 14px; padding: 7px 12px; text-decoration: none; color: inherit; }
+.space-actions .plain-btn.quiet { background: transparent; color: var(--fg2); font-weight: 500; }
+.space-actions .plain-btn.done { color: var(--accent); }
+.accent-text { color: var(--accent); font-weight: 600; }
+.your-masjid { margin-bottom: 14px; padding: 14px 16px; border-radius: 22px; background: var(--glass); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); display: flex; flex-direction: column; gap: 6px; }
+.your-masjid-main { display: flex; align-items: center; gap: 12px; text-align: left; }
+.your-masjid-main > svg { flex: none; }
+.your-masjid .caps { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.your-masjid-line { margin: 0; font-size: 14px; line-height: 1.4; padding-left: 32px; }
+.your-masjid .space-actions { padding-left: 32px; }
+.pin-pop .pin-open { color: #1f8a3b; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .space-more { animation: none; } }
+.friday-card { margin-top: 22px; padding: 16px 16px 12px; border-radius: 22px; background: var(--glass); border: 1px solid var(--stroke);
+  -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); }
+.friday-card.today { margin-top: 16px; border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.friday-head { display: flex; gap: 12px; align-items: flex-start; }
+.friday-head > svg { flex: none; margin-top: 3px; }
+.friday-head p { margin: 4px 0 0; font-size: 14px; line-height: 1.4; }
+.friday-card .space-list li:last-child { border-bottom: none; }
+.friday-card .space-name { font-size: 16px; }
+.friday-all { margin: 6px 0 8px; font-size: 14px; }
+.friday-card .footnote { margin: 4px 0 0; line-height: 1.4; }
+.friday-card .footnote a { color: var(--accent); }
+.pin-pop { display: flex; flex-direction: column; gap: 2px; font-size: 13px; line-height: 1.35; min-width: 160px; max-width: 220px; }
+.pin-pop b { font-size: 14px; }
+.friday-card .space-addr, .friday-card .space-name { white-space: normal; }
+.pin-pop span { color: #555; }
+.pin-pop .pin-fri { color: rgb(178, 84, 31); font-weight: 600; }
+.pin-pop a { margin-top: 4px; font-weight: 700; color: rgb(178, 84, 31); }
+/* Laptops: the map fills the left, the nearest places sit beside it. */
+@media (min-width: 1100px) and (min-height: 500px) {
+  .screen.tab-masjid { --col-pad: max(var(--rail-room, 0px), calc((100% - 1080px) / 2)); }
+  .masjid { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 24px; align-items: start; }
+  .masjid-map-wrap { position: sticky; top: 16px; margin-top: 16px; height: calc(100vh - 32px); border-radius: 26px; overflow: hidden; }
+  .masjid-page { padding: 16px 0 40px; }
+}
 .leaflet-container.masjid-map, .leaflet-container.map-box { font: inherit; background: #1b1f3a; }
 :root[data-theme="light"] .leaflet-container.masjid-map, :root[data-theme="light"] .leaflet-container.map-box { background: #e8eaf2; }
 .leaflet-layer.night-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.85) saturate(0.5); }
@@ -280,10 +353,11 @@
 .space-pin.musollah span { background: rgb(108, 132, 204); }
 .kaaba-pin span { display: block; width: 20px; height: 20px; background: #141419; border: 2px solid #F2C766; border-radius: 4px; }
 .leaflet-control-attribution { font-size: 10px; }
+.leaflet-container .leaflet-control-attribution a { color: #004766; }
 
 /* ---------- Settings & sheets ---------- */
 .settings { padding-bottom: 12px; }
-.settings .item .value { max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.settings .item .value { max-width: 55%; overflow-wrap: anywhere; }
 .settings a.item { text-decoration: none; color: var(--fg); }
 .settings .item svg { flex: none; }
 .makers-list { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; }
@@ -358,13 +432,14 @@
 .season-title { font-weight: 700; font-size: 16px; }
 .season-sub { font-size: 13px; opacity: 0.8; line-height: 1.35; }
 .season-main { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; color: inherit; }
-.season-day { display: flex; flex-direction: column; align-items: center; min-width: 58px; padding: 4px 8px; border-radius: 14px; background: color-mix(in srgb, #f3c969 18%, transparent); color: var(--gold); }
+.season-day { display: flex; flex-direction: column; align-items: center; min-width: 58px; padding: 4px 8px; border-radius: 14px; background: color-mix(in srgb, #f3c969 18%, transparent); color: var(--gold-text); }
 .season-day .big { font-size: 28px; font-weight: 700; line-height: 1.05; color: var(--fg); }
 .season-card .caps, .ramadan-today .caps, .raya-today .caps { font-size: 11px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; }
 .season-count { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.season-count .count { font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--gold); }
+.season-count .count { font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--gold-text); white-space: nowrap; }
 .season-count .count.small { font-size: 17px; color: inherit; }
-.season-count .at { font-size: 13px; display: inline-flex; gap: 4px; align-items: baseline; }
+.season-count .at { font-size: 13px; display: inline-flex; flex-wrap: wrap; column-gap: 4px; align-items: baseline; }
+.season-count .at .time { white-space: nowrap; }
 .season-note { display: flex; gap: 6px; align-items: center; margin: 0; font-size: 13px; opacity: 0.9; }
 .season-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 999px; font-size: 14px; font-weight: 600; color: inherit;
@@ -375,11 +450,12 @@
 .chip.small { font-size: 13px; padding: 6px 10px; }
 .preview-tag { position: absolute; top: -7px; right: 12px; font-size: 10px; font-weight: 800; letter-spacing: .6px; padding: 2px 7px; border-radius: 999px; background: #f3c969; color: #1b1410; }
 .preview-banner { margin: 10px 16px 0; padding: 10px 12px; border-radius: 12px; font-size: 13px; background: color-mix(in srgb, #f3c969 22%, transparent); }
-.ramadan-today .rt-times { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+/* Three boxes side by side; with bigger text or a narrow phone they wrap instead of being cut off. */
+.ramadan-today .rt-times { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 8px; margin-top: 10px; }
 .ramadan-today .rt-times > div { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; border-radius: 14px; background: color-mix(in srgb, var(--fg) 6%, transparent); }
-.ramadan-today .rt-times > div.gold { background: color-mix(in srgb, #f3c969 20%, transparent); }
+.ramadan-today .rt-times > div.gold { background: color-mix(in srgb, #f3c969 20%, transparent); color: var(--gold-text); }
 .ramadan-today .rt-times .time { font-size: clamp(22px, 7vw, 34px) !important; }
-.rt-count { text-align: center; font-size: 17px; font-weight: 700; color: var(--gold); margin: 10px 0 4px; }
+.rt-count { text-align: center; font-size: 17px; font-weight: 700; color: var(--gold-text); margin: 10px 0 4px; }
 .fast-today { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .fast-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
 .fast-day { position: relative; aspect-ratio: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: inherit;
@@ -390,11 +466,14 @@
 .fast-day.qadha { background: color-mix(in srgb, var(--accent) 45%, transparent); }
 .fast-day.is-today { outline: 2px solid var(--accent); outline-offset: 1px; }
 .fast-day[disabled] { opacity: .4; }
-.fast-reason { position: absolute; bottom: 2px; right: 5px; font-size: 10px; font-weight: 800; opacity: .8; }
-.odd-nights { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0; }
-.odd-night { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; border-radius: 12px; background: color-mix(in srgb, #3a2a7a 30%, transparent); }
-.odd-night .big { font-size: 22px; font-weight: 700; }
-.odd-night.tonight { background: color-mix(in srgb, #f3c969 35%, transparent); }
+.fast-reason { position: absolute; bottom: 2px; right: 5px; font-size: 11px; font-weight: 800; }
+.odd-nights { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 10px 0; }
+.odd-night { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 0; padding: 10px 2px; border-radius: 14px; background: color-mix(in srgb, var(--fg) 6%, transparent); text-align: center; }
+.odd-night .big { font-size: clamp(20px, 6vw, 26px); font-weight: 700; line-height: 1.1; }
+.odd-night .od-day, .odd-night .od-date { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 12px; line-height: 1.3; }
+.odd-night .od-date { font-weight: 600; }
+.odd-night.tonight { background: color-mix(in srgb, #f3c969 20%, transparent); color: var(--gold-text); }
+.odd-night.tonight .od-day { color: inherit; font-weight: 700; }
 .doa-body { padding: 4px 16px 14px 48px; }
 .doa-body p { margin: 6px 0; line-height: 1.5; }
 .doa-body .arabic { font-size: 24px; line-height: 1.9; text-align: right; font-family: 'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', serif; }
@@ -479,3 +558,138 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .app-card-line { font-size: 14px; color: rgba(238, 240, 250, 0.88); }
 .app-card-version { font-size: 13px; color: rgba(238, 240, 250, 0.75); }
 .app-card-chevron { position: relative; flex: none; color: rgba(238, 240, 250, 0.75); }
+
+/* Tarawih counter: one big tap area, easy to hit without looking closely. */
+.tarawih-choice { display: flex; gap: 10px; margin: 10px 0; }
+.tarawih-choice .pill-btn { flex: 1; justify-content: center; min-height: 48px; font-size: 17px; }
+.tarawih-choice .pill-btn.quiet.on { background: color-mix(in srgb, var(--green) 85%, transparent); color: #fff; }
+.tarawih-tap { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 180px;
+  border-radius: 22px; background: color-mix(in srgb, var(--fg) 6%, transparent); color: inherit; touch-action: manipulation; }
+.tarawih-tap:active { transform: scale(.98); }
+.tarawih-tap.complete { background: color-mix(in srgb, var(--green) 35%, transparent); }
+.tarawih-count { font-size: 56px; font-weight: 700; line-height: 1; }
+.tarawih-count .secondary { font-size: 28px; }
+.tarawih-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 260px; }
+.tarawih-dots span { width: 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; opacity: .5; }
+.tarawih-dots span.on { background: currentColor; opacity: 1; }
+.chip:disabled { opacity: .45; }
+.tarawih-tap .caption { font-size: 15px; }
+
+/* The GPS arrow pulses while the app shows the last known place and checks where we are now. */
+.checking-location { animation: checking-location 1.4s ease-in-out infinite; }
+@keyframes checking-location { 50% { opacity: 0.3; } }
+@media (prefers-reduced-motion: reduce) { .checking-location { animation: none; opacity: 0.6; } }
+/* Qibla: the big "Turn on the compass" button iPhone Safari needs before it shares the compass. */
+.compass-on { display: flex; align-items: center; gap: 12px; margin-top: 4px; padding: 14px 22px 14px 18px; border-radius: 22px; text-align: left;
+  background: var(--accent); color: var(--on-accent); box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent); position: relative; }
+/* The soft pulse is a ring that grows and fades (moved by the graphics chip), not a shadow repainted every frame. */
+.compass-on::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 45%, transparent); opacity: 0; transform: scale(.94);
+  animation: compass-on-glow 2.4s ease-out infinite; will-change: transform, opacity; }
+.compass-on:active { transform: scale(.97); }
+.compass-on-text { display: flex; flex-direction: column; gap: 2px; }
+.compass-on-title { font-size: 19px; font-weight: 800; }
+.compass-on-line { font-size: 14px; font-weight: 600; opacity: .8; }
+@keyframes compass-on-glow {
+  0% { opacity: .9; transform: scale(.94); }
+  60%, 100% { opacity: 0; transform: scale(1.04); }
+}
+.qibla-dial .centre-tap { z-index: 4; flex-direction: column; gap: 4px; color: var(--accent); font-weight: 700; font-size: 14px; cursor: pointer;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 70%, transparent); }
+@media (prefers-reduced-motion: reduce) { .compass-on::after { animation: none; } }
+/* A way back to the website from every tab (web only). Quiet, like the other round buttons. */
+.home-site-btn { text-decoration: none; color: inherit; }
+.home-site-btn.corner { position: absolute; z-index: 3; top: calc(var(--safe-top) + 14px); right: 16px; opacity: .85; }
+@media (min-width: 700px) { .home-site-btn.corner { right: calc(var(--col-pad, 0px) + 16px); } }
+.masjid-title .masjid-home { position: absolute; left: 16px; pointer-events: auto; background: rgba(0, 0, 0, 0.25); width: 38px; height: 38px; }
+:root[data-theme="light"] .masjid-title .masjid-home { background: rgba(255, 255, 255, 0.7); }
+@media (min-width: 900px) and (display-mode: browser) { .home-site-btn { display: none !important; } }
+
+/* ---------- Quick guide (first launch, and from Settings) ---------- */
+.guide { position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; color: #fff;
+  background: radial-gradient(120% 70% at 50% 0%, #3a3480 0%, #151a45 55%, #0b0f2a 100%);
+  padding: calc(var(--safe-top) + 12px) 0 calc(var(--safe-bottom) + 16px); animation: guide-in 0.45s ease-out both; }
+@keyframes guide-in { from { opacity: 0; transform: scale(1.02); } to { opacity: 1; transform: none; } }
+.guide-top { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; min-height: 44px; max-width: 520px; width: 100%; margin: 0 auto; }
+.guide-langs { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); }
+.guide-langs button { font-size: 13px; font-weight: 700; padding: 6px 11px; border-radius: 999px; color: rgba(255, 255, 255, 0.7); letter-spacing: 0.04em; }
+.guide-langs button[aria-pressed="true"] { background: rgba(255, 255, 255, 0.92); color: #151a45; }
+.guide-skip { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.8); padding: 8px 12px; }
+.guide-viewport { flex: 1; overflow: hidden; touch-action: pan-y; max-width: 520px; width: 100%; margin: 0 auto; }
+.guide-track { display: flex; height: 100%; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.guide-track.dragging { transition: none; }
+.guide-card { flex: 0 0 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center;
+  padding: max(4vh, 8px) 32px 8px; gap: 0; user-select: none; -webkit-user-select: none; }
+.guide-card > * { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.guide-card.on > * { opacity: 1; transform: none; }
+.guide-card.on > :nth-child(2) { transition-delay: 0.08s; }
+.guide-card.on > :nth-child(3) { transition-delay: 0.14s; }
+.guide-card.on > :nth-child(4) { transition-delay: 0.2s; }
+.guide-card.on > :nth-child(5) { transition-delay: 0.26s; }
+.guide-card.on > :nth-child(6) { transition-delay: 0.32s; }
+.guide-hello { font-size: 15px; font-weight: 600; color: #f7bd8f; margin: 18px 0 0; }
+.guide-title { font-family: 'Nunito Variable', ui-rounded, system-ui, sans-serif; font-size: 30px; font-weight: 800; line-height: 1.12; margin: 14px 0 12px; }
+.guide-card .guide-hello + .guide-title { margin-top: 6px; }
+.guide-foot { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: 'feats feats' 'back next'; align-items: center; gap: 16px 12px; padding: 0 20px; max-width: 520px; width: 100%; margin: 0 auto; }
+.guide-back { grid-area: back; justify-self: start; font-size: 16px; font-weight: 600; color: rgba(255, 255, 255, 0.75); padding: 12px 6px; }
+.guide-next { grid-area: next; justify-self: end; min-width: 112px; padding: 14px 22px; border-radius: 999px; background: #fff; color: #151a45; font-size: 16px; font-weight: 700; }
+.guide-feats { grid-area: feats; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 2px 20px; scroll-padding: 0 20px; }
+.guide-feats::-webkit-scrollbar { display: none; }
+.guide-feats button { flex: none; display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; font-size: 13.5px; font-weight: 700;
+  color: rgba(255, 255, 255, 0.62); background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.1); transition: background 0.3s, color 0.3s; }
+.guide-feats button.seen { color: rgba(255, 255, 255, 0.85); }
+.guide-feats button.on { background: #f7bd8f; color: #151a45; border-color: #f7bd8f; }
+
+/* The little phone: real app screens, a gold box on the button, and a finger that taps it. */
+.guide-demo { display: flex; flex-direction: column; align-items: center; flex: 1; min-height: 0; width: 100%; }
+.guide-phone { position: relative; flex: none; height: min(470px, calc(100dvh - 410px)); aspect-ratio: 393 / 852; padding: 0; border-radius: 26px; overflow: hidden;
+  background: #0b0f2a; box-shadow: 0 0 0 5px #262b5e, 0 0 0 6px rgba(242, 238, 233, 0.28), 0 22px 50px rgba(0, 0, 0, 0.5); cursor: pointer; }
+.guide-phone img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.45s ease; pointer-events: none; }
+.guide-phone img.on { opacity: 1; }
+.guide-spot { position: absolute; margin: -4px; padding: 4px; box-sizing: content-box; border-radius: 12px; border: 2.5px solid #f7bd8f; pointer-events: none;
+  box-shadow: 0 0 0 999px rgba(11, 15, 42, 0.16), 0 0 14px 2px rgba(247, 189, 143, 0.7);
+  transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1), top 0.6s cubic-bezier(0.22, 1, 0.36, 1), width 0.6s cubic-bezier(0.22, 1, 0.36, 1), height 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.guide-card.on .guide-spot { animation: spot 1.4s ease-in-out infinite; }
+@keyframes spot { 50% { box-shadow: 0 0 0 999px rgba(11, 15, 42, 0.16), 0 0 22px 6px rgba(247, 189, 143, 0.95); } }
+/* The tip of the finger (top left of the icon) lands on the middle of the box. */
+.guide-finger { position: absolute; width: 34px; height: 34px; margin: -3px 0 0 -11px; color: #151a45; pointer-events: none;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.45)); transform-origin: 11px 3px;
+  transition: left 0.7s cubic-bezier(0.22, 1, 0.36, 1), top 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.18s ease; }
+.guide-finger svg { position: relative; display: block; }
+.guide-finger.press { transform: scale(0.82); }
+.guide-ripple { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; border: 3px solid #fff; opacity: 0; pointer-events: none; }
+.guide-spot.press .guide-ripple { animation: ripple 0.7s ease-out; }
+@keyframes ripple { from { transform: scale(0.3); opacity: 0.95; } to { transform: scale(1.5); opacity: 0; } }
+.guide-say { font-size: 18px; font-weight: 700; line-height: 1.35; color: #fff; margin: 18px 0 0; max-width: 340px; min-height: 2.7em; animation: say 0.4s ease-out both; }
+@keyframes say { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.guide-steps { display: flex; gap: 8px; margin-top: 10px; }
+.guide-steps button { width: 26px; height: 26px; padding: 0; border-radius: 50%; font-size: 12.5px; font-weight: 800; color: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.3); transition: background 0.3s, color 0.3s, border-color 0.3s; }
+.guide-steps button.seen { border-color: rgba(247, 189, 143, 0.7); color: #f7bd8f; }
+.guide-steps button.on { background: #f7bd8f; border-color: #f7bd8f; color: #151a45; }
+
+@media (prefers-reduced-motion: reduce) {
+  .guide, .guide-track, .guide-card > *, .guide-say { animation: none !important; transition: none !important; }
+  .guide-card > * { opacity: 1; transform: none; }
+  .guide-card.on .guide-spot, .guide-spot.press .guide-ripple { animation: none; }
+  .guide-spot, .guide-finger { transition: none; }
+}
+@media (max-height: 640px) {
+  .guide-title { font-size: 24px; margin: 8px 0; }
+  .guide-say { font-size: 16px; margin-top: 12px; }
+  .guide-phone { height: calc(100dvh - 370px); }
+}
+
+/* A note to the makers */
+.feedback-kinds { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.feedback-kinds .chip { cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; color: inherit; }
+.feedback-kinds .chip.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.feedback-text { width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 14px; border: 0; background: var(--fill); font-size: 16px; resize: vertical; min-height: 110px; }
+.feedback .group { margin: 12px 0; }
+.feedback .primary-btn { width: 100%; box-sizing: border-box; padding: 13px 16px; font-size: 16px; text-decoration: none; }
+.feedback .plain-btn { width: 100%; box-sizing: border-box; justify-content: center; margin-top: 8px; }
+.feedback .footnote { text-align: center; margin-top: 10px; }
+.review-links .item { text-decoration: none; color: inherit; gap: 12px; }
+.review-steps { margin: 10px 0 12px; padding: 12px 14px 12px 34px; border-radius: 14px; background: var(--fill); font-size: 15px; line-height: 1.45; }
+.review-steps li { margin: 3px 0; }
+.review-steps li::marker { color: var(--accent); font-weight: 800; }

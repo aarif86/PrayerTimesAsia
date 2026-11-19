@@ -9,26 +9,28 @@ struct TimetableCard: View {
     let date: Date
     var style: TodayStyle = .list
 
-    var body: some View {
-        if let s = snapshot, let day = s.day(containing: date) {
-            switch style {
-            case .list, .simple: list(s, day: day)
-            case .dial, .centre: dial(s, day: day)
-            case .sunPath: sunPath(s, day: day)
-            case .bands: bands(s, day: day)
-            }
-        } else {
-            Text("Open Prayer Times Asia to set your location.")
+    /// Each style, header and row is wrapped in AnyView on purpose: the widget
+    /// draws on a small stack, and one deeply nested SwiftUI type is enough to
+    /// overflow it while Swift looks the type up. When that happens the widget
+    /// never draws and iOS leaves the grey placeholder bars on the Home Screen.
+    var body: AnyView {
+        guard let s = snapshot, let day = s.day(containing: date) else {
+            return AnyView(Text("Open Prayer Times Asia to set your location.")
                 .font(.headline)
                 .foregroundStyle(.white)
-                .padding()
+                .padding())
+        }
+        switch style {
+        case .list, .simple: return AnyView(list(s, day: day))
+        case .dial, .centre: return AnyView(dial(s, day: day))
+        case .sunPath: return AnyView(sunPath(s, day: day))
+        case .bands: return AnyView(bands(s, day: day))
         }
     }
 
     /// What goes behind the card: the Living Sky, or charcoal for the bands.
-    @ViewBuilder
-    static func background(_ snapshot: WidgetSnapshot?, at date: Date, style: TodayStyle) -> some View {
-        if style == .bands { BandsPalette.header } else { sky(snapshot, at: date) }
+    static func background(_ snapshot: WidgetSnapshot?, at date: Date, style: TodayStyle) -> AnyView {
+        style == .bands ? AnyView(BandsPalette.header) : AnyView(sky(snapshot, at: date))
     }
 
     // MARK: Side Dial (a mini version of the list)
@@ -37,11 +39,11 @@ struct TimetableCard: View {
         let current = s.current(at: date)?.prayer
         let countdown = countdownRow(s, day: day)
         return VStack(spacing: 8) {
-            header(s, day: day)
+            AnyView(header(s, day: day))
             VStack(spacing: 2) {
                 ForEach(Prayer.allCases) { prayer in
-                    row(s, prayer: prayer, time: day.time(prayer), isCurrent: prayer == current,
-                        countdown: countdown?.prayer == prayer ? countdown : nil)
+                    AnyView(row(s, prayer: prayer, time: day.time(prayer), isCurrent: prayer == current,
+                                countdown: countdown?.prayer == prayer ? countdown : nil))
                 }
             }
             .padding(5)
@@ -93,7 +95,7 @@ struct TimetableCard: View {
                 ForEach(Prayer.allCases) { prayer in
                     let time = day.time(prayer)
                     let isCurrent = prayer == current?.prayer
-                    VStack(spacing: 1) {
+                    AnyView(VStack(spacing: 1) {
                         Text(s.name(prayer, at: time)).font(.system(size: 12, weight: .semibold)).opacity(0.85)
                         Text(s.format(time)).font(.system(size: 16, weight: .semibold, design: .rounded)).monospacedDigit()
                     }
@@ -102,7 +104,7 @@ struct TimetableCard: View {
                     .background(prayer.tint.opacity(isCurrent ? 0.35 : 0.14), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .strokeBorder(prayer.tint.opacity(isCurrent ? 0.8 : 0), lineWidth: 1))
-                    .opacity(time <= date && !isCurrent ? 0.6 : 1)
+                    .opacity(time <= date && !isCurrent ? 0.6 : 1))
                 }
             }
         }
@@ -136,7 +138,7 @@ struct TimetableCard: View {
                     let time = day.time(prayer)
                     let isCurrent = prayer == current?.prayer
                     let parts = timeParts(s, time)
-                    HStack {
+                    AnyView(HStack {
                         Capsule().fill(prayer.tint).frame(width: 3, height: 16)
                         Text(s.name(prayer, at: time)).font(.system(size: 15, weight: isCurrent ? .bold : .semibold))
                         Spacer()
@@ -148,7 +150,7 @@ struct TimetableCard: View {
                     .background {
                         if isCurrent { RoundedRectangle(cornerRadius: 10, style: .continuous).fill(prayer.tint.opacity(0.25)) }
                     }
-                    .opacity(time <= date && !isCurrent ? 0.6 : 1)
+                    .opacity(time <= date && !isCurrent ? 0.6 : 1))
                 }
             }
         }
@@ -176,7 +178,7 @@ struct TimetableCard: View {
                 let time = day.time(prayer)
                 let parts = timeParts(s, time)
                 let isCurrent = prayer == current
-                HStack(alignment: .firstTextBaseline) {
+                AnyView(HStack(alignment: .firstTextBaseline) {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .firstTextBaseline) {
                             Text(s.name(prayer, at: time)).font(.system(size: 21, weight: .bold))
@@ -194,7 +196,7 @@ struct TimetableCard: View {
                     Spacer()
                     Text(parts.time).font(.system(size: 25, weight: .light)).monospacedDigit()
                     if let suffix = parts.suffix { Text(suffix).font(.system(size: 15, weight: .light)) }
-                }
+                })
                 .padding(.horizontal, 16)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(BandsPalette.color(prayer))

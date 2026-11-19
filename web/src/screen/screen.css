@@ -43,6 +43,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .screen-page { height: 100%; cursor: none; }
 .screen-page:hover { cursor: default; }
 .screen-shift { width: 100%; height: 100%; }
+/* The burn-in drift moves the screen a few pixels: fill the edge it uncovers with the look's own colour. */
+.screen-shift > .scr { box-shadow: 0 0 0 calc(var(--u) * 2) var(--bg); }
 .screen-tools {
   position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: 16px; display: flex; gap: 12px; align-items: center;
   font-size: 14px; color: var(--fg2); background: var(--glass-strong); padding: 8px 8px 8px 14px; border-radius: 999px;
@@ -88,6 +90,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-title, .scr-notice, .scr-brand, .scr-name, .scr-tag { font-variant-numeric: normal; }
 .scr-title { min-width: 0; }
 .scr-title h1 { margin: 0; font-family: var(--font-display); font-size: calc(var(--u) * 5.6); font-weight: 800; letter-spacing: 0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Long names wrap to two lines, a size smaller, instead of losing their end. */
+.scr-title h1.long, .scr-title h1.xlong { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.12; overflow-wrap: anywhere; }
+.scr-title h1.long { font-size: calc(var(--u) * 4.6); }
+.scr-title h1.xlong { font-size: calc(var(--u) * 3.8); }
+.scr-notice.long { font-size: calc(var(--u) * 3); }
+.scr-notice.xlong { font-size: calc(var(--u) * 2.6); line-height: 1.2; }
 .scr-title p { margin: calc(var(--u) * 0.9) 0 0; font-size: calc(var(--u) * 3); color: var(--fg2); }
 .scr-clock, .scr-t, .scr-big { font-family: var(--font-display); }
 .scr-clock { font-size: calc(var(--u) * 7.4); font-weight: 700; white-space: nowrap; }
@@ -186,6 +194,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   padding: calc(var(--u) * 1); border-radius: calc(var(--u) * 2.6); background: var(--glass); border: 1px solid var(--stroke);
   -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); align-self: center;
 }
+/* With a long name, a long notice and the Ramadan line, the list gives up its spacing rather than push the footer off the screen. */
+.scr-look-board .scr-grid { min-height: 0; max-height: 100%; grid-auto-rows: minmax(0, 1fr); }
+.scr-look-board .scr-cell { min-height: 0; }
 .scr-look-board .scr-cell {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); grid-template-areas: "name time iq" "tag time iq"; justify-items: start; align-items: center;
   row-gap: 0; padding: calc(var(--u) * 1) calc(var(--u) * 2.4); background: transparent; border: 0; border-radius: calc(var(--u) * 1.6);
@@ -206,7 +217,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .portrait .scr-hero { padding-block: calc(var(--u) * 3); }
 .portrait .scr-grid { grid-auto-flow: row; grid-template-columns: 1fr 1fr; align-content: center; row-gap: calc(var(--u) * 2); }
 .portrait .scr-look-board .scr-grid { grid-template-columns: 1fr; row-gap: calc(var(--u) * 0.5); }
-.portrait .scr-brand { flex-wrap: wrap; white-space: normal; }
+.portrait .scr-brand, .landscape .scr-look-bands .scr-brand { flex-wrap: wrap; white-space: normal; row-gap: calc(var(--u) * 0.6); }
 
 /* MARK: Setup page */
 
@@ -270,7 +281,8 @@ textarea { resize: vertical; }
 /* MARK: Looks from the app's Prayer screen styles */
 
 /* Bands: each prayer a full-width band in its own colour on the app's charcoal (Bands style). */
-.scr-look-bands { --bg: rgb(43, 43, 43); --glass: rgb(61, 61, 61); --fill: rgba(255, 255, 255, 0.12); }
+.scr-look-bands { --bg: rgb(43, 43, 43); --glass: rgb(61, 61, 61); --fill: rgba(255, 255, 255, 0.12); --fg3: rgba(255, 255, 255, 0.6); }
+.scr-look-bands .scr-next-name { color: #fff; }
 .scr-look-bands .scr-grid { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: 1fr; grid-auto-rows: 1fr; gap: 0; }
 .landscape .scr-look-bands { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 4.4); }
 .landscape .scr-look-bands .scr-head { grid-column: 1; grid-row: 1; }
@@ -286,9 +298,9 @@ textarea { resize: vertical; }
   border: 0; border-radius: 0; color: #fff; background: var(--band); -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 .scr-look-bands .p-fajr { --band: rgb(33, 110, 92); }
-.scr-look-bands .p-sunrise { --band: rgb(143, 168, 82); }
-.scr-look-bands .p-dhuhr { --band: rgb(217, 171, 33); }
-.scr-look-bands .p-asr { --band: rgb(227, 148, 82); }
+.scr-look-bands .p-sunrise { --band: rgb(131, 154, 75); }
+.scr-look-bands .p-dhuhr { --band: rgb(179, 141, 27); }
+.scr-look-bands .p-asr { --band: rgb(220, 119, 36); }
 .scr-look-bands .p-maghrib { --band: rgb(224, 110, 84); }
 .scr-look-bands .p-isha { --band: rgb(219, 79, 89); }
 .scr-look-bands .scr-imsak { --band: rgb(75, 75, 82); }
@@ -304,7 +316,8 @@ textarea { resize: vertical; }
 
 /* Day Dial: the app's dial on the left, the countdown on the right. */
 .scr-look-dial .scr-grid { display: none; }
-.scr-dialbox { --ds: calc(var(--k) * 0.5); width: calc(600px * var(--ds)); height: calc(600px * var(--ds)); align-self: center; justify-self: center; }
+.scr-dialslot { min-height: 0; min-width: 0; align-self: stretch; display: grid; place-items: center; }
+.scr-dialbox { --ds: min(calc(var(--k) * 0.5), var(--fit, 99)); width: calc(600px * var(--ds)); height: calc(600px * var(--ds)); align-self: center; justify-self: center; }
 .scr-dialbox > .herodial { position: relative; transform: scale(var(--ds)); transform-origin: top left; }
 .scr-dialbox .herodial svg { position: absolute; inset: 0; }
 .scr-dialbox .dial-label { position: absolute; display: flex; }
@@ -312,7 +325,7 @@ textarea { resize: vertical; }
 .landscape .scr-look-dial { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 4); }
 .landscape .scr-look-dial .scr-head, .landscape .scr-look-dial .scr-foot { grid-column: 1 / -1; }
 .landscape .scr-look-dial .scr-big { font-size: calc(var(--u) * 18); }
-.portrait .scr-dialbox { --ds: calc(var(--k) * 1.18); }
+.portrait .scr-dialbox { --ds: min(calc(var(--k) * 1.18), var(--fit, 99)); }
 .scr-dm { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1.05;
   border-radius: 16px; border: 1.5px solid transparent; }
 .scr-dm.on { background: color-mix(in srgb, var(--tint) 18%, transparent); border-color: color-mix(in srgb, var(--tint) 55%, transparent); }
@@ -336,7 +349,7 @@ textarea { resize: vertical; }
 .scr-sun svg path { stroke-width: 5px; }
 .scr-sun svg circle[r="3.8"] { r: 9px; stroke-width: 3px; }
 .portrait .scr-look-sunpath { grid-template-rows: auto auto minmax(0, 0.5fr) auto auto; }
-.landscape .scr-look-bands .scr-head { flex-direction: column; gap: calc(var(--u) * 1); }
+.landscape .scr-look-bands .scr-head { flex-direction: column; align-items: stretch; gap: calc(var(--u) * 1); }
 .landscape .scr-look-bands .scr-title h1 { font-size: calc(var(--u) * 5); }
 .landscape .scr-look-bands .scr-title p { font-size: calc(var(--u) * 2.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .landscape .scr-look-bands .scr-clock { font-size: calc(var(--u) * 6.4); }
@@ -420,3 +433,12 @@ select option { background-color: #161a36; color: #fff; }
 .scr-ramadan .scr-dotsep { font-style: normal; opacity: 0.5; }
 .scr-ramadan .scr-t-small { font-size: 1em; }
 .scr-look-dial .scr-ramadan { position: relative; z-index: 2; }
+
+/* Day Dial: the iqamah line stays small (the bigger dial time above would otherwise apply to it too and push labels into each other). */
+.scr-dm .scr-dm-iq { font-size: 16px; line-height: 1.1; }
+.scr-dm .scr-dm-iq .scr-t { font-size: 1.3em; }
+
+/* Ramadan: "Berbuka" under Maghrib in the column cards, where beside it there is no room. */
+.scr-look-night .scr-name em, .scr-look-day .scr-name em, .scr-look-sunpath .scr-name em, .scr-look-board .scr-name em { display: block; font-size: 0.62em; line-height: 1.1; }
+.scr-look-night .scr-name em .scr-dotsep, .scr-look-day .scr-name em .scr-dotsep, .scr-look-sunpath .scr-name em .scr-dotsep, .scr-look-board .scr-name em .scr-dotsep { display: none; }
+.scr-name em .scr-dotsep { font-style: normal; }

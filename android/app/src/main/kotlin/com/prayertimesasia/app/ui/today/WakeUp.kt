@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
@@ -68,19 +69,26 @@ import java.util.Locale
 fun WakeChip(state: AppState, background: Color = Palette.primary.copy(alpha = 0.1f)) {
     val next = AlarmScheduler.nextWakeUp(state.resolver, state.now)
     val fajr = Prayer.FAJR.name(state.resolver.naming)
-    Row(
-        Modifier.sizeIn(minWidth = 34.dp, minHeight = 34.dp).clip(CircleShape)
-            .background(if (next == null) background else Palette.sunArc.copy(alpha = 0.3f), CircleShape)
+    // A 48 dp touch area around the smaller chip.
+    Box(
+        Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).clip(CircleShape)
             .clickable { state.showWakeUp = true }
-            .padding(horizontal = if (next == null) 0.dp else 10.dp)
-            .semantics { contentDescription = next?.let { "Next alarm at ${state.resolver.formatted(it.at)}" } ?: "Prayer alarms, wake up for $fajr: set an alarm" },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+            .semantics(mergeDescendants = true) { contentDescription = next?.let { "Next alarm at ${state.resolver.formatted(it.at)}" } ?: "Prayer alarms, wake up for $fajr: set an alarm" },
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(if (next == null) Icons.Filled.Alarm else Icons.Filled.AlarmOn, null, Modifier.size(17.dp), tint = Palette.primary)
-        if (next != null) {
-            Text(state.resolver.formatted(next.at).removeSuffix(" AM").removeSuffix(" PM"),
-                style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
+        Row(
+            Modifier.sizeIn(minWidth = 34.dp, minHeight = 34.dp)
+                .background(if (next == null) background else Palette.sunArc.copy(alpha = 0.3f), CircleShape)
+                .padding(horizontal = if (next == null) 0.dp else 10.dp)
+                .clearAndSetSemantics {},
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+        ) {
+            Icon(if (next == null) Icons.Filled.Alarm else Icons.Filled.AlarmOn, null, Modifier.size(17.dp), tint = Palette.primary)
+            if (next != null) {
+                Text(state.resolver.formatted(next.at).removeSuffix(" AM").removeSuffix(" PM"),
+                    style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Palette.primary)
+            }
         }
     }
 }
@@ -95,14 +103,13 @@ fun WakeUpSheetContent(state: AppState) {
     val r = state.resolver
     val p = state.prefs
     val fajr = Prayer.FAJR.name(r.naming)
+    val context = LocalContext.current
+    val snoozed = remember(state.snoozeTick, state.now) { AlarmScheduler.hasSnooze(context) }
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
         Column(Modifier.padding(horizontal = 32.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("Prayer alarms", style = Txt.title3, color = Palette.primary)
-            Text("اللَّهُمَّ بَارِكْ لِأُمَّتِي فِي بُكُورِهَا", style = Txt.title3.copy(textDirection = TextDirection.Rtl),
-                color = Palette.primary, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
-            Text("“O Allah, bless my ummah in their early mornings.”", style = Txt.body.copy(fontStyle = FontStyle.Italic), color = Palette.primary)
-            Text("The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi", style = Txt.footnote, color = Palette.secondary)
-            AlarmScheduler.nextWakeUp(r, state.now)?.let { next ->
+            val next = AlarmScheduler.nextWakeUp(r, state.now)
+            if (next != null) {
                 val forPrayer = Prayer.entries.firstOrNull { next.id.endsWith("-${it.raw}-alarm") }
                 val what = when {
                     next.id.endsWith("sahur") -> " for sahur"
@@ -111,27 +118,32 @@ fun WakeUpSheetContent(state: AppState) {
                 }
                 Text("Next alarm ${whenText(state, next.at)} ${r.formatted(next.at)}$what",
                     style = Txt.subheadlineSemibold, color = Palette.sunArc, modifier = Modifier.padding(top = 4.dp))
+            } else {
+                Text("No alarms are on", style = Txt.subheadlineSemibold, color = Palette.secondary, modifier = Modifier.padding(top = 4.dp))
+            }
+        }
+        if (snoozed || p.anyAlarm) {
+            Section(null) {
+                if (snoozed) ChoiceRow("Stop the snoozed alarm", null, false) { state.stopRinging() }
+                if (p.anyAlarm) ChoiceRow("Turn off all alarms", null, false) { state.turnOffAllAlarms() }
             }
         }
 
-        @Composable
-        fun choices(part: WakeUpTiming.Part) = WakeUpTiming.entries.filter { it.part == part }.forEach { t ->
-            ChoiceRow(t.label(r.naming), timeSoon(state) { t.date(it) }, p.wakeUp == t) { state.setWakeUp(t) }
-        }
-        Section("$fajr alarm") {
-            ChoiceRow("Off", null, p.wakeUp == null) { state.update { it.copy(wakeUp = null) } }
-            choices(WakeUpTiming.Part.BEFORE_FAJR)
-        }
-        HadithView(state, HadithId.NIGHT_PRAYER, Modifier.padding(horizontal = 16.dp).padding(top = 12.dp), line = true)
-        Section("From $fajr") { choices(WakeUpTiming.Part.FROM_FAJR) }
-        Section("Before ${Prayer.SUNRISE.name(r.naming)}", "Rings every morning and moves with $fajr wherever you are.") {
-            choices(WakeUpTiming.Part.BEFORE_SUNRISE)
+        Section(null, if (p.wakeUp != null) "Rings every morning and moves with $fajr wherever you are. Pick one time." else "Turn on to wake up for $fajr every morning.") {
+            SwitchRow("$fajr alarm", p.wakeUp != null) { on -> if (on) state.setWakeUp(WakeUpTiming.AT_FAJR) else state.turnOffWakeUp() }
+            if (p.wakeUp != null) {
+                WakeUpTiming.entries.forEach { t ->
+                    ChoiceRow(t.label(r.naming), timeSoon(state) { t.date(it) }, p.wakeUp == t) { state.setWakeUp(t) }
+                }
+            }
         }
 
-        Section("Sahur alarm", "An earlier alarm to eat sahur before a fast, or for a longer night prayer.") {
-            ChoiceRow("Off", null, p.sahurAlarm == null) { state.update { it.copy(sahurAlarm = null) } }
-            SahurTiming.entries.forEach { t ->
-                ChoiceRow(t.label(r.naming), timeSoon(state) { t.date(it) }, p.sahurAlarm == t) { state.setSahurAlarm(t) }
+        Section(null, "An earlier alarm to eat sahur before a fast, or for a longer night prayer.") {
+            SwitchRow("Sahur alarm", p.sahurAlarm != null) { on -> if (on) state.setSahurAlarm(SahurTiming.entries.first()) else state.turnOffSahurAlarm() }
+            if (p.sahurAlarm != null) {
+                SahurTiming.entries.forEach { t ->
+                    ChoiceRow(t.label(r.naming), timeSoon(state) { t.date(it) }, p.sahurAlarm == t) { state.setSahurAlarm(t) }
+                }
             }
         }
 
@@ -148,10 +160,6 @@ fun WakeUpSheetContent(state: AppState) {
                     }
                 }
             }
-            Column(Modifier.padding(horizontal = 16.dp).padding(top = 12.dp)) {
-                HadithView(state, HadithId.MON_THU, line = true)
-                HadithView(state, HadithId.WHITE_DAYS, line = true)
-            }
         }
 
         Section("Other prayers", "An alarm rings loudly until you stop it. If it rings at the very start of a prayer, it takes the place of that prayer's alert.") {
@@ -160,8 +168,22 @@ fun WakeUpSheetContent(state: AppState) {
 
         AlarmSoundSection(state)
 
+        Column(Modifier.padding(horizontal = 32.dp).padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("اللَّهُمَّ بَارِكْ لِأُمَّتِي فِي بُكُورِهَا", style = Txt.title3.copy(textDirection = TextDirection.Rtl),
+                color = Palette.primary, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
+            Text("“O Allah, bless my ummah in their early mornings.”", style = Txt.body.copy(fontStyle = FontStyle.Italic), color = Palette.primary)
+            Text("The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi", style = Txt.footnote, color = Palette.secondary)
+        }
+        Column(Modifier.padding(horizontal = 16.dp).padding(top = 8.dp)) {
+            if (p.wakeUp == WakeUpTiming.FAJR_MINUS_30) HadithView(state, HadithId.NIGHT_PRAYER, line = true)
+            if (p.sahurAlarm != null) {
+                HadithView(state, HadithId.MON_THU, line = true)
+                HadithView(state, HadithId.WHITE_DAYS, line = true)
+            }
+        }
+
         Text("Rings like an alarm, even when the phone is on silent, and keeps ringing until you tap I'm up. " +
-            "Tap Snooze 5 min to hear it again in 5 minutes. " +
+            "Snooze 5 min rings it once more in 5 minutes. Turning an alarm off also stops a snooze. " +
             "If it stays quiet, allow Alarms and reminders for this app in your phone's settings.",
             style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp))
     }

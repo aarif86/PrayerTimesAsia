@@ -192,8 +192,12 @@ class AlarmReceiver : BroadcastReceiver() {
             val at = Instant.ofEpochMilli(intent.getLongExtra("unlessPrayedAt", 0))
             state.resolver.isPrayed(prayer, at) || state.resolver.isExcused(at) || state.prefs.trackerPausedSince != null
         } ?: false
-        if (kind != null && kind != AlarmScheduler.Kind.REFRESH && !done) {
-            Notifications.post(context, intent.getStringExtra("id") ?: "alert", intent.getStringExtra("title") ?: "",
+        val id = intent.getStringExtra("id") ?: "alert"
+        // A snooze that was stopped (alarm turned Off) stays quiet even if the system still delivers it.
+        val stoppedSnooze = id.endsWith(AlarmScheduler.SNOOZE_SUFFIX) && !AlarmScheduler.isSnoozeWaiting(context, id)
+        if (id.endsWith(AlarmScheduler.SNOOZE_SUFFIX)) AlarmScheduler.forgetSnooze(context, id)
+        if (kind != null && kind != AlarmScheduler.Kind.REFRESH && !done && !stoppedSnooze) {
+            Notifications.post(context, id, intent.getStringExtra("title") ?: "",
                 intent.getStringExtra("body") ?: "", kind,
                 runCatching { AlarmScheduler.Sound.valueOf(intent.getStringExtra("sound") ?: "") }.getOrDefault(AlarmScheduler.Sound.STANDARD),
                 intent.getBooleanExtra("silent", false))

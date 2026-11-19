@@ -34,8 +34,9 @@ class AlarmPlanTest {
         val today = r.day(now)!!
         // The next alert is this morning's Subuh, at the exact minute.
         assertEquals(today.time(Prayer.FAJR), first.at)
-        assertTrue(first.title, first.title.startsWith("Subuh · "))
-        assertTrue(first.body, first.body.contains("Pasir Ris"))
+        assertTrue(first.title, first.title.startsWith("Fajr · "))
+        // One short call to prayer, without the place name.
+        assertTrue(first.body, first.body.isNotBlank() && !first.body.contains("Pasir Ris") && !first.body.contains("\n"))
         val early = plan.first { it.kind == AlarmScheduler.Kind.EARLY }
         assertEquals(today.time(Prayer.FAJR).minusSeconds(600), early.at)
         val wake = plan.first { it.kind == AlarmScheduler.Kind.WAKE }
@@ -71,7 +72,7 @@ class AlarmPlanTest {
         val asr = plan.single { it.id == "$key-asr-alarm" }
         assertEquals(today.time(Prayer.ASR).plusSeconds(600), asr.at)
         assertEquals(AlarmScheduler.Kind.WAKE, asr.kind)
-        assertEquals("Time for Asar", asr.title)
+        assertEquals("Time for Asr", asr.title)
         assertTrue(plan.any { it.id == "$key-isha-alarm" })
         assertTrue(plan.none { it.id == "$key-isha" })
         assertTrue(plan.any { it.id == "$key-asr" })
@@ -88,7 +89,7 @@ class AlarmPlanTest {
         val today = r.day(now)!!
         val first = plan.first { it.kind == AlarmScheduler.Kind.EARLY }
         assertEquals(today.time(Prayer.FAJR).minusSeconds(900), first.at)
-        assertEquals("Subuh in 15 min", first.title)
+        assertEquals("Fajr in 15 min", first.title)
         // One per chosen prayer each day (two days ahead, minus the ones already past).
         assertTrue(plan.count { it.kind == AlarmScheduler.Kind.EARLY } >= 10)
     }

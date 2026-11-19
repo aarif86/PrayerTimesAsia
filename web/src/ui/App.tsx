@@ -1,25 +1,69 @@
+import { FeedbackSheet, ReviewSheet } from './Feedback'
+import type { ComponentType } from 'preact'
+import { SiteHomeButton } from './SiteHome'
 import { lazy, Suspense } from 'preact/compat'
 import { useEffect, useLayoutEffect } from 'preact/hooks'
-import { Compass, Globe2, Plane } from 'lucide-preact'
+import { ChevronsLeft, ChevronsRight, Compass, Globe2, Plane } from 'lucide-preact'
 import { scheduleAlerts } from '../services/notifications'
 import { store, TABS, useNow, useStore, type Tab } from '../services/store'
-import { openSheet, useSheet } from './common'
-import { FalakScreen } from './Falak'
-import { ARScreen, LevelSheet } from './FalakTools'
+import { closeSheet, openSheet, useSheet } from './common'
 import { TabFalak, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 import { LivingSky } from './LivingSky'
-import { MasjidLinkSheet } from './MyMasjid'
-import { MoveInSheet, MoveOutSheet, takeMoveFromLink } from './Move'
-import { QiblaScreen } from './Qibla'
-import { SettingsScreen, VERSION } from './Settings'
+import { takeMoveFromLink } from './moveLink'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
 import { SKY, skyAt } from './sky'
 import { TodayScreen } from './Today'
 import { RamadanSheet } from './Ramadan'
-import { TrackerSheet } from './Tracker'
+import { VERSION } from './version'
 import { WakeUpSheet } from './WakeUp'
 
 const MasjidScreen = lazy(() => import('./Masjid'))
+// Screens and sheets the first screen never shows load when first opened (and are kept offline like the rest).
+const QiblaScreen = later(() => import('./Qibla').then((m) => m.QiblaScreen), <div class="page" />)
+const FalakScreen = later(() => import('./Falak').then((m) => m.FalakScreen), <div class="page" />)
+const SettingsScreen = later(() => import('./Settings').then((m) => m.SettingsScreen), <div class="page" />)
+const LevelSheet = later(() => import('./FalakTools').then((m) => m.LevelSheet))
+const ARScreen = later(() => import('./FalakTools').then((m) => m.ARScreen))
+const TrackerSheet = later(() => import('./Tracker').then((m) => m.TrackerSheet))
+const MasjidLinkSheet = later(() => import('./MyMasjid').then((m) => m.MasjidLinkSheet))
+const MoveInSheet = later(() => import('./Move').then((m) => m.MoveInSheet))
+const MoveOutSheet = later(() => import('./Move').then((m) => m.MoveOutSheet))
+const Guide = later(() => import('./Guide').then((m) => m.Guide))
+
+/**
+ * A lazy piece failed to download: usually a new version went live and its old
+ * file is gone. Reload once (to the new version) rather than leave a broken
+ * screen; if it fails again straight away, show the error as before.
+ */
+function reloadOnce(err: unknown): never {
+  let again = false
+  try { again = sessionStorage.getItem('ptasia.reloadedForChunk') === '1'; sessionStorage.setItem('ptasia.reloadedForChunk', '1') } catch { /* private mode */ }
+  if (!again) { location.reload(); return new Promise<never>(() => {}) as never }
+  throw err
+}
+
+/** A component loaded on first use; shows nothing (or `fallback`) for the moment it takes. */
+function later<P extends object>(load: () => Promise<ComponentType<P>>, fallback: preact.JSX.Element | null = null) {
+  const Lazy = lazy(() => load().then((c) => { try { sessionStorage.removeItem('ptasia.reloadedForChunk') } catch { /* private mode */ } return { default: c } }, reloadOnce)) as ComponentType<P>
+  return (p: P) => <Suspense fallback={fallback}><Lazy {...p} /></Suspense>
+}
+
+/**
+ * Once the Prayer screen is up and the phone is idle, quietly load the other
+ * screens too, so the first tap on Qibla, Falak, Masjid or Settings opens at
+ * once instead of showing an empty page while its file arrives.
+ */
+function warmUpScreens(): ReturnType<typeof setTimeout> {
+  return setTimeout(() => {
+    const load = () => {
+      for (const get of [() => import('./Qibla'), () => import('./Masjid'), () => import('./Settings'), () => import('./Falak'), () => import('./Tracker')]) {
+        get().catch(() => { /* offline or a new version: the screen loads on its tap as before */ })
+      }
+    }
+    const idle = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback
+    if (idle) idle(load, { timeout: 4000 }); else load()
+  }, 2500)
+}
 
 const TAB_LABEL: Record<Tab, string> = { today: 'Prayer', qibla: 'Qibla', falak: 'Falak', masjid: 'Masjid', settings: 'Settings' }
 const TAB_ICON: Record<Tab, (p: { size?: number }) => preact.JSX.Element> = {
@@ -53,9 +97,10 @@ export function App() {
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = scheme
     document.documentElement.toggleAttribute('data-large-text', s.prefs.largeText)
+    document.documentElement.dataset.menu = s.prefs.menuSide
     const meta = document.querySelector('meta[name="theme-color"]')
     meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
-  }, [scheme, bands, s.prefs.largeText])
+  }, [scheme, bands, s.prefs.largeText, s.prefs.menuSide])
 
   useEffect(() => {
     const moved = takeMoveFromLink()
@@ -64,13 +109,14 @@ export function App() {
     s.refreshOfficial()
     void s.refreshData()
     // Counted a few seconds in, so the GPS place has usually arrived.
-    const count = () => setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000)
+    const count = () => { s.countOpenDay(); setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000) }
     count()
     const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); void s.refreshData(); scheduleAlerts(); count() } }
     // On moon sighting nights the announcement can arrive while the app is open.
     const poll = setInterval(() => { void s.refreshData() }, 10 * 60_000)
     document.addEventListener('visibilitychange', onVisible)
-    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll) }
+    const warm = warmUpScreens()
+    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll); clearTimeout(warm) }
   }, [])
 
   // Re-arm the next prayer alert whenever anything changes.
@@ -81,7 +127,7 @@ export function App() {
       <>
         <LivingSky colors={SKY.dawn} scheme="dark" soft={false} />
         <Onboarding />
-        {sheet?.kind === 'places' && <PlacesSheet />}
+        {sheet?.kind === 'places' && <PlacesSheet forHome={sheet.forHome} />}
         {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
       </>
     )
@@ -93,6 +139,8 @@ export function App() {
       {bands && <div class="bands-backdrop" />}
       <div class="shell">
         <main class={`screen tab-${s.tab}`} id="main">
+          {/* Prayer and Masjid place the home button in their own top bars. */}
+          {s.tab !== 'today' && s.tab !== 'masjid' && <SiteHomeButton class="corner" />}
           {s.tab === 'today' && <TodayScreen />}
           {s.tab === 'qibla' && <QiblaScreen />}
           {s.tab === 'falak' && <FalakScreen />}
@@ -101,18 +149,28 @@ export function App() {
         </main>
       </div>
       {/* Big screens have room beside the app: a way back to the website. */}
-      <a class="site-link" href="../">&larr; prayertimes.asia</a>
-      <nav class="tabbar" role="tablist" aria-label="Sections">
+      <a class="site-link" href="../" aria-label="Back to the prayertimes.asia website">
+        <span class="site-link-arrow" aria-hidden="true">&larr;</span>
+        <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" width="24" height="24" />
+        <span>prayertimes.asia</span>
+      </a>
+      <nav class="tabbar" aria-label="Sections">
         {TABS.map((t) => {
           const Icon = TAB_ICON[t]
           return (
-            <button role="tab" aria-selected={s.tab === t} onClick={() => { s.setTab(t); document.getElementById('main')?.scrollTo({ top: 0 }) }}>
+            <button aria-current={s.tab === t ? 'page' : undefined} onClick={() => { s.setTab(t); document.getElementById('main')?.scrollTo({ top: 0 }) }}>
               <Icon size={25} /><span>{TAB_LABEL[t]}</span>
             </button>
           )
         })}
+        {/* Bigger screens: the bar sits at the side, and this arrow slides it across. Hidden on phones (bottom bar). */}
+        <button class="tabbar-move" aria-label={s.prefs.menuSide === 'right' ? 'Move the menu to the left' : 'Move the menu to the right'}
+          title={s.prefs.menuSide === 'right' ? 'Move to the left' : 'Move to the right'}
+          onClick={() => store.update((p) => { p.menuSide = p.menuSide === 'right' ? 'left' : 'right' })}>
+          {s.prefs.menuSide === 'right' ? <ChevronsLeft size={18} /> : <ChevronsRight size={18} />}
+        </button>
       </nav>
-      {sheet?.kind === 'places' && <PlacesSheet />}
+      {sheet?.kind === 'places' && <PlacesSheet forHome={sheet.forHome} />}
       {sheet?.kind === 'sanad' && <SanadSheet day={sheet.day} />}
       {sheet?.kind === 'calendar' && <CalendarSheet />}
       {sheet?.kind === 'makers' && <MakersSheet placement={sheet.placement} />}
@@ -125,9 +183,13 @@ export function App() {
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}
       {sheet?.kind === 'install' && <InstallSheet />}
       {sheet?.kind === 'credits' && <CreditsSheet />}
+      {sheet?.kind === 'feedback' && <FeedbackSheet />}
+      {sheet?.kind === 'review' && <ReviewSheet />}
       {s.pendingMasjid && !sheet && <MasjidLinkSheet m={s.pendingMasjid} />}
       {sheet?.kind === 'move-out' && <MoveOutSheet />}
       {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
+      {/* New users see the quick guide once, right after choosing their place. */}
+      {(sheet?.kind === 'guide' || (!s.prefs.guideSeen && !sheet && !s.pendingMasjid)) && <Guide onClose={closeSheet} />}
     </>
   )
 }
@@ -142,7 +204,7 @@ function Onboarding() {
           <p class="onb-lead">Wherever you land, know when to pray and which way to face.</p>
         </div>
         <div class="onb-features">
-          <Feature icon={<Globe2 size={24} />} title="Every country's own method" detail="MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia - and sensible defaults everywhere else." />
+          <Feature icon={<Globe2 size={24} />} title="Every country's own method" detail="MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia, and sensible defaults everywhere else." />
           <Feature icon={<Plane size={24} />} title="Built for travel" detail="Switches when you land, works offline, and tells you when you can shorten and combine prayers." />
           <Feature icon={<Compass size={24} />} title="Qibla in one glance" detail="A calm compass that lights up when you're facing the Kaaba." />
         </div>

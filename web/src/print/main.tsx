@@ -4,17 +4,21 @@ import { render } from 'preact'
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import type { Place } from '../core/place'
 import { NAMING_LABEL, NAMING_STYLES, type NamingStyle } from '../core/prayer'
-import { profileFor, timeZoneForPlace } from '../core/regions'
+import { profileFor, timeZoneForLocated } from '../core/regions'
 import { deviceTimeZone, zoned } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable, rowFor } from '../services/officialTables'
 import { readJSON } from '../services/storage'
 import { configFromHash, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, type ScreenConfig, type ScreenLanguage, type ScreenPlace } from '../screen/config'
 import { officialSourceForScreen } from '../screen/model'
-import { monthDays, optionsFromHash, PRINT_WORDS, printHash, ramadanDays, shortHash, configFromShortHash, SHEETS, type PrintOptions, type SheetKind } from './model'
-import { FastingSheet, MonthSheet, RamadanSheet, StickerSheet, TrackerSheet } from './Sheets'
+import { monthDays, todayDay, optionsFromHash, PRINT_WORDS, printHash, ramadanDays, shortHash, configFromShortHash, SHEETS, type PrintOptions, type SheetKind } from './model'
+import { FastingSheet, LetterSheet, MonthSheet, RamadanSheet, StickerSheet, TrackerSheet } from './Sheets'
+import { LETTER_FOR, LETTER_WORDS, PAPER_SIZES } from './letter'
+import { YearSheet } from './YearSheet'
+import { WallSheet } from './WallSheet'
 import { defaultAuthority, type CalendarDataset } from '../core/calendarSanad'
 import { communityHijri } from '../core/season'
+import { withBundled } from '../core/bundledCalendar'
 import './print.css'
 
 /**
@@ -48,17 +52,17 @@ function initialConfig(): ScreenConfig {
   return { ...DEFAULT_CONFIG }
 }
 
-const SHEET_ICON: Record<SheetKind, string> = { month: '▦', ramadan: '☾', stickers: '✂', tracker: '★', fasting: '✦' }
+const SHEET_ICON: Record<SheetKind, string> = { month: '▦', wall: '❏', year: '◐', ramadan: '☾', stickers: '✂', tracker: '★', fasting: '✦', letter: '✉' }
 
 /** Ramadan as the community counts it: the app's saved announcements and the authority for the place's country. */
 function communityHijriFor(c: ScreenConfig) {
-  const cal = readJSON<CalendarDataset>('ptasia.calendar')
+  const cal = withBundled(readJSON<CalendarDataset>('ptasia.calendar'))
   const chosen = readJSON<{ communityAuthority?: string | null }>('ptasia.preferences.v1')?.communityAuthority
   const authority = chosen ?? defaultAuthority(c.place?.cc ?? '') ?? null
   const tz = c.place?.tz ?? 'UTC'
   return (ms: number) => {
     const z = zoned(ms, tz)
-    return communityHijri({ year: z.year, month: z.month, day: z.day }, c.hijriAdj, cal?.announcements ?? [], authority)
+    return communityHijri({ year: z.year, month: z.month, day: z.day }, c.hijriAdj, cal.announcements, authority, cal.month_starts)
   }
 }
 
@@ -74,7 +78,9 @@ function App() {
 
   const days = useMemo(() => {
     if (!c.place) return []
-    return o.sheet === 'ramadan' || o.sheet === 'fasting' ? ramadanDays(c, now, rowFor, communityHijriFor(c)) : monthDays(c, o.year, o.month, rowFor)
+    if (o.sheet === 'letter') return todayDay(c, now, rowFor)
+    if (o.sheet === 'year' || o.sheet === 'wall') return Array.from({ length: 12 }, (_, i) => monthDays(c, o.year, i + 1, rowFor, communityHijriFor(c))).flat()
+    return o.sheet === 'ramadan' || o.sheet === 'fasting' ? ramadanDays(c, now, rowFor, communityHijriFor(c)) : monthDays(c, o.year, o.month, rowFor, communityHijriFor(c))
   }, [c, o, tables])
 
   // Ramadan can fall in the next year: fetch every year the sheet touches.
@@ -103,7 +109,7 @@ function App() {
       const lat = +pos.coords.latitude.toFixed(4), lng = +pos.coords.longitude.toFixed(4)
       const near = nearestCity(lat, lng, 25), wide = nearestCity(lat, lng, 200)
       const cc = wide?.countryCode ?? null
-      choose({ name: near?.name ?? 'My place', lat, lng, tz: timeZoneForPlace(cc, lng) ?? deviceTimeZone(), cc, district: near?.district ?? null })
+      choose({ name: near?.name ?? 'My place', lat, lng, tz: timeZoneForLocated(cc, lat, lng) ?? deviceTimeZone(), cc, district: near?.district ?? null })
       setGps('idle')
     }, () => setGps('failed'), { enableHighAccuracy: true, timeout: 20_000 })
   }
@@ -124,10 +130,13 @@ function App() {
     return () => ro.disconnect()
   }, [])
 
-  const Sheet = { month: MonthSheet, ramadan: RamadanSheet, stickers: StickerSheet, tracker: TrackerSheet, fasting: FastingSheet }[o.sheet]
+  const Sheet = { month: MonthSheet, wall: WallSheet, year: YearSheet, ramadan: RamadanSheet, stickers: StickerSheet, tracker: TrackerSheet, fasting: FastingSheet, letter: LetterSheet }[o.sheet]
+  const lw = LETTER_WORDS[c.lang]
+  const usLetter = o.sheet === 'letter' && o.paper === 'letter'
 
   return (
     <div class="print-page">
+      <style>{`@page { size: ${usLetter ? 'letter' : 'A4'}; margin: 0; }`}</style>
       <aside class="controls">
         <header>
           <p class="eyebrow">Prayer Times Asia</p>
@@ -147,7 +156,35 @@ function App() {
           <p class="muted small">{w.sheetHint[o.sheet]}</p>
         </fieldset>
 
-        {o.sheet !== 'ramadan' && o.sheet !== 'fasting' && (
+        {o.sheet === 'letter' && (
+          <fieldset>
+            <legend>Letter</legend>
+            <div class="seg" role="group" aria-label="Who the letter is for">
+              {LETTER_FOR.map((f) => (
+                <button key={f} type="button" class={(o.for ?? 'work') === f ? 'on' : ''} aria-pressed={(o.for ?? 'work') === f} onClick={() => setO((x) => ({ ...x, for: f }))}>{lw.forLabel[f]}</button>
+              ))}
+            </div>
+            <div class="seg" role="group" aria-label="Paper size">
+              {PAPER_SIZES.map((p) => (
+                <button key={p} type="button" class={(o.paper ?? 'a4') === p ? 'on' : ''} aria-pressed={(o.paper ?? 'a4') === p} onClick={() => setO((x) => ({ ...x, paper: p }))}>{lw.paperLabel[p]}</button>
+              ))}
+            </div>
+            <p class="muted small">Today's prayer times are filled in. Write the name, sign it, and hand it over.</p>
+          </fieldset>
+        )}
+
+        {(o.sheet === 'year' || o.sheet === 'wall') && (
+          <fieldset>
+            <legend>Year</legend>
+            <div class="month-picker">
+              <button type="button" onClick={() => shiftMonth(-12)} aria-label="Previous year">‹</button>
+              <b>{o.year}</b>
+              <button type="button" onClick={() => shiftMonth(12)} aria-label="Next year">›</button>
+            </div>
+          </fieldset>
+        )}
+
+        {o.sheet !== 'ramadan' && o.sheet !== 'fasting' && o.sheet !== 'letter' && o.sheet !== 'year' && o.sheet !== 'wall' && (
           <fieldset>
             <legend>Month</legend>
             <div class="month-picker">
@@ -196,7 +233,7 @@ function App() {
         </fieldset>
 
         <button type="button" class="primary print-btn" disabled={!c.place} onClick={() => window.print()}>Print or save as PDF</button>
-        <p class="muted small">In the print window choose A4, and turn off "Headers and footers". For a PDF, choose "Save as PDF" as the printer.</p>
+        <p class="muted small">In the print window choose {usLetter ? 'Letter' : 'A4'}, and turn off "Headers and footers". For a PDF, choose "Save as PDF" as the printer.</p>
       </aside>
 
       <main class="preview">

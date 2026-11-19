@@ -180,10 +180,12 @@ struct BrightSkyLayer: View {
     let isDay: Bool
     let glow: Color
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Opened by the UI tests with -still: the sky stops moving so Apple's accessibility audit can finish.
+    private static let still = ProcessInfo.processInfo.arguments.contains("-still")
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { context in
-            let t = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate
+        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion || Self.still)) { context in
+            let t = reduceMotion || Self.still ? 0 : context.date.timeIntervalSinceReferenceDate
             GeometryReader { geo in
                 let w = geo.size.width
                 ZStack {

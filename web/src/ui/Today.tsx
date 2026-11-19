@@ -1,24 +1,29 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
   Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
-  CloudMoon, Contrast, Droplet, Flame, Pause, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
+  CloudMoon, Contrast, Droplet, Flame, Pause, Star, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
 import { parameterSummary } from '../core/methods'
 import { isInAsia, placeProfile } from '../core/place'
 import { isObligatory, PRAYERS, type Prayer } from '../core/prayer'
+import { LONG_DAYS_WORDS } from '../core/longDays'
+import { lang3 } from '../core/ramadanContent'
 import { flag } from '../core/regions'
+import { noonDaysAfter } from '../core/tz'
 import { nudgeAt } from '../core/window'
 import { alertSupport, requestPermission } from '../services/notifications'
 import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '../services/prefs'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { WakeChip } from './WakeUp'
-import { fmtDate, openSheet, short, SourceBadge, Switch, TimeText } from './common'
+import { fmtDate, openSheet, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
+import { HomeQuestion } from './Sheets'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { featuredOffer, MakersCard } from './Makers'
 import { appBannerShownByBrowser, phoneAppOffer } from './pwa'
+import { SiteHomeButton } from './SiteHome'
 import { TabJourney } from './icons'
 import { SeasonCard } from './Ramadan'
 import { Hadith } from './Hadith'
@@ -64,12 +69,13 @@ export function TodayScreen() {
   const s = useStore()
   const now = useNow()
   const [offset, setOffset] = useState(0)
+  useDayRequests(setOffset)
   const [showMore, setShowMoreState] = useState(() => s.demo ? s.demo.more : readString('today.showMore') === '1')
   const [toast, showToast] = useToast()
   const setShowMore = (v: boolean) => { setShowMoreState(v); if (!s.demo) writeString('today.showMore', v ? '1' : '0') }
   const day = s.day(now)
   if (!day) return <NoPlace />
-  const shown = offset === 0 ? day : s.day(now + offset * 86_400_000) ?? day
+  const shown = offset === 0 ? day : s.day(noonDaysAfter(now, offset, s.timeZone)) ?? day
   const ctx: Ctx = {
     now, day, shown, offset, setOffset, showMore, setShowMore, showToast,
     current: s.current(now), next: s.next(now),
@@ -77,6 +83,7 @@ export function TodayScreen() {
   const style = s.prefs.todayStyle
   return (
     <div class={`today style-${style}`} data-theme-local={style === 'bands' ? 'dark' : undefined}>
+      <h1 class="sr-only">Prayer times{s.activePlace ? ` in ${s.activePlace.name}` : ''}</h1>
       {style === 'list' && <ClassicPage c={ctx} />}
       {style === 'centre' && <CentrePage c={ctx} />}
       {style === 'dial' && <DialPage c={ctx} />}
@@ -187,6 +194,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
   if (order === 'column') {
     return (
       <div class="controls-col">
+        <SiteHomeButton />
         <JourneyButton now={c.now} withChip />
         <StyleButton c={c} />
         <AppearanceButton c={c} />
@@ -202,6 +210,7 @@ function Controls({ c, order = 'row' }: { c: Ctx; order?: 'row' | 'column' }) {
       {store.prefs.trackerEnabled && <StreakChip now={c.now} />}
       <AppearanceButton c={c} />
       <StyleButton c={c} />
+      <SiteHomeButton />
     </>
   )
 }
@@ -210,7 +219,7 @@ function PlaceLabel() {
   const place = store.activePlace
   return (
     <>
-      {store.prefs.useGPS ? <Navigation size={11} fill="currentColor" /> : <MapPin size={12} />}
+      {store.prefs.useGPS ? <Navigation size={11} fill="currentColor" class={store.isCheckingLocation ? 'checking-location' : undefined} /> : <MapPin size={12} />}
       <span class="place-name" style={(place?.name.length ?? 0) > 11 ? { fontSize: '0.87em' } : undefined}>{place?.name ?? 'Choose a place'}</span>
       {place && isInAsia(place) && <span class="flag">{flag(placeProfile(place).code)}</span>}
       <ChevronDown size={12} strokeWidth={3} style={{ opacity: 0.6 }} />
@@ -278,6 +287,25 @@ function AppPrompt() {
   )
 }
 
+/**
+ * Once ever, after ten separate days of use: a quiet line asking for a note to the
+ * makers. Never close to a prayer, never twice. Closing it or using it ends it.
+ */
+function NotePrompt({ c }: { c: Ctx }) {
+  const p = store.prefs
+  if (c.offset !== 0 || p.noteCardDone || p.reviewTappedAt > 0 || p.openDayCount < 10) return null
+  if (c.next && c.next.time - c.now < 15 * 60_000) return null
+  const done = () => store.update((x) => { x.noteCardDone = true })
+  return (
+    <div class="alerts-prompt note-prompt">
+      <Star size={18} class="accent" style={{ flex: 'none' }} />
+      <span class="text">Enjoying the app? A short review helps other Muslims find it.</span>
+      <button class="primary-btn" onClick={() => { done(); openSheet({ kind: 'review' }) }}>Review</button>
+      <button class="x" aria-label="Not now" onClick={done}><X size={15} strokeWidth={3} /></button>
+    </div>
+  )
+}
+
 /** One tap to be told when each prayer begins. */
 function AlertsPrompt() {
   if (store.prefs.notificationsEnabled || store.prefs.alertsPromptDismissed) return null
@@ -287,6 +315,25 @@ function AlertsPrompt() {
       <span class="text">Get an alert when each prayer begins</span>
       <button class="primary-btn" onClick={() => void turnOnAlerts()}>Turn on</button>
       <button class="x" aria-label="Not now" onClick={() => store.update((p) => { p.alertsPromptDismissed = true })}><X size={15} strokeWidth={3} /></button>
+    </div>
+  )
+}
+
+/** Far from the equator in summer: why Fajr and Isha look unusual. Once per place and summer, closable. */
+function LongDaysNote({ now }: { now: number }) {
+  const key = store.longDaysNote(now)
+  if (!key) return null
+  const w = LONG_DAYS_WORDS[lang3(store.naming)]
+  return (
+    <div class="glass card arrival long-days" role="note">
+      <div class="row" style={{ alignItems: 'flex-start', gap: '12px' }}>
+        <Sun size={26} class="accent" style={{ flex: 'none', marginTop: '2px' }} />
+        <div style={{ flex: 1 }}>
+          <div class="headline">{w.title}</div>
+          <div class="subhead" style={{ opacity: 0.85, marginTop: '4px' }}>{w.body(store.name('fajr'), store.name('isha'))}</div>
+        </div>
+        <button aria-label={w.close} onClick={() => store.closeLongDaysNote(key)} style={{ padding: '6px' }}><X size={16} strokeWidth={3} /></button>
+      </div>
     </div>
   )
 }
@@ -322,6 +369,7 @@ function ArrivalCard() {
           <Switch label="Musafir features" on={store.prefs.musafirEnabled} onChange={(v) => store.update((p) => { p.musafirEnabled = v })} />
         </div>
       )}
+      {store.prefs.musafirEnabled && !store.prefs.homeConfirmed && <HomeQuestion />}
       <label class="row arrival-row">
         <span class="subhead" style={{ fontWeight: 600, flex: 1 }}>Asr</span>
         <select class="inline-select" value={store.prefs.asrOverride ?? 'auto'}
@@ -475,7 +523,7 @@ function DateBlock({ c }: { c: Ctx }) {
 
 function SmallDial({ c, size }: { c: Ctx; size: number }) {
   const { now, day, current, next } = c
-  const tomorrow = store.day(now + 86_400_000)
+  const tomorrow = store.day(noonDaysAfter(now, 1, store.timeZone))
   if (!current || !next || !tomorrow) return <div style={{ width: `${size}px`, height: `${size}px` }} />
   return (
     <DayDial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}
@@ -499,9 +547,11 @@ function ClassicPage({ c }: { c: Ctx }) {
       <TopPrompt />
       <PrayerHadith c={c} />
       <ArrivalCard />
+      {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <PrayerList c={c} fill />
       <ShowMoreButton c={c} />
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -624,11 +674,13 @@ function CentrePage({ c }: { c: Ctx }) {
       <TopPrompt />
       <PrayerHadith c={c} />
       <ArrivalCard />
+      {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={c.now} />
       <DayNavigator c={c} />
       <PrayerList c={c} fill />
       <div class="row foot-row"><SourceBadge day={c.shown} compact /><span class="spacer" /><ShowMoreButton c={c} inline /></div>
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -671,6 +723,7 @@ function DialPage({ c }: { c: Ctx }) {
       <div class="top-bar"><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
       <TopPrompt />
       <ArrivalCard />
+      {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <button class="date-header" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? 'Ramadan and Eid dates with their sources' : 'Back to today'}>
         <span class="caps-day accent">{dayLabel(c.offset)}</span>
@@ -707,6 +760,7 @@ function DialPage({ c }: { c: Ctx }) {
         <button class="round-btn big" aria-label="Next day" onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={18} strokeWidth={2.4} /></button>
       </div>
       <ShowMoreButton c={c} />
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -772,6 +826,7 @@ function SunPathPage({ c }: { c: Ctx }) {
         {store.prefs.trackerEnabled && <StreakChip now={now} />}
         <AppearanceButton c={c} />
         <StyleButton c={c} />
+        <SiteHomeButton />
       </div>
       <div class="sunpath-wrap" ref={wrap}>
         <SunPath width={width} height={96} now={now} day={c.day} tz={store.timeZone} />
@@ -780,12 +835,14 @@ function SunPathPage({ c }: { c: Ctx }) {
       <TopPrompt />
       <PrayerHadith c={c} />
       <ArrivalCard />
+      {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={now} />
       <DayNavigator c={c} />
       <PrayerList c={c} fill={false} />
       <ShowMoreButton c={c} />
       <SourceBadge day={c.shown} />
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -794,8 +851,8 @@ function SunPathPage({ c }: { c: Ctx }) {
 // ---------- Colour Bands ----------
 
 const BAND: Record<Prayer, string> = {
-  fajr: 'rgb(33, 110, 92)', sunrise: 'rgb(143, 168, 82)', dhuhr: 'rgb(217, 171, 33)',
-  asr: 'rgb(227, 148, 82)', maghrib: 'rgb(224, 110, 84)', isha: 'rgb(219, 79, 89)',
+  fajr: 'rgb(33, 110, 92)', sunrise: 'rgb(131, 154, 75)', dhuhr: 'rgb(179, 141, 27)',
+  asr: 'rgb(220, 119, 36)', maghrib: 'rgb(224, 110, 84)', isha: 'rgb(219, 79, 89)',
 }
 
 function BandsPage({ c }: { c: Ctx }) {
@@ -815,23 +872,25 @@ function BandsPage({ c }: { c: Ctx }) {
         )}
         <TopPrompt />
         <ArrivalCard />
+      {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       </div>
       <div class="bands-date">
         <button aria-label="Previous day" onClick={() => c.setOffset(offset - 1)}><ChevronLeft size={20} strokeWidth={2.6} /></button>
         <button class="bands-date-main" onClick={() => dateTap(c)} aria-label={offset === 0 ? 'Ramadan and Eid dates with their sources' : 'Back to today'}>
-          {offset !== 0 && <Undo2 size={13} />} {fmtDate(shown.times.dhuhr, { day: 'numeric', month: 'short', year: 'numeric' })} · {hijri(shown.times.dhuhr)}
+          {offset !== 0 && <Undo2 size={13} />}<span>{fmtDate(shown.times.dhuhr, { day: 'numeric', month: 'short', year: 'numeric' })} ·</span><span>{hijri(shown.times.dhuhr)}</span>
         </button>
         <button aria-label="Next day" onClick={() => c.setOffset(offset + 1)}><ChevronRight size={20} strokeWidth={2.6} /></button>
       </div>
       <div class="bands" {...swipe}>
         {PRAYERS.map((p) => <PrayerBand p={p} t={shown.times[p]} jamaah={shown.jamaah[p]} now={now} isCurrent={offset === 0 && p === current?.prayer}
-          next={offset === 0 && p === next?.prayer ? next : null} />)}
+          next={offset === 0 && p === next?.prayer && next.time === shown.times[p] ? next : null} />)}
         {blessed.map(([b, t]) => <BlessedBand b={b} t={t} now={now} />)}
       </div>
       <div class="bands-foot page">
         <div class="row foot-row"><SourceBadge day={shown} compact /><span class="spacer" /><ShowMoreButton c={c} inline /></div>
-        <Offer c={c} />
+        <NotePrompt c={c} />
+      <Offer c={c} />
       </div>
     </div>
   )

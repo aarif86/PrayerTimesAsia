@@ -25,7 +25,7 @@ export const NAMING_STYLES: readonly NamingStyle[] = [
 ]
 
 export const NAMING_LANGUAGE: Record<NamingStyle, string> = {
-  arabic: 'International',
+  arabic: 'English',
   malay: 'Malay',
   indonesian: 'Indonesian',
   southAsian: 'South Asian',
@@ -37,7 +37,7 @@ export const NAMING_LANGUAGE: Record<NamingStyle, string> = {
 }
 
 export const NAMING_LABEL: Record<NamingStyle, string> = {
-  arabic: 'International (Fajr, Dhuhr, Asr, Isha)',
+  arabic: 'English (Fajr, Dhuhr, Asr, Isha)',
   malay: 'Malay (Subuh, Zohor, Asar, Isyak)',
   indonesian: 'Indonesian (Subuh, Dzuhur, Ashar, Isya)',
   southAsian: 'South Asian (Fajr, Zuhr, Asr, Isha)',

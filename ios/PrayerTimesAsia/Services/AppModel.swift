@@ -25,6 +25,8 @@ final class AppModel {
     var showJourney = false
     /// Wake up for Subuh (the alarm chip on the Prayer screen, or Settings).
     var showWakeUp = false
+    /// "Welcome back" after a reinstall brought the settings back.
+    var showWelcomeBack = false
     /// A masjid from a screen's QR code, waiting for the user to say yes.
     var pendingMasjid: MasjidLink?
 
@@ -37,7 +39,39 @@ final class AppModel {
     init() {
         prefs = Preferences.load()
         if let demo = Self.demoPreferences() { prefs = demo }
+        if Preferences.didRestore, !Self.isDemo {
+            // A reinstall: settings came back from the keychain. Ask again for
+            // what iOS forgets when an app is deleted.
+            showWelcomeBack = true
+            if prefs.useGPS { location.requestPermission() }
+            if prefs.notificationsEnabled || prefs.anyAlarm {
+                Task { _ = await NotificationScheduler.requestPermission(); scheduleNotifications() }
+            }
+        }
         if ProcessInfo.processInfo.arguments.contains("-masjid-link") { pendingMasjid = Self.demoMasjid }
+        // Open on the last place GPS found, so the times show at once instead of
+        // "Finding where you are" while the phone gets a fresh fix. The fresh fix
+        // then updates the place (and the country's method) in place.
+        if !Self.isDemo { gpsPlace = Self.loadLastGPSPlace() }
+    }
+
+    // MARK: Last GPS place
+
+    private static let lastGPSPlaceKey = "lastGPSPlace.v1"
+
+    private static func loadLastGPSPlace() -> Place? {
+        guard let data = UserDefaults.standard.data(forKey: lastGPSPlaceKey) else { return nil }
+        return try? JSONDecoder().decode(Place.self, from: data)
+    }
+
+    private static func saveLastGPSPlace(_ place: Place) {
+        if let data = try? JSONEncoder().encode(place) { UserDefaults.standard.set(data, forKey: lastGPSPlaceKey) }
+    }
+
+    /// Showing the last known place while the phone checks where it is now
+    /// (the location arrow pulses until the fresh fix lands).
+    var isCheckingLocation: Bool {
+        prefs.useGPS && location.isAuthorized && location.location == nil && gpsPlace != nil
     }
 
     /// For screenshots only: a made-up masjid in Pasir Ris with typical iqamah gaps.
@@ -62,6 +96,21 @@ final class AppModel {
 
     func forgetMasjid() { prefs.myMasjid = nil }
 
+    /// "Make it my masjid" on the Masjid tab. Saved on this phone only, like every
+    /// setting. Keeps the iqamah times when it's already the masjid from its QR code.
+    func chooseMasjid(name: String, coordinates c: Coordinates) {
+        if let m = prefs.myMasjid, abs(m.lat - c.latitude) < 0.003, abs(m.lng - c.longitude) < 0.003 { return }
+        prefs.myMasjid = MasjidLink(name: String(name.prefix(80)), lat: c.latitude, lng: c.longitude,
+                                    tz: activePlace?.timeZoneID ?? TimeZone.current.identifier,
+                                    cc: activePlace?.countryCode, jamaah: [:], jumuah: nil)
+    }
+
+    /// True when this spot is your masjid (within about 300 m).
+    func isMyMasjid(_ c: Coordinates) -> Bool {
+        guard let m = prefs.myMasjid else { return false }
+        return abs(m.lat - c.latitude) < 0.003 && abs(m.lng - c.longitude) < 0.003
+    }
+
     /// Your masjid, when the place shown is within reach of it (not while travelling).
     var myMasjidHere: MasjidLink? {
         guard let m = prefs.myMasjid, let place = activePlace,
@@ -80,8 +129,11 @@ final class AppModel {
                          timeZoneID: "Asia/Singapore", coordinates: Coordinates(latitude: 1.3721, longitude: 103.9474))
         var p = Preferences()
         p.hasOnboarded = true
+        // Screenshots skip the quick guide unless they ask for it.
+        p.guideSeen = !args.contains("-guide")
         p.useGPS = false
         p.home = home
+        p.homeConfirmed = true
         p.manualPlace = home
         p.lastCountryCode = "SG"
         // Show the tracker with a three-day streak.
@@ -95,6 +147,11 @@ final class AppModel {
         p.appearance = args.contains("-light") ? .light : args.contains("-auto") ? .system : .dark
         p.todayStyle = args.contains("-dial") ? .dial : args.contains("-sunpath") ? .sunPath : args.contains("-centre") ? .centre : args.contains("-bands") ? .bands : args.contains("-sidedial") ? .list : .centre
         if args.contains("-masjid") { p.myMasjid = demoMasjid }
+        // -arrival: the Welcome card at home too (as after a reinstall).
+        if args.contains("-arrival") { p.arrivalBannerDismissed = false }
+        if args.contains("-largetext") { p.largeText = true }
+        // `-review` (screenshots): ten days of use, so the gentle review line shows.
+        if args.contains("-review") { p.openDayCount = 10 }
         // -season ramadan (or sighting, lastTen, raya, syawal): the tester's Ramadan preview.
         if let i = args.firstIndex(of: "-season"), i + 1 < args.count, let season = SeasonPreview(rawValue: args[i + 1]) {
             p.seasonPreview = season
@@ -119,6 +176,7 @@ final class AppModel {
             // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
             p.home = Place(name: "Sydney", region: nil, countryCode: "AU", countryName: "Australia",
                            timeZoneID: "Australia/Sydney", coordinates: Coordinates(latitude: -33.8688, longitude: 151.2093))
+            p.homeConfirmed = true
             p.manualPlace = Place(name: "Kuala Lumpur", region: nil, countryCode: "MY", countryName: "Malaysia",
                                   timeZoneID: "Asia/Kuala_Lumpur", coordinates: Coordinates(latitude: 3.139, longitude: 101.6869))
             p.lastCountryCode = "MY"
@@ -190,20 +248,22 @@ final class AppModel {
 
     var isMethodAutomatic: Bool { prefs.methodOverrideID == nil }
     /// Whose times these are, in plain words (official timetable, the authority's method, or a standard one).
-    var sourceSummary: String { profile.sourceSummary(method: method, pinned: !isMethodAutomatic) }
+    var sourceSummary: String { OfficialTimetables.summary(officialSource) ?? profile.sourceSummary(method: method, pinned: !isMethodAutomatic) }
     /// The same in one sentence or two, for the welcome card.
-    var sourceShort: String { profile.sourceSummary(method: method, pinned: !isMethodAutomatic, short: true) }
+    var sourceShort: String { OfficialTimetables.summary(officialSource, short: true) ?? profile.sourceSummary(method: method, pinned: !isMethodAutomatic, short: true) }
     var asrSchool: AsrSchool { prefs.asrOverride ?? profile.asr }
-    /// Your prayer names - from your home or your phone, not from where you
-    /// are, so they stay the same as you travel.
+    /// Your prayer names, from your phone's language (English unless it has
+    /// names in it), not from where you are, so they stay the same as you travel.
     var naming: NamingStyle { prefs.namingOverride ?? personalNaming }
-    var personalNaming: NamingStyle { NamingStyle.personal(homeCountry: prefs.home?.countryCode) }
+    var personalNaming: NamingStyle { NamingStyle.personal() }
     /// The words used where you are (the masjid's signs, the azan app locals use).
     var localNaming: NamingStyle { profile.naming }
 
     /// The local word for a prayer, when it differs from yours.
     func localName(_ prayer: Prayer, at time: Date) -> String? {
         guard prefs.showLocalNames, localNaming != naming else { return nil }
+        // At home you already know the local words; the hint is for travel.
+        if let home = prefs.home?.countryCode, home == profile.code { return nil }
         let local = prayer.name(localNaming, isFriday: isFriday(time))
         return local == prayer.name(naming, isFriday: isFriday(time)) ? nil : local
     }
@@ -222,8 +282,10 @@ final class AppModel {
         return max(0, Calendar.current.dateComponents([.day], from: arrived, to: .now).day ?? 0)
     }
 
+    /// Nil until home is set and the user has said it is home, so a guessed
+    /// home never tells anyone they are a traveller (or at home) by mistake.
     var musafirStatus: Musafir.Status? {
-        guard let place = activePlace else { return nil }
+        guard let place = activePlace, prefs.homeConfirmed else { return nil }
         return Musafir.status(home: prefs.home?.coordinates, current: place.coordinates,
                               daysHere: daysHere, rules: musafirRules)
     }
@@ -322,7 +384,7 @@ final class AppModel {
     func next(after now: Date) -> (prayer: Prayer, time: Date)? {
         guard let today = day(containing: now) else { return nil }
         if let upcoming = today.ordered.first(where: { $0.time > now }) { return upcoming }
-        guard let tomorrow = day(containing: now.addingTimeInterval(86_400)) else { return nil }
+        guard let tomorrow = day(containing: noon(now, plus: 1)) else { return nil }
         return (.fajr, tomorrow.time(.fajr))
     }
 
@@ -330,7 +392,7 @@ final class AppModel {
     func current(at now: Date) -> (prayer: Prayer, time: Date)? {
         guard let today = day(containing: now) else { return nil }
         if let passed = today.ordered.last(where: { $0.time <= now }) { return passed }
-        guard let yesterday = day(containing: now.addingTimeInterval(-86_400)) else { return nil }
+        guard let yesterday = day(containing: noon(now, plus: -1)) else { return nil }
         return (.isha, yesterday.time(.isha))
     }
 
@@ -345,8 +407,8 @@ final class AppModel {
     /// The prayer open now and when its time runs out; nil between sunrise and Zohor.
     func window(at now: Date) -> PrayerWindow? {
         guard let today = day(containing: now),
-              let yesterday = day(containing: now.addingTimeInterval(-86_400)),
-              let tomorrow = day(containing: now.addingTimeInterval(86_400)) else { return nil }
+              let yesterday = day(containing: noon(now, plus: -1)),
+              let tomorrow = day(containing: noon(now, plus: 1)) else { return nil }
         return PrayerWindow.open(at: now, yesterday: yesterday, today: today, tomorrow: tomorrow)
     }
 
@@ -397,6 +459,11 @@ final class AppModel {
 
     // MARK: Prayer tracker
 
+    /// Local noon `days` calendar days after `date` here, safe on clock change days.
+    func noon(_ date: Date, plus days: Int) -> Date {
+        DayStep.noon(date, plus: days, in: timeZone)
+    }
+
     /// Local calendar key ("yyyy-MM-dd") for a date at the active place.
     func dayKey(_ date: Date) -> String {
         var cal = Calendar(identifier: .gregorian)
@@ -436,14 +503,28 @@ final class AppModel {
 
     /// Pause for haid, nifas or illness: today and every day until it's ended
     /// count as excused, so the streak waits.
-    func pauseTracker(_ date: Date = .now) { prefs.trackerPausedSince = dayKey(date) }
+    /// In Ramadan the paused days read as "Period" in the fast record too.
+    func pauseTracker(_ date: Date = .now) { linkWomensDays { $0.pause(today: dayKey(date)) } }
 
-    /// End the pause: the paused days are kept as excused days, today included.
+    /// End the pause: the paused days are kept as excused days, today included,
+    /// and as "Period" fasts in Ramadan.
     func endTrackerPause(_ date: Date = .now) {
-        guard let since = prefs.trackerPausedSince else { return }
-        prefs.excusedDays.formUnion(Self.days(from: since, to: dayKey(date)))
-        prefs.trackerPausedSince = nil
+        guard prefs.trackerPausedSince != nil else { return }
+        let today = dayKey(date)
+        linkWomensDays { $0.endPause(today: today, isRamadan: isRamadanKey) }
     }
+
+    /// The fast record and the tracker pause kept in step (Core/WomensDays.swift).
+    private func linkWomensDays(_ change: (inout WomensDays) -> Void) {
+        var w = WomensDays(fastLog: prefs.fastLog, excusedDays: prefs.excusedDays, trackerPausedSince: prefs.trackerPausedSince)
+        change(&w)
+        if w.fastLog != prefs.fastLog { prefs.fastLog = w.fastLog }
+        if w.excusedDays != prefs.excusedDays { prefs.excusedDays = w.excusedDays }
+        if w.trackerPausedSince != prefs.trackerPausedSince { prefs.trackerPausedSince = w.trackerPausedSince }
+    }
+
+    /// Is this "yyyy-MM-dd" a Ramadan day for this community.
+    func isRamadanKey(_ key: String) -> Bool { CivilDay(key).map { hijri(of: $0).month == 9 } ?? false }
 
     /// Every "yyyy-MM-dd" from `from` to `to`, both included (at most a year).
     nonisolated static func days(from: String, to: String) -> [String] {
@@ -462,9 +543,10 @@ final class AppModel {
         return out
     }
 
+    /// "Just today": in Ramadan it marks that fast "Period" too, and again undoes both.
     func toggleExcused(_ date: Date) {
         let key = dayKey(date)
-        if prefs.excusedDays.contains(key) { prefs.excusedDays.remove(key) } else { prefs.excusedDays.insert(key) }
+        linkWomensDays { $0.toggleExcused(key, isRamadan: isRamadanKey) }
     }
 
     /// Consecutive days with all five prayers marked (or excused). Today counts
@@ -476,7 +558,7 @@ final class AppModel {
             let key = dayKey(date)
             let complete = isExcused(key: key) || (prefs.prayedLog[key]?.count ?? 0) >= Prayer.obligatory.count
             if complete { count += 1 } else if i > 0 { break }
-            date = date.addingTimeInterval(-86_400)
+            date = noon(date, plus: -1)
         }
         return count
     }
@@ -493,6 +575,7 @@ final class AppModel {
         a.hiddenHadith = []; b.hiddenHadith = []
         a.fastLog = [:]; b.fastLog = [:]
         a.tarawihLog = []; b.tarawihLog = []
+        a.tarawihRakaat = nil; b.tarawihRakaat = nil
         a.quranLog = []; b.quranLog = []
         a.zakatPaid = []; b.zakatPaid = []
         guard a != b else {
@@ -514,6 +597,26 @@ final class AppModel {
         }
         scheduleNotifications()
         countOpen()
+        countOpenDay()
+    }
+
+    /// Counts separate days the app was opened, on this phone only (for the review line and star box).
+    private func countOpenDay() {
+        guard prefs.hasOnboarded, !Self.isDemo else { return }
+        let c = Calendar.current.dateComponents([.year, .month, .day], from: .now)
+        let key = "\(c.year ?? 0)-\(c.month ?? 0)-\(c.day ?? 0)"
+        guard prefs.lastOpenDay != key else { return }
+        prefs.lastOpenDay = key
+        prefs.openDayCount += 1
+    }
+
+    /// A calm moment for a review line or Apple's star box: today, after `days` days of
+    /// use, not within 15 minutes before a prayer or 15 minutes after one began.
+    func isCalmForReview(at now: Date, days: Int) -> Bool {
+        guard prefs.openDayCount >= days else { return false }
+        if let n = next(after: now), n.time.timeIntervalSince(now) < 15 * 60 { return false }
+        if let c = current(at: now), now.timeIntervalSince(c.time) < 15 * 60 { return false }
+        return true
     }
 
     /// Anonymous count of this open, a few seconds in so the GPS place has usually arrived.
@@ -566,6 +669,7 @@ final class AppModel {
 
     private func adopt(gps place: Place) {
         gpsPlace = place
+        if !Self.isDemo { Self.saveLastGPSPlace(place) }
         if prefs.useGPS { arrived(at: place) }
         refreshOfficialTimetable()
     }
@@ -586,9 +690,16 @@ final class AppModel {
         if let gpsPlace { arrived(at: gpsPlace) }
     }
 
+    /// Home, picked by the user. Also counts as saying "this is home".
     func setHome(_ place: Place) {
-        prefs.home = place
+        var p = prefs
+        p.home = place
+        p.homeConfirmed = true
+        prefs = p
     }
+
+    /// "Yes, this is home" for the home the app guessed.
+    func confirmHome() { prefs.homeConfirmed = true }
 
     /// Travel mode: notice a new country, remember when we got here, show the welcome card.
     private func arrived(at place: Place) {
@@ -620,6 +731,22 @@ final class AppModel {
     /// The local calendar day containing `date`.
     func civil(_ date: Date) -> CivilDay { CivilDay(date, timeZone: timeZone) }
 
+    /// The long summer days note: its key when today's Fajr and Isha come from a high
+    /// latitude rule (twilight lasts all night) and the note for this place and summer
+    /// hasn't been closed. Only for calculated times; an official timetable sets its own.
+    func longDaysNote(_ now: Date) -> String? {
+        guard let place = activePlace, officialSource == nil else { return nil }
+        let d = civil(now)
+        let c = place.coordinates
+        guard LongDays.twilightLastsAllNight(year: d.year, month: d.month, day: d.day, latitude: c.latitude, method: method) else { return nil }
+        let key = LongDays.key(year: d.year, month: d.month, latitude: c.latitude, longitude: c.longitude, countryCode: place.countryCode)
+        return prefs.longDaysClosed.contains(key) ? nil : key
+    }
+
+    func closeLongDaysNote(_ key: String) {
+        prefs.longDaysClosed = Array((prefs.longDaysClosed.filter { $0 != key } + [key]).suffix(30))
+    }
+
     var isSeasonPreview: Bool { prefs.seasonPreview != .off }
 
     /// Days the tester's "Try Ramadan" moves the calendar by (0 when off).
@@ -635,7 +762,8 @@ final class AppModel {
     /// The Hijri date of a civil day as this community counts it (Core/Season.swift).
     func hijri(of g: CivilDay) -> Hijri.HijriDate {
         if isSeasonPreview { return Season.baseHijri(g.adding(seasonShift)) }
-        return Season.communityHijri(g, adjustment: prefs.hijriAdjustment, announcements: hijriCalendar.dataset.announcements, authority: communityAuthority)
+        return Season.communityHijri(g, adjustment: prefs.hijriAdjustment, announcements: hijriCalendar.dataset.announcements,
+                                     authority: communityAuthority, monthStarts: hijriCalendar.dataset.monthStarts)
     }
 
     func hijri(of date: Date) -> Hijri.HijriDate { hijri(of: civil(date)) }
@@ -676,7 +804,7 @@ final class AppModel {
             if now < imsak(today) { return (.imsak, imsak(today)) }
             if now < today.time(.maghrib) { return (.berbuka, today.time(.maghrib)) }
         }
-        if let tomorrow = day(containing: now.addingTimeInterval(86_400)), isRamadanDay(tomorrow.time(.dhuhr)) {
+        if let tomorrow = day(containing: noon(now, plus: 1)), isRamadanDay(tomorrow.time(.dhuhr)) {
             return (.imsak, imsak(tomorrow))
         }
         return nil
@@ -709,7 +837,7 @@ final class AppModel {
         let today = civil(.now).key
         var fasted = 0, missed = 0
         for d in days where d.key <= today {
-            switch prefs.fastLog[d.key] {
+            switch fastMark(d.key) {
             case .fasted?: fasted += 1
             case let m? where m.isMissed: missed += 1
             default: break
@@ -726,8 +854,16 @@ final class AppModel {
         return FastSummary(days: days, fasted: fasted, missed: missed, replaced: replaced, owed: max(0, missed - replaced), syawal: syawal)
     }
 
+    /// How a fast day went. An unmarked Ramadan day inside a tracker pause reads as "Period".
+    func fastMark(_ key: String) -> FastMark? {
+        WomensDays(fastLog: prefs.fastLog, excusedDays: prefs.excusedDays, trackerPausedSince: prefs.trackerPausedSince)
+            .mark(key, today: dayKey(.now), isRamadan: isRamadanKey)
+    }
+
+    /// Marking "Period" pauses the tracker too, and changing it back undoes both.
     func setFast(_ key: String, _ mark: FastMark?) {
-        prefs.fastLog[key] = mark
+        let today = dayKey(.now)
+        linkWomensDays { $0.setFast(key, mark, today: today, isRamadan: isRamadanKey) }
         if prefs.fastLog.count > 800, let oldest = prefs.fastLog.keys.min() { prefs.fastLog[oldest] = nil }
     }
 
@@ -772,14 +908,13 @@ final class AppModel {
         let jumuah = prefs.jumuahReminderMinutes
         let here = place.isInAsia ? "\(place.name) \(place.profile.flag)" : place.name
         let maghribAlertOn = onTime && prefs.notifyPrayers.contains(.maghrib)
-        // Settings, Hadith: one line under each prayer alert.
-        let hadithLine = prefs.hadithInAlerts ? "\n" + Hadith.of(.azan).alertLine(RamadanContent.lang(naming)) : ""
+        let lineLang = RamadanContent.lang(naming)
         var ramadan: [NotificationScheduler.Alert] = []
         // iOS keeps at most 64 pending, so fewer days when there are more alerts a day.
         let perDay = (onTime ? 6 : 0) + (early > 0 ? 6 : 0) + (nudges ? 4 : 0) + (jumuah > 0 ? 1 : 0)
         let days = max(2, min(12, 60 / max(perDay, 1)))
         for offset in -1..<days {
-            guard let pd = day(containing: Date.now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
+            guard let pd = day(containing: noon(.now, plus: offset)) else { continue }
             if nudges, let next = day(containing: pd.time(.dhuhr).addingTimeInterval(86_400)) {
                 for w in PrayerWindow.windows(of: pd, next: next) where prefs.notifyPrayers.contains(w.prayer) {
                     // Already ticked or excused: no nudge (ticking reschedules).
@@ -818,7 +953,7 @@ final class AppModel {
                     let title = prayer == .sunrise ? "\(Prayer.fajr.name(naming)) ends in \(early) min" : "\(name) in \(early) min"
                     let at = time.addingTimeInterval(Double(-early) * 60)
                     alerts.append(.init(id: id + "-early", title: title,
-                                        body: "\(name) at \(formatted(time)) · \(here)",
+                                        body: "\(name) at \(formatted(time))",
                                         fireDate: at, silent: isSilent(at, prayer: prayer)))
                 }
                 guard onTime else { continue }
@@ -826,17 +961,17 @@ final class AppModel {
                 if prefs.alarmAtStart(prayer) { continue }
                 if prayer == .sunrise {
                     alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
-                                        body: "\(Prayer.fajr.name(naming)) has ended. \(here)", fireDate: time, silent: silent))
+                                        body: "\(Prayer.fajr.name(naming)) has ended.", fireDate: time, silent: silent))
                     continue
                 }
                 if prayer == .maghrib && isRamadanDay(time) {
                     alerts.append(.init(id: id, title: "Time to berbuka · \(name) \(formatted(time))",
-                                        body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu · \(here)", fireDate: time,
+                                        body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu", fireDate: time,
                                         sound: prefs.azanSound ? .azan : .standard, silent: silent))
                     continue
                 }
                 alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
-                                    body: "It's time for \(name) in \(here)\(hadithLine)", fireDate: time,
+                                    body: AlertLines.line(lineLang, prayer: prayer, friday: isFriday(time), year: pd.year, month: pd.month, day: pd.day, name: name), fireDate: time,
                                     sound: prefs.azanSound ? (prayer == .fajr ? .azanSubuh : .azan) : .standard, silent: silent))
             }
         }
@@ -891,7 +1026,7 @@ final class AppModel {
         let fajr = Prayer.fajr.name(naming)
         var out: [WakeUp] = []
         for offset in start..<(start + days) {
-            guard let pd = day(containing: now.addingTimeInterval(Double(offset) * 86_400)) else { continue }
+            guard let pd = day(containing: noon(now, plus: offset)) else { continue }
             if let sahur = prefs.sahurAlarm,
                SahurDay.rings(on: pd, prefs.sahurDays, timeZone: timeZone, hijriAdjustment: prefs.hijriAdjustment) {
                 out.append(WakeUp(date: sahur.date(in: pd), title: "Wake up for sahur · \(fajr) at \(formatted(pd.time(.fajr)))", isSahur: true))

@@ -100,7 +100,7 @@ enum Musafir {
         case .home:
             return nil
         case .nearby(let km):
-            return (false, "You are \(Int(km.rounded()).formatted()) km from home. That is less than \(limit) km, so this trip does not count as travel yet.")
+            return (false, "You are \(Int(km.rounded(.down)).formatted()) km from home. That is less than \(limit) km, so this trip does not count as travel yet.")
         case .traveller(let km), .settled(let km, _):
             return (true, "You are \(Int(km.rounded()).formatted()) km from home. That is more than \(limit) km, so this trip counts as travel.")
         }

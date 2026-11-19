@@ -73,6 +73,12 @@ android {
             all {
                 it.maxHeapSize = "4g"
                 it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
+                // Print the whole failure (accessibility results list every problem) in the build log.
+                it.testLogging {
+                    events("failed")
+                    exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                    showStackTraces = false
+                }
             }
         }
     }
@@ -109,6 +115,10 @@ dependencies {
     implementation(libs.camerax.view)
     // QR codes for Move my settings (making them and reading them from the camera).
     implementation(libs.zxing.core)
+    // Google Play's own in-app star box (asked rarely, at a calm moment).
+    implementation(libs.play.review.ktx)
+    // Play review pulls in an old Fragment; pin a current one so ActivityResult APIs pass lint.
+    implementation(libs.androidx.fragment.ktx)
 
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
@@ -118,6 +128,7 @@ dependencies {
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.roborazzi.junit.rule)
+    testImplementation(libs.roborazzi.accessibility.check)
     testImplementation(platform(libs.compose.bom))
     testImplementation(libs.compose.ui.test.junit4)
     testImplementation(libs.androidx.test.core)

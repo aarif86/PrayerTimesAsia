@@ -49,6 +49,10 @@ final class PlaceSearch: NSObject, MKLocalSearchCompleterDelegate {
 }
 
 struct PlacesView: View {
+    /// What the picked place is for: where to show times, or where home is.
+    enum Purpose { case location, home }
+    var purpose: Purpose = .location
+
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var search = PlaceSearch()
@@ -58,7 +62,9 @@ struct PlacesView: View {
         @Bindable var search = search
         NavigationStack {
             List {
-                if search.query.isEmpty {
+                if search.query.isEmpty, purpose == .home {
+                    homeSuggestions
+                } else if search.query.isEmpty {
                     Section {
                         Button {
                             model.useGPS()
@@ -108,7 +114,7 @@ struct PlacesView: View {
             .overlay { if resolving { ProgressView() } }
             .searchable(text: $search.query, placement: .navigationBarDrawer(displayMode: .always), prompt: "City or place")
             .onChange(of: search.query) { search.update() }
-            .navigationTitle("Location")
+            .navigationTitle(purpose == .home ? "Where is home?" : "Location")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
@@ -124,14 +130,49 @@ struct PlacesView: View {
                 if !place.subtitle.isEmpty { Text(place.subtitle).font(.caption).foregroundStyle(.secondary) }
             }
             Spacer()
-            if !model.prefs.useGPS, model.prefs.manualPlace?.isNear(place) == true {
+            let picked = purpose == .home
+                ? model.prefs.home?.isNear(place) == true
+                : (!model.prefs.useGPS && model.prefs.manualPlace?.isNear(place) == true)
+            if picked {
                 Image(systemName: "checkmark").foregroundStyle(.tint)
             }
         }
     }
 
+    /// For home: where you are now, your saved places, and a note on why it matters.
+    @ViewBuilder
+    private var homeSuggestions: some View {
+        if let here = model.gpsPlace ?? model.activePlace {
+            Section {
+                Button { pick(here) } label: {
+                    Label {
+                        VStack(alignment: .leading) {
+                            Text("Where I am now")
+                            Text(here.name + (here.countryName.map { ", \($0)" } ?? "")).font(.caption).foregroundStyle(.secondary)
+                        }
+                    } icon: { Image(systemName: "location.fill") }
+                }
+            }
+        }
+        let saved = model.prefs.savedPlaces.filter { $0.name != "Current location" }
+        if !saved.isEmpty {
+            Section("Saved places") {
+                ForEach(saved) { place in
+                    Button { pick(place) } label: { placeRow(place) }
+                }
+            }
+        }
+        Section {
+            Text("Search the town or area where you live, like Tampines, Shah Alam or Bandung. Home is used to work out when you count as a traveller.")
+                .font(.footnote).foregroundStyle(.secondary)
+        }
+    }
+
     private func pick(_ place: Place) {
-        model.choose(manual: place)
+        switch purpose {
+        case .location: model.choose(manual: place)
+        case .home: model.setHome(place)
+        }
         dismiss()
     }
 }

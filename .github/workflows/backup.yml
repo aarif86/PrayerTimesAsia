@@ -1,0 +1,94 @@
+# "Make a backup" button.
+#
+# Actions -> Backup -> Run workflow.
+#   * Always: puts a dated marker (tag) backup-YYYY-MM-DD on main, so main can be
+#     rolled back to this exact point.
+#   * When "full" is ticked (the default, and every Sunday on its own): also makes
+#     one file holding every branch and all history (a git bundle) and saves it as
+#     a GitHub Release, with a list of every branch and the commit it was on.
+#
+# The overnight loop (docs/ai-team.md) runs this with full = false before it starts
+# work, so every night has a marker to roll back to. It only adds tags and releases;
+# it never changes code, branches, the website or the apps.
+#
+# Restore from a bundle:  git clone prayertimesasia-full-<date>.bundle prayertimesasia
+
+name: Backup
+
+on:
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Also save every branch as a downloadable file (Release)"
+        type: boolean
+        required: false
+        default: true
+  schedule:
+    - cron: "23 18 * * 6"   # Sunday 02:23 in Singapore
+
+permissions:
+  contents: write
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Get every branch and all history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Mark main with today's date
+        id: tag
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --tags --force origin
+          base="backup-$(TZ=Asia/Singapore date +%Y-%m-%d)"
+          tag="$base"; n=2
+          # Several backups on one day get -2, -3 ... instead of overwriting.
+          while git rev-parse -q --verify "refs/tags/$tag" >/dev/null; do tag="$base-$n"; n=$((n+1)); done
+          git tag -a "$tag" origin/main -m "Backup of main ($(git rev-parse --short origin/main)) made by the Backup workflow"
+          git push origin "refs/tags/$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Marked main as **$tag**" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Save every branch in one file
+        if: github.event_name == 'schedule' || inputs.full
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*'
+          mkdir -p ../bk ../mirror
+          git clone -q --mirror . ../mirror
+          cd ../mirror
+          # Turn every GitHub branch into a normal branch inside the bundle.
+          git for-each-ref --format='%(refname)' refs/heads | xargs -r -n1 git update-ref -d
+          git for-each-ref --format='%(refname) %(objectname)' refs/remotes/origin \
+            | grep -v 'refs/remotes/origin/HEAD' \
+            | while read -r r o; do git update-ref "refs/heads/${r#refs/remotes/origin/}" "$o"; done
+          git for-each-ref --format='%(refname)' refs/remotes | xargs -r -n1 git update-ref -d
+          git symbolic-ref HEAD refs/heads/main
+          git for-each-ref --format='%(refname:short) %(objectname:short)' refs/heads > ../bk/branch-heads.txt
+          git bundle create "../bk/prayertimesasia-full-$TAG.bundle" HEAD --branches --tags
+          cd ../bk
+          # Prove it restores before saving it.
+          git clone -q "prayertimesasia-full-$TAG.bundle" check
+          git -C check fsck --no-progress
+          rm -rf check
+          sha256sum * > SHA256SUMS
+          count=$(wc -l < branch-heads.txt)
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --latest=false \
+            --title "Backup $TAG" \
+            --notes "Full backup: $count branches and all history. Restore with git clone prayertimesasia-full-$TAG.bundle prayertimesasia" \
+            prayertimesasia-full-$TAG.bundle branch-heads.txt SHA256SUMS
+          echo "Saved $count branches as release **$TAG**" >> "$GITHUB_STEP_SUMMARY"

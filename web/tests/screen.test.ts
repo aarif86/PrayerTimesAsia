@@ -52,6 +52,7 @@ describe('screen config', () => {
   it('reads iqamah as minutes or a time', () => {
     expect(parseIqamah('10')).toEqual({ after: 10 })
     expect(parseIqamah(' 7 ')).toEqual({ after: 7 })
+    expect(parseIqamah('13,15')).toEqual({ fixed: '13:15' })
     expect(parseIqamah('13:15')).toEqual({ fixed: '13:15' })
     expect(parseIqamah('6.05')).toEqual({ fixed: '06:05' })
     expect(parseIqamah('')).toBeNull()
@@ -174,5 +175,28 @@ describe('QR code for worshippers', () => {
       jamaah: { fajr: { after: 15 }, dhuhr: { fixed: '13:15' }, maghrib: { after: 5 } }, jumuah: '13:00',
     })
     expect(masjidAppLink({ ...SG, place: null }, 'https://x/app/screen/')).toBeNull()
+  })
+})
+
+describe('screen on clock-change nights', () => {
+  const LDN: ScreenConfig = { ...DEFAULT_CONFIG, name: 'Masjid London', place: { name: 'London', lat: 51.5074, lng: -0.1278, tz: 'Europe/London', cc: 'GB', district: null } }
+  const ldn = (y: number, mo: number, d: number, h: number, mi: number) => zonedTime(y, mo, d, h, mi, 0, 'Europe/London')
+  const dayOf = (ms: number) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date(ms))
+
+  it('after Isyak on the night the clocks go forward, counts down to the next morning', () => {
+    const now = ldn(2027, 3, 27, 23, 30)
+    const p = phaseAt(now, LDN, noTable)!
+    expect(p.kind).toBe('waiting')
+    if (p.kind !== 'waiting') return
+    expect(p.next).toBe('fajr')
+    expect(dayOf(p.at)).toBe('2027-03-28')
+    expect(p.at - now).toBeLessThan(12 * 3600_000)
+  })
+
+  it('after Isyak on the night the clocks go back, counts down to the next morning', () => {
+    const now = ldn(2026, 10, 24, 23, 30)
+    const p = phaseAt(now, LDN, noTable)!
+    if (p.kind !== 'waiting') throw new Error(p.kind)
+    expect(dayOf(p.at)).toBe('2026-10-25')
   })
 })

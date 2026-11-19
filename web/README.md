@@ -4,7 +4,7 @@ The web version of **Prayer Times Asia**, the iOS app for Muslims living and tra
 times with their source, qibla, falak (sun-and-shadow) tools and nearby masjids. An installable, offline-capable
 PWA (Preact + TypeScript + Vite), no accounts, no ads, no analytics.
 
-- Live (GitHub Pages): **https://aarif86.github.io/PrayerTimesAsia/app/** (the promo page from `site/` is at the root; both move to prayertimes.asia once the domain is set up, see [site/README.md](../site/README.md)).
+- Live (GitHub Pages): **https://prayertimes.asia/app/** (the promo page from `site/` is at the root, see [site/README.md](../site/README.md)).
 - Screenshots: [`docs/screenshots/`](docs/screenshots/) ([contact sheet](docs/screenshots/contact-sheet.png)).
 - Lives in `web/` of the Prayer Times Asia project, next to `ios/` and `android/`; every push to `main` that touches `web/` builds, tests and deploys it.
 
@@ -34,7 +34,7 @@ with `style` = `list | centre | dial | sunPath | bands`, `appearance` = `system 
 ## Masjid screen (`screen/`)
 
 A second page for masjid TVs: the next prayer's countdown, the six times with iqamah, Jumu'ah, Ramadan Imsak and
-notices, with the same official tables and engine as the app. Live at **https://aarif86.github.io/PrayerTimesAsia/app/screen/**. Setup happens on a phone at `screen/#setup`; it gives
+notices, with the same official tables and engine as the app. Live at **https://prayertimes.asia/app/screen/**. Setup happens on a phone at `screen/#setup`; it gives
 one link (the settings ride in the `#hash`, never sent anywhere) that the TV opens once and remembers. The screen
 dims during prayer, keeps the TV awake, drifts a few pixels against burn-in and reloads at 3 am.
 Why it works this way: [docs/masjid-screen.md](../docs/masjid-screen.md). Screenshots: [`docs/screenshots/screen/`](docs/screenshots/screen/).
@@ -89,7 +89,7 @@ badge says "Calculated".
   steps; asks for compass permission on iPhone Safari; without a compass, the bearing plus **the qibla line on a map**.
 - Falak: shadow right now, Qibla Day, rashdul qiblat, shadow stick (tongkat istiwa') with readings, sky signs; camera
   view and spirit level.
-- Masjid: OpenStreetMap map and list (Overpass), All/Masjid/Musollah, walking directions in the phone's maps app,
+- Masjid: OpenStreetMap map and list (weekly ready-made list, Overpass as fallback), All/Masjid/Musollah, walking directions in the phone's maps app,
   the (i) "Built fisabilillah" sheet.
 - From the makers: Badal.sg for Singapore users, NasarDigital otherwise; on the Prayer screen only under Show more; (i)
   on Masjid; Settings "From the makers" with the Show offers switch. Same links and utm parameters as iOS. Nothing is tracked.

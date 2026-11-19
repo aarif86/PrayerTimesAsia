@@ -58,7 +58,7 @@ enum class NamingStyle(val raw: String) {
     /** Short name, for "Subuh (Malay)" style captions. */
     val language: String
         get() = when (this) {
-            INTERNATIONAL -> "International"
+            INTERNATIONAL -> "English"
             MALAY -> "Malay"
             INDONESIAN -> "Indonesian"
             SOUTH_ASIAN -> "South Asian"
@@ -71,7 +71,7 @@ enum class NamingStyle(val raw: String) {
 
     val label: String
         get() = when (this) {
-            INTERNATIONAL -> "International (Fajr, Dhuhr, Asr, Isha)"
+            INTERNATIONAL -> "English (Fajr, Dhuhr, Asr, Isha)"
             MALAY -> "Malay (Subuh, Zohor, Asar, Isyak)"
             INDONESIAN -> "Indonesian (Subuh, Dzuhur, Ashar, Isya)"
             SOUTH_ASIAN -> "South Asian (Fajr, Zuhr, Asr, Isha)"
@@ -142,17 +142,14 @@ enum class NamingStyle(val raw: String) {
     companion object {
         /**
          * Your names, when you haven't picked any: your phone's language when we
-         * have names in it, else your home country's, else your region's, else
-         * International. Read from the phone only, never from your IP address.
+         * have names in it, else English (International). Your home country does
+         * not change them, so a Singapore user on an English phone sees Fajr, and
+         * picks Malay in Settings for Subuh. Read from the phone only, never from
+         * your IP address.
          *
          * [language] is an ISO 639 code; Android still reports Indonesian as "in".
          */
-        fun personal(homeCountry: String?, language: String?, region: String?): NamingStyle {
-            forLanguage(language)?.let { return it }
-            // A home with its own spelling wins over an English phone.
-            AsiaRegions.profile(homeCountry)?.let { if (it.naming != INTERNATIONAL) return it.naming }
-            return AsiaRegions.profile(region)?.naming ?: INTERNATIONAL
-        }
+        fun personal(language: String?): NamingStyle = forLanguage(language) ?: INTERNATIONAL
 
         /** The names that go with a language code (ISO 639). */
         fun forLanguage(language: String?): NamingStyle? = when (language?.lowercase()) {
@@ -166,8 +163,7 @@ enum class NamingStyle(val raw: String) {
             else -> null
         }
 
-        fun personal(homeCountry: String?, locale: java.util.Locale): NamingStyle =
-            personal(homeCountry, locale.language, locale.country.ifEmpty { null })
+        fun personal(locale: java.util.Locale): NamingStyle = personal(locale.language)
     }
 }
 

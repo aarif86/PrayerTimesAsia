@@ -1,5 +1,6 @@
 package com.prayertimesasia.core
 
+import kotlin.math.floor
 import kotlin.math.roundToInt
 
 /**
@@ -94,7 +95,8 @@ object Musafir {
         val limit = rules.thresholdKm.toInt()
         return when (status) {
             Status.Home -> null
-            is Status.Nearby -> false to "You are ${"%,d".format(java.util.Locale.US, status.distanceKm.roundToInt())} km from home. That is less than $limit km, so this trip does not count as travel yet."
+            // Round down when short of the limit, so 80.6 km never reads "81 km, less than 81 km".
+            is Status.Nearby -> false to "You are ${"%,d".format(java.util.Locale.US, floor(status.distanceKm).toInt())} km from home. That is less than $limit km, so this trip does not count as travel yet."
             is Status.Traveller -> true to "You are ${"%,d".format(java.util.Locale.US, status.distanceKm.roundToInt())} km from home. That is more than $limit km, so this trip counts as travel."
             is Status.Settled -> true to "You are ${"%,d".format(java.util.Locale.US, status.distanceKm.roundToInt())} km from home. That is more than $limit km, so this trip counts as travel."
         }

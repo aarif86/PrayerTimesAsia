@@ -2,13 +2,14 @@ import { isInAsia, placeProfile } from '../core/place'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { flag } from '../core/regions'
 import type { PrayerDay } from '../core/engine'
-import { zoned } from '../core/tz'
+import { noonDaysAfter, zoned } from '../core/tz'
 import { ALARM_KEY, ALARM_PRAYERS, prayerAlarmTime, sahurRings, sahurTime, wakeUpTime, type AlarmPrayer } from '../core/wakeup'
 import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
 import { playAzan } from './azan'
 import { playAlarm } from './alarmSound'
 import { hadithAlertLine, type HadithId } from '../core/hadith'
 import { lang3 } from '../core/ramadanContent'
+import { alertLine } from '../core/alertLines'
 import { store } from './store'
 
 /**
@@ -77,8 +78,8 @@ export function upcomingAlerts(now: number): Alert[] {
   const here = isInAsia(place) ? `${place.name} ${flag(placeProfile(place).code)}` : place.name
   const out: Alert[] = []
   for (let offset = -1; offset < 2; offset++) {
-    const day = store.day(now + offset * 86_400_000)
-    const nextDay = store.day(now + (offset + 1) * 86_400_000)
+    const day = store.day(noonDaysAfter(now, offset, tz))
+    const nextDay = store.day(noonDaysAfter(now, offset + 1, tz))
     if (!day) continue
     if (nudges && nextDay) {
       for (const w of windowsOf(day, nextDay)) {
@@ -118,27 +119,28 @@ export function upcomingAlerts(now: number): Alert[] {
         // or work would otherwise run past the time.
         out.push({
           id: `${id}-early`, title: prayer === 'sunrise' ? `${store.name('fajr')} ends in ${early} min` : `${name} in ${early} min`,
-          body: `${name} at ${store.formatted(time)} · ${here}`, at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
+          body: `${name} at ${store.formatted(time)}`, at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
         })
       }
       if (!onTime) continue
       // An alarm at the same minute rings instead, so it doesn't sound twice.
       if (alarmAtStart(prayer)) continue
       if (prayer === 'sunrise') {
-        out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended. ${here}`, at: time, silent })
+        out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended.`, at: time, silent })
         continue
       }
       if (prayer === 'maghrib' && store.isRamadanDay(time)) {
-        out.push({ id, title: `Time to berbuka · ${name} ${store.formatted(time)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu · ${here}`, at: time, prayer, silent })
+        out.push({ id, title: `Time to berbuka · ${name} ${store.formatted(time)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu`, at: time, prayer, silent })
         continue
       }
-      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `It's time for ${name} in ${here}${alertHadith('azan')}`, at: time, prayer, silent })
+      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: alertLine(lang3(store.naming), prayer, store.isFriday(time), day.year, day.month, day.day, name), at: time, prayer, silent })
     }
   }
   return [...out, ...wake].filter((a) => a.at > now).sort((a, b) => a.at - b.at)
 }
 
-/** "\n“When you hear the azan, say what the muazzin says.” al Bukhari", or nothing when Settings, Hadith, alerts is off. */
+
+/** "\n“...” al Bukhari" under a wake-up alert, or nothing when Settings, Hadith, alerts is off. */
 function alertHadith(id: HadithId): string {
   return store.prefs.hadithInAlerts ? `\n${hadithAlertLine(id, lang3(store.naming))}` : ''
 }
@@ -164,7 +166,7 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
   const fajr = store.name('fajr')
   const out: WakeUp[] = []
   for (let offset = start; offset < start + days; offset++) {
-    const day = store.day(now + offset * 86_400_000)
+    const day = store.day(noonDaysAfter(now, offset, place.timeZoneID))
     if (!day) continue
     const key = `${day.year}-${day.month}-${day.day}`
     if (p.sahurAlarm && sahurRings(day, p.sahurDays, place.timeZoneID, p.hijriAdjustment)) {
@@ -308,7 +310,7 @@ export function buildICS(days = 30, prayers: Prayer[] = ['fajr', 'dhuhr', 'asr',
     `X-WR-CALNAME:${esc(`Prayer times · ${place.name}`)}`]
   const early = store.prefs.reminderMinutesBefore
   for (let i = 0; i < days; i++) {
-    const day = store.day(now + i * 86_400_000)
+    const day = store.day(noonDaysAfter(now, i, tz))
     if (!day) continue
     for (const p of prayers) {
       const t = day.times[p]

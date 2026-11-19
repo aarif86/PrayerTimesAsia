@@ -85,7 +85,8 @@ fun MoveOutContent(state: AppState) {
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     val moved = remember { MovedSettings.from(state.prefs) }
-    val (qrLink, keptDays) = remember(moved) { moved.qrLink() }
+    val (qrLink, keptDays, ramadanTrimmed) = remember(moved) { moved.qrLink() }
+    val trimNote = remember(keptDays, ramadanTrimmed) { MovedSettings.trimNote(keptDays, ramadanTrimmed) }
     val qr = remember(qrLink) { qrBitmap(qrLink) }
     val link = remember(moved) { moved.link() }
     var copied by remember { mutableStateOf(false) }
@@ -100,9 +101,8 @@ fun MoveOutContent(state: AppState) {
         }
         Text("On the other phone, open Prayer Times Asia › Settings › Bring in settings and scan this code. No app there? Point its camera at the code: it opens the web app with your settings.",
             style = Txt.footnote, color = Palette.secondary)
-        if (keptDays != null) {
-            Text("The QR code carries your last $keptDays days of tracker history. To bring all of it, share the link instead.",
-                style = Txt.footnote, color = Palette.secondary)
+        if (trimNote != null) {
+            Text(trimNote, style = Txt.footnote, color = Palette.secondary)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Pill(Icons.Filled.Share, "Share link") {

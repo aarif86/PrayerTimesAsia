@@ -12,13 +12,14 @@ import { isInAsia, isNear, placeProfile, placeSubtitle, type Place } from '../co
 import { OBLIGATORY } from '../core/prayer'
 import { flag, profileFor, timeZoneForPlace } from '../core/regions'
 import { GRADE_EXPLANATION, GRADE_TITLE, mosqueMethod, type SourceGrade } from '../core/sources'
-import { isValidTimeZone } from '../core/tz'
+import { isValidTimeZone, noonDaysAfter } from '../core/tz'
 import { searchCities } from '../services/cities'
 import { alertSupport } from '../services/notifications'
 import { fetchOK } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { closeSheet, fmtDate, GRADE_TINT, Segmented, Sheet, openSheet } from './common'
 import { TabJourney } from './icons'
+import { HijriMonthCard } from './HijriCalendar'
 import { MakersAbout } from './Makers'
 import { canInstall, install, isIOS } from './pwa'
 
@@ -33,7 +34,7 @@ function fromNominatim(it: NominatimItem): Place {
   const a = it.address ?? {}
   const code = (a.country_code ?? '').toUpperCase() || null
   const lat = parseFloat(it.lat), lng = parseFloat(it.lon)
-  const tz = timeZoneForPlace(code, lng)
+  const tz = timeZoneForPlace(code, lng, lat)
   const offset = Math.round(lng / 15)
   const fallbackTz = offset === 0 ? 'Etc/GMT' : `Etc/GMT${offset > 0 ? '-' : '+'}${Math.abs(offset)}`
   return {
@@ -48,14 +49,18 @@ function fromNominatim(it: NominatimItem): Place {
   }
 }
 
-export function PlacesSheet() {
+/** Pick where times are shown, or (forHome) where home is. Picking home goes back to Journey. */
+export function PlacesSheet({ forHome = false }: { forHome?: boolean } = {}) {
   const s = useStore()
   const [query, setQuery] = useState('')
   const [online, setOnline] = useState<Place[] | null>(null)
   const [searching, setSearching] = useState(false)
   const builtIn = useMemo(() => searchCities(query), [query])
   useEffect(() => { setOnline(null) }, [query])
-  const pick = (p: Place) => { store.choose(p); closeSheet() }
+  const pick = (p: Place) => {
+    if (forHome) { store.setHome(p); openSheet({ kind: 'journey' }) } else { store.choose(p); closeSheet() }
+  }
+  const here = s.gpsPlace ?? s.activePlace
   const searchOnline = async () => {
     setSearching(true)
     const r = await fetchOK(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=8&accept-language=en&q=${encodeURIComponent(query)}`, 15000)
@@ -68,20 +73,38 @@ export function PlacesSheet() {
       <button class="row" style={{ flex: 1, gap: '12px', textAlign: 'left' }} onClick={() => pick(p)}>
         <span style={{ fontSize: '20px' }}>{isInAsia(p) ? flag(placeProfile(p).code) : '🌏'}</span>
         <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: 'block' }}>{p.name}</span>{placeSubtitle(p) && <span class="sub">{placeSubtitle(p)}</span>}</span>
-        {!s.prefs.useGPS && s.prefs.manualPlace && isNear(s.prefs.manualPlace, p) && <Check size={18} class="accent" />}
+        {(forHome ? !!s.prefs.home && isNear(s.prefs.home, p) : !s.prefs.useGPS && !!s.prefs.manualPlace && isNear(s.prefs.manualPlace, p)) && <Check size={18} class="accent" />}
       </button>
       {saved && <button aria-label={`Remove ${p.name}`} class="secondary" style={{ padding: '6px' }}
         onClick={() => store.update((x) => { x.savedPlaces = x.savedPlaces.filter((q) => q.id !== p.id) })}><Trash2 size={16} /></button>}
     </div>
   )
   return (
-    <Sheet title="Location" full>
+    <Sheet title={forHome ? 'Where is home?' : 'Location'} full>
       <label class="search-box">
         <Search size={17} class="secondary" />
         <input type="search" placeholder="City or country" value={query} autoFocus={!s.demo}
           onInput={(e) => setQuery((e.target as HTMLInputElement).value)} aria-label="City or country" />
       </label>
-      {!query ? (
+      {!query && forHome ? (
+        <>
+          {here && (
+            <div class="group" style={{ marginTop: '14px' }}>
+              <button class="item" onClick={() => pick(here)}>
+                <Navigation size={18} fill="currentColor" />
+                <span class="label">Where I am now<span class="sub">{here.name}{here.countryName ? `, ${here.countryName}` : ''}</span></span>
+              </button>
+            </div>
+          )}
+          {s.prefs.savedPlaces.filter((p) => p.name !== 'Current location').length > 0 && (
+            <>
+              <h3 class="group-title" style={{ fontSize: '15px' }}>Saved places</h3>
+              <div class="group">{s.prefs.savedPlaces.filter((p) => p.name !== 'Current location').map((p) => row(p))}</div>
+            </>
+          )}
+          <p class="group-foot">Search the town or area where you live, like Tampines, Shah Alam or Bandung. Home is used to work out when you count as a traveller.</p>
+        </>
+      ) : !query ? (
         <>
           <div class="group" style={{ marginTop: '14px' }}>
             <button class="item" onClick={() => { store.useGPS(); closeSheet() }}>
@@ -207,7 +230,9 @@ export function CalendarSheet() {
   const mine = s.communityAuthority
   return (
     <Sheet title="Calendar" full>
-      <div class="group" style={{ marginTop: '10px' }}>
+      <HijriMonthCard />
+      <h3 class="group-title" style={{ fontSize: '15px', marginTop: '22px' }}>Ramadan and Raya, by authority</h3>
+      <div class="group">
         <label class="item">
           <span class="label">My community follows</span>
           <select value={s.prefs.communityAuthority ?? 'auto'} onChange={(e) => {
@@ -264,12 +289,11 @@ export function JourneySheet() {
   const rules = s.musafirRules
   const g = status ? musafirGuidance(status, rules, s.naming) : null
   const km = status && status.kind !== 'home' ? status.distanceKm : null
-  const today = s.day(now), tomorrow = s.day(now + 86_400_000)
-  const place = s.activePlace
+  const today = s.day(now), tomorrow = s.day(noonDaysAfter(now, 1, s.timeZone))
   const home = s.prefs.home
   return (
     <Sheet title="Journey" full>
-      <div class="glass card" style={{ marginTop: '10px' }}>
+      {home && !s.prefs.homeConfirmed ? <HomeQuestion /> : <div class="glass card" style={{ marginTop: '10px' }}>
         {g && status ? (
           <>
             <div class="row" style={{ gap: '10px' }}>{status.kind === 'traveller' ? <span class="journey-badge"><TabJourney size={18} /></span> : <House size={28} />}<span style={{ fontSize: '22px', fontWeight: 700 }}>{g.title}</span></div>
@@ -288,9 +312,10 @@ export function JourneySheet() {
             {s.prefs.arrivedAt != null && (status.kind === 'traveller' || status.kind === 'settled') && <div class="subhead" style={{ fontWeight: 600, opacity: 0.8 }}>Day {s.daysHere(now) + 1} in {s.profile.name || 'this place'}</div>}
           </>
         ) : (
-          <><div style={{ fontSize: '22px', fontWeight: 700 }}>Set your home</div><p style={{ opacity: 0.85 }}>Tell us where home is and we'll work out when you count as a traveller.</p></>
+          <><div style={{ fontSize: '22px', fontWeight: 700 }}>Set your home</div><p style={{ opacity: 0.85 }}>Tell us where home is and we'll work out when you count as a traveller.</p>
+            <button class="pill-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}><House size={16} /> Set home</button></>
         )}
-      </div>
+      </div>}
       {status?.kind === 'traveller' && s.isRamadanDay(now) && (
         <div class="glass card" style={{ marginTop: '16px' }}>
           <div class="caps" style={{ opacity: 0.7 }}>Fasting on this journey</div>
@@ -312,7 +337,7 @@ export function JourneySheet() {
           <div class="headline">{home ? `${flag(placeProfile(home).code)} ${home.name}` : 'Not set'}</div>
           {home && placeSubtitle(home) && <div class="subhead" style={{ opacity: 0.75 }}>{placeSubtitle(home)}</div>}
         </div>
-        {place && (!home || !isNear(home, place)) && <button class="plain-btn" onClick={() => store.setHome(place)}>Set to here</button>}
+        <button class="plain-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}><House size={16} />{home ? 'Change home' : 'Set home'}</button>
       </div>
       <div class="glass card" style={{ marginTop: '16px' }}>
         <div class="caps" style={{ opacity: 0.7, marginBottom: '10px' }}>Travel distance</div>
@@ -371,7 +396,7 @@ export function AlertsHelpSheet() {
         {support === 'unsupported' && <p class="headline">This browser can't show notifications.</p>}
         {support === 'supported' && <p class="headline">Notifications are blocked for this site.</p>}
         {support === 'supported' && <p class="subhead">Allow notifications in your browser's site settings (the icon left of the address), then try again.</p>}
-        <p class="subhead">Web alerts ring only while Prayer Times Asia is open. For alerts that ring when it's closed, use <b>Settings › Add the next 30 days to a calendar</b> - your calendar app rings every prayer.</p>
+        <p class="subhead">Web alerts ring only while Prayer Times Asia is open. For alerts that ring when it's closed, use <b>Settings › Add the next 30 days to a calendar</b>. Your calendar app rings every prayer.</p>
         <button class="primary-btn" onClick={closeSheet}>OK</button>
       </div>
     </Sheet>
@@ -404,7 +429,7 @@ const CREDITS: [string, string, string | null][] = [
   ['Kemenag - Indonesia', 'Kementerian Agama (Bimas Islam) schedules via the myquran.com community API.', 'https://api.myquran.com'],
   ['JAKIM zone boundaries', 'District-to-zone mapping from mptwaktusolat/malaysia.geojson; one reference point per district is used.', 'https://github.com/mptwaktusolat/malaysia.geojson'],
   ['Calculation', 'In-browser solar calculation after praytimes.org; method presets as published by MUIS, JAKIM, Kemenag, the Muslim World League, Karachi, Umm al-Qura, Diyanet and others.', 'https://praytimes.org/wiki/Calculation_Methods'],
-  ['Maps and places', 'Map data © OpenStreetMap contributors (ODbL), tiles © CARTO, masjid search through the Overpass API, place search through Nominatim.', 'https://www.openstreetmap.org/copyright'],
+  ['Maps and places', 'Map data © OpenStreetMap contributors (ODbL), tiles © CARTO, masjid lists built weekly from OpenStreetMap with the Overpass API, place search through Nominatim.', 'https://www.openstreetmap.org/copyright'],
   ['Icons and fonts', 'Lucide icons (ISC); Inter and Nunito (SIL Open Font Licence).', 'https://lucide.dev'],
   ['Community data', 'Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.', 'https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md'],
   ['This app', 'Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.', 'https://github.com/aarif86/PrayerTimesAsia'],
@@ -418,7 +443,7 @@ export function CreditsSheet() {
           <div class="item" style={{ display: 'block' }}>
             <div class="subhead" style={{ fontWeight: 600 }}>{t}</div>
             <div class="footnote secondary">{d}</div>
-            {u && <a class="footnote accent" href={u} target="_blank" rel="noopener noreferrer">{u.replace('https://', '')}</a>}
+            {u && <a class="footnote accent" style={{ overflowWrap: 'anywhere' }} href={u} target="_blank" rel="noopener noreferrer">{u.replace('https://', '')}</a>}
           </div>
         ))}
       </div>
@@ -427,6 +452,27 @@ export function CreditsSheet() {
 }
 
 export function MakersSheet({ placement }: { placement: string }) {
-  return <Sheet title=""><MakersAbout placement={placement} /></Sheet>
+  return <Sheet label="About Prayer Times Asia"><MakersAbout placement={placement} /></Sheet>
 }
 
+
+/**
+ * "Is Kuala Lumpur your home?" for a home the app only guessed (from where the
+ * device was when the app was first opened). Until it is answered, Journey and
+ * the musafir line say nothing about travelling.
+ */
+export function HomeQuestion() {
+  const s = useStore()
+  const home = s.prefs.home
+  if (!home || s.prefs.homeConfirmed) return null
+  return (
+    <div class="glass card home-question" style={{ marginTop: '10px' }}>
+      <div class="row" style={{ gap: '10px' }}><House size={28} /><span style={{ fontSize: '20px', fontWeight: 700 }}>Is {home.name} your home?</span></div>
+      <p class="subhead" style={{ opacity: 0.85 }}>We guessed it from where you were when you first opened the app. Home is used to work out when you count as a traveller, so please check it.</p>
+      <div class="row" style={{ gap: '10px', flexWrap: 'wrap' }}>
+        <button class="pill-btn" onClick={() => store.confirmHome()}>Yes, this is home</button>
+        <button class="plain-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}>Change home</button>
+      </div>
+    </div>
+  )
+}

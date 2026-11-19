@@ -24,6 +24,25 @@ for i, a in enumerate(data['announcements']):
     if key in seen: errors.append(f"{where}: duplicate {key}")
     seen.add(key)
 
+import datetime
+starts = data.get('month_starts', [])
+by_auth = {}
+for i, m in enumerate(starts):
+    where = f"month_starts[{i}]"
+    if m.get('authority') not in AUTHORITIES: errors.append(f"{where}: unknown authority {m.get('authority')!r}")
+    if not isinstance(m.get('hijri_month'), int) or not 1 <= m['hijri_month'] <= 12: errors.append(f"{where}: hijri_month must be 1 to 12")
+    if not isinstance(m.get('hijri_year'), int) or not 1440 <= m['hijri_year'] <= 1500: errors.append(f"{where}: hijri_year out of range")
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', str(m.get('date'))): errors.append(f"{where}: date must be yyyy-MM-dd"); continue
+    if not str(m.get('source_url', '')).startswith('https://'): errors.append(f"{where}: needs an https source_url")
+    by_auth.setdefault(m.get('authority'), []).append(m)
+for auth, ms in by_auth.items():
+    ms.sort(key=lambda m: m['date'])
+    for a, b in zip(ms, ms[1:]):
+        gap = (datetime.date.fromisoformat(b['date']) - datetime.date.fromisoformat(a['date'])).days
+        nxt = (a['hijri_year'] + (a['hijri_month'] == 12), a['hijri_month'] % 12 + 1)
+        if (b['hijri_year'], b['hijri_month']) == nxt and gap not in (29, 30):
+            errors.append(f"{auth} {a['hijri_month']}/{a['hijri_year']} lasts {gap} days (must be 29 or 30)")
+
 if errors:
     print('\n'.join(errors)); sys.exit(1)
-print(f"calendar.json OK: {len(data['announcements'])} announcements")
+print(f"calendar.json OK: {len(data['announcements'])} announcements, {len(starts)} month starts")

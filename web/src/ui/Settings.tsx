@@ -1,6 +1,6 @@
 import { azanAvailable } from '../services/azan'
 import { useEffect, useState } from 'preact/hooks'
-import { AlarmClock, ArrowDownToLine, ArrowRightLeft, MoonStar, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, MapPinned, MapPinOff, Printer, Smartphone } from 'lucide-preact'
+import { AlarmClock, ArrowDownToLine, ArrowRightLeft, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, Lightbulb, Mail, MapPinned, MapPinOff, MoonStar, Printer, Smartphone, Star } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
@@ -16,7 +16,8 @@ import { canInstall, install, isStandalone, phoneAppOffer } from './pwa'
 import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { daysToRamadan } from './Ramadan'
 
-export const VERSION = '1.0.0 (web)'
+import { VERSION } from './version'
+export { VERSION }
 
 /** Every half hour of the day, in minutes past midnight. */
 const HALF_HOURS = Array.from({ length: 48 }, (_, i) => i * 30)
@@ -147,9 +148,12 @@ export function SettingsScreen() {
         <a class="item" href="print/">
           <Printer size={20} /><span class="label">Print a prayer calendar<span class="sub">A monthly or Ramadan timetable, a sticker calendar or a kids' prayer tracker</span></span>
         </a>
+        <a class="item" href="print/#sheet=letter">
+          <Mail size={20} /><span class="label">Print a letter for work or school<span class="sub">Explains your prayer breaks to an employer or teacher, with today's times</span></span>
+        </a>
       </Group>
 
-      <Group title="Prayer names" foot={'Your names stay the same wherever you are: Automatic uses your home country\'s words, or your browser\'s language. When you travel somewhere that uses different words, the local name appears small beside it - "Fajr" with "Subuh" in Kuala Lumpur - so the masjid\'s signs make sense. Spellings follow each authority\'s own timetable.'}>
+      <Group title="Prayer names" foot={'Automatic shows English names like Fajr and Isha, or your browser\'s language if we have it. Pick Malay for Subuh and Isyak. Your names stay the same wherever you go. When you travel somewhere that uses other words, the local name shows small underneath, like Subuh in Kuala Lumpur, so the masjid\'s signs make sense. Spellings follow each authority\'s own timetable.'}>
         <SelectItem label="Prayer names" value={p.namingOverride ?? 'auto'}
           options={[{ value: 'auto', label: `Automatic · ${NAMING_LANGUAGE[s.personalNaming]}` }, ...NAMING_STYLES.map((n) => ({ value: n, label: NAMING_LABEL[n] }))]}
           onChange={(v) => store.update((x) => { x.namingOverride = v === 'auto' ? null : (v as NamingStyle) })} />
@@ -159,7 +163,7 @@ export function SettingsScreen() {
       <Group title="Hadith" foot="Tap ✕ on any hadith to hide just that one. Turn both off for a clean app with times only.">
         <ToggleItem label="Show hadith in the app" sub="A short hadith or ayah on some screens" on={p.showHadith}
           onChange={(v) => store.update((x) => { x.showHadith = v; if (v) x.hiddenHadith = [] })} />
-        <ToggleItem label="Add a hadith to alerts" sub="One short line under each prayer alert and the Subuh alarm" on={p.hadithInAlerts}
+        <ToggleItem label="Add a hadith to wake-up alerts" sub="One short line under the Subuh and tahajjud alerts" on={p.hadithInAlerts}
           onChange={(v) => store.update((x) => { x.hadithInAlerts = v })} />
       </Group>
 
@@ -178,6 +182,8 @@ export function SettingsScreen() {
           onChange={(v) => store.update((x) => { x.todayStyle = v as TodayStyle })} />
         <ToggleItem label="Bigger text" on={p.largeText} onChange={(v) => store.update((x) => { x.largeText = v })}
           sub="Makes every word and time larger. For the clearest screen, pick Big and Simple as the Prayer screen too." />
+        <ToggleItem label="Opening screen" on={p.showOpening} onChange={(v) => store.update((x) => { x.showOpening = v })}
+          sub="The moving dial you see as the app opens. Turn it off to go straight to your prayer times. It always shows the first time." />
         <ToggleItem label="24-hour time" on={p.use24Hour} onChange={(v) => store.update((x) => { x.use24Hour = v })} />
         <div class="item">
           <span class="label">Hijri date adjustment</span>
@@ -190,7 +196,7 @@ export function SettingsScreen() {
       </Group>
 
       <Group title="Alerts" foot={<>
-        Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both. <b>On the web, they ring only while Prayer Times Asia is open</b> - in a tab or as an installed app.
+        Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it. Turn on either or both. <b>On the web, they ring only while Prayer Times Asia is open</b>, in a tab or as an installed app.
         For alerts when it's closed, add the times to your calendar above: your calendar rings them, reminder included.
         {perm === 'denied' && ' Notifications are blocked for this site in your browser settings.'}
       </>}>
@@ -234,7 +240,7 @@ export function SettingsScreen() {
           onChange={(v) => void setJumuah(parseInt(v, 10))} />
       </Group>
 
-      <Group title="Moving to another phone" foot="Your places, choices and tracker history travel inside a QR code or link - no account, nothing uploaded. It works between the web, iPhone and Android.">
+      <Group title="Moving to another phone" foot="Your places, choices and tracker history travel inside a QR code or link. No account, nothing uploaded. It works between the web, iPhone and Android.">
         <button class="item" onClick={() => openSheet({ kind: 'move-out' })}>
           <ArrowRightLeft size={20} /><span class="label">Move my settings</span><ChevronRight size={16} class="secondary" />
         </button>
@@ -259,11 +265,17 @@ export function SettingsScreen() {
         </Group>
       )}
 
+      <Group title="Help" foot="A short tour that taps the real buttons, so you know where everything is.">
+        <button class="item" onClick={() => openSheet({ kind: 'guide' })}>
+          <Lightbulb size={20} /><span class="label">Show the quick guide</span><ChevronRight size={16} class="secondary" />
+        </button>
+      </Group>
+
       <Group title="Accuracy">
         <p class="item footnote" style={{ display: 'block', lineHeight: 1.4 }}>
           Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times.
           In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it in this browser for offline use; if an authority is down, the app's own calendar feeds (built weekly from the same tables) stand in.
-          Everywhere else, and before that download, times are calculated in your browser with the country's own method - the same engine as the iOS app, checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.
+          Everywhere else, and before that download, times are calculated in your browser with the country's own method, the same engine as the iOS app, checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.
         </p>
       </Group>
 
@@ -272,16 +284,18 @@ export function SettingsScreen() {
         <div class="item footnote"><MapPinOff size={18} />Your exact location stays in this browser. The place name comes from a built-in list, not a server.</div>
         <ToggleItem label="Share anonymous usage counts" on={p.shareUsage} onChange={(v) => store.update((x) => { x.shareUsage = v })}
           sub="Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you: no name, no exact location, no IP address kept." />
-        <div class="item footnote"><MapPinned size={18} />The Masjid map and search use OpenStreetMap services (map tiles and Overpass), which see the area you look at.</div>
+        <div class="item footnote"><MapPinned size={18} />The Masjid map and list use OpenStreetMap data. The map tiles, our weekly masjid list on GitHub and Overpass see only the area you look at.</div>
       </Group>
 
-      <Group id="makers" title="From the makers" foot="Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own - no ad networks, nothing tracked.">
+      <Group id="makers" title="From the makers" foot="Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own. No ad networks, nothing tracked.">
         <div class="makers-list">{OFFERS.map((o) => <MakersCard offer={o} placement="settings" />)}</div>
         <ToggleItem label="Show offers on Prayer and Masjid" on={p.showOffers} onChange={(v) => store.update((x) => { x.showOffers = v })} />
       </Group>
 
       <Group foot="Prayer Times Asia. Built in Asia, made for Muslims everywhere.">
         <a class="item" href="../"><span class="label">About Prayer Times Asia</span><ChevronRight size={16} class="secondary" /></a>
+        <button class="item" onClick={() => openSheet({ kind: 'review' })}><Star size={18} class="accent" /><span class="label">Rate and review</span><ChevronRight size={16} class="secondary" /></button>
+        <button class="item" onClick={() => openSheet({ kind: 'feedback' })}><Mail size={18} class="accent" /><span class="label">Send a note to the makers</span><ChevronRight size={16} class="secondary" /></button>
         <button class="item" onClick={() => openSheet({ kind: 'credits' })}><span class="label">Sources &amp; credits</span><ChevronRight size={16} class="secondary" /></button>
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><span class="label">Help verify times where you are</span><ChevronRight size={16} class="secondary" /></a>
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md" target="_blank" rel="noopener noreferrer"><span class="label">Design a new look</span><ChevronRight size={16} class="secondary" /></a>
@@ -317,3 +331,4 @@ function AppCard() {
     </a>
   )
 }
+
