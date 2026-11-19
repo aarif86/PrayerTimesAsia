@@ -281,12 +281,16 @@ input, select, textarea { font: inherit; color: inherit; }
 .hcal-day .gd { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .hcal-day.sun .gd { color: var(--sunday, #e5484d); }
 .hcal-day .hd { font-size: 11px; opacity: 0.7; margin-top: 3px; position: relative; }
-.hcal-day .hm, .hcal-day .ev { font-size: 9px; line-height: 1.1; margin-top: 1px; max-width: 100%; overflow-wrap: anywhere; text-align: center; }
+.hcal-day .hm, .hcal-day .ev { font-size: 9px; line-height: 1.1; margin-top: 1px; max-width: 100%; overflow-wrap: break-word; letter-spacing: -0.2px; text-align: center; }
 .hcal-day .hm { opacity: 0.7; }
 .hcal-day .ev { color: var(--accent); font-weight: 700; }
 .hcal-day.new-month .hd, .hcal-day.new-month .hm { color: var(--accent); opacity: 1; font-weight: 700; }
+.hcal-wd.fri { color: var(--gold, #E2B65A); opacity: 1; }
+.hcal-day.ramadan { background: color-mix(in srgb, #4C7BD9 16%, transparent); }
+.hcal-day.major { box-shadow: inset 0 2px 0 var(--gold, #E2B65A); }
 .hcal-day.quiet { background: color-mix(in srgb, var(--accent) 10%, transparent); }
-.hcal-day.major { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.hcal-day.major:not(.ramadan) { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.hcal-day.ramadan.quiet { background: color-mix(in srgb, #4C7BD9 30%, transparent); }
 .hcal-day.is-today { outline: 2px solid var(--accent); outline-offset: -2px; }
 .hcal-day.picked { background: var(--accent); color: var(--on-accent); }
 .hcal-day.picked .gd, .hcal-day.picked .ev, .hcal-day.picked .hd, .hcal-day.picked .hm { color: inherit; opacity: 1; }

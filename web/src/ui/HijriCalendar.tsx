@@ -45,10 +45,13 @@ export function HijriMonthCard() {
   const keyDays = days.flatMap(({ g, h }) => islamicDaysOf(h).filter((k) => k.major || k.kind === 'lastTen' && h.day === 21 || k.kind === 'tasyrik' && h.day === 11 || k.kind === 'zulhijjahTen' && h.day === 1).map((k) => ({ g, h, k })))
   const hijriSpan = (() => {
     const a = days[0].h, z = days[days.length - 1].h
-    if (a.month === z.month) return `${hMonths[a.month - 1]} ${a.year}`
-    return a.year === z.year ? `${hMonths[a.month - 1]} ${words.and} ${hMonths[z.month - 1]} ${z.year}`
-      : `${hMonths[a.month - 1]} ${a.year} ${words.and} ${hMonths[z.month - 1]} ${z.year}`
+    const n = (m: number) => hijriMonthShort(m, s.naming, hMonths[m - 1])
+    if (a.month === z.month) return `${n(a.month)} ${a.year}`
+    return a.year === z.year ? `${n(a.month)} ${words.and} ${n(z.month)} ${z.year}`
+      : `${n(a.month)} ${a.year} ${words.and} ${n(z.month)} ${z.year}`
   })()
+  // A month with no big days still has its white days: list each run of 13, 14, 15.
+  const whiteRuns = keyDays.length ? [] : days.filter(({ h }, i) => (h.day === 13 || i === 0) && islamicDaysOf(h).some((k) => k.kind === 'whiteDay'))
   const sel = picked ? days.find((d) => daysApart(d.g, picked) === 0) : null
   const authority = s.communityAuthority
   const adj = s.prefs.hijriAdjustment
@@ -65,7 +68,7 @@ export function HijriMonthCard() {
         <button class="round-btn hcal-next" aria-label="Next month" onClick={() => move(1)}><ChevronRight size={18} /></button>
       </div>
       <div class="hcal-grid" role="grid">
-        {words.week.map((w) => <span class="hcal-wd secondary" aria-hidden="true">{w}</span>)}
+        {words.week.map((w, i) => <span class={`hcal-wd secondary${i === 5 ? ' fri' : ''}`} aria-hidden="true">{w}</span>)}
         {Array.from({ length: lead }, () => <span />)}
         {days.map(({ g, h }, i) => {
           const marks = islamicDaysOf(h)
@@ -77,9 +80,10 @@ export function HijriMonthCard() {
           const newMonth = h.day === 1
           const showMonth = newMonth || i === 0
           const sunday = (lead + i) % 7 === 0
+          const ramadan = h.month === 9
           const label = `${fmtCivil(g)}, ${h.day} ${hMonths[h.month - 1]} ${h.year}${marks.length ? `, ${marks.map((k) => islamicDayName(k.kind, s.naming)).join(', ')}` : ''}`
           return (
-            <button class={`hcal-day${isToday ? ' is-today' : ''}${major ? ' major' : ''}${quiet ? ' quiet' : ''}${isPicked ? ' picked' : ''}${sunday ? ' sun' : ''}${newMonth ? ' new-month' : ''}`}
+            <button class={`hcal-day${isToday ? ' is-today' : ''}${major ? ' major' : ''}${quiet ? ' quiet' : ''}${isPicked ? ' picked' : ''}${sunday ? ' sun' : ''}${ramadan ? ' ramadan' : ''}${newMonth ? ' new-month' : ''}`}
               aria-label={label} aria-current={isToday ? 'date' : undefined} onClick={() => setPicked(isPicked ? null : g)}>
               <span class="gd">{g.day}</span>
               <span class="hd mono">{h.day}{white && <i class="white-dot" aria-hidden="true" />}</span>
@@ -107,8 +111,14 @@ export function HijriMonthCard() {
               <span class="hcal-row-name">{islamicDayName(k.kind, s.naming)}</span>
               <span class="caption secondary mono">{h.day} {hMonths[h.month - 1]}</span>
             </button>
+          )) : whiteRuns.length ? whiteRuns.map(({ g, h }) => (
+            <button class="hcal-row" onClick={() => setPicked(g)}>
+              <span class="mono hcal-row-h">{g.day}</span>
+              <span class="hcal-row-name">{islamicDayName('whiteDay', s.naming)}</span>
+              <span class="caption secondary mono">13, 14, 15 {hijriMonthShort(h.month, s.naming, hMonths[h.month - 1])}</span>
+            </button>
           )) : <p class="caption secondary" style={{ margin: '4px 0' }}>{words.none}</p>}
-          <div class="caption secondary hcal-legend"><i class="white-dot" aria-hidden="true" />{islamicDayName('whiteDay', s.naming)} 13, 14, 15</div>
+          {!whiteRuns.length && <div class="caption secondary hcal-legend"><i class="white-dot" aria-hidden="true" />{islamicDayName('whiteDay', s.naming)} 13, 14, 15</div>}
         </div>
       )}
       <a class="hcal-print caption accent" href={`print/#sheet=year&m=${shown.y}-01`}><Printer size={14} />{words.print} {shown.y}</a>
