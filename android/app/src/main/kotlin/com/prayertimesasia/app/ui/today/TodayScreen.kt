@@ -84,6 +84,8 @@ import com.prayertimesasia.core.TodayStyle
 import com.prayertimesasia.core.secondsSince
 import kotlinx.coroutines.delay
 import java.time.Instant
+import com.prayertimesasia.app.ui.makers.ReviewLine
+import com.prayertimesasia.app.ui.makers.StarBoxAsker
 
 /** Everything one frame of the Prayer screen needs. */
 class TodayFrame(
@@ -113,6 +115,9 @@ fun TodayScreen(state: AppState, openPlaces: () -> Unit, openCalendar: () -> Uni
     val r = state.resolver
     val day = r.day(now)
     var offset by rememberSaveable { mutableIntStateOf(0) }
+    LaunchedEffect(state.showDayRequest) {
+        state.showDayRequest?.let { offset = it; state.showDayRequest = null }
+    }
     if (day == null) {
         NoPlace(state, openPlaces)
         return
@@ -124,6 +129,7 @@ fun TodayScreen(state: AppState, openPlaces: () -> Unit, openCalendar: () -> Uni
         shownNextFajr = r.day(shown.time(Prayer.DHUHR).plusSeconds(86_400))?.time(Prayer.FAJR) ?: shown.time(Prayer.FAJR).plusSeconds(86_400),
     )
     val setOffset: (Int) -> Unit = { offset = it }
+    StarBoxAsker(state, f.current?.second, f.next?.second)
     val style = state.prefs.todayStyle
 
     Box(Modifier.fillMaxSize()) {
@@ -198,6 +204,7 @@ private fun ColumnScope.Prompts(f: TodayFrame, hadith: Boolean = false) {
 /** Today's one community card, below the times and only with Show more open (docs/community-cards.md). */
 @Composable
 private fun Makers(f: TodayFrame) {
+    if (f.offset == 0) ReviewLine(f.state, f.now, f.current?.second, f.next?.second)
     if (!f.state.prefs.showOffers || !f.state.prefs.showMore) return
     val r = f.state.resolver
     // Never in the half hour before Berbuka in Ramadan.

@@ -4,11 +4,17 @@ import SwiftUI
 struct CalendarSanadView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    /// Shows a day picked in the month calendar on the Prayer screen (days from today).
+    var onShowDay: ((Int) -> Void)?
 
     var body: some View {
         @Bindable var model = model
         NavigationStack {
             List {
+                Section {
+                    HijriMonthCard(onShowDay: onShowDay.map { show in { days in show(days); dismiss() } })
+                }
+
                 Section {
                     Picker("My community follows", selection: $model.prefs.communityAuthority) {
                         Text("Automatic · \(model.communityAuthority.map(CalendarSanad.authorityName) ?? "none")").tag(String?.none)

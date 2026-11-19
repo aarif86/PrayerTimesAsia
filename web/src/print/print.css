@@ -227,3 +227,92 @@ button.link { background: none; border: 0; padding: 0; min-height: 32px; color: 
 .letter-sign { display: flex; gap: 8mm; margin-top: 8mm; }
 .letter-sign div { display: flex; flex-direction: column; gap: 1mm; }
 .letter-sign small { font-size: 8.5pt; color: var(--ink2); }
+
+/* MARK: Islamic year calendar */
+.sheet-year { padding: 9mm 10mm 7mm; gap: 2.2mm; }
+.year-head { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: .5mm solid var(--night); padding-bottom: 2mm; }
+.year-head .eyebrow { margin: 0; font-size: 8.5pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+.year-head h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 26pt; line-height: 1; color: var(--night); }
+.year-span { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 15pt; color: var(--gold); }
+.year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6mm 5mm; }
+.mini h3 { margin: 0 0 1mm; display: flex; justify-content: space-between; align-items: baseline; gap: 1mm; font-family: var(--font-display); font-size: 10pt; color: var(--night); }
+.mini h3 span { font-family: var(--font); font-size: 6pt; font-weight: 600; color: var(--gold); text-align: right; }
+.mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: .4mm; font-variant-numeric: tabular-nums; }
+.mini-grid .wd { text-align: center; font-size: 6pt; font-weight: 700; color: var(--ink2); }
+.mini-grid .wd.sun, .mini-grid .day.sun b { color: #D9573F; }
+.mini-grid .day { display: flex; flex-direction: column; align-items: center; height: 6.1mm; padding-top: .3mm; border-radius: 1mm; line-height: 1.05; }
+.mini-grid .day b { font-size: 7.5pt; }
+.mini-grid .day i { font-style: normal; font-size: 5.5pt; color: var(--ink2); position: relative; }
+.mini-grid .day.new i { color: var(--gold); font-weight: 800; }
+.mini-grid .day.quiet { background: #F6F3EC; }
+.mini-grid .day.major { box-shadow: inset 0 -.5mm 0 var(--gold); border-radius: 0; }
+.mini-grid .day.major b { color: var(--gold); }
+.mini-grid .dot { position: absolute; right: -1.2mm; top: .4mm; width: .9mm; height: .9mm; border-radius: 50%; background: var(--ink3); }
+.year-keys h2 { margin: 0 0 1mm; font-family: var(--font-display); font-size: 10pt; color: var(--night); }
+.year-keys ol { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 6mm; font-size: 6.6pt; }
+.year-keys li { display: flex; gap: 2mm; break-inside: avoid; padding: .25mm 0; border-bottom: .2mm solid var(--rule); }
+.year-keys li b { width: 11mm; flex: none; color: var(--night); }
+.year-keys li span { flex: 1; }
+.year-keys li i { font-style: normal; color: var(--ink2); }
+.year-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; }
+.year-foot p { margin: 0; font-size: 7pt; color: var(--ink2); max-width: 135mm; }
+.year-foot .dot { display: inline-block; width: 1.4mm; height: 1.4mm; border-radius: 50%; background: var(--ink3); vertical-align: middle; }
+
+/* MARK: Islamic wall calendar (cover + a page a month)
+   Brand: Night Navy, Kiswah Gold, North Coral, Stitch Cream. Hairlines, not boxes. */
+.pages { display: flex; flex-direction: column; gap: 24px; align-items: center; }
+.wall-cover, .wall-month { --navy: #151A45; --kgold: #E2B65A; --dgold: #A97B22; --coral: #D9573F; --cream: #F6F2EC; --hair: #D9D6CF; }
+.wall-cover { position: relative; background: var(--navy); color: #fff; padding: 0; }
+.wall-cover .kawung { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cover-inner { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30mm 20mm; }
+.cover-where { margin: 0 0 14mm; font-size: 9pt; letter-spacing: .32em; text-transform: uppercase; color: var(--kgold); font-weight: 600; }
+.cover-year { font-family: var(--font-display); font-weight: 800; font-size: 120pt; line-height: .9; letter-spacing: -.02em; }
+.cover-hijri { margin-top: 6mm; font-family: var(--font-display); font-weight: 700; font-size: 26pt; color: var(--kgold); letter-spacing: .04em; display: flex; gap: 5mm; }
+.cover-hijri span { opacity: .6; }
+.cover-title { margin: 16mm 0 0; font-family: var(--font); font-weight: 300; font-size: 18pt; letter-spacing: .5em; text-transform: uppercase; padding-left: .5em; }
+.cover-rule { width: 18mm; height: .5mm; background: var(--kgold); margin: 10mm 0; }
+.cover-credit { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 11pt; }
+.cover-credit span { display: block; margin-top: 2mm; font-family: var(--font); font-weight: 400; font-size: 7.5pt; opacity: .7; letter-spacing: .02em; }
+
+.wall-month { padding: 14mm 14mm 10mm; gap: 0; }
+.wm-head { display: grid; grid-template-columns: 1fr 72mm; gap: 10mm; align-items: end; padding-bottom: 6mm; border-bottom: .35mm solid var(--navy); }
+.wm-num { display: block; font-family: var(--font); font-size: 9pt; font-weight: 700; letter-spacing: .08em; color: var(--dgold); }
+.wm-title h1 { margin: 1mm 0 0; font-family: var(--font-display); font-weight: 800; font-size: 50pt; line-height: .95; letter-spacing: -.01em; color: var(--navy); }
+.wm-hijri { margin: 3mm 0 0; font-family: var(--font-display); font-weight: 700; font-size: 13pt; color: var(--dgold); white-space: pre; }
+.wm-side h2 { margin: 0 0 2mm; font-size: 7pt; font-weight: 700; letter-spacing: .25em; text-transform: uppercase; color: var(--ink2); }
+.wm-side ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1.6mm; }
+.wm-side li { display: flex; gap: 3mm; align-items: baseline; font-size: 8.5pt; color: var(--navy); line-height: 1.2; }
+.wm-side li b { font-family: var(--font-display); font-size: 13pt; width: 8mm; flex: none; text-align: right; color: var(--dgold); font-variant-numeric: tabular-nums; }
+.wm-side li span { font-weight: 600; }
+.wm-side li i { display: block; font-style: normal; font-weight: 400; font-size: 7pt; color: var(--ink2); margin-top: .4mm; }
+.wm-none { margin: 0; font-size: 8pt; color: var(--ink2); }
+
+.wm-grid { flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: 9mm repeat(var(--rows), 1fr); margin-top: 4mm; }
+.wm-wd { font-size: 6.8pt; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ink2); padding: 2mm 2mm 0; }
+.wm-wd.sun { color: var(--coral); }
+.wm-wd.fri { color: var(--dgold); }
+.wm-cell { position: relative; border-top: .25mm solid var(--hair); padding: 2mm 2mm 1.6mm; display: flex; flex-direction: column; min-width: 0; }
+.wm-cell + .wm-cell:not(:nth-child(7n + 1)) { border-left: .2mm solid #ECEAE5; }
+.wm-cell.empty { background: transparent; }
+.wm-cell .g { font-family: var(--font-display); font-weight: 600; font-size: 19pt; line-height: 1; color: var(--navy); font-variant-numeric: tabular-nums; }
+.wm-cell.sun .g { color: var(--coral); }
+.wm-cell .h { margin-top: auto; align-self: flex-end; font-size: 8pt; color: var(--ink2); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 1mm; }
+.wm-cell .h.new { color: var(--dgold); font-weight: 700; font-size: 7pt; letter-spacing: .02em; }
+.wm-cell .ev { margin-top: 1.4mm; font-size: 6.6pt; font-weight: 700; line-height: 1.15; color: var(--dgold); letter-spacing: .01em; }
+.wm-cell.fri { background: #FBF8F2; }
+.wm-cell.ramadan { background: #F1F2FA; }
+.wm-cell.quiet { background: #F7F3EA; }
+.wm-cell.major { box-shadow: inset 0 .9mm 0 var(--kgold); }
+.wd-dot { display: inline-block; width: 1.3mm; height: 1.3mm; border-radius: 50%; border: .25mm solid var(--dgold); }
+
+.wm-foot { display: grid; grid-template-columns: auto 1fr auto; gap: 8mm; align-items: end; padding-top: 4mm; margin-top: 2mm; border-top: .35mm solid var(--navy); }
+.wm-minis { display: flex; gap: 6mm; }
+.wm-mini b { display: block; font-family: var(--font-display); font-size: 7pt; color: var(--navy); margin-bottom: .8mm; }
+.wm-mini div { display: grid; grid-template-columns: repeat(7, 3.4mm); row-gap: .3mm; font-size: 5pt; color: var(--ink2); font-variant-numeric: tabular-nums; }
+.wm-mini span { text-align: right; }
+.wm-mini span.m { color: var(--dgold); font-weight: 800; }
+.wm-note { margin: 0; font-size: 6.8pt; line-height: 1.45; color: var(--ink2); }
+.wm-brand { display: flex; align-items: center; gap: 2.5mm; }
+.wm-brand div { display: flex; flex-direction: column; font-size: 6.5pt; color: var(--ink2); }
+.wm-brand b { font-family: var(--font-display); font-size: 8.5pt; color: var(--navy); }
+@media print { .pages { display: block; } .pages .paper { break-after: page; } }

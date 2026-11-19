@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
   Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
-  CloudMoon, Contrast, Droplet, Flame, Pause, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
+  CloudMoon, Contrast, Droplet, Flame, Pause, Star, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
@@ -18,7 +18,7 @@ import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { WakeChip } from './WakeUp'
-import { fmtDate, openSheet, short, SourceBadge, Switch, TimeText } from './common'
+import { fmtDate, openSheet, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
 import { cardOfTheDay } from '../core/communityCards'
@@ -70,6 +70,7 @@ export function TodayScreen() {
   const s = useStore()
   const now = useNow()
   const [offset, setOffset] = useState(0)
+  useDayRequests(setOffset)
   const [showMore, setShowMoreState] = useState(() => s.demo ? s.demo.more : readString('today.showMore') === '1')
   const [toast, showToast] = useToast()
   const setShowMore = (v: boolean) => { setShowMoreState(v); if (!s.demo) writeString('today.showMore', v ? '1' : '0') }
@@ -287,6 +288,25 @@ function AppPrompt() {
       <span class="text">{offer.title}</span>
       <a class="primary-btn" href={offer.href} target={offer.kind === 'ask' ? undefined : '_blank'} rel="noopener">{offer.action}</a>
       <button class="x" aria-label="Not now" onClick={() => store.update((p) => { p.appPromptDismissed = true })}><X size={15} strokeWidth={3} /></button>
+    </div>
+  )
+}
+
+/**
+ * Once ever, after ten separate days of use: a quiet line asking for a note to the
+ * makers. Never close to a prayer, never twice. Closing it or using it ends it.
+ */
+function NotePrompt({ c }: { c: Ctx }) {
+  const p = store.prefs
+  if (c.offset !== 0 || p.noteCardDone || p.reviewTappedAt > 0 || p.openDayCount < 10) return null
+  if (c.next && c.next.time - c.now < 15 * 60_000) return null
+  const done = () => store.update((x) => { x.noteCardDone = true })
+  return (
+    <div class="alerts-prompt note-prompt">
+      <Star size={18} class="accent" style={{ flex: 'none' }} />
+      <span class="text">Enjoying the app? A short review helps other Muslims find it.</span>
+      <button class="primary-btn" onClick={() => { done(); openSheet({ kind: 'review' }) }}>Review</button>
+      <button class="x" aria-label="Not now" onClick={done}><X size={15} strokeWidth={3} /></button>
     </div>
   )
 }
@@ -536,6 +556,7 @@ function ClassicPage({ c }: { c: Ctx }) {
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <PrayerList c={c} fill />
       <ShowMoreButton c={c} />
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -664,6 +685,7 @@ function CentrePage({ c }: { c: Ctx }) {
       <DayNavigator c={c} />
       <PrayerList c={c} fill />
       <div class="row foot-row"><SourceBadge day={c.shown} compact /><span class="spacer" /><ShowMoreButton c={c} inline /></div>
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -743,6 +765,7 @@ function DialPage({ c }: { c: Ctx }) {
         <button class="round-btn big" aria-label="Next day" onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={18} strokeWidth={2.4} /></button>
       </div>
       <ShowMoreButton c={c} />
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -824,6 +847,7 @@ function SunPathPage({ c }: { c: Ctx }) {
       <PrayerList c={c} fill={false} />
       <ShowMoreButton c={c} />
       <SourceBadge day={c.shown} />
+      <NotePrompt c={c} />
       <Offer c={c} />
     </div>
   )
@@ -870,7 +894,8 @@ function BandsPage({ c }: { c: Ctx }) {
       </div>
       <div class="bands-foot page">
         <div class="row foot-row"><SourceBadge day={shown} compact /><span class="spacer" /><ShowMoreButton c={c} inline /></div>
-        <Offer c={c} />
+        <NotePrompt c={c} />
+      <Offer c={c} />
       </div>
     </div>
   )

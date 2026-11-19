@@ -14,8 +14,11 @@ import { officialSourceForScreen } from '../screen/model'
 import { monthDays, todayDay, optionsFromHash, PRINT_WORDS, printHash, ramadanDays, shortHash, configFromShortHash, SHEETS, type PrintOptions, type SheetKind } from './model'
 import { FastingSheet, LetterSheet, MonthSheet, RamadanSheet, StickerSheet, TrackerSheet } from './Sheets'
 import { LETTER_FOR, LETTER_WORDS, PAPER_SIZES } from './letter'
+import { YearSheet } from './YearSheet'
+import { WallSheet } from './WallSheet'
 import { defaultAuthority, type CalendarDataset } from '../core/calendarSanad'
 import { communityHijri } from '../core/season'
+import { withBundled } from '../core/bundledCalendar'
 import './print.css'
 
 /**
@@ -49,17 +52,17 @@ function initialConfig(): ScreenConfig {
   return { ...DEFAULT_CONFIG }
 }
 
-const SHEET_ICON: Record<SheetKind, string> = { month: '▦', ramadan: '☾', stickers: '✂', tracker: '★', fasting: '✦', letter: '✉' }
+const SHEET_ICON: Record<SheetKind, string> = { month: '▦', wall: '❏', year: '◐', ramadan: '☾', stickers: '✂', tracker: '★', fasting: '✦', letter: '✉' }
 
 /** Ramadan as the community counts it: the app's saved announcements and the authority for the place's country. */
 function communityHijriFor(c: ScreenConfig) {
-  const cal = readJSON<CalendarDataset>('ptasia.calendar')
+  const cal = withBundled(readJSON<CalendarDataset>('ptasia.calendar'))
   const chosen = readJSON<{ communityAuthority?: string | null }>('ptasia.preferences.v1')?.communityAuthority
   const authority = chosen ?? defaultAuthority(c.place?.cc ?? '') ?? null
   const tz = c.place?.tz ?? 'UTC'
   return (ms: number) => {
     const z = zoned(ms, tz)
-    return communityHijri({ year: z.year, month: z.month, day: z.day }, c.hijriAdj, cal?.announcements ?? [], authority)
+    return communityHijri({ year: z.year, month: z.month, day: z.day }, c.hijriAdj, cal.announcements, authority, cal.month_starts)
   }
 }
 
@@ -76,6 +79,7 @@ function App() {
   const days = useMemo(() => {
     if (!c.place) return []
     if (o.sheet === 'letter') return todayDay(c, now, rowFor)
+    if (o.sheet === 'year' || o.sheet === 'wall') return Array.from({ length: 12 }, (_, i) => monthDays(c, o.year, i + 1, rowFor, communityHijriFor(c))).flat()
     return o.sheet === 'ramadan' || o.sheet === 'fasting' ? ramadanDays(c, now, rowFor, communityHijriFor(c)) : monthDays(c, o.year, o.month, rowFor, communityHijriFor(c))
   }, [c, o, tables])
 
@@ -126,7 +130,7 @@ function App() {
     return () => ro.disconnect()
   }, [])
 
-  const Sheet = { month: MonthSheet, ramadan: RamadanSheet, stickers: StickerSheet, tracker: TrackerSheet, fasting: FastingSheet, letter: LetterSheet }[o.sheet]
+  const Sheet = { month: MonthSheet, wall: WallSheet, year: YearSheet, ramadan: RamadanSheet, stickers: StickerSheet, tracker: TrackerSheet, fasting: FastingSheet, letter: LetterSheet }[o.sheet]
   const lw = LETTER_WORDS[c.lang]
   const usLetter = o.sheet === 'letter' && o.paper === 'letter'
 
@@ -169,7 +173,18 @@ function App() {
           </fieldset>
         )}
 
-        {o.sheet !== 'ramadan' && o.sheet !== 'fasting' && o.sheet !== 'letter' && (
+        {(o.sheet === 'year' || o.sheet === 'wall') && (
+          <fieldset>
+            <legend>Year</legend>
+            <div class="month-picker">
+              <button type="button" onClick={() => shiftMonth(-12)} aria-label="Previous year">‹</button>
+              <b>{o.year}</b>
+              <button type="button" onClick={() => shiftMonth(12)} aria-label="Next year">›</button>
+            </div>
+          </fieldset>
+        )}
+
+        {o.sheet !== 'ramadan' && o.sheet !== 'fasting' && o.sheet !== 'letter' && o.sheet !== 'year' && o.sheet !== 'wall' && (
           <fieldset>
             <legend>Month</legend>
             <div class="month-picker">

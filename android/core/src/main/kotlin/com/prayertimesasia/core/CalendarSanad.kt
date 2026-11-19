@@ -75,13 +75,32 @@ data class CalendarAnnouncement(
         }
 }
 
+/** The first day of one Hijri month as an authority's published Islamic calendar gives it, from data/calendar.json. */
+@Serializable
+data class MonthStart(
+    val authority: String,
+    val country: String,
+    @SerialName("hijri_year") val hijriYear: Int,
+    @SerialName("hijri_month") val hijriMonth: Int,
+    /** "yyyy-MM-dd" (Gregorian, local). */
+    val date: String,
+    @SerialName("source_url") val sourceUrl: String? = null,
+)
+
 @Serializable
 data class CalendarDataset(
     val version: Int,
     val licence: String,
     val announcements: List<CalendarAnnouncement>,
+    @SerialName("month_starts") val monthStarts: List<MonthStart> = emptyList(),
 ) {
     fun announcements(event: HijriEvent, hijriYear: Int) = announcements.filter { it.event == event && it.hijriYear == hijriYear }
+
+    /** A downloaded or cached copy, filled in from the copy inside the app where it says nothing. */
+    fun withBundled(bundled: CalendarDataset = BundledCalendar.dataset): CalendarDataset = copy(
+        announcements = announcements.ifEmpty { bundled.announcements },
+        monthStarts = monthStarts.ifEmpty { bundled.monthStarts },
+    )
 
     companion object {
         val empty = CalendarDataset(1, "CC-BY-4.0", emptyList())

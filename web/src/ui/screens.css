@@ -535,3 +535,17 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .masjid-title .masjid-home { position: absolute; left: 16px; pointer-events: auto; background: rgba(0, 0, 0, 0.25); width: 38px; height: 38px; }
 :root[data-theme="light"] .masjid-title .masjid-home { background: rgba(255, 255, 255, 0.7); }
 @media (min-width: 900px) and (display-mode: browser) { .home-site-btn { display: none !important; } }
+
+/* A note to the makers */
+.feedback-kinds { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.feedback-kinds .chip { cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; color: inherit; }
+.feedback-kinds .chip.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.feedback-text { width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 14px; border: 0; background: var(--fill); font-size: 16px; resize: vertical; min-height: 110px; }
+.feedback .group { margin: 12px 0; }
+.feedback .primary-btn { width: 100%; box-sizing: border-box; padding: 13px 16px; font-size: 16px; text-decoration: none; }
+.feedback .plain-btn { width: 100%; box-sizing: border-box; justify-content: center; margin-top: 8px; }
+.feedback .footnote { text-align: center; margin-top: 10px; }
+.review-links .item { text-decoration: none; color: inherit; gap: 12px; }
+.review-steps { margin: 10px 0 12px; padding: 12px 14px 12px 34px; border-radius: 14px; background: var(--fill); font-size: 15px; line-height: 1.45; }
+.review-steps li { margin: 3px 0; }
+.review-steps li::marker { color: var(--accent); font-weight: 800; }

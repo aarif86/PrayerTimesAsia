@@ -7,6 +7,7 @@ import { distanceKm, KAABA } from '../core/geo'
 import { formatHijriDate, gregorianFromHijri, type HijriDate } from '../core/hijri'
 import { MISSED, type FastMark } from '../core/ramadanContent'
 import { endPauseLinked, fastMarkFor, pauseLinked, setFastLinked, toggleExcusedLinked } from '../core/womensDays'
+import { BUNDLED_CALENDAR, withBundled } from '../core/bundledCalendar'
 import { addDays, authorityDate, baseHijri, civilKey, communityHijri, daysApart, parseCivil, previewShift, seasonFor, type CivilDay, type Season } from '../core/season'
 import { masjidProfile, MY_MASJID_RADIUS_KM, parseMasjidLink, type MasjidLink } from '../core/masjidLink'
 import { methodWithId, type CalculationMethod } from '../core/methods'
@@ -55,7 +56,7 @@ class AppStore {
   tab: Tab = 'today'
   showJourney = false
   mosques: MosqueDataset = { version: 1, licence: 'CC-BY-4.0', mosques: [] }
-  calendar: CalendarDataset = { version: 1, licence: 'CC-BY-4.0', announcements: [] }
+  calendar: CalendarDataset = BUNDLED_CALENDAR
   /** A masjid from a screen's QR code, waiting for the user to say yes. */
   pendingMasjid: MasjidLink | null = null
   /** Bumped on every change, so views re-read. */
@@ -71,7 +72,7 @@ class AppStore {
     const m = readJSON<MosqueDataset>('ptasia.mosques')
     if (m?.mosques) this.mosques = m
     const c = readJSON<CalendarDataset>('ptasia.calendar')
-    if (c?.announcements) this.calendar = c
+    this.calendar = withBundled(c)
     // Open on the last place GPS found, so the times show at once instead of
     // "Finding where you are" while the browser gets a fresh fix.
     if (!this.demo) this.gpsPlace = readJSON<Place>(LAST_GPS_KEY)
@@ -154,6 +155,14 @@ class AppStore {
   }
 
   // MARK: Where and which rules
+
+  /** Counts separate days the app was opened, on this device only (for the one gentle note card). */
+  countOpenDay(): void {
+    if (this.demo || !this.prefs.hasOnboarded) return
+    const d = new Date(), key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+    if (this.prefs.lastOpenDay === key) return
+    this.update((p) => { p.lastOpenDay = key; p.openDayCount += 1 })
+  }
 
   /** Anonymous count of this open, once the place is known (see services/usage.ts). */
   countOpen(version: string): void {
@@ -398,7 +407,7 @@ class AppStore {
   /** The Hijri date of a civil day as this community counts it (see core/season.ts). */
   hijriOfCivil(g: CivilDay): HijriDate {
     if (this.isSeasonPreview) return baseHijri(addDays(g, this.seasonShift))
-    return communityHijri(g, this.prefs.hijriAdjustment, this.calendar.announcements, this.communityAuthority)
+    return communityHijri(g, this.prefs.hijriAdjustment, this.calendar.announcements, this.communityAuthority, this.calendar.month_starts)
   }
 
   hijriOf(ms: number): HijriDate { return this.hijriOfCivil(this.civil(ms)) }
@@ -746,7 +755,7 @@ class AppStore {
       if (r) {
         try {
           const data = (await r.json()) as CalendarDataset
-          if (Array.isArray(data.announcements)) { this.calendar = data; writeJSON('ptasia.calendar', data); writeString('ptasia.calendar.at', String(Date.now())); this.emit() }
+          if (Array.isArray(data.announcements)) { this.calendar = withBundled(data); writeJSON('ptasia.calendar', data); writeString('ptasia.calendar.at', String(Date.now())); this.emit() }
         } catch { /* keep the cached copy */ }
       }
     }
@@ -853,6 +862,10 @@ function demoPreferences(demo: Demo): Preferences {
   p.appPromptDismissed = q.get('appprompt') !== 'on'
   if (q.get('masjid') === 'on') p.myMasjid = DEMO_MASJID
   if (q.get('large') === '1') p.largeText = true
+  // ?note=on: ten days of use, so the one gentle "note to the makers" line shows (screenshots).
+  if (q.get('note') === 'on') p.openDayCount = 10
+  const naming = q.get('naming') as NamingStyle | null
+  if (naming) p.namingOverride = naming
   if (demo.variant === 'visitor') {
     p.homeConfirmed = true
     p.home = { id: 'demo-sydney', name: 'Sydney', countryCode: 'AU', countryName: 'Australia', timeZoneID: 'Australia/Sydney', coordinates: { latitude: -33.8688, longitude: 151.2093 } }

@@ -37,6 +37,24 @@ final class AccessibilityAuditTests: XCTestCase {
         _ = app.tabBars.firstMatch.waitForExistence(timeout: 10)
         sleep(2)
         var found: [String] = []
+        // The audit gives up (error -56) if the screen changes while it reads it, which the
+        // ticking countdowns sometimes do on a slow CI Mac. Try up to three times.
+        for attempt in 1...3 {
+            found = []
+            do {
+                try runAudit(app, screen: screen, extra: extra, types: types, into: &found)
+                break
+            } catch let error as NSError where error.code == -56 && attempt < 3 {
+                print("A11Y-RETRY \(screen.name): audit timed out, attempt \(attempt)")
+            }
+        }
+        app.terminate()
+        return found
+    }
+
+    private func runAudit(_ app: XCUIApplication, screen: Screen, extra: [String], types: XCUIAccessibilityAuditType, into found: inout [String]) throws {
+        var collected: [String] = []
+        defer { found = collected }
         try app.performAccessibilityAudit(for: types) { issue in
             let element = issue.element.map { e -> String in
                 let label = e.label.isEmpty ? e.identifier : e.label
@@ -44,11 +62,9 @@ final class AccessibilityAuditTests: XCTestCase {
             } ?? ""
             if Self.accepted(issue) { return true }
             let blocking = Self.blocking.contains(issue.auditType)
-            found.append((blocking ? "BLOCKING " : "TO DO ") + "\(screen.name)\(extra.isEmpty ? "" : " " + extra.joined(separator: " ")): \(Self.name(issue.auditType)): \(issue.compactDescription)\(element)")
+            collected.append((blocking ? "BLOCKING " : "TO DO ") + "\(screen.name)\(extra.isEmpty ? "" : " " + extra.joined(separator: " ")): \(Self.name(issue.auditType)): \(issue.compactDescription)\(element)")
             return true
         }
-        app.terminate()
-        return found
     }
 
     /// Issues we accept on purpose, each for a reason:

@@ -67,10 +67,41 @@ struct CalendarAnnouncement: Codable, Hashable, Sendable {
     }
 }
 
+/// The first day of one Hijri month as an authority's published Islamic
+/// calendar gives it (for example MUIS's yearly calendar), from data/calendar.json.
+struct MonthStart: Codable, Hashable, Sendable {
+    var authority: String
+    var country: String
+    var hijriYear: Int
+    var hijriMonth: Int
+    /// "yyyy-MM-dd" (Gregorian, local).
+    var date: String
+    var sourceURL: String?
+
+    enum CodingKeys: String, CodingKey {
+        case authority, country, date
+        case hijriYear = "hijri_year", hijriMonth = "hijri_month", sourceURL = "source_url"
+    }
+}
+
 struct CalendarDataset: Codable, Sendable {
     var version: Int
     var licence: String
     var announcements: [CalendarAnnouncement]
+    var monthStarts: [MonthStart]? = nil
+
+    enum CodingKeys: String, CodingKey {
+        case version, licence, announcements
+        case monthStarts = "month_starts"
+    }
+
+    /// A downloaded or cached copy, filled in from the copy inside the app where it says nothing.
+    func withBundled(_ bundled: CalendarDataset = BundledCalendar.dataset) -> CalendarDataset {
+        var out = self
+        if out.announcements.isEmpty { out.announcements = bundled.announcements }
+        if (out.monthStarts ?? []).isEmpty { out.monthStarts = bundled.monthStarts }
+        return out
+    }
 }
 
 enum CalendarSanad {

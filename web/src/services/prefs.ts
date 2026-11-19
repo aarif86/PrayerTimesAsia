@@ -132,6 +132,18 @@ export interface Preferences {
   hadithInAlerts: boolean
   /** Hadith closed with their ✕, by id. Turning Show hadith back on brings them all back. */
   hiddenHadith: string[]
+  /** Separate days the app was opened, for the one gentle "note to the makers" card. */
+  openDayCount: number
+  /** "yyyy-MM-dd" of the last counted open. */
+  lastOpenDay: string
+  /** When a note to the makers was last started (ms), 0 = never. */
+  feedbackSentAt: number
+  /** The one gentle "note to the makers" card was closed or used; it never comes back. */
+  noteCardDone: boolean
+  /** When a public review link was last tapped (ms), 0 = never. */
+  reviewTappedAt: number
+  /** The review words written once in Rate and review, kept on this device to paste in each store. */
+  reviewDraft: string
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -202,6 +214,12 @@ export const DEFAULT_PREFS: Preferences = {
   showHadith: true,
   hadithInAlerts: true,
   hiddenHadith: [],
+  openDayCount: 0,
+  lastOpenDay: '',
+  feedbackSentAt: 0,
+  noteCardDone: false,
+  reviewTappedAt: 0,
+  reviewDraft: '',
 }
 
 const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat', 

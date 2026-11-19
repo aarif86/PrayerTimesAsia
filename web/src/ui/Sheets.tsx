@@ -19,6 +19,7 @@ import { fetchOK } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { closeSheet, fmtDate, GRADE_TINT, Segmented, Sheet, openSheet } from './common'
 import { TabJourney } from './icons'
+import { HijriMonthCard } from './HijriCalendar'
 import { MakersAbout } from './Makers'
 import { canInstall, install, isIOS } from './pwa'
 
@@ -229,7 +230,9 @@ export function CalendarSheet() {
   const mine = s.communityAuthority
   return (
     <Sheet title="Calendar" full>
-      <div class="group" style={{ marginTop: '10px' }}>
+      <HijriMonthCard />
+      <h3 class="group-title" style={{ fontSize: '15px', marginTop: '22px' }}>Ramadan and Raya, by authority</h3>
+      <div class="group">
         <label class="item">
           <span class="label">My community follows</span>
           <select value={s.prefs.communityAuthority ?? 'auto'} onChange={(e) => {

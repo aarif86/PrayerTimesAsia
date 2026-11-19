@@ -1,3 +1,4 @@
+import { FeedbackSheet, ReviewSheet } from './Feedback'
 import type { ComponentType } from 'preact'
 import { SiteHomeButton } from './SiteHome'
 import { lazy, Suspense } from 'preact/compat'
@@ -107,7 +108,7 @@ export function App() {
     s.refreshOfficial()
     void s.refreshData()
     // Counted a few seconds in, so the GPS place has usually arrived.
-    const count = () => setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000)
+    const count = () => { s.countOpenDay(); setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000) }
     count()
     s.usageVisible(true)
     const onVisible = () => {
@@ -183,6 +184,8 @@ export function App() {
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}
       {sheet?.kind === 'install' && <InstallSheet />}
       {sheet?.kind === 'credits' && <CreditsSheet />}
+      {sheet?.kind === 'feedback' && <FeedbackSheet />}
+      {sheet?.kind === 'review' && <ReviewSheet />}
       {s.pendingMasjid && !sheet && <MasjidLinkSheet m={s.pendingMasjid} />}
       {sheet?.kind === 'move-out' && <MoveOutSheet />}
       {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}

@@ -406,6 +406,18 @@ struct Preferences: Codable, Equatable, Sendable {
     var hadithInAlerts = true
     /// Hadith closed with their ✕, by id. Turning Show hadith back on brings them all back.
     var hiddenHadith: [String] = []
+    /// Separate days the app was opened, for the one gentle review line and Apple's star box.
+    var openDayCount = 0
+    /// "yyyy-MM-dd" of the last counted open.
+    var lastOpenDay = ""
+    /// The one gentle review line was closed or used; it never comes back.
+    var noteCardDone = false
+    /// When a public review link was last tapped (seconds since 1970), 0 = never.
+    var reviewTappedAt: Double = 0
+    /// The review words written once in Rate and review, kept to paste in each place.
+    var reviewDraft = ""
+    /// When Apple's own star box was last asked for (seconds since 1970), 0 = never.
+    var starBoxAskedAt: Double = 0
 
     private static let key = "preferences.v1"
 
@@ -490,6 +502,12 @@ struct Preferences: Codable, Equatable, Sendable {
         showHadith = v(.showHadith, d.showHadith)
         hadithInAlerts = v(.hadithInAlerts, d.hadithInAlerts)
         hiddenHadith = v(.hiddenHadith, d.hiddenHadith)
+        openDayCount = v(.openDayCount, d.openDayCount)
+        lastOpenDay = v(.lastOpenDay, d.lastOpenDay)
+        noteCardDone = v(.noteCardDone, d.noteCardDone)
+        reviewTappedAt = v(.reviewTappedAt, d.reviewTappedAt)
+        reviewDraft = v(.reviewDraft, d.reviewDraft)
+        starBoxAskedAt = v(.starBoxAskedAt, d.starBoxAskedAt)
     }
 
     /// Set when `load()` brought settings back from the keychain copy.

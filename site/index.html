@@ -215,6 +215,23 @@
     @font-face { font-family: "Twemoji Country Flags"; src: url("fonts/TwemojiCountryFlags.woff2") format("woff2"); unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E007F; font-display: swap; }
     .chip { font-family: "Twemoji Country Flags", var(--font); background: rgba(255,255,255,0.06); border: 1px solid var(--card-line); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; color: var(--text); }
 
+    /* Printable Islamic calendar */
+    .printcal { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .printcal ul { margin: 22px 0 0; padding: 0; list-style: none; }
+    .printcal li { padding: 10px 0 10px 30px; position: relative; border-bottom: 1px solid var(--card-line); color: var(--text); }
+    .printcal li:last-child { border-bottom: 0; }
+    .printcal li::before { content: ""; position: absolute; left: 4px; top: 18px; width: 9px; height: 9px; border-radius: 50%; background: #E2B65A; }
+    .printcal .note { font-size: 0.85rem; margin-top: 16px; }
+    .sheets { position: relative; height: 470px; }
+    .sheets img { position: absolute; width: 300px; height: auto; border-radius: 6px; box-shadow: 0 30px 60px -20px #000c, 0 0 0 1px #ffffff14;
+      transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+    .sheets .cover { left: 8%; top: 10px; transform: rotate(-6deg); }
+    .sheets .month { right: 6%; top: 40px; transform: rotate(4deg); }
+    .sheets:hover .cover { transform: rotate(-9deg) translateX(-14px); }
+    .sheets:hover .month { transform: rotate(2deg) translateY(-8px); }
+    @media (max-width: 860px) { .printcal { grid-template-columns: 1fr; gap: 28px; } .sheets { height: 360px; } .sheets img { width: 220px; } .sheets .cover { left: 2%; } .sheets .month { right: 2%; } }
+    @media (prefers-reduced-motion: reduce) { .sheets img { transition: none; } }
+
     /* Masjid partner band */
     .partner { background: linear-gradient(135deg, #1d2160, #2b1a4f 60%, #3d1f3f); border: 1px solid var(--card-line); border-radius: 30px;
       padding: 48px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; }
@@ -835,6 +852,33 @@
     </div>
   </section>
 
+  <section id="calendar">
+    <div class="wrap">
+      <div class="printcal">
+        <div class="sheets" aria-hidden="true">
+          <img class="cover" src="img/print-wall-cover.webp" alt="" width="560" height="792" loading="lazy" />
+          <img class="month" src="img/print-wall-month.webp" alt="" width="560" height="793" loading="lazy" />
+        </div>
+        <div>
+          <span class="eyebrow">Free to print</span>
+          <h2>An Islamic calendar worth hanging on your wall.</h2>
+          <p class="muted">Print a full Islamic calendar for the year at home, free. Calm A4 pages with big dates, the Hijri date under every day, and the important days of the year marked for you.</p>
+          <ul>
+            <li>A wall calendar with a cover and one page for each month</li>
+            <li>The whole Islamic year on one page</li>
+            <li>Monthly prayer timetables, a Ramadan timetable and charts for children</li>
+            <li>For your own town, in English, Malay or Indonesian</li>
+          </ul>
+          <div class="btns" style="margin-top: 24px">
+            <a class="btn btn-primary" href="app/print/#sheet=wall">Print your calendar</a>
+            <a class="btn btn-ghost" href="app/print/">See everything you can print</a>
+          </div>
+          <p class="muted note">Hijri dates can differ by a day from place to place. Follow your local religious authority.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="masjid">
     <div class="wrap">
       <div class="partner">
@@ -1052,7 +1096,7 @@
 
     // Sections rise into view as you scroll, a little after each other.
     var groups = ['main section .center', '.chapter', '.trip-photo', '.letter', '.feature', '.grid > .card', '.countries > .card',
-      '.steps > .card', '.partner', '.faq details', '.ask-band'];
+      '.steps > .card', '.partner', '.printcal', '.faq details', '.ask-band'];
     var items = document.querySelectorAll(groups.join(','));
     items.forEach(function (el) {
       el.classList.add('reveal');

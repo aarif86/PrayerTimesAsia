@@ -46,12 +46,19 @@ export const GRADE_TINT: Record<SourceGrade, string> = {
 export type SheetKind =
   | { kind: 'places'; forHome?: boolean } | { kind: 'sanad'; day: PrayerDay } | { kind: 'calendar' } | { kind: 'makers'; placement: string }
   | { kind: 'journey' } | { kind: 'level' } | { kind: 'ar' } | { kind: 'alerts-help' } | { kind: 'credits' } | { kind: 'install' }
-  | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup' }
+  | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup' } | { kind: 'feedback' } | { kind: 'review' }
 
 let current: SheetKind | null = null
 const listeners = new Set<() => void>()
 export function openSheet(s: SheetKind) { current = s; listeners.forEach((f) => f()) }
 export function closeSheet() { current = null; listeners.forEach((f) => f()) }
+/** Ask the Prayer screen to show the day `offset` days from today (from the Hijri calendar). */
+const dayListeners = new Set<(offset: number) => void>()
+export function showDayOnPrayerScreen(offset: number) { dayListeners.forEach((f) => f(offset)) }
+export function useDayRequests(set: (offset: number) => void) {
+  useEffect(() => { dayListeners.add(set); return () => { dayListeners.delete(set) } }, [set])
+}
+
 export function useSheet(): SheetKind | null {
   const [, set] = useState(0)
   useEffect(() => { const f = () => set((x) => x + 1); listeners.add(f); return () => { listeners.delete(f) } }, [])

@@ -29,6 +29,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Download
@@ -102,6 +104,8 @@ fun SettingsScreen(
     listState: LazyListState = rememberLazyListState(),
     openMoveOut: () -> Unit = {},
     openMoveIn: () -> Unit = {},
+    openReview: () -> Unit = {},
+    openNote: () -> Unit = {},
 ) {
     val r = state.resolver
     val p = state.prefs
@@ -319,6 +323,8 @@ fun SettingsScreen(
             }
             item {
                 Section(null, "Prayer Times Asia. Built in Asia, made for Muslims everywhere.") {
+                    LinkRow("Rate and review", Icons.Outlined.StarOutline, openReview)
+                    LinkRow("Send a note to the makers", Icons.Outlined.Email, openNote)
                     LinkRow("Sources & credits", null, openCredits)
                     LinkRow("Help verify times where you are", null) {
                         runCatching { uri.openUri("https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md") }
