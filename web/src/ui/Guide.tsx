@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState } from 'preact/hooks'
-import { Pointer } from 'lucide-preact'
+import { BellRing, CircleDot, Palette, Pointer, Printer } from 'lucide-preact'
 import { GUIDE_CARDS, GUIDE_STEPS, guideLang, guideWord, type GuideCardId } from '../core/guideWords'
 import { lang3, type Lang3 } from '../core/ramadanContent'
 import { navigatorLocale, store } from '../services/store'
+import { TabFalak, TabJourney, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 
 /** Real app screens for the little phone, by name (made by scripts/guide-shots.mjs). */
 const SHOTS = Object.fromEntries(Object.entries(import.meta.glob('../assets/guide/steps/*.webp', { eager: true, import: 'default' }))
   .map(([path, url]) => [path.split('/').pop()!.replace('.webp', ''), url as string]))
 
 const LANGS: { id: Lang3; label: string }[] = [{ id: 'en', label: 'EN' }, { id: 'ms', label: 'BM' }, { id: 'id', label: 'ID' }]
+/** The icon on each feature's tab along the bottom. */
+const FEATURE_ICON = {
+  prayer: TabPrayer, buttons: CircleDot, looks: Palette, alerts: BellRing, qibla: TabQibla, masjid: TabMasjid,
+  travel: TabJourney, falak: TabFalak, print: Printer, yours: TabSettings,
+} satisfies Record<GuideCardId, unknown>
 type Say = (k: Parameters<typeof guideWord>[1], a?: Record<string, number>) => string
 
 /**
@@ -87,11 +93,30 @@ export function Guide({ onClose }: { onClose: () => void }) {
 
       <div class="guide-foot">
         <button class="guide-back" onClick={() => go(i - 1)} style={{ visibility: i === 0 ? 'hidden' : 'visible' }}>{t('back')}</button>
-        <div class="guide-dots" aria-label={t('of', { n: i + 1, t: GUIDE_CARDS.length })}>
-          {GUIDE_CARDS.map((id, n) => <button aria-label={t(`${id}_title`)} class={n === i ? 'on' : ''} onClick={() => go(n)} />)}
-        </div>
+        <Features i={i} go={go} t={t} />
         <button class="guide-next" onClick={() => (last ? finish() : go(i + 1))}>{last ? t('start') : t('next')}</button>
       </div>
+    </div>
+  )
+}
+
+/** One named tab per feature along the bottom, so people see what they are learning and can jump to any of it. */
+function Features({ i, go, t }: { i: number; go: (n: number) => void; t: Say }) {
+  const row = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = row.current?.children[i] as HTMLElement | undefined
+    if (el && row.current) row.current.scrollTo({ left: el.offsetLeft - (row.current.clientWidth - el.offsetWidth) / 2, behavior: quiet() ? 'auto' : 'smooth' })
+  }, [i])
+  return (
+    <div class="guide-feats" ref={row} role="tablist" aria-label={t('of', { n: i + 1, t: GUIDE_CARDS.length })}>
+      {GUIDE_CARDS.map((id, n) => {
+        const Icon = FEATURE_ICON[id]
+        return (
+          <button role="tab" aria-selected={n === i} class={n === i ? 'on' : n < i ? 'seen' : ''} onClick={() => go(n)}>
+            <Icon size={16} /><span>{t(`${id}_tab`)}</span>
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -136,7 +161,11 @@ function PhoneDemo({ id, on, t, swiped }: { id: GuideCardId; on: boolean; t: Say
         </span>
       </button>
       <p class="guide-say" aria-live="polite" key={`${k}-${s.say}`}>{t(s.say)}</p>
-      <div class="guide-steps" aria-hidden="true">{steps.map((_, n) => <i class={n === k ? 'on' : ''} />)}</div>
+      <div class="guide-steps" role="group" aria-label={t('step', { n: k + 1, t: steps.length })}>
+        {steps.map((_, n) => (
+          <button class={n === k ? 'on' : n < k ? 'seen' : ''} onClick={() => setK(n)} tabIndex={on ? 0 : -1} aria-label={t('step', { n: n + 1, t: steps.length })}>{n + 1}</button>
+        ))}
+      </div>
     </div>
   )
 }
