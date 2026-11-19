@@ -100,6 +100,18 @@ const shots = [
     await p.click('.sheet [aria-label="Sahur alarm"]'); await p.waitForTimeout(300)
     await p.evaluate(() => [...document.querySelectorAll('.sheet *')].find((h) => h.textContent === 'Sahur alarm')?.scrollIntoView({ block: 'center' }))
   }],
+  // Hijri calendar: tap the date on the Prayer screen.
+  ['45-hijri-calendar', { style: 'list', appearance: 'dark', now: '2026-11-19T21:00:00+08:00' }, (p) => p.click('.date-main')],
+  ['46-hijri-calendar-day', { style: 'list', appearance: 'system', now: '2026-11-19T13:00:00+08:00' }, async (p) => {
+    await p.click('.date-main'); await p.waitForTimeout(400); await p.click('.hcal-next'); await p.waitForTimeout(200); await p.click('.hcal-next'); await p.waitForTimeout(300)
+    await p.click('.hcal-row')
+  }],
+  ['47-hijri-calendar-malay', { style: 'list', appearance: 'dark', now: '2026-11-19T21:00:00+08:00', naming: 'malay' }, async (p) => {
+    await p.click('.date-main'); await p.waitForTimeout(400); for (let i = 0; i < 5; i++) { await p.click('.hcal-prev'); await p.waitForTimeout(150) }
+  }],
+  ['48-hijri-calendar-zulhijjah', { style: 'list', appearance: 'dark', now: '2026-11-19T21:00:00+08:00' }, async (p) => {
+    await p.click('.date-main'); await p.waitForTimeout(400); for (let i = 0; i < 6; i++) { await p.click('.hcal-next'); await p.waitForTimeout(150) }
+  }],
   ['28-journey', { demo: 'travel', style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Musafir"]')],
 ]
 

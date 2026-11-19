@@ -831,6 +831,8 @@ function demoPreferences(demo: Demo): Preferences {
   p.appPromptDismissed = q.get('appprompt') !== 'on'
   if (q.get('masjid') === 'on') p.myMasjid = DEMO_MASJID
   if (q.get('large') === '1') p.largeText = true
+  const naming = q.get('naming') as NamingStyle | null
+  if (naming) p.namingOverride = naming
   if (demo.variant === 'visitor') {
     p.homeConfirmed = true
     p.home = { id: 'demo-sydney', name: 'Sydney', countryCode: 'AU', countryName: 'Australia', timeZoneID: 'Australia/Sydney', coordinates: { latitude: -33.8688, longitude: 151.2093 } }
