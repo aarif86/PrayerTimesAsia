@@ -26,6 +26,7 @@ struct TodayView: View {
         .sheet(isPresented: $showPlaces) { PlacesView() }
         .sheet(isPresented: $showCalendar) { CalendarSanadView() }
         .sheet(isPresented: $showTracker) { TrackerView() }
+        .asksForStarsWhenCalm()
         .onAppear {
             // Demo screenshots: Show more only when asked, never carried over from a previous run.
             let args = ProcessInfo.processInfo.arguments
@@ -137,6 +138,7 @@ struct TodayView: View {
                     withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
                 })
             showMoreButton
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
@@ -294,6 +296,7 @@ struct TodayView: View {
                 })
             dayRow(shown)
             showMoreButton
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
@@ -527,6 +530,7 @@ struct TodayView: View {
                     Spacer(minLength: 8)
                     showMoreButton.fixedSize()
                 }
+                if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore {
                     MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
                 }
@@ -618,6 +622,7 @@ struct TodayView: View {
                 Spacer(minLength: 8)
                 showMoreButton.fixedSize()
             }
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
                 MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
             }
@@ -659,6 +664,7 @@ struct TodayView: View {
                     })
                 showMoreButton
                 SourceBadge(day: shown)
+                if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore {
                     MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
                 }
