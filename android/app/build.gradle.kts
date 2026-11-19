@@ -106,6 +106,8 @@ dependencies {
     implementation(libs.camerax.view)
     // QR codes for Move my settings (making them and reading them from the camera).
     implementation(libs.zxing.core)
+    // Google Play's own in-app star box (asked rarely, at a calm moment).
+    implementation(libs.play.review.ktx)
 
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
