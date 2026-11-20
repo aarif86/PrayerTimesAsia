@@ -54,8 +54,8 @@ struct ReviewView: View {
                         .font(.subheadline)
                     VStack(alignment: .leading, spacing: 8) {
                         step(1, "Write once", "in the box below, in your own words.")
-                        step(2, "Tap a place", "to review. We copy your words for you.")
-                        step(3, "Tap and hold", "in their review box, then Paste. Come back and do the same for the next one.")
+                        step(2, Device.words("Tap a place"), "to review. We copy your words for you.")
+                        step(3, Device.words("Tap and hold"), "in their review box, then Paste. Come back and do the same for the next one.")
                     }
                     .padding(.vertical, 4)
                 }
@@ -72,7 +72,7 @@ struct ReviewView: View {
                                 Image(systemName: link.icon).font(.title3).foregroundStyle(Theme.accentText).frame(width: 26)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(link.title).foregroundStyle(.primary)
-                                    Text(copiedFor == link.id ? "Copied. Tap and hold in the review box, then Paste." : link.subtitle)
+                                    Text(copiedFor == link.id ? Device.words("Copied. Tap and hold in the review box, then Paste.") : link.subtitle)
                                         .font(.footnote).foregroundStyle(.secondary)
                                 }
                                 Spacer(minLength: 4)
@@ -149,7 +149,7 @@ struct NoteView: View {
             case .kind: "What has the app helped you with?"
             case .idea: "What would make the app better for you?"
             case .time: "Which prayer, which day, and what does your masjid show?"
-            case .broke: "What did you tap, and what happened?"
+            case .broke: Device.words("What did you tap, and what happened?")
             }
         }
     }

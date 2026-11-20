@@ -189,7 +189,7 @@ private struct EachPrayerSection: View {
         } header: {
             Text("Each prayer")
         } footer: {
-            Text("Tap a prayer's name for its times. Notify is a notification, quiet when your phone is on silent or in a Focus. Alarm rings until you stop it, even on silent.")
+            Text(Device.words("Tap a prayer's name for its times. Notify is a notification, quiet when your phone is on silent or in a Focus. Alarm rings until you stop it, even on silent."))
         }
     }
 
@@ -276,7 +276,7 @@ private struct NextAlarmSection: View {
 
     private var alarmNote: String {
         if #available(iOS 26.0, *) {
-            return "An alarm rings even in Silent mode and Focus, like the Clock app. Tap Stop to end it. Snooze 5 min rings it once more in 5 minutes."
+            return Device.words("An alarm rings even in Silent mode and Focus, like the Clock app. Tap Stop to end it. Snooze 5 min rings it once more in 5 minutes.")
         }
         return "On this iPhone an alarm comes as a notification. From iOS 26 it rings like a real alarm, even in Silent mode."
     }
@@ -442,7 +442,7 @@ private struct AlarmSoundSection: View {
         } header: {
             Text("Alarm sound")
         } footer: {
-            Text("Tap a sound to hear it. Every alarm plays this sound. Classic is your iPhone's own alarm.")
+            Text(Device.words("Tap a sound to hear it. Every alarm plays this sound. Classic is your iPhone's own alarm."))
         }
     }
 }

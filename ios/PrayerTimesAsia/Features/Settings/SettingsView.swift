@@ -69,7 +69,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Alerts and alarms")
                 } footer: {
-                    Text("Each prayer Off, Notify or Alarm, \(Prayer.dhuhr.name(model.naming, isFriday: true)), sahur, Ramadan and how it all sounds, in one place. Also on the Prayer screen. Tap the alarm clock at the top, or hold a bell.")
+                    Text(Device.words("Each prayer Off, Notify or Alarm, \(Prayer.dhuhr.name(model.naming, isFriday: true)), sahur, Ramadan and how it all sounds, in one place. Also on the Prayer screen. Tap the alarm clock at the top, or hold a bell."))
                 }
 
                 Section {
@@ -172,7 +172,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Hadith")
                 } footer: {
-                    Text("Tap ✕ on any hadith to hide just that one. Turn both off for a clean app with times only.")
+                    Text(Device.words("Tap ✕ on any hadith to hide just that one. Turn both off for a clean app with times only."))
                 }
 
                 Section {
@@ -180,7 +180,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Tracker")
                 } footer: {
-                    Text("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this \(Device.noun)." + (model.prefs.trackerEnabled ? " The nudge before time runs out is in Alerts and alarms." : ""))
+                    Text(Device.words("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this \(Device.noun).") + (model.prefs.trackerEnabled ? " The nudge before time runs out is in Alerts and alarms." : ""))
                 }
 
                 Section {
@@ -189,7 +189,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Lock Screen")
                 } footer: {
-                    Text("Shows a countdown to the next prayer on the Lock Screen and in the Dynamic Island. Add widgets from your Home Screen: touch and hold, then tap Edit.")
+                    Text(Device.words("Shows a countdown to the next prayer on the Lock Screen and in the Dynamic Island. Add widgets from your Home Screen: touch and hold, then tap Edit."))
                 }
 
                 Section("Display") {
@@ -233,7 +233,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Help")
                 } footer: {
-                    Text("A short tour that taps the real buttons, so you know where everything is.")
+                    Text(Device.words("A short tour that taps the real buttons, so you know where everything is."))
                 }
 
                 Section("Accuracy") {
@@ -289,6 +289,10 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity)
             .background(SkyNow())
             .navigationTitle("Settings")
+            #if targetEnvironment(macCatalyst)
+            // The side bar already says Settings; a small title sits better over the centred list.
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .sheet(isPresented: $showPlaces) { PlacesView() }
             .sheet(isPresented: $showRamadan) { RamadanView() }
             .fullScreenCover(isPresented: $showGuide) { GuideView() }

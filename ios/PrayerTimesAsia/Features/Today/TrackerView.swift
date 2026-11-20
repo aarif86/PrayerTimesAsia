@@ -26,7 +26,7 @@ struct TrackerView: View {
                     } else {
                         Button { model.pauseTracker() } label: { Label("Pause tracker", systemImage: "pause.fill") }
                         Button { model.toggleExcused(.now) } label: {
-                            Label(model.isExcused(.now) ? "Excused today (tap to undo)" : "Excuse just today", systemImage: "drop.fill")
+                            Label(model.isExcused(.now) ? Device.words("Excused today (tap to undo)") : "Excuse just today", systemImage: "drop.fill")
                         }
                         .tint(Self.pink)
                     }
@@ -44,7 +44,7 @@ struct TrackerView: View {
                 Section {
                     month
                 } footer: {
-                    Text("Tap a prayer on the Prayer screen once its time has come to tick it off. Your tracker is kept only on this \(Device.noun) - never uploaded, and it moves to a new phone only through Move my settings.")
+                    Text(Device.words("Tap a prayer on the Prayer screen once its time has come to tick it off. Your tracker is kept only on this \(Device.noun) - never uploaded, and it moves to a new phone only through Move my settings."))
                 }
             }
             .navigationTitle("Prayer tracker")

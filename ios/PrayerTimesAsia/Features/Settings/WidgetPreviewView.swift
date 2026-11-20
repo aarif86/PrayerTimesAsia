@@ -23,7 +23,7 @@ struct WidgetPreviewView: View {
                     .background(TimetableCard.background(snapshot, at: .now, style: style))
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                     .shadow(color: .black.opacity(0.25), radius: 16, y: 8)
-                Text("Touch and hold your Home Screen, tap Edit, then Add Widget and search for Prayer Times Asia. Choose \"Today's timetable\". It follows your Prayer screen style; touch and hold it, then Edit Widget, to pick another.")
+                Text(Device.words("Touch and hold your Home Screen, tap Edit, then Add Widget and search for Prayer Times Asia. Choose \"Today's timetable\". It follows your Prayer screen style; touch and hold it, then Edit Widget, to pick another."))
                     .font(.footnote)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.white)

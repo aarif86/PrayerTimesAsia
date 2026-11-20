@@ -23,7 +23,7 @@ enum AlertMode: String, CaseIterable, Identifiable, Sendable {
     var help: String {
         switch self {
         case .off: "Nothing for this prayer"
-        case .notify: "A notification with sound. Quiet when your phone is on silent or in a Focus."
+        case .notify: Device.words("A notification with sound. Quiet when your phone is on silent or in a Focus.")
         case .alarm: "Rings until you stop it, even on silent and in a Focus. Snooze 5 min."
         }
     }

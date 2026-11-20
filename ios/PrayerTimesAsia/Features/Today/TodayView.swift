@@ -694,6 +694,14 @@ struct TodayView: View {
                     if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
                     if dayOffset == 0 { TodayNotes(now: now) }
                     if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
+                    // A Mac window has the room: the month, with the Hijri day under
+                    // each date. Click a day to see its times on the right.
+                    HijriMonthCard(onShowDay: { days in withAnimation(.snappy) { dayOffset = days } })
+                        .padding(14)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+                        .padding(.top, 6)
                 }
                 .padding(.bottom, 16)
             }
@@ -1216,7 +1224,7 @@ private struct PrayerList: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(prayer.name(model.naming)) \(mode.word)")
-                .accessibilityHint("Tap to change. Hold for more.")
+                .accessibilityHint(Device.words("Tap to change. Hold for more."))
                 .contextMenu { AlertMenuItems(prayer: prayer) }
             }
         }
@@ -1235,6 +1243,20 @@ private struct PrayerList: View {
         .accessibilityAction(named: prayed ? "Mark as not prayed" : "Mark as prayed") {
             if trackable { model.togglePrayed(prayer, on: time) }
         }
+        #if targetEnvironment(macCatalyst)
+        // Mouse manners: the row lights up under the pointer, and a right click
+        // offers what a click or the bell would do.
+        .modifier(MacHover(corner: 16))
+        .contextMenu {
+            if trackable {
+                Button(prayed ? "Mark as not prayed" : "Mark as prayed", systemImage: prayed ? "circle" : "checkmark.circle") {
+                    withAnimation(.snappy) { model.togglePrayed(prayer, on: time) }
+                }
+                Divider()
+            }
+            AlertMenuItems(prayer: prayer)
+        }
+        #endif
         .background {
             if isCurrent {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
