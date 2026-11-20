@@ -49,6 +49,8 @@ import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.theme.display
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /**
  * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
@@ -112,7 +114,7 @@ fun MakersCard(card: CommunityCard, placement: String, compact: Boolean = false,
 fun MakersSheetContent(placement: String, state: AppState? = null) {
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Dims.gutter), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         state?.let { HadithView(it, HadithId.FIXED_TIMES, tag = "Al Quran") }
-        Text("Built fisabilillah", style = display(26.sp, FontWeight.Bold), color = Palette.primary)
+        Text(tr(R.string.makers_title), style = display(26.sp, FontWeight.Bold), color = Palette.primary)
         Text("Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).",
             style = Txt.body, color = Palette.secondary)
         CommunityCard.ours(state?.offerCountry ?: "").forEach { MakersCard(it, placement, state = state) }
