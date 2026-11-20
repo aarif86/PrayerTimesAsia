@@ -107,12 +107,14 @@ export function App() {
   useEffect(() => {
     const moved = takeMoveFromLink()
     if (moved) openSheet({ kind: 'move-in', code: moved })
-    // The website's phone frame opens a screen straight away: ?demo&open=alarms (or calendar, tracker).
+    // The website's phone frame opens a screen straight away: ?demo&open=alarms (or calendar, tracker, journey, ramadan).
     if (s.demo) {
       const open = new URLSearchParams(location.search).get('open')
       if (open === 'alarms') openSheet({ kind: 'wakeup' })
       else if (open === 'calendar') openSheet({ kind: 'calendar' })
       else if (open === 'tracker') openSheet({ kind: 'tracker' })
+      else if (open === 'journey') openSheet({ kind: 'journey' })
+      else if (open === 'ramadan') openSheet({ kind: 'ramadan' })
     }
     if (s.prefs.hasOnboarded && s.prefs.useGPS) s.locate()
     s.refreshOfficial()

@@ -51,7 +51,7 @@
   "Everything you need for salah, nothing you don't.": "নামাজের জন্য যা দরকার সবকিছু, অপ্রয়োজনীয় কিছু নয়।",
   "Prayer times": "নামাজের সময়",
   "The times you trust, at a glance": "যে সময়ে আপনি ভরসা করেন, এক নজরে",
-  "The Prayer screen, a dial counting down to Isha, and today's times in Pasir Ris, Singapore": "নামাজ স্ক্রিন, ইশা পর্যন্ত কাউন্টডাউন ডায়াল, আর সিঙ্গাপুরের পাসির রিসে আজকের সময়",
+  "The Prayer screen, with how long is left to pray and today's times in Pasir Ris, Singapore": "নামাজের স্ক্রিন, নামাজের বাকি সময় আর পাসির রিস, সিঙ্গাপুরের আজকের সময়সহ",
   "The Colour Bands style, each prayer time on its own bright band": "রঙিন ব্যান্ড স্টাইল, প্রতিটি নামাজের সময় নিজের উজ্জ্বল ব্যান্ডে",
   "Travel": "ভ্রমণ",
   "Land in a new country, the times are already right": "নতুন দেশে নামুন, সময় আগে থেকেই ঠিক",
@@ -334,5 +334,7 @@
   "Print a prayer calendar": "নামাজের সময়ের ক্যালেন্ডার প্রিন্ট করুন",
   "Things to try": "যা চালিয়ে দেখতে পারেন",
   "The free masjid display screen, showing today's times and the next prayer": "মসজিদের বিনামূল্যের ডিসপ্লে স্ক্রিন, আজকের সময় আর পরের নামাজ দেখাচ্ছে",
-  "· With": "· সহযোগী"
+  "· With": "· সহযোগী",
+  "Times from your local religious authority, in 143 countries.": "আপনার স্থানীয় ধর্মীয় কর্তৃপক্ষের সময়, ১৪৩টি দেশে।",
+  "Your own masjid's jamaah times, shown under each prayer": "আপনার নিজের মসজিদের জামাতের সময়, প্রতিটি নামাজের নিচে"
 }

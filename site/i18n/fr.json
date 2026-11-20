@@ -51,7 +51,7 @@
   "Everything you need for salah, nothing you don't.": "Tout ce qu'il faut pour la salat, rien de superflu.",
   "Prayer times": "Horaires de prière",
   "The times you trust, at a glance": "Les horaires de confiance, d'un coup d'œil",
-  "The Prayer screen, a dial counting down to Isha, and today's times in Pasir Ris, Singapore": "L'écran Prière, un cadran qui compte jusqu'à Isha, et les horaires du jour à Pasir Ris, Singapour",
+  "The Prayer screen, with how long is left to pray and today's times in Pasir Ris, Singapore": "L'écran Prière, avec le temps qu'il reste pour prier et les horaires du jour à Pasir Ris, Singapour",
   "The Colour Bands style, each prayer time on its own bright band": "Le style Bandes de couleur, chaque prière sur sa propre bande vive",
   "Travel": "Voyage",
   "Land in a new country, the times are already right": "Arrivez dans un nouveau pays, les horaires sont déjà justes",
@@ -334,5 +334,7 @@
   "Print a prayer calendar": "Imprimer un calendrier des prières",
   "Things to try": "À essayer",
   "The free masjid display screen, showing today's times and the next prayer": "L'écran gratuit pour la mosquée, avec les horaires du jour et la prochaine prière",
-  "· With": "· Avec"
+  "· With": "· Avec",
+  "Times from your local religious authority, in 143 countries.": "Les horaires de votre autorité religieuse locale, dans 143 pays.",
+  "Your own masjid's jamaah times, shown under each prayer": "Les horaires de jamaah de votre propre mosquée, sous chaque prière"
 }

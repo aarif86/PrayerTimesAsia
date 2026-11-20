@@ -51,7 +51,7 @@
   "Everything you need for salah, nothing you don't.": "Namaz için gereken her şey, fazlası değil.",
   "Prayer times": "Namaz vakitleri",
   "The times you trust, at a glance": "Güvendiğiniz vakitler, tek bakışta",
-  "The Prayer screen, a dial counting down to Isha, and today's times in Pasir Ris, Singapore": "Namaz ekranı, Yatsı'ya geri sayan kadran ve Singapur Pasir Ris için bugünün vakitleri",
+  "The Prayer screen, with how long is left to pray and today's times in Pasir Ris, Singapore": "Namaz ekranı, namaza kalan süre ve Pasir Ris, Singapur için bugünün vakitleriyle",
   "The Colour Bands style, each prayer time on its own bright band": "Renkli Şeritler görünümü, her vakit kendi parlak şeridinde",
   "Travel": "Seyahat",
   "Land in a new country, the times are already right": "Yeni bir ülkeye inin, vakitler zaten doğru",
@@ -334,5 +334,7 @@
   "Print a prayer calendar": "Namaz vakti takvimi yazdırın",
   "Things to try": "Denenecekler",
   "The free masjid display screen, showing today's times and the next prayer": "Ücretsiz cami ekranı, bugünün vakitlerini ve sıradaki namazı gösteriyor",
-  "· With": "· İş ortağı"
+  "· With": "· İş ortağı",
+  "Times from your local religious authority, in 143 countries.": "Vakitler yerel din kurumunuzdan, 143 ülkede.",
+  "Your own masjid's jamaah times, shown under each prayer": "Kendi caminizin cemaat vakitleri, her namazın altında"
 }

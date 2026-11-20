@@ -49,7 +49,7 @@
   "Everything you need for salah, nothing you don't.": "Semua yang Anda perlukan untuk salat, tanpa yang tidak perlu.",
   "Prayer times": "Jadwal salat",
   "The times you trust, at a glance": "Waktu yang Anda percaya, sekilas pandang",
-  "The Prayer screen, a dial counting down to Isha, and today's times in Pasir Ris, Singapore": "Layar Salat, dial yang menghitung mundur ke Isya, dan jadwal hari ini di Pasir Ris, Singapura",
+  "The Prayer screen, with how long is left to pray and today's times in Pasir Ris, Singapore": "Layar Salat, dengan sisa waktu untuk salat dan jadwal hari ini di Pasir Ris, Singapura",
   "The Colour Bands style, each prayer time on its own bright band": "Gaya Pita Warna, setiap waktu salat pada pitanya sendiri yang cerah",
   "Travel": "Perjalanan",
   "Land in a new country, the times are already right": "Tiba di negara baru, waktunya sudah benar",
@@ -334,5 +334,7 @@
   "Print a prayer calendar": "Cetak kalender jadwal salat",
   "Things to try": "Hal yang bisa dicoba",
   "The free masjid display screen, showing today's times and the next prayer": "Layar tampilan masjid gratis, menampilkan jadwal hari ini dan salat berikutnya",
-  "· With": "· Bersama"
+  "· With": "· Bersama",
+  "Times from your local religious authority, in 143 countries.": "Waktu dari otoritas agama setempat Anda, di 143 negara.",
+  "Your own masjid's jamaah times, shown under each prayer": "Waktu jamaah masjid Anda sendiri, ditampilkan di bawah setiap salat"
 }

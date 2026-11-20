@@ -51,7 +51,7 @@
   "Everything you need for salah, nothing you don't.": "كل ما تحتاجه للصلاة، ولا شيء زائد.",
   "Prayer times": "مواقيت الصلاة",
   "The times you trust, at a glance": "المواقيت التي تثق بها، بنظرة واحدة",
-  "The Prayer screen, a dial counting down to Isha, and today's times in Pasir Ris, Singapore": "شاشة الصلاة، وعدّاد دائري حتى العشاء، ومواقيت اليوم في باسير ريس، سنغافورة",
+  "The Prayer screen, with how long is left to pray and today's times in Pasir Ris, Singapore": "شاشة الصلاة، مع الوقت المتبقي للصلاة ومواقيت اليوم في باسير ريس، سنغافورة",
   "The Colour Bands style, each prayer time on its own bright band": "نمط الأشرطة الملونة، كل وقت صلاة على شريط زاهٍ",
   "Travel": "السفر",
   "Land in a new country, the times are already right": "تصل إلى بلد جديد والمواقيت صحيحة من البداية",
@@ -334,5 +334,7 @@
   "Print a prayer calendar": "اطبع تقويم مواقيت الصلاة",
   "Things to try": "أشياء تجربها",
   "The free masjid display screen, showing today's times and the next prayer": "شاشة عرض المسجد المجانية، تعرض مواقيت اليوم والصلاة القادمة",
-  "· With": "· مع"
+  "· With": "· مع",
+  "Times from your local religious authority, in 143 countries.": "المواقيت من الجهة الدينية المحلية عندك، في 143 دولة.",
+  "Your own masjid's jamaah times, shown under each prayer": "أوقات الجماعة في مسجدك، تظهر تحت كل صلاة"
 }

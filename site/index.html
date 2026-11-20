@@ -147,6 +147,8 @@
     .hero .wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; }
     .hero h1 span { background: linear-gradient(135deg, var(--gold), var(--ember) 60%, var(--rose)); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .hero .btns { margin: 28px 0 18px; }
+    .hero .trust { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 0.95rem; color: var(--text); opacity: .9; }
+    .hero .trust svg { flex: none; color: var(--gold); }
     .hero .note { font-size: 0.9rem; color: var(--muted); }
     .hero-phones { position: relative; height: 600px; }
     .hero-phones .phone { position: absolute; width: 260px; }
@@ -166,7 +168,7 @@
     .phone img { display: block; border-radius: 31px; width: 100%; height: auto; aspect-ratio: 603 / 1311; }
     /* Android: squarer corners, thin even bezel and a punch hole camera. */
     .phone.android { border-radius: 28px; padding: 6px; background: #0a0b12; }
-    .phone.android img { border-radius: 22px; aspect-ratio: 603 / 1347; }
+    .phone.android img { border-radius: 22px; aspect-ratio: 603 / 1307; }
     .feature .shot .phone.android { position: relative; }
     .phone.android::before { content: ""; position: absolute; top: 13px; left: 50%; width: 11px; height: 11px; margin-left: -5.5px; border-radius: 50%; background: #000; box-shadow: 0 0 0 1.5px #1c1f2e; }
 
@@ -519,10 +521,11 @@
             <span class="two">iPhone and Android<small>Join the test</small></span>
           </a>
         </div>
+        <p class="trust"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>Times from your local religious authority, in 143 countries.</p>
         <p class="note"><a href="#story">Read the story</a> · With <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd)</p>
       </div>
       <div class="hero-phones" aria-hidden="true">
-        <div class="phone android back"><img src="img/android-dial.webp" srcset="img/android-dial-400.webp 400w, img/android-dial.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1347" fetchpriority="high" /></div>
+        <div class="phone android back"><img src="img/android-dial.webp" srcset="img/android-dial-400.webp 400w, img/android-dial.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1307" fetchpriority="high" /></div>
         <div class="phone front"><img src="img/today.webp" srcset="img/today-400.webp 400w, img/today.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1311" fetchpriority="high" /></div>
       </div>
     </div>
@@ -686,8 +689,8 @@
           <p class="tribute">The Colour Bands look is our tribute to prayertime.sg &amp; my, the Singapore app many of us grew up with.</p>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/today.webp" alt="The Prayer screen, a dial counting down to Isha, and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone android"><img src="img/android-bands.webp" alt="The Colour Bands style, each prayer time on its own bright band" loading="lazy" width="603" height="1347" /></div>
+          <div class="phone"><img src="img/today.webp" alt="The Prayer screen, with how long is left to pray and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-bands.webp" alt="The Colour Bands style, each prayer time on its own bright band" loading="lazy" width="603" height="1307" /></div>
         </div>
       </div>
 
@@ -705,7 +708,7 @@
         </div>
         <div class="shot">
           <div class="phone"><img src="img/travel.webp" alt="Arriving in Hanoi, a welcome card explains the app switched to the Southeast Asia method" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone android"><img src="img/android-journey.webp" alt="Journey, 2,195 km from home, you may shorten and combine prayers" loading="lazy" width="603" height="1347" /></div>
+          <div class="phone android"><img src="img/android-journey.webp" alt="Journey, 2,195 km from home, you may shorten and combine prayers" loading="lazy" width="603" height="1307" /></div>
         </div>
       </div>
 
@@ -722,7 +725,7 @@
         </div>
         <div class="shot">
           <div class="phone"><img src="img/qibla.webp" alt="The qibla compass showing Aligned, facing 293 degrees" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone android"><img src="img/android-falak.webp" alt="Falak, the shadow right now and the days to the next Qibla Day" loading="lazy" width="603" height="1347" /></div>
+          <div class="phone android"><img src="img/android-falak.webp" alt="Falak, the shadow right now and the days to the next Qibla Day" loading="lazy" width="603" height="1307" /></div>
         </div>
       </div>
 
@@ -733,8 +736,8 @@
           <p class="muted">See the nearest masjids, prayer rooms on a map, with how far each one is and how long it takes to walk or drive. Handy in a new city, or in a mall at Asr.</p>
         </div>
         <div class="shot">
-          <div class="phone android"><img src="img/android-masjid.webp" alt="A map and list of masjids and prayer rooms near Pasir Ris" loading="lazy" width="603" height="1347" /></div>
-          <div class="phone"><img src="img/widget.webp" alt="The big Home Screen widget with today's prayer times" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-masjid.webp" alt="A map and list of masjids and prayer rooms near Pasir Ris" loading="lazy" width="603" height="1307" /></div>
+          <div class="phone"><img src="img/your-masjid.webp" alt="Your own masjid's jamaah times, shown under each prayer" loading="lazy" width="603" height="1311" /></div>
         </div>
       </div>
 
@@ -754,7 +757,7 @@
         </div>
         <div class="shot">
           <div class="phone"><img src="img/ramadan-berbuka.webp" alt="The Prayer screen in Ramadan, counting down to iftar" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone android"><img src="img/android-ramadan.webp" alt="The Ramadan page with today's Imsak, Fajr and iftar times" loading="lazy" width="603" height="1347" /></div>
+          <div class="phone android"><img src="img/android-ramadan.webp" alt="The Ramadan page with today's Imsak, Fajr and iftar times" loading="lazy" width="603" height="1307" /></div>
         </div>
       </div>
     </div>
@@ -1091,7 +1094,7 @@
     document.querySelectorAll('.lang .menu a').forEach(function (a) {
       a.addEventListener('click', function () { try { localStorage.setItem('pta-lang', a.getAttribute('hreflang')); } catch (e) {} });
     });
-    var intro = document.querySelectorAll('.hero .eyebrow, .hero h1, .hero .lead, .hero .btns, .hero .note');
+    var intro = document.querySelectorAll('.hero .eyebrow, .hero h1, .hero .lead, .hero .btns, .hero .trust, .hero .note');
     intro.forEach(function (el, n) { el.classList.add('intro'); el.style.setProperty('--i', n); });
 
     // The trust strip loops: repeat its items once so the scroll is seamless.

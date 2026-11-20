@@ -52,7 +52,7 @@
   "Everything you need for salah, nothing you don't.": "نماز کے لیے جو چاہیے سب کچھ، فالتو کچھ نہیں۔",
   "Prayer times": "نماز کے اوقات",
   "The times you trust, at a glance": "وہ اوقات جن پر آپ بھروسہ کرتے ہیں، ایک نظر میں",
-  "The Prayer screen, a dial counting down to Isha, and today's times in Pasir Ris, Singapore": "نماز اسکرین، عشاء تک الٹی گنتی کا ڈائل، اور پاسیر ریس، سنگاپور میں آج کے اوقات",
+  "The Prayer screen, with how long is left to pray and today's times in Pasir Ris, Singapore": "نماز کی سکرین، نماز کا باقی وقت اور پاسیر رس، سنگاپور میں آج کے اوقات کے ساتھ",
   "The Colour Bands style, each prayer time on its own bright band": "رنگین پٹیوں والا انداز، ہر نماز کا وقت اپنی روشن پٹی پر",
   "Travel": "سفر",
   "Land in a new country, the times are already right": "نئے ملک میں اتریں، اوقات پہلے سے درست ہیں",
@@ -335,5 +335,7 @@
   "Print a prayer calendar": "نماز کے اوقات کا کیلنڈر پرنٹ کریں",
   "Things to try": "آزمانے کی چیزیں",
   "The free masjid display screen, showing today's times and the next prayer": "مسجد کے لیے مفت ڈسپلے اسکرین، آج کے اوقات اور اگلی نماز دکھاتی ہوئی",
-  "· With": "· شراکت دار"
+  "· With": "· شراکت دار",
+  "Times from your local religious authority, in 143 countries.": "اوقات آپ کے مقامی دینی ادارے سے، 143 ممالک میں۔",
+  "Your own masjid's jamaah times, shown under each prayer": "آپ کی اپنی مسجد کے جماعت کے اوقات، ہر نماز کے نیچے"
 }
