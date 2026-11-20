@@ -769,3 +769,32 @@ struct AlertMenuItems: View {
         }
     }
 }
+
+/// A few seconds of an alarm sound, heard when a sound is tapped.
+enum AlarmPreview {
+    private static var player: AVAudioPlayer?
+
+    static func play(_ sound: AlarmSound) {
+        stop()
+        guard let file = sound.fileName,
+              let url = Bundle.main.url(forResource: (file as NSString).deletingPathExtension, withExtension: "caf") else {
+            // Classic is the iPhone's own alarm, which apps can't play; a short system alert stands in.
+            AudioServicesPlayAlertSound(SystemSoundID(1005))
+            return
+        }
+        try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.duckOthers])
+        try? AVAudioSession.sharedInstance().setActive(true)
+        player = try? AVAudioPlayer(contentsOf: url)
+        player?.play()
+        let current = player
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            if player === current { stop() }
+        }
+    }
+
+    static func stop() {
+        player?.stop()
+        player = nil
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+}
