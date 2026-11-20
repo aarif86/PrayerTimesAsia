@@ -4,6 +4,355 @@
   "releases": [
     {
       "version": "1.0.0",
+      "build": 40,
+      "date": "2026-11-20",
+      "title": "Leave for Jumaat",
+      "summary": "A reminder to set off for Friday prayer, and the next prayer leads after sunrise.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "Leave for Jumaat lives with the prayer alarms. Choose how early, from 15 minutes to 2 hours, and in Singapore pick the first or second session."
+        },
+        {
+          "type": "new",
+          "text": "Leave for Jumaat can ring as a real alarm, through silent mode and Focus, like the prayer alarms."
+        },
+        {
+          "type": "improved",
+          "text": "From Syuruk until Zohor, every look and widget now counts down to Zohor instead of showing Sunrise."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 39,
+      "date": "2026-11-19",
+      "title": "Barakah Picks and a clearer masjid map",
+      "summary": "One small card of good causes near you, and a map that shows how far things are.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "Barakah Picks, one small card under Show more with good causes and halal businesses we check by hand for your country. You can turn it off in Settings."
+        },
+        {
+          "type": "improved",
+          "text": "The masjid map shows a beaming dot where you are, with rings at 1, 2 and 5 km."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 38,
+      "date": "2026-11-19",
+      "title": "A quick guide, a Hijri calendar and a new Masjid tab",
+      "summary": "New users get a short tour, and the date on the Prayer screen opens a Hijri calendar.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "A short guide the first time you open the app, with a small phone that taps the real buttons. Replay it any time from Settings, Help."
+        },
+        {
+          "type": "new",
+          "text": "Tap the date on the Prayer screen for the whole Hijri month, with the important days marked."
+        },
+        {
+          "type": "new",
+          "text": "Free wall calendar and a whole Islamic year on one page, ready to print."
+        },
+        {
+          "type": "new",
+          "text": "Rate and review, with a private note to us if something is wrong."
+        },
+        {
+          "type": "improved",
+          "text": "The Masjid tab shows the nearest five first, with walk or drive time, your own masjid, facilities and Friday prayer sessions in Singapore."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 37,
+      "date": "2026-11-19",
+      "title": "Easier for everyone",
+      "summary": "Bigger text, screen readers and clearer colours across the app.",
+      "changes": [
+        {
+          "type": "improved",
+          "text": "Works with bigger text and with VoiceOver on iPhone and TalkBack on Android."
+        },
+        {
+          "type": "improved",
+          "text": "Deeper colours on the Colour Bands look, easier to read in daylight."
+        },
+        {
+          "type": "improved",
+          "text": "Ramadan last ten nights and the Tarawih counter in calmer colours."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 36,
+      "date": "2026-11-17",
+      "title": "Opens straight away",
+      "summary": "No more waiting on Finding where you are.",
+      "changes": [
+        {
+          "type": "improved",
+          "text": "The app opens on your last place at once, then quietly checks where you are."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 35,
+      "date": "2026-11-17",
+      "title": "Ramadan extras and a letter for work",
+      "summary": "More for Ramadan, and help asking for prayer breaks.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "Berbuka countdown widgets for the home screen."
+        },
+        {
+          "type": "new",
+          "text": "A Tarawih counter for 8 or 20 rakaat."
+        },
+        {
+          "type": "new",
+          "text": "A short letter that explains prayer breaks to your boss or your school, ready to print."
+        },
+        {
+          "type": "new",
+          "text": "A note for long summer days in places far from the equator."
+        },
+        {
+          "type": "fixed",
+          "text": "Times on the day the clocks change are right again."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 33,
+      "date": "2026-11-12",
+      "title": "Ramadan in Malay and Indonesian",
+      "summary": "Ramadan screens in your language, and London times from the London Unified Prayer Timetable.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "Ramadan screens in Malay and Indonesian."
+        },
+        {
+          "type": "new",
+          "text": "London now uses the London Unified Prayer Timetable."
+        },
+        {
+          "type": "improved",
+          "text": "Move my settings now carries your Ramadan fasts, Tarawih and juz."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 32,
+      "date": "2026-11-11",
+      "title": "Widget fix",
+      "summary": "The big timetable widget shows the times again.",
+      "changes": [
+        {
+          "type": "fixed",
+          "text": "The big timetable widget showed grey bars only. Fixed."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 31,
+      "date": "2026-11-10",
+      "title": "Crash fix",
+      "summary": "The app opens again on every iPhone.",
+      "changes": [
+        {
+          "type": "fixed",
+          "text": "Build 30 could close itself on opening. Fixed."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 30,
+      "date": "2026-11-09",
+      "title": "Shorter prayer alerts",
+      "summary": "Alerts that are short and kind, in English, Malay and Indonesian.",
+      "changes": [
+        {
+          "type": "improved",
+          "text": "Prayer alerts use short lines that change each day."
+        },
+        {
+          "type": "improved",
+          "text": "Prayer names are in English by default. Change them in Settings."
+        },
+        {
+          "type": "improved",
+          "text": "A short moving clock greets you when the app opens. Turn it off in Settings."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 25,
+      "date": "2026-11-09",
+      "title": "Same settings after a new phone",
+      "summary": "Delete the app or change phones and your settings come back.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "Your home, alarms and look come back after you delete the app or move to a new phone."
+        },
+        {
+          "type": "improved",
+          "text": "Your home place is only changed when you say so, with Change home."
+        },
+        {
+          "type": "fixed",
+          "text": "Prayer alarms no longer ring again after Stop or Off."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 23,
+      "date": "2026-11-08",
+      "title": "A short hadith where it helps",
+      "summary": "Short, authentic hadith in the right places, each with its reference.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "A short hadith beside the Prayer screen, tracker, alarms and Ramadan. Close any of them, or turn them off in Settings."
+        },
+        {
+          "type": "new",
+          "text": "A new app icon, a compass ring with a fine kawung batik pattern, and the same look inside the app."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 19,
+      "date": "2026-11-08",
+      "title": "Alarms for every prayer",
+      "summary": "Real alarms that ring, with Snooze.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "An alarm for any of the five prayers, with a choice of sound and Snooze for five minutes."
+        },
+        {
+          "type": "new",
+          "text": "Big and Simple, large clear times with nothing extra on the screen."
+        },
+        {
+          "type": "improved",
+          "text": "One clear countdown, like 19m left to pray."
+        },
+        {
+          "type": "improved",
+          "text": "The Living Sky is easier to read by day."
+        },
+        {
+          "type": "improved",
+          "text": "Faster masjid search, with ready made lists for each country."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 15,
+      "date": "2026-11-07",
+      "title": "Ready for Ramadan",
+      "summary": "Sahur to Raya, and alarms to wake up for Subuh.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "Ramadan and Syawal, with sahur and berbuka countdowns, fasting tracker and Raya."
+        },
+        {
+          "type": "new",
+          "text": "Wake up for Subuh, a tahajjud alarm and a sahur alarm."
+        },
+        {
+          "type": "new",
+          "text": "Quiet hours, buzz only alerts, a Jumaat reminder and your work calendar."
+        },
+        {
+          "type": "improved",
+          "text": "The Journey screen shows each prayer's plan when you travel."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 13,
+      "date": "2026-11-06",
+      "title": "Worldwide, local authority first",
+      "summary": "Prayer times in 143 countries, following each country's religious authority.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "143 countries, with the local religious authority first."
+        },
+        {
+          "type": "new",
+          "text": "A reminder before each prayer, as well as the alert when it starts."
+        },
+        {
+          "type": "new",
+          "text": "Prayer names in Arabic, Urdu, Bangla and French too."
+        },
+        {
+          "type": "new",
+          "text": "Azan alerts and a pause in the prayer tracker for haid or illness."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 12,
+      "date": "2026-10-29",
+      "title": "Our promises",
+      "summary": "Free forever, no outside ads, your data stays yours, open for anyone to see.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "The four promises are in the app, and the code is open for anyone to check."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "build": 11,
+      "date": "2026-10-28",
+      "title": "Print, find and move",
+      "summary": "A printable calendar, a better masjid search and an easy way to move your settings.",
+      "changes": [
+        {
+          "type": "new",
+          "text": "Print a monthly prayer calendar for the fridge or the surau wall."
+        },
+        {
+          "type": "new",
+          "text": "Move my settings to a new phone with a QR code, with nothing to sign up for."
+        },
+        {
+          "type": "improved",
+          "text": "Masjid search on iPhone uses Apple Maps and OpenStreetMap together, so more places show."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
       "build": 10,
       "date": "2026-10-25",
       "title": "Centre Dial first",
