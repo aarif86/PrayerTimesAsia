@@ -37,6 +37,22 @@ struct PrayerTimesAsiaApp: App {
                 }
                 .onOpenURL { model.open(url: $0) }
         }
+        #if targetEnvironment(macCatalyst)
+        // The Go menu at the top of the screen, with the usual Mac shortcuts.
+        .commands {
+            CommandMenu("Go") {
+                Button("Prayer") { model.selectedTab = .today }.keyboardShortcut("1")
+                Button("Falak") { model.selectedTab = .falak }.keyboardShortcut("2")
+                Button("Masjid") { model.selectedTab = .nearby }.keyboardShortcut("3")
+                Divider()
+                Button("Alerts and alarms") { model.selectedTab = .today; model.showWakeUp = true }
+                    .keyboardShortcut("a", modifiers: [.command, .shift])
+            }
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") { model.selectedTab = .settings }.keyboardShortcut(",")
+            }
+        }
+        #endif
     }
 }
 

@@ -69,6 +69,18 @@ struct TodayView: View {
                 }
                 .background(BandsPalette.header.ignoresSafeArea())
                 .environment(\.colorScheme, .dark)
+            } else if Device.isMac && model.prefs.todayStyle == .centre {
+                // A Mac window is wide: the dial on the left, the day's times beside it.
+                GeometryReader { geo in
+                    if geo.size.width >= 600 {
+                        AnyView(macCentrePage(now: now, day: day, shown: shown, current: current, next: next))
+                    } else {
+                        ScrollView {
+                            AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
+                        }
+                        .scrollIndicators(.hidden)
+                    }
+                }
             } else {
             ViewThatFits(in: .vertical) {
                 if model.prefs.todayStyle == .centre {
@@ -639,6 +651,71 @@ struct TodayView: View {
         .padding(.horizontal, Theme.gutter)
         .padding(.top, 4)
         .padding(.bottom, fill ? 8 : 24)
+    }
+
+    // MARK: Mac, two parts side by side
+
+    /// The Centre style on a wide Mac window: the dial, the place and the notes
+    /// in a column on the left, the day's times filling the right.
+    private func macCentrePage(now: Date, day: PrayerDay, shown: PrayerDay,
+                               current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
+        HStack(alignment: .top, spacing: 20) {
+            ScrollView {
+                VStack(spacing: 12) {
+                    if let lead = PrayerLead(current: current, next: next), let next, let tomorrow = model.day(containing: model.noon(now, plus: 1)) {
+                        DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
+                                currentName: lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time)),
+                                currentPrayer: lead.prayer,
+                                countdown: PrayerCountdown(now: now, next: next, model: model).count,
+                                label: PrayerCountdown(now: now, next: next, model: model).label,
+                                isNext: lead.isNext)
+                            .frame(width: 200, height: 200)
+                            .padding(.vertical, 10)
+                    }
+                    HStack(spacing: 8) {
+                        sunJourneyButton
+                        styleButton
+                        appearanceButton
+                        wakeChip(now)
+                        if model.prefs.trackerEnabled { streakChip(now) }
+                    }
+                    sunPlaceChip()
+                    if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+                    prayerHadith(next)
+                    if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+                    if dayOffset == 0 { TodayNotes(now: now) }
+                    if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
+                }
+                .padding(.bottom, 16)
+            }
+            .scrollIndicators(.hidden)
+            .frame(width: 300)
+
+            VStack(alignment: .leading, spacing: 8) {
+                sunDayNavigator(shown)
+                ScrollView {
+                    PrayerList(day: shown, now: now,
+                               current: dayOffset == 0 ? PrayerLead.open(current)?.prayer : nil,
+                               next: dayOffset == 0 ? next : nil,
+                               showMore: showMore, fill: false)
+                    if dayOffset == 0 { ReviewLine(now: now) }
+                    if model.prefs.showOffers && showMore {
+                        CommunityCardSlot(now: now, next: next)
+                    }
+                }
+                .scrollIndicators(.hidden)
+                HStack {
+                    SourceBadge(day: shown, compact: true)
+                    Spacer(minLength: 8)
+                    showMoreButton.fixedSize()
+                }
+            }
+            .frame(maxWidth: 640)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, Theme.gutter)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
     }
 
     // MARK: Sun Path style
