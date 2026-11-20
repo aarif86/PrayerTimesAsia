@@ -26,6 +26,8 @@ export type AlertSupport = 'supported' | 'needs-install' | 'unsupported'
 
 export function alertSupport(): AlertSupport {
   if (typeof window === 'undefined') return 'unsupported'
+  // The demo (the website's phone frame) acts as if alerts were allowed, so visitors can tap around.
+  if (store.demo) return 'supported'
   if ('Notification' in window) return 'supported'
   // iPhone and iPad Safari only offer notifications to apps added to the Home Screen.
   const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
@@ -33,10 +35,12 @@ export function alertSupport(): AlertSupport {
 }
 
 export function permission(): NotificationPermission | 'unsupported' {
+  if (store.demo) return 'granted'
   return 'Notification' in window ? Notification.permission : 'unsupported'
 }
 
 export async function requestPermission(): Promise<boolean> {
+  if (store.demo) return true
   if (!('Notification' in window)) return false
   if (Notification.permission === 'granted') return true
   if (Notification.permission === 'denied') return false
