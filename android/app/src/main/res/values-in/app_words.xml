@@ -132,7 +132,7 @@
     <string name="hadith_hide" formatted="false">Sembunyikan hadis ini</string>
     <string name="hadith_hidden" formatted="false">Hadis disembunyikan di sini. Tampilkan lagi di Pengaturan, Hadis.</string>
     <string name="makers_title" formatted="false">Dibuat fisabilillah</string>
-    <string name="makers_body" formatted="false">Prayer Times Asia gratis, tanpa iklan luar dan tanpa pelacakan. Aplikasi ini dibuat dan dikelola oleh Ustaz Aarif Raziff dan tim Nasar Digital (Nasar Pte Ltd).</string>
+    <string name="makers_body" formatted="false">Prayer Times Asia gratis, tanpa iklan luar dan tanpa pelacakan. Aplikasi ini dibuat dan dikelola oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama tim Nasar Digital (Nasar Pte Ltd).</string>
     <string name="makers_opens" formatted="false">{name}, membuka {site}</string>
     <string name="makers_sponsored" formatted="false">Bersponsor</string>
     <string name="qibla_choosePlace" formatted="false">Pilih tempat untuk mencari kiblat.</string>
@@ -475,7 +475,7 @@
     <string name="settings_usageSub" formatted="false">Memberi tahu kami berapa banyak orang yang memakai aplikasi dan di kota serta negara mana, agar kami tahu di mana perlu menambah jadwal resmi. Angka acak dipakai sebagai pengganti Anda. Tanpa nama, tanpa lokasi tepat, tanpa alamat IP yang disimpan.</string>
     <string name="settings_osm" formatted="false">Peta dan daftar Masjid memakai data OpenStreetMap. Ubin peta, daftar masjid mingguan kami di GitHub, dan Overpass hanya melihat area yang Anda lihat.</string>
     <string name="settings_makers" formatted="false">Dari pembuat</string>
-    <string name="settings_makersFoot" formatted="false">Prayer Times Asia gratis dan dibuat fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Nasar Digital (Nasar Pte Ltd). Penawaran yang Anda lihat hanya milik kami sendiri. Tanpa jaringan iklan, tanpa pelacakan.</string>
+    <string name="settings_makersFoot" formatted="false">Prayer Times Asia gratis dan dibuat fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama Nasar Digital (Nasar Pte Ltd). Penawaran yang Anda lihat hanya milik kami sendiri. Tanpa jaringan iklan, tanpa pelacakan.</string>
     <string name="settings_showOffers" formatted="false">Tampilkan penawaran di Salat dan Masjid</string>
     <string name="settings_help" formatted="false">Bantuan</string>
     <string name="settings_helpFoot" formatted="false">Tur singkat yang mengetuk tombol sungguhan, agar Anda tahu letak semuanya.</string>

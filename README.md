@@ -2,7 +2,8 @@
 
 Prayer times and qibla on iPhone, Android and the web. Asia first, now worldwide
 (143 countries, each following its local religious authority first). Free, built
-fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
+fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah
+Hamzah, with Nasar Digital (Nasar Pte Ltd).
 No outside ads, no sign up, no tracking, and your exact location stays on your phone.
 
 ## Where it stands (20 November 2026)

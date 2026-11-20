@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Prayer Times Asia | prayer times and qibla wherever you land</title>
-  <meta name="description" content="Built by Ustaz Aarif Raziff after a trip to Vietnam with no proper prayer app. Free prayer times and qibla, built in Asia and made for Muslims everywhere. Your local religious authority first, official timetables where they exist, works offline, no outside ads, no account, no tracking. On the web today, iPhone and Android in testing." />
+  <meta name="description" content="Built by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah after a family trip to Vietnam where none of their prayer apps worked. Free prayer times and qibla, built in Asia and made for Muslims everywhere. Your local religious authority first, official timetables where they exist, works offline, no outside ads, no account, no tracking. On the web today, iPhone and Android in testing." />
   <meta name="theme-color" content="#0b0f2a" />
   <meta name="color-scheme" content="dark light" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
@@ -367,10 +367,11 @@
        Reveals only hide content once the script has run (html.js), and all of it
        switches off for people who ask their device for less motion. */
     .sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-    .sky .glow { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; will-change: transform; }
-    .sky .g1 { width: 46vmax; height: 46vmax; background: #2a2f78; top: -18vmax; right: -12vmax; animation: drift1 26s ease-in-out infinite alternate; }
-    .sky .g2 { width: 40vmax; height: 40vmax; background: #3a1f52; bottom: -16vmax; left: -14vmax; animation: drift2 32s ease-in-out infinite alternate; }
-    .sky .g3 { width: 24vmax; height: 24vmax; background: #f39a4a; opacity: .12; top: 30%; left: 40%; animation: drift3 38s ease-in-out infinite alternate; }
+    /* Soft glows drawn as plain gradients. A blur filter this size made every frame slow on many computers. */
+    .sky .glow { position: absolute; border-radius: 50%; will-change: transform; }
+    .sky .g1 { width: 46vmax; height: 46vmax; background: radial-gradient(circle, #2a2f78b0 0%, #2a2f7860 38%, transparent 70%); top: -18vmax; right: -12vmax; animation: drift1 26s ease-in-out infinite alternate; }
+    .sky .g2 { width: 40vmax; height: 40vmax; background: radial-gradient(circle, #3a1f52b0 0%, #3a1f5260 38%, transparent 70%); bottom: -16vmax; left: -14vmax; animation: drift2 32s ease-in-out infinite alternate; }
+    .sky .g3 { width: 24vmax; height: 24vmax; background: radial-gradient(circle, #f39a4a26 0%, #f39a4a12 38%, transparent 70%); top: 30%; left: 40%; animation: drift3 38s ease-in-out infinite alternate; }
     .sky .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; animation: twinkle var(--d, 4s) ease-in-out var(--delay, 0s) infinite; }
     .sky .shoot { position: absolute; top: 12%; left: 70%; width: 120px; height: 1.5px; opacity: 0;
       background: linear-gradient(90deg, #fff, transparent); transform: rotate(-20deg); animation: shoot 11s ease-in 3s infinite; }
@@ -502,9 +503,9 @@
         radial-gradient(60% 50% at 80% 0%, #f7bd8f55 0%, transparent 70%),
         radial-gradient(50% 40% at 0% 100%, #e2b65a33 0%, transparent 70%),
         var(--night); }
-    [data-theme="light"] .sky .g1 { background: #f7bd8f; opacity: .45; }
-    [data-theme="light"] .sky .g2 { background: #e2b65a; opacity: .3; }
-    [data-theme="light"] .sky .g3 { background: #e7788f; opacity: .1; }
+    [data-theme="light"] .sky .g1 { background: radial-gradient(circle, #f7bd8f90 0%, #f7bd8f48 38%, transparent 70%); }
+    [data-theme="light"] .sky .g2 { background: radial-gradient(circle, #e2b65a60 0%, #e2b65a30 38%, transparent 70%); }
+    [data-theme="light"] .sky .g3 { background: radial-gradient(circle, #e7788f22 0%, #e7788f10 38%, transparent 70%); }
     [data-theme="light"] .sky .star, [data-theme="light"] .sky .shoot { display: none; }
     [data-theme="light"] header.top { background: rgba(242, 238, 233, 0.78); }
     [data-theme="light"] header.top.scrolled { background: rgba(242, 238, 233, 0.94); box-shadow: 0 10px 30px -22px #151A4566; }
@@ -621,7 +622,7 @@
       <div>
         <span class="eyebrow">Asia first. Now worldwide.</span>
         <h1>The right prayer time, <span>wherever you land.</span></h1>
-        <p class="lead">Free, with no outside ads and no subscriptions. Built fisabilillah in Singapore by Ustaz Aarif Raziff, for every Muslim, everywhere.</p>
+        <p class="lead">Free, with no outside ads and no subscriptions. Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, for every Muslim, everywhere.</p>
         <div class="btns">
           <a class="btn btn-primary" href="app/">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
@@ -662,18 +663,18 @@
     <div class="wrap">
       <div class="center">
         <span class="eyebrow">Our story</span>
-        <h2>It started with a trip to Vietnam.</h2>
+        <h2>It started with a family trip to Vietnam.</h2>
       </div>
       <div class="chapters">
         <div class="chapter">
           <span class="num">1</span>
-          <h3>He landed with no proper prayer app</h3>
-          <p>Ustaz Aarif studied at Al&#8209;Azhar and is recognised by the Islamic Religious Council of Singapore (MUIS). In Vietnam he looked for a prayer app he could trust. The big ones show ads around your salah and make you pay for things that used to be free. Even the best one he found wasn't made for Asia.</p>
+          <h3>The whole family had the same problem</h3>
+          <p>Ustaz Aarif travelled to Vietnam with his wife Ustazah Nasibah Hamzah, their son, his mother-in-law and their helper. None of their prayer apps worked for them there, so everyone turned to him to find out when to pray. The big apps show ads around your salah and make you pay for things that used to be free.</p>
         </div>
         <div class="chapter">
           <span class="num">2</span>
-          <h3>Back home, he decided to build one</h3>
-          <p>Not a business, and never something to sell later. Just a prayer app, built fisabilillah in the hope that it becomes sadaqah jariah. It knows how each country sets its prayer times, from Singapore and Malaysia to Vietnam and Japan.</p>
+          <h3>Back home, they decided to build one</h3>
+          <p>His parents have the same trouble. Their apps are hard to use and full of ads, and some play the azan out loud on a crowded MRT train with no easy way to mute it. So he and his wife set out to build a prayer app for the people they love, fisabilillah, in the hope that it becomes sadaqah jariah.</p>
         </div>
         <div class="chapter">
           <span class="num">3</span>
@@ -690,17 +691,25 @@
       <figure class="letter">
         <blockquote>
           <p>Assalamualaikum.</p>
-          <p>When I landed in Vietnam, I couldn't find a proper prayer app. The ones I found were full of ads or asked for a subscription.</p>
+          <p>When we landed in Vietnam as a family, none of our prayer apps worked for us. My wife, our son, my mother-in-law and our helper all turned to me to ask when to pray. Back home, my parents had the same trouble with apps full of ads, and some would play the azan out loud on the MRT.</p>
           <p>To me, prayer times and the qibla are what every Muslim needs, wherever they are. Putting them behind a paywall just isn't right.</p>
           <p>Falak has served us for centuries, and it still does. Today we have better tools to take it further, so why not use them, and keep them free for everyone? A beautiful design is just a bonus.</p>
           <p>I was born in Singapore, so I built it for Asia first, my home. But the same rule applies everywhere, your local religious authority comes first, and it works all over the world.</p>
+          <p>None of this would happen without my wife, Ustazah Nasibah Hamzah. Her support and her honest feedback shape every part of this app.</p>
           <p>It's free and it will stay free. If it helps you, make du'a for us, and share it with someone who prays.</p>
         </blockquote>
         <div class="signed">
           <img src="img/ustaz-aarif.webp" alt="Ustaz Aarif Raziff" width="64" height="64" loading="lazy" />
           <div>
-            <figcaption>Ustaz Aarif Raziff, founder of Prayer Times Asia</figcaption>
+            <figcaption>Ustaz Aarif Raziff, co-founder of Prayer Times Asia</figcaption>
             <p class="ars">Studied Islamic law (fiqh) at Al&#8209;Azhar University in Cairo. Recognised as a religious teacher by the Islamic Religious Council of Singapore (MUIS). <a href="https://www.muis.gov.sg/education/asatizah-development/asatizah-recognition-scheme/ars-directory/" target="_blank" rel="noopener">See the MUIS list</a> or <a href="https://aarif.sg/" target="_blank" rel="noopener">read more about him</a>.</p>
+          </div>
+        </div>
+        <div class="signed">
+          <img src="img/ustazah-nasibah.webp" alt="Ustazah Nasibah Hamzah" width="64" height="64" loading="lazy" />
+          <div>
+            <p class="who" style="margin:0;color:var(--gold);font-weight:700">Ustazah Nasibah Hamzah, co-founder of Prayer Times Asia</p>
+            <p class="ars">Studied Tafsir and Quranic Sciences at Al&#8209;Azhar University in Cairo. Recognised as a religious teacher by the Islamic Religious Council of Singapore (MUIS). Director of Nasar Pte Ltd.</p>
           </div>
         </div>
       </figure>
@@ -809,7 +818,7 @@
         <div class="copy">
           <span class="tag live">Travel</span>
           <h3>Land in a new country, the times are already right</h3>
-          <p class="muted">This is the problem that started it all, on a trip to Vietnam.</p>
+          <p class="muted">This is the problem that started it all, on a family trip to Vietnam.</p>
           <p class="muted">Most prayer apps use one setting for everyone. Prayer Times Asia knows how each country sets its prayer times. It changes over as soon as you arrive, and shows a short note telling you what changed.</p>
           <ul>
             <li>For travellers, it shows how far you are from home, and whether you can shorten (qasar) and combine (jamak) your prayers</li>
@@ -1124,7 +1133,7 @@
       <div class="faq">
         <details>
           <summary>Is it really free?</summary>
-          <p>Yes. Ustaz Aarif Raziff builds it fisabilillah with <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd), a Singapore team that builds apps and websites for businesses and organisations. That paid work covers the costs, so the app stays free. There are no outside ads, no subscriptions and nothing to buy.</p>
+          <p>Yes. Ustaz Aarif Raziff and Ustazah Nasibah Hamzah build it fisabilillah with their company, <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd), a Singapore team that builds apps and websites for businesses and organisations. That paid work covers the costs, so the app stays free. There are no outside ads, no subscriptions and nothing to buy.</p>
           <p>Under Show more on the Prayer screen you may see one small card, picked for the country you live in. It shows a Nasar Digital service, or a halal Muslim business we chose by hand. You can turn it off in Settings. If you like what we built, Nasar Digital can build an app or website for your business or masjid too.</p>
         </details>
         <details>
@@ -1203,7 +1212,7 @@
   <div class="wrap">
     <div>
       <strong style="color: var(--text)">Prayer Times Asia</strong><br />
-      Built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd).
+      Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd).
     </div>
     <div>
       <a href="app/">Web app</a> ·
