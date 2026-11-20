@@ -107,14 +107,29 @@ export function App() {
   useEffect(() => {
     const moved = takeMoveFromLink()
     if (moved) openSheet({ kind: 'move-in', code: moved })
-    // The website's phone frame opens a screen straight away: ?demo&open=alarms (or calendar, tracker, journey, ramadan).
+    // The website's phone frame opens a screen straight away: ?demo&open=alarms (or fajr, check, calendar, tracker, journey, ramadan).
     if (s.demo) {
       const open = new URLSearchParams(location.search).get('open')
       if (open === 'alarms') openSheet({ kind: 'wakeup' })
+      else if (open === 'fajr') openSheet({ kind: 'wakeup', prayer: 'fajr' })
+      else if (open === 'check') openSheet({ kind: 'wakeup', view: 'check' })
       else if (open === 'calendar') openSheet({ kind: 'calendar' })
       else if (open === 'tracker') openSheet({ kind: 'tracker' })
       else if (open === 'journey') openSheet({ kind: 'journey' })
       else if (open === 'ramadan') openSheet({ kind: 'ramadan' })
+      // ?spot=extras (or sound, work): scroll to that part of the screen once it is open.
+      const spot = new URLSearchParams(location.search).get('spot')
+      if (spot) {
+        let tries = 0
+        const find = () => {
+          const el = document.getElementById(`demo-${spot}`)
+          if (el) setTimeout(() => el.scrollIntoView({ block: 'start' }), 400)
+          else if (++tries < 20) setTimeout(find, 250)
+        }
+        find()
+      }
+      // Ramadan preview notes are for testers, not for visitors trying the demo.
+      document.documentElement.classList.add('demo')
     }
     if (s.prefs.hasOnboarded && s.prefs.useGPS) s.locate()
     s.refreshOfficial()

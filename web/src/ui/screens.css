@@ -708,3 +708,4 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .review-steps { margin: 10px 0 12px; padding: 12px 14px 12px 34px; border-radius: 14px; background: var(--fill); font-size: 15px; line-height: 1.45; }
 .review-steps li { margin: 3px 0; }
 .review-steps li::marker { color: var(--accent); font-weight: 800; }
+.demo .preview-tag, .demo .preview-banner { display: none; }
