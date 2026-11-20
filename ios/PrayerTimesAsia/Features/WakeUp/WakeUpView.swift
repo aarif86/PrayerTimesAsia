@@ -103,6 +103,8 @@ struct WakeUpView: View {
                     Text("An alarm rings loudly until you stop it. If it rings at the very start of a prayer, it takes the place of that prayer's alert.")
                 }
 
+                JumuahLeaveSection()
+
                 Section {
                     ForEach(AlarmSound.choices) { sound in
                         let on = (model.prefs.alarmSound == .phone ? .classic : model.prefs.alarmSound) == sound
@@ -267,6 +269,7 @@ struct WakeUpView: View {
             model.prefs.wakeUp = nil
             model.prefs.sahurAlarm = nil
             for prayer in PrayerAlarmTiming.prayers { model.prefs.setAlarm(nil, for: prayer) }
+            model.prefs.jumuahLeaveAlarm = false
         }
         Task {
             await WakeUpAlarm.stopRinging()

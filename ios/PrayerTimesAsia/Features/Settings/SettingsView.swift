@@ -79,9 +79,9 @@ struct SettingsView: View {
                         }
                     }
                 } header: {
-                    Text("Wake-up")
+                    Text("Alarms")
                 } footer: {
-                    Text("Also on the Prayer screen. Tap the alarm clock at the top.")
+                    Text("Wake up for \(Prayer.fajr.name(model.naming)), sahur, alarms for each prayer, and when to leave for \(Prayer.dhuhr.name(model.naming, isFriday: true)). Also on the Prayer screen. Tap the alarm clock at the top.")
                 }
 
                 Section {
@@ -271,24 +271,6 @@ struct SettingsView: View {
                     Text("Quiet alerts")
                 } footer: {
                     Text("For shift workers sleeping in the day, a baby asleep in the room, or simply a calm night. Alerts still come, but they only buzz. \(Prayer.fajr.name(model.naming)) keeps its sound so it can wake you.")
-                }
-
-                Section {
-                    Picker("Remind me to leave", selection: Binding(
-                        get: { model.prefs.jumuahReminderMinutes },
-                        set: { minutes in
-                            Task {
-                                if minutes > 0, !(await NotificationScheduler.requestPermission()) { return }
-                                model.prefs.jumuahReminderMinutes = minutes
-                            }
-                        })) {
-                        ForEach(Preferences.jumuahReminderChoices, id: \.self) { Text($0 == 0 ? "Off" : "\($0) min before").tag($0) }
-                    }
-                } header: {
-                    Text(Prayer.dhuhr.name(model.naming, isFriday: true))
-                } footer: {
-                    let friday = Prayer.dhuhr.name(model.naming, isFriday: true)
-                    Text("A reminder on Fridays to get ready and leave in time. It uses your masjid's own \(friday) time when you have set one in the Masjid tab, otherwise the start of \(Prayer.dhuhr.name(model.naming)). \(friday) is not required of women, travellers or the sick, who pray \(Prayer.dhuhr.name(model.naming)) instead.")
                 }
 
                 Section {

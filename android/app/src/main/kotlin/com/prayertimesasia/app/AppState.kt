@@ -354,7 +354,7 @@ class AppState(
     fun turnOffAllAlarms() {
         stopRinging()
         update { p ->
-            com.prayertimesasia.core.PrayerAlarmTiming.prayers.fold(p.copy(wakeUp = null, sahurAlarm = null)) { acc, prayer -> acc.withAlarm(prayer, null) }
+            com.prayertimesasia.core.PrayerAlarmTiming.prayers.fold(p.copy(wakeUp = null, sahurAlarm = null, jumuahLeaveAlarm = false)) { acc, prayer -> acc.withAlarm(prayer, null) }
         }
     }
 
@@ -366,6 +366,14 @@ class AppState(
 
     /** Bumped when a snooze is stopped, so the alarm sheet looks again. */
     var snoozeTick by mutableStateOf(0)
+
+    /** "Ring as an alarm" for the leave reminder, like the other alarms. Off also stops it if it is ringing. */
+    fun setJumuahLeaveAlarm(on: Boolean) {
+        scope.launch {
+            if (on) permissions?.notifications() else stopRinging()
+            update { it.copy(jumuahLeaveAlarm = on) }
+        }
+    }
 
     /** "Leave for Jumaat": asks for notification permission, then reminds [minutes] before Jumaat on Fridays. */
     fun enableJumuahReminder(minutes: Int) {

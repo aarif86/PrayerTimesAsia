@@ -2,7 +2,9 @@ import { isInAsia, placeProfile } from '../core/place'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { flag } from '../core/regions'
 import type { PrayerDay } from '../core/engine'
-import { noonDaysAfter, zoned } from '../core/tz'
+import { noonDaysAfter, zoned, zonedTime } from '../core/tz'
+import { fridayMosqueAt, inSingapore } from '../core/friday'
+import { leaveWords, SECOND_SESSION_FROM } from '../core/jumuahLeave'
 import { ALARM_KEY, ALARM_PRAYERS, prayerAlarmTime, sahurRings, sahurTime, wakeUpTime, type AlarmPrayer } from '../core/wakeup'
 import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
 import { playAzan } from './azan'
@@ -64,6 +66,42 @@ export function isSilent(at: number, prayer: Prayer | undefined, tz: string): bo
   return prefs.quietHours && inQuietHours(minuteOfDay(at, tz), prefs.quietFrom, prefs.quietTo)
 }
 
+/** Singapore's choice of the second Friday session applies only while the place shown is in Singapore. */
+export function secondJumuahHere(): boolean {
+  const place = store.activePlace
+  return store.prefs.jumuahSession === 'second' && !!place && inSingapore(place.coordinates, place.countryCode)
+}
+
+/**
+ * When Jumaat starts on this Friday, for the "Leave for Jumaat" reminder: your
+ * masjid's own Jumaat time when it has one, else the start of Zohor. In
+ * Singapore you can pick the second session instead, from 2 PM.
+ */
+export function jumuahStart(day: PrayerDay): { at: number; second: boolean; where: string | null } {
+  if (secondJumuahHere()) {
+    const [h, m] = SECOND_SESSION_FROM.split(':').map((x) => parseInt(x, 10))
+    const mine = store.myMasjidHere
+    const where = mine && fridayMosqueAt({ latitude: mine.lat, longitude: mine.lng }) ? mine.name : null
+    return { at: zonedTime(day.year, day.month, day.day, h, m, 0, store.timeZone), second: true, where }
+  }
+  const at = day.jamaah.dhuhr ?? day.times.dhuhr
+  return { at, second: false, where: day.jamaah.dhuhr && day.mosqueName ? day.mosqueName : null }
+}
+
+/** The coming Friday's reminder (today's while it is still ahead): when it comes and when Jumaat starts. */
+export function nextJumuahLeave(now: number): { leave: number; start: number; second: boolean } | null {
+  const minutes = store.prefs.jumuahReminderMinutes
+  if (minutes <= 0 || !store.activePlace) return null
+  for (let offset = 0; offset < 8; offset++) {
+    const day = store.day(noonDaysAfter(now, offset, store.timeZone))
+    if (!day || !store.isFriday(day.times.dhuhr)) continue
+    const j = jumuahStart(day)
+    const leave = j.at - minutes * 60_000
+    if (leave > now) return { leave, start: j.at, second: j.second }
+  }
+  return null
+}
+
 /** The alerts for the next two days, as the iOS scheduler builds them. */
 export function upcomingAlerts(now: number): Alert[] {
   const place = store.activePlace
@@ -98,13 +136,14 @@ export function upcomingAlerts(now: number): Alert[] {
     }
     if (offset < 0) continue
     out.push(...ramadanAlerts(day, here))
-    if (jumuah > 0 && store.isFriday(day.times.dhuhr)) {
-      const start = day.jamaah.dhuhr ?? day.times.dhuhr
-      const at = start - jumuah * 60_000
-      const where = day.jamaah.dhuhr && day.mosqueName ? ` at ${day.mosqueName}` : ''
+    // Rung as an alarm instead (wakeUps) when Ring as an alarm is on.
+    if (jumuah > 0 && !prefs.jumuahLeaveAlarm && store.isFriday(day.times.dhuhr)) {
+      const j = jumuahStart(day)
+      const at = j.at - jumuah * 60_000
+      const name = store.name('dhuhr', day.times.dhuhr)
       out.push({
-        id: `${day.year}-${day.month}-${day.day}-jumuah`, title: `${store.name('dhuhr', day.times.dhuhr)} in ${jumuah} min`,
-        body: `Time to get ready and leave for ${store.name('dhuhr', day.times.dhuhr)}${where}, ${store.formatted(start)}.`, at, silent: isSilent(at, 'dhuhr', tz),
+        id: `${day.year}-${day.month}-${day.day}-jumuah`, ...leaveWords(lang3(store.naming), jumuah, name, j.second, store.formatted(j.at), j.where),
+        at, silent: isSilent(at, 'dhuhr', tz),
       })
     }
     if (!onTime && early <= 0) continue
@@ -149,7 +188,7 @@ export interface WakeUp { id: string; title: string; body: string; at: number; s
 
 /** Is any alarm on: Subuh, sahur or one of the other prayers? */
 export function anyAlarm(p = store.prefs): boolean {
-  return !!(p.wakeUp || p.sahurAlarm || ALARM_PRAYERS.some((x) => p[ALARM_KEY[x]]))
+  return !!(p.wakeUp || p.sahurAlarm || ALARM_PRAYERS.some((x) => p[ALARM_KEY[x]]) || (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0))
 }
 
 /** Does this prayer have an alarm at the very start, which stands in for its alert? */
@@ -193,6 +232,12 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
         body: prayer === 'isha' ? `${name} began at ${store.formatted(begins)} · ${place.name}` : `${name} is open until ${store.formatted(end)} · ${place.name}`,
         at: prayerAlarmTime(t, begins, end), sahur: false, prayer,
       })
+    }
+    // Leave for Jumaat, when it rings as an alarm.
+    if (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0 && store.isFriday(day.times.dhuhr)) {
+      const j = jumuahStart(day)
+      const w = leaveWords(lang3(store.naming), p.jumuahReminderMinutes, store.name('dhuhr', day.times.dhuhr), j.second, store.formatted(j.at), j.where)
+      out.push({ id: `${key}-jumuah-alarm`, ...w, at: j.at - p.jumuahReminderMinutes * 60_000, sahur: false })
     }
   }
   return out.filter((w) => w.at > now).sort((a, b) => a.at - b.at)

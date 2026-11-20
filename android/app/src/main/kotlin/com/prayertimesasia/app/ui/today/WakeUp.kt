@@ -54,6 +54,9 @@ import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.alarms.Notifications
 import com.prayertimesasia.core.AlarmSound
+import com.prayertimesasia.core.JumuahLeave
+import com.prayertimesasia.core.JumuahSession
+import com.prayertimesasia.core.MasjidExtras
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerAlarmTiming
 import com.prayertimesasia.core.PrayerDay
@@ -166,6 +169,8 @@ fun WakeUpSheetContent(state: AppState) {
             PrayerAlarmTiming.prayers.forEach { prayer -> PrayerAlarmRow(state, prayer) }
         }
 
+        JumuahLeaveSection(state)
+
         AlarmSoundSection(state)
 
         Column(Modifier.padding(horizontal = 32.dp).padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -186,6 +191,71 @@ fun WakeUpSheetContent(state: AppState) {
             "Snooze 5 min rings it once more in 5 minutes. Turning an alarm off also stops a snooze. " +
             "If it stays quiet, allow Alarms and reminders for this app in your phone's settings.",
             style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp))
+    }
+}
+
+/**
+ * "Leave for Jumaat", its one home. Singapore also gets the first or second session.
+ * Same as web ui/JumuahLeave.tsx and iOS JumuahLeaveSection.
+ */
+@Composable
+private fun JumuahLeaveSection(state: AppState) {
+    val r = state.resolver
+    val p = state.prefs
+    val friday = Prayer.DHUHR.name(r.naming, true)
+    val zohor = Prayer.DHUHR.name(r.naming)
+    val sg = r.activePlace?.let { MasjidExtras.inSingapore(it.coordinates, it.countryCode) } == true
+    val twoPM = JumuahLeave.SECOND_SESSION_FROM.split(":").mapNotNull { it.toIntOrNull() }
+        .let { if (it.size == 2) r.clock(it[0] * 60 + it[1]) else JumuahLeave.SECOND_SESSION_FROM }
+    val from = when {
+        sg && p.jumuahSession == JumuahSession.SECOND -> twoPM
+        r.myMasjidHere?.jumuah != null -> "your masjid's own $friday time"
+        else -> "the start of $zohor"
+    }
+    val foot = "A reminder on Fridays to get ready and leave in time. It counts back from $from." +
+        (if (sg) " Only some masjids in Singapore hold a second session. The Masjid tab shows which ones." else "") +
+        " $friday is not required of women, travellers or the sick, who pray $zohor instead."
+    val next = r.nextJumuahLeave(state.now)?.let { (leave, j) ->
+        val day = if (r.dayKey(leave) == r.dayKey(state.now)) "Today" else "Friday"
+        "$day ${r.formatted(leave)}, for $friday at ${r.formatted(j.at)}"
+    }
+    Section("Leave for $friday", foot) {
+        MenuRow("Remind me to leave", next, JumuahLeave.label(p.jumuahReminderMinutes), p.jumuahReminderMinutes > 0,
+            JumuahLeave.CHOICES.map { JumuahLeave.label(it) to it }) { m ->
+            if (m > 0) state.enableJumuahReminder(m) else state.update { it.copy(jumuahReminderMinutes = 0) }
+        }
+        if (p.jumuahReminderMinutes > 0) {
+            SwitchRow("Ring as an alarm", p.jumuahLeaveAlarm, sub = "Rings even on silent or Do Not Disturb") { on -> state.setJumuahLeaveAlarm(on) }
+        }
+        if (sg && p.jumuahReminderMinutes > 0) {
+            val label = { s: JumuahSession -> if (s == JumuahSession.FIRST) "First" else "Second" }
+            MenuRow("Which session", "First at $zohor, second from $twoPM", label(p.jumuahSession), true,
+                JumuahSession.entries.map { label(it) to it }) { v -> state.update { it.copy(jumuahSession = v) } }
+        }
+    }
+}
+
+/** A row with a drop down menu of choices, like the prayer alarm rows. */
+@Composable
+private fun <T> MenuRow(label: String, sub: String?, value: String, on: Boolean, options: List<Pair<String, T>>, onPick: (T) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable { open = true }.padding(horizontal = 16.dp, vertical = 10.dp)
+                .semantics { contentDescription = "$label, $value" },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(label, style = Txt.body, color = Palette.primary)
+                if (sub != null) Text(sub, style = Txt.footnote.copy(fontFeatureSettings = "tnum"), color = Palette.secondary)
+            }
+            Text(value, style = Txt.body, color = if (on) Palette.sunArc else Palette.secondary)
+            Icon(Icons.Filled.ArrowDropDown, null, Modifier.size(20.dp), tint = Palette.secondary)
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            options.forEach { (name, v) -> DropdownMenuItem(text = { Text(name) }, onClick = { open = false; onPick(v) }) }
+        }
     }
 }
 

@@ -193,6 +193,45 @@ class Resolver(
 
     fun isFriday(instant: Instant): Boolean = instant.atZone(zone).dayOfWeek == DayOfWeek.FRIDAY
 
+    /** Singapore's choice of the second Friday session applies only while the place shown is in Singapore. */
+    val secondJumuahHere: Boolean
+        get() = prefs.jumuahSession == JumuahSession.SECOND &&
+            activePlace?.let { MasjidExtras.inSingapore(it.coordinates, it.countryCode) } == true
+
+    /** When Jumaat starts on a Friday, for the "Leave for Jumaat" reminder. */
+    data class JumuahStart(val at: Instant, val second: Boolean, val where: String?)
+
+    /**
+     * Your masjid's own Jumaat time when it has one, else the start of Zohor. In
+     * Singapore you can pick the second session instead, from 2 PM.
+     */
+    fun jumuahStart(day: PrayerDay): JumuahStart {
+        if (secondJumuahHere) {
+            val p = JumuahLeave.SECOND_SESSION_FROM.split(":").mapNotNull { it.toIntOrNull() }
+            if (p.size == 2) {
+                val at = LocalDate.of(day.year, day.month, day.day).atTime(p[0], p[1]).atZone(zone).toInstant()
+                val where = myMasjidHere?.takeIf { MasjidExtras.fridayAt(it.coordinates) != null }?.name
+                return JumuahStart(at, true, where)
+            }
+        }
+        val jamaah = day.jamaah[Prayer.DHUHR]
+        return JumuahStart(jamaah ?: day.time(Prayer.DHUHR), false, if (jamaah != null) day.mosqueName else null)
+    }
+
+    /** The coming Friday's reminder (today's while it is still ahead): when it comes, and when Jumaat starts. */
+    fun nextJumuahLeave(now: Instant): Pair<Instant, JumuahStart>? {
+        val minutes = prefs.jumuahReminderMinutes
+        if (minutes <= 0 || activePlace == null) return null
+        for (offset in 0 until 8) {
+            val day = day(now, offset) ?: continue
+            if (!isFriday(day.time(Prayer.DHUHR))) continue
+            val j = jumuahStart(day)
+            val leave = j.at.minusSeconds(minutes * 60L)
+            if (leave.isAfter(now)) return leave to j
+        }
+        return null
+    }
+
     fun formatted(instant: Instant): String = TimeFormat.formatted(instant, zone, prefs.use24Hour)
     fun timeParts(instant: Instant): Pair<String, String?> = TimeFormat.parts(instant, zone, prefs.use24Hour)
 

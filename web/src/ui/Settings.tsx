@@ -7,7 +7,7 @@ import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
 import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, prayerName, type NamingStyle, type Prayer } from '../core/prayer'
 import { flag, profileMethod } from '../core/regions'
 import { alertSupport, downloadICS, anyAlarm, nextWakeUp, permission, requestPermission, testAlert, WORK_PRAYERS } from '../services/notifications'
-import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, JUMUAH_REMINDER_CHOICES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
+import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
 import { store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
 import { ourCards } from '../core/communityCards'
@@ -70,13 +70,7 @@ export function SettingsScreen() {
   const reminderOn = p.reminderMinutesBefore > 0 && perm === 'granted'
   const nextWake = nextWakeUp(s.now())
   const wakeValue = nextWake ? `Next ${s.formatted(nextWake.at)}` : anyAlarm(p) ? 'On' : 'Off'
-  const friday = prayerName('dhuhr', s.naming, true)
 
-  const setJumuah = async (minutes: number) => {
-    if (minutes > 0 && support === 'supported' && !(await requestPermission())) { setPerm(permission()); openSheet({ kind: 'alerts-help' }); return }
-    setPerm(permission())
-    store.update((x) => { x.jumuahReminderMinutes = minutes })
-  }
 
   const timetable = !source ? 'Calculated on this device'
     : s.hasTable() ? `Official · downloaded${s.tableVia() === 'feed' ? ' (feed)' : ''}` : 'Official · will download when online'
@@ -108,7 +102,7 @@ export function SettingsScreen() {
         <ToggleItem label="Qiyam reminder" sub="The last third of the last ten nights" on={p.qiyamAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.qiyamAlert = v }) }} />
       </Group>
 
-      <Group title="Wake-up" foot="Also on the Prayer screen. Tap the alarm clock at the top.">
+      <Group title="Alarms" foot={`Wake up for ${s.name('fajr')}, sahur, alarms for each prayer, and when to leave for ${prayerName('dhuhr', s.naming, true)}. Also on the Prayer screen. Tap the alarm clock at the top.`}>
         <button class="item" onClick={() => openSheet({ kind: 'wakeup' })}>
           <AlarmClock size={20} /><span class="label">Prayer alarms</span>
           <span class="value">{wakeValue}</span><ChevronRight size={16} class="secondary" />
@@ -235,11 +229,6 @@ export function SettingsScreen() {
         )}
       </Group>
 
-      <Group title={friday} foot={`A reminder on Fridays to get ready and leave in time. It uses your masjid's own ${friday} time when you have set one in the Masjid tab, otherwise the start of ${s.name('dhuhr')}. ${friday} is not required of women, travellers or the sick, who pray ${s.name('dhuhr')} instead.`}>
-        <SelectItem label="Remind me to leave" value={String(p.jumuahReminderMinutes)}
-          options={JUMUAH_REMINDER_CHOICES.map((m) => ({ value: String(m), label: m === 0 ? 'Off' : `${m} min before` }))}
-          onChange={(v) => void setJumuah(parseInt(v, 10))} />
-      </Group>
 
       <Group title="Moving to another phone" foot="Your places, choices and tracker history travel inside a QR code or link. No account, nothing uploaded. It works between the web, iPhone and Android.">
         <button class="item" onClick={() => openSheet({ kind: 'move-out' })}>

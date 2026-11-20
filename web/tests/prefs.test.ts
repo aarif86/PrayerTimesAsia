@@ -20,3 +20,15 @@ describe('Preferences', () => {
     expect(prefs.manualPlace).toBeNull()
   })
 })
+
+describe('Leave for Jumaat', () => {
+  it('moves old choices up to the next one and keeps the session sane', () => {
+    expect(decodePreferences({ jumuahReminderMinutes: 20 }).jumuahReminderMinutes).toBe(30)
+    expect(decodePreferences({ jumuahReminderMinutes: 90 }).jumuahReminderMinutes).toBe(120)
+    expect(decodePreferences({ jumuahReminderMinutes: 120 }).jumuahReminderMinutes).toBe(120)
+    expect(decodePreferences({ jumuahReminderMinutes: -5 }).jumuahReminderMinutes).toBe(0)
+    expect(decodePreferences({ jumuahReminderMinutes: 17 }).jumuahReminderMinutes).toBe(0)
+    expect(decodePreferences({ jumuahSession: 'third' }).jumuahSession).toBe('first')
+    expect(decodePreferences({ jumuahSession: 'second' }).jumuahSession).toBe('second')
+  })
+})
