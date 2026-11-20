@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Page not found · Prayer Times Asia</title>
-  <meta name="color-scheme" content="dark" />
+  <meta name="color-scheme" content="dark light" />
   <style>
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 24px;
       background: radial-gradient(60% 50% at 80% 0%, #2a2f78 0%, transparent 70%), #0b0f2a; color: #eef0fa;
@@ -13,7 +13,20 @@
       background: linear-gradient(135deg, #f2c063, #f39a4a); color: #1b1230; }
     a.ghost { background: rgba(255,255,255,0.06); color: #eef0fa; border: 1px solid rgba(255,255,255,0.1); }
     p { color: #a9b2d6; }
+    /* Light mode follows the choice made on the rest of the website, or else the device setting. */
+    [data-theme="light"] body { background: radial-gradient(60% 50% at 80% 0%, #f7bd8f55 0%, transparent 70%), #F2EEE9; color: #151A45; }
+    [data-theme="light"] a.ghost { background: #ffffff; color: #151A45; border-color: rgba(21,26,69,0.13); }
+    [data-theme="light"] p { color: #4c5380; }
   </style>
+  <script>
+    // Pick light or dark before the page paints: the visitor's saved choice first, then the device setting.
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('pta-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') { t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 </head>
 <body>
   <main>

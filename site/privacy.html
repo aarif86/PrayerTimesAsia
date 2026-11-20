@@ -6,7 +6,7 @@
   <title>Privacy · Prayer Times Asia</title>
   <meta name="description" content="What Prayer Times Asia keeps on your phone, and the anonymous counts it sends." />
   <meta name="theme-color" content="#0b0f2a" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="color-scheme" content="dark light" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
   <style>
     :root { --night: #0b0f2a; --text: #eef0fa; --muted: #a9b2d6; --gold: #f2c063; --line: rgba(255, 255, 255, 0.10);
@@ -25,11 +25,33 @@
     td { color: var(--muted); }
     .back { display: inline-block; margin-bottom: 24px; }
     :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
+    :root { color-scheme: dark; --card: rgba(255, 255, 255, 0.05); }
+    :root[data-theme="light"] { --night: #F2EEE9; --card: #ffffff; --line: rgba(21, 26, 69, 0.13); --text: #151A45; --muted: #4c5380; --gold: #8a5a00; color-scheme: light; }
+    .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+    .bar .back { margin-bottom: 0; }
+    /* Light and dark button (sun and moon). */
+    .mode { width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--gold); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; padding: 0; transition: border-color .2s, transform .2s; }
+    .mode[hidden] { display: none; }
+    .mode:hover { border-color: var(--gold); transform: rotate(12deg); }
+    .mode svg { width: 20px; height: 20px; }
+    .mode .sun { display: none; }
+    [data-theme="light"] .mode .sun { display: block; }
+    [data-theme="light"] .mode .moon-icon { display: none; }
   </style>
+  <script>
+    // Pick light or dark before the page paints: the visitor's saved choice first, then the device setting.
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('pta-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') { t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 </head>
 <body>
 <main>
-  <a class="back" href="./">← Prayer Times Asia</a>
+  <div class="bar"><a class="back" href="./">← Prayer Times Asia</a><button class="mode" type="button" hidden aria-label="Switch between light and dark"><svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a.7.7 0 0 0-.9-.8A9.9 9.9 0 1 0 21.3 15.1a.7.7 0 0 0-.8-.9z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button></div>
   <h1>Privacy</h1>
   <p>Updated 17 November 2026. This covers the website, the web app, the masjid screen, and the iPhone and Android apps.</p>
 
@@ -68,5 +90,26 @@
   <h2>Questions</h2>
   <p>Prayer Times Asia is built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah, with <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd). Email <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>.</p>
 </main>
+<script>
+  // Light and dark button: remembers the choice on this device for every page of the website.
+  (function () {
+    var root = document.documentElement, btn = document.querySelector('.mode'), meta = document.querySelector('meta[name="theme-color"]');
+    function paint() {
+      var light = root.getAttribute('data-theme') === 'light';
+      if (meta) meta.setAttribute('content', light ? '#F2EEE9' : '#0b0f2a');
+      if (btn) btn.setAttribute('aria-pressed', light ? 'true' : 'false');
+    }
+    if (btn) {
+      btn.hidden = false;
+      btn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('pta-theme', next); } catch (e) {}
+        paint();
+      });
+    }
+    paint();
+  })();
+</script>
 </body>
 </html>

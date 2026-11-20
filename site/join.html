@@ -6,7 +6,7 @@
   <title>Become a Timekeeper | Prayer Times Asia</title>
   <meta name="description" content="Join the Prayer Times Asia Timekeepers. Volunteers who check the prayer times for their city, test the app on their devices and bring their masjid on board." />
   <meta name="theme-color" content="#0b0f2a" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="color-scheme" content="dark light" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
   <meta property="og:type" content="website" />
@@ -160,14 +160,60 @@
     .steps { counter-reset: step; }
     .steps .card::before { counter-increment: step; content: counter(step); display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;
       background: #f2c06322; color: var(--gold); font-weight: 800; margin-bottom: 12px; }
+    /* Light mode. The page starts dark; the script in the head sets data-theme from the
+       visitor's own choice, or else from their device setting. */
+    :root { color-scheme: dark; }
+    :root[data-theme="light"] { --night: #F2EEE9; --card: #ffffff; --card-line: rgba(21, 26, 69, 0.13); --text: #151A45; --muted: #4c5380; --gold: #8a5a00; color-scheme: light; }
+    [data-theme="light"] body::before { background:
+        radial-gradient(60% 50% at 80% 0%, #f7bd8f55 0%, transparent 70%),
+        radial-gradient(50% 40% at 0% 100%, #e2b65a33 0%, transparent 70%),
+        var(--night); }
+    [data-theme="light"] header.top { background: rgba(242, 238, 233, 0.78); }
+    [data-theme="light"] header.top.scrolled { background: rgba(242, 238, 233, 0.94); box-shadow: 0 10px 30px -22px #151A4566; }
+    [data-theme="light"] .btn-primary { background: linear-gradient(135deg, #f2c063, #f39a4a); }
+    [data-theme="light"] .btn-ghost:hover { background: #fff; border-color: #c8922a; }
+    [data-theme="light"] .moon::before { box-shadow: inset -18px 10px 0 0 #e2a63a; }
+    [data-theme="light"] .hero h1 span { background-image: linear-gradient(90deg, #b06f00, #c2571a, #b8405c, #b06f00); }
+    [data-theme="light"] .card { box-shadow: 0 10px 30px -22px #151A4555; }
+    [data-theme="light"] .card:hover { border-color: #c8922a; box-shadow: 0 20px 40px -26px #151A4566; }
+    [data-theme="light"] .band { background: linear-gradient(135deg, rgba(226,182,90,.28), rgba(231,120,143,.14)); }
+    [data-theme="light"] .steps .card::before { background: #e2b65a44; }
+    [data-theme="light"] .sheet { background: #ffffff; border-color: #c8922a; box-shadow: 0 30px 60px -34px #151A4577, 0 0 90px -40px #e2b65a; }
+    [data-theme="light"] .sheet iframe { color-scheme: light; }
+    .back .short { display: none; }
+    @media (max-width: 520px) { .back .long { display: none; } .back .short { display: inline; } }
+    .top-right { display: flex; align-items: center; gap: 10px; }
+    .mode { display: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--card-line); background: var(--card); color: var(--gold); cursor: pointer;
+      align-items: center; justify-content: center; padding: 0; transition: border-color .2s, transform .2s; }
+    .js .mode { display: inline-flex; }
+    .mode:hover { border-color: var(--gold); transform: rotate(12deg); }
+    .mode svg { width: 20px; height: 20px; }
+    .mode .sun { display: none; }
+    [data-theme="light"] .mode .sun { display: block; }
+    [data-theme="light"] .mode .moon-icon { display: none; }
   </style>
+  <script>
+    // Pick light or dark before the page paints: the visitor's saved choice first, then the device setting.
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('pta-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') { t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 </head>
 <body>
 <div class="progress" aria-hidden="true"></div>
 <header class="top">
   <div class="wrap">
     <a class="brand" href="./"><img src="img/icon-192.png" alt="" width="34" height="34" />Prayer Times Asia</a>
-    <a class="back" href="./">&#8592; Back to home</a>
+    <div class="top-right">
+      <button class="mode" type="button" aria-label="Switch between light and dark" title="Light or dark">
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a.7.7 0 0 0-.9-.8A9.9 9.9 0 1 0 21.3 15.1a.7.7 0 0 0-.8-.9z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+      </button>
+      <a class="back" href="./">&#8592; <span class="long">Back to home</span><span class="short">Home</span></a>
+    </div>
   </div>
 </header>
 
@@ -285,6 +331,21 @@
       var max = document.documentElement.scrollHeight - window.innerHeight;
       bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0) + ')';
     }
+    // Light and dark button. The join form sits in a frame and follows the same choice.
+    var modeBtn = document.querySelector('.mode');
+    var themeMeta = document.querySelector('meta[name="theme-color"]');
+    function paintTheme() {
+      var light = root.getAttribute('data-theme') === 'light';
+      if (themeMeta) themeMeta.setAttribute('content', light ? '#F2EEE9' : '#0b0f2a');
+      if (modeBtn) modeBtn.setAttribute('aria-pressed', light ? 'true' : 'false');
+    }
+    if (modeBtn) modeBtn.addEventListener('click', function () {
+      var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('pta-theme', next); } catch (e) {}
+      paintTheme();
+    });
+    paintTheme();
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
   })();
