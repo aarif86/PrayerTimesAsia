@@ -85,6 +85,12 @@ jobs:
           shot 4-masjid -demo -tab nearby
           shot 5-settings -demo -tab settings
           shot 6-travel -demo-travel -tab journey
+          # The other Prayer looks and one pop up, to see how each sits in a wide window.
+          shot 7-dial -demo -tab today -dial
+          shot 8-sunpath -demo -tab today -sunpath
+          shot 9-bands -demo -tab today -bands
+          shot 10-sidedial -demo -tab today -sidedial
+          shot 11-alerts -demo -tab wakeup
           pkill -x PrayerTimesAsia || true
           ls -la macshots
           # What the app said about its menu bar item.
