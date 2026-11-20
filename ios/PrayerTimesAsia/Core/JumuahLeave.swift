@@ -12,24 +12,27 @@ enum JumuahSession: String, Codable, CaseIterable, Identifiable, Sendable {
 
 enum JumuahLeave {
     /// Minutes before Jumaat. 0 is off.
-    static let choices = [0, 15, 30, 45, 60, 120]
+    static let choices = [0, 15, 30, 45, 60, 90, 120, 150, 180]
 
     /// "14:00", from the Islamic Religious Council of Singapore (MUIS) list.
     static var secondSessionFrom: String { MasjidExtras.fridaySecondFrom }
 
-    /// The older choices 20 and 90 move up to 30 and 120, so the reminder still comes early enough. Anything else is off.
+    /// The older choice 20 moves up to 30, so the reminder still comes early enough. Anything else not on the list is off.
     static func snap(_ m: Int) -> Int {
         if m == 20 { return 30 }
-        if m == 90 { return 120 }
         return choices.contains(m) ? m : 0
     }
 
     /// "15 min", "1 hour", "2 hours" in the alert's language.
     static func span(_ minutes: Int, _ lang: RamadanContent.Lang) -> String {
-        if minutes >= 60 && minutes % 60 == 0 {
+        if minutes >= 60 && minutes % 30 == 0 {
             let h = minutes / 60
-            if lang == .en { return h == 1 ? "1 hour" : "\(h) hours" }
-            return "\(h) jam"
+            let half = minutes % 60 == 30
+            switch lang {
+            case .en: return half ? "\(h) \(h == 1 ? "hour" : "hours") 30 min" : (h == 1 ? "1 hour" : "\(h) hours")
+            case .ms: return half ? "\(h) jam 30 minit" : "\(h) jam"
+            case .id: return half ? "\(h) jam 30 menit" : "\(h) jam"
+            }
         }
         switch lang {
         case .en: return "\(minutes) min"

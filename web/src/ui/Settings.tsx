@@ -1,13 +1,13 @@
-import { azanAvailable } from '../services/azan'
-import { useEffect, useState } from 'preact/hooks'
-import { AlarmClock, ArrowDownToLine, ArrowRightLeft, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, Lightbulb, Mail, MapPinned, MapPinOff, MoonStar, Printer, Smartphone, Star } from 'lucide-preact'
+import { alertMode } from '../core/alertMode'
+import { useEffect } from 'preact/hooks'
+import { AlarmClock, ArrowDownToLine, ArrowRightLeft, Briefcase, CalendarPlus, ChevronRight, Download, Hand, Lightbulb, Mail, MapPinned, MapPinOff, MoonStar, Printer, Smartphone, Star } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
-import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, prayerName, type NamingStyle, type Prayer } from '../core/prayer'
+import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, prayerName, type NamingStyle } from '../core/prayer'
 import { flag, profileMethod } from '../core/regions'
-import { alertSupport, downloadICS, anyAlarm, nextWakeUp, permission, requestPermission, testAlert, WORK_PRAYERS } from '../services/notifications'
-import { APPEARANCE_LABEL, APPEARANCES, DEFAULT_REMINDER_MINUTES, REMINDER_CHOICES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
+import { downloadICS, anyAlarm, nextWakeUp, WORK_PRAYERS } from '../services/notifications'
+import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
 import { store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
 import { ourCards } from '../core/communityCards'
@@ -20,8 +20,6 @@ import { daysToRamadan } from './Ramadan'
 import { VERSION } from './version'
 export { VERSION }
 
-/** Every half hour of the day, in minutes past midnight. */
-const HALF_HOURS = Array.from({ length: 48 }, (_, i) => i * 30)
 
 
 
@@ -42,34 +40,18 @@ export function SettingsScreen() {
   const source = s.officialSource
   const appOffer = phoneAppOffer()
   const feed = source ? feedName(source) : null
-  const [perm, setPerm] = useState(permission())
-  const support = alertSupport()
   useEffect(() => {
     if (s.demo && new URLSearchParams(location.search).get('settings') === 'makers') {
       setTimeout(() => document.getElementById('makers')?.scrollIntoView({ block: 'start' }), 300)
     }
   }, [])
 
-  const setAlerts = async (on: boolean) => {
-    if (!on) { store.update((x) => { x.notificationsEnabled = false }); return }
-    if (support !== 'supported') { openSheet({ kind: 'alerts-help' }); return }
-    const ok = await requestPermission()
-    setPerm(permission())
-    if (ok) store.update((x) => { x.notificationsEnabled = true })
-    else openSheet({ kind: 'alerts-help' })
-  }
-
-  const setReminder = async (on: boolean) => {
-    if (!on) { store.update((x) => { x.reminderMinutesBefore = 0 }); return }
-    if (support !== 'supported') { openSheet({ kind: 'alerts-help' }); return }
-    const ok = await requestPermission()
-    setPerm(permission())
-    if (ok) store.update((x) => { x.reminderMinutesBefore = DEFAULT_REMINDER_MINUTES })
-    else openSheet({ kind: 'alerts-help' })
-  }
-  const reminderOn = p.reminderMinutesBefore > 0 && perm === 'granted'
   const nextWake = nextWakeUp(s.now())
-  const wakeValue = nextWake ? `Next ${s.formatted(nextWake.at)}` : anyAlarm(p) ? 'On' : 'Off'
+  const wakeValue = nextWake ? `Next ${s.formatted(nextWake.at)}` : ''
+  const counts = { notify: 0, alarm: 0 }
+  for (const pr of PRAYERS) { const m = alertMode(p, pr); if (m !== 'off') counts[m]++ }
+  const alertsSummary = counts.notify + counts.alarm === 0 && !anyAlarm(p) ? 'Nothing is on'
+    : [counts.notify && `${counts.notify} notify`, counts.alarm && `${counts.alarm} ${counts.alarm === 1 ? 'alarm' : 'alarms'}`].filter(Boolean).join(', ') || 'On'
 
 
   const timetable = !source ? 'Calculated on this device'
@@ -87,6 +69,13 @@ export function SettingsScreen() {
         <div class="item"><span class="label">Country rules</span><span class="value">{s.profile.code ? `${flag(s.profile.code)} ${s.profile.name}` : s.profile.name}</span></div>
       </Group>
 
+      <Group title="Alerts and alarms" foot={`Each prayer Off, Notify or Alarm, ${prayerName('dhuhr', s.naming, true)}, sahur, Ramadan and how it all sounds, in one place. Also on the Prayer screen. Tap the alarm clock at the top, or hold a bell.`}>
+        <button class="item" onClick={() => openSheet({ kind: 'wakeup' })}>
+          <AlarmClock size={20} /><span class="label">Alerts and alarms<span class="sub">{alertsSummary}</span></span>
+          <span class="value">{wakeValue}</span><ChevronRight size={16} class="secondary" />
+        </button>
+      </Group>
+
       <Group title="Ramadan and Syawal" foot={<>
         Ramadan mode turns on by itself on the first day your authority announces, and Syawal follows on Raya. {(() => { const d = daysToRamadan(s.now()); return d != null && d > 0 && !s.isSeasonPreview ? `About ${d} days to Ramadan.` : '' })()}
         {' '}Try Ramadan lets testers see every part of it now. It only changes this {s.demo ? 'demo' : 'browser'}, and the real dates come back when you turn it off.
@@ -97,17 +86,8 @@ export function SettingsScreen() {
         <SelectItem label="Try Ramadan (for testers)" value={p.seasonPreview}
           options={SEASON_PREVIEWS.map((v) => ({ value: v, label: SEASON_PREVIEW_LABEL[v] }))}
           onChange={(v) => store.update((x) => { x.seasonPreview = v as SeasonPreview })} />
-        <ToggleItem label="Imsak alert" sub="10 minutes before Imsak, in Ramadan" on={p.imsakAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.imsakAlert = v }) }} />
-        <ToggleItem label="Berbuka alert" sub="At Maghrib, in Ramadan" on={p.berbukaAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.berbukaAlert = v }) }} />
-        <ToggleItem label="Qiyam reminder" sub="The last third of the last ten nights" on={p.qiyamAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.qiyamAlert = v }) }} />
       </Group>
 
-      <Group title="Alarms" foot={`Wake up for ${s.name('fajr')}, sahur, alarms for each prayer, and when to leave for ${prayerName('dhuhr', s.naming, true)}. Also on the Prayer screen. Tap the alarm clock at the top.`}>
-        <button class="item" onClick={() => openSheet({ kind: 'wakeup' })}>
-          <AlarmClock size={20} /><span class="label">Prayer alarms</span>
-          <span class="value">{wakeValue}</span><ChevronRight size={16} class="secondary" />
-        </button>
-      </Group>
 
       <Group title="Travel" foot="Jamak and qasar guidance, combined prayer windows and a log of where you've prayed. We'll ask when you land in another country.">
         <ToggleItem label="Musafir features" on={p.musafirEnabled} onChange={(v) => store.update((x) => { x.musafirEnabled = v })} />
@@ -164,10 +144,6 @@ export function SettingsScreen() {
 
       <Group title="Tracker" foot="Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only in this browser.">
         <ToggleItem label="Prayer tracker" on={p.trackerEnabled} onChange={(v) => store.update((x) => { x.trackerEnabled = v })} />
-        {p.trackerEnabled && (
-          <ToggleItem label="Nudge before time runs out" on={p.windowNudge} onChange={(v) => store.update((x) => { x.windowNudge = v })}
-            sub={`One gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for ${s.name('isha')}, which stays open until ${s.name('fajr')}. Never while paused.`} />
-        )}
       </Group>
 
       <Group title="Display">
@@ -190,44 +166,7 @@ export function SettingsScreen() {
         </div>
       </Group>
 
-      <Group title="Alerts" foot={<>
-        Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it. Turn on either or both. <b>On the web, they ring only while Prayer Times Asia is open</b>, in a tab or as an installed app.
-        For alerts when it's closed, add the times to your calendar above: your calendar rings them, reminder included.
-        {perm === 'denied' && ' Notifications are blocked for this site in your browser settings.'}
-      </>}>
-        <ToggleItem label="Prayer time alerts" on={p.notificationsEnabled && perm === 'granted'} onChange={(v) => void setAlerts(v)} />
-        {p.notificationsEnabled && perm === 'granted' && azanAvailable() && (
-          <ToggleItem label="Play the azan" on={p.azanSound} onChange={(v) => store.update((x) => { x.azanSound = v })} />
-        )}
-        <ToggleItem label="Reminder before prayer" on={reminderOn} onChange={(v) => void setReminder(v)} />
-        {reminderOn && (
-          <SelectItem label="Remind me" value={String(p.reminderMinutesBefore)}
-            options={REMINDER_CHOICES.map((m) => ({ value: String(m), label: `${m} min before` }))}
-            onChange={(v) => store.update((x) => { x.reminderMinutesBefore = parseInt(v, 10) })} />
-        )}
-        {(p.notificationsEnabled || p.reminderMinutesBefore > 0) && perm === 'granted' && (
-          <>
-            {PRAYERS.map((pr: Prayer) => (
-              <ToggleItem label={pr === 'sunrise' ? `${s.name(pr)} (${s.name('fajr')} ends)` : s.name(pr)} on={p.notifyPrayers.includes(pr)}
-                onChange={(v) => store.update((x) => { x.notifyPrayers = v ? [...new Set([...x.notifyPrayers, pr])] : x.notifyPrayers.filter((q) => q !== pr) })} />
-            ))}
-            <button class="item" onClick={testAlert}><BellRing size={20} /><span class="label">Send a test alert</span></button>
-          </>
-        )}
-      </Group>
 
-      <Group title="Quiet alerts" foot={`For shift workers sleeping in the day, a baby asleep in the room, or simply a calm night. Alerts still come, but they only buzz. ${s.name('fajr')} keeps its sound so it can wake you.`}>
-        <ToggleItem label="Buzz only, no sound" on={p.buzzOnly} onChange={(v) => store.update((x) => { x.buzzOnly = v })} />
-        <ToggleItem label="Quiet hours" on={p.quietHours} onChange={(v) => store.update((x) => { x.quietHours = v })} />
-        {p.quietHours && (
-          <>
-            <SelectItem label="From" value={String(p.quietFrom)} options={HALF_HOURS.map((m) => ({ value: String(m), label: s.clock(m) }))}
-              onChange={(v) => store.update((x) => { x.quietFrom = parseInt(v, 10) })} />
-            <SelectItem label="Until" value={String(p.quietTo)} options={HALF_HOURS.map((m) => ({ value: String(m), label: s.clock(m) }))}
-              onChange={(v) => store.update((x) => { x.quietTo = parseInt(v, 10) })} />
-          </>
-        )}
-      </Group>
 
 
       <Group title="Moving to another phone" foot="Your places, choices and tracker history travel inside a QR code or link. No account, nothing uploaded. It works between the web, iPhone and Android.">
