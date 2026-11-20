@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
+/// The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd).
 /// The cards are our own services and, from time to time, a hand picked halal
 /// sponsor for the user's country (CommunityCard, data/community-cards.json).
 /// No outside ads, nothing tracked: each card just opens the website.
@@ -94,7 +94,7 @@ struct MakersSheet: View {
                 VStack(alignment: .leading, spacing: 16) {
                     HadithView(id: .fixedTimes, tag: "Al Quran")
                     Text("Built fisabilillah").font(Theme.display(26, .bold))
-                    Text("Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).")
+                    Text("Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with the team at Nasar Digital (Nasar Pte Ltd).")
                         .foregroundStyle(.secondary)
                     ForEach(CommunityCard.ours(for: model.offerCountry)) { card in
                         MakersCard(card: card, placement: placement)

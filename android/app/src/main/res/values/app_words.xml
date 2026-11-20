@@ -132,7 +132,7 @@
     <string name="hadith_hide" formatted="false">Hide this hadith</string>
     <string name="hadith_hidden" formatted="false">Hadith hidden here. Bring them all back in Settings, Hadith.</string>
     <string name="makers_title" formatted="false">Built fisabilillah</string>
-    <string name="makers_body" formatted="false">Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).</string>
+    <string name="makers_body" formatted="false">Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with the team at Nasar Digital (Nasar Pte Ltd).</string>
     <string name="makers_opens" formatted="false">{name}, opens {site}</string>
     <string name="makers_sponsored" formatted="false">Sponsored</string>
     <string name="qibla_choosePlace" formatted="false">Choose a place to find the qibla.</string>
@@ -475,7 +475,7 @@
     <string name="settings_usageSub" formatted="false">Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you. No name, no exact location, no IP address kept.</string>
     <string name="settings_osm" formatted="false">The Masjid map and list use OpenStreetMap data. The map tiles, our weekly masjid list on GitHub and Overpass see only the area you look at.</string>
     <string name="settings_makers" formatted="false">From the makers</string>
-    <string name="settings_makersFoot" formatted="false">Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own. No ad networks, nothing tracked.</string>
+    <string name="settings_makersFoot" formatted="false">Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own. No ad networks, nothing tracked.</string>
     <string name="settings_showOffers" formatted="false">Show offers on Prayer and Masjid</string>
     <string name="settings_help" formatted="false">Help</string>
     <string name="settings_helpFoot" formatted="false">A short tour that taps the real buttons, so you know where everything is.</string>
