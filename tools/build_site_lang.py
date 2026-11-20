@@ -69,7 +69,7 @@ def attr(m):
     return f'{m.group(1)}="{html.escape(html.unescape(tr(m.group(2))), quote=True)}"'
 
 
-work = re.sub(r'\b(alt|aria-label)="([^"]*)"', attr, work)
+work = re.sub(r'\b(alt|aria-label|placeholder)="([^"]*)"', attr, work)
 work = re.sub(r'(<meta (?:name="description"|property="og:(?:title|description)") content)="([^"]*)"',
               attr, work)
 
