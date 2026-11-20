@@ -179,7 +179,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Tracker")
                 } footer: {
-                    Text("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone." + (model.prefs.trackerEnabled ? " Nudge before time runs out sends one gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for \(Prayer.isha.name(model.naming)), which stays open until \(Prayer.fajr.name(model.naming)). Never while paused." : ""))
+                    Text("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this \(Device.noun)." + (model.prefs.trackerEnabled ? " Nudge before time runs out sends one gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for \(Prayer.isha.name(model.naming)), which stays open until \(Prayer.fajr.name(model.naming)). Never while paused." : ""))
                 }
 
                 Section {
@@ -253,7 +253,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Alerts")
                 } footer: {
-                    Text("Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both." + (Azan.isAvailable ? " With Play the azan on, prayer time alerts open with the azan (a Subuh azan at Subuh)." : "") + " Worked out on your phone and topped up every time you open the app - nothing comes from a server.")
+                    Text("Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both." + (Azan.isAvailable ? " With Play the azan on, prayer time alerts open with the azan (a Subuh azan at Subuh)." : "") + " Worked out on your \(Device.noun) and topped up every time you open the app - nothing comes from a server.")
                 }
 
                 Section {
@@ -315,7 +315,7 @@ struct SettingsView: View {
                 }
 
                 Section("Accuracy") {
-                    Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.")
+                    Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your \(Device.noun) with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.")
                         .font(.footnote)
                 }
 

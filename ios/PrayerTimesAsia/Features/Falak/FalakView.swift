@@ -20,7 +20,8 @@ struct FalakView: View {
                         ScrollView {
                             VStack(spacing: 16) {
                                 header
-                                tools
+                                // The camera view and the spirit level need a phone in the hand, so a Mac leaves them out.
+                                if !Device.isMac { tools }
                                 SunSafetyCard()
                                 ShadowCompassCard(place: place, now: context.date)
                                 QiblaDayCard(place: place, now: context.date)
