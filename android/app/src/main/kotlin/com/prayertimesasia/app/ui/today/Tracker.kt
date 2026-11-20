@@ -53,6 +53,8 @@ import com.prayertimesasia.core.Prayer
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 private val Pink = Color(0xFFE06C8A)
 
@@ -69,7 +71,7 @@ fun TrackerSheetContent(state: AppState) {
 
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Dims.gutter, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Text("Prayer tracker", style = Txt.headline, color = Palette.primary)
+        Text(tr(R.string.settings_trackerOn), style = Txt.headline, color = Palette.primary)
         HadithView(state, HadithId.RIVER)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(if (since != null) Icons.Filled.Pause else Icons.Filled.Whatshot, null, Modifier.size(24.dp), tint = Palette.accent)

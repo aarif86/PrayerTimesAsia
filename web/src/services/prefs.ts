@@ -1,3 +1,4 @@
+import { unifyAlerts } from '../core/alertMode'
 import { JUMUAH_LEAVE_CHOICES, snapLeaveMinutes, type JumuahSession } from '../core/jumuahLeave'
 import { TARAWIH_RAKAAT } from '../core/tarawih'
 import type { MasjidLink } from '../core/masjidLink'
@@ -9,6 +10,9 @@ import {
   ALARM_SOUNDS, DEFAULT_SAHUR_DAYS, PRAYER_ALARM_TIMINGS, SAHUR_DAYS, SAHUR_TIMINGS, WAKE_UP_TIMINGS,
   type AlarmSound, type PrayerAlarmTiming, type SahurDay, type SahurTiming, type WakeUpTiming,
 } from '../core/wakeup'
+
+export type AppLanguage = 'en' | 'ms' | 'id'
+export const APP_LANGUAGES: readonly AppLanguage[] = ['en', 'ms', 'id']
 
 export type Appearance = 'system' | 'light' | 'dark'
 export const APPEARANCES: Appearance[] = ['system', 'light', 'dark']
@@ -44,6 +48,8 @@ export interface Preferences {
   methodOverrideID: string | null
   asrOverride: AsrSchool | null
   namingOverride: NamingStyle | null
+  /** The language of the app's words. null = from the browser's language (English unless Malay or Indonesian). */
+  appLanguageOverride: AppLanguage | null
   use24Hour: boolean
   hijriAdjustment: number
   notificationsEnabled: boolean
@@ -163,6 +169,7 @@ export const DEFAULT_PREFS: Preferences = {
   methodOverrideID: null,
   asrOverride: null,
   namingOverride: null,
+  appLanguageOverride: null,
   use24Hour: false,
   hijriAdjustment: 0,
   notificationsEnabled: false,
@@ -233,7 +240,7 @@ export const DEFAULT_PREFS: Preferences = {
 }
 
 const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat', 
-  'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'jakimZoneOverride',
+  'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'appLanguageOverride', 'jakimZoneOverride',
   'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
   'dhuhrAlarm', 'asrAlarm', 'maghribAlarm', 'ishaAlarm',
 ])
@@ -244,6 +251,7 @@ const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands', 'simple'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,
+  appLanguageOverride: APP_LANGUAGES,
   seasonPreview: SEASON_PREVIEWS,
   wakeUp: WAKE_UP_TIMINGS,
   sahurAlarm: SAHUR_TIMINGS,
@@ -297,6 +305,8 @@ export function decodePreferences(raw: unknown): Preferences {
   if (out.jumuahSession !== 'second') out.jumuahSession = 'first'
   // Isyak is open until Subuh: it has no "before it ends" alarm.
   if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
+  // One Off, Notify or Alarm per prayer in Alerts and alarms (core/alertMode.ts).
+  unifyAlerts(out)
   // People already using the app before the quick guide came don't get it pushed at them; it waits in Settings.
   if (!('guideSeen' in r) && out.hasOnboarded) out.guideSeen = true
   return out

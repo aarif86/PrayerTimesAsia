@@ -91,6 +91,8 @@ import java.time.Instant
 import com.prayertimesasia.core.TodayStyle
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 internal fun dayLabel(offset: Int): String = when (offset) {
     0 -> "TODAY"
@@ -265,9 +267,9 @@ fun AlertsPrompt(state: AppState) {
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Icon(Icons.Filled.NotificationsActive, null, Modifier.size(20.dp), tint = Palette.sunArc)
-        Text("Get an alert when each prayer begins", style = Txt.subheadlineSemibold, color = Palette.primary,
+        Text(tr(R.string.today_alertPrompt), style = Txt.subheadlineSemibold, color = Palette.primary,
             maxLines = 2, modifier = Modifier.weight(1f))
-        Text("Turn on", style = Txt.subheadline.copy(fontWeight = FontWeight.Bold), color = Color.Black.copy(alpha = 0.8f),
+        Text(tr(R.string.common_turnOn), style = Txt.subheadline.copy(fontWeight = FontWeight.Bold), color = Color.Black.copy(alpha = 0.8f),
             modifier = Modifier.clip(CircleShape).background(Palette.sunArc).clickable {
                 state.enableAlerts(com.prayertimesasia.core.Prayer.obligatory.toSet())
             }.padding(horizontal = 14.dp, vertical = 8.dp))
@@ -374,7 +376,7 @@ fun MusafirChip(state: AppState) {
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(AppIcons.journey, null, Modifier.size(18.dp), tint = Palette.primary)
-            Text("Musafir. You may shorten and join", style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f), maxLines = 1)
+            Text(tr(R.string.today_musafirLine), style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f), maxLines = 1)
             Icon(Icons.Filled.ChevronRight, null, Modifier.size(16.dp), tint = Palette.primary)
         }
         Box(
@@ -432,8 +434,8 @@ fun ArrivalCard(state: AppState) {
         HorizontalDivider(Modifier.padding(vertical = 8.dp), color = Palette.primary.copy(alpha = 0.25f))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Switch automatically", style = Txt.subheadlineSemibold, color = Palette.primary)
-                Text("Follow each country's method as you travel", style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
+                Text(tr(R.string.today_switchAuto), style = Txt.subheadlineSemibold, color = Palette.primary)
+                Text(tr(R.string.today_switchAutoSub), style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
             }
             Switch(r.isMethodAutomatic, onCheckedChange = { auto ->
                 val id = r.method.id
@@ -444,8 +446,8 @@ fun ArrivalCard(state: AppState) {
         if (home != null && home != profile.code) {
             Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Musafir features", style = Txt.subheadlineSemibold, color = Palette.primary)
-                    Text("Jamak and qasar guidance while you're away", style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
+                    Text(tr(R.string.settings_musafir), style = Txt.subheadlineSemibold, color = Palette.primary)
+                    Text(tr(R.string.today_musafirSub), style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
                 }
                 Switch(state.prefs.musafirEnabled, onCheckedChange = { on -> state.update { it.copy(musafirEnabled = on) } }, colors = switchColors)
             }
@@ -454,7 +456,7 @@ fun ArrivalCard(state: AppState) {
             }
         }
         Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Asr", style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f))
+            Text(tr(R.string.settings_asr), style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f))
             Box {
                 Text(
                     (if (r.asrSchool == AsrSchool.HANAFI) "Later Asr (Hanafi)" else "Earlier Asr (Shafi'i)") + "  ▾",

@@ -918,7 +918,7 @@ struct TodayView: View {
     private func wakeChip(_ now: Date) -> some View {
         let next = model.nextWakeUp(after: now)
         let fajr = Prayer.fajr.name(model.naming)
-        return Button { model.showWakeUp = true } label: {
+        return Button { model.openAlerts() } label: {
             HStack(spacing: 4) {
                 Image(systemName: next == nil ? "alarm" : "alarm.fill")
                 if let next {
@@ -932,8 +932,8 @@ struct TodayView: View {
             .background(next == nil ? Color.primary.opacity(0.1) : Theme.sunArc.opacity(0.3), in: Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(next.map { "Next alarm at \(model.formatted($0.date))" } ?? "Prayer alarms, wake up for \(fajr): set an alarm")
-        .accessibilityHint("Alarms for \(fajr), sahur and every prayer, and the alarm sound.")
+        .accessibilityLabel(next.map { "Next alarm at \(model.formatted($0.date))" } ?? "Alerts and alarms")
+        .accessibilityHint("Off, Notify or Alarm for \(fajr) and every prayer, sahur, and how they sound.")
     }
 
     private func streakChip(_ now: Date) -> some View {
@@ -1075,7 +1075,7 @@ private struct PrayerList: View {
         let isCurrent = prayer == current && time <= now
         let isNext = prayer == next?.prayer && next?.time == time
         let passed = time <= now && !isCurrent
-        let notifying = model.prefs.notificationsEnabled && model.prefs.notifyPrayers.contains(prayer)
+        let mode = model.prefs.alertMode(prayer)
         let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
         let prayed = trackable && model.isPrayed(prayer, on: time)
         return HStack(spacing: 12) {
@@ -1118,17 +1118,20 @@ private struct PrayerList: View {
             Spacer(minLength: 6)
             TimeText(parts: model.timeParts(time), size: 27)
             Group {
-                Button { toggleNotify(prayer) } label: {
-                    Image(systemName: notifying ? "bell.fill" : "bell.slash")
+                Button { cycleAlert(prayer, model: model) } label: {
+                    Image(systemName: mode.symbol)
                         .font(.subheadline)
-                        .opacity(notifying ? 0.95 : 0.4)
+                        .foregroundStyle(mode == .alarm ? Theme.sunArc : Color.primary)
+                        .opacity(mode == .off ? 0.4 : 0.95)
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                         // 44 pt to tap, but laid out at the old 30 by 34 so rows keep their height.
                         .padding(.horizontal, -7).padding(.vertical, -5)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(notifying ? "Turn off alert" : "Turn on alert")
+                .accessibilityLabel("\(prayer.name(model.naming)) \(mode.word)")
+                .accessibilityHint("Tap to change. Hold for more.")
+                .contextMenu { AlertMenuItems(prayer: prayer) }
             }
         }
         .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, fill ? 8 : 12)
@@ -1180,21 +1183,6 @@ private struct PrayerList: View {
         .transition(.opacity.combined(with: .move(edge: .top)))
     }
 
-    private func toggleNotify(_ prayer: Prayer) {
-        Task {
-            if !model.prefs.notificationsEnabled {
-                guard await NotificationScheduler.requestPermission() else { return }
-                model.prefs.notificationsEnabled = true
-                model.prefs.notifyPrayers = [prayer]
-                return
-            }
-            if model.prefs.notifyPrayers.contains(prayer) {
-                model.prefs.notifyPrayers.remove(prayer)
-            } else {
-                model.prefs.notifyPrayers.insert(prayer)
-            }
-        }
-    }
 }
 
 // MARK: - Times on the dial
@@ -1212,14 +1200,11 @@ private struct PrayerMark: View {
 
     var body: some View {
         let passed = time <= now && !isCurrent
-        let notifying = model.prefs.notificationsEnabled && model.prefs.notifyPrayers.contains(prayer)
+        let mode = model.prefs.alertMode(prayer)
         let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
         let prayed = trackable && model.isPrayed(prayer, on: time)
         Menu {
-            Button { toggleNotify() } label: {
-                Label(notifying ? "Turn off alert" : "Alert me at \(prayer.name(model.naming))",
-                      systemImage: notifying ? "bell.slash" : "bell")
-            }
+            AlertMenuItems(prayer: prayer)
             if trackable {
                 Button { withAnimation(.snappy) { model.togglePrayed(prayer, on: time) } } label: {
                     Label(prayed ? "Mark as not prayed" : "Mark as prayed",
@@ -1234,7 +1219,9 @@ private struct PrayerMark: View {
                         .foregroundStyle(isCurrent ? prayer.textTint : Color.primary.opacity(0.75))
                     if prayed {
                         Image(systemName: "checkmark.circle.fill").font(.system(size: size * 0.03)).foregroundStyle(.green)
-                    } else if model.prefs.notificationsEnabled && !notifying && prayer.isObligatory {
+                    } else if mode == .alarm {
+                        Image(systemName: "alarm.fill").font(.system(size: size * 0.026)).opacity(0.8)
+                    } else if model.prefs.notificationsEnabled && mode == .off && prayer.isObligatory {
                         Image(systemName: "bell.slash").font(.system(size: size * 0.026)).opacity(0.5)
                     }
                 }
@@ -1273,21 +1260,6 @@ private struct PrayerMark: View {
         return "\(own) · \(local)"
     }
 
-    private func toggleNotify() {
-        Task {
-            if !model.prefs.notificationsEnabled {
-                guard await NotificationScheduler.requestPermission() else { return }
-                model.prefs.notificationsEnabled = true
-                model.prefs.notifyPrayers = [prayer]
-                return
-            }
-            if model.prefs.notifyPrayers.contains(prayer) {
-                model.prefs.notifyPrayers.remove(prayer)
-            } else {
-                model.prefs.notifyPrayers.insert(prayer)
-            }
-        }
-    }
 }
 
 /// A blessed time inside the dial, smaller and quieter than the prayers.
@@ -1342,15 +1314,12 @@ private struct PrayerBand: View {
     let fill: Bool
 
     var body: some View {
-        let notifying = model.prefs.notificationsEnabled && model.prefs.notifyPrayers.contains(prayer)
+        let mode = model.prefs.alertMode(prayer)
         let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
         let prayed = trackable && model.isPrayed(prayer, on: time)
         let parts = model.timeParts(time)
         Menu {
-            Button { toggleNotify() } label: {
-                Label(notifying ? "Turn off alert" : "Alert me at \(prayer.name(model.naming))",
-                      systemImage: notifying ? "bell.slash" : "bell")
-            }
+            AlertMenuItems(prayer: prayer)
             if trackable {
                 Button { withAnimation(.snappy) { model.togglePrayed(prayer, on: time) } } label: {
                     Label(prayed ? "Mark as not prayed" : "Mark as prayed",
@@ -1385,7 +1354,9 @@ private struct PrayerBand: View {
                     if let suffix = parts.suffix { Text(suffix).font(.system(size: 22, weight: .bold)) }
                 }
                 .fixedSize()
-                if model.prefs.notificationsEnabled && !notifying && prayer.isObligatory {
+                if mode == .alarm {
+                    Image(systemName: "alarm.fill").font(.caption).opacity(0.85)
+                } else if model.prefs.notificationsEnabled && mode == .off && prayer.isObligatory {
                     Image(systemName: "bell.slash").font(.caption).opacity(0.6)
                 }
             }
@@ -1403,21 +1374,6 @@ private struct PrayerBand: View {
         .accessibilityLabel("\(prayer.name(model.naming)), \(model.formatted(time))\(isCurrent ? ", now" : "")\(prayed ? ", prayed" : "")")
     }
 
-    private func toggleNotify() {
-        Task {
-            if !model.prefs.notificationsEnabled {
-                guard await NotificationScheduler.requestPermission() else { return }
-                model.prefs.notificationsEnabled = true
-                model.prefs.notifyPrayers = [prayer]
-                return
-            }
-            if model.prefs.notifyPrayers.contains(prayer) {
-                model.prefs.notifyPrayers.remove(prayer)
-            } else {
-                model.prefs.notifyPrayers.insert(prayer)
-            }
-        }
-    }
 }
 
 /// A blessed time under Show more: a thinner, quiet grey band.

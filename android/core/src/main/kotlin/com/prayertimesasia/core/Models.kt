@@ -408,7 +408,7 @@ data class Preferences(
 
     companion object {
         fun decode(text: String?): Preferences =
-            (text?.let { runCatching { CoreJson.decodeFromString(serializer(), it) }.getOrNull() } ?: Preferences()).sane()
+            (text?.let { runCatching { CoreJson.decodeFromString(serializer(), it) }.getOrNull() } ?: Preferences()).sane().unifyAlerts()
 
         /** Times of day must be real ones and the Jumaat reminder one of the choices. */
         private fun Preferences.sane(): Preferences = copy(

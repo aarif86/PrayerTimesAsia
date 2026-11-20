@@ -10,7 +10,6 @@ import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
 import { playAzan } from './azan'
 import { playAlarm } from './alarmSound'
 import { hadithAlertLine, type HadithId } from '../core/hadith'
-import { lang3 } from '../core/ramadanContent'
 import { alertLine } from '../core/alertLines'
 import { store } from './store'
 
@@ -142,7 +141,7 @@ export function upcomingAlerts(now: number): Alert[] {
       const at = j.at - jumuah * 60_000
       const name = store.name('dhuhr', day.times.dhuhr)
       out.push({
-        id: `${day.year}-${day.month}-${day.day}-jumuah`, ...leaveWords(lang3(store.naming), jumuah, name, j.second, store.formatted(j.at), j.where),
+        id: `${day.year}-${day.month}-${day.day}-jumuah`, ...leaveWords(store.appLang, jumuah, name, j.second, store.formatted(j.at), j.where),
         at, silent: isSilent(at, 'dhuhr', tz),
       })
     }
@@ -172,7 +171,7 @@ export function upcomingAlerts(now: number): Alert[] {
         out.push({ id, title: `Time to berbuka · ${name} ${store.formatted(time)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu`, at: time, prayer, silent })
         continue
       }
-      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: alertLine(lang3(store.naming), prayer, store.isFriday(time), day.year, day.month, day.day, name), at: time, prayer, silent })
+      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: alertLine(store.appLang, prayer, store.isFriday(time), day.year, day.month, day.day, name), at: time, prayer, silent })
     }
   }
   return [...out, ...wake].filter((a) => a.at > now).sort((a, b) => a.at - b.at)
@@ -181,7 +180,7 @@ export function upcomingAlerts(now: number): Alert[] {
 
 /** "\n“...” al Bukhari" under a wake-up alert, or nothing when Settings, Hadith, alerts is off. */
 function alertHadith(id: HadithId): string {
-  return store.prefs.hadithInAlerts ? `\n${hadithAlertLine(id, lang3(store.naming))}` : ''
+  return store.prefs.hadithInAlerts ? `\n${hadithAlertLine(id, store.appLang)}` : ''
 }
 
 export interface WakeUp { id: string; title: string; body: string; at: number; sahur: boolean; prayer?: AlarmPrayer }
@@ -236,7 +235,7 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
     // Leave for Jumaat, when it rings as an alarm.
     if (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0 && store.isFriday(day.times.dhuhr)) {
       const j = jumuahStart(day)
-      const w = leaveWords(lang3(store.naming), p.jumuahReminderMinutes, store.name('dhuhr', day.times.dhuhr), j.second, store.formatted(j.at), j.where)
+      const w = leaveWords(store.appLang, p.jumuahReminderMinutes, store.name('dhuhr', day.times.dhuhr), j.second, store.formatted(j.at), j.where)
       out.push({ id: `${key}-jumuah-alarm`, ...w, at: j.at - p.jumuahReminderMinutes * 60_000, sahur: false })
     }
   }

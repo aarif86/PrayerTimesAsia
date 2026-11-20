@@ -13,23 +13,22 @@ struct SettingsView: View {
     /// Every half hour of the day, in minutes past midnight.
     static let halfHours = Array(stride(from: 0, to: 1440, by: 30))
 
-    /// A Ramadan alert switch that asks for notification permission when turned on.
-    private func ramadanAlert(_ title: String, _ detail: String, _ key: WritableKeyPath<Preferences, Bool>) -> some View {
-        Toggle(isOn: Binding(
-            get: { model.prefs[keyPath: key] },
-            set: { on in
-                Task {
-                    if on { model.prefs[keyPath: key] = await NotificationScheduler.requestPermission() }
-                    else { model.prefs[keyPath: key] = false }
-                }
-            })) {
-            VStack(alignment: .leading) { Text(title); Text(detail).font(.caption).foregroundStyle(.secondary) }
-        }
-    }
 
     private var wakeUpSummary: String {
-        guard model.prefs.anyAlarm else { return "Off" }
-        return model.nextWakeUp(after: .now).map { "Next \(model.formatted($0.date))" } ?? "On"
+        guard model.prefs.anyAlarm else { return "" }
+        return model.nextWakeUp(after: .now).map { "Next \(model.formatted($0.date))" } ?? ""
+    }
+
+    /// "2 notify, 1 alarm", or "Nothing is on".
+    private var alertsCount: String {
+        let modes = Prayer.allCases.map { model.prefs.alertMode($0) }
+        let notify = modes.filter { $0 == .notify }.count
+        let alarm = modes.filter { $0 == .alarm }.count
+        if notify + alarm == 0 { return model.prefs.anyAlarm ? "On" : "Nothing is on" }
+        var parts: [String] = []
+        if notify > 0 { parts.append("\(notify) notify") }
+        if alarm > 0 { parts.append(alarm == 1 ? "1 alarm" : "\(alarm) alarms") }
+        return parts.joined(separator: ", ")
     }
 
     var body: some View {
@@ -52,15 +51,34 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Button { model.openAlerts() } label: {
+                        LabeledContent {
+                            Text(wakeUpSummary)
+                        } label: {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Alerts and alarms")
+                                    Text(alertsCount).font(.footnote).foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "alarm.fill")
+                            }
+                            .foregroundStyle(.primary)
+                        }
+                    }
+                } header: {
+                    Text("Alerts and alarms")
+                } footer: {
+                    Text("Each prayer Off, Notify or Alarm, \(Prayer.dhuhr.name(model.naming, isFriday: true)), sahur, Ramadan and how it all sounds, in one place. Also on the Prayer screen. Tap the alarm clock at the top, or hold a bell.")
+                }
+
+                Section {
                     Button { showRamadan = true } label: {
                         Label("Ramadan page", systemImage: "moon.stars")
                     }
                     Picker("Try Ramadan (for testers)", selection: $model.prefs.seasonPreview) {
                         ForEach(SeasonPreview.allCases) { p in Text(p.label).tag(p) }
                     }
-                    ramadanAlert("Imsak alert", "10 minutes before Imsak, to finish sahur", \.imsakAlert)
-                    ramadanAlert("Berbuka alert", "At Maghrib, with the doa", \.berbukaAlert)
-                    ramadanAlert("Qiyam in the last ten nights", "At the last third of the night", \.qiyamAlert)
                 } header: {
                     Text("Ramadan and Syawal")
                 } footer: {
@@ -69,20 +87,6 @@ struct SettingsView: View {
                          : "Pretend mode is on. The app shows a pretend date, not today's. Turn it off before you rely on the times.")
                 }
 
-                Section {
-                    Button { model.showWakeUp = true } label: {
-                        LabeledContent {
-                            Text(wakeUpSummary)
-                        } label: {
-                            Label("Prayer alarms", systemImage: "alarm.fill")
-                                .foregroundStyle(.primary)
-                        }
-                    }
-                } header: {
-                    Text("Alarms")
-                } footer: {
-                    Text("Wake up for \(Prayer.fajr.name(model.naming)), sahur, alarms for each prayer, and when to leave for \(Prayer.dhuhr.name(model.naming, isFriday: true)). Also on the Prayer screen. Tap the alarm clock at the top.")
-                }
 
                 Section {
                     Toggle("Musafir features", isOn: $model.prefs.musafirEnabled)
@@ -173,13 +177,10 @@ struct SettingsView: View {
 
                 Section {
                     Toggle("Prayer tracker", isOn: $model.prefs.trackerEnabled)
-                    if model.prefs.trackerEnabled {
-                        Toggle("Nudge before time runs out", isOn: $model.prefs.windowNudge)
-                    }
                 } header: {
                     Text("Tracker")
                 } footer: {
-                    Text("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone." + (model.prefs.trackerEnabled ? " Nudge before time runs out sends one gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for \(Prayer.isha.name(model.naming)), which stays open until \(Prayer.fajr.name(model.naming)). Never while paused." : ""))
+                    Text("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone." + (model.prefs.trackerEnabled ? " The nudge before time runs out is in Alerts and alarms." : ""))
                 }
 
                 Section {
@@ -210,68 +211,7 @@ struct SettingsView: View {
                     }
                 }
 
-                Section {
-                    Toggle("Prayer time alerts", isOn: Binding(
-                        get: { model.prefs.notificationsEnabled },
-                        set: { on in
-                            Task {
-                                if on { model.prefs.notificationsEnabled = await NotificationScheduler.requestPermission() }
-                                else { model.prefs.notificationsEnabled = false }
-                            }
-                        }))
-                    if model.prefs.notificationsEnabled && Azan.isAvailable {
-                        Toggle("Play the azan", isOn: $model.prefs.azanSound)
-                    }
-                    Toggle("Reminder before prayer", isOn: Binding(
-                        get: { model.prefs.reminderMinutesBefore > 0 },
-                        set: { on in
-                            Task {
-                                if on {
-                                    if await NotificationScheduler.requestPermission() {
-                                        model.prefs.reminderMinutesBefore = Preferences.defaultReminderMinutes
-                                    }
-                                } else { model.prefs.reminderMinutesBefore = 0 }
-                            }
-                        }))
-                    if model.prefs.reminderMinutesBefore > 0 {
-                        Picker("Remind me", selection: $model.prefs.reminderMinutesBefore) {
-                            ForEach(Preferences.reminderChoices, id: \.self) { Text("\($0) min before").tag($0) }
-                        }
-                    }
-                    if model.prefs.notificationsEnabled || model.prefs.reminderMinutesBefore > 0 {
-                        ForEach(Prayer.allCases) { prayer in
-                            Toggle(prayer == .sunrise
-                                   ? "\(prayer.name(model.naming)) (\(Prayer.fajr.name(model.naming)) ends)"
-                                   : prayer.name(model.naming), isOn: Binding(
-                                get: { model.prefs.notifyPrayers.contains(prayer) },
-                                set: { on in
-                                    if on { model.prefs.notifyPrayers.insert(prayer) }
-                                    else { model.prefs.notifyPrayers.remove(prayer) }
-                                }))
-                        }
-                    }
-                } header: {
-                    Text("Alerts")
-                } footer: {
-                    Text("Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both." + (Azan.isAvailable ? " With Play the azan on, prayer time alerts open with the azan (a Subuh azan at Subuh)." : "") + " Worked out on your phone and topped up every time you open the app - nothing comes from a server.")
-                }
 
-                Section {
-                    Toggle("Buzz only, no sound", isOn: $model.prefs.buzzOnly)
-                    Toggle("Quiet hours", isOn: $model.prefs.quietHours)
-                    if model.prefs.quietHours {
-                        Picker("From", selection: $model.prefs.quietFrom) {
-                            ForEach(Self.halfHours, id: \.self) { Text(model.clock($0)).tag($0) }
-                        }
-                        Picker("Until", selection: $model.prefs.quietTo) {
-                            ForEach(Self.halfHours, id: \.self) { Text(model.clock($0)).tag($0) }
-                        }
-                    }
-                } header: {
-                    Text("Quiet alerts")
-                } footer: {
-                    Text("For shift workers sleeping in the day, a baby asleep in the room, or simply a calm night. Alerts still come, but they only buzz. \(Prayer.fajr.name(model.naming)) keeps its sound so it can wake you.")
-                }
 
                 Section {
                     NavigationLink { MoveOutView() } label: {

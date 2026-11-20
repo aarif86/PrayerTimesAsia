@@ -45,6 +45,8 @@ import com.prayertimesasia.app.ui.theme.display
 import com.prayertimesasia.core.fmt
 import kotlin.math.acos
 import kotlin.math.sqrt
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /**
  * A spirit level for the shadow stick. Lay the phone flat where the stick will
@@ -88,10 +90,10 @@ fun LevelScreen() {
     val green = Palette.success
     val primary = Palette.primary
     Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(24.dp)) {
-        Text("Level", style = Txt.headline, color = primary)
+        Text(tr(R.string.falak_level), style = Txt.headline, color = primary)
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            SegmentedButton(!upright, { upright = false }, SegmentedButtonDefaults.itemShape(0, 2)) { Text("Ground (phone flat)") }
-            SegmentedButton(upright, { upright = true }, SegmentedButtonDefaults.itemShape(1, 2)) { Text("Stick (phone upright)") }
+            SegmentedButton(!upright, { upright = false }, SegmentedButtonDefaults.itemShape(0, 2)) { Text(tr(R.string.falakTools_ground)) }
+            SegmentedButton(upright, { upright = true }, SegmentedButtonDefaults.itemShape(1, 2)) { Text(tr(R.string.falakTools_stick)) }
         }
         Box(Modifier.size(260.dp), contentAlignment = Alignment.Center) {
             Canvas(Modifier.fillMaxSize()) {

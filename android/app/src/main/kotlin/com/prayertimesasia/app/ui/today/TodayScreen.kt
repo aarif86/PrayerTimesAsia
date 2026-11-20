@@ -87,6 +87,8 @@ import kotlinx.coroutines.delay
 import java.time.Instant
 import com.prayertimesasia.app.ui.makers.ReviewLine
 import com.prayertimesasia.app.ui.makers.StarBoxAsker
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /** Everything one frame of the Prayer screen needs. */
 class TodayFrame(
@@ -392,7 +394,6 @@ private fun PrayerMark(state: AppState, day: PrayerDay, prayer: Prayer, time: In
     val r = state.resolver
     val p = state.prefs
     val passed = time <= now && !isCurrent
-    val notifying = p.notificationsEnabled && prayer in p.notifyPrayers
     val trackable = p.trackerEnabled && prayer.isObligatory && time <= now
     val prayed = trackable && r.isPrayed(prayer, time)
     var menu by remember { mutableStateOf(false) }
@@ -422,9 +423,7 @@ private fun PrayerMark(state: AppState, day: PrayerDay, prayer: Prayer, time: In
             }
         }
         androidx.compose.material3.DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            androidx.compose.material3.DropdownMenuItem(
-                text = { Text(if (notifying) "Turn off alert" else "Alert me at ${prayer.name(r.naming)}") },
-                onClick = { menu = false; state.toggleNotify(prayer) })
+            AlertMenuItems(state, prayer) { menu = false }
             if (trackable) {
                 androidx.compose.material3.DropdownMenuItem(
                     text = { Text(if (prayed) "Mark as not prayed" else "Mark as prayed") },
@@ -457,7 +456,7 @@ private fun DialCentre(f: TodayFrame, size: Dp) {
     val nxt = f.next
     if (cur != null && nxt != null) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy((size.value * 0.006f).dp)) {
-            Text(if (cur.isNext) "NEXT" else "NOW", fontSize = (size.value * 0.028f).sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.6.sp, color = cur.prayer.textTint)
+            Text(if (cur.isNext) tr(R.string.today_next) else tr(R.string.today_now), fontSize = (size.value * 0.028f).sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.6.sp, color = cur.prayer.textTint)
             Text(f.name(cur.prayer, cur.time), style = display((size.value * 0.085f).sp, FontWeight.Bold), color = Palette.primary, maxLines = 1)
             val count = Countdown.of(f.state, f.now, nxt)
             Text(count.count, style = display((size.value * 0.066f).sp, FontWeight.SemiBold),
@@ -603,7 +602,7 @@ private fun NoPlace(state: AppState, openPlaces: () -> Unit) {
             Text(if (state.locationRequested && !state.location.hasPermission) "Location is off" else "Finding where you are…",
                 style = Txt.title2, color = Palette.primary)
             Spacer(Modifier.height(16.dp))
-            Text("Prayer times are calculated for your exact spot. Allow location, or pick a city.", style = Txt.body,
+            Text(tr(R.string.today_whereExplain), style = Txt.body,
                 color = Palette.primary.copy(alpha = 0.85f), textAlign = TextAlign.Center)
             Spacer(Modifier.height(16.dp))
             CapsuleButton("Choose a city", background = Palette.primary.copy(alpha = 0.25f), onClick = openPlaces)
