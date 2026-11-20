@@ -154,7 +154,7 @@ private struct CheckCardSection: View {
                         .foregroundStyle(.primary)
                     Text("Notifications stay quiet then. Set a prayer to Alarm if you need to hear it.")
                         .font(.footnote).foregroundStyle(.secondary)
-                    Text("Check my phone")
+                    Text("Check my \(Device.noun)")
                         .font(.footnote.weight(.bold))
                         .padding(.horizontal, 12).padding(.vertical, 6)
                         .background(Capsule().fill(Theme.sunArc))
@@ -278,7 +278,7 @@ private struct NextAlarmSection: View {
         if #available(iOS 26.0, *) {
             return Device.words("An alarm rings even in Silent mode and Focus, like the Clock app. Tap Stop to end it. Snooze 5 min rings it once more in 5 minutes.")
         }
-        return "On this iPhone an alarm comes as a notification. From iOS 26 it rings like a real alarm, even in Silent mode."
+        return Device.isMac ? "On a Mac an alarm comes as a notification with sound. Keep your iPhone for alarms that ring on silent." : "On this iPhone an alarm comes as a notification. From iOS 26 it rings like a real alarm, even in Silent mode."
     }
 
     private func nextText(_ w: AppModel.WakeUp) -> String {
@@ -654,7 +654,7 @@ private struct CheckPhonePage: View {
                         Task { await requestAlarms(); await refresh() }
                     }
                 case .oldIOS:
-                    CheckRow(ok: false, title: "Alarms come as notifications on this iPhone", detail: "From iOS 26 they ring like the Clock app, even on silent.")
+                    CheckRow(ok: false, title: Device.isMac ? "Alarms come as notifications on a Mac" : "Alarms come as notifications on this iPhone", detail: Device.isMac ? "Keep your iPhone for alarms that ring on silent." : "From iOS 26 they ring like the Clock app, even on silent.")
                 case .unknown:
                     EmptyView()
                 }

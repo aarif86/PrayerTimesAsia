@@ -58,7 +58,7 @@ struct TodayView: View {
                 }
                 .scrollIndicators(.hidden)
             } else if model.prefs.todayStyle == .sunPath {
-                AnyView(sunPathPage(now: now, day: day, shown: shown, current: current, next: next))
+                macWidth(sunPathPage(now: now, day: day, shown: shown, current: current, next: next), 820)
             } else if model.prefs.todayStyle == .bands {
                 ViewThatFits(in: .vertical) {
                     AnyView(bandsPage(now: now, shown: shown, current: current, next: next, fill: true))
@@ -74,17 +74,17 @@ struct TodayView: View {
                 if model.prefs.todayStyle == .centre {
                     centreOrMacPage(now: now, day: day, shown: shown, current: current, next: next)
                 } else if model.prefs.todayStyle == .dial {
-                    AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
+                    macWidth(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true), 560)
                 } else {
-                    AnyView(page(now: now, day: day, shown: shown, current: current, next: next, fill: true))
+                    macWidth(page(now: now, day: day, shown: shown, current: current, next: next, fill: true), 820)
                 }
                 ScrollView {
                     if model.prefs.todayStyle == .centre {
                         AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
                     } else if model.prefs.todayStyle == .dial {
-                        AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
+                        macWidth(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false), 560)
                     } else {
-                        AnyView(page(now: now, day: day, shown: shown, current: current, next: next, fill: false))
+                        macWidth(page(now: now, day: day, shown: shown, current: current, next: next, fill: false), 820)
                     }
                 }
                 .scrollIndicators(.hidden)
@@ -642,6 +642,13 @@ struct TodayView: View {
     }
 
     // MARK: Mac, two parts side by side
+
+    /// On a Mac a look made for a phone keeps a comfortable width in the middle of
+    /// the window instead of stretching across it. On a phone nothing changes.
+    private func macWidth<V: View>(_ view: V, _ width: CGFloat) -> AnyView {
+        guard Device.isMac else { return AnyView(view) }
+        return AnyView(view.frame(maxWidth: width).frame(maxWidth: .infinity))
+    }
 
     /// Phones get the Centre page as before. A Mac window is wide, so there the
     /// dial sits on the left with the day's times beside it. Kept behind AnyView
