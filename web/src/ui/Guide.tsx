@@ -31,7 +31,7 @@ export function Guide({ onClose }: { onClose: () => void }) {
   const last = i === GUIDE_CARDS.length - 1
 
   const go = (n: number) => { setI(Math.max(0, Math.min(GUIDE_CARDS.length - 1, n))); setDrag(0) }
-  const finish = () => { store.update((p) => { p.guideSeen = true }); onClose() }
+  const finish = () => { store.update((p) => { p.guideShown = true }); onClose() }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

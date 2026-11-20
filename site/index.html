@@ -6,7 +6,7 @@
   <title>Prayer Times Asia | prayer times and qibla wherever you land</title>
   <meta name="description" content="Built by Ustaz Aarif Raziff after a trip to Vietnam with no proper prayer app. Free prayer times and qibla, built in Asia and made for Muslims everywhere. Your local religious authority first, official timetables where they exist, works offline, no outside ads, no account, no tracking. On the web today, iPhone and Android in testing." />
   <meta name="theme-color" content="#0b0f2a" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="color-scheme" content="dark light" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
 
@@ -489,7 +489,87 @@
     @media (max-width: 900px) { .also-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 560px) { .also-grid { grid-template-columns: 1fr; } .also { margin-top: 40px; } }
     @media (prefers-reduced-motion: reduce) { .try-tab { transition: none; } }
+
+    /* ---------- Light mode ----------
+       The page starts dark; the script in the head sets data-theme from the visitor's own
+       choice, or else from their device setting. A few panels stay night coloured on purpose
+       (the masjid band, the closing band and the TV example), so they get the night colours back. */
+    :root { color-scheme: dark; }
+    :root[data-theme="light"] { --night: #F2EEE9; --night-2: #e9e2d8; --card: #ffffff; --card-line: rgba(21, 26, 69, 0.13); --text: #151A45; --muted: #4c5380; --gold: #8a5a00; --green: #1c8a55; color-scheme: light; }
+    [data-theme="light"] .partner, [data-theme="light"] .ask-band, [data-theme="light"] .ex-tv {
+      --card: rgba(255, 255, 255, 0.05); --card-line: rgba(255, 255, 255, 0.10); --text: #eef0fa; --muted: #a9b2d6; --gold: #f2c063; --green: #4fd18b; color: var(--text); }
+    [data-theme="light"] body::before { background:
+        radial-gradient(60% 50% at 80% 0%, #f7bd8f55 0%, transparent 70%),
+        radial-gradient(50% 40% at 0% 100%, #e2b65a33 0%, transparent 70%),
+        var(--night); }
+    [data-theme="light"] .sky .g1 { background: #f7bd8f; opacity: .45; }
+    [data-theme="light"] .sky .g2 { background: #e2b65a; opacity: .3; }
+    [data-theme="light"] .sky .g3 { background: #e7788f; opacity: .1; }
+    [data-theme="light"] .sky .star, [data-theme="light"] .sky .shoot { display: none; }
+    [data-theme="light"] header.top { background: rgba(242, 238, 233, 0.78); }
+    [data-theme="light"] header.top.scrolled { background: rgba(242, 238, 233, 0.94); box-shadow: 0 10px 30px -22px #151A4566; }
+    [data-theme="light"] .btn-primary { background: linear-gradient(135deg, #f2c063, #f39a4a); }
+    [data-theme="light"] .btn-ghost:hover { background: var(--card); border-color: var(--gold); }
+    [data-theme="light"] .hero h1 span { background-image: linear-gradient(135deg, #b06f00, #c2571a 60%, #b8405c); }
+    [data-theme="light"] .lang summary { border-color: rgba(21, 26, 69, 0.2); }
+    [data-theme="light"] .lang summary:hover, [data-theme="light"] .lang[open] summary { background: #ffffff; border-color: #c8922a; }
+    [data-theme="light"] .lang .menu { background: #ffffff; border-color: rgba(21, 26, 69, 0.14); box-shadow: 0 18px 40px -16px #151A4577; }
+    [data-theme="light"] .lang .menu a:hover { background: rgba(21, 26, 69, 0.06); }
+    [data-theme="light"] .lang .menu a[aria-current="page"] { background: rgba(226, 182, 90, 0.28); }
+    [data-theme="light"] .phone { box-shadow: 0 0 0 1.5px #151A4522, 0 30px 60px -24px #151A4588, 0 0 80px -20px #f39a4a55; }
+    [data-theme="light"] .strip { background: rgba(255, 255, 255, 0.55); }
+    [data-theme="light"] .strip li::before { box-shadow: none; }
+    [data-theme="light"] .card, [data-theme="light"] .chapter { box-shadow: 0 10px 30px -22px #151A4555; }
+    [data-theme="light"] .card:hover, [data-theme="light"] .chapter:hover { border-color: #c8922a; box-shadow: 0 20px 40px -26px #151A4566; }
+    [data-theme="light"] .card .icon { background: linear-gradient(135deg, #f2c06355, #f39a4a33); }
+    [data-theme="light"] .tag.live { background: #1c8a5522; }
+    [data-theme="light"] .tag.beta { background: #e2b65a44; }
+    [data-theme="light"] .tag.plan { background: #151A4512; }
+    [data-theme="light"] .chip { background: #ffffff; }
+    [data-theme="light"] .sheets img { box-shadow: 0 30px 60px -24px #151A4588, 0 0 0 1px #151A4514; }
+    [data-theme="light"] .steps .card::before { background: #f2c063; }
+    [data-theme="light"] .chapter .num, [data-theme="light"] .ex-dots i { background: linear-gradient(135deg, #f2c063, #f39a4a); }
+    [data-theme="light"] .letter { background: #ffffff; border-color: #c8922a; box-shadow: 0 30px 60px -36px #151A4577; }
+    [data-theme="light"] .trip-photo img { box-shadow: 0 30px 60px -30px #151A4588; }
+    [data-theme="light"] .ex { background: #f7f3ee; border-color: rgba(21, 26, 69, 0.10); box-shadow: 0 14px 30px -22px #151A4566; }
+    [data-theme="light"] .ex-note { background: #f7f3ee; }
+    [data-theme="light"] .ex-pill { background: rgba(226, 182, 90, 0.3); }
+    [data-theme="light"] .ex-row { border-bottom-color: rgba(21, 26, 69, 0.09); }
+    [data-theme="light"] .ex-row:last-child { border-bottom: 0; }
+    [data-theme="light"] .ex-dots i.p { background: repeating-linear-gradient(45deg, rgba(21,26,69,.28) 0 3px, rgba(21,26,69,.08) 3px 6px); }
+    [data-theme="light"] .ex-calr + .ex-calr { border-top-color: rgba(21, 26, 69, 0.08); }
+    [data-theme="light"] .ex.ex-tv { background: linear-gradient(160deg, #0d1436, #1a1446); border: 6px solid #05070f; }
+    [data-theme="light"] .to-top { background: rgba(255, 255, 255, 0.92); box-shadow: 0 10px 30px -12px #151A4588, 0 0 28px -10px var(--ember); }
+    [data-theme="light"] .to-top .track { stroke: rgba(21, 26, 69, 0.12); }
+    [data-theme="light"] details:not(.lang)[open] { background: #fffaf0; border-color: #c8922a; }
+
+    [data-theme="light"] .try-tab { border-color: rgba(21, 26, 69, 0.13); box-shadow: 0 10px 30px -22px #151A4555; }
+    [data-theme="light"] .try-tab[aria-selected="true"] { background: rgba(226, 182, 90, 0.22); border-color: #c8922a; }
+    [data-theme="light"] .also-card { box-shadow: 0 10px 30px -22px #151A4555; }
+    [data-theme="light"] .also-show { border-color: #c8922a; }
+    [data-theme="light"] .also-show:hover { background: rgba(226, 182, 90, 0.22); }
+    [data-theme="light"] .review-band { box-shadow: 0 10px 30px -22px #151A4555; }
+    [data-theme="light"] #review-words { background: #fbf8f4; }
+
+    /* Light and dark button (sun and moon). */
+    .mode { width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1px solid var(--card-line); background: var(--card); color: var(--gold); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; padding: 0; transition: border-color .2s, transform .2s; }
+    .mode[hidden] { display: none; }
+    .mode:hover { border-color: var(--gold); transform: rotate(12deg); }
+    .mode svg { width: 20px; height: 20px; }
+    .mode .sun { display: none; }
+    [data-theme="light"] .mode .sun { display: block; }
+    [data-theme="light"] .mode .moon-icon { display: none; }
   </style>
+  <script>
+    // Pick light or dark before the page paints: the visitor's saved choice first, then the device setting.
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('pta-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') { t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 <script>
   // First visit to the English page: open the page in the visitor's own language if we have it.
   // Uses only the language their phone or computer is set to, nothing is sent anywhere.
@@ -527,6 +607,7 @@
       <a href="#faq">Questions</a>
     </nav>
     <div class="top-right">
+      <button class="mode" type="button" hidden aria-label="Switch between light and dark"><svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a.7.7 0 0 0-.9-.8A9.9 9.9 0 1 0 21.3 15.1a.7.7 0 0 0-.8-.9z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
       <details class="lang"><summary aria-label="Language"><!--notr--><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="cur">EN</span><svg class="caret" viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><!--/notr--></summary><!--notr--><div class="menu"><a href="./" hreflang="en" aria-current="page">English</a><a href="ms/" hreflang="ms" lang="ms">Bahasa Melayu</a><a href="id/" hreflang="id" lang="id">Bahasa Indonesia</a><a href="ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a><a href="ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a><a href="bn/" hreflang="bn" lang="bn">বাংলা</a><a href="tr/" hreflang="tr" lang="tr">Türkçe</a><a href="fr/" hreflang="fr" lang="fr">Français</a></div><!--/notr--></details>
       <a class="btn btn-primary btn-sm" href="app/">Open the app</a>
     </div>
@@ -1304,6 +1385,26 @@
         if (words && navigator.clipboard) navigator.clipboard.writeText(words).then(function () { note.hidden = false; }, function () {});
       });
     });
+  })();
+
+  // Light and dark button: remembers the choice on this device for every page of the website.
+  (function () {
+    var root = document.documentElement, btn = document.querySelector('.mode'), meta = document.querySelector('meta[name="theme-color"]');
+    function paint() {
+      var light = root.getAttribute('data-theme') === 'light';
+      if (meta) meta.setAttribute('content', light ? '#F2EEE9' : '#0b0f2a');
+      if (btn) btn.setAttribute('aria-pressed', light ? 'true' : 'false');
+    }
+    if (btn) {
+      btn.hidden = false;
+      btn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('pta-theme', next); } catch (e) {}
+        paint();
+      });
+    }
+    paint();
   })();
 </script>
 </body>

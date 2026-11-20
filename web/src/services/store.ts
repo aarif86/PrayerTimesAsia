@@ -857,7 +857,7 @@ function demoPreferences(demo: Demo): Preferences {
   p.lastCountryCode = 'SG'
   p.trackerEnabled = true
   // Screenshots skip the quick guide unless they ask for it (?guide=1).
-  p.guideSeen = q.get('guide') !== '1'
+  p.guideShown = q.get('guide') !== '1'
   for (let back = 1; back <= 3; back++) {
     p.prayedLog[dayKey(now - back * 86_400_000, 'Asia/Singapore')] = [...OBLIGATORY]
   }
