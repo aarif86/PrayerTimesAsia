@@ -94,6 +94,7 @@ import com.prayertimesasia.core.JakimZones
 import com.prayertimesasia.core.NamingStyle
 import com.prayertimesasia.core.Official
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.alertMode
 import com.prayertimesasia.app.CalendarFile
 import com.prayertimesasia.core.TodayStyle
 import java.time.LocalDate
@@ -133,6 +134,21 @@ fun SettingsScreen(
                 }
             }
             item {
+                val next = com.prayertimesasia.app.alarms.AlarmScheduler.nextWakeUp(r, state.now)
+                val notify = Prayer.all.count { p.alertMode(it) == com.prayertimesasia.core.AlertMode.NOTIFY }
+                val alarm = Prayer.all.count { p.alertMode(it) == com.prayertimesasia.core.AlertMode.ALARM }
+                Section("Alerts and alarms", "Each prayer Off, Notify or Alarm, the ${Prayer.DHUHR.name(r.naming, true)} reminder, sahur, Ramadan, sound and quiet hours, all in one place. Also on the Prayer screen. Tap the alarm clock at the top, or a prayer's bell.") {
+                    ValueRow("Alerts and alarms", when {
+                        notify + alarm == 0 && next == null -> "Off"
+                        else -> listOfNotNull(
+                            if (notify > 0) "$notify notify" else null,
+                            if (alarm > 0) "$alarm alarm${if (alarm > 1) "s" else ""}" else null,
+                            next?.let { "next ${r.formatted(it.at)}" },
+                        ).joinToString(", ")
+                    }) { state.openAlerts() }
+                }
+            }
+            item {
                 Section(tr(R.string.settings_ramadan),
                     if (p.seasonPreview == com.prayertimesasia.core.SeasonPreview.OFF)
                         "Ramadan mode turns on by itself on the day your local religious authority announces. Testers can pretend it's Ramadan or Raya with the switch above."
@@ -140,19 +156,6 @@ fun SettingsScreen(
                     LinkRow(tr(R.string.settings_ramadanPage), Icons.Filled.NightsStay) { state.showRamadan = true }
                     PickerRow(tr(R.string.settings_tryRamadan), p.seasonPreview.label,
                         com.prayertimesasia.core.SeasonPreview.entries.map { it.label to it }, p.seasonPreview) { v -> state.update { it.copy(seasonPreview = v) } }
-                    SwitchRow(tr(R.string.settings_imsakAlert), p.imsakAlert) { on -> state.setRamadanAlert(on) { q, v -> q.copy(imsakAlert = v) } }
-                    SwitchRow(tr(R.string.settings_berbukaAlert), p.berbukaAlert) { on -> state.setRamadanAlert(on) { q, v -> q.copy(berbukaAlert = v) } }
-                    SwitchRow("Qiyam in the last ten nights", p.qiyamAlert) { on -> state.setRamadanAlert(on) { q, v -> q.copy(qiyamAlert = v) } }
-                }
-            }
-            item {
-                val next = com.prayertimesasia.app.alarms.AlarmScheduler.nextWakeUp(r, state.now)
-                Section("Alarms", "Wake up for ${Prayer.FAJR.name(r.naming)}, sahur, alarms for each prayer, and when to leave for ${Prayer.DHUHR.name(r.naming, true)}. Also on the Prayer screen. Tap the alarm clock at the top.") {
-                    ValueRow(tr(R.string.settings_alarms), when {
-                        next != null -> "Next ${r.formatted(next.at)}"
-                        p.anyAlarm -> "On"
-                        else -> "Off"
-                    }) { state.showWakeUp = true }
                 }
             }
             item {
@@ -222,12 +225,8 @@ fun SettingsScreen(
                 }
             }
             item {
-                val nudgeNote = if (p.trackerEnabled) " Nudge before time runs out sends one gentle alert about 30 minutes before a prayer's time ends, only if you haven't ticked it. Not for ${Prayer.ISHA.name(r.naming)}, which stays open until ${Prayer.FAJR.name(r.naming)}. Never while paused." else ""
-                Section(tr(R.string.settings_tracker), "Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone.$nudgeNote") {
+                Section(tr(R.string.settings_tracker), "Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone. The nudge before time runs out is in Alerts and alarms.") {
                     SwitchRow(tr(R.string.settings_trackerOn), p.trackerEnabled) { on -> state.update { it.copy(trackerEnabled = on) } }
-                    if (p.trackerEnabled) {
-                        SwitchRow(tr(R.string.settings_nudge), p.windowNudge) { on -> state.update { it.copy(windowNudge = on) } }
-                    }
                 }
             }
             item {
@@ -253,49 +252,6 @@ fun SettingsScreen(
                         canDown = p.hijriAdjustment > -2, canUp = p.hijriAdjustment < 2,
                         onDown = { state.update { it.copy(hijriAdjustment = it.hijriAdjustment - 1) } },
                         onUp = { state.update { it.copy(hijriAdjustment = it.hijriAdjustment + 1) } })
-                }
-            }
-            item {
-                Section(tr(R.string.settings_alerts), "Prayer time alerts ring at the exact time of each prayer you choose. Reminder before prayer gives you a heads-up a few minutes earlier (15 by default), so a meeting or work doesn't run past it - turn on either or both. With Play the azan on (when available), prayer time alerts play the azan, and a Subuh azan at Subuh. To let them through Do Not Disturb, allow reminders there. Worked out on your phone and topped up every time you open the app and when the phone restarts - nothing comes from a server.") {
-                    SwitchRow(tr(R.string.settings_prayerAlerts), p.notificationsEnabled) { on ->
-                        if (on) state.enableAlerts() else state.update { it.copy(notificationsEnabled = false) }
-                    }
-                    if (p.notificationsEnabled && Azan.isAvailable(context)) {
-                        SwitchRow(tr(R.string.settings_azan), p.azanSound) { on -> state.update { it.copy(azanSound = on) } }
-                    }
-                    SwitchRow(tr(R.string.settings_reminder), p.reminderMinutesBefore > 0) { on ->
-                        if (on) state.enableReminder() else state.update { it.copy(reminderMinutesBefore = 0) }
-                    }
-                    if (p.reminderMinutesBefore > 0) {
-                        PickerRow(tr(R.string.settings_remindMe), "${p.reminderMinutesBefore} min before",
-                            AlarmScheduler.REMINDER_CHOICES.map { "$it min before" to it }, p.reminderMinutesBefore) { m ->
-                            state.update { it.copy(reminderMinutesBefore = m) }
-                        }
-                    }
-                    if (p.notificationsEnabled || p.reminderMinutesBefore > 0) {
-                        Prayer.all.forEach { prayer ->
-                            SwitchRow(if (prayer == Prayer.SUNRISE) "${prayer.name(r.naming)} (${Prayer.FAJR.name(r.naming)} ends)" else prayer.name(r.naming),
-                                prayer in p.notifyPrayers) { on ->
-                                state.update { it.copy(notifyPrayers = if (on) it.notifyPrayers + prayer else it.notifyPrayers - prayer) }
-                            }
-                        }
-                        ExactAlarmRow(context)
-                    }
-                }
-            }
-            item {
-                Section(tr(R.string.settings_quiet), "For shift workers sleeping in the day, a baby asleep in the room, or simply a calm night. Alerts still come, but they only buzz. ${Prayer.FAJR.name(r.naming)} keeps its sound so it can wake you.") {
-                    SwitchRow(tr(R.string.settings_buzzOnly), p.buzzOnly) { on -> state.update { it.copy(buzzOnly = on) } }
-                    SwitchRow(tr(R.string.settings_quietHours), p.quietHours) { on -> state.update { it.copy(quietHours = on) } }
-                    if (p.quietHours) {
-                        val halfHours = (0 until 1440 step 30).toList()
-                        PickerRow(tr(R.string.settings_from), r.clock(p.quietFrom), halfHours.map { r.clock(it) to it }, p.quietFrom) { m ->
-                            state.update { it.copy(quietFrom = m) }
-                        }
-                        PickerRow(tr(R.string.settings_until), r.clock(p.quietTo), halfHours.map { r.clock(it) to it }, p.quietTo) { m ->
-                            state.update { it.copy(quietTo = m) }
-                        }
-                    }
                 }
             }
             item {
@@ -362,20 +318,6 @@ private fun openFeed(context: Context, https: String) {
 }
 
 /** Android 12+: exact alarms need the user's say-so; without it alerts may be a few minutes late. */
-@Composable
-private fun ExactAlarmRow(context: Context) {
-    if (Build.VERSION.SDK_INT < 31) return
-    val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    var allowed by remember { mutableStateOf(am.canScheduleExactAlarms()) }
-    LaunchedEffect(Unit) { allowed = am.canScheduleExactAlarms() }
-    if (allowed) return
-    LinkRow("Allow alerts at the exact minute", null) {
-        runCatching {
-            context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:${context.packageName}"))
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        }
-    }
-}
 
 // MARK: Form building blocks
 

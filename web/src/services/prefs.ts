@@ -1,3 +1,4 @@
+import { unifyAlerts } from '../core/alertMode'
 import { JUMUAH_LEAVE_CHOICES, snapLeaveMinutes, type JumuahSession } from '../core/jumuahLeave'
 import { TARAWIH_RAKAAT } from '../core/tarawih'
 import type { MasjidLink } from '../core/masjidLink'
@@ -297,6 +298,8 @@ export function decodePreferences(raw: unknown): Preferences {
   if (out.jumuahSession !== 'second') out.jumuahSession = 'first'
   // Isyak is open until Subuh: it has no "before it ends" alarm.
   if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
+  // One Off, Notify or Alarm per prayer in Alerts and alarms (core/alertMode.ts).
+  unifyAlerts(out)
   // People already using the app before the quick guide came don't get it pushed at them; it waits in Settings.
   if (!('guideSeen' in r) && out.hasOnboarded) out.guideSeen = true
   return out

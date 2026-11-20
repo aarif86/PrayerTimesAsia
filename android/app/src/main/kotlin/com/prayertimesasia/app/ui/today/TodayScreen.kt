@@ -394,7 +394,6 @@ private fun PrayerMark(state: AppState, day: PrayerDay, prayer: Prayer, time: In
     val r = state.resolver
     val p = state.prefs
     val passed = time <= now && !isCurrent
-    val notifying = p.notificationsEnabled && prayer in p.notifyPrayers
     val trackable = p.trackerEnabled && prayer.isObligatory && time <= now
     val prayed = trackable && r.isPrayed(prayer, time)
     var menu by remember { mutableStateOf(false) }
@@ -424,9 +423,7 @@ private fun PrayerMark(state: AppState, day: PrayerDay, prayer: Prayer, time: In
             }
         }
         androidx.compose.material3.DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            androidx.compose.material3.DropdownMenuItem(
-                text = { Text(if (notifying) "Turn off alert" else "Alert me at ${prayer.name(r.naming)}") },
-                onClick = { menu = false; state.toggleNotify(prayer) })
+            AlertMenuItems(state, prayer) { menu = false }
             if (trackable) {
                 androidx.compose.material3.DropdownMenuItem(
                     text = { Text(if (prayed) "Mark as not prayed" else "Mark as prayed") },

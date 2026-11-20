@@ -69,7 +69,10 @@ class PrayerWindowTest {
 
     @Test fun leaveForJumaatChoicesWordsAndOldValues() {
         assertEquals(30, Preferences.decode("""{"jumuahReminderMinutes":20}""").jumuahReminderMinutes)
-        assertEquals(120, Preferences.decode("""{"jumuahReminderMinutes":90}""").jumuahReminderMinutes)
+        assertEquals(90, Preferences.decode("""{"jumuahReminderMinutes":90}""").jumuahReminderMinutes)
+        assertEquals(180, Preferences.decode("""{"jumuahReminderMinutes":180}""").jumuahReminderMinutes)
+        assertEquals("2 hours 30 min", JumuahLeave.span(150, RamadanContent.Lang.EN))
+        assertEquals("1 jam 30 menit", JumuahLeave.span(90, RamadanContent.Lang.ID))
         assertEquals(JumuahSession.FIRST, Preferences.decode("""{"jumuahSession":"third"}""").jumuahSession)
         assertEquals("2 hours before", JumuahLeave.label(120))
         assertEquals("1 hour before", JumuahLeave.label(60))
