@@ -1,9 +1,12 @@
 import { store } from '../services/store'
 import { addDays, type CivilDay } from '../core/season'
+import { appLocale } from '../core/appWords'
+import { wordsFor } from '../core/ramadanWords'
 
 /**
- * Pictures people send to family and group chats: this week's Imsak and Berbuka
- * times for their city, and a Hari Raya card. Drawn on the phone; nothing is uploaded.
+ * Pictures people send to family and group chats: this week's Imsak and iftar
+ * times for their city, and an Eid card, in the app's language. Drawn on the phone;
+ * nothing is uploaded.
  */
 
 const W = 1080
@@ -35,7 +38,7 @@ function footer(g: CanvasRenderingContext2D, h: number) {
   g.fillText('Prayer Times Asia · prayertimes.asia', W / 2, h - 60)
 }
 
-const dayName = (d: CivilDay) => new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
+const dayName = (d: CivilDay) => new Intl.DateTimeFormat(appLocale(), { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
   .format(new Date(Date.UTC(d.year, d.month - 1, d.day))).replace(',', '')
 
 /** Seven days of Imsak and Berbuka from today (Ramadan days only). */
@@ -52,6 +55,7 @@ export function weekCard(now: number): HTMLCanvasElement | null {
   }
   if (!rows.length) return null
   const h = 520 + rows.length * 120
+  const t = wordsFor(store.appLang)
   const { canvas, g } = base(h, '#101a4a', '#3a1f5c')
   crescent(g, W - 150, 150, 70, '#f3c969', '#16204f')
   g.textAlign = 'left'
@@ -63,13 +67,13 @@ export function weekCard(now: number): HTMLCanvasElement | null {
   g.fillText(store.activePlace?.name ?? '', 80, 220)
   g.fillStyle = 'rgba(255,255,255,0.75)'
   g.font = '500 34px Inter, system-ui, sans-serif'
-  g.fillText('Imsak and Berbuka this week', 80, 280)
+  g.fillText(t('weekCardTitle'), 80, 280)
   g.font = '700 30px Inter, system-ui, sans-serif'
   g.fillStyle = 'rgba(255,255,255,0.6)'
-  g.fillText('DAY', 80, 370)
+  g.fillText(t('weekCardDay').toLocaleUpperCase(appLocale()), 80, 370)
   g.textAlign = 'right'
-  g.fillText('IMSAK', 760, 370)
-  g.fillText('BERBUKA', 1000, 370)
+  g.fillText(t('imsak').toLocaleUpperCase(appLocale()), 760, 370)
+  g.fillText(t('berbuka').toLocaleUpperCase(appLocale()), 1000, 370)
   rows.forEach((r, i) => {
     const y = 460 + i * 120
     g.fillStyle = i % 2 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.09)'
@@ -80,7 +84,7 @@ export function weekCard(now: number): HTMLCanvasElement | null {
     g.fillText(r.label, 80, y)
     g.fillStyle = 'rgba(255,255,255,0.6)'
     g.font = '500 28px Inter, system-ui, sans-serif'
-    g.fillText(`${r.hijri} Ramadan`, 80, y + 34 - 4)
+    g.fillText(`${r.hijri} ${t('ramadan')}`, 80, y + 34 - 4)
     g.textAlign = 'right'
     g.fillStyle = '#fff'
     g.font = '600 46px Inter, system-ui, sans-serif'
@@ -91,14 +95,15 @@ export function weekCard(now: number): HTMLCanvasElement | null {
   g.textAlign = 'center'
   g.fillStyle = 'rgba(255,255,255,0.6)'
   g.font = '500 26px Inter, system-ui, sans-serif'
-  g.fillText('Follow your local religious authority for the start of Ramadan and Raya.', W / 2, h - 110)
+  g.fillText(t('weekCardFollow'), W / 2, h - 110)
   footer(g, h)
   return canvas
 }
 
-/** A simple Hari Raya card with the sender's own words. */
+/** A simple Eid card with the sender's own words. English says Eid Mubarak, Malay and Indonesian keep their own greeting. */
 export function rayaCard(fromName: string): HTMLCanvasElement {
   const h = 1350
+  const t = wordsFor(store.appLang)
   const { canvas, g } = base(h, '#0f3d2e', '#1f6b4f')
   // Ketupat lattice in the corners.
   g.strokeStyle = 'rgba(243,201,105,0.35)'
@@ -112,18 +117,26 @@ export function rayaCard(fromName: string): HTMLCanvasElement {
   g.textAlign = 'center'
   g.fillStyle = '#f3c969'
   g.font = '700 84px Inter, system-ui, sans-serif'
-  g.fillText('Selamat Hari Raya', W / 2, 620)
-  g.fillText('Aidilfitri', W / 2, 720)
+  // Two lines when the greeting is too wide for one ("Selamat Hari Raya / Aidilfitri").
+  const title = t('rayaCardTitle')
+  const words = title.split(' ')
+  let lines = [title]
+  if (g.measureText(title).width > W - 160 && words.length > 1) {
+    let best = 1
+    for (let i = 1; i < words.length; i++) if (g.measureText(words.slice(0, i).join(' ')).width <= W - 160) best = i
+    lines = [words.slice(0, best).join(' '), words.slice(best).join(' ')]
+  }
+  lines.forEach((l, i) => g.fillText(l, W / 2, (lines.length > 1 ? 620 : 670) + i * 100))
   g.fillStyle = '#fff'
   g.font = '500 44px Inter, system-ui, sans-serif'
-  g.fillText('Maaf zahir dan batin', W / 2, 820)
+  g.fillText(t('maafZahirBatin').replace(/\.$/, ''), W / 2, 820)
   g.font = '500 34px Inter, system-ui, sans-serif'
   g.fillStyle = 'rgba(255,255,255,0.8)'
   g.fillText('Taqabbalallahu minna wa minkum', W / 2, 890)
   if (fromName.trim()) {
     g.fillStyle = '#fff'
     g.font = '600 44px Inter, system-ui, sans-serif'
-    g.fillText(`From ${fromName.trim().slice(0, 40)}`, W / 2, 1040)
+    g.fillText(t('rayaCardFrom', { name: fromName.trim().slice(0, 40) }), W / 2, 1040)
   }
   footer(g, h)
   return canvas

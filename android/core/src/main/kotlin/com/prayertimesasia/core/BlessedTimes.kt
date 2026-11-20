@@ -31,9 +31,9 @@ enum class BlessedTime(val raw: String) {
     /** One line on what the time is and how it is worked out. */
     val note: String
         get() = when (this) {
-            IMSAK -> "10 minutes before Subuh. Finish sahur by now"
+            IMSAK -> "10 minutes before Fajr. Finish sahur by now"
             DHUHA -> "Sun a spear's length up (about 4½°)"
-            MIDNIGHT -> "Halfway from Maghrib to Subuh"
+            MIDNIGHT -> "Halfway from Maghrib to Fajr"
             LAST_THIRD -> "Best time for tahajjud and dua"
         }
 

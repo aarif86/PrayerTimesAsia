@@ -9,7 +9,8 @@ Rules, the same as data/ramadan-words.json:
 - every key is in every language, and no language has extra keys
 - every line has the same {holes} as English, and nothing else in braces
 - a key ending in _one is the single form of the key without it
-- no colons or dashes, no spaces at either end, nothing empty
+- no colons or dashes (a hyphen inside a word, like kira-kira or al-Fitr, is fine),
+  no spaces at either end, nothing empty
 - Malay has no "lah"
 - no key clashes with the Ramadan words, which stay in data/ramadan-words.json
   until the apps switch over
@@ -50,7 +51,7 @@ for lang in LANGS:
             problems.append(f"{lang}.{k} has other {{holes}} than English")
         if re.sub(HOLE, "", line).count("{") or re.sub(HOLE, "", line).count("}"):
             problems.append(f"{lang}.{k} has a broken {{hole}}")
-        if re.search(r"[:\-–—]", line):
+        if re.search(r"[:–—]|(?<!\w)-|-(?!\w)", line):
             problems.append(f"{lang}.{k} has a colon or dash")
         if lang == "ms" and re.search(r"\blah\b", line, re.I):
             problems.append(f"ms.{k} uses lah")

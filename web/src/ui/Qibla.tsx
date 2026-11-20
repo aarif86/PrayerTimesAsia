@@ -38,12 +38,12 @@ export function QiblaScreen() {
   }, [delta == null ? null : Math.round(delta * 10)])
   if (!place) return <div class="page"><p class="headline" style={{ textAlign: 'center', marginTop: '40vh' }}>{tr('qibla.choosePlace')}</p></div>
   const isAligned = demoAligned || aligned
-  const instruction = delta == null ? `Face ${Math.round(bearing)}° from north`
-    : isAligned ? "You're facing the Qibla" : delta > 0 ? `Turn right ${Math.round(Math.abs(delta))}°` : `Turn left ${Math.round(Math.abs(delta))}°`
+  const instruction = delta == null ? tr('qibla.faceFromNorth', { deg: Math.round(bearing) })
+    : isAligned ? tr('qibla.youAreFacing') : tr(delta > 0 ? 'qibla.turnRight' : 'qibla.turnLeft', { deg: Math.round(Math.abs(delta)) })
   // Spoken in steps of 10 degrees, so a screen reader is not interrupted at every degree.
   const step = delta == null ? 0 : Math.max(10, Math.round(Math.abs(delta) / 10) * 10)
   const spoken = delta == null ? instruction
-    : isAligned ? instruction : `${delta > 0 ? 'Turn right' : 'Turn left'}, about ${step}°`
+    : isAligned ? instruction : tr(delta > 0 ? 'qibla.turnRightAbout' : 'qibla.turnLeftAbout', { deg: step })
   const hasCompass = demoAligned || compass.state === 'active'
   // iPhone Safari only shares the compass after a tap, so the tap goes first and big.
   const askFirst = compass.state === 'needs-permission' && !demoAligned

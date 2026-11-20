@@ -34,7 +34,7 @@ export function MoveOutSheet() {
 
   const copy = async () => {
     if (!full) return
-    try { await navigator.clipboard.writeText(full); setCopied(true) } catch { prompt('Copy this link', full) }
+    try { await navigator.clipboard.writeText(full); setCopied(true) } catch { prompt(tr('move.copyThis'), full) }
   }
   const canShare = typeof navigator.share === 'function'
 

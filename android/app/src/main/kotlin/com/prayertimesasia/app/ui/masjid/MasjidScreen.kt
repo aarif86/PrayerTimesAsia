@@ -120,7 +120,7 @@ import kotlin.math.sqrt
 import com.prayertimesasia.app.ui.components.tr
 import com.prayertimesasia.app.R
 
-private enum class Kind(val label: String) { ALL("All"), MASJID("Masjid"), MUSOLLAH("Musollah") }
+private enum class Kind(val label: String) { ALL("All"), MASJID("Masjid"), MUSOLLAH("Prayer room") }
 
 /** What the Masjid tab last found, kept while the app runs so switching tabs doesn't search again. */
 object NearbyCache {
@@ -283,7 +283,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
         LazyColumn(Modifier.fillMaxSize()) {
             item {
                 Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-                    Text("Masjid & Musollah", style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
+                    Text("Masjids and prayer rooms", style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
                     Box(Modifier.align(Alignment.CenterEnd).size(40.dp).clip(CircleShape).clickable(onClickLabel = "About this app", onClick = openAbout),
                         contentAlignment = Alignment.Center) {
                         Icon(Icons.Outlined.Info, "About this app", Modifier.size(26.dp), tint = Palette.primary)
@@ -341,7 +341,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                         if (failed) "Couldn't search" else if (openOnly) "Nothing open right now" else "Nothing listed nearby",
                         if (failed) "Searching needs an internet connection."
                         else if (openOnly) "Only places with opening hours on the map count here. Turn off Open now only to see the rest."
-                        else "OpenStreetMap has no ${if (kind == Kind.MUSOLLAH) "musollah" else "masjid"} listed within 15 km. Use the Qibla tab to pray where you are.",
+                        else "OpenStreetMap has no ${if (kind == Kind.MUSOLLAH) "prayer room" else "masjid"} listed within 15 km. Use the Qibla tab to pray where you are.",
                         onRetry = if (failed) ({ attempt += 1 }) else null,
                     )
                 }
@@ -500,7 +500,7 @@ private fun YourMasjid(state: AppState, m: MasjidLink, from: Coordinates, mode: 
     val naming = state.resolver.naming
     val parts = Prayer.obligatory.mapNotNull { p ->
         m.jamaah[p.raw]?.let { r -> "${p.name(naming)} ${r.fixed?.let { MasjidExtras.clock(it, h24) } ?: "+${r.after} min"}" }
-    } + listOfNotNull(m.jumuah?.let { "Jumaat ${MasjidExtras.clock(it, h24)}" })
+    } + listOfNotNull(m.jumuah?.let { "${Prayer.DHUHR.name(naming, true)} ${MasjidExtras.clock(it, h24)}" })
     val friday = if (singapore) MasjidExtras.fridayAt(c) else null
     val raya = eid?.let { MasjidExtras.eidAt(it, m.name, c) }
     GlassCard(Modifier.fillMaxWidth(), padding = 14.dp) {
@@ -518,7 +518,7 @@ private fun YourMasjid(state: AppState, m: MasjidLink, from: Coordinates, mode: 
                 }
                 if (raya != null && eid != null) Text("${eid.shortName} prayer at ${raya.sessions.joinToString(", ") { MasjidExtras.clock(it.time, h24) }}.",
                     style = Txt.footnoteSemibold, color = Palette.accentText)
-                else m.eid?.let { Text("Hari Raya prayer at ${MasjidExtras.clock(it, h24)}.", style = Txt.footnoteSemibold, color = Palette.accentText) }
+                else m.eid?.let { Text("Eid prayer at ${MasjidExtras.clock(it, h24)}.", style = Txt.footnoteSemibold, color = Palette.accentText) }
                 Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CapsuleButton("Directions", style = Txt.footnoteSemibold) { directions(context, c, m.name, mode) }
                     CapsuleButton("Remove", style = Txt.footnoteSemibold, background = Color.Transparent, contentColor = Palette.secondary) { state.forgetMasjid() }
@@ -540,7 +540,7 @@ private fun FridayCard(from: Coordinates, today: Boolean, mode: TripMode, h24: B
             Icon(Icons.Filled.Event, null, Modifier.size(22.dp), tint = Palette.accent)
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(if (today) "Friday prayer today" else "Friday prayer in Singapore", style = Txt.headline, color = Palette.primary)
-                Text("${list.size} masjids hold a second Friday prayer from ${MasjidExtras.clock(MasjidExtras.FRIDAY_SECOND_FROM, h24)}, for those who can't make the first one at Zohor.",
+                Text("${list.size} masjids hold a second Friday prayer from ${MasjidExtras.clock(MasjidExtras.FRIDAY_SECOND_FROM, h24)}, for those who can't make the first one.",
                     style = Txt.footnote, color = Palette.secondary)
             }
         }

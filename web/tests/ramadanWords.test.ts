@@ -18,7 +18,7 @@ describe('Ramadan words in English, Malay and Indonesian', () => {
       for (const k of keys) {
         expect(w[k], `${lang}.${k}`).toBeTypeOf('string')
         expect(holes(w[k]), `${lang}.${k}`).toEqual(holes((words.en as Record<string, string>)[k]))
-        expect(w[k], `${lang}.${k}`).not.toMatch(/[:–—-]/)
+        expect(w[k], `${lang}.${k}`).not.toMatch(/[:–—]|(?<!\w)-|-(?!\w)/)
       }
     }
   })

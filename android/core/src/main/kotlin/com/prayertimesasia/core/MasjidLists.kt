@@ -66,7 +66,7 @@ object MasjidLists {
             if (PrayerSpaces.isGraveOrShrine(name)) return@mapNotNull null
             PrayerSpace(
                 id = "osm/" + ((r[0] as? JsonPrimitive)?.contentOrNull ?: "$lat,$lon"),
-                name = name.ifEmpty { if (musollah) "Musollah" else "Masjid" },
+                name = name.ifEmpty { if (musollah) "Prayer room" else "Masjid" },
                 address = (r[4] as? JsonPrimitive)?.contentOrNull.orEmpty(),
                 coordinates = Coordinates(lat, lon),
                 distanceKm = 0.0,

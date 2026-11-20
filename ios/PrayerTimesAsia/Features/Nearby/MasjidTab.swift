@@ -96,7 +96,7 @@ struct NearbyView: View {
                 }
             }
             .background(SkyNow())
-            .navigationTitle("Masjid & Musollah")
+            .navigationTitle("Masjids and prayer rooms")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -391,7 +391,7 @@ struct NearbyView: View {
                 Text(busy ? "The connection is slow. Places will appear here as soon as they arrive."
                      : search.failed ? "Searching needs an internet connection."
                      : openOnly ? "Only places with opening hours on the map count here. Turn off Open now only to see the rest."
-                     : "Neither Apple Maps nor OpenStreetMap lists a \(kind == .musollah ? "musollah" : "masjid") within 15 km. Use the Qibla tab to pray where you are.")
+                     : "Neither Apple Maps nor OpenStreetMap lists a \(kind == .musollah ? "prayer room" : "masjid") within 15 km. Use the Qibla tab to pray where you are.")
             } actions: {
                 if busy || search.failed {
                     Button("Try again") { slow = false; search.retry() }
@@ -402,7 +402,7 @@ struct NearbyView: View {
             if search.isAddingMore {
                 HStack(spacing: 6) {
                     ProgressView().controlSize(.mini)
-                    Text("Looking for more surau and musollah…")
+                    Text("Looking for more prayer rooms…")
                 }
                 .font(.caption).foregroundStyle(.secondary)
                 .padding(.horizontal)
@@ -596,7 +596,7 @@ private struct SpaceRow: View {
         guard let r = m.jamaah[p.rawValue] else { return nil }
         return "\(p.name(model.naming)) \(r.fixed.map { MasjidExtras.clock($0, use24: use24) } ?? "+\(r.after ?? 0) min")"
     }
-    if let j = m.jumuah { parts.append("Jumaat \(MasjidExtras.clock(j, use24: use24))") }
+    if let j = m.jumuah { parts.append("\(Prayer.dhuhr.name(model.naming, isFriday: true)) \(MasjidExtras.clock(j, use24: use24))") }
     return parts.isEmpty ? nil : parts.joined(separator: ", ")
 }
 
@@ -647,7 +647,7 @@ private struct YourMasjidCard: View {
                     Text("\(eid.shortName) prayer at \(raya.sessions.map { MasjidExtras.clock($0.time, use24: use24) }.joined(separator: ", ")).")
                         .foregroundStyle(Theme.accentText)
                 } else if let e = link.eid {
-                    Text("Hari Raya prayer at \(MasjidExtras.clock(e, use24: use24)).").foregroundStyle(Theme.accentText)
+                    Text("Eid prayer at \(MasjidExtras.clock(e, use24: use24)).").foregroundStyle(Theme.accentText)
                 }
             }
             .font(.footnote)
@@ -700,7 +700,7 @@ private struct FridayCard: View {
                 Image(systemName: "calendar").foregroundStyle(Theme.accentText).frame(width: 24)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(today ? "Friday prayer today" : "Friday prayer in Singapore").font(.headline)
-                    Text("\(list.count) masjids hold a second Friday prayer from \(MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24)), for those who can't make the first one at Zohor.")
+                    Text("\(list.count) masjids hold a second Friday prayer from \(MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24)), for those who can't make the first one at \(Prayer.dhuhr.name(model.naming)).")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }

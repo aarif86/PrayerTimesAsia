@@ -24,7 +24,8 @@ for lang in LANGS:
         base = k[:-4] if k.endswith("_one") else k
         assert set(HOLE.findall(line)) == set(HOLE.findall(DATA["en"][base])), f"{lang}.{k} has other {{holes}} than English"
         assert line == line.strip(), f"{lang}.{k} starts or ends with a space"
-        assert ":" not in line and "—" not in line and "–" not in line and "-" not in line, f"no colons or dashes: {lang}.{k}"
+        # No colons or dashes. A hyphen inside a word, like kedua-duanya or al-Fitr, is fine.
+        assert not re.search(r"[:–—]|(?<!\w)-|-(?!\w)", line), f"no colons or dashes: {lang}.{k}"
         if lang == "ms":
             assert not re.search(r"\blah\b", line, re.I), f"no lah: {k}"
         assert line or k.startswith("letter_"), f"{lang}.{k} is empty"

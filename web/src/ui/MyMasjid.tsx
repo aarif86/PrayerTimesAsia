@@ -15,7 +15,7 @@ function clock(hhmm: string): string {
 function Rules({ m }: { m: MasjidLink }) {
   const rows = OBLIGATORY.filter((p) => m.jamaah[p]).map((p) => {
     const r = m.jamaah[p]!
-    return { label: store.name(p), value: r.fixed ? clock(r.fixed) : r.after === 0 ? 'At the azan' : `${r.after} min after azan` }
+    return { label: store.name(p), value: r.fixed ? clock(r.fixed) : r.after === 0 ? tr('myMasjid.atAzan') : tr('myMasjid.afterAzan', { n: r.after ?? 0 }) }
   })
   if (m.jumuah) rows.push({ label: tr('myMasjid.jumuah'), value: clock(m.jumuah) })
   if (!rows.length) return <div class="item"><span class="label secondary">{tr('myMasjid.noTimes')}</span></div>

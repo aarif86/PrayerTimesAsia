@@ -74,9 +74,11 @@ export function prayerName(p: Prayer, style: NamingStyle, isFriday = false): str
   return NAMES[style][p]
 }
 
-const HIJRI_MONTHS: Record<'malay' | 'international' | 'turkish' | 'arabicScript' | 'urdu' | 'bengali' | 'french', string[]> = {
+const HIJRI_MONTHS: Record<'malay' | 'indonesian' | 'international' | 'turkish' | 'arabicScript' | 'urdu' | 'bengali' | 'french', string[]> = {
   malay: ['Muharram', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jamadilawal', 'Jamadilakhir',
     'Rejab', 'Syaaban', 'Ramadan', 'Syawal', 'Zulkaedah', 'Zulhijjah'],
+  indonesian: ['Muharam', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jumadilawal', 'Jumadilakhir',
+    'Rajab', 'Syakban', 'Ramadan', 'Syawal', 'Zulkaidah', 'Zulhijah'],
   international: ['Muharram', 'Safar', 'Rabi al-Awwal', 'Rabi al-Thani', 'Jumada al-Ula', 'Jumada al-Akhirah',
     'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhu al-Qa'dah", 'Dhu al-Hijjah'],
   turkish: ['Muharrem', 'Safer', 'Rebiülevvel', 'Rebiülahir', 'Cemaziyelevvel', 'Cemaziyelahir',
@@ -93,8 +95,8 @@ const HIJRI_MONTHS: Record<'malay' | 'international' | 'turkish' | 'arabicScript
 
 export function hijriMonths(style: NamingStyle): string[] {
   switch (style) {
-    case 'malay': case 'indonesian': return HIJRI_MONTHS.malay
-    case 'turkish': case 'arabicScript': case 'urdu': case 'bengali': case 'french': return HIJRI_MONTHS[style]
+    case 'malay': return HIJRI_MONTHS.malay
+    case 'indonesian': case 'turkish': case 'arabicScript': case 'urdu': case 'bengali': case 'french': return HIJRI_MONTHS[style]
     default: return HIJRI_MONTHS.international
   }
 }

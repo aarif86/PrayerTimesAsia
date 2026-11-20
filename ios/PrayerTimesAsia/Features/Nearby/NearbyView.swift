@@ -7,7 +7,7 @@ import SwiftUI
 /// hardly any masjid or surau), where OpenStreetMap fills the gaps.
 struct PrayerSpace: Identifiable, Hashable {
     enum Kind: String, CaseIterable, Identifiable {
-        case all = "All", masjid = "Masjid", musollah = "Musollah"
+        case all = "All", masjid = "Masjid", musollah = "Prayer room"
         var id: String { rawValue }
     }
 
@@ -324,7 +324,7 @@ final class NearbySearch {
             let point = Coordinates(latitude: lat, longitude: lon)
             let km = Geo.distanceKm(center, point)
             guard km <= 15 else { continue }
-            let name = rawName.isEmpty ? (isMusollah ? "Musollah" : "Masjid") : rawName
+            let name = rawName.isEmpty ? (isMusollah ? "Prayer room" : "Masjid") : rawName
             let key = "\(name.lowercased())|\((lat * 2000).rounded())|\((lon * 2000).rounded())"
             guard found[key] == nil else { continue }
             let street = [tags["addr:housenumber"], tags["addr:street"]].compactMap { $0 }.joined(separator: " ")

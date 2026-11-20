@@ -350,7 +350,7 @@ private struct ExtrasSection: View {
         }
         Section {
             ramadanSwitch("Imsak alert", "10 minutes before Imsak, in Ramadan", \.imsakAlert)
-            ramadanSwitch("Berbuka alert", "At Maghrib, with the doa, in Ramadan", \.berbukaAlert)
+            ramadanSwitch("Iftar alert", "At Maghrib, with the dua, in Ramadan", \.berbukaAlert)
             ramadanSwitch("Qiyam in the last ten nights", "At the last third of the night", \.qiyamAlert)
             if model.prefs.trackerEnabled {
                 Toggle(isOn: Binding(get: { model.prefs.windowNudge }, set: { model.prefs.windowNudge = $0 })) {

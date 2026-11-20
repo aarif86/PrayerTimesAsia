@@ -106,7 +106,7 @@ object AlarmScheduler {
                         else -> Sound.AZAN
                     }
                     if (prayer == Prayer.MAGHRIB && r.isRamadanDay(time)) {
-                        out += Alert(id, "Time to berbuka · $name ${r.formatted(time)}", BERBUKA_DOA, time, Kind.PRAYER, sound,
+                        out += Alert(id, "Time for iftar · $name ${r.formatted(time)}", BERBUKA_DOA, time, Kind.PRAYER, sound,
                             silent = r.isSilent(time, prayer))
                         continue
                     }
@@ -135,10 +135,10 @@ object AlarmScheduler {
             val imsak = r.imsak(day)
             if (p.imsakAlert) {
                 out += Alert("$key-imsak", "Imsak in 10 minutes · ${r.formatted(imsak)}",
-                    "Finish your sahur. Subuh at ${r.formatted(day.time(Prayer.FAJR))} · $here", imsak.minusSeconds(600), Kind.PRAYER, silent = r.isSilent(imsak, Prayer.FAJR))
+                    "Finish your sahur. ${Prayer.FAJR.name(r.naming)} at ${r.formatted(day.time(Prayer.FAJR))} · $here", imsak.minusSeconds(600), Kind.PRAYER, silent = r.isSilent(imsak, Prayer.FAJR))
             }
             if (p.berbukaAlert && !maghribAlertOn) {
-                out += Alert("$key-berbuka", "Time to berbuka · ${r.formatted(day.time(Prayer.MAGHRIB))}",
+                out += Alert("$key-berbuka", "Time for iftar · ${r.formatted(day.time(Prayer.MAGHRIB))}",
                     "$BERBUKA_DOA. Ramadan day ${s.ramadanDay ?: 0} · $here", day.time(Prayer.MAGHRIB), Kind.PRAYER, silent = r.isSilent(day.time(Prayer.MAGHRIB), Prayer.MAGHRIB))
             }
         }

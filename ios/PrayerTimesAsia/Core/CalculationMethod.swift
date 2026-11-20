@@ -75,7 +75,7 @@ extension CalculationMethod {
         fajrAngle: 18, ishaAngle: 18, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
         offsets: [.fajr: 2.375, .sunrise: -1.375, .dhuhr: 3, .asr: 2.25, .maghrib: 2.25, .isha: 2.375],
         matchesOfficialTable: true,
-        note: "Malaysia's 18° Subuh criterion (since 2019). Online, the app shows JAKIM's official e-Solat timetable for your zone; offline it calculates to within about 2 minutes.")
+        note: "Malaysia's 18° Fajr criterion (since 2019). Online, the app shows JAKIM's official e-Solat timetable for your zone; offline it calculates to within about 2 minutes.")
 
     static let kemenag = CalculationMethod(
         id: "kemenag", name: "Kemenag · Indonesia", shortName: "Kemenag",

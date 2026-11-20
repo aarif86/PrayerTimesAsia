@@ -548,11 +548,11 @@ private fun ShareAndPrint(state: AppState, s: Season.Info) {
             val h = r.hijriOf(g)
             val day = r.dayOf(g)
             if (h.month != 9 || day == null) null
-            else "${dateText(g, "EEE d MMM")} (${h.day} Ramadan)  Imsak ${r.formatted(r.imsak(day))}  Berbuka ${r.formatted(day.time(Prayer.MAGHRIB))}"
+            else "${dateText(g, "EEE d MMM")} (${h.day} ${t(RamadanWordKey.ramadan)})  ${t(RamadanWordKey.imsak)} ${r.formatted(r.imsak(day))}  ${t(RamadanWordKey.berbuka)} ${r.formatted(day.time(Prayer.MAGHRIB))}"
         }
         if (lines.isNotEmpty()) {
-            val text = "Ramadan Kareem. Imsak and Berbuka this week in ${r.activePlace?.name ?: ""}\n\n" + lines.joinToString("\n") +
-                "\n\nFollow your local religious authority for the start of Ramadan and Raya.\nPrayer Times Asia · prayertimes.asia"
+            val text = "Ramadan Kareem. ${t(RamadanWordKey.weekCardTitle)}, ${r.activePlace?.name ?: ""}\n\n" + lines.joinToString("\n") +
+                "\n\n${t(RamadanWordKey.weekCardFollow)}\nPrayer Times Asia · prayertimes.asia"
             context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text), "Share"))
         }
     }
@@ -590,7 +590,7 @@ private fun RayaToday(state: AppState, s: Season.Info) {
     Text(t(RamadanWordKey.rayaSunnah), style = Txt.footnote, color = Palette.secondary)
     val context = LocalContext.current
     LinkLine(t(RamadanWordKey.sendRayaGreeting), null, Icons.Filled.Share) {
-        val text = "Selamat Hari Raya Aidilfitri. Maaf zahir dan batin. Taqabbalallahu minna wa minkum."
+        val text = "${t(RamadanWordKey.rayaCardTitle)}. ${t(RamadanWordKey.maafZahirBatin)} Taqabbalallahu minna wa minkum."
         context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text), "Share"))
     }
 }

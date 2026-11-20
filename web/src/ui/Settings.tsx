@@ -14,7 +14,7 @@ import { ourCards } from '../core/communityCards'
 import { MakersCard, PICKS_NAME } from './Makers'
 import { TabJourney } from './icons'
 import { canInstall, install, isStandalone, phoneAppOffer } from './pwa'
-import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
+import { SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { daysToRamadan } from './Ramadan'
 
 import { VERSION } from './version'
@@ -85,7 +85,7 @@ export function SettingsScreen() {
           <MoonStar size={20} /><span class="label">{tr('settings.ramadanPage')}<span class="sub">{tr('settings.ramadanPageSub')}</span></span><ChevronRight size={16} class="secondary" />
         </button>
         <SelectItem label={tr('settings.tryRamadan')} value={p.seasonPreview}
-          options={SEASON_PREVIEWS.map((v) => ({ value: v, label: SEASON_PREVIEW_LABEL[v] }))}
+          options={SEASON_PREVIEWS.map((v) => ({ value: v, label: tr(`preview.${v}`) }))}
           onChange={(v) => store.update((x) => { x.seasonPreview = v as SeasonPreview })} />
       </Group>
 
