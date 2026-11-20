@@ -90,7 +90,7 @@ PRIVAT DAN GRATIS
 
 Jadwal dihitung dengan cermat dan dicocokkan dengan jadwal resmi. Jadwal di masjid sekitar Anda mungkin berbeda satu atau dua menit. Selalu ikuti otoritas agama setempat.
 
-Dibuat fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Nasar Digital (Nasar Pte Ltd).
+Dibuat fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama Nasar Digital (Nasar Pte Ltd).
 ```
 
 ### What's New, first version (limit 4000)
@@ -168,7 +168,7 @@ PRIVAT DAN GRATIS
 
 Jadwal dihitung dengan cermat dan dicocokkan dengan jadwal resmi. Jadwal di masjid sekitar Anda mungkin berbeda satu atau dua menit. Selalu ikuti otoritas agama setempat.
 
-Dibuat fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Nasar Digital (Nasar Pte Ltd).
+Dibuat fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama Nasar Digital (Nasar Pte Ltd).
 ```
 
 ### Release notes, first version (limit 500)

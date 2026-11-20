@@ -37,7 +37,7 @@ def main():
             if title.startswith(("Description", "Full description")):
                 if AUTHORITY.get(lang, "") not in text.lower():
                     notes.append("missing the 'follow your local religious authority' line")
-                if "Ustaz Aarif Raziff" not in text:
+                if "Ustaz Aarif Raziff" not in text or "Ustazah Nasibah Hamzah" not in text:
                     notes.append("missing credit line")
             problems += bool(notes)
             print(f"{'FAIL' if notes else 'ok  '} {lang:3} {n:5}/{limit:<5} {title}  {', '.join(notes)}")

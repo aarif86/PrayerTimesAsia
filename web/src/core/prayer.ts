@@ -74,9 +74,11 @@ export function prayerName(p: Prayer, style: NamingStyle, isFriday = false): str
   return NAMES[style][p]
 }
 
-const HIJRI_MONTHS: Record<'malay' | 'international' | 'turkish' | 'arabicScript' | 'urdu' | 'bengali' | 'french', string[]> = {
+const HIJRI_MONTHS: Record<'malay' | 'indonesian' | 'international' | 'turkish' | 'arabicScript' | 'urdu' | 'bengali' | 'french', string[]> = {
   malay: ['Muharram', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jamadilawal', 'Jamadilakhir',
     'Rejab', 'Syaaban', 'Ramadan', 'Syawal', 'Zulkaedah', 'Zulhijjah'],
+  indonesian: ['Muharam', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jumadilawal', 'Jumadilakhir',
+    'Rajab', 'Syakban', 'Ramadan', 'Syawal', 'Zulkaidah', 'Zulhijah'],
   international: ['Muharram', 'Safar', 'Rabi al-Awwal', 'Rabi al-Thani', 'Jumada al-Ula', 'Jumada al-Akhirah',
     'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhu al-Qa'dah", 'Dhu al-Hijjah'],
   turkish: ['Muharrem', 'Safer', 'Rebiülevvel', 'Rebiülahir', 'Cemaziyelevvel', 'Cemaziyelahir',
@@ -93,8 +95,8 @@ const HIJRI_MONTHS: Record<'malay' | 'international' | 'turkish' | 'arabicScript
 
 export function hijriMonths(style: NamingStyle): string[] {
   switch (style) {
-    case 'malay': case 'indonesian': return HIJRI_MONTHS.malay
-    case 'turkish': case 'arabicScript': case 'urdu': case 'bengali': case 'french': return HIJRI_MONTHS[style]
+    case 'malay': return HIJRI_MONTHS.malay
+    case 'indonesian': case 'turkish': case 'arabicScript': case 'urdu': case 'bengali': case 'french': return HIJRI_MONTHS[style]
     default: return HIJRI_MONTHS.international
   }
 }
@@ -103,3 +105,19 @@ export function hijriMonths(style: NamingStyle): string[] {
 export type AsrSchool = 'standard' | 'hanafi'
 export const shadowFactor = (s: AsrSchool): number => (s === 'hanafi' ? 2 : 1)
 export const asrLabel = (s: AsrSchool): string => (s === 'hanafi' ? 'Hanafi' : "Shafi'i (standard)")
+
+type At = { prayer: Prayer; time: number } | null
+
+/**
+ * What leads the Prayer screen. While a prayer's time is open, that prayer
+ * (NOW). Syuruk ends Subuh but starts no prayer, so from Syuruk to Zohor the
+ * next prayer leads instead (NEXT, "Zohor in 53m"), never "Syuruk". Same rule
+ * on iPhone, Android and the widgets; the masjid screen already worked this way.
+ */
+export function lead(current: At, next: At): { prayer: Prayer; time: number; isNext: boolean } | null {
+  if (!current || !next) return null
+  return current.prayer === 'sunrise' ? { ...next, isNext: true } : { ...current, isNext: false }
+}
+
+/** The prayer whose time is open now: null between Syuruk and Zohor. Only this one is marked NOW. */
+export const openPrayer = (current: At): At => (current?.prayer === 'sunrise' ? null : current)

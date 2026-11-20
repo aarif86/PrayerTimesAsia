@@ -67,11 +67,19 @@ import com.prayertimesasia.app.ui.theme.textTint
 import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.BlessedTime
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.AlertMode
+import com.prayertimesasia.core.alertMode
+import com.prayertimesasia.core.nextAlertMode
+import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.semantics.stateDescription
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.SourceGrade
 import com.prayertimesasia.core.TimeFormat
 import com.prayertimesasia.core.secondsSince
 import java.time.Instant
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /** "Jamaah 1:20 PM", with a countdown between the azan and the iqamah. */
 internal fun jamaahLine(r: com.prayertimesasia.core.Resolver, day: PrayerDay, prayer: Prayer, jamaah: Instant, now: Instant): String {
@@ -148,7 +156,7 @@ private fun PrayerRow(
     val isCurrent = prayer == current && time <= now
     val isNext = next != null && prayer == next.first && next.second == time
     val passed = time <= now && !isCurrent
-    val notifying = p.notificationsEnabled && prayer in p.notifyPrayers
+    val mode = p.alertMode(prayer)
     val trackable = p.trackerEnabled && prayer.isObligatory && time <= now
     val prayed = trackable && r.isPrayed(prayer, time)
     val rowShape = RoundedCornerShape(16.dp)
@@ -193,7 +201,7 @@ private fun PrayerRow(
                     if (prayed) Icon(Icons.Filled.CheckCircle, "Prayed", Modifier.size(16.dp), tint = Palette.success)
                 }
                 if (isCurrent) {
-                    Text("NOW", style = Txt.caption2Heavy, color = prayer.textTint)
+                    Text(tr(R.string.today_now), style = Txt.caption2Heavy, color = prayer.textTint)
                 } else if (isNext && next != null) {
                     Text("in ${TimeFormat.short(next.second.secondsSince(now))}", style = Txt.captionSemibold.copy(fontFeatureSettings = "tnum"),
                         color = prayer.textTint)
@@ -208,14 +216,7 @@ private fun PrayerRow(
                 }
             }
             Box(Modifier.clearAndSetSemantics {}) { TimeText(r.timeParts(time), size = 27.sp) }
-            Box(Modifier.size(30.dp, 34.dp).clip(CircleShape).quietClick { state.toggleNotify(prayer) }
-                .semantics { contentDescription = if (notifying) "Turn off alert" else "Turn on alert" }, contentAlignment = Alignment.Center) {
-                Icon(
-                    if (notifying) Icons.Filled.Notifications else Icons.Outlined.NotificationsOff,
-                    null,
-                    Modifier.size(18.dp), tint = Palette.primary.copy(alpha = if (notifying) 0.95f else 0.4f),
-                )
-            }
+            BellButton(state, prayer, mode)
         }
     }
 }
@@ -262,7 +263,7 @@ fun ColumnScope.PrayerBand(
 ) {
     val r = state.resolver
     val p = state.prefs
-    val notifying = p.notificationsEnabled && prayer in p.notifyPrayers
+    val mode = p.alertMode(prayer)
     val trackable = p.trackerEnabled && prayer.isObligatory && time <= now
     val prayed = trackable && r.isPrayed(prayer, time)
     val parts = r.timeParts(time)
@@ -284,7 +285,7 @@ fun ColumnScope.PrayerBand(
                     Text(r.prayerName(prayer, time), fontFamily = Rounded, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1)
                     r.localName(prayer, time)?.let { Text(it, style = Txt.captionSemibold, color = Color.White.copy(alpha = 0.8f)) }
                     if (isCurrent) {
-                        Text("NOW", fontFamily = Rounded, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = Color.White,
+                        Text(tr(R.string.today_now), fontFamily = Rounded, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = Color.White,
                             modifier = Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.25f)).padding(horizontal = 7.dp, vertical = 2.dp))
                     }
                     if (prayed) Icon(Icons.Filled.CheckCircle, "Prayed", Modifier.size(16.dp), tint = Color.White)
@@ -301,15 +302,14 @@ fun ColumnScope.PrayerBand(
                     Text(it, style = display(22.sp, FontWeight.Bold), color = Color.White, modifier = Modifier.alignByBaseline())
                 }
             }
-            if (p.notificationsEnabled && !notifying && prayer.isObligatory) {
+            if (mode == AlertMode.ALARM) {
+                Icon(Icons.Filled.Alarm, "Alarm on", Modifier.size(14.dp), tint = Color.White.copy(alpha = 0.85f))
+            } else if (p.notificationsEnabled && mode == AlertMode.OFF && prayer.isObligatory) {
                 Icon(Icons.Outlined.NotificationsOff, "Alert off", Modifier.size(14.dp), tint = Color.White.copy(alpha = 0.6f))
             }
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            DropdownMenuItem(
-                text = { Text(if (notifying) "Turn off alert" else "Alert me at ${prayer.name(r.naming)}") },
-                onClick = { menu = false; state.toggleNotify(prayer) },
-            )
+            AlertMenuItems(state, prayer) { menu = false }
             if (trackable) {
                 DropdownMenuItem(
                     text = { Text(if (prayed) "Mark as not prayed" else "Mark as prayed") },
@@ -341,4 +341,55 @@ fun BlessedBand(state: AppState, blessed: BlessedTime, time: Instant, now: Insta
             parts.second?.let { Text(it, style = display(15.sp, FontWeight.Light), color = Color.White, modifier = Modifier.alignByBaseline()) }
         }
     }
+}
+
+/** The bell beside a prayer: tap for Off, then Notify, then Alarm. Hold for the prayer's own page. */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+fun BellButton(state: AppState, prayer: Prayer, mode: AlertMode) {
+    val name = prayer.name(state.resolver.naming)
+    Box(
+        Modifier.size(34.dp, 40.dp).clip(CircleShape)
+            .combinedClickable(
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null,
+                onClickLabel = "Change to ${state.prefs.nextAlertMode(prayer).word}",
+                onLongClickLabel = "Open $name in Alerts and alarms",
+                onLongClick = { state.openAlerts(prayer.raw) },
+                onClick = { state.cycleAlert(prayer) },
+            )
+            .semantics { contentDescription = "$name alert"; stateDescription = mode.word },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            when (mode) {
+                AlertMode.OFF -> Icons.Outlined.NotificationsOff
+                AlertMode.NOTIFY -> Icons.Filled.Notifications
+                AlertMode.ALARM -> Icons.Filled.Alarm
+            },
+            null,
+            Modifier.size(18.dp),
+            tint = when (mode) {
+                AlertMode.OFF -> Palette.primary.copy(alpha = 0.4f)
+                AlertMode.NOTIFY -> Palette.primary.copy(alpha = 0.95f)
+                AlertMode.ALARM -> Palette.sunArc
+            },
+        )
+    }
+}
+
+/** The choices in a prayer's tap menu: Off, Notify, Alarm, and its page in Alerts and alarms. */
+@Composable
+fun AlertMenuItems(state: AppState, prayer: Prayer, close: () -> Unit) {
+    val now = state.prefs.alertMode(prayer)
+    AlertMode.modes(prayer).forEach { mode ->
+        DropdownMenuItem(
+            text = { Text(if (mode == now) "${mode.word} ✓" else mode.word) },
+            onClick = { close(); state.setAlertMode(prayer, mode) },
+        )
+    }
+    DropdownMenuItem(
+        text = { Text("${prayer.name(state.resolver.naming)} in Alerts and alarms") },
+        onClick = { close(); state.openAlerts(prayer.raw) },
+    )
 }

@@ -66,26 +66,25 @@ const shots = [
   ['30-jamaah-countdown', { style: 'list', appearance: 'system', now: '2026-10-25T12:57:00+08:00', masjid: 'on' }],
   ['31-masjid-yours', { tab: 'masjid', appearance: 'dark', now: NIGHT, masjid: 'on' }],
   ['32-wake-up', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
-    await p.click('button[aria-label^="Prayer alarms"]'); await p.waitForTimeout(400)
-    await p.click('text=5 min after Subuh begins'); await p.waitForTimeout(300)
-    await p.evaluate(() => document.querySelector('.sheet')?.scrollTo(0, 360))
+    await p.click('button[aria-label^="Alerts and alarms"]'); await p.waitForTimeout(400)
+    await p.click('.sheet .mode-switch[aria-label="Subuh"] .mode-alarm'); await p.waitForTimeout(200)
+    await p.click('.sheet .mode-switch[aria-label="Maghrib"] .mode-notify'); await p.waitForTimeout(200)
   }],
   ['33-wake-chip', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
-    await p.click('button[aria-label^="Prayer alarms"]'); await p.waitForTimeout(400)
-    await p.click('text=At Subuh'); await p.click('.sheet .done')
+    await p.click('button[aria-label^="Alerts and alarms"]'); await p.waitForTimeout(400)
+    await p.click('.sheet .mode-switch[aria-label="Subuh"] .mode-alarm'); await p.click('.sheet .done')
   }],
   ['38-prayer-alarms', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
-    await p.click('button[aria-label^="Prayer alarms"]'); await p.waitForTimeout(400)
-    await p.selectOption('select[aria-label="Asar alarm"]', 'plus10')
-    await p.selectOption('select[aria-label="Isyak alarm"]', 'atStart')
-    await p.click('text=Gentle chime'); await p.waitForTimeout(300)
-    await p.evaluate(() => [...document.querySelectorAll('.sheet h2.group-title')].find((h) => h.textContent === 'Other prayers')?.scrollIntoView())
+    await p.click('button[aria-label^="Alerts and alarms"]'); await p.waitForTimeout(400)
+    await p.click('.sheet .mode-switch[aria-label="Asar"] .mode-alarm'); await p.waitForTimeout(200)
+    await p.click('.sheet .mode-row-name[aria-label^="Asar"]'); await p.waitForTimeout(300)
+    await p.click('text=10 min after'); await p.waitForTimeout(300)
   }],
   ['34-time-left-subuh', { style: 'sunpath', appearance: 'system', now: '2026-10-25T06:45:00+08:00', tracker: 'on' }],
   ['35-simple-day', { style: 'simple', appearance: 'system', now: DAY, tracker: 'on' }],
   ['35b-simple-more', { style: 'simple', appearance: 'dark', now: DAY }, async (p) => { await p.click('.simple-more'); await p.waitForTimeout(300); await p.evaluate(() => document.querySelector('.simple-more')?.scrollIntoView()) }],
   ['36-simple-night-large', { style: 'simple', appearance: 'dark', now: '2026-10-25T22:10:00+08:00', large: '1' }],
-  ['37-settings-quiet', { tab: 'settings', appearance: 'dark', now: NIGHT }, (p) => p.evaluate(() => document.querySelector('h2.group-title:nth-of-type(n)') && [...document.querySelectorAll('h2.group-title')].find((h) => h.textContent === 'Quiet alerts')?.scrollIntoView())],
+  ['37-settings-quiet', { tab: 'settings', appearance: 'dark', now: NIGHT }, (p) => p.evaluate(() => document.querySelector('h2.group-title:nth-of-type(n)') && [...document.querySelectorAll('h2.group-title')].find((h) => h.textContent === 'Alerts and alarms')?.scrollIntoView())],
   // Ramadan 1448 on its real dates (1 Ramadan 9 Feb 2027 in Singapore), for the website's Ramadan page.
   ['39-ramadan-berbuka', { style: 'centre', appearance: 'dark', now: '2027-02-20T17:40:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }],
   ['40-ramadan-sheet', { style: 'centre', appearance: 'dark', now: '2027-02-20T17:40:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }, (p) => p.click('.season-main, button.season-card')],
@@ -96,7 +95,7 @@ const shots = [
     await p.evaluate(() => [...document.querySelectorAll('.sheet h2, .sheet h3')].find((h) => /Your fasts/.test(h.textContent ?? ''))?.scrollIntoView({ block: 'center' }))
   }],
   ['44-sahur-alarm', { style: 'centre', appearance: 'dark', now: '2027-02-20T21:30:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }, async (p) => {
-    await p.click('button[aria-label^="Prayer alarms"]'); await p.waitForTimeout(400)
+    await p.click('button[aria-label^="Alerts and alarms"]'); await p.waitForTimeout(400)
     await p.click('.sheet [aria-label="Sahur alarm"]'); await p.waitForTimeout(300)
     await p.evaluate(() => [...document.querySelectorAll('.sheet *')].find((h) => h.textContent === 'Sahur alarm')?.scrollIntoView({ block: 'center' }))
   }],

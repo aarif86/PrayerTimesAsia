@@ -22,7 +22,7 @@ The Galaxy Store uses the Google Play text and pictures
 - Prayer comes first. No talk of how the app was built.
 - Every description ends with "follow your local religious authority" (in each
   language) and the line "Built fisabilillah in Singapore by Ustaz Aarif Raziff
-  and Nasar Digital (Nasar Pte Ltd)".
+  and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd)".
 - The promise is **no outside ads** (no Google or Facebook ads, no tracking),
   which stays true when Barakah Picks (PR #114) goes live.
 

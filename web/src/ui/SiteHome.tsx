@@ -1,5 +1,6 @@
 import { House } from 'lucide-preact'
 import { isStandalone } from './pwa'
+import { tr } from '../core/appWords'
 
 /**
  * A small house button back to the website's home page, on every tab of the web app.
@@ -9,7 +10,7 @@ import { isStandalone } from './pwa'
 export function SiteHomeButton({ class: cls = '' }: { class?: string }) {
   if (isStandalone()) return null
   return (
-    <a class={`round-btn home-site-btn ${cls}`} href="../" aria-label="Back to the Prayer Times Asia website" title="Website home">
+    <a class={`round-btn home-site-btn ${cls}`} href="../" aria-label={tr('app.backToWebsite')} title={tr('app.websiteHome')}>
       <House size={17} />
     </a>
   )

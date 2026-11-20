@@ -141,8 +141,54 @@ before they go live.
 
 ## Promotional text and description
 
+<<<<<<< HEAD
 Moved to [store-listings/en.md](store-listings/en.md),
 [ms.md](store-listings/ms.md) and [id.md](store-listings/id.md).
+=======
+Land anywhere in Asia and know when to pray and which way to face. Official MUIS and JAKIM timetables, works offline, no ads.
+
+## Description
+
+Prayer times and qibla for Muslims living and travelling across Asia.
+
+Most prayer apps either stop working when you cross a border, or use one global setting for everyone. Prayer Times Asia knows how each country calculates its prayer times - and switches for you the moment you land.
+
+AT HOME, EXACT
+• Singapore: the official MUIS timetable
+• Malaysia: the official JAKIM e-Solat timetable for your zone (found automatically, or pick it yourself)
+• Indonesia: Kemenag's method
+Downloaded once a year and kept on your phone, so it works offline.
+
+ON THE ROAD, READY
+• Vietnam, Thailand, Japan, Korea, India, Türkiye, the Gulf and the rest of Asia - each with its local method, Asr school and prayer names
+• Calculated on your phone: no data roaming needed
+• A welcome card when you arrive tells you what changed
+
+MUSAFIR MADE SIMPLE
+• See how far you are from home and whether you may shorten (qasar) and combine (jamak) your prayers
+• Shafi'i (81 or 89 km, up to 3 days) and Hanafi (78 km, up to 15 days)
+• A log of the countries you've prayed in
+
+QIBLA IN ONE GLANCE
+• A calm compass that lights up and taps when you face the Kaaba
+• Bearing and distance to Makkah
+
+A SKY THAT MOVES WITH YOU
+• The background follows the real sun where you are - dawn rose at Subuh, gold at Asar, ember at Maghrib
+• Home Screen and Lock Screen widgets, and a Live Activity countdown in the Dynamic Island
+
+ALSO
+• Nearby masjid and musollah via Apple Maps
+• Prayer reminders, Jumaat on Fridays, Hijri date with ±2 day adjustment, 24-hour time
+
+PRIVATE BY DESIGN
+No third-party ads. No account. No tracking. Your exact location never leaves your phone.
+
+WHO MAKES IT
+Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd). It started on a family trip to Vietnam, when none of our prayer apps worked and everyone turned to Ustaz Aarif to ask when to pray. Back home, our parents had the same trouble with apps full of ads that play the azan out loud on the train. So we built one for the people we love, and for you.
+
+Musafir guidance is general information, not a fatwa - when unsure, follow your local religious authority.
+>>>>>>> origin/main
 
 ## App Privacy (nutrition label)
 

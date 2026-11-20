@@ -62,9 +62,9 @@ const NAMES: Record<IslamicDayKind, Record<Lang, string>> = {
   ramadanStart: { en: 'First day of Ramadan', ms: 'Awal Ramadan', id: 'Awal Ramadan' },
   nuzulQuran: { en: 'Nuzul al-Quran', ms: 'Nuzul al-Quran', id: 'Nuzulul Quran' },
   lastTen: { en: 'Last ten nights', ms: 'Sepuluh malam terakhir', id: 'Sepuluh malam terakhir' },
-  aidilfitri: { en: 'Eid al-Fitr', ms: 'Hari Raya Aidilfitri', id: 'Idul Fitri' },
+  aidilfitri: { en: 'Eid al-Fitr', ms: 'Hari Raya Aidilfitri', id: 'Idulfitri' },
   arafah: { en: 'Day of Arafah', ms: 'Hari Arafah', id: 'Hari Arafah' },
-  aidiladha: { en: 'Eid al-Adha', ms: 'Hari Raya Aidiladha', id: 'Idul Adha' },
+  aidiladha: { en: 'Eid al-Adha', ms: 'Hari Raya Aidiladha', id: 'Iduladha' },
   tasyrik: { en: 'Days of Tashriq', ms: 'Hari Tasyrik', id: 'Hari Tasyrik' },
   whiteDay: { en: 'White days', ms: 'Hari putih', id: 'Ayyamul bidh' },
 }
@@ -85,9 +85,9 @@ const SHORT: Partial<Record<IslamicDayKind, Record<Lang, string>>> = {
   nisfuSyaaban: { en: "Nisfu Sha'ban", ms: 'Nisfu Syaaban', id: "Nisfu Sya'ban" },
   ramadanStart: { en: 'Ramadan', ms: 'Awal Ramadan', id: 'Awal Ramadan' },
   nuzulQuran: { en: 'Nuzul Quran', ms: 'Nuzul Quran', id: 'Nuzulul Quran' },
-  aidilfitri: { en: 'Eid al-Fitr', ms: 'Aidilfitri', id: 'Idul Fitri' },
+  aidilfitri: { en: 'Eid al-Fitr', ms: 'Aidilfitri', id: 'Idulfitri' },
   arafah: { en: 'Arafah', ms: 'Arafah', id: 'Arafah' },
-  aidiladha: { en: 'Eid al-Adha', ms: 'Aidiladha', id: 'Idul Adha' },
+  aidiladha: { en: 'Eid al-Adha', ms: 'Aidiladha', id: 'Iduladha' },
 }
 export const islamicDayShort = (k: IslamicDayKind, s: NamingStyle): string => SHORT[k]?.[lang(s)] ?? NAMES[k][lang(s)]
 
@@ -122,7 +122,7 @@ export const HIJRI_CAL_WORDS: Record<Lang, {
     months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'], keyDays: 'Bulan ini', none: 'Tidak ada hari besar bulan ini.',
     week: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
     note: (a) => a
-      ? `Awal Ramadan dan Idul Fitri mengikuti ${a} setelah diumumkan. Tanggal lain dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat.`
+      ? `Awal Ramadan dan Idulfitri mengikuti ${a} setelah diumumkan. Tanggal lain dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat.`
       : 'Tanggal dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat.',
     notePublished: (a) => `Tanggal ini mengikuti kalender Islam ${a}. Awal Ramadan dan Lebaran mengikuti pengumumannya. Ikuti otoritas keagamaan setempat.`,
     print: 'Cetak kalender setahun', adjust: 'Geser tanggal Hijriah', adjustNone: 'Tidak digeser', earlier: 'Sehari lebih awal', later: 'Sehari lebih lambat', dayOff: 'hari',
@@ -136,5 +136,5 @@ export function hijriMonthShort(month: number, s: NamingStyle, full: string): st
   const en = ['Muharram', 'Safar', 'Rabi I', 'Rabi II', 'Jumada I', 'Jumada II', 'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhul Qa'dah", 'Dhul Hijjah']
   const ms = ['Muharram', 'Safar', 'Rabiul Awal', 'Rabiul Akhir', 'Jamadil Awal', 'Jamadil Akhir', 'Rejab', 'Syaaban', 'Ramadan', 'Syawal', 'Zulkaedah', 'Zulhijjah']
   const i = Math.max(0, Math.min(11, month - 1))
-  return s === 'malay' || s === 'indonesian' ? ms[i] : ['turkish', 'arabicScript', 'urdu', 'bengali', 'french'].includes(s) ? full : en[i]
+  return s === 'malay' ? ms[i] : ['indonesian', 'turkish', 'arabicScript', 'urdu', 'bengali', 'french'].includes(s) ? full : en[i]
 }

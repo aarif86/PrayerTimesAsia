@@ -87,6 +87,8 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /**
  * Falak Mode: Qibla Day, daily rashdul qiblat, the tongkat istiwa' for Zuhur
@@ -99,7 +101,7 @@ fun FalakScreen(state: AppState, openCamera: () -> Unit, openLevel: () -> Unit) 
     Box(Modifier.fillMaxSize()) {
         LivingSkyBackground(state.skyNow)
         if (place == null) {
-            Text("Choose a place first.", style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
+            Text(tr(R.string.falak_choosePlace), style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
             return@Box
         }
         val now = state.now
@@ -128,7 +130,7 @@ private fun Header() {
     Column(Modifier.padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(AppIcons.falak, null, Modifier.size(38.dp), tint = Palette.accent)
-            Text("Falak", style = display(34.sp, FontWeight.Bold), color = Palette.primary)
+            Text(tr(R.string.tab_falak), style = display(34.sp, FontWeight.Bold), color = Palette.primary)
         }
         Text("Read the time and the qibla from the sun and its shadow, the way the muwaqqit did - no signal needed.",
             style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.9f))
@@ -189,8 +191,8 @@ private fun ShadowCompassCard(place: Place, now: Instant) {
                         Text("A stick's shadow points ${shadowBearing.roundToInt()}° ${Geo.compassPoint(shadowBearing)} and is ${fmt("%.1f", Falak.shadowLength(1.0, max(sun.altitude, 0.5)))}× its height.",
                             style = Txt.footnote, color = Palette.primary.copy(alpha = 0.85f))
                     } else {
-                        Text("The sun is below the horizon.", style = Txt.subheadlineSemibold, color = Palette.primary)
-                        Text("Shadow readings start after sunrise. See the sky signs below.", style = Txt.footnote, color = Palette.primary.copy(alpha = 0.85f))
+                        Text(tr(R.string.falak_sunBelow), style = Txt.subheadlineSemibold, color = Palette.primary)
+                        Text(tr(R.string.falak_afterSunrise), style = Txt.footnote, color = Palette.primary.copy(alpha = 0.85f))
                     }
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Icon(Icons.Filled.Navigation, null, Modifier.size(14.dp), tint = Palette.gold)
@@ -277,7 +279,7 @@ private fun RashdulCard(state: AppState, place: Place, now: Instant) {
     GlassCard {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             CardTitle("Rashdul qiblat today", Icons.Filled.SwapVert)
-            Text("The moments the sun lines up with the qibla from where you are, so any upright shadow lies along the qibla line.",
+            Text(tr(R.string.falak_rashdulExplain),
                 style = Txt.footnote, color = Palette.primary.copy(alpha = 0.85f))
             if (today.isEmpty()) {
                 val next = remember(d, place.coordinates) { nextAlignment(state, place, d) }
@@ -332,15 +334,15 @@ private fun ShadowStickCard(state: AppState, place: Place) {
             Text("Stand a straight stick upright on level ground - a pen on a table works. Measure the stick and its shadow in centimetres.",
                 style = Txt.footnote, color = Palette.primary.copy(alpha = 0.85f))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Stick height", style = Txt.subheadline, color = Palette.primary, modifier = Modifier.weight(1f))
+                Text(tr(R.string.falak_stickHeight), style = Txt.subheadline, color = Palette.primary, modifier = Modifier.weight(1f))
                 OutlinedTextField(heightText, { t ->
                     heightText = t
                     t.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }?.let { v -> state.update { it.copy(stickHeight = v) } }
-                }, singleLine = true, suffix = { Text("cm") }, colors = fieldColors,
+                }, singleLine = true, suffix = { Text(tr(R.string.phone_cm)) }, colors = fieldColors,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.width(120.dp))
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Today, for this stick", style = Txt.subheadlineSemibold, color = Palette.primary)
+                Text(tr(R.string.falak_forStick), style = Txt.subheadlineSemibold, color = Palette.primary)
                 PlanRow("Zawal (shortest shadow)", r.formatted(plan.noon), "${cm(plan.noonShadow(height))} pointing ${Geo.compassPoint(plan.noonShadowBearing)}")
                 plan.asrShafii?.let { PlanRow("Asr, Shafi'i (+1× stick)", r.formatted(it), cm(plan.asrShadow(height, AsrSchool.STANDARD))) }
                 plan.asrHanafi?.let { PlanRow("Asr, Hanafi (+2× stick)", r.formatted(it), cm(plan.asrShadow(height, AsrSchool.HANAFI))) }
@@ -352,21 +354,21 @@ private fun ShadowStickCard(state: AppState, place: Place) {
                 }
             }
             HorizontalDivider(color = Palette.primary.copy(alpha = 0.3f))
-            Text("Check a reading", style = Txt.subheadlineSemibold, color = Palette.primary)
+            Text(tr(R.string.falak_checkReading), style = Txt.subheadlineSemibold, color = Palette.primary)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Shadow length", style = Txt.subheadline, color = Palette.primary, modifier = Modifier.weight(1f))
-                OutlinedTextField(shadowText, { shadowText = it }, singleLine = true, suffix = { Text("cm") }, colors = fieldColors,
+                Text(tr(R.string.falak_shadowLength), style = Txt.subheadline, color = Palette.primary, modifier = Modifier.weight(1f))
+                OutlinedTextField(shadowText, { shadowText = it }, singleLine = true, suffix = { Text(tr(R.string.phone_cm)) }, colors = fieldColors,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.width(120.dp))
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Measured at", style = Txt.subheadline, color = Palette.primary, modifier = Modifier.weight(1f))
+                Text(tr(R.string.falak_measuredAt), style = Txt.subheadline, color = Palette.primary, modifier = Modifier.weight(1f))
                 Text(r.formatted(measuredAt), style = Txt.subheadlineSemibold, color = Palette.accentText, modifier = Modifier.clickable {
                     val z = measuredAt.atZone(r.zone)
                     TimePickerDialog(context, { _, h, m ->
                         measuredAt = z.withHour(h).withMinute(m).withSecond(0).toInstant()
                     }, z.hour, z.minute, state.prefs.use24Hour).show()
                 }.padding(6.dp))
-                Text("Now", style = Txt.subheadlineSemibold, color = Palette.primary,
+                Text(tr(R.string.common_now), style = Txt.subheadlineSemibold, color = Palette.primary,
                     modifier = Modifier.clip(CircleShape).background(Palette.primary.copy(alpha = 0.12f)).clickable { measuredAt = state.now }
                         .padding(horizontal = 12.dp, vertical = 6.dp))
             }

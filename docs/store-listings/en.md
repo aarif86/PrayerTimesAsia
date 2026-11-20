@@ -89,7 +89,7 @@ PRIVATE AND FREE
 
 Times are worked out with care and checked against official timetables. Your local masjid may differ by a minute or two. Always follow your local religious authority.
 
-Built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
+Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd).
 ```
 
 ### What's New, first version (limit 4000)
@@ -167,7 +167,7 @@ PRIVATE AND FREE
 
 Times are worked out with care and checked against official timetables. Your local masjid may differ by a minute or two. Always follow your local religious authority.
 
-Built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
+Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd).
 ```
 
 ### Release notes, first version (limit 500)

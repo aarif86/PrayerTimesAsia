@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Prayer Times Asia | prayer times and qibla wherever you land</title>
-  <meta name="description" content="Built by Ustaz Aarif Raziff after a trip to Vietnam with no proper prayer app. Free prayer times and qibla, built in Asia and made for Muslims everywhere. Your local religious authority first, official timetables where they exist, works offline, no outside ads, no account, no tracking. On the web today, iPhone and Android in testing." />
+  <meta name="description" content="Built by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah after a family trip to Vietnam where none of their prayer apps worked. Free prayer times and qibla, built in Asia and made for Muslims everywhere. Your local religious authority first, official timetables where they exist, works offline, no outside ads, no account, no tracking. On the web today, iPhone and Android in testing." />
   <meta name="theme-color" content="#0b0f2a" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="color-scheme" content="dark light" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
 
@@ -344,10 +344,11 @@
        Reveals only hide content once the script has run (html.js), and all of it
        switches off for people who ask their device for less motion. */
     .sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-    .sky .glow { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; will-change: transform; }
-    .sky .g1 { width: 46vmax; height: 46vmax; background: #2a2f78; top: -18vmax; right: -12vmax; animation: drift1 26s ease-in-out infinite alternate; }
-    .sky .g2 { width: 40vmax; height: 40vmax; background: #3a1f52; bottom: -16vmax; left: -14vmax; animation: drift2 32s ease-in-out infinite alternate; }
-    .sky .g3 { width: 24vmax; height: 24vmax; background: #f39a4a; opacity: .12; top: 30%; left: 40%; animation: drift3 38s ease-in-out infinite alternate; }
+    /* Soft glows drawn as plain gradients. A blur filter this size made every frame slow on many computers. */
+    .sky .glow { position: absolute; border-radius: 50%; will-change: transform; }
+    .sky .g1 { width: 46vmax; height: 46vmax; background: radial-gradient(circle, #2a2f78b0 0%, #2a2f7860 38%, transparent 70%); top: -18vmax; right: -12vmax; animation: drift1 26s ease-in-out infinite alternate; }
+    .sky .g2 { width: 40vmax; height: 40vmax; background: radial-gradient(circle, #3a1f52b0 0%, #3a1f5260 38%, transparent 70%); bottom: -16vmax; left: -14vmax; animation: drift2 32s ease-in-out infinite alternate; }
+    .sky .g3 { width: 24vmax; height: 24vmax; background: radial-gradient(circle, #f39a4a26 0%, #f39a4a12 38%, transparent 70%); top: 30%; left: 40%; animation: drift3 38s ease-in-out infinite alternate; }
     .sky .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; animation: twinkle var(--d, 4s) ease-in-out var(--delay, 0s) infinite; }
     .sky .shoot { position: absolute; top: 12%; left: 70%; width: 120px; height: 1.5px; opacity: 0;
       background: linear-gradient(90deg, #fff, transparent); transform: rotate(-20deg); animation: shoot 11s ease-in 3s infinite; }
@@ -430,7 +431,79 @@
       .js .intro, .js .reveal, .js .feature.reveal .shot .phone { opacity: 1; transform: none; }
       .js .strip ul { flex-wrap: wrap; justify-content: center; width: auto; }
     }
+
+    /* ---------- Light mode ----------
+       The page starts dark; the script in the head sets data-theme from the visitor's own
+       choice, or else from their device setting. A few panels stay night coloured on purpose
+       (the masjid band, the closing band and the TV example), so they get the night colours back. */
+    :root { color-scheme: dark; }
+    :root[data-theme="light"] { --night: #F2EEE9; --night-2: #e9e2d8; --card: #ffffff; --card-line: rgba(21, 26, 69, 0.13); --text: #151A45; --muted: #4c5380; --gold: #8a5a00; --green: #1c8a55; color-scheme: light; }
+    [data-theme="light"] .partner, [data-theme="light"] .ask-band, [data-theme="light"] .ex-tv {
+      --card: rgba(255, 255, 255, 0.05); --card-line: rgba(255, 255, 255, 0.10); --text: #eef0fa; --muted: #a9b2d6; --gold: #f2c063; --green: #4fd18b; color: var(--text); }
+    [data-theme="light"] body::before { background:
+        radial-gradient(60% 50% at 80% 0%, #f7bd8f55 0%, transparent 70%),
+        radial-gradient(50% 40% at 0% 100%, #e2b65a33 0%, transparent 70%),
+        var(--night); }
+    [data-theme="light"] .sky .g1 { background: radial-gradient(circle, #f7bd8f90 0%, #f7bd8f48 38%, transparent 70%); }
+    [data-theme="light"] .sky .g2 { background: radial-gradient(circle, #e2b65a60 0%, #e2b65a30 38%, transparent 70%); }
+    [data-theme="light"] .sky .g3 { background: radial-gradient(circle, #e7788f22 0%, #e7788f10 38%, transparent 70%); }
+    [data-theme="light"] .sky .star, [data-theme="light"] .sky .shoot { display: none; }
+    [data-theme="light"] header.top { background: rgba(242, 238, 233, 0.78); }
+    [data-theme="light"] header.top.scrolled { background: rgba(242, 238, 233, 0.94); box-shadow: 0 10px 30px -22px #151A4566; }
+    [data-theme="light"] .btn-primary { background: linear-gradient(135deg, #f2c063, #f39a4a); }
+    [data-theme="light"] .btn-ghost:hover { background: var(--card); border-color: var(--gold); }
+    [data-theme="light"] .hero h1 span { background-image: linear-gradient(135deg, #b06f00, #c2571a 60%, #b8405c); }
+    [data-theme="light"] .lang summary { border-color: rgba(21, 26, 69, 0.2); }
+    [data-theme="light"] .lang summary:hover, [data-theme="light"] .lang[open] summary { background: #ffffff; border-color: #c8922a; }
+    [data-theme="light"] .lang .menu { background: #ffffff; border-color: rgba(21, 26, 69, 0.14); box-shadow: 0 18px 40px -16px #151A4577; }
+    [data-theme="light"] .lang .menu a:hover { background: rgba(21, 26, 69, 0.06); }
+    [data-theme="light"] .lang .menu a[aria-current="page"] { background: rgba(226, 182, 90, 0.28); }
+    [data-theme="light"] .phone { box-shadow: 0 0 0 1.5px #151A4522, 0 30px 60px -24px #151A4588, 0 0 80px -20px #f39a4a55; }
+    [data-theme="light"] .strip { background: rgba(255, 255, 255, 0.55); }
+    [data-theme="light"] .strip li::before { box-shadow: none; }
+    [data-theme="light"] .card, [data-theme="light"] .chapter { box-shadow: 0 10px 30px -22px #151A4555; }
+    [data-theme="light"] .card:hover, [data-theme="light"] .chapter:hover { border-color: #c8922a; box-shadow: 0 20px 40px -26px #151A4566; }
+    [data-theme="light"] .card .icon { background: linear-gradient(135deg, #f2c06355, #f39a4a33); }
+    [data-theme="light"] .tag.live { background: #1c8a5522; }
+    [data-theme="light"] .tag.beta { background: #e2b65a44; }
+    [data-theme="light"] .tag.plan { background: #151A4512; }
+    [data-theme="light"] .chip { background: #ffffff; }
+    [data-theme="light"] .sheets img { box-shadow: 0 30px 60px -24px #151A4588, 0 0 0 1px #151A4514; }
+    [data-theme="light"] .steps .card::before { background: #f2c063; }
+    [data-theme="light"] .chapter .num, [data-theme="light"] .ex-dots i { background: linear-gradient(135deg, #f2c063, #f39a4a); }
+    [data-theme="light"] .letter { background: #ffffff; border-color: #c8922a; box-shadow: 0 30px 60px -36px #151A4577; }
+    [data-theme="light"] .trip-photo img { box-shadow: 0 30px 60px -30px #151A4588; }
+    [data-theme="light"] .ex { background: #f7f3ee; border-color: rgba(21, 26, 69, 0.10); box-shadow: 0 14px 30px -22px #151A4566; }
+    [data-theme="light"] .ex-note { background: #f7f3ee; }
+    [data-theme="light"] .ex-pill { background: rgba(226, 182, 90, 0.3); }
+    [data-theme="light"] .ex-row { border-bottom-color: rgba(21, 26, 69, 0.09); }
+    [data-theme="light"] .ex-row:last-child { border-bottom: 0; }
+    [data-theme="light"] .ex-dots i.p { background: repeating-linear-gradient(45deg, rgba(21,26,69,.28) 0 3px, rgba(21,26,69,.08) 3px 6px); }
+    [data-theme="light"] .ex-calr + .ex-calr { border-top-color: rgba(21, 26, 69, 0.08); }
+    [data-theme="light"] .ex.ex-tv { background: linear-gradient(160deg, #0d1436, #1a1446); border: 6px solid #05070f; }
+    [data-theme="light"] .to-top { background: rgba(255, 255, 255, 0.92); box-shadow: 0 10px 30px -12px #151A4588, 0 0 28px -10px var(--ember); }
+    [data-theme="light"] .to-top .track { stroke: rgba(21, 26, 69, 0.12); }
+    [data-theme="light"] details:not(.lang)[open] { background: #fffaf0; border-color: #c8922a; }
+
+    /* Light and dark button (sun and moon). */
+    .mode { width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1px solid var(--card-line); background: var(--card); color: var(--gold); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; padding: 0; transition: border-color .2s, transform .2s; }
+    .mode[hidden] { display: none; }
+    .mode:hover { border-color: var(--gold); transform: rotate(12deg); }
+    .mode svg { width: 20px; height: 20px; }
+    .mode .sun { display: none; }
+    [data-theme="light"] .mode .sun { display: block; }
+    [data-theme="light"] .mode .moon-icon { display: none; }
   </style>
+  <script>
+    // Pick light or dark before the page paints: the visitor's saved choice first, then the device setting.
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('pta-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') { t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 <script>
   // First visit to the English page: open the page in the visitor's own language if we have it.
   // Uses only the language their phone or computer is set to, nothing is sent anywhere.
@@ -468,6 +541,7 @@
       <a href="#faq">Questions</a>
     </nav>
     <div class="top-right">
+      <button class="mode" type="button" hidden aria-label="Switch between light and dark"><svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a.7.7 0 0 0-.9-.8A9.9 9.9 0 1 0 21.3 15.1a.7.7 0 0 0-.8-.9z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
       <details class="lang"><summary aria-label="Language"><!--notr--><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="cur">EN</span><svg class="caret" viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><!--/notr--></summary><!--notr--><div class="menu"><a href="./" hreflang="en" aria-current="page">English</a><a href="ms/" hreflang="ms" lang="ms">Bahasa Melayu</a><a href="id/" hreflang="id" lang="id">Bahasa Indonesia</a><a href="ar/" hreflang="ar" lang="ar" dir="rtl">العربية</a><a href="ur/" hreflang="ur" lang="ur" dir="rtl">اردو</a><a href="bn/" hreflang="bn" lang="bn">বাংলা</a><a href="tr/" hreflang="tr" lang="tr">Türkçe</a><a href="fr/" hreflang="fr" lang="fr">Français</a></div><!--/notr--></details>
       <a class="btn btn-primary btn-sm" href="app/">Open the app</a>
     </div>
@@ -479,9 +553,9 @@
   <section class="hero">
     <div class="wrap">
       <div>
-        <span class="eyebrow">By Ustaz Aarif Raziff · Free fisabilillah</span>
+        <span class="eyebrow">By Ustaz Aarif Raziff and Ustazah Nasibah Hamzah · Free fisabilillah</span>
         <h1>A prayer app with <span>nothing to sell you.</span></h1>
-        <p class="lead">When Ustaz Aarif landed in Vietnam, he couldn't find a proper prayer app. So he asked himself, why not build one? Built in Asia, made for every Muslim. Times follow your local religious authority first, official timetables where they exist, no outside ads, no subscriptions, and your exact location stays on your phone.</p>
+        <p class="lead">When Ustaz Aarif and his family landed in Vietnam, none of their prayer apps worked for them. So he asked himself, why not build one? Built in Asia, made for every Muslim. Times follow your local religious authority first, official timetables where they exist, no outside ads, no subscriptions, and your exact location stays on your phone.</p>
         <div class="btns">
           <a class="btn btn-primary" href="app/">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
@@ -492,7 +566,7 @@
             <span class="two">iPhone and Android<small>Join the test</small></span>
           </a>
         </div>
-        <p class="note"><a href="#story">Read the story</a> · Built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd)</p>
+        <p class="note"><a href="#story">Read the story</a> · Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd)</p>
       </div>
       <div class="hero-phones" aria-hidden="true">
         <div class="phone android back"><img src="img/android-dial.webp" srcset="img/android-dial-400.webp 400w, img/android-dial.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1347" fetchpriority="high" /></div>
@@ -521,18 +595,18 @@
     <div class="wrap">
       <div class="center">
         <span class="eyebrow">Our story</span>
-        <h2>It started with a trip to Vietnam.</h2>
+        <h2>It started with a family trip to Vietnam.</h2>
       </div>
       <div class="chapters">
         <div class="chapter">
           <span class="num">1</span>
-          <h3>He landed with no proper prayer app</h3>
-          <p>Ustaz Aarif studied at Al&#8209;Azhar and is recognised by the Islamic Religious Council of Singapore (MUIS). In Vietnam he looked for a prayer app he could trust. The big ones show ads around your salah and make you pay for things that used to be free. Even the best one he found wasn't made for Asia.</p>
+          <h3>The whole family had the same problem</h3>
+          <p>Ustaz Aarif travelled to Vietnam with his wife Ustazah Nasibah Hamzah, their son, his mother-in-law and their helper. None of their prayer apps worked for them there, so everyone turned to him to find out when to pray. The big apps show ads around your salah and make you pay for things that used to be free.</p>
         </div>
         <div class="chapter">
           <span class="num">2</span>
-          <h3>Back home, he decided to build one</h3>
-          <p>Not a business, and never something to sell later. Just a prayer app, built fisabilillah in the hope that it becomes sadaqah jariah. It knows how each country sets its prayer times, from Singapore and Malaysia to Vietnam and Japan.</p>
+          <h3>Back home, they decided to build one</h3>
+          <p>His parents have the same trouble. Their apps are hard to use and full of ads, and some play the azan out loud on a crowded MRT train with no easy way to mute it. So he and his wife set out to build a prayer app for the people they love, fisabilillah, in the hope that it becomes sadaqah jariah.</p>
         </div>
         <div class="chapter">
           <span class="num">3</span>
@@ -549,17 +623,25 @@
       <figure class="letter">
         <blockquote>
           <p>Assalamualaikum.</p>
-          <p>When I landed in Vietnam, I couldn't find a proper prayer app. The ones I found were full of ads or asked for a subscription.</p>
+          <p>When we landed in Vietnam as a family, none of our prayer apps worked for us. My wife, our son, my mother-in-law and our helper all turned to me to ask when to pray. Back home, my parents had the same trouble with apps full of ads, and some would play the azan out loud on the MRT.</p>
           <p>To me, prayer times and the qibla are what every Muslim needs, wherever they are. Putting them behind a paywall just isn't right.</p>
           <p>Falak has served us for centuries, and it still does. Today we have better tools to take it further, so why not use them, and keep them free for everyone? A beautiful design is just a bonus.</p>
           <p>I was born in Singapore, so I built it for Asia first, my home. But the same rule applies everywhere, your local religious authority comes first, and it works all over the world.</p>
+          <p>None of this would happen without my wife, Ustazah Nasibah Hamzah. Her support and her honest feedback shape every part of this app.</p>
           <p>It's free and it will stay free. If it helps you, make du'a for us, and share it with someone who prays.</p>
         </blockquote>
         <div class="signed">
           <img src="img/ustaz-aarif.webp" alt="Ustaz Aarif Raziff" width="64" height="64" loading="lazy" />
           <div>
-            <figcaption>Ustaz Aarif Raziff, founder of Prayer Times Asia</figcaption>
+            <figcaption>Ustaz Aarif Raziff, co-founder of Prayer Times Asia</figcaption>
             <p class="ars">Studied Islamic law (fiqh) at Al&#8209;Azhar University in Cairo. Recognised as a religious teacher by the Islamic Religious Council of Singapore (MUIS). <a href="https://www.muis.gov.sg/education/asatizah-development/asatizah-recognition-scheme/ars-directory/" target="_blank" rel="noopener">See the MUIS list</a> or <a href="https://aarif.sg/" target="_blank" rel="noopener">read more about him</a>.</p>
+          </div>
+        </div>
+        <div class="signed">
+          <img src="img/ustazah-nasibah.webp" alt="Ustazah Nasibah Hamzah" width="64" height="64" loading="lazy" />
+          <div>
+            <p class="who" style="margin:0;color:var(--gold);font-weight:700">Ustazah Nasibah Hamzah, co-founder of Prayer Times Asia</p>
+            <p class="ars">Studied Tafsir and Quranic Sciences at Al&#8209;Azhar University in Cairo. Recognised as a religious teacher by the Islamic Religious Council of Singapore (MUIS). Director of Nasar Pte Ltd.</p>
           </div>
         </div>
       </figure>
@@ -668,7 +750,7 @@
         <div class="copy">
           <span class="tag live">Travel</span>
           <h3>Land in a new country, the times are already right</h3>
-          <p class="muted">This is the problem that started it all, on a trip to Vietnam.</p>
+          <p class="muted">This is the problem that started it all, on a family trip to Vietnam.</p>
           <p class="muted">Most prayer apps use one setting for everyone. Prayer Times Asia knows how each country sets its prayer times. It changes over as soon as you arrive, and shows a short note telling you what changed.</p>
           <ul>
             <li>For travellers, it shows how far you are from home, and whether you can shorten (qasar) and combine (jamak) your prayers</li>
@@ -979,7 +1061,7 @@
       <div class="faq">
         <details>
           <summary>Is it really free?</summary>
-          <p>Yes. Ustaz Aarif Raziff builds it fisabilillah. His company, <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd), pays the costs, and we earn our living from other work. There are no outside ads, no subscriptions and nothing to buy. You may see a small card for our own services or a halal Muslim business we picked by hand, and you can turn it off.</p>
+          <p>Yes. Ustaz Aarif Raziff and Ustazah Nasibah Hamzah build it fisabilillah. Their company, <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd), pays the costs, and we earn our living from other work. There are no outside ads, no subscriptions and nothing to buy. You may see a small card for our own services or a halal Muslim business we picked by hand, and you can turn it off.</p>
         </details>
         <details>
           <summary>Could the app be sold one day?</summary>
@@ -1037,7 +1119,7 @@
   <div class="wrap">
     <div>
       <strong style="color: var(--text)">Prayer Times Asia</strong><br />
-      Built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd).
+      Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd).
     </div>
     <div>
       <a href="app/">Web app</a> ·
@@ -1162,6 +1244,27 @@
         clock.textContent = '00:' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
       }, 1000);
     }
+  })();
+</script>
+<script>
+  // Light and dark button: remembers the choice on this device for every page of the website.
+  (function () {
+    var root = document.documentElement, btn = document.querySelector('.mode'), meta = document.querySelector('meta[name="theme-color"]');
+    function paint() {
+      var light = root.getAttribute('data-theme') === 'light';
+      if (meta) meta.setAttribute('content', light ? '#F2EEE9' : '#0b0f2a');
+      if (btn) btn.setAttribute('aria-pressed', light ? 'true' : 'false');
+    }
+    if (btn) {
+      btn.hidden = false;
+      btn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('pta-theme', next); } catch (e) {}
+        paint();
+      });
+    }
+    paint();
   })();
 </script>
 </body>

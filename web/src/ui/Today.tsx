@@ -1,23 +1,23 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
-  Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
+  AlarmClock, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
   CloudMoon, Contrast, Droplet, Flame, Pause, Star, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
-import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
+import { BLESSED_NAME, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
 import { parameterSummary } from '../core/methods'
 import { isInAsia, placeProfile } from '../core/place'
-import { isObligatory, PRAYERS, type Prayer } from '../core/prayer'
+import { isObligatory, lead, openPrayer, PRAYERS, type Prayer } from '../core/prayer'
 import { LONG_DAYS_WORDS } from '../core/longDays'
-import { lang3 } from '../core/ramadanContent'
 import { flag } from '../core/regions'
 import { noonDaysAfter } from '../core/tz'
 import { nudgeAt } from '../core/window'
 import { alertSupport, requestPermission } from '../services/notifications'
-import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '../services/prefs'
+import { APPEARANCES, TODAY_STYLES } from '../services/prefs'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
-import { WakeChip } from './WakeUp'
+import { cycleAlert, ModeIcon, modeWord, WakeChip } from './WakeUp'
+import { alertMode } from '../core/alertMode'
 import { fmtDate, openSheet, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
@@ -28,8 +28,10 @@ import { SiteHomeButton } from './SiteHome'
 import { TabJourney } from './icons'
 import { SeasonCard } from './Ramadan'
 import { Hadith } from './Hadith'
+import { appLocale, appearanceLabel, blessedNote, blessedShort, styleLabel, tr } from '../core/appWords'
 
 type Moment = { prayer: Prayer; time: number } | null
+
 
 /** The new style's name, shown for a moment after switching. */
 function useToast(): [string | null, (s: string) => void] {
@@ -52,18 +54,24 @@ async function turnOnAlerts(only?: Prayer) {
   })
 }
 
+/** The bell: Off, then Notify, then Alarm. The first time, alerts were never on: start with this prayer only. */
 function toggleNotify(prayer: Prayer) {
-  if (!store.prefs.notificationsEnabled) { void turnOnAlerts(prayer); return }
-  store.update((p) => {
-    p.notifyPrayers = p.notifyPrayers.includes(prayer) ? p.notifyPrayers.filter((x) => x !== prayer) : [...p.notifyPrayers, prayer]
-  })
+  if (!store.prefs.notificationsEnabled && alertMode(store.prefs, prayer) === 'off' && alertSupport() !== 'supported') { openSheet({ kind: 'alerts-help' }); return }
+  announce(cycleAlert(prayer))
+}
+
+/** Read out what the bell changed, for screen reader users. */
+function announce(text: string) {
+  const el = document.getElementById('bell-status')
+  if (el) el.textContent = text
 }
 
 function dayLabel(offset: number): string {
-  if (offset === 0) return 'TODAY'
-  if (offset === 1) return 'TOMORROW'
-  if (offset === -1) return 'YESTERDAY'
-  return offset > 0 ? `IN ${offset} DAYS` : `${-offset} DAYS AGO`
+  const up = (line: string) => line.toLocaleUpperCase(appLocale())
+  if (offset === 0) return up(tr('common.today'))
+  if (offset === 1) return up(tr('common.tomorrow'))
+  if (offset === -1) return up(tr('today.yesterday'))
+  return up(offset > 0 ? tr('today.inDays', { n: offset }) : tr('today.daysAgo', { n: -offset }))
 }
 
 export function TodayScreen() {
@@ -84,7 +92,8 @@ export function TodayScreen() {
   const style = s.prefs.todayStyle
   return (
     <div class={`today style-${style}`} data-theme-local={style === 'bands' ? 'dark' : undefined}>
-      <h1 class="sr-only">Prayer times{s.activePlace ? ` in ${s.activePlace.name}` : ''}</h1>
+      <h1 class="sr-only">{s.activePlace ? tr('today.titleIn', { place: s.activePlace.name }) : tr('today.title')}</h1>
+      <p id="bell-status" class="sr-only" aria-live="polite" />
       {style === 'list' && <ClassicPage c={ctx} />}
       {style === 'centre' && <CentrePage c={ctx} />}
       {style === 'dial' && <DialPage c={ctx} />}
@@ -113,11 +122,11 @@ function AppearanceButton({ c }: { c: Ctx }) {
   if (store.prefs.todayStyle === 'bands') return null
   const Icon = a === 'system' ? Contrast : a === 'light' ? Sun : Moon
   return (
-    <button class="round-btn" aria-label={`Appearance: ${APPEARANCE_LABEL[a]}. Switches between Automatic, Light and Dark.`}
+    <button class="round-btn" aria-label={tr('today.appearanceButton', { name: appearanceLabel(a) })}
       onClick={() => {
         const next = APPEARANCES[(APPEARANCES.indexOf(a) + 1) % APPEARANCES.length]
         store.update((p) => { p.appearance = next })
-        c.showToast(next === 'system' ? 'Automatic: follows the sky' : APPEARANCE_LABEL[next])
+        c.showToast(next === 'system' ? tr('today.followsSky') : appearanceLabel(next))
       }}>
       <Icon size={17} strokeWidth={2.4} fill={a === 'system' ? 'none' : 'currentColor'} />
     </button>
@@ -136,11 +145,11 @@ function StyleButton({ c }: { c: Ctx }) {
   }
   const pick = (style: (typeof TODAY_STYLES)[number]) => {
     store.update((p) => { p.todayStyle = style })
-    c.showToast(TODAY_STYLE_LABEL[style])
+    c.showToast(styleLabel(style))
   }
   return (
     <>
-      <button ref={ref} class="round-btn" aria-label={`Prayer screen style: ${TODAY_STYLE_LABEL[store.prefs.todayStyle]}. Switches to the next style; touch and hold to choose one.`}
+      <button ref={ref} class="round-btn" aria-label={tr('today.styleButton', { name: styleLabel(store.prefs.todayStyle) })}
         onPointerDown={() => { held.current = false; hold.current = setTimeout(() => { held.current = true; openMenu() }, 500) }}
         onPointerUp={() => clearTimeout(hold.current)} onPointerLeave={() => clearTimeout(hold.current)}
         onContextMenu={(e) => { e.preventDefault(); openMenu() }}
@@ -157,7 +166,7 @@ function StyleButton({ c }: { c: Ctx }) {
             {TODAY_STYLES.map((st) => (
               <button role="menuitem" onClick={() => { setMenu(null); pick(st) }}>
                 <span style={{ width: '16px' }}>{st === store.prefs.todayStyle && <CircleCheck size={16} />}</span>
-                {TODAY_STYLE_LABEL[st]}
+                {styleLabel(st)}
               </button>
             ))}
           </div>
@@ -172,7 +181,7 @@ function StreakChip({ now }: { now: number }) {
   const paused = store.trackerPaused
   return (
     <button class="streak-chip" onClick={() => openSheet({ kind: 'tracker' })}
-      aria-label={`Prayer tracker: streak ${store.streak(now)} days${paused ? ', paused' : excused ? ', excused today' : ''}`}>
+      aria-label={tr('today.trackerButton', { n: store.streak(now), extra: paused ? tr('today.trackerPaused') : excused ? tr('today.trackerExcused') : '' })}>
       {paused ? <Pause size={15} /> : excused ? <Droplet size={15} fill="currentColor" /> : <Flame size={15} fill="currentColor" />}
       <span class="mono">{store.streak(now)}</span>
     </button>
@@ -185,7 +194,7 @@ function JourneyButton({ now, withChip = false }: { now: number; withChip?: bool
   if (withChip && !store.prefs.musafirChipDismissed) return null
   return (
     <button class="round-btn" style={{ background: 'color-mix(in srgb, var(--accent) 25%, transparent)' }}
-      aria-label="Musafir: you may shorten and combine prayers" onClick={() => openSheet({ kind: 'journey' })}>
+      aria-label={tr('today.musafirButton')} onClick={() => openSheet({ kind: 'journey' })}>
       <TabJourney size={18} />
     </button>
   )
@@ -221,7 +230,7 @@ function PlaceLabel() {
   return (
     <>
       {store.prefs.useGPS ? <Navigation size={11} fill="currentColor" class={store.isCheckingLocation ? 'checking-location' : undefined} /> : <MapPin size={12} />}
-      <span class="place-name" style={(place?.name.length ?? 0) > 11 ? { fontSize: '0.87em' } : undefined}>{place?.name ?? 'Choose a place'}</span>
+      <span class="place-name" style={(place?.name.length ?? 0) > 11 ? { fontSize: '0.87em' } : undefined}>{place?.name ?? tr('masjid.choosePlace')}</span>
       {place && isInAsia(place) && <span class="flag">{flag(placeProfile(place).code)}</span>}
       <ChevronDown size={12} strokeWidth={3} style={{ opacity: 0.6 }} />
     </>
@@ -229,14 +238,14 @@ function PlaceLabel() {
 }
 
 function PlaceChip() {
-  return <button class="place-chip" onClick={() => openSheet({ kind: 'places' })} aria-label="Change location"><PlaceLabel /></button>
+  return <button class="place-chip" onClick={() => openSheet({ kind: 'places' })} aria-label={tr('today.changeLocation')}><PlaceLabel /></button>
 }
 
 /** "TODAY | ➤ Pasir Ris 🇸🇬" - which day and where, in one centred chip. */
 function SunPlaceChip({ offset }: { offset: number }) {
   return (
     <div class="center-row">
-      <button class="sun-place-chip" onClick={() => openSheet({ kind: 'places' })} aria-label="Change location">
+      <button class="sun-place-chip" onClick={() => openSheet({ kind: 'places' })} aria-label={tr('today.changeLocation')}>
         <span class="caps-day">{dayLabel(offset)}</span>
         <span class="divider" />
         <PlaceLabel />
@@ -248,8 +257,8 @@ function SunPlaceChip({ offset }: { offset: number }) {
 function ShowMoreButton({ c, inline }: { c: Ctx; inline?: boolean }) {
   const btn = (
     <button class="capsule-btn" onClick={() => c.setShowMore(!c.showMore)} aria-expanded={c.showMore}
-      aria-label={`${c.showMore ? 'Show less' : 'Show more'}: Dhuha and the blessed times of the night`}>
-      {c.showMore ? 'SHOW LESS' : 'SHOW MORE'}
+      aria-label={`${c.showMore ? tr('common.showLess') : tr('common.showMore')}, ${tr('today.blessedTimes', { name: store.name('sunrise') })}`}>
+      {(c.showMore ? tr('common.showLess') : tr('common.showMore')).toLocaleUpperCase()}
       {c.showMore ? <ChevronUp size={14} strokeWidth={3} /> : <ChevronDown size={14} strokeWidth={3} />}
     </button>
   )
@@ -271,7 +280,7 @@ function PrayerHadith({ c }: { c: Ctx }) {
   if (c.offset !== 0 || !store.prefs.showHadith) return null
   const n = c.next?.prayer
   if (n !== 'fajr' && n !== 'asr') return null
-  return <Hadith id="coolPrayers" tag={`Before ${store.name(n, c.next!.time)}`} />
+  return <Hadith id="coolPrayers" tag={tr('today.before', { name: store.name(n, c.next!.time) })} />
 }
 
 function TopPrompt() {
@@ -287,7 +296,7 @@ function AppPrompt() {
       <Smartphone size={19} class="accent" style={{ flex: 'none' }} />
       <span class="text">{offer.title}</span>
       <a class="primary-btn" href={offer.href} target={offer.kind === 'ask' ? undefined : '_blank'} rel="noopener">{offer.action}</a>
-      <button class="x" aria-label="Not now" onClick={() => store.update((p) => { p.appPromptDismissed = true })}><X size={15} strokeWidth={3} /></button>
+      <button class="x" aria-label={tr('common.notNow')} onClick={() => store.update((p) => { p.appPromptDismissed = true })}><X size={15} strokeWidth={3} /></button>
     </div>
   )
 }
@@ -304,9 +313,9 @@ function NotePrompt({ c }: { c: Ctx }) {
   return (
     <div class="alerts-prompt note-prompt">
       <Star size={18} class="accent" style={{ flex: 'none' }} />
-      <span class="text">Enjoying the app? A short review helps other Muslims find it.</span>
-      <button class="primary-btn" onClick={() => { done(); openSheet({ kind: 'review' }) }}>Review</button>
-      <button class="x" aria-label="Not now" onClick={done}><X size={15} strokeWidth={3} /></button>
+      <span class="text">{tr('today.reviewAsk')}</span>
+      <button class="primary-btn" onClick={() => { done(); openSheet({ kind: 'review' }) }}>{tr('today.review')}</button>
+      <button class="x" aria-label={tr('common.notNow')} onClick={done}><X size={15} strokeWidth={3} /></button>
     </div>
   )
 }
@@ -317,9 +326,9 @@ function AlertsPrompt() {
   return (
     <div class="alerts-prompt">
       <BellRing size={19} class="accent" fill="currentColor" style={{ flex: 'none' }} />
-      <span class="text">Get an alert when each prayer begins</span>
-      <button class="primary-btn" onClick={() => void turnOnAlerts()}>Turn on</button>
-      <button class="x" aria-label="Not now" onClick={() => store.update((p) => { p.alertsPromptDismissed = true })}><X size={15} strokeWidth={3} /></button>
+      <span class="text">{tr('today.alertPrompt')}</span>
+      <button class="primary-btn" onClick={() => void turnOnAlerts()}>{tr('common.turnOn')}</button>
+      <button class="x" aria-label={tr('common.notNow')} onClick={() => store.update((p) => { p.alertsPromptDismissed = true })}><X size={15} strokeWidth={3} /></button>
     </div>
   )
 }
@@ -328,7 +337,7 @@ function AlertsPrompt() {
 function LongDaysNote({ now }: { now: number }) {
   const key = store.longDaysNote(now)
   if (!key) return null
-  const w = LONG_DAYS_WORDS[lang3(store.naming)]
+  const w = LONG_DAYS_WORDS[store.appLang]
   return (
     <div class="glass card arrival long-days" role="note">
       <div class="row" style={{ alignItems: 'flex-start', gap: '12px' }}>
@@ -352,36 +361,36 @@ function ArrivalCard() {
       <div class="row" style={{ alignItems: 'flex-start', gap: '12px' }}>
         <span style={{ fontSize: '34px', lineHeight: 1 }}>{profile.code ? flag(profile.code) : '🌏'}</span>
         <div style={{ flex: 1 }}>
-          <div class="headline">{profile.code ? `Welcome to ${profile.name}` : 'Welcome'}</div>
+          <div class="headline">{profile.code ? tr('today.welcomeTo', { place: profile.name }) : tr('today.welcome')}</div>
           <div class="subhead" style={{ opacity: 0.85, marginTop: '4px' }}>
-            {store.isMethodAutomatic ? `Switched to ${method.name} (${parameterSummary(method)}), local time. Works offline.`
-              : `Local time applied. You've pinned ${method.shortName} in Settings.`}
+            {store.isMethodAutomatic ? tr('today.switched', { method: method.name, country: parameterSummary(method) })
+              : tr('today.pinned', { method: method.shortName })}
           </div>
           <div class="caption" style={{ opacity: 0.75, marginTop: '6px' }}>
             {store.sourceShort}
           </div>
         </div>
-        <button aria-label="Dismiss" onClick={() => store.update((p) => { p.arrivalBannerDismissed = true })} style={{ padding: '6px' }}><X size={16} strokeWidth={3} /></button>
+        <button aria-label={tr('common.dismiss')} onClick={() => store.update((p) => { p.arrivalBannerDismissed = true })} style={{ padding: '6px' }}><X size={16} strokeWidth={3} /></button>
       </div>
       <hr />
       <div class="row arrival-row">
-        <div style={{ flex: 1 }}><div class="subhead" style={{ fontWeight: 600 }}>Switch automatically</div><div class="caption" style={{ opacity: 0.75 }}>Follow each country's method as you travel</div></div>
-        <Switch label="Switch automatically" on={store.isMethodAutomatic} onChange={(auto) => { const id = store.method.id; store.update((p) => { p.methodOverrideID = auto ? null : id }) }} />
+        <div style={{ flex: 1 }}><div class="subhead" style={{ fontWeight: 600 }}>{tr('today.switchAuto')}</div><div class="caption" style={{ opacity: 0.75 }}>{tr('today.switchAutoSub')}</div></div>
+        <Switch label={tr('today.switchAuto')} on={store.isMethodAutomatic} onChange={(auto) => { const id = store.method.id; store.update((p) => { p.methodOverrideID = auto ? null : id }) }} />
       </div>
       {store.prefs.home?.countryCode && store.prefs.home.countryCode !== profile.code && (
         <div class="row arrival-row">
-          <div style={{ flex: 1 }}><div class="subhead" style={{ fontWeight: 600 }}>Musafir features</div><div class="caption" style={{ opacity: 0.75 }}>Jamak and qasar guidance while you're away</div></div>
-          <Switch label="Musafir features" on={store.prefs.musafirEnabled} onChange={(v) => store.update((p) => { p.musafirEnabled = v })} />
+          <div style={{ flex: 1 }}><div class="subhead" style={{ fontWeight: 600 }}>{tr('settings.musafir')}</div><div class="caption" style={{ opacity: 0.75 }}>{tr('today.musafirSub')}</div></div>
+          <Switch label={tr('settings.musafir')} on={store.prefs.musafirEnabled} onChange={(v) => store.update((p) => { p.musafirEnabled = v })} />
         </div>
       )}
       {store.prefs.musafirEnabled && !store.prefs.homeConfirmed && <HomeQuestion />}
       <label class="row arrival-row">
-        <span class="subhead" style={{ fontWeight: 600, flex: 1 }}>Asr</span>
+        <span class="subhead" style={{ fontWeight: 600, flex: 1 }}>{tr('settings.asr')}</span>
         <select class="inline-select" value={store.prefs.asrOverride ?? 'auto'}
           onChange={(e) => { const v = (e.target as HTMLSelectElement).value; store.update((p) => { p.asrOverride = v === 'auto' ? null : (v as 'standard' | 'hanafi') }) }}>
-          <option value="auto">{store.asrSchool === 'hanafi' ? 'Later Asr (Hanafi)' : "Earlier Asr (Shafi'i)"} · Automatic</option>
-          <option value="standard">Earlier Asr (Shafi'i)</option>
-          <option value="hanafi">Later Asr (Hanafi)</option>
+          <option value="auto">{tr('common.nameAutomatic', { name: store.asrSchool === 'hanafi' ? tr('today.asrHanafi') : tr('today.asrShafii') })}</option>
+          <option value="standard">{tr('today.asrShafii')}</option>
+          <option value="hanafi">{tr('today.asrHanafi')}</option>
         </select>
       </label>
     </div>
@@ -433,7 +442,7 @@ function PrayerList({ c, fill }: { c: Ctx; fill: boolean }) {
   const day = c.shown
   const list = entries(c, day)
   const swipe = useSwipe(c)
-  const current = c.offset === 0 ? c.current?.prayer : null
+  const current = c.offset === 0 ? openPrayer(c.current)?.prayer : null
   const next = c.offset === 0 ? c.next : null
   const prayerRows = list.filter((e) => e.kind === 'prayer').length
   // Tapping Syuruk opens a short hadith on why it is not a prayer time.
@@ -464,7 +473,7 @@ function jamaahText(day: PrayerDay, p: Prayer, now: number): string | null {
 function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: number; now: number; day: PrayerDay; isCurrent: boolean; next: Moment; onTap?: () => void }) {
   const prefs = store.prefs
   const passed = t <= now && !isCurrent
-  const notifying = prefs.notificationsEnabled && prefs.notifyPrayers.includes(p)
+  const mode = alertMode(prefs, p)
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const local = store.localName(p, t)
@@ -477,17 +486,19 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: n
       <div class="names">
         <div class="name-line">
           <span class="pname">{store.name(p, t)}</span>
-          {local && <span class="local" aria-label={`called ${local} here`}>{local}</span>}
+          {local && <span class="local" aria-label={tr('today.calledHere', { name: local })}>{local}</span>}
           {prayed && <CheckCircle2 size={16} class="check" fill="var(--green)" color="var(--bg-check, #fff)" />}
         </div>
-        {isCurrent && <div class="now-tag">NOW</div>}
-        {!isCurrent && next && <div class="in-tag mono">in {short(next.time - now)}</div>}
+        {isCurrent && <div class="now-tag">{tr('today.now')}</div>}
+        {!isCurrent && next && <div class="in-tag mono">{tr('today.inTime', { time: short(next.time - now) })}</div>}
         {jamaah && <div class="extra">{jamaah}</div>}
         {other != null && day.alternateSource && <div class="extra alt">{day.alternateSource} {store.formatted(other)}</div>}
       </div>
       <TimeText ms={t} size={27} />
-      <button class="bell" aria-label={notifying ? 'Turn off alert' : 'Turn on alert'} onClick={(e) => { e.stopPropagation(); toggleNotify(p) }}>
-        {notifying ? <Bell size={16} fill="currentColor" /> : <BellOff size={16} style={{ opacity: 0.4 }} />}
+      <button class={`bell bell-${mode}`} aria-label={tr('today.bellAria', { name: store.name(p, t), mode: modeWord(mode) })}
+        onClick={(e) => { e.stopPropagation(); toggleNotify(p) }}
+        onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); openSheet({ kind: 'wakeup', prayer: p }) }}>
+        <ModeIcon mode={mode} />
       </button>
     </div>
   )
@@ -499,7 +510,7 @@ function BlessedRow({ b, t, now }: { b: BlessedTime; t: number; now: number }) {
       <span class="bar" />
       <div class="names">
         <div class="bname">{BLESSED_NAME[b]}</div>
-        <div class="bnote">{BLESSED_NOTE[b]}</div>
+        <div class="bnote">{blessedNote(b)}</div>
       </div>
       <TimeText ms={t} size={22} weight={500} />
       <span style={{ width: '30px', flex: 'none' }} />
@@ -515,13 +526,13 @@ function DateBlock({ c }: { c: Ctx }) {
   const date = c.shown.times.dhuhr
   return (
     <div class="date-block">
-      <button class="chev" aria-label="Previous day" onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={18} strokeWidth={2.4} /></button>
-      <button class="date-main" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? 'Ramadan and Eid dates with their sources' : 'Back to today'}>
+      <button class="chev" aria-label={tr('today.prevDay')} onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={18} strokeWidth={2.4} /></button>
+      <button class="date-main" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? tr('today.datesSources') : tr('today.backToToday')}>
         <span class="caps-day accent">{dayLabel(c.offset)}</span>
         <span class="date-line">{fmtDate(date, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
         <span class="hijri-line">{hijri(date)} {c.offset === 0 ? <Calendar size={12} /> : <Undo2 size={12} />}</span>
       </button>
-      <button class="chev" aria-label="Next day" onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={18} strokeWidth={2.4} /></button>
+      <button class="chev" aria-label={tr('today.nextDay')} onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={18} strokeWidth={2.4} /></button>
     </div>
   )
 }
@@ -529,10 +540,11 @@ function DateBlock({ c }: { c: Ctx }) {
 function SmallDial({ c, size }: { c: Ctx; size: number }) {
   const { now, day, current, next } = c
   const tomorrow = store.day(noonDaysAfter(now, 1, store.timeZone))
-  if (!current || !next || !tomorrow) return <div style={{ width: `${size}px`, height: `${size}px` }} />
+  const top = lead(current, next)
+  if (!top || !tomorrow) return <div style={{ width: `${size}px`, height: `${size}px` }} />
   return (
     <DayDial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}
-      currentPrayer={current.prayer} currentName={store.name(current.prayer, current.time)}
+      currentPrayer={top.prayer} currentName={store.name(top.prayer, top.time)} isNext={top.isNext}
       countdown={countdown(now).count} label={countdown(now).label} />
   )
 }
@@ -576,12 +588,17 @@ export function countdown(now: number): { count: string; label: string; text: st
   const done = !!w && store.prefs.trackerEnabled && store.isPrayed(w.prayer, w.start)
   if (w && !done) {
     const count = short(w.end - now)
-    return { count, label: 'left to pray', text: `${count} left to pray`, urgent: w.prayer !== 'isha' && now >= nudgeAt(w), done }
+    return { count, label: tr('today.leftLabel'), text: tr('today.leftToPray', { time: count }), urgent: w.prayer !== 'isha' && now >= nudgeAt(w), done }
   }
   const next = store.next(now)
   if (!next) return { count: '', label: '', text: '', urgent: false, done }
+  // Syuruk to Zohor: the next prayer's name leads, so the count only says when.
+  if (!w && store.current(now)?.prayer === 'sunrise') {
+    const text = tr('today.inTime', { time: short(next.time - now) })
+    return { count: text, label: '', text, urgent: false, done }
+  }
   const count = short(next.time - now)
-  const label = `until ${store.name(next.prayer, next.time)}`
+  const label = tr('today.untilName', { name: store.name(next.prayer, next.time) })
   return { count, label, text: `${count} ${label}`, urgent: false, done }
 }
 
@@ -593,13 +610,16 @@ export function countdown(now: number): { count: string; label: string; text: st
  * it when the tracker is on. Nothing else.
  */
 function SimplePage({ c }: { c: Ctx }) {
-  const { now, day, current } = c
+  const { now, day } = c
+  const current = openPrayer(c.current)
+  const top = lead(c.current, c.next)
   const t = countdown(now)
   return (
     <div class="today-page page simple-page">
       <div class="row" style={{ gap: '8px', paddingTop: '8px' }}><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
       <div class="simple-now">
-        {current && <div class="simple-big display tint-text" style={{ '--tint': tint(current.prayer) }}>{store.name(current.prayer, current.time)}{t.done && <CheckCircle2 size={34} class="accent" style={{ marginLeft: '10px' }} />}</div>}
+        {top?.isNext && <div class="simple-kicker">{tr('today.next')}</div>}
+        {top && <div class="simple-big display tint-text" style={{ '--tint': tint(top.prayer) }}>{store.name(top.prayer, top.time)}{t.done && <CheckCircle2 size={34} class="accent" style={{ marginLeft: '10px' }} />}</div>}
         {t.text && <div class={`simple-left mono ${t.urgent ? 'accent' : ''}`}>{t.text}</div>}
       </div>
       <div class="simple-list">
@@ -610,7 +630,7 @@ function SimplePage({ c }: { c: Ctx }) {
           const isNow = current?.prayer === p && current.time === time
           return (
             <button class={`simple-row ${isNow ? 'current' : ''}`} style={{ '--tint': tint(p) }} disabled={!trackable}
-              aria-label={`${store.name(p, time)} ${store.formatted(time)}${prayed ? ', prayed' : ''}`}
+              aria-label={`${store.name(p, time)} ${store.formatted(time)}${prayed ? tr('today.prayed') : ''}`}
               onClick={() => trackable && store.togglePrayed(p, time)}>
               <span class="simple-name">{store.name(p, time)}</span>
               <span class="simple-time mono">{store.formatted(time)}</span>
@@ -620,14 +640,14 @@ function SimplePage({ c }: { c: Ctx }) {
         })}
       </div>
       <button class="simple-more" onClick={() => c.setShowMore(!c.showMore)} aria-expanded={c.showMore}>
-        {c.showMore ? 'Show less' : 'Show more times'}
+        {c.showMore ? tr('common.showLess') : tr('today.moreTimes')}
         {c.showMore ? <ChevronUp size={22} strokeWidth={2.6} /> : <ChevronDown size={22} strokeWidth={2.6} />}
       </button>
       {c.showMore && (
         <div class="simple-list">
           {store.blessed(day).map(([b, t]) => (
             <div class="simple-row blessed" style={{ opacity: t <= now ? 0.6 : 1 }}>
-              <span class="simple-name">{BLESSED_NAME[b]}<span class="simple-note">{BLESSED_NOTE[b]}</span></span>
+              <span class="simple-name">{BLESSED_NAME[b]}<span class="simple-note">{blessedNote(b)}</span></span>
               <span class="simple-time mono">{store.formatted(t)}</span>
             </div>
           ))}
@@ -644,12 +664,12 @@ function DayNavigator({ c }: { c: Ctx }) {
   const date = c.shown.times.dhuhr
   return (
     <div class="day-nav">
-      <button class="chev" aria-label="Previous day" onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={22} strokeWidth={2.4} /></button>
-      <button class="day-nav-main" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? 'Ramadan and Eid dates with their sources' : 'Back to today'}>
+      <button class="chev" aria-label={tr('today.prevDay')} onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={22} strokeWidth={2.4} /></button>
+      <button class="day-nav-main" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? tr('today.datesSources') : tr('today.backToToday')}>
         <span class="day-nav-date">{fmtDate(date, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
         <span class="day-nav-hijri">{hijri(date)} {c.offset === 0 ? <Calendar size={12} /> : <Undo2 size={12} />}</span>
       </button>
-      <button class="chev" aria-label="Next day" onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={22} strokeWidth={2.4} /></button>
+      <button class="chev" aria-label={tr('today.nextDay')} onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={22} strokeWidth={2.4} /></button>
     </div>
   )
 }
@@ -660,9 +680,9 @@ function MusafirChip({ now }: { now: number }) {
   return (
     <div class="musafir-chip">
       <button class="musafir-chip-open" onClick={() => openSheet({ kind: 'journey' })}>
-        <TabJourney size={17} /><span style={{ flex: 1, textAlign: 'left' }}>Musafir. You may shorten and join</span><ChevronRight size={14} strokeWidth={3} />
+        <TabJourney size={17} /><span style={{ flex: 1, textAlign: 'left' }}>{tr('today.musafirLine')}</span><ChevronRight size={14} strokeWidth={3} />
       </button>
-      <button class="musafir-chip-close" aria-label="Hide, keep the luggage button at the top"
+      <button class="musafir-chip-close" aria-label={tr('today.musafirHide')}
         onClick={() => store.update((p) => { p.musafirChipDismissed = true })}><X size={14} strokeWidth={3} /></button>
     </div>
   )
@@ -730,7 +750,7 @@ function DialPage({ c }: { c: Ctx }) {
       <ArrivalCard />
       {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
-      <button class="date-header" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? 'Ramadan and Eid dates with their sources' : 'Back to today'}>
+      <button class="date-header" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? tr('today.datesSources') : tr('today.backToToday')}>
         <span class="caps-day accent">{dayLabel(c.offset)}</span>
         <span class="date-big display">{fmtDate(shown.times.dhuhr, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
         <span class="hijri-line subhead">{hijri(shown.times.dhuhr)} {c.offset === 0 ? <Calendar size={13} /> : <Undo2 size={13} />}</span>
@@ -738,31 +758,31 @@ function DialPage({ c }: { c: Ctx }) {
       <div class="hero-wrap" ref={wrap} {...swipe}>
         <div class="hero-centre-box">
         <HeroDial size={size} now={c.now} day={shown} nextFajr={nextFajr} tz={store.timeZone}
-          currentPrayer={isToday ? c.current?.prayer ?? null : null} marks={marks}
+          currentPrayer={isToday ? lead(c.current, c.next)?.prayer ?? null : null} marks={marks}
           label={(m, sz) => {
             const p = PRAYERS.find((x) => x === m.id)
-            if (p) return <DialPrayerLabel p={p} t={m.date} now={c.now} size={sz} day={shown} isCurrent={isToday && p === c.current?.prayer} />
+            if (p) return <DialPrayerLabel p={p} t={m.date} now={c.now} size={sz} day={shown} isCurrent={isToday && p === openPrayer(c.current)?.prayer} />
             const b = blessed.find(([x]) => x === m.id)
             return b ? <DialBlessedLabel b={b[0]} t={b[1]} now={c.now} size={sz} /> : null
           }}
           centre={(sz) => {
-            const cur = isToday ? c.current : null
-            if (!cur || !c.next) return <MoonStar size={sz * 0.08} style={{ opacity: 0.5 }} />
+            const cur = isToday ? lead(c.current, c.next) : null
+            if (!cur) return <MoonStar size={sz * 0.08} style={{ opacity: 0.5 }} />
             return (
               <div class="hero-centre">
-                <div class="tint-text" style={{ fontSize: `${sz * 0.028}px`, fontWeight: 800, letterSpacing: '0.6px', '--tint': tint(cur.prayer) }}>NOW</div>
+                <div class="tint-text" style={{ fontSize: `${sz * 0.028}px`, fontWeight: 800, letterSpacing: '0.6px', '--tint': tint(cur.prayer) }}>{cur.isNext ? tr('today.next') : tr('today.now')}</div>
                 <div class="display" style={{ fontSize: `${sz * 0.085}px`, fontWeight: 700, lineHeight: 1.1 }}>{store.name(cur.prayer, cur.time)}</div>
                 <div class="display accent mono" style={{ fontSize: `${sz * 0.066}px`, fontWeight: 600 }}>{countdown(c.now).count}</div>
-                <div class="secondary" style={{ fontSize: `${sz * 0.034}px`, fontWeight: 500 }}>{countdown(c.now).label}</div>
+                {countdown(c.now).label && <div class="secondary" style={{ fontSize: `${sz * 0.034}px`, fontWeight: 500 }}>{countdown(c.now).label}</div>}
               </div>
             )
           }} />
         </div>
       </div>
       <div class="row day-row">
-        <button class="round-btn big" aria-label="Previous day" onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={18} strokeWidth={2.4} /></button>
+        <button class="round-btn big" aria-label={tr('today.prevDay')} onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={18} strokeWidth={2.4} /></button>
         <span class="spacer" /><SourceBadge day={shown} compact /><span class="spacer" />
-        <button class="round-btn big" aria-label="Next day" onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={18} strokeWidth={2.4} /></button>
+        <button class="round-btn big" aria-label={tr('today.nextDay')} onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={18} strokeWidth={2.4} /></button>
       </div>
       <ShowMoreButton c={c} />
       <NotePrompt c={c} />
@@ -774,7 +794,7 @@ function DialPage({ c }: { c: Ctx }) {
 function DialPrayerLabel({ p, t, now, size, day, isCurrent }: { p: Prayer; t: number; now: number; size: number; day: PrayerDay; isCurrent: boolean }) {
   const prefs = store.prefs
   const passed = t <= now && !isCurrent
-  const notifying = prefs.notificationsEnabled && prefs.notifyPrayers.includes(p)
+  const mode = alertMode(prefs, p)
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const own = store.name(p, t)
@@ -782,12 +802,13 @@ function DialPrayerLabel({ p, t, now, size, day, isCurrent }: { p: Prayer; t: nu
   const name = local ? `${own} · ${local}` : own
   return (
     <button class={`dial-mark ${isCurrent ? 'current' : ''}`} style={{ '--tint': tint(p), '--tint-soft': tint(p, 0.16), '--tint-line': tint(p, 0.5), opacity: passed && !prayed ? 0.55 : 1, borderRadius: `${size * 0.035}px` }}
-      aria-label={`${name}, ${store.formatted(t)}${isCurrent ? ', now' : ''}${prayed ? ', prayed' : ''}`}
+      aria-label={`${name}, ${store.formatted(t)}${isCurrent ? tr('today.isNow') : ''}${prayed ? tr('today.prayed') : ''}`}
       onClick={() => (trackable ? store.togglePrayed(p, t) : toggleNotify(p))}>
       <span class="dm-name" style={{ fontSize: `${size * 0.034}px`, fontWeight: isCurrent ? 700 : 600 }}>
         {name}
         {prayed && <CheckCircle2 size={size * 0.03} fill="var(--green)" color="#fff" />}
-        {!prayed && prefs.notificationsEnabled && !notifying && isObligatory(p) && <BellOff size={size * 0.026} style={{ opacity: 0.5 }} />}
+        {!prayed && mode === 'alarm' && <AlarmClock size={size * 0.026} style={{ opacity: 0.8 }} />}
+        {!prayed && mode === 'off' && prefs.notificationsEnabled && isObligatory(p) && <BellOff size={size * 0.026} style={{ opacity: 0.5 }} />}
       </span>
       <TimeText ms={t} size={size * 0.05} weight={isCurrent ? 700 : 600} />
       {day.jamaah[p] != null && <span style={{ fontSize: `${size * 0.027}px`, opacity: 0.75 }}>{jamaahText(day, p, now)}</span>}
@@ -798,9 +819,9 @@ function DialPrayerLabel({ p, t, now, size, day, isCurrent }: { p: Prayer; t: nu
 function DialBlessedLabel({ b, t, now, size }: { b: BlessedTime; t: number; now: number; size: number }) {
   const Icon = BLESSED_ICON[b]
   return (
-    <div class="dial-blessed" style={{ opacity: t <= now ? 0.55 : 1 }} aria-label={`${BLESSED_NAME[b]}, ${store.formatted(t)}. ${BLESSED_NOTE[b]}`}>
+    <div class="dial-blessed" style={{ opacity: t <= now ? 0.55 : 1 }} aria-label={`${BLESSED_NAME[b]}, ${store.formatted(t)}. ${blessedNote(b)}`}>
       <span class="secondary" style={{ fontSize: `${size * 0.028}px`, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
-        <Icon size={size * 0.03} />{BLESSED_SHORT[b]}
+        <Icon size={size * 0.03} />{blessedShort(b)}
       </span>
       <TimeText ms={t} size={size * 0.04} weight={500} style={{ opacity: 0.85 }} />
     </div>
@@ -812,16 +833,17 @@ function DialBlessedLabel({ b, t, now, size }: { b: BlessedTime; t: number; now:
 function SunPathPage({ c }: { c: Ctx }) {
   const wrap = useRef<HTMLDivElement>(null)
   const width = useWidth(wrap, 393)
-  const { current, next, now } = c
+  const { next, now } = c
   const nextName = next ? store.name(next.prayer, next.time) : ''
+  const top = lead(c.current, next)
   return (
     <div class="today-page page sunpath-page">
       <div class="row" style={{ alignItems: 'flex-start', gap: '8px', paddingTop: '6px' }}>
-        {current && next && (
-          <div class="sun-status" aria-label={`Now ${store.name(current.prayer, current.time)}. ${nextName} at ${store.formatted(next.time)}.`}>
+        {top && next && (
+          <div class="sun-status" aria-label={top.isNext ? tr('today.nextAt', { next: nextName, time: store.formatted(next.time) }) : tr('today.nowNext', { now: store.name(top.prayer, top.time), next: nextName, time: store.formatted(next.time) })}>
             <div class="row" style={{ gap: '8px' }}>
-              <span class="dot" style={{ background: tint(current.prayer) }} />
-              <span class="display" style={{ fontSize: '30px', fontWeight: 700 }}>{store.name(current.prayer, current.time)}</span>
+              <span class="dot" style={{ background: tint(top.prayer) }} />
+              <span class="display" style={{ fontSize: '30px', fontWeight: 700 }}>{store.name(top.prayer, top.time)}</span>
             </div>
             <span class={`status-pill mono ${countdown(now).urgent ? 'urgent' : ''}`}>{countdown(now).text}</span>
           </div>
@@ -861,19 +883,21 @@ const BAND: Record<Prayer, string> = {
 }
 
 function BandsPage({ c }: { c: Ctx }) {
-  const { now, shown, current, next, offset } = c
+  const { now, shown, next, offset } = c
+  const current = openPrayer(c.current)
+  const top = lead(c.current, next)
   const swipe = useSwipe(c)
   const blessed = visibleBlessed(c, shown)
   return (
     <div class="today-page bands-page">
       <div class="bands-top page">
         <div class="row" style={{ gap: '8px' }}>
-          <button class="bands-place" onClick={() => openSheet({ kind: 'places' })} aria-label="Change location"><PlaceLabel /></button>
+          <button class="bands-place" onClick={() => openSheet({ kind: 'places' })} aria-label={tr('today.changeLocation')}><PlaceLabel /></button>
           <span class="spacer" />
           <Controls c={c} />
         </div>
-        {current && next && offset === 0 && (
-          <div class="bands-status mono">{store.name(current.prayer, current.time)} now · {countdown(now).text}</div>
+        {top && offset === 0 && (
+          <div class="bands-status mono">{top.isNext ? store.name(top.prayer, top.time) : tr('today.nameNow', { name: store.name(top.prayer, top.time) })} · {countdown(now).text}</div>
         )}
         <TopPrompt />
         <ArrivalCard />
@@ -881,11 +905,11 @@ function BandsPage({ c }: { c: Ctx }) {
       {c.offset === 0 && <SeasonCard now={c.now} />}
       </div>
       <div class="bands-date">
-        <button aria-label="Previous day" onClick={() => c.setOffset(offset - 1)}><ChevronLeft size={20} strokeWidth={2.6} /></button>
-        <button class="bands-date-main" onClick={() => dateTap(c)} aria-label={offset === 0 ? 'Ramadan and Eid dates with their sources' : 'Back to today'}>
+        <button aria-label={tr('today.prevDay')} onClick={() => c.setOffset(offset - 1)}><ChevronLeft size={20} strokeWidth={2.6} /></button>
+        <button class="bands-date-main" onClick={() => dateTap(c)} aria-label={offset === 0 ? tr('today.datesSources') : tr('today.backToToday')}>
           {offset !== 0 && <Undo2 size={13} />}<span>{fmtDate(shown.times.dhuhr, { day: 'numeric', month: 'short', year: 'numeric' })} ·</span><span>{hijri(shown.times.dhuhr)}</span>
         </button>
-        <button aria-label="Next day" onClick={() => c.setOffset(offset + 1)}><ChevronRight size={20} strokeWidth={2.6} /></button>
+        <button aria-label={tr('today.nextDay')} onClick={() => c.setOffset(offset + 1)}><ChevronRight size={20} strokeWidth={2.6} /></button>
       </div>
       <div class="bands" {...swipe}>
         {PRAYERS.map((p) => <PrayerBand p={p} t={shown.times[p]} jamaah={shown.jamaah[p]} now={now} isCurrent={offset === 0 && p === current?.prayer}
@@ -903,28 +927,29 @@ function BandsPage({ c }: { c: Ctx }) {
 
 function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: number; jamaah?: number; now: number; isCurrent: boolean; next: Moment }) {
   const prefs = store.prefs
-  const notifying = prefs.notificationsEnabled && prefs.notifyPrayers.includes(p)
+  const mode = alertMode(prefs, p)
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const parts = store.timeParts(t)
   const local = store.localName(p, t)
   return (
     <button class={`band ${isCurrent ? 'current' : ''}`} style={{ background: BAND[p] }}
-      aria-label={`${store.name(p, t)}, ${store.formatted(t)}${isCurrent ? ', now' : ''}${prayed ? ', prayed' : ''}`}
+      aria-label={`${store.name(p, t)}, ${store.formatted(t)}${isCurrent ? tr('today.isNow') : ''}${prayed ? tr('today.prayed') : ''}`}
       onClick={() => (trackable ? store.togglePrayed(p, t) : toggleNotify(p))}>
       <span class="band-names">
         <span class="row" style={{ gap: '8px', alignItems: 'baseline' }}>
           <span class="band-name">{store.name(p, t)}</span>
           {local && <span class="caption" style={{ fontWeight: 600, opacity: 0.8 }}>{local}</span>}
-          {isCurrent && <span class="now-pill">NOW</span>}
+          {isCurrent && <span class="now-pill">{tr('today.now')}</span>}
           {prayed && <CheckCircle2 size={16} />}
         </span>
-        {next && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>in {short(next.time - now)}</span>}
-        {isCurrent && jamaah != null && t <= now && now < jamaah && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>Jamaah in {short(jamaah - now)}</span>}
+        {next && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>{tr('today.inTime', { time: short(next.time - now) })}</span>}
+        {isCurrent && jamaah != null && t <= now && now < jamaah && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>{tr('today.jamaahIn', { time: short(jamaah - now) })}</span>}
       </span>
       <span class="spacer" />
       <span class="band-time"><span>{parts.time}</span>{parts.suffix && <span class="sfx">{parts.suffix}</span>}</span>
-      {prefs.notificationsEnabled && !notifying && isObligatory(p) && <BellOff size={13} style={{ opacity: 0.6 }} />}
+      {mode === 'alarm' && <AlarmClock size={13} style={{ opacity: 0.85 }} />}
+      {mode === 'off' && prefs.notificationsEnabled && isObligatory(p) && <BellOff size={13} style={{ opacity: 0.6 }} />}
     </button>
   )
 }
@@ -937,7 +962,7 @@ function BlessedBand({ b, t, now }: { b: BlessedTime; t: number; now: number }) 
       <Icon size={17} style={{ opacity: 0.8, flex: 'none' }} />
       <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <span class="headline">{BLESSED_NAME[b]}</span>
-        <span class="caption" style={{ opacity: 0.7, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{BLESSED_NOTE[b]}</span>
+        <span class="caption" style={{ opacity: 0.7, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{blessedNote(b)}</span>
       </span>
       <span class="spacer" />
       <span class="band-time small"><span>{parts.time}</span>{parts.suffix && <span class="sfx">{parts.suffix}</span>}</span>
@@ -952,9 +977,9 @@ function NoPlace() {
   return (
     <div class="no-place page">
       <Navigation size={54} strokeWidth={1.2} />
-      <h2 class="display">{s.gpsStatus === 'denied' ? 'Location is off' : s.gpsStatus === 'locating' ? 'Finding where you are…' : 'Where are you?'}</h2>
-      <p>Prayer times are calculated for your exact spot. Allow location, or pick a city.</p>
-      <button class="primary-btn" onClick={() => openSheet({ kind: 'places' })}>Choose a city</button>
+      <h2 class="display">{s.gpsStatus === 'denied' ? tr('today.locationOff') : s.gpsStatus === 'locating' ? tr('today.finding') : tr('today.whereAreYou')}</h2>
+      <p>{tr('today.whereExplain')}</p>
+      <button class="primary-btn" onClick={() => openSheet({ kind: 'places' })}>{tr('today.chooseCity')}</button>
     </div>
   )
 }

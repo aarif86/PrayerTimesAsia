@@ -20,11 +20,11 @@ export type SeasonPreview = 'off' | 'sighting' | 'ramadan' | 'lastTen' | 'raya' 
 export const SEASON_PREVIEWS: SeasonPreview[] = ['off', 'sighting', 'ramadan', 'lastTen', 'raya', 'syawal']
 export const SEASON_PREVIEW_LABEL: Record<SeasonPreview, string> = {
   off: 'Off (real dates)',
-  sighting: 'Moon sighting night (29 Syaaban)',
+  sighting: "Moon sighting night (29 Sha'ban)",
   ramadan: 'Ramadan (day 12)',
   lastTen: 'Last ten nights (day 26)',
-  raya: 'Hari Raya morning (1 Syawal)',
-  syawal: 'Syawal (day 8)',
+  raya: 'Eid morning (1 Shawwal)',
+  syawal: 'Shawwal (day 8)',
 }
 const PREVIEW_TARGET: Record<Exclude<SeasonPreview, 'off'>, { month: number; day: number }> = {
   sighting: { month: 8, day: 29 }, ramadan: { month: 9, day: 12 }, lastTen: { month: 9, day: 26 },

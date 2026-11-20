@@ -47,7 +47,7 @@ for (const appearance of ['light', 'dark']) {
   pages.push([`source-sheet-${appearance}`, { style: 'list', appearance, now: NIGHT }, click('.source-badge')])
   pages.push([`calendar-sheet-${appearance}`, { style: 'list', appearance, now: NIGHT }, click('.date-main')])
   pages.push([`places-sheet-${appearance}`, { style: 'list', appearance, now: NIGHT }, async (p) => { await p.click('.place-chip'); await p.fill('input[type=search]', 'ku') }])
-  pages.push([`alarms-sheet-${appearance}`, { style: 'centre', appearance, now: NIGHT }, click('button[aria-label^="Prayer alarms"]')])
+  pages.push([`alarms-sheet-${appearance}`, { style: 'centre', appearance, now: NIGHT }, click('button[aria-label^="Alerts and alarms"]')])
   pages.push([`journey-sheet-${appearance}`, { demo: 'travel', style: 'list', appearance, now: NIGHT }, click('button[aria-label^="Musafir"]')])
   pages.push([`masjid-about-${appearance}`, { tab: 'masjid', appearance, now: NIGHT }, click('button[aria-label="About this app"]')])
 }

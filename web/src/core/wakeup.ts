@@ -1,6 +1,7 @@
 import type { PrayerDay } from './engine'
 import { hijriDate } from './hijri'
 import { prayerName, type NamingStyle } from './prayer'
+import { tr, type AppWordKey } from './appWords'
 
 /**
  * Wake up for Subuh: the Subuh alarm and the earlier sahur alarm, the same
@@ -44,21 +45,20 @@ const SAHUR_MINUTES: Record<SahurTiming, number> = { fajrMinus60: 60, fajrMinus9
 export type SahurDay = 'ramadan' | 'monThu' | 'whiteDays' | 'everyDay'
 export const SAHUR_DAYS: readonly SahurDay[] = ['ramadan', 'monThu', 'whiteDays', 'everyDay']
 export const DEFAULT_SAHUR_DAYS: SahurDay[] = ['ramadan', 'monThu']
-export const SAHUR_DAY_LABEL: Record<SahurDay, string> = {
-  ramadan: 'Ramadan',
-  monThu: 'Mondays and Thursdays',
-  whiteDays: 'White days (13, 14 and 15 of the Hijri month)',
-  everyDay: 'Every day',
+const SAHUR_DAY_KEY: Record<SahurDay, AppWordKey> = {
+  ramadan: 'alerts.dayRamadan', monThu: 'alerts.dayMonThu', whiteDays: 'alerts.dayWhite', everyDay: 'alerts.dayEvery',
 }
+/** "Mondays and Thursdays", in the app's language. */
+export const sahurDayLabel = (d: SahurDay): string => tr(SAHUR_DAY_KEY[d])
 
 export function wakeUpLabel(t: WakeUpTiming, naming: NamingStyle): string {
   const fajr = prayerName('fajr', naming)
   const sunrise = prayerName('sunrise', naming)
   const { part, minutes } = WAKE[t]
-  if (t === 'fajrMinus30') return `30 min before ${fajr} for tahajjud`
-  if (t === 'atFajr') return `At ${fajr}`
-  if (t === 'sunriseMinus60') return `1 hour before ${sunrise}`
-  return part === 'beforeSunrise' ? `${minutes} min before ${sunrise}` : `${minutes} min after ${fajr} begins`
+  if (t === 'fajrMinus30') return tr('alerts.wakeTahajjud', { fajr })
+  if (t === 'atFajr') return tr('alerts.wakeAtFajr', { fajr })
+  if (t === 'sunriseMinus60') return tr('alerts.wakeHourBefore', { sunrise })
+  return part === 'beforeSunrise' ? tr('alerts.wakeBeforeSunrise', { n: minutes, sunrise }) : tr('alerts.wakeAfterFajr', { n: minutes, fajr })
 }
 
 export function wakeUpTime(t: WakeUpTiming, day: PrayerDay): number {
@@ -71,9 +71,9 @@ export function wakeUpTime(t: WakeUpTiming, day: PrayerDay): number {
 export function sahurLabel(t: SahurTiming, naming: NamingStyle): string {
   const fajr = prayerName('fajr', naming)
   switch (t) {
-    case 'fajrMinus60': return `1 hour before ${fajr}`
-    case 'fajrMinus90': return `1 hour 30 min before ${fajr}`
-    case 'fajrMinus120': return `2 hours before ${fajr}`
+    case 'fajrMinus60': return tr('alerts.sahur60', { fajr })
+    case 'fajrMinus90': return tr('alerts.sahur90', { fajr })
+    case 'fajrMinus120': return tr('alerts.sahur120', { fajr })
   }
 }
 
@@ -117,9 +117,9 @@ export function prayerAlarmChoices(prayer: AlarmPrayer): PrayerAlarmTiming[] {
 
 /** Short, as it sits in the row beside the prayer's name. */
 export function prayerAlarmLabel(t: PrayerAlarmTiming): string {
-  if (t === 'atStart') return 'On time'
-  if (t === 'endMinus30') return '30 min before it ends'
-  return `${ALARM_MINUTES[t]} min after`
+  if (t === 'atStart') return tr('alerts.onTime')
+  if (t === 'endMinus30') return tr('alerts.beforeEnds')
+  return tr('alerts.minAfter', { n: ALARM_MINUTES[t] })
 }
 
 /** When the alarm rings, given the prayer's start and end (the next prayer). */
@@ -132,6 +132,8 @@ export function prayerAlarmTime(t: PrayerAlarmTiming, start: number, end: number
 /** The sound every alarm plays. "phone" (a ringtone picked on Android) plays Classic elsewhere. */
 export type AlarmSound = 'classic' | 'chime' | 'bells' | 'beeps' | 'phone'
 export const ALARM_SOUNDS: readonly AlarmSound[] = ['classic', 'chime', 'bells', 'beeps', 'phone']
-export const ALARM_SOUND_LABEL: Record<AlarmSound, string> = {
-  classic: 'Classic alarm', chime: 'Gentle chime', bells: 'Rising bells', beeps: 'Soft beeps', phone: 'From my phone',
+const ALARM_SOUND_KEY: Record<AlarmSound, AppWordKey> = {
+  classic: 'alerts.soundClassic', chime: 'alerts.soundChime', bells: 'alerts.soundBells', beeps: 'alerts.soundBeeps', phone: 'alerts.soundPhone',
 }
+/** "Gentle chime", in the app's language. */
+export const alarmSoundLabel = (s: AlarmSound): string => tr(ALARM_SOUND_KEY[s])

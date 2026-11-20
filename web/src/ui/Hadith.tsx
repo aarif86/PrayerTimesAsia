@@ -1,8 +1,8 @@
 import { X } from 'lucide-preact'
 import { useEffect, useState } from 'preact/hooks'
 import { HADITH, type HadithId } from '../core/hadith'
-import { lang3 } from '../core/ramadanContent'
 import { store, useStore } from '../services/store'
+import { tr } from '../core/appWords'
 
 /**
  * A short hadith or ayah, as a card (`card`) or a softer line (`line`). Hidden
@@ -23,19 +23,19 @@ export function Hadith({ id, tag, variant = 'card' }: { id: HadithId; tag?: stri
     if (!justHidden) return null
     return (
       <div class="hadith-undo" role="status">
-        <span>Hadith hidden here. Bring them all back in Settings, Hadith.</span>
-        <button onClick={() => { store.update((p) => { p.hiddenHadith = p.hiddenHadith.filter((x) => x !== id) }); setJustHidden(false) }}>Undo</button>
+        <span>{tr('hadith.hidden')}</span>
+        <button onClick={() => { store.update((p) => { p.hiddenHadith = p.hiddenHadith.filter((x) => x !== id) }); setJustHidden(false) }}>{tr('common.undo')}</button>
       </div>
     )
   }
   const h = HADITH[id]
-  const lang = lang3(s.naming)
+  const lang = s.appLang
   const close = () => { store.update((p) => { if (!p.hiddenHadith.includes(id)) p.hiddenHadith = [...p.hiddenHadith, id] }); setJustHidden(true) }
   return (
     <div class={variant === 'card' ? 'glass card hadith-card' : 'hadith-line'}>
       <div class="hadith-top">
-        {variant === 'card' && <span class="hadith-tag">{tag ?? 'Hadith'}</span>}
-        <button class="hadith-x" aria-label="Hide this hadith" onClick={close}><X size={15} strokeWidth={2.6} /></button>
+        {variant === 'card' && <span class="hadith-tag">{tag ?? tr('hadith.title')}</span>}
+        <button class="hadith-x" aria-label={tr('hadith.hide')} onClick={close}><X size={15} strokeWidth={2.6} /></button>
       </div>
       <p class="arabic" dir="rtl" lang="ar">{h.arabic}</p>
       <p class="quote">“{h.meaning[lang]}”</p>

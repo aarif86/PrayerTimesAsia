@@ -48,7 +48,7 @@ export const HADITH: Record<HadithId, Hadith> = {
     id: 'coolPrayers',
     arabic: 'مَنْ صَلَّى الْبَرْدَيْنِ دَخَلَ الْجَنَّةَ',
     meaning: {
-      en: 'Whoever prays the two cool prayers, Subuh and Asar, will enter Paradise.',
+      en: 'Whoever prays the two cool prayers, Fajr and Asr, will enter Paradise.',
       ms: 'Sesiapa yang solat dua waktu sejuk, Subuh dan Asar, akan masuk syurga.',
       id: 'Siapa yang salat dua waktu sejuk, Subuh dan Asar, akan masuk surga.',
     },
@@ -59,7 +59,7 @@ export const HADITH: Record<HadithId, Hadith> = {
     id: 'syuruk',
     arabic: 'لاَ صَلاَةَ بَعْدَ الصُّبْحِ حَتَّى تَرْتَفِعَ الشَّمْسُ',
     meaning: {
-      en: 'No prayer after Subuh until the sun has risen. Syuruk is sunrise, when Subuh time ends. It is not a prayer.',
+      en: 'No prayer after Fajr until the sun has risen. Sunrise is when Fajr time ends. It is not a prayer.',
       ms: 'Tiada solat selepas Subuh sehingga matahari naik. Syuruk ialah waktu matahari terbit, tamatnya waktu Subuh. Ia bukan waktu solat.',
       id: 'Tidak ada salat setelah Subuh hingga matahari naik. Syuruk adalah terbit matahari, saat waktu Subuh berakhir. Ia bukan waktu salat.',
     },
@@ -103,7 +103,7 @@ export const HADITH: Record<HadithId, Hadith> = {
     id: 'nightPrayer',
     arabic: 'أَفْضَلُ الصَّلاَةِ بَعْدَ الْفَرِيضَةِ صَلاَةُ اللَّيْلِ',
     meaning: {
-      en: 'The best prayer after the fardhu is the night prayer.',
+      en: 'The best prayer after the obligatory prayers is the night prayer.',
       ms: 'Solat paling utama selepas solat fardhu ialah solat malam.',
       id: 'Salat paling utama setelah salat fardu adalah salat malam.',
     },

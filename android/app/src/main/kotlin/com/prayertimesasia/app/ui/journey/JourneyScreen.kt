@@ -61,6 +61,8 @@ import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /**
  * Travel mode: where home is, how far you are, whether the traveller's
@@ -83,7 +85,7 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
             Box(Modifier.fillMaxWidth().padding(top = 8.dp)) {
                 CapsuleButton("Done", Modifier.align(Alignment.CenterEnd), style = Txt.headline, onClick = onDone)
             }
-            Text("Journey", style = display(34.sp, FontWeight.Bold), color = Palette.primary)
+            Text(tr(R.string.settings_journey), style = display(34.sp, FontWeight.Bold), color = Palette.primary)
             if (state.prefs.home != null && !state.prefs.homeConfirmed) HomeQuestionCard(state)
             else GlassCard(padding = 20.dp) {
                 if (status != null) {
@@ -109,8 +111,8 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                     }
                 } else {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Set your home", style = Txt.title2, color = Palette.primary)
-                        Text("Tell us where home is and we'll work out when you count as a traveller.", style = Txt.body,
+                        Text(tr(R.string.journey_setHome), style = Txt.title2, color = Palette.primary)
+                        Text(tr(R.string.journey_setHomeHelp), style = Txt.body,
                             color = Palette.primary.copy(alpha = 0.85f))
                         CapsuleButton("Set home", style = Txt.subheadlineSemibold, background = Palette.primary.copy(alpha = 0.12f)) { pickingHome = true }
                     }
@@ -120,9 +122,9 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                 GlassCard {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("FASTING ON THIS JOURNEY", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Palette.primary.copy(alpha = 0.7f))
-                        Text("As a traveller you may choose not to fast today and replace it after Ramadan. If fasting is easy for you, fasting is better. The day counts as travel only if you left home before Subuh.",
+                        Text(tr(R.string.phone_fastingToday),
                             style = Txt.footnote, color = Palette.primary)
-                        Text("Mark it on the Ramadan page so the app counts the day to replace.", style = Txt.footnote, color = Palette.primary.copy(alpha = 0.8f))
+                        Text(tr(R.string.phone_markRamadan), style = Txt.footnote, color = Palette.primary.copy(alpha = 0.8f))
                     }
                 }
             }
@@ -134,7 +136,7 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                         Row {
                             Text("COMBINED WINDOWS TODAY", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Palette.primary.copy(alpha = 0.7f),
                                 modifier = Modifier.weight(1f))
-                            Text("Pending shariah review", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Palette.primary.copy(alpha = 0.6f))
+                            Text(tr(R.string.falak_pendingReview), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Palette.primary.copy(alpha = 0.6f))
                         }
                         Window(state, Prayer.DHUHR, Prayer.ASR, today.time(Prayer.DHUHR), today.time(Prayer.MAGHRIB))
                         Window(state, Prayer.MAGHRIB, Prayer.ISHA, today.time(Prayer.MAGHRIB), tomorrow.time(Prayer.FAJR))
@@ -158,7 +160,7 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("TRAVEL DISTANCE", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Palette.primary.copy(alpha = 0.7f))
                     if (r.asrSchool == AsrSchool.HANAFI) {
-                        Text("In the Hanafi school the travel distance is about 78 km, for stays of up to 15 days. Prayers are shortened but not joined.", style = Txt.subheadline, color = Palette.primary)
+                        Text(tr(R.string.journey_hanafi), style = Txt.subheadline, color = Palette.primary)
                     } else {
                         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                             listOf(81.0 to "81 km (2 marhalah)", 89.0 to "89 km").forEachIndexed { i, (km, label) ->
@@ -169,9 +171,9 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                                     icon = {}) { Text(label) }
                             }
                         }
-                        Text("Most of Southeast Asia uses 81 km, which is two marhalah. Some scholars use 89 km. Pick the one your local religious authority uses.",
+                        Text(tr(R.string.journey_distanceHelp),
                             style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f))
-                        Text("In the Shafi'i school this holds for stays of up to 3 days, not counting the day you arrive and the day you leave.",
+                        Text(tr(R.string.journey_shafii),
                             style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f))
                     }
                     status?.let { Musafir.distanceCheck(it, r.musafirRules) }?.let { (counts, text) ->
@@ -207,7 +209,7 @@ fun JourneyScreen(state: AppState, onDone: () -> Unit) {
                     }
                 }
             }
-            Text("This is general guidance on the traveller's concessions (rukhsah), not a fatwa. When unsure, follow your local religious authority.",
+            Text(tr(R.string.journey_notFatwa),
                 style = Txt.caption, color = Palette.primary.copy(alpha = 0.7f))
             Spacer(Modifier.height(12.dp))
         }
@@ -262,7 +264,7 @@ fun HomeQuestionCard(state: AppState) {
                 Icon(Icons.Filled.Home, null, Modifier.size(30.dp), tint = Palette.primary)
                 Text("Is ${home.name} your home?", style = Txt.title3, color = Palette.primary)
             }
-            Text("We guessed it from where your phone was when you first opened the app. Home is used to work out when you count as a traveller, so please check it.",
+            Text(tr(R.string.phone_homeGuess),
                 style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 CapsuleButton("Yes, this is home", style = Txt.subheadlineSemibold, background = Palette.primary.copy(alpha = 0.2f)) { state.confirmHome() }

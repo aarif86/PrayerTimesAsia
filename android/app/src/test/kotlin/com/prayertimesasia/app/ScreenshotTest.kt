@@ -162,6 +162,14 @@ class ScreenshotTest {
         s.update { it.copy(wakeUp = WakeUpTiming.FAJR_MINUS_30, sahurAlarm = SahurTiming.FAJR_MINUS_90, asrAlarm = com.prayertimesasia.core.PrayerAlarmTiming.PLUS_10) }
         s.showWakeUp = true
     }
+    @Test fun alerts_prayer_page() = shoot("10d-alerts-prayer-page", d(TodayStyle.CENTRE)) { s ->
+        s.update { it.copy(asrAlarm = com.prayertimesasia.core.PrayerAlarmTiming.PLUS_10) }
+        s.openAlerts("asr")
+    }
+    @Test fun alerts_friday_page() = shoot("10e-alerts-friday-page", d(TodayStyle.CENTRE)) { s ->
+        s.update { it.copy(jumuahReminderMinutes = 90, jumuahLeaveAlarm = true) }
+        s.openAlerts("friday")
+    }
     @Test fun wake_chip() = shoot("02c-today-centre-wake-chip", d(TodayStyle.CENTRE)) { s ->
         s.update { it.copy(wakeUp = WakeUpTiming.AT_FAJR) }
     }

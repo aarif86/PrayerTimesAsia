@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import com.prayertimesasia.app.R
 import kotlin.math.ceil
 import kotlin.math.hypot
+import com.prayertimesasia.app.ui.components.tr
 
 /**
  * The app icon's look, carried inside the app: the navy compass ring, the faint
@@ -132,7 +133,7 @@ fun AppCard(version: String, onClick: () -> Unit, modifier: Modifier = Modifier)
                 Modifier.size(64.dp).shadow(7.dp, RoundedCornerShape(15.dp)).clip(RoundedCornerShape(15.dp)))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("Prayer Times Asia", color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-                Text("Built fisabilillah in Singapore", color = Brand.moonText.copy(alpha = 0.88f), fontSize = 14.sp)
+                Text(tr(R.string.settings_builtIn), color = Brand.moonText.copy(alpha = 0.88f), fontSize = 14.sp)
                 Text("Version $version", color = Brand.moonText.copy(alpha = 0.75f), fontSize = 13.sp)
             }
             Icon(Icons.Filled.ChevronRight, null, tint = Brand.moonText.copy(alpha = 0.75f))

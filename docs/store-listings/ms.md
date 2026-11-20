@@ -90,7 +90,7 @@ PERIBADI DAN PERCUMA
 
 Waktu solat dikira dengan teliti dan disemak dengan jadual rasmi. Waktu di masjid berdekatan mungkin berbeza seminit dua. Sentiasa ikut pihak berkuasa agama di tempat anda.
 
-Dibina fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Nasar Digital (Nasar Pte Ltd).
+Dibina fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama Nasar Digital (Nasar Pte Ltd).
 ```
 
 ### What's New, first version (limit 4000)
@@ -168,7 +168,7 @@ PERIBADI DAN PERCUMA
 
 Waktu solat dikira dengan teliti dan disemak dengan jadual rasmi. Waktu di masjid berdekatan mungkin berbeza seminit dua. Sentiasa ikut pihak berkuasa agama di tempat anda.
 
-Dibina fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Nasar Digital (Nasar Pte Ltd).
+Dibina fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama Nasar Digital (Nasar Pte Ltd).
 ```
 
 ### Release notes, first version (limit 500)

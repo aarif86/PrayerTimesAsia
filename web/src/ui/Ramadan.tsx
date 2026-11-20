@@ -3,7 +3,7 @@ import {
   BookOpen, Check, ChevronDown, ChevronRight, ExternalLink, Gift, HandCoins, HandHeart, Moon, MoonStar, Printer, Share2, Sparkles, Sunrise, Utensils,
 } from 'lucide-preact'
 import { authorityName } from '../core/calendarSanad'
-import { DOA, juzLink, lang3, MISSED, ZAKAT, ZAKAT_NOTE, type DoaId, type FastMark, type Lang3 } from '../core/ramadanContent'
+import { DOA, juzLink, MISSED, ZAKAT, ZAKAT_NOTE, type DoaId, type FastMark, type Lang3 } from '../core/ramadanContent'
 import { fastMarkLabel, fastMarkLetter, RAMADAN_LOCALE, wordsFor } from '../core/ramadanWords'
 import { addDays, civilKey, daysApart, type CivilDay } from '../core/season'
 import { TARAWIH_RAKAAT, tarawihSets, tarawihTap, tarawihUndo } from '../core/tarawih'
@@ -30,7 +30,7 @@ function whenWords(from: CivilDay, d: CivilDay, lang: Lang3): string {
 
 /** The Ramadan words in the language of the prayer names. */
 function useWords() {
-  const lang = lang3(useStore().naming)
+  const lang = useStore().appLang
   return { lang, t: wordsFor(lang) }
 }
 
@@ -405,7 +405,7 @@ function LastTenNights({ now, year }: { now: number; year: number }) {
 
 export function DoaList({ ids }: { ids: DoaId[] }) {
   const s = useStore()
-  const lang = lang3(s.naming)
+  const lang = s.appLang
   const t = wordsFor(lang)
   const [open, setOpen] = useState<DoaId | null>(null)
   return (
@@ -435,7 +435,7 @@ export function DoaList({ ids }: { ids: DoaId[] }) {
 
 function ZakatCard({ year }: { year: number }) {
   const s = useStore()
-  const lang = lang3(s.naming)
+  const lang = s.appLang
   const t = wordsFor(lang)
   const code = s.prefs.home?.countryCode ?? s.profile.code
   const bodies = ZAKAT[code] ?? []

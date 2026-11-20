@@ -76,6 +76,7 @@ import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.PrayerLead
 import com.prayertimesasia.core.Season
 import java.time.Duration
 import java.time.LocalDate
@@ -86,6 +87,8 @@ import kotlinx.coroutines.delay
 import java.time.Instant
 import com.prayertimesasia.app.ui.makers.ReviewLine
 import com.prayertimesasia.app.ui.makers.StarBoxAsker
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /** Everything one frame of the Prayer screen needs. */
 class TodayFrame(
@@ -100,7 +103,10 @@ class TodayFrame(
     val shownNextFajr: Instant,
 ) {
     val isToday get() = offset == 0
-    val currentPrayer get() = if (isToday) current?.first else null
+    /** Marked NOW in lists and bands: null between Syuruk and Zohor, when no prayer is open. */
+    val currentPrayer get() = if (isToday) PrayerLead.open(current)?.first else null
+    /** Leads the dial and status line: the open prayer, or from Syuruk the next one. */
+    val lead get() = PrayerLead.of(current, next)
     val nextForList get() = if (isToday) next else null
     fun name(p: Prayer, t: Instant) = state.resolver.prayerName(p, t)
 }
@@ -268,11 +274,11 @@ private fun ClassicPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) { HeaderButtons(f.state) }
         // The Day Dial on the left; where, when and the source on the right.
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            val cur = f.current
+            val cur = f.lead
             val nxt = f.next
             if (cur != null && nxt != null) {
-                DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.first, cur.second), cur.first,
-                    Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 172.dp)
+                DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.prayer, cur.time), cur.prayer,
+                    Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 172.dp, isNext = cur.isNext)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 PlaceChip(f.state, openPlaces)
@@ -293,12 +299,12 @@ private fun ClassicPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
 private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> Unit, openCalendar: () -> Unit, openSanad: (PrayerDay) -> Unit) {
     FillOrScroll(f, setOffset, 8.dp, top = {
         Box(Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
-            val cur = f.current
+            val cur = f.lead
             val nxt = f.next
             if (cur != null && nxt != null) {
-                DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.first, cur.second), cur.first,
+                DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.prayer, cur.time), cur.prayer,
                     Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 148.dp,
-                    Modifier.align(Alignment.Center))
+                    Modifier.align(Alignment.Center), isNext = cur.isNext)
             }
             // Each button has a 48 dp touch area, so they stack with no extra gap.
             Column(Modifier.align(Alignment.TopEnd), verticalArrangement = Arrangement.spacedBy(0.dp),
@@ -369,11 +375,11 @@ private fun HeroDialFor(f: TodayFrame, modifier: Modifier) {
         DialMark(p.raw, f.shown.time(p), extraLine = f.shown.jamaah[p] != null || f.shown.alternate[p] != null, tint = p.tint)
     } + blessed.map { DialMark(it.first.raw, it.second, minor = true) }
     HeroDial(
-        f.now, f.shown, f.shownNextFajr, r.zone, f.currentPrayer, marks, modifier,
+        f.now, f.shown, f.shownNextFajr, r.zone, if (f.isToday) f.lead?.prayer else null, marks, modifier,
         label = { mark, size ->
             val prayer = Prayer.fromRaw(mark.id)
             if (prayer != null) {
-                PrayerMark(state, f.shown, prayer, mark.date, f.now, size, f.isToday && prayer == f.current?.first)
+                PrayerMark(state, f.shown, prayer, mark.date, f.now, size, prayer == f.currentPrayer)
             } else {
                 blessed.firstOrNull { it.first.raw == mark.id }?.let { BlessedMark(state, it.first, it.second, f.now, size) }
             }
@@ -388,7 +394,6 @@ private fun PrayerMark(state: AppState, day: PrayerDay, prayer: Prayer, time: In
     val r = state.resolver
     val p = state.prefs
     val passed = time <= now && !isCurrent
-    val notifying = p.notificationsEnabled && prayer in p.notifyPrayers
     val trackable = p.trackerEnabled && prayer.isObligatory && time <= now
     val prayed = trackable && r.isPrayed(prayer, time)
     var menu by remember { mutableStateOf(false) }
@@ -418,9 +423,7 @@ private fun PrayerMark(state: AppState, day: PrayerDay, prayer: Prayer, time: In
             }
         }
         androidx.compose.material3.DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            androidx.compose.material3.DropdownMenuItem(
-                text = { Text(if (notifying) "Turn off alert" else "Alert me at ${prayer.name(r.naming)}") },
-                onClick = { menu = false; state.toggleNotify(prayer) })
+            AlertMenuItems(state, prayer) { menu = false }
             if (trackable) {
                 androidx.compose.material3.DropdownMenuItem(
                     text = { Text(if (prayed) "Mark as not prayed" else "Mark as prayed") },
@@ -446,19 +449,19 @@ private fun BlessedMark(state: AppState, blessed: com.prayertimesasia.core.Bless
     }
 }
 
-/** The dial's centre: the prayer we are in and the time left until the next. */
+/** The dial's centre: the prayer we are in and the time left until the next. From Syuruk to Zohor, the next prayer. */
 @Composable
 private fun DialCentre(f: TodayFrame, size: Dp) {
-    val cur = if (f.isToday) f.current else null
+    val cur = if (f.isToday) f.lead else null
     val nxt = f.next
     if (cur != null && nxt != null) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy((size.value * 0.006f).dp)) {
-            Text("NOW", fontSize = (size.value * 0.028f).sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.6.sp, color = cur.first.textTint)
-            Text(f.name(cur.first, cur.second), style = display((size.value * 0.085f).sp, FontWeight.Bold), color = Palette.primary, maxLines = 1)
+            Text(if (cur.isNext) tr(R.string.today_next) else tr(R.string.today_now), fontSize = (size.value * 0.028f).sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.6.sp, color = cur.prayer.textTint)
+            Text(f.name(cur.prayer, cur.time), style = display((size.value * 0.085f).sp, FontWeight.Bold), color = Palette.primary, maxLines = 1)
             val count = Countdown.of(f.state, f.now, nxt)
             Text(count.count, style = display((size.value * 0.066f).sp, FontWeight.SemiBold),
                 color = Palette.accentText, maxLines = 1)
-            Text(count.label, fontSize = (size.value * 0.034f).sp, fontWeight = FontWeight.Medium,
+            if (count.label.isNotEmpty()) Text(count.label, fontSize = (size.value * 0.034f).sp, fontWeight = FontWeight.Medium,
                 color = Palette.secondary, maxLines = 1)
         }
     } else {
@@ -477,13 +480,13 @@ private fun SunPathPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
     ) {
         // Left: where we are in the day. Right: streak and buttons. One row.
         Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.Top) {
-            val cur = f.current
+            val cur = f.lead
             val nxt = f.next
             if (cur != null && nxt != null) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Box(Modifier.size(9.dp).clip(CircleShape).background(cur.first.tint))
-                        Text(f.name(cur.first, cur.second), style = display(30.sp, FontWeight.Bold), color = Palette.primary)
+                        Box(Modifier.size(9.dp).clip(CircleShape).background(cur.prayer.tint))
+                        Text(f.name(cur.prayer, cur.time), style = display(30.sp, FontWeight.Bold), color = Palette.primary)
                     }
                     val count = Countdown.of(state, f.now, nxt)
                     Text(
@@ -534,10 +537,10 @@ private fun BandsPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () ->
                         Spacer(Modifier.weight(1f))
                         HeaderButtons(state, background = buttonBg)
                     }
-                    val cur = f.current
+                    val cur = f.lead
                     val nxt = f.next
                     if (cur != null && nxt != null && f.isToday) {
-                        Text("${f.name(cur.first, cur.second)} now · ${Countdown.of(f.state, f.now, nxt).text}",
+                        Text("${f.name(cur.prayer, cur.time)}${if (cur.isNext) "" else " now ·"} ${Countdown.of(f.state, f.now, nxt).text}",
                             style = Txt.subheadlineSemibold.copy(fontFeatureSettings = "tnum"), color = Color.White.copy(alpha = 0.75f))
                     }
                     Prompts(f)
@@ -545,7 +548,7 @@ private fun BandsPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () ->
                 BandsDateBar(f, setOffset, openCalendar)
                 Column(Modifier.fillMaxWidth().then(if (fill) Modifier.weight(1f) else Modifier).daySwipe(f.offset, setOffset)) {
                     Prayer.all.forEach { p ->
-                        PrayerBand(state, p, f.shown.time(p), f.now, isCurrent = f.isToday && p == f.current?.first,
+                        PrayerBand(state, p, f.shown.time(p), f.now, isCurrent = p == f.currentPrayer,
                             next = if (f.isToday && p == f.next?.first) f.next else null, fill = fill)
                     }
                     blessed.forEach { BlessedBand(state, it.first, it.second, f.now) }
@@ -599,7 +602,7 @@ private fun NoPlace(state: AppState, openPlaces: () -> Unit) {
             Text(if (state.locationRequested && !state.location.hasPermission) "Location is off" else "Finding where you are…",
                 style = Txt.title2, color = Palette.primary)
             Spacer(Modifier.height(16.dp))
-            Text("Prayer times are calculated for your exact spot. Allow location, or pick a city.", style = Txt.body,
+            Text(tr(R.string.today_whereExplain), style = Txt.body,
                 color = Palette.primary.copy(alpha = 0.85f), textAlign = TextAlign.Center)
             Spacer(Modifier.height(16.dp))
             CapsuleButton("Choose a city", background = Palette.primary.copy(alpha = 0.25f), onClick = openPlaces)

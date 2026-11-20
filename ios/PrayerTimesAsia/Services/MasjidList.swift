@@ -173,7 +173,7 @@ final class MasjidList {
             if !name.isEmpty, NearbySearch.isGraveOrShrine(name) { return nil }
             let hours = row.count > 7 ? (row[7] as? String).flatMap { $0.isEmpty ? nil : $0 } : nil
             return Place(id: id, latitude: lat, longitude: lon,
-                         name: name.isEmpty ? (musollah ? "Musollah" : "Masjid") : name,
+                         name: name.isEmpty ? (musollah ? "Prayer room" : "Masjid") : name,
                          address: (row[4] as? String) ?? "", isMusollah: musollah,
                          facilities: row.count > 6 ? (row[6] as? String) ?? "" : "", hours: hours)
         }
