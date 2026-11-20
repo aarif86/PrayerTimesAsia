@@ -306,6 +306,8 @@
     #who .card h3 { margin-bottom: 8px; }
     /* Small examples of the app on each "who it's for" card */
     .tribute { margin: 14px 0 0; font-size: 0.85rem; color: var(--muted); font-style: italic; }
+    .ex-shot { display: block; width: 100%; height: auto; border-radius: 16px; margin: -4px 0 18px; box-shadow: 0 0 0 1px #ffffff1a, 0 18px 40px -20px #000c; transition: transform 0.3s; }
+    #who .card:hover .ex-shot { transform: translateY(-3px); }
     .ex { border-radius: 16px; padding: 12px 14px; margin: -4px 0 18px; font-size: 0.86rem; line-height: 1.35; color: var(--text);
       background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.10); box-shadow: 0 14px 30px -18px rgba(0,0,0,.8); transition: transform .4s ease; }
     #who .card:hover .ex { transform: translateY(-3px); }
@@ -430,7 +432,7 @@
       .js .intro, .js .reveal, .js .feature.reveal .shot .phone { opacity: 1; transform: none; }
       .js .strip ul { flex-wrap: wrap; justify-content: center; width: auto; }
     }
-      /* Try it: a phone you can tap, one small demo per feature */
+      /* Try the real app: the live web app in demo mode, inside a phone */
     .tryit { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 40px; align-items: center; margin-top: 40px; }
     .try-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .try-tab { text-align: left; font: inherit; color: var(--text); background: var(--card); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 14px 16px; cursor: pointer; transition: border-color .2s, background .2s, transform .2s; }
@@ -439,100 +441,22 @@
     .try-tab:hover { transform: translateY(-2px); border-color: rgba(242,192,99,.4); }
     .try-tab[aria-selected="true"] { background: rgba(242,192,99,.12); border-color: var(--gold); }
     .try-tab[aria-selected="true"] b { color: var(--gold); }
-    .try-stage { display: flex; justify-content: center; }
-    .try-phone { position: relative; width: 300px; height: 600px; border-radius: 44px; padding: 14px; background: #05060d; box-shadow: 0 30px 80px rgba(0,0,0,.5), inset 0 0 0 2px #2a2f4a; overflow: hidden; }
-    .try-phone::before { content: ""; position: absolute; inset: 14px; border-radius: 32px; background: radial-gradient(120% 70% at 50% 0%, #2b2f6b 0%, #121638 55%, #0b0e24 100%); }
-    .try-notch { position: absolute; top: 22px; left: 50%; width: 90px; height: 24px; margin-left: -45px; border-radius: 14px; background: #05060d; z-index: 3; }
-    .demo { position: absolute; inset: 14px; border-radius: 32px; padding: 58px 22px 22px; display: flex; flex-direction: column; align-items: center; text-align: center; opacity: 0; visibility: hidden; transform: translateY(14px) scale(.98); transition: opacity .35s, transform .35s, visibility 0s .35s; overflow: hidden; }
-    .demo.is-on { opacity: 1; visibility: visible; transform: none; transition: opacity .35s, transform .35s; }
-    .demo > div { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-    .d-small { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 0; }
-    .d-title { font-size: 22px; font-weight: 700; margin: 0; }
-    .d-clock { font-size: 64px; font-weight: 300; letter-spacing: -2px; margin: 0 0 6px; }
-    .d-hint { color: var(--gold); font-size: 12px; margin: 4px 0 0; animation: d-pulse 2s infinite; }
-    .d-row { display: flex; gap: 10px; margin-top: 8px; }
-    .d-btn { font: inherit; font-weight: 700; font-size: 15px; border: 0; border-radius: 999px; padding: 11px 20px; cursor: pointer; background: var(--gold); color: #1b1404; text-decoration: none; display: inline-block; transition: transform .15s; }
-    .d-btn:active { transform: scale(.95); }
-    .d-btn.ghost { background: rgba(255,255,255,.12); color: var(--text); }
-    .d-bell { font-size: 54px; animation: d-shake 1s infinite; }
-    .d-big-icon { font-size: 54px; }
-    .d-alarm .d-ringing, .d-alarm .d-snoozed, .d-alarm .d-stopped { display: none; flex-direction: column; align-items: center; gap: 8px; }
-    .d-alarm[data-state="ring"] .d-ringing, .d-alarm[data-state="snooze"] .d-snoozed, .d-alarm[data-state="stop"] .d-stopped { display: flex; animation: d-in .35s; }
-    .d-ring { width: 170px; height: 170px; transform: rotate(-90deg); margin: 4px 0 -118px; }
-    .d-ring circle { fill: none; stroke-width: 9; stroke-linecap: round; }
-    .d-ring .track { stroke: rgba(255,255,255,.1); }
-    .d-ring .fill { stroke: var(--gold); stroke-dasharray: 327; transition: stroke-dashoffset .3s, stroke .3s; }
-    .d-count { font-size: 14px; font-weight: 700; margin: 0 0 66px; min-height: 52px; display: flex; flex-direction: column; align-items: center; max-width: 130px; line-height: 1.2; color: var(--muted); }
-    .d-mins { font-size: 32px; color: var(--text); }
-    .d-range, .d-size { width: 100%; accent-color: var(--gold); }
-    .d-warn { color: var(--rose); font-size: 13px; font-weight: 700; margin: 0; visibility: hidden; }
-    .d-left.urgent .d-warn { visibility: visible; }
-    .d-left.urgent .d-ring .fill { stroke: var(--rose); }
-    .d-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-    .d-chip { font: inherit; font-size: 13px; color: var(--text); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 8px 6px; cursor: pointer; }
-    .d-chip.is-on { background: var(--gold); color: #1b1404; border-color: var(--gold); font-weight: 700; }
-    .d-note { width: 100%; text-align: left; background: rgba(255,255,255,.1); border-radius: 18px; padding: 12px 14px; margin-top: 10px; font-size: 14px; display: flex; flex-direction: column; gap: 4px; animation: d-drop .5s; }
-    .d-note span { color: var(--muted); font-size: 13px; }
-    .d-note span b { color: var(--text); }
-    .d-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; width: 100%; margin: 6px 0; }
-    .d-cal button { font: inherit; font-size: 13px; color: var(--muted); background: rgba(255,255,255,.04); border: 0; border-radius: 9px; aspect-ratio: 1; padding: 0; cursor: default; }
-    .d-cal button.mark { color: #1b1404; background: var(--gold); font-weight: 700; cursor: pointer; animation: d-pulse 2.4s infinite; }
-    .d-cal button.ten { box-shadow: inset 0 0 0 1px rgba(242,192,99,.5); color: var(--text); }
-    .d-cal button.picked { background: var(--text); color: #0b0e24; animation: none; }
-    .d-day { min-height: 76px; display: flex; align-items: center; }
-    .d-dayname { display: none; margin: 0; font-size: 14px; line-height: 1.45; }
-    .d-dayname.is-on { display: block; animation: d-in .3s; }
-    .d-switch { display: flex; gap: 10px; align-items: center; font-weight: 700; cursor: pointer; align-self: stretch; justify-content: space-between; background: rgba(255,255,255,.08); padding: 10px 14px; border-radius: 14px; }
-    .d-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-    .d-switch i { width: 46px; height: 28px; border-radius: 99px; background: rgba(255,255,255,.2); position: relative; transition: background .25s; flex: none; }
-    .d-switch i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .25s; }
-    .d-switch input:checked + i { background: var(--green); }
-    .d-switch input:checked + i::after { transform: translateX(18px); }
-    .d-switch input:focus-visible + i { outline: 2px solid var(--gold); outline-offset: 2px; }
-    .d-list { list-style: none; margin: 4px 0 0; padding: 0; width: 100%; }
-    .d-list li { display: flex; justify-content: space-between; padding: 7px 8px; border-bottom: 1px solid rgba(255,255,255,.07); font-size: 15px; transition: font-size .3s, padding .3s; }
-    .d-list li.next { color: var(--gold); font-weight: 700; }
-    .d-bigdemo.big .d-list li { font-size: 28px; padding: 6px 4px; }
-    .d-bigdemo.big .d-list li:not(.next):not(:nth-child(4)) { display: none; }
-    .d-sample { width: 100%; background: rgba(255,255,255,.08); border-radius: 16px; padding: 14px; text-align: left; }
-    .d-sample p { margin: 0; font-size: 1em; line-height: 1.3; }
-    .d-sample .d-small { font-size: .8em; }
-    .d-spoken { font-style: italic; color: var(--gold); margin: 0; font-size: 14px; visibility: hidden; }
-    .d-easy.speaking .d-spoken { visibility: visible; animation: d-in .3s; }
-    .d-appicon img { width: 72px; height: 72px; border-radius: 18px; transition: transform .5s, opacity .5s; }
-    .d-newphone[data-state="have"] .d-appicon img { animation: d-wiggle .6s infinite; }
-    .d-newphone[data-state="gone"] .d-appicon img { transform: scale(0); opacity: 0; }
-    .d-settings { list-style: none; padding: 0; margin: 4px 0; width: 100%; text-align: left; }
-    .d-settings li { background: rgba(255,255,255,.08); border-radius: 12px; padding: 9px 12px; margin-bottom: 7px; font-size: 14px; display: flex; justify-content: space-between; transition: opacity .4s, transform .4s; }
-    .d-settings li b { color: var(--gold); }
-    .d-newphone[data-state="gone"] .d-settings li { opacity: 0; transform: translateX(-20px); }
-    .d-newphone[data-state="back"] .d-settings li { animation: d-in .5s backwards; }
-    .d-newphone[data-state="back"] .d-settings li:nth-child(2) { animation-delay: .15s; }
-    .d-newphone[data-state="back"] .d-settings li:nth-child(3) { animation-delay: .3s; }
-    .d-newphone [data-act="install"], .d-newphone .d-gone, .d-newphone .d-back { display: none; }
-    .d-newphone[data-state="gone"] [data-act="delete"] { display: none; }
-    .d-newphone[data-state="gone"] [data-act="install"], .d-newphone[data-state="gone"] .d-gone { display: inline-block; }
-    .d-newphone[data-state="back"] .d-back { display: block; margin: 0; font-size: 14px; color: var(--green); }
-    .d-newphone p { font-size: 13px; color: var(--muted); }
-    .d-print img { width: 170px; height: auto; border-radius: 6px; box-shadow: 0 14px 30px rgba(0,0,0,.4); transform: rotate(-3deg); }
-    .try-more { margin-top: 28px; }
-    @keyframes d-shake { 0%,100% { transform: rotate(0); } 20% { transform: rotate(-14deg); } 40% { transform: rotate(12deg); } 60% { transform: rotate(-8deg); } 80% { transform: rotate(5deg); } }
-    @keyframes d-pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
-    @keyframes d-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-    @keyframes d-drop { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: none; } }
-    @keyframes d-wiggle { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+    .try-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .try-phone { position: relative; width: 302px; height: 644px; border-radius: 46px; padding: 11px; background: #05060d; box-shadow: 0 30px 80px rgba(0,0,0,.5), inset 0 0 0 2px #2a2f4a; }
+    .try-screen { width: 280px; height: 622px; border-radius: 36px; overflow: hidden; position: relative; background: #121638; }
+    .try-frame { border: 0; width: 375px; height: 833px; transform: scale(.7467); transform-origin: 0 0; display: block; }
+    .try-open { margin: 0; font-size: 14px; color: var(--muted); }
+    .try-open a { color: var(--gold); }
     @media (max-width: 860px) {
-      .tryit { grid-template-columns: 1fr; gap: 22px; }
-      .try-tabs { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 8px; padding-bottom: 6px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+      .tryit { grid-template-columns: 1fr; gap: 18px; }
+      .try-tabs { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 8px; padding: 0 16px 6px; margin: 0 -16px; }
       .try-tab { flex: 0 0 auto; scroll-snap-align: start; padding: 10px 14px; border-radius: 999px; }
       .try-tab span { display: none; }
       .try-tab b { margin: 0; font-size: 14px; white-space: nowrap; }
-      .try-phone { width: 290px; height: 580px; }
+      .try-hint { display: block; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .demo, .try-tab, .d-ring .fill { transition: none; }
-      .d-bell, .d-hint, .d-cal button.mark, .d-newphone[data-state="have"] .d-appicon img { animation: none; }
-    }
+    .try-hint { display: none; color: var(--muted); font-size: 14px; text-align: center; margin: 0; min-height: 2.8em; }
+    @media (prefers-reduced-motion: reduce) { .try-tab { transition: none; } }
   </style>
 <script>
   // First visit to the English page: open the page in the visitor's own language if we have it.
@@ -582,9 +506,9 @@
   <section class="hero">
     <div class="wrap">
       <div>
-        <span class="eyebrow">By Ustaz Aarif Raziff · Free fisabilillah</span>
-        <h1>A prayer app with <span>nothing to sell you.</span></h1>
-        <p class="lead">When Ustaz Aarif landed in Vietnam, he couldn't find a proper prayer app. So he asked himself, why not build one? Built in Asia, made for every Muslim. Times follow your local religious authority first, official timetables where they exist, no outside ads, no subscriptions, and your exact location stays on your phone.</p>
+        <span class="eyebrow">Asia first. Now worldwide.</span>
+        <h1>The right prayer time, <span>wherever you land.</span></h1>
+        <p class="lead">Free, with no outside ads and no subscriptions. Built fisabilillah in Singapore by Ustaz Aarif Raziff, for every Muslim, everywhere.</p>
         <div class="btns">
           <a class="btn btn-primary" href="app/">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
@@ -595,7 +519,7 @@
             <span class="two">iPhone and Android<small>Join the test</small></span>
           </a>
         </div>
-        <p class="note"><a href="#story">Read the story</a> · Built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd)</p>
+        <p class="note"><a href="#story">Read the story</a> · With <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd)</p>
       </div>
       <div class="hero-phones" aria-hidden="true">
         <div class="phone android back"><img src="img/android-dial.webp" srcset="img/android-dial-400.webp 400w, img/android-dial.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1347" fetchpriority="high" /></div>
@@ -705,32 +629,32 @@
       </div>
       <div class="grid">
         <div class="card">
-          <div class="ex ex-note" aria-hidden="true"><img src="img/icon-96.webp" alt="" width="30" height="30" loading="lazy" /><div><div class="ex-top"><b>Prayer Times Asia</b><span>now</span></div><div class="ex-main">Asar in 15 minutes</div><div class="ex-sub">4.11 pm at Raffles Place</div></div></div>
+          <img class="ex-shot" src="img/who-worker.webp" alt="" loading="lazy" />
           <h3>The worker between meetings</h3>
-          <p>A gentle reminder before Zohor and Asar, and the next prayer right on your home screen, so a busy day never makes you miss salah.</p>
+          <p>A gentle reminder before Dhuhr and Asr, and the next prayer right on your home screen, so a busy day never makes you miss salah.</p>
         </div>
         <div class="card">
-          <div class="ex ex-card" aria-hidden="true"><div class="ex-main">✈️ Welcome to Bangkok</div><div class="ex-sub">Times now follow Thailand.</div><div class="ex-pill">1,430 km from home · You can qasar and jamak</div></div>
+          <img class="ex-shot" src="img/who-traveller.webp" alt="" loading="lazy" />
           <h3>The traveller</h3>
           <p>Land in Bangkok or Tokyo and the times already match the local masjid. It also tells you how far you are from home and whether you can shorten and combine your prayers.</p>
         </div>
         <div class="card">
-          <div class="ex ex-list" aria-hidden="true"><div class="ex-row"><span>🕌 Musollah, Level 3</span><b>250 m</b></div><div class="ex-row"><span>🕌 Masjid Al&#8209;Falah</span><b>1.2 km</b></div><div class="ex-row ex-qibla"><span>🧭 Qibla</span><b>293°</b></div></div>
+          <img class="ex-shot" src="img/who-student.webp" alt="" loading="lazy" />
           <h3>The student abroad</h3>
-          <p>Far from a masjid, it finds the nearest musollah or prayer room, shows the qibla and still works with no signal.</p>
+          <p>Far from a masjid, it finds the nearest masjid or prayer room, shows the qibla and still works with no signal.</p>
         </div>
         <div class="card">
-          <div class="ex ex-track" aria-hidden="true"><div class="ex-days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div><div class="ex-dots"><i></i><i></i><i class="p"></i><i class="p"></i><i class="p"></i><i></i><i></i></div><div class="ex-sub">Paused for 3 days · Record kept</div></div>
+          <img class="ex-shot" src="img/who-sister.webp" alt="" loading="lazy" />
           <h3>The sister</h3>
-          <p>Keep track of your prayers, with a pause for haid or illness so your record isn't broken. It stays on your phone and is never sent anywhere.</p>
+          <p>Keep track of your prayers, with a pause for your period or illness so your record isn't broken. It stays on your phone and is never sent anywhere.</p>
         </div>
         <div class="card">
-          <div class="ex ex-cal" aria-hidden="true"><div class="ex-calh"><span></span><span>Subuh</span><span>Zohor</span><span>Asar</span><span>Maghrib</span></div><div class="ex-calr"><span>Fri 6</span><span>5.28</span><span>12.50</span><span>4.11</span><span>6.52</span></div><div class="ex-calr"><span>Sat 7</span><span>5.27</span><span>12.50</span><span>4.11</span><span>6.52</span></div><div class="ex-calr"><span>Sun 8</span><span>5.27</span><span>12.50</span><span>4.12</span><span>6.53</span></div></div>
+          <img class="ex-shot" src="img/who-family.webp" alt="" loading="lazy" />
           <h3>The family at home</h3>
-          <p>Times on every phone in the house, and a printable monthly calendar for the fridge or the surau wall.</p>
+          <p>Times on every phone in the house, and a printable monthly calendar for the fridge or the masjid notice board.</p>
         </div>
         <div class="card">
-          <div class="ex ex-tv" aria-hidden="true"><div><div class="ex-sub">Asar iqamah in</div><div class="ex-big">08:24</div><div class="ex-sub">Azan 4.11 · Iqamah 4.21</div></div><svg class="ex-qr" viewBox="-1 -1 27 27" aria-hidden="true"><rect x="-1" y="-1" width="27" height="27" fill="#fff"/><path d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM13 0h1v1h-1zM14 0h1v1h-1zM18 0h1v1h-1zM19 0h1v1h-1zM20 0h1v1h-1zM21 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM10 1h1v1h-1zM12 1h1v1h-1zM13 1h1v1h-1zM16 1h1v1h-1zM18 1h1v1h-1zM24 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM9 2h1v1h-1zM11 2h1v1h-1zM13 2h1v1h-1zM14 2h1v1h-1zM15 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM21 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM9 3h1v1h-1zM11 3h1v1h-1zM13 3h1v1h-1zM15 3h1v1h-1zM16 3h1v1h-1zM18 3h1v1h-1zM20 3h1v1h-1zM21 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM12 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM18 5h1v1h-1zM24 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM19 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM9 7h1v1h-1zM12 7h1v1h-1zM13 7h1v1h-1zM0 8h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM11 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM0 9h1v1h-1zM2 9h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM7 9h1v1h-1zM9 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM13 9h1v1h-1zM14 9h1v1h-1zM15 9h1v1h-1zM17 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM9 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM13 10h1v1h-1zM15 10h1v1h-1zM17 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM24 10h1v1h-1zM0 11h1v1h-1zM2 11h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM7 11h1v1h-1zM9 11h1v1h-1zM17 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM23 11h1v1h-1zM24 11h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1zM11 12h1v1h-1zM15 12h1v1h-1zM18 12h1v1h-1zM24 12h1v1h-1zM0 13h1v1h-1zM5 13h1v1h-1zM7 13h1v1h-1zM10 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM20 13h1v1h-1zM23 13h1v1h-1zM0 14h1v1h-1zM1 14h1v1h-1zM2 14h1v1h-1zM3 14h1v1h-1zM6 14h1v1h-1zM7 14h1v1h-1zM8 14h1v1h-1zM13 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM18 14h1v1h-1zM20 14h1v1h-1zM21 14h1v1h-1zM22 14h1v1h-1zM23 14h1v1h-1zM24 14h1v1h-1zM0 15h1v1h-1zM2 15h1v1h-1zM4 15h1v1h-1zM5 15h1v1h-1zM8 15h1v1h-1zM12 15h1v1h-1zM15 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM19 15h1v1h-1zM21 15h1v1h-1zM22 15h1v1h-1zM24 15h1v1h-1zM0 16h1v1h-1zM3 16h1v1h-1zM6 16h1v1h-1zM7 16h1v1h-1zM8 16h1v1h-1zM10 16h1v1h-1zM11 16h1v1h-1zM12 16h1v1h-1zM13 16h1v1h-1zM15 16h1v1h-1zM16 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM19 16h1v1h-1zM20 16h1v1h-1zM22 16h1v1h-1zM23 16h1v1h-1zM8 17h1v1h-1zM11 17h1v1h-1zM14 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM0 18h1v1h-1zM1 18h1v1h-1zM2 18h1v1h-1zM3 18h1v1h-1zM4 18h1v1h-1zM5 18h1v1h-1zM6 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM12 18h1v1h-1zM14 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM20 18h1v1h-1zM24 18h1v1h-1zM0 19h1v1h-1zM6 19h1v1h-1zM8 19h1v1h-1zM11 19h1v1h-1zM13 19h1v1h-1zM15 19h1v1h-1zM16 19h1v1h-1zM20 19h1v1h-1zM24 19h1v1h-1zM0 20h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM8 20h1v1h-1zM9 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM12 20h1v1h-1zM14 20h1v1h-1zM15 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM18 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM0 21h1v1h-1zM2 21h1v1h-1zM3 21h1v1h-1zM4 21h1v1h-1zM6 21h1v1h-1zM8 21h1v1h-1zM10 21h1v1h-1zM12 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM16 21h1v1h-1zM17 21h1v1h-1zM18 21h1v1h-1zM23 21h1v1h-1zM24 21h1v1h-1zM0 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM6 22h1v1h-1zM10 22h1v1h-1zM11 22h1v1h-1zM14 22h1v1h-1zM20 22h1v1h-1zM21 22h1v1h-1zM22 22h1v1h-1zM23 22h1v1h-1zM24 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM10 23h1v1h-1zM11 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM17 23h1v1h-1zM19 23h1v1h-1zM20 23h1v1h-1zM22 23h1v1h-1zM23 23h1v1h-1zM24 23h1v1h-1zM0 24h1v1h-1zM1 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM11 24h1v1h-1zM12 24h1v1h-1zM16 24h1v1h-1zM18 24h1v1h-1zM21 24h1v1h-1zM24 24h1v1h-1z" fill="#0b0f2a"/></svg></div>
+          <img class="ex-shot" src="img/who-masjid-screen.webp" alt="" loading="lazy" />
           <h3>The masjid committee</h3>
           <p>A free prayer times screen for the masjid TV with azan and iqamah times, and a QR code so jamaah can take your times home.</p>
         </div>
@@ -754,7 +678,7 @@
           <ul>
             <li>Singapore uses the official MUIS times, Malaysia uses JAKIM for your zone, and Indonesia uses Kemenag for your area</li>
             <li>Prayer names in the way you say them, Subuh or Fajr, Zohor or Dhuhr</li>
-            <li>An alert when each prayer starts, a reminder before it if you like, and Jumaat on Fridays</li>
+            <li>An alert when each prayer starts, a reminder before it if you like, and Jumu'ah on Fridays</li>
             <li>Hijri date, Dhuha and the special night times</li>
             <li>Prayer times on your home screen and lock screen, on iPhone and Android</li>
             <li>A short hadith now and then to lift the heart, which you can turn off</li>
@@ -762,7 +686,7 @@
           <p class="tribute">The Colour Bands look is our tribute to prayertime.sg &amp; my, the Singapore app many of us grew up with.</p>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/today.webp" alt="The Prayer screen, a dial counting down to Isyak, and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone"><img src="img/today.webp" alt="The Prayer screen, a dial counting down to Isha, and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1311" /></div>
           <div class="phone android"><img src="img/android-bands.webp" alt="The Colour Bands style, each prayer time on its own bright band" loading="lazy" width="603" height="1347" /></div>
         </div>
       </div>
@@ -805,32 +729,32 @@
       <div class="feature flip">
         <div class="copy">
           <span class="tag live">Masjid</span>
-          <h3>Find a masjid or musollah nearby</h3>
-          <p class="muted">See the nearest masjids, musollahs and prayer rooms on a map, with how far each one is and how long it takes to walk or drive. Handy in a new city, or in a mall at Asar.</p>
+          <h3>Find a masjid or prayer room nearby</h3>
+          <p class="muted">See the nearest masjids, prayer rooms on a map, with how far each one is and how long it takes to walk or drive. Handy in a new city, or in a mall at Asr.</p>
         </div>
         <div class="shot">
-          <div class="phone android"><img src="img/android-masjid.webp" alt="A map and list of masjids and musollahs near Pasir Ris" loading="lazy" width="603" height="1347" /></div>
+          <div class="phone android"><img src="img/android-masjid.webp" alt="A map and list of masjids and prayer rooms near Pasir Ris" loading="lazy" width="603" height="1347" /></div>
           <div class="phone"><img src="img/widget.webp" alt="The big Home Screen widget with today's prayer times" loading="lazy" width="603" height="1311" /></div>
         </div>
       </div>
 
       <div class="feature">
         <div class="copy">
-          <span class="tag live">Ramadan &amp; Syawal</span>
-          <h3>Ready for Ramadan, from sahur to Raya</h3>
+          <span class="tag live">Ramadan &amp; Shawwal</span>
+          <h3>Ready for Ramadan, from sahur to Shawwal</h3>
           <p class="muted">When Ramadan comes, the app changes with it. It follows the dates your local religious authority announces, and you can move the date by a day in Settings.</p>
           <ul>
-            <li>Countdown to Imsak and Berbuka on the Prayer screen</li>
+            <li>Countdown to Imsak and iftar on the Prayer screen</li>
             <li>A sahur alarm, so you wake up in time to eat</li>
             <li>A Tarawih counter for 8 or 20 rakaat</li>
             <li>Your fasts this month, with the days still to replace</li>
-            <li>The six days of Syawal after Raya</li>
+            <li>The six days of Shawwal after Eid</li>
           </ul>
           <p class="muted"><a href="ramadan.html">See everything for Ramadan</a>.</p>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/ramadan-berbuka.webp" alt="The Prayer screen in Ramadan, counting down to Berbuka" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone android"><img src="img/android-ramadan.webp" alt="The Ramadan page with today's Imsak, Subuh and Berbuka times" loading="lazy" width="603" height="1347" /></div>
+          <div class="phone"><img src="img/ramadan-iftar.webp" alt="The Prayer screen in Ramadan, counting down to iftar" loading="lazy" width="603" height="1311" /></div>
+          <div class="phone android"><img src="img/android-ramadan.webp" alt="The Ramadan page with today's Imsak, Fajr and iftar times" loading="lazy" width="603" height="1347" /></div>
         </div>
       </div>
     </div>
@@ -839,169 +763,30 @@
   <section id="everyday">
     <div class="wrap">
       <div class="center">
-        <span class="eyebrow">New in the app</span>
-        <h2>Don't take our word for it. Try it here.</h2>
-        <p class="lead">Pick a feature and tap the phone. Everything below works just like it does in the app.</p>
+        <span class="eyebrow">Try the real app</span>
+        <h2>Don't take our word for it. Tap around.</h2>
+        <p class="lead">This is the real app, running live with today's times in Singapore. Pick something to try and use it like you would on your phone.</p>
       </div>
       <div class="tryit">
-        <div class="try-tabs" role="tablist" aria-label="Features to try">
-          <button class="try-tab" role="tab" aria-selected="true" data-demo="alarm"><b>Alarms for every prayer</b><span>Wake up for Subuh with a real alarm, and Snooze.</span></button>
-          <button class="try-tab" role="tab" aria-selected="false" data-demo="left"><b>Time left to pray</b><span>See how long is left before the time ends.</span></button>
-          <button class="try-tab" role="tab" aria-selected="false" data-demo="jumaat"><b>Leave for Jumaat</b><span>A reminder to set off, at the time you choose.</span></button>
-          <button class="try-tab" role="tab" aria-selected="false" data-demo="hijri"><b>Hijri calendar</b><span>Tap a day to see what it is.</span></button>
-          <button class="try-tab" role="tab" aria-selected="false" data-demo="big"><b>Big and Simple</b><span>Large, clear times for our parents.</span></button>
-          <button class="try-tab" role="tab" aria-selected="false" data-demo="easy"><b>Easy for everyone</b><span>Bigger text and a screen reader that speaks.</span></button>
-          <button class="try-tab" role="tab" aria-selected="false" data-demo="phone"><b>New phone, same settings</b><span>Delete the app and watch your settings come back.</span></button>
-          <button class="try-tab" role="tab" aria-selected="false" data-demo="print"><b>Print it out</b><span>A prayer calendar for the fridge or the surau wall.</span></button>
+        <div class="try-tabs" role="tablist" aria-label="Things to try">
+          <button class="try-tab" role="tab" aria-selected="true" data-app="?demo"><b>Today's prayer times</b><span>See how long is left to pray. Tap the date for the Hijri calendar.</span></button>
+          <button class="try-tab" role="tab" aria-selected="false" data-app="?demo"><b>Alarms and Jumu'ah</b><span>Tap the alarm clock on the right. Set an alarm for any prayer, or a reminder to leave for Jumu'ah.</span></button>
+          <button class="try-tab" role="tab" aria-selected="false" data-app="?demo&amp;style=simple"><b>Big and Simple</b><span>Large, clear times with nothing extra. Made for our parents.</span></button>
+          <button class="try-tab" role="tab" aria-selected="false" data-app="?demo&amp;season=ramadan"><b>Ramadan</b><span>A look at Ramadan mode, with the iftar countdown and your fasts.</span></button>
+          <button class="try-tab" role="tab" aria-selected="false" data-app="?demo&amp;tab=masjid"><b>Masjids near you</b><span>The nearest masjids and prayer rooms, with walk and drive times.</span></button>
+          <button class="try-tab" role="tab" aria-selected="false" data-app="?demo&amp;tab=qibla"><b>Qibla</b><span>On a phone, tap Turn on the compass and turn until it goes green.</span></button>
+          <button class="try-tab" role="tab" aria-selected="false" data-app="?demo=travel"><b>Just landed</b><span>Arrive in Hanoi and the times switch to Vietnam on their own.</span></button>
+          <button class="try-tab" role="tab" aria-selected="false" data-app="?demo&amp;guide=1"><b>First time in the app</b><span>The short guide every new user sees, in English, Malay or Indonesian.</span></button>
         </div>
-
         <div class="try-stage">
-          <div class="try-phone" aria-live="polite">
-            <div class="try-notch" aria-hidden="true"></div>
-
-            <!-- 1. Alarm -->
-            <div class="demo is-on" data-demo="alarm">
-              <div class="d-alarm" data-state="ring">
-                <p class="d-small">Friday</p>
-                <p class="d-clock" data-clock="5.42">5.42</p>
-                <div class="d-ringing">
-                  <div class="d-bell" aria-hidden="true">⏰</div>
-                  <p class="d-title">Subuh</p>
-                  <p class="d-small">Time to wake up for Subuh</p>
-                  <div class="d-row">
-                    <button class="d-btn ghost" data-act="snooze">Snooze</button>
-                    <button class="d-btn" data-act="stop">Stop</button>
-                  </div>
-                  <p class="d-hint">Tap Snooze or Stop</p>
-                </div>
-                <div class="d-snoozed">
-                  <div class="d-big-icon" aria-hidden="true">😴</div>
-                  <p class="d-title">Snoozed for five minutes</p>
-                  <p class="d-small">It rings again at <b class="d-snooze-at">5.47</b></p>
-                  <button class="d-btn ghost" data-act="ring">Ring again now</button>
-                </div>
-                <div class="d-stopped">
-                  <div class="d-big-icon" aria-hidden="true">🌅</div>
-                  <p class="d-title">Alarm stopped</p>
-                  <p class="d-small">It also rings on silent and in Focus. Pick any of the five prayers and the sound you like.</p>
-                  <button class="d-btn ghost" data-act="ring">Try it again</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- 2. Time left -->
-            <div class="demo" data-demo="left">
-              <div class="d-left">
-                <p class="d-small">Now</p>
-                <p class="d-title">Zohor</p>
-                <svg class="d-ring" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="track"/><circle cx="60" cy="60" r="52" class="fill"/></svg>
-                <p class="d-count"><span class="d-mins">19m</span><span>left to pray</span></p>
-                <p class="d-small">Asar comes in when the ring runs out. Move the slider to see the day go by.</p>
-                <input class="d-range" type="range" min="0" max="180" value="161" aria-label="Time of day" />
-                <p class="d-warn">Hurry, the time for Zohor is almost over.</p>
-              </div>
-            </div>
-
-            <!-- 3. Jumaat -->
-            <div class="demo" data-demo="jumaat">
-              <div class="d-jumaat">
-                <p class="d-small">Friday prayer</p>
-                <p class="d-title">Jumaat at <span class="d-jt">1.05</span></p>
-                <p class="d-small">How early do you want to leave?</p>
-                <div class="d-chips" role="group" aria-label="How early">
-                  <button class="d-chip" data-min="15">15 min</button>
-                  <button class="d-chip is-on" data-min="30">30 min</button>
-                  <button class="d-chip" data-min="60">1 hour</button>
-                  <button class="d-chip" data-min="120">2 hours</button>
-                </div>
-                <div class="d-chips" role="group" aria-label="Session">
-                  <button class="d-chip d-sess is-on" data-t="785">First session</button>
-                  <button class="d-chip d-sess" data-t="860">Second session</button>
-                </div>
-                <div class="d-note">
-                  <b>🕌 Time to leave for Jumaat</b>
-                  <span>Leave at <b class="d-leave">12.35</b> to be at the masjid in time.</span>
-                </div>
-                <p class="d-hint">Session times here are only an example</p>
-              </div>
-            </div>
-
-            <!-- 4. Hijri -->
-            <div class="demo" data-demo="hijri">
-              <div class="d-hijri">
-                <p class="d-title">Ramadan 1448</p>
-                <div class="d-cal" role="group" aria-label="Ramadan 1448"></div>
-                <div class="d-day">
-                  <p class="d-dayname" data-day="0">Tap a marked day</p>
-                  <p class="d-dayname" data-day="1">1 Ramadan. The first day of fasting.</p>
-                  <p class="d-dayname" data-day="17">17 Ramadan. Nuzul al-Quran, when the Quran was first sent down.</p>
-                  <p class="d-dayname" data-day="21">From the night before 21 Ramadan, the last ten nights. Look for Laylatul Qadr.</p>
-                  <p class="d-dayname" data-day="27">The night before 27 Ramadan is one of the odd nights. Look for Laylatul Qadr.</p>
-                  <p class="d-dayname" data-day="29">Ramadan lasts 29 or 30 days. Hari Raya comes when your local religious authority announces it.</p>
-                </div>
-                <p class="d-hint">Dates can differ by a day where you live. Follow your local religious authority.</p>
-              </div>
-            </div>
-
-            <!-- 5. Big and Simple -->
-            <div class="demo" data-demo="big">
-              <div class="d-bigdemo">
-                <label class="d-switch"><span>Big and Simple</span><input type="checkbox" class="d-bigtoggle" role="switch" /><i aria-hidden="true"></i></label>
-                <ul class="d-list">
-                  <li><span>Subuh</span><b>5.42</b></li>
-                  <li><span>Syuruk</span><b>7.01</b></li>
-                  <li class="next"><span>Zohor</span><b>1.05</b></li>
-                  <li><span>Asar</span><b>4.28</b></li>
-                  <li><span>Maghrib</span><b>7.07</b></li>
-                  <li><span>Isyak</span><b>8.21</b></li>
-                </ul>
-                <p class="d-hint">Turn the switch on and off</p>
-              </div>
-            </div>
-
-            <!-- 6. Easy for everyone -->
-            <div class="demo" data-demo="easy">
-              <div class="d-easy">
-                <p class="d-small">Text size</p>
-                <input class="d-size" type="range" min="12" max="26" value="15" aria-label="Text size" />
-                <div class="d-sample">
-                  <p><b>Asar</b> in 15 minutes</p>
-                  <p class="d-small">4.28 at Raffles Place</p>
-                </div>
-                <button class="d-btn ghost d-speak">🔊 Hear it like a screen reader</button>
-                <p class="d-spoken">"Asar, in 15 minutes, 4.28 pm, Raffles Place."</p>
-                <p class="d-small">Works with VoiceOver on iPhone and TalkBack on Android. New users also get a short guide the first time they open the app.</p>
-              </div>
-            </div>
-
-            <!-- 7. New phone -->
-            <div class="demo" data-demo="phone">
-              <div class="d-newphone" data-state="have">
-                <div class="d-appicon" aria-hidden="true"><img src="img/icon-96.webp" alt="" width="64" height="64" /></div>
-                <ul class="d-settings">
-                  <li>🏠 Home <b>Singapore</b></li>
-                  <li>⏰ Alarm <b>Subuh</b></li>
-                  <li>🎨 Look <b>Centre Dial</b></li>
-                </ul>
-                <button class="d-btn" data-act="delete">Delete the app</button>
-                <button class="d-btn" data-act="install">Install it again</button>
-                <p class="d-gone">The app is gone. Now install it again.</p>
-                <p class="d-back">All back, with nothing to sign up for. Or move everything to a new phone with a QR code.</p>
-              </div>
-            </div>
-
-            <!-- 8. Print -->
-            <div class="demo" data-demo="print">
-              <div class="d-print">
-                <img src="img/print-wall-month.webp" alt="A printed prayer calendar" width="560" height="793" loading="lazy" />
-                <p class="d-small">A monthly prayer calendar for your own town, and a short letter that explains prayer breaks to your boss or your school.</p>
-                <a class="d-btn" href="app/print/">Make one now</a>
-              </div>
+          <div class="try-phone">
+            <div class="try-screen">
+              <iframe class="try-frame" title="Prayer Times Asia app" loading="lazy" data-base="app/" src="about:blank"></iframe>
             </div>
           </div>
+          <p class="try-open"><a href="app/">Open the full app</a> · <a href="app/print/">Print a prayer calendar</a></p>
         </div>
       </div>
-      <p class="center muted try-more">Also new. The app opens straight away on your last place, and the masjid map shows walk and drive times.</p>
     </div>
   </section>
 
@@ -1062,7 +847,7 @@
           <span class="tag plan">Planned</span>
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
           <h3>Mac and Windows</h3>
-          <p>The next prayer in the menu bar on a Mac and beside the clock on Windows, with alerts, so a busy workday never makes you miss Zohor or Asar.</p>
+          <p>The next prayer in the menu bar on a Mac and beside the clock on Windows, with alerts, so a busy workday never makes you miss Dhuhr or Asr.</p>
         </div>
         <div class="card">
           <span class="tag plan">Planned</span>
@@ -1074,7 +859,7 @@
           <span class="tag live">Live</span>
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c-2 2-4 3.5-4 6h8c0-2.5-2-4-4-6zM4 22V12h16v10M9 22v-5a3 3 0 0 1 6 0v5M2 22h20"/></svg></div>
           <h3>Masjid display screens</h3>
-          <p>A clear prayer times screen for the masjid TV with azan and iqamah times, Jumaat and announcements, in six looks for a wide or tall screen. The masjid sets it up. <a href="app/screen/#setup">Set one up</a>.</p>
+          <p>A clear prayer times screen for the masjid TV with azan and iqamah times, Jumu'ah and announcements, in six looks for a wide or tall screen. The masjid sets it up. <a href="app/screen/#setup">Set one up</a>.</p>
         </div>
       </div>
     </div>
@@ -1113,7 +898,7 @@
         <div>
           <span class="eyebrow">For masjids and imams</span>
           <h2>Help us get it right for your community.</h2>
-          <p class="muted">We want to work with imams and masjid committees everywhere, so the app matches how your community prays. If you look after a masjid or musollah, we would love to hear from you.</p>
+          <p class="muted">We want to work with imams and masjid committees everywhere, so the app matches how your community prays. If you look after a masjid or prayer room, we would love to hear from you.</p>
           <ul>
             <li>Compare our times with your masjid's and tell us if they are different</li>
             <li>Share your iqamah and Jumu'ah times so nearby jamaah can find them</li>
@@ -1125,16 +910,7 @@
           </div>
         </div>
         <div>
-          <div class="tv" aria-hidden="true">
-            <div class="tv-in">
-              <div class="tv-head"><span>Your masjid · Singapore</span><span>Friday 30 October · 18 Jamadilawal 1448</span></div>
-              <div class="tv-now"><span>Asar iqamah in</span><b>00:12:40</b></div>
-              <div class="tv-row">
-                <div>Subuh<b>5:28</b></div><div>Syuruk<b>6:47</b></div><div>Zohor<b>12:50</b></div>
-                <div class="on">Asar<b>4:08</b></div><div>Maghrib<b>6:51</b></div><div>Isyak<b>8:02</b></div>
-              </div>
-            </div>
-          </div>
+          <div class="tv"><img src="img/who-masjid-screen.webp" alt="The free masjid display screen, showing today's times and the next prayer" width="960" height="540" loading="lazy" style="display:block;width:100%;height:auto;border-radius:9px" /></div>
           <p class="muted center" style="font-size: 0.85rem; margin-top: 12px">The free masjid display screen. <a href="app/screen/#setup">Try it on your TV</a>.</p>
         </div>
       </div>
@@ -1395,118 +1171,34 @@
   })();
 </script>
 <script>
-  // Try it: one small working demo per feature, inside a drawn phone.
+  // Try the real app: load the live web app (demo mode, nothing is saved) only
+  // when the section comes near, and switch what it shows from the buttons.
   (function () {
     var box = document.querySelector('.tryit');
     if (!box) return;
+    var frame = box.querySelector('.try-frame');
     var tabs = box.querySelectorAll('.try-tab');
-    var demos = box.querySelectorAll('.demo');
-    function show(name) {
-      tabs.forEach(function (t) { t.setAttribute('aria-selected', t.dataset.demo === name ? 'true' : 'false'); });
-      demos.forEach(function (d) { d.classList.toggle('is-on', d.dataset.demo === name); });
+    var hint = document.createElement('p');
+    hint.className = 'try-hint';
+    box.querySelector('.try-stage').insertBefore(hint, box.querySelector('.try-phone'));
+    var lang = document.documentElement.lang || 'en';
+    var page = location.pathname.split('/').filter(Boolean);
+    var base = (page.length && page[page.length - 1].length <= 3 ? '../' : '') + frame.dataset.base;
+    var current = null;
+    function load(tab) {
+      tabs.forEach(function (t) { t.setAttribute('aria-selected', t === tab ? 'true' : 'false'); });
+      hint.textContent = tab.querySelector('span').textContent;
+      var url = base + tab.dataset.app + (lang !== 'en' ? '&lang=' + lang : '');
+      if (url !== current || tab.dataset.app === '?demo') { frame.src = url; current = url; }
     }
-    tabs.forEach(function (t) {
-      t.addEventListener('click', function () { show(t.dataset.demo); });
-    });
-    function hm(mins) { // minutes after midnight to 12 hour "h.mm"
-      var h = Math.floor(mins / 60) % 12 || 12, m = mins % 60;
-      return h + '.' + (m < 10 ? '0' : '') + m;
-    }
-
-    // Alarm: Snooze, Stop, ring again.
-    var alarm = box.querySelector('.d-alarm');
-    alarm.addEventListener('click', function (e) {
-      var act = e.target.closest('[data-act]');
-      if (!act) return;
-      alarm.dataset.state = { snooze: 'snooze', stop: 'stop', ring: 'ring' }[act.dataset.act];
-      if (navigator.vibrate && act.dataset.act === 'ring') navigator.vibrate(200);
-    });
-
-    // Time left: Zohor 1.05 to Asar 4.28 here, the slider moves the clock.
-    var left = box.querySelector('.d-left');
-    var range = left.querySelector('.d-range');
-    var mins = left.querySelector('.d-mins');
-    var fill = left.querySelector('.fill');
-    var total = 203;
-    function paint() {
-      var gone = Math.round(+range.value / 180 * total);
-      var rest = Math.max(1, total - gone);
-      mins.textContent = rest >= 60 ? Math.floor(rest / 60) + 'h ' + (rest % 60) + 'm' : rest + 'm';
-      fill.style.strokeDashoffset = (327 * (1 - rest / total)).toFixed(1);
-      left.classList.toggle('urgent', rest <= 20);
-    }
-    range.addEventListener('input', paint);
-    paint();
-
-    // Leave for Jumaat: how early, and which session.
-    var jum = box.querySelector('.d-jumaat');
-    var before = 30, start = 785;
-    function leave() {
-      jum.querySelector('.d-leave').textContent = hm(start - before);
-      jum.querySelector('.d-jt').textContent = hm(start);
-      var note = jum.querySelector('.d-note');
-      note.style.animation = 'none'; void note.offsetWidth; note.style.animation = '';
-    }
-    jum.addEventListener('click', function (e) {
-      var c = e.target.closest('.d-chip');
-      if (!c) return;
-      var group = c.parentNode.querySelectorAll('.d-chip');
-      group.forEach(function (g) { g.classList.toggle('is-on', g === c); });
-      if (c.dataset.min) before = +c.dataset.min;
-      if (c.dataset.t) start = +c.dataset.t;
-      leave();
-    });
-
-    // Hijri calendar: tap a marked day.
-    var cal = box.querySelector('.d-cal');
-    var marks = { 1: 1, 17: 17, 21: 21, 27: 27, 29: 29 };
-    for (var d = 1; d <= 30; d++) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = d;
-      if (marks[d]) { b.className = 'mark'; b.dataset.day = d; }
-      else { b.tabIndex = -1; if (d > 20) b.className = 'ten'; }
-      cal.appendChild(b);
-    }
-    var names = box.querySelectorAll('.d-dayname');
-    function pick(day) {
-      names.forEach(function (n) { n.classList.toggle('is-on', n.dataset.day === String(day)); });
-      cal.querySelectorAll('button').forEach(function (x) { x.classList.toggle('picked', x.dataset.day === String(day)); });
-    }
-    cal.addEventListener('click', function (e) {
-      var b = e.target.closest('button.mark');
-      if (b) pick(b.dataset.day);
-    });
-    pick(0);
-
-    // Big and Simple switch.
-    var big = box.querySelector('.d-bigdemo');
-    big.querySelector('.d-bigtoggle').addEventListener('change', function (e) { big.classList.toggle('big', e.target.checked); });
-
-    // Easy for everyone: text size and a spoken line.
-    var easy = box.querySelector('.d-easy');
-    var sample = easy.querySelector('.d-sample');
-    var size = easy.querySelector('.d-size');
-    size.addEventListener('input', function () { sample.style.fontSize = size.value + 'px'; });
-    sample.style.fontSize = size.value + 'px';
-    easy.querySelector('.d-speak').addEventListener('click', function () {
-      easy.classList.add('speaking');
-      var line = easy.querySelector('.d-spoken').textContent.replace(/["“”]/g, '');
-      if (window.speechSynthesis) {
-        speechSynthesis.cancel();
-        var u = new SpeechSynthesisUtterance(line);
-        u.lang = document.documentElement.lang || 'en';
-        speechSynthesis.speak(u);
-      }
-    });
-
-    // New phone, same settings.
-    var np = box.querySelector('.d-newphone');
-    np.addEventListener('click', function (e) {
-      var act = e.target.closest('[data-act]');
-      if (!act) return;
-      np.dataset.state = act.dataset.act === 'delete' ? 'gone' : 'back';
-    });
+    tabs.forEach(function (t) { t.addEventListener('click', function () { load(t); }); });
+    hint.textContent = tabs[0].querySelector('span').textContent;
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) {
+        if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); load(tabs[0]); }
+      }, { rootMargin: '400px' });
+      io.observe(box);
+    } else { load(tabs[0]); }
   })();
 </script>
 </body>
