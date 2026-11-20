@@ -151,12 +151,12 @@
       *, *::before, *::after { animation: none !important; transition: none !important; }
       .js .intro, .js .reveal, .js .feature.reveal .shot figure { opacity: 1; transform: none; }
     }
-    /* The join form sits on a cream sheet, the same cream the form itself uses. */
-    .sheet { background: #F2EEE9; border-radius: 28px; padding: 14px; max-width: 760px; margin: 36px auto 0; border: 2px solid #E2B65A;
-      box-shadow: 0 30px 60px -24px #000c, 0 0 80px -30px #f2c06355; }
-    .sheet iframe { display: block; width: 100%; min-height: 900px; border: 0; border-radius: 18px; background: #F2EEE9; }
-    .sheet .fallback { color: #151A45; text-align: center; margin: 10px 0 4px; font-size: 0.92rem; }
-    .sheet .fallback a { color: #3A3480; font-weight: 700; }
+    /* The join form sits in a glass card. The form itself carries the same night colours. */
+    .sheet { background: linear-gradient(160deg, rgba(42,47,120,.55), rgba(11,15,42,.9)); border-radius: 28px; padding: 18px 14px 10px; max-width: 760px; margin: 36px auto 0;
+      border: 1px solid #f2c06366; box-shadow: 0 30px 60px -24px #000c, 0 0 90px -30px #f2c06366; }
+    .sheet iframe { display: block; width: 100%; min-height: 900px; border: 0; border-radius: 18px; background: transparent; color-scheme: dark; }
+    .sheet .fallback { color: var(--muted); text-align: center; margin: 10px 0 8px; font-size: 0.92rem; }
+    .sheet .fallback a { color: var(--gold); font-weight: 700; }
     .steps { counter-reset: step; }
     .steps .card::before { counter-increment: step; content: counter(step); display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;
       background: #f2c06322; color: var(--gold); font-weight: 800; margin-bottom: 12px; }
@@ -224,7 +224,7 @@
       <div class="center">
         <span class="eyebrow">Join</span>
         <h2>Join the Timekeepers.</h2>
-        <p class="lead">We ask for your details so we know who can check which city and which device. We use them only for Timekeepers work and we never sell or share them.</p>
+        <p class="lead">It takes about three minutes.</p>
       </div>
       <div class="sheet">
         <iframe src="https://api.nasardigital.com/widget/form/nZQpvhhRsNDmDGK4MdOW" id="inline-nZQpvhhRsNDmDGK4MdOW" title="Prayer Times Asia Timekeepers join form" loading="lazy"
