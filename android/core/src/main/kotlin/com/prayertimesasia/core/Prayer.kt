@@ -31,6 +31,26 @@ enum class Prayer(val raw: String) {
 }
 
 /**
+ * What leads the Prayer screen and widgets. While a prayer's time is open, that
+ * prayer (NOW). Syuruk ends Subuh but starts no prayer, so from Syuruk to Zohor
+ * the next prayer leads instead (NEXT, "Zohor in 53m"), never "Sunrise". Same
+ * rule on iPhone and the web; the masjid screen already worked this way.
+ */
+data class PrayerLead(val prayer: Prayer, val time: java.time.Instant, val isNext: Boolean) {
+    companion object {
+        fun of(current: Pair<Prayer, java.time.Instant>?, next: Pair<Prayer, java.time.Instant>?): PrayerLead? {
+            if (current == null || next == null) return null
+            return if (current.first == Prayer.SUNRISE) PrayerLead(next.first, next.second, true)
+            else PrayerLead(current.first, current.second, false)
+        }
+
+        /** The prayer whose time is open now: null between Syuruk and Zohor. Only this one is marked NOW. */
+        fun open(current: Pair<Prayer, java.time.Instant>?): Pair<Prayer, java.time.Instant>? =
+            if (current?.first == Prayer.SUNRISE) null else current
+    }
+}
+
+/**
  * How prayer names are spelled. Muslims across Asia say the same prayers with
  * different words. The app uses *your* words (from your home, or your phone)
  * wherever you are, and shows the local word underneath when you travel - so a

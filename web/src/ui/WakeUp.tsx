@@ -11,6 +11,7 @@ import { alertSupport, anyAlarm, downloadWakeICS, nextWakeUp, requestPermission 
 import { store, useNow, useStore } from '../services/store'
 import { Sheet, ToggleItem } from './common'
 import { Hadith } from './Hadith'
+import { JumuahLeaveGroup } from './JumuahLeave'
 import { phoneAppOffer } from './pwa'
 import { appLocale, tr } from '../core/appWords'
 
@@ -75,6 +76,7 @@ export function WakeUpSheet() {
       x.wakeUp = null
       x.sahurAlarm = null
       for (const prayer of ALARM_PRAYERS) x[ALARM_KEY[prayer]] = null
+      x.jumuahLeaveAlarm = false
     })
     stopAlarm()
   }
@@ -171,6 +173,8 @@ export function WakeUpSheet() {
         </div>
         <p class="group-foot">{tr('wake.loud')}</p>
       </section>
+
+      <JumuahLeaveGroup />
 
       <section>
         <h2 class="group-title">{tr('wake.sound')}</h2>

@@ -31,6 +31,12 @@ data class WidgetModel(
     /** In Ramadan, the fast's next moment (Imsak or Berbuka), as the Ramadan card shows it; null otherwise. */
     val fast: FastMoment? = null,
 ) {
+    /** The prayer marked NOW: null between Syuruk and Zohor, when no prayer is open. */
+    val open: Prayer? get() = com.prayertimesasia.core.PrayerLead.open(current)?.first
+
+    /** Leads the dial: the open prayer, or from Syuruk the next one. */
+    val lead: com.prayertimesasia.core.PrayerLead? get() = com.prayertimesasia.core.PrayerLead.of(current, next)
+
     /** "Berbuka" at 7:05 PM, in the prayer names' language. */
     data class FastMoment(val kind: Resolver.FastingKind, val at: Instant, val label: String, val time: String)
 
