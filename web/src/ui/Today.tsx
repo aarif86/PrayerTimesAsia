@@ -1,13 +1,13 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
-  Bell, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
+  AlarmClock, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck,
   CloudMoon, Contrast, Droplet, Flame, Pause, Star, MapPin, MoonStar, Navigation, Palette, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
 import { parameterSummary } from '../core/methods'
 import { isInAsia, placeProfile } from '../core/place'
-import { isObligatory, PRAYERS, type Prayer } from '../core/prayer'
+import { isObligatory, lead, openPrayer, PRAYERS, type Prayer } from '../core/prayer'
 import { LONG_DAYS_WORDS } from '../core/longDays'
 import { lang3 } from '../core/ramadanContent'
 import { flag } from '../core/regions'
@@ -17,7 +17,8 @@ import { alertSupport, requestPermission } from '../services/notifications'
 import { APPEARANCE_LABEL, APPEARANCES, TODAY_STYLE_LABEL, TODAY_STYLES } from '../services/prefs'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
-import { WakeChip } from './WakeUp'
+import { cycleAlert, ModeIcon, MODE_WORD, WakeChip } from './WakeUp'
+import { alertMode } from '../core/alertMode'
 import { fmtDate, openSheet, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
 import { DayDial, HeroDial, SunPath, tint, type DialMark } from './Dials'
@@ -30,6 +31,7 @@ import { SeasonCard } from './Ramadan'
 import { Hadith } from './Hadith'
 
 type Moment = { prayer: Prayer; time: number } | null
+
 
 /** The new style's name, shown for a moment after switching. */
 function useToast(): [string | null, (s: string) => void] {
@@ -52,11 +54,16 @@ async function turnOnAlerts(only?: Prayer) {
   })
 }
 
+/** The bell: Off, then Notify, then Alarm. The first time, alerts were never on: start with this prayer only. */
 function toggleNotify(prayer: Prayer) {
-  if (!store.prefs.notificationsEnabled) { void turnOnAlerts(prayer); return }
-  store.update((p) => {
-    p.notifyPrayers = p.notifyPrayers.includes(prayer) ? p.notifyPrayers.filter((x) => x !== prayer) : [...p.notifyPrayers, prayer]
-  })
+  if (!store.prefs.notificationsEnabled && alertMode(store.prefs, prayer) === 'off' && alertSupport() !== 'supported') { openSheet({ kind: 'alerts-help' }); return }
+  announce(cycleAlert(prayer))
+}
+
+/** Read out what the bell changed, for screen reader users. */
+function announce(text: string) {
+  const el = document.getElementById('bell-status')
+  if (el) el.textContent = text
 }
 
 function dayLabel(offset: number): string {
@@ -85,6 +92,7 @@ export function TodayScreen() {
   return (
     <div class={`today style-${style}`} data-theme-local={style === 'bands' ? 'dark' : undefined}>
       <h1 class="sr-only">Prayer times{s.activePlace ? ` in ${s.activePlace.name}` : ''}</h1>
+      <p id="bell-status" class="sr-only" aria-live="polite" />
       {style === 'list' && <ClassicPage c={ctx} />}
       {style === 'centre' && <CentrePage c={ctx} />}
       {style === 'dial' && <DialPage c={ctx} />}
@@ -433,7 +441,7 @@ function PrayerList({ c, fill }: { c: Ctx; fill: boolean }) {
   const day = c.shown
   const list = entries(c, day)
   const swipe = useSwipe(c)
-  const current = c.offset === 0 ? c.current?.prayer : null
+  const current = c.offset === 0 ? openPrayer(c.current)?.prayer : null
   const next = c.offset === 0 ? c.next : null
   const prayerRows = list.filter((e) => e.kind === 'prayer').length
   // Tapping Syuruk opens a short hadith on why it is not a prayer time.
@@ -464,7 +472,7 @@ function jamaahText(day: PrayerDay, p: Prayer, now: number): string | null {
 function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: number; now: number; day: PrayerDay; isCurrent: boolean; next: Moment; onTap?: () => void }) {
   const prefs = store.prefs
   const passed = t <= now && !isCurrent
-  const notifying = prefs.notificationsEnabled && prefs.notifyPrayers.includes(p)
+  const mode = alertMode(prefs, p)
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const local = store.localName(p, t)
@@ -486,8 +494,10 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: n
         {other != null && day.alternateSource && <div class="extra alt">{day.alternateSource} {store.formatted(other)}</div>}
       </div>
       <TimeText ms={t} size={27} />
-      <button class="bell" aria-label={notifying ? 'Turn off alert' : 'Turn on alert'} onClick={(e) => { e.stopPropagation(); toggleNotify(p) }}>
-        {notifying ? <Bell size={16} fill="currentColor" /> : <BellOff size={16} style={{ opacity: 0.4 }} />}
+      <button class={`bell bell-${mode}`} aria-label={`${store.name(p, t)} ${MODE_WORD[mode]}. Tap to change, hold for more`}
+        onClick={(e) => { e.stopPropagation(); toggleNotify(p) }}
+        onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); openSheet({ kind: 'wakeup', prayer: p }) }}>
+        <ModeIcon mode={mode} />
       </button>
     </div>
   )
@@ -529,10 +539,11 @@ function DateBlock({ c }: { c: Ctx }) {
 function SmallDial({ c, size }: { c: Ctx; size: number }) {
   const { now, day, current, next } = c
   const tomorrow = store.day(noonDaysAfter(now, 1, store.timeZone))
-  if (!current || !next || !tomorrow) return <div style={{ width: `${size}px`, height: `${size}px` }} />
+  const top = lead(current, next)
+  if (!top || !tomorrow) return <div style={{ width: `${size}px`, height: `${size}px` }} />
   return (
     <DayDial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}
-      currentPrayer={current.prayer} currentName={store.name(current.prayer, current.time)}
+      currentPrayer={top.prayer} currentName={store.name(top.prayer, top.time)} isNext={top.isNext}
       countdown={countdown(now).count} label={countdown(now).label} />
   )
 }
@@ -580,6 +591,11 @@ export function countdown(now: number): { count: string; label: string; text: st
   }
   const next = store.next(now)
   if (!next) return { count: '', label: '', text: '', urgent: false, done }
+  // Syuruk to Zohor: the next prayer's name leads, so the count only says when.
+  if (!w && store.current(now)?.prayer === 'sunrise') {
+    const text = `in ${short(next.time - now)}`
+    return { count: text, label: '', text, urgent: false, done }
+  }
   const count = short(next.time - now)
   const label = `until ${store.name(next.prayer, next.time)}`
   return { count, label, text: `${count} ${label}`, urgent: false, done }
@@ -593,13 +609,16 @@ export function countdown(now: number): { count: string; label: string; text: st
  * it when the tracker is on. Nothing else.
  */
 function SimplePage({ c }: { c: Ctx }) {
-  const { now, day, current } = c
+  const { now, day } = c
+  const current = openPrayer(c.current)
+  const top = lead(c.current, c.next)
   const t = countdown(now)
   return (
     <div class="today-page page simple-page">
       <div class="row" style={{ gap: '8px', paddingTop: '8px' }}><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
       <div class="simple-now">
-        {current && <div class="simple-big display tint-text" style={{ '--tint': tint(current.prayer) }}>{store.name(current.prayer, current.time)}{t.done && <CheckCircle2 size={34} class="accent" style={{ marginLeft: '10px' }} />}</div>}
+        {top?.isNext && <div class="simple-kicker">NEXT</div>}
+        {top && <div class="simple-big display tint-text" style={{ '--tint': tint(top.prayer) }}>{store.name(top.prayer, top.time)}{t.done && <CheckCircle2 size={34} class="accent" style={{ marginLeft: '10px' }} />}</div>}
         {t.text && <div class={`simple-left mono ${t.urgent ? 'accent' : ''}`}>{t.text}</div>}
       </div>
       <div class="simple-list">
@@ -738,22 +757,22 @@ function DialPage({ c }: { c: Ctx }) {
       <div class="hero-wrap" ref={wrap} {...swipe}>
         <div class="hero-centre-box">
         <HeroDial size={size} now={c.now} day={shown} nextFajr={nextFajr} tz={store.timeZone}
-          currentPrayer={isToday ? c.current?.prayer ?? null : null} marks={marks}
+          currentPrayer={isToday ? lead(c.current, c.next)?.prayer ?? null : null} marks={marks}
           label={(m, sz) => {
             const p = PRAYERS.find((x) => x === m.id)
-            if (p) return <DialPrayerLabel p={p} t={m.date} now={c.now} size={sz} day={shown} isCurrent={isToday && p === c.current?.prayer} />
+            if (p) return <DialPrayerLabel p={p} t={m.date} now={c.now} size={sz} day={shown} isCurrent={isToday && p === openPrayer(c.current)?.prayer} />
             const b = blessed.find(([x]) => x === m.id)
             return b ? <DialBlessedLabel b={b[0]} t={b[1]} now={c.now} size={sz} /> : null
           }}
           centre={(sz) => {
-            const cur = isToday ? c.current : null
-            if (!cur || !c.next) return <MoonStar size={sz * 0.08} style={{ opacity: 0.5 }} />
+            const cur = isToday ? lead(c.current, c.next) : null
+            if (!cur) return <MoonStar size={sz * 0.08} style={{ opacity: 0.5 }} />
             return (
               <div class="hero-centre">
-                <div class="tint-text" style={{ fontSize: `${sz * 0.028}px`, fontWeight: 800, letterSpacing: '0.6px', '--tint': tint(cur.prayer) }}>NOW</div>
+                <div class="tint-text" style={{ fontSize: `${sz * 0.028}px`, fontWeight: 800, letterSpacing: '0.6px', '--tint': tint(cur.prayer) }}>{cur.isNext ? 'NEXT' : 'NOW'}</div>
                 <div class="display" style={{ fontSize: `${sz * 0.085}px`, fontWeight: 700, lineHeight: 1.1 }}>{store.name(cur.prayer, cur.time)}</div>
                 <div class="display accent mono" style={{ fontSize: `${sz * 0.066}px`, fontWeight: 600 }}>{countdown(c.now).count}</div>
-                <div class="secondary" style={{ fontSize: `${sz * 0.034}px`, fontWeight: 500 }}>{countdown(c.now).label}</div>
+                {countdown(c.now).label && <div class="secondary" style={{ fontSize: `${sz * 0.034}px`, fontWeight: 500 }}>{countdown(c.now).label}</div>}
               </div>
             )
           }} />
@@ -774,7 +793,7 @@ function DialPage({ c }: { c: Ctx }) {
 function DialPrayerLabel({ p, t, now, size, day, isCurrent }: { p: Prayer; t: number; now: number; size: number; day: PrayerDay; isCurrent: boolean }) {
   const prefs = store.prefs
   const passed = t <= now && !isCurrent
-  const notifying = prefs.notificationsEnabled && prefs.notifyPrayers.includes(p)
+  const mode = alertMode(prefs, p)
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const own = store.name(p, t)
@@ -787,7 +806,8 @@ function DialPrayerLabel({ p, t, now, size, day, isCurrent }: { p: Prayer; t: nu
       <span class="dm-name" style={{ fontSize: `${size * 0.034}px`, fontWeight: isCurrent ? 700 : 600 }}>
         {name}
         {prayed && <CheckCircle2 size={size * 0.03} fill="var(--green)" color="#fff" />}
-        {!prayed && prefs.notificationsEnabled && !notifying && isObligatory(p) && <BellOff size={size * 0.026} style={{ opacity: 0.5 }} />}
+        {!prayed && mode === 'alarm' && <AlarmClock size={size * 0.026} style={{ opacity: 0.8 }} />}
+        {!prayed && mode === 'off' && prefs.notificationsEnabled && isObligatory(p) && <BellOff size={size * 0.026} style={{ opacity: 0.5 }} />}
       </span>
       <TimeText ms={t} size={size * 0.05} weight={isCurrent ? 700 : 600} />
       {day.jamaah[p] != null && <span style={{ fontSize: `${size * 0.027}px`, opacity: 0.75 }}>{jamaahText(day, p, now)}</span>}
@@ -812,16 +832,17 @@ function DialBlessedLabel({ b, t, now, size }: { b: BlessedTime; t: number; now:
 function SunPathPage({ c }: { c: Ctx }) {
   const wrap = useRef<HTMLDivElement>(null)
   const width = useWidth(wrap, 393)
-  const { current, next, now } = c
+  const { next, now } = c
   const nextName = next ? store.name(next.prayer, next.time) : ''
+  const top = lead(c.current, next)
   return (
     <div class="today-page page sunpath-page">
       <div class="row" style={{ alignItems: 'flex-start', gap: '8px', paddingTop: '6px' }}>
-        {current && next && (
-          <div class="sun-status" aria-label={`Now ${store.name(current.prayer, current.time)}. ${nextName} at ${store.formatted(next.time)}.`}>
+        {top && next && (
+          <div class="sun-status" aria-label={top.isNext ? `Next ${nextName} at ${store.formatted(next.time)}.` : `Now ${store.name(top.prayer, top.time)}. ${nextName} at ${store.formatted(next.time)}.`}>
             <div class="row" style={{ gap: '8px' }}>
-              <span class="dot" style={{ background: tint(current.prayer) }} />
-              <span class="display" style={{ fontSize: '30px', fontWeight: 700 }}>{store.name(current.prayer, current.time)}</span>
+              <span class="dot" style={{ background: tint(top.prayer) }} />
+              <span class="display" style={{ fontSize: '30px', fontWeight: 700 }}>{store.name(top.prayer, top.time)}</span>
             </div>
             <span class={`status-pill mono ${countdown(now).urgent ? 'urgent' : ''}`}>{countdown(now).text}</span>
           </div>
@@ -861,7 +882,9 @@ const BAND: Record<Prayer, string> = {
 }
 
 function BandsPage({ c }: { c: Ctx }) {
-  const { now, shown, current, next, offset } = c
+  const { now, shown, next, offset } = c
+  const current = openPrayer(c.current)
+  const top = lead(c.current, next)
   const swipe = useSwipe(c)
   const blessed = visibleBlessed(c, shown)
   return (
@@ -872,8 +895,8 @@ function BandsPage({ c }: { c: Ctx }) {
           <span class="spacer" />
           <Controls c={c} />
         </div>
-        {current && next && offset === 0 && (
-          <div class="bands-status mono">{store.name(current.prayer, current.time)} now · {countdown(now).text}</div>
+        {top && offset === 0 && (
+          <div class="bands-status mono">{store.name(top.prayer, top.time)} {top.isNext ? '' : 'now · '}{countdown(now).text}</div>
         )}
         <TopPrompt />
         <ArrivalCard />
@@ -903,7 +926,7 @@ function BandsPage({ c }: { c: Ctx }) {
 
 function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: number; jamaah?: number; now: number; isCurrent: boolean; next: Moment }) {
   const prefs = store.prefs
-  const notifying = prefs.notificationsEnabled && prefs.notifyPrayers.includes(p)
+  const mode = alertMode(prefs, p)
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const parts = store.timeParts(t)
@@ -924,7 +947,8 @@ function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: numb
       </span>
       <span class="spacer" />
       <span class="band-time"><span>{parts.time}</span>{parts.suffix && <span class="sfx">{parts.suffix}</span>}</span>
-      {prefs.notificationsEnabled && !notifying && isObligatory(p) && <BellOff size={13} style={{ opacity: 0.6 }} />}
+      {mode === 'alarm' && <AlarmClock size={13} style={{ opacity: 0.85 }} />}
+      {mode === 'off' && prefs.notificationsEnabled && isObligatory(p) && <BellOff size={13} style={{ opacity: 0.6 }} />}
     </button>
   )
 }

@@ -163,7 +163,7 @@ struct NextPrayerView: View {
         if family == .systemMedium {
             HStack(spacing: 0) {
                 small.frame(maxWidth: 150)
-                let current = s.current(at: entry.date)?.prayer
+                let current = PrayerLead.open(s.current(at: entry.date))?.prayer
                 if let day = s.day(containing: entry.date) {
                     VStack(spacing: 3) {
                         ForEach(Prayer.allCases) { p in

@@ -113,6 +113,8 @@ function MoonGlyph({ size, color }: { size: number; color: string }) {
 export function DayDial(props: {
   size: number; now: number; day: PrayerDay; nextFajr: number; tz: string
   currentPrayer: Prayer; currentName: string; countdown: string; label: string
+  /** Syuruk to Zohor: the centre names the next prayer, not the one we are in. */
+  isNext?: boolean
 }) {
   const { size, now, day, nextFajr, tz, currentPrayer } = props
   const midnight = useMemo(() => startOfDay(day.times.dhuhr, tz), [day, tz])
@@ -129,7 +131,7 @@ export function DayDial(props: {
   const [dx, dy] = pt(c, c, angle(now), r)
   return (
     <div class="daydial" style={{ width: `${size}px`, height: `${size}px` }} role="img"
-      aria-label={`Now ${props.currentName}. ${props.countdown} ${props.label}.`}>
+      aria-label={props.isNext ? `Next ${props.currentName}, ${props.countdown}.` : `Now ${props.currentName}. ${props.countdown} ${props.label}.`}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
         <circle cx={c} cy={c} r={r} fill="none" stroke="var(--fg)" stroke-opacity="0.1" stroke-width={ring} />
         {segments.map((s) => (
@@ -147,7 +149,7 @@ export function DayDial(props: {
       <div class="daydial-centre" style={{ padding: `0 ${size * 0.18}px` }}>
         <div class="display" style={{ fontSize: `${size * 0.14}px`, fontWeight: 700, lineHeight: 1.1 }}>{props.currentName}</div>
         <div class="display accent mono" style={{ fontSize: `${size * 0.1}px`, fontWeight: 600, lineHeight: 1.15 }}>{props.countdown}</div>
-        <div class="secondary" style={{ fontSize: `${size * 0.065}px`, fontWeight: 500 }}>{props.label}</div>
+        {props.label && <div class="secondary" style={{ fontSize: `${size * 0.065}px`, fontWeight: 500 }}>{props.label}</div>}
       </div>
     </div>
   )

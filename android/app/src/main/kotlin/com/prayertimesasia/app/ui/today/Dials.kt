@@ -125,12 +125,14 @@ fun DayDial(
     now: Instant, day: PrayerDay, nextFajr: Instant, zone: ZoneId,
     currentName: String, currentPrayer: Prayer, countdown: String, label: String,
     size: Dp, modifier: Modifier = Modifier,
+    /** Syuruk to Zohor: the centre names the next prayer ("Zohor", "in 53m"), not the one we are in. */
+    isNext: Boolean = false,
 ) {
     val primary = Palette.primary
     val accent = Palette.accent
     val sunArc = Palette.sunArc
     val mid = midnight(day, zone)
-    Box(modifier.size(size).semantics { contentDescription = "Now $currentName. $countdown $label." },
+    Box(modifier.size(size).semantics { contentDescription = if (isNext) "Next $currentName, $countdown." else "Now $currentName. $countdown $label." },
         contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val ring = this.size.width * 0.085f
@@ -152,7 +154,7 @@ fun DayDial(
         Column(Modifier.padding(horizontal = size * 0.18f), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(currentName, style = display((size.value * 0.14f).sp, FontWeight.Bold), color = primary, maxLines = 1, softWrap = false)
             Text(countdown, style = display((size.value * 0.1f).sp, FontWeight.SemiBold), color = Palette.accentText, maxLines = 1)
-            Text(label, fontFamily = Rounded, fontSize = (size.value * 0.065f).sp, fontWeight = FontWeight.Medium,
+            if (label.isNotEmpty()) Text(label, fontFamily = Rounded, fontSize = (size.value * 0.065f).sp, fontWeight = FontWeight.Medium,
                 color = Palette.secondary, maxLines = 1, textAlign = TextAlign.Center)
         }
     }

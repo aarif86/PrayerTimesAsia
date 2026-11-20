@@ -46,6 +46,6 @@ data class PrayerWindow(val prayer: Prayer, val start: Instant, val end: Instant
         }
 
         /** "Leave for Jumaat": how long before the khutbah. 0 is off. */
-        val JUMUAH_REMINDER_CHOICES = listOf(0, 20, 30, 45, 60, 90)
+        val JUMUAH_REMINDER_CHOICES = JumuahLeave.CHOICES
     }
 }
