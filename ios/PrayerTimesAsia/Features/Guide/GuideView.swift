@@ -11,7 +11,8 @@ struct GuideView: View {
     @State private var page = 0
     @State private var started = false
 
-    private let cards = GuideWords.cards
+    // No Qibla card on a Mac: it has no compass, so that tab is not there.
+    private let cards = GuideWords.cards.filter { !(Device.isMac && $0 == "qibla") }
     private var last: Bool { page == cards.count - 1 }
     private func t(_ key: String, _ args: [String: String] = [:]) -> String { GuideWords.word(lang, key, args) }
 

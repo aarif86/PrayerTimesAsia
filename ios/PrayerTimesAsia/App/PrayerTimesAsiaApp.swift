@@ -70,9 +70,12 @@ struct RootView: View {
                 TodayView()
                     .tabItem { Label { Text("Prayer") } icon: { Image("Tab-prayer") } }
                     .tag(AppModel.Tab.today)
+                // A Mac has no compass, so the Qibla tab is left out there.
+                #if !targetEnvironment(macCatalyst)
                 QiblaView()
                     .tabItem { Label { Text("Qibla") } icon: { Image("Tab-qibla") } }
                     .tag(AppModel.Tab.qibla)
+                #endif
                 FalakView(isTab: true)
                     .tabItem { Label { Text("Falak") } icon: { Image("Tab-falak") } }
                     .tag(AppModel.Tab.falak)
@@ -85,6 +88,9 @@ struct RootView: View {
             }
             .tint(.primary)
             .onAppear { model.applyDemoTab() }
+            #if targetEnvironment(macCatalyst)
+            .onAppear { MacWindow.fit() }
+            #endif
             .sheet(isPresented: $model.showJourney) { JourneyView() }
             .sheet(isPresented: $model.showWakeUp) { WakeUpView() }
             .sheet(item: $model.pendingMasjid) { MasjidLinkSheet(link: $0) }
@@ -95,7 +101,7 @@ struct RootView: View {
             .alert("Welcome back", isPresented: $model.showWelcomeBack) {
                 Button("OK") {}
             } message: {
-                Text("Your settings are back, just as you left them. Your phone keeps a private copy, so deleting the app never loses them.")
+                Text("Your settings are back, just as you left them. Your \(Device.noun) keeps a private copy, so deleting the app never loses them.")
             }
             .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-widget-preview"))) {
                 NavigationStack { WidgetPreviewView() }

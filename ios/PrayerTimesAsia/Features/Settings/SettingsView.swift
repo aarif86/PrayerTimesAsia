@@ -148,7 +148,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Prayer names")
                 } footer: {
-                    Text("Automatic shows English names like Fajr and Isha, or your phone's language if we have it. Pick Malay for Subuh and Isyak. Your names stay the same wherever you go. When you travel somewhere that uses other words, the local name shows small underneath, like Subuh in Kuala Lumpur, so the masjid's signs make sense. Spellings follow each authority's own timetable.")
+                    Text("Automatic shows English names like Fajr and Isha, or your \(Device.noun)'s language if we have it. Pick Malay for Subuh and Isyak. Your names stay the same wherever you go. When you travel somewhere that uses other words, the local name shows small underneath, like Subuh in Kuala Lumpur, so the masjid's signs make sense. Spellings follow each authority's own timetable.")
                 }
 
                 Section {
@@ -321,7 +321,7 @@ struct SettingsView: View {
 
                 Section {
                     Label("No outside ads, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
-                    Label("Your exact location never leaves your phone.", systemImage: "location.slash.fill")
+                    Label("Your exact location never leaves your \(Device.noun).", systemImage: "location.slash.fill")
                     Label("Nearby masjid search goes through Apple Maps and OpenStreetMap (only the area is sent).", systemImage: "map.fill")
                     Toggle("Share anonymous usage counts", isOn: $model.prefs.shareUsage)
                 } header: {

@@ -86,7 +86,7 @@ jobs:
           }
           shot 1-today -demo -tab today
           shot 2-today-light -demo -tab today -light
-          shot 3-qibla -demo -tab qibla
+          shot 3-falak -demo -tab falak
           shot 4-masjid -demo -tab nearby
           shot 5-settings -demo -tab settings
           shot 6-travel -demo-travel -tab journey
