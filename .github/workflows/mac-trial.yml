@@ -35,6 +35,14 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
+      # Xcode only offers the Mac destination when the project itself says the
+      # app supports it, so switch that on in this run's copy of project.yml.
+      # Nothing is committed.
+      - name: Switch on Mac support for this run only
+        run: |
+          sed -i '' 's/^    SWIFT_VERSION: "5.0"$/    SWIFT_VERSION: "5.0"\n    SUPPORTS_MACCATALYST: YES/' project.yml
+          grep -n "SUPPORTS_MACCATALYST" project.yml
+
       - name: Generate Xcode project
         run: xcodegen generate
 
@@ -46,7 +54,6 @@ jobs:
             -scheme PrayerTimesAsia \
             -destination 'generic/platform=macOS,variant=Mac Catalyst' \
             -derivedDataPath build/mac \
-            SUPPORTS_MACCATALYST=YES \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee build.log | tail -n 40
           STATUS=${PIPESTATUS[0]}
           {
