@@ -34,6 +34,9 @@ struct FalakView: View {
                             }
                             .padding(.horizontal, Theme.gutter)
                             .padding(.bottom, 32)
+                            // On a wide Mac window the cards keep a comfortable reading width.
+                            .frame(maxWidth: Device.isMac ? 760 : .infinity)
+                            .frame(maxWidth: .infinity)
                         }
                     }
                 } else {

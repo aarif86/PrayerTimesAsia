@@ -284,6 +284,9 @@ struct SettingsView: View {
             }
             }
             .scrollContentBackground(.hidden)
+            // On a wide Mac window the list keeps a comfortable reading width.
+            .frame(maxWidth: Device.isMac ? 760 : .infinity)
+            .frame(maxWidth: .infinity)
             .background(SkyNow())
             .navigationTitle("Settings")
             .sheet(isPresented: $showPlaces) { PlacesView() }
