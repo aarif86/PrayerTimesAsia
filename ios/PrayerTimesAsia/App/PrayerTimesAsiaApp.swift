@@ -87,7 +87,8 @@ struct RootView: View {
                     .tag(AppModel.Tab.settings)
             }
             .modifier(MacSidebar())
-            .tint(.primary)
+            // On a Mac the tint also fills the chosen row in the side bar, where white on white cannot be read.
+            .tint(Device.isMac ? Theme.accentText : .primary)
             .onAppear { model.applyDemoTab() }
             #if targetEnvironment(macCatalyst)
             .onAppear { MacWindow.fit(); MacMenuBar.refresh(model) }
