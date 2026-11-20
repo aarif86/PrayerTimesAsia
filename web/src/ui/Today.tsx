@@ -7,7 +7,7 @@ import { BLESSED_NAME, BLESSED_NOTE, BLESSED_SHORT, type BlessedTime } from '../
 import type { PrayerDay } from '../core/engine'
 import { parameterSummary } from '../core/methods'
 import { isInAsia, placeProfile } from '../core/place'
-import { isObligatory, PRAYERS, type Prayer } from '../core/prayer'
+import { isObligatory, lead, openPrayer, PRAYERS, type Prayer } from '../core/prayer'
 import { LONG_DAYS_WORDS } from '../core/longDays'
 import { lang3 } from '../core/ramadanContent'
 import { flag } from '../core/regions'
@@ -31,19 +31,6 @@ import { Hadith } from './Hadith'
 
 type Moment = { prayer: Prayer; time: number } | null
 
-/**
- * What leads the screen. While a prayer's time is open, that prayer (NOW).
- * Syuruk ends Subuh but starts no prayer, so from Syuruk to Zohor the next
- * prayer leads instead (NEXT, "Zohor in 53m"), never "Syuruk". Same rule on
- * iPhone, Android and the widgets; the masjid screen already worked this way.
- */
-export function lead(current: Moment, next: Moment): { prayer: Prayer; time: number; isNext: boolean } | null {
-  if (!current || !next) return null
-  return current.prayer === 'sunrise' ? { ...next, isNext: true } : { ...current, isNext: false }
-}
-
-/** The prayer whose time is open now: null between Syuruk and Zohor. Only this one is marked NOW. */
-const openPrayer = (current: Moment): Moment => (current?.prayer === 'sunrise' ? null : current)
 
 /** The new style's name, shown for a moment after switching. */
 function useToast(): [string | null, (s: string) => void] {
