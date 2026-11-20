@@ -193,7 +193,7 @@ private fun NextPrayerContent(context: Context) {
                 Spacer(GlanceModifier.width(10.dp))
                 Column(GlanceModifier.defaultWeight()) {
                     Prayer.all.forEach { p ->
-                        val isCurrent = p == m.current?.first
+                        val isCurrent = p == m.open
                         val t = m.times.getValue(p)
                         Row(
                             GlanceModifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp).cornerRadius(10.dp)
@@ -235,7 +235,7 @@ private fun TimetableContent(context: Context) {
                 Text("${m.placeName} ${m.flag}  ·  ${m.sourceLabel}", style = style(11, FontWeight.Medium, white(0.65f)), maxLines = 1)
             }
             Prayer.all.forEach { p ->
-                val isCurrent = p == m.current?.first
+                val isCurrent = p == m.open
                 val t = m.times.getValue(p)
                 Row(
                     GlanceModifier.fillMaxWidth().defaultWeight().background(BandsPalette.color(p)).padding(horizontal = 16.dp),
@@ -259,10 +259,19 @@ private fun TimetableContent(context: Context) {
                 Box(GlanceModifier.size(120.dp), contentAlignment = Alignment.Center) {
                     val px = (120 * context.resources.displayMetrics.density).toInt().coerceAtMost(480)
                     Image(ImageProvider(dialBitmap(m, px)), "Day dial", GlanceModifier.fillMaxSize())
-                    m.current?.let { cur ->
+                    // "NEXT Zohor in 53:08" or "NOW Asar 1:20:05 left": the ticking number
+                    // always has a word, so it can't read as how long Sunrise lasts.
+                    val lead = m.lead
+                    val next = m.next
+                    if (lead != null && next != null) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(m.names.getValue(cur.first), style = style(15, FontWeight.Bold))
-                            m.next?.let { Countdown(context, it.second) }
+                            Text(if (lead.isNext) "NEXT" else "NOW", style = style(9, FontWeight.Bold, white(0.85f)))
+                            Text(m.names.getValue(lead.prayer), style = style(15, FontWeight.Bold))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (lead.isNext) Text("in ", style = style(12, FontWeight.Medium, white(0.85f)))
+                                Countdown(context, next.second)
+                                if (!lead.isNext) Text(" left", style = style(12, FontWeight.Medium, white(0.85f)))
+                            }
                         }
                     }
                 }
@@ -277,11 +286,12 @@ private fun TimetableContent(context: Context) {
             listOf(Prayer.all.take(3), Prayer.all.drop(3)).forEach { row ->
                 Row(GlanceModifier.fillMaxWidth().defaultWeight()) {
                     row.forEachIndexed { i, p ->
-                        val isCurrent = p == m.current?.first
+                        val isCurrent = p == m.open
                         val t = m.times.getValue(p)
+                        val isNext = m.lead?.isNext == true && p == m.lead?.prayer
                         Column(
                             GlanceModifier.defaultWeight().fillMaxSize().cornerRadius(12.dp)
-                                .background(p.tint.copy(alpha = if (isCurrent) 0.4f else 0.16f)),
+                                .background(if (isNext) Color.White.copy(alpha = 0.24f) else p.tint.copy(alpha = if (isCurrent) 0.4f else 0.16f)),
                             horizontalAlignment = Alignment.CenterHorizontally, verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(m.names.getValue(p), style = style(12, FontWeight.Medium, white(0.85f)))
@@ -301,7 +311,7 @@ private fun TimetableContent(context: Context) {
             Column(GlanceModifier.fillMaxWidth().defaultWeight().cornerRadius(18.dp).background(Color.Black.copy(alpha = 0.18f)).padding(5.dp)) {
                 val countdown = m.countdownRow()
                 Prayer.all.forEach { p ->
-                    val isCurrent = p == m.current?.first
+                    val isCurrent = p == m.open
                     val passed = m.day.time(p) <= m.now && !isCurrent
                     val t = m.times.getValue(p)
                     val alpha = if (passed) 0.6f else 1f
