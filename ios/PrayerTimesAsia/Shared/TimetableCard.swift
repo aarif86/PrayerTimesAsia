@@ -36,7 +36,7 @@ struct TimetableCard: View {
     // MARK: Side Dial (a mini version of the list)
 
     private func list(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
-        let current = s.current(at: date)?.prayer
+        let current = PrayerLead.open(s.current(at: date))?.prayer
         let countdown = countdownRow(s, day: day)
         return VStack(spacing: 8) {
             AnyView(header(s, day: day))
@@ -60,17 +60,23 @@ struct TimetableCard: View {
     /// The 24-hour ring with the current prayer and countdown inside, the six
     /// times underneath.
     private func dial(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
-        let current = s.current(at: date)
         let next = s.next(after: date)
+        let lead = PrayerLead(current: s.current(at: date), next: next)
+        let current = PrayerLead.open(s.current(at: date))
         return VStack(spacing: 8) {
             HStack(spacing: 14) {
                 ZStack {
                     DialRing(day: day, now: date, timeZone: s.timeZone)
-                    if let current, let next {
+                    if let lead, let next {
+                        // "NEXT Jumu'ah in 53:08" or "NOW Asar 1:20:05 left": a ticking
+                        // number never stands alone, so it can't read as how long Sunrise lasts.
+                        let timer = Text(timerInterval: date...max(date, next.time), countsDown: true)
                         VStack(spacing: 0) {
-                            Text(s.name(current.prayer, at: current.time))
+                            Text(lead.isNext ? "NEXT" : "NOW")
+                                .font(.system(size: 9, weight: .heavy)).tracking(0.8).opacity(0.85)
+                            Text(s.name(lead.prayer, at: lead.time))
                                 .font(.system(size: 17, weight: .bold, design: .rounded))
-                            Text(timerInterval: date...max(date, next.time), countsDown: true)
+                            (lead.isNext ? Text("in ") + timer : timer + Text(" left"))
                                 .font(.system(size: 13, weight: .semibold, design: .rounded)).monospacedDigit()
                                 .multilineTextAlignment(.center)
                                 .foregroundStyle(Color(red: 0.97, green: 0.74, blue: 0.56))
@@ -95,15 +101,17 @@ struct TimetableCard: View {
                 ForEach(Prayer.allCases) { prayer in
                     let time = day.time(prayer)
                     let isCurrent = prayer == current?.prayer
+                    let isNext = lead?.isNext == true && prayer == lead?.prayer && abs(time.timeIntervalSince(lead?.time ?? .distantPast)) < 60
                     AnyView(VStack(spacing: 1) {
                         Text(s.name(prayer, at: time)).font(.system(size: 12, weight: .semibold)).opacity(0.85)
                         Text(s.format(time)).font(.system(size: 16, weight: .semibold, design: .rounded)).monospacedDigit()
                     }
                     .lineLimit(1).minimumScaleFactor(0.7)
                     .frame(maxWidth: .infinity).padding(.vertical, 7)
-                    .background(prayer.tint.opacity(isCurrent ? 0.35 : 0.14), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(isNext ? Color.white.opacity(0.2) : prayer.tint.opacity(isCurrent ? 0.35 : 0.14),
+                                in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(prayer.tint.opacity(isCurrent ? 0.8 : 0), lineWidth: 1))
+                        .strokeBorder(isNext ? Color.white.opacity(0.9) : prayer.tint.opacity(isCurrent ? 0.8 : 0), lineWidth: 1))
                     .opacity(time <= date && !isCurrent ? 0.6 : 1))
                 }
             }
@@ -116,17 +124,19 @@ struct TimetableCard: View {
 
     /// The sun's arc over the day with each prayer on it, then the list.
     private func sunPath(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
-        let current = s.current(at: date)
         let next = s.next(after: date)
+        let lead = PrayerLead(current: s.current(at: date), next: next)
+        let current = PrayerLead.open(s.current(at: date))
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline) {
-                if let current {
-                    Circle().fill(current.prayer.tint).frame(width: 8, height: 8)
-                    Text(s.name(current.prayer, at: current.time)).font(.system(size: 20, weight: .bold))
+                if let lead {
+                    Circle().fill(lead.prayer.tint).frame(width: 8, height: 8)
+                    Text(s.name(lead.prayer, at: lead.time)).font(.system(size: 20, weight: .bold))
                 }
                 Spacer()
                 if let next {
-                    Text("\(s.name(next.prayer, at: next.time)) in ")
+                    // Syuruk to Zohor the name on the left is already the next prayer.
+                    Text(lead?.isNext == true ? "in " : "\(s.name(next.prayer, at: next.time)) in ")
                         .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
                     + Text(next.time, style: .relative).font(.system(size: 12, weight: .semibold))
                 }
@@ -162,7 +172,7 @@ struct TimetableCard: View {
 
     /// Each prayer a full-width band, like the classic Singapore timetable.
     private func bands(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
-        let current = s.current(at: date)?.prayer
+        let current = PrayerLead.open(s.current(at: date))?.prayer
         let countdown = countdownRow(s, day: day)
         return VStack(spacing: 0) {
             VStack(spacing: 1) {

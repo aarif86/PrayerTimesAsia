@@ -4,14 +4,15 @@ import SwiftUI
 /// yet ticked) it says how long is left to pray it: "19m left to pray". Every
 /// prayer's time ends when the next one starts (Subuh at Syuruk), so this is
 /// the same moment as the next prayer, said the way busy people ask it.
-/// Between Syuruk and Zohor, or once ticked, it counts to the next prayer.
-/// Same wording as the web app and Android.
+/// Once ticked it counts to the next prayer ("1h 05m until Asar"). Between
+/// Syuruk and Zohor the next prayer's name already leads, so it only says
+/// "in 53m". Same wording as the web app and Android.
 struct PrayerCountdown {
     let count: String
     let label: String
     let urgent: Bool
     let done: Bool
-    var text: String { "\(count) \(label)" }
+    var text: String { label.isEmpty ? count : "\(count) \(label)" }
 
     @MainActor init(now: Date, next: (prayer: Prayer, time: Date), model: AppModel) {
         let w = model.window(at: now)
@@ -20,6 +21,10 @@ struct PrayerCountdown {
             count = TodayView.short(w.end.timeIntervalSince(now))
             label = "left to pray"
             urgent = w.prayer != .isha && now >= w.nudgeAt
+        } else if w == nil && model.current(at: now)?.prayer == .sunrise {
+            count = "in \(TodayView.short(next.time.timeIntervalSince(now)))"
+            label = ""
+            urgent = false
         } else {
             count = TodayView.short(next.time.timeIntervalSince(now))
             label = "until \(next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))"
@@ -43,11 +48,14 @@ struct SimpleTimes: View {
     var body: some View {
         VStack(spacing: 18) {
             VStack(spacing: 6) {
-                if let current {
+                if let lead = PrayerLead(current: current, next: next) {
+                    if lead.isNext {
+                        Text("NEXT").font(.system(size: 15, weight: .heavy)).tracking(1).foregroundStyle(.secondary)
+                    }
                     HStack(spacing: 10) {
-                        Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
+                        Text(lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time)))
                             .font(.system(size: 56, weight: .heavy, design: .rounded))
-                            .foregroundStyle(current.prayer.textTint)
+                            .foregroundStyle(lead.prayer.textTint)
                             .minimumScaleFactor(0.6).lineLimit(1)
                         if let next, PrayerCountdown(now: now, next: next, model: model).done {
                             Image(systemName: "checkmark.circle.fill").font(.system(size: 34)).foregroundStyle(Theme.accent)
@@ -117,7 +125,8 @@ struct SimpleTimes: View {
         let time = day.time(prayer)
         let trackable = model.prefs.trackerEnabled && prayer != .sunrise && time <= now
         let prayed = trackable && model.isPrayed(prayer, on: time)
-        let isNow = current?.prayer == prayer && current?.time == time
+        let open = PrayerLead.open(current)
+        let isNow = open?.prayer == prayer && open?.time == time
         return Button {
             if trackable { withAnimation(.snappy) { model.togglePrayed(prayer, on: time) } }
         } label: {
