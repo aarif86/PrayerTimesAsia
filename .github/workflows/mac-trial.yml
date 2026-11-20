@@ -87,6 +87,8 @@ jobs:
           shot 6-travel -demo-travel -tab journey
           pkill -x PrayerTimesAsia || true
           ls -la macshots
+          # What the app said about its menu bar item.
+          log show --last 3m --predicate 'process == "PrayerTimesAsia" AND eventMessage CONTAINS "MacMenuBar"' 2>/dev/null | tail -n 12 || true
           # Any crash report from the app, so a failed start explains itself.
           ls ~/Library/Logs/DiagnosticReports/ 2>/dev/null | grep -i prayer || echo "No crash reports."
           for f in ~/Library/Logs/DiagnosticReports/*PrayerTimesAsia*; do [ -f "$f" ] && head -n 60 "$f"; done || true

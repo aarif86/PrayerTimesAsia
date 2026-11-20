@@ -12,11 +12,14 @@ enum MacMenuBar {
     static func update(_ snapshot: WidgetSnapshot) {
         if !looked {
             looked = true
-            if let url = Bundle.main.builtInPlugInsURL?.appendingPathComponent("MacMenuBar.bundle"),
-               let bundle = Bundle(url: url), bundle.load(),
-               let type = bundle.principalClass as? NSObject.Type {
-                plugin = type.init()
+            guard let url = Bundle.main.builtInPlugInsURL?.appendingPathComponent("MacMenuBar.bundle"),
+                  let bundle = Bundle(url: url) else { NSLog("MacMenuBar: not found inside the app"); return }
+            do { try bundle.loadAndReturnError() } catch { NSLog("MacMenuBar: did not load: \(error)"); return }
+            guard let type = bundle.principalClass as? NSObject.Type else {
+                NSLog("MacMenuBar: no main class (\(String(describing: bundle.principalClass)))"); return
             }
+            plugin = type.init()
+            NSLog("MacMenuBar: loaded")
         }
         guard let plugin else { return }
 
