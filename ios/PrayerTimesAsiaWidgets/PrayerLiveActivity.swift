@@ -1,3 +1,5 @@
+// The Live Activity is iPhone and iPad only; a Mac has no Lock Screen countdown.
+#if !targetEnvironment(macCatalyst)
 import ActivityKit
 import SwiftUI
 import WidgetKit
@@ -67,3 +69,4 @@ struct PrayerLiveActivity: Widget {
             .multilineTextAlignment(.trailing)
     }
 }
+#endif

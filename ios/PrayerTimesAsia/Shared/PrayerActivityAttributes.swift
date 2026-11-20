@@ -1,3 +1,5 @@
+// The Live Activity is iPhone and iPad only; a Mac has no Lock Screen countdown.
+#if !targetEnvironment(macCatalyst)
 import ActivityKit
 import Foundation
 
@@ -13,3 +15,4 @@ struct PrayerActivityAttributes: ActivityAttributes {
 
     var placeName: String
 }
+#endif

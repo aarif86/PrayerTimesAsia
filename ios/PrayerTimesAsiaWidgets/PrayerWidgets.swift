@@ -7,8 +7,10 @@ struct PrayerTimesAsiaWidgets: WidgetBundle {
         NextPrayerWidget()
         TimetableWidget()
         LockScreenWidget()
+        #if !targetEnvironment(macCatalyst)
         PrayerLiveActivity()
-        #if canImport(AlarmKit)
+        #endif
+        #if canImport(AlarmKit) && !targetEnvironment(macCatalyst)
         if #available(iOS 26.0, *) {
             WakeUpAlarmActivity()
         }
