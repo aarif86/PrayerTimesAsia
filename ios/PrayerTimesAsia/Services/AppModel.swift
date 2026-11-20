@@ -138,7 +138,7 @@ final class AppModel {
         var p = Preferences()
         p.hasOnboarded = true
         // Screenshots skip the quick guide unless they ask for it.
-        p.guideSeen = !args.contains("-guide")
+        p.guideShown = !args.contains("-guide")
         p.useGPS = false
         p.home = home
         p.homeConfirmed = true
