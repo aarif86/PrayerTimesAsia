@@ -50,7 +50,7 @@ struct RootView: View {
 
     /// The quick guide is still to come, and nothing else is on screen in its way.
     private var guideDue: Bool {
-        model.prefs.hasOnboarded && !model.prefs.guideSeen && opening != true && !model.showWelcomeBack && !showGuide
+        model.prefs.hasOnboarded && !model.prefs.guideShown && opening != true && !model.showWelcomeBack && !showGuide
     }
 
     var body: some View {
@@ -98,7 +98,7 @@ struct RootView: View {
             // It waits a moment first: the place list (or "Bring in settings") sheet and
             // the location question are still closing then, and iOS quietly drops a
             // screen that tries to open over them, so the guide never showed.
-            .fullScreenCover(isPresented: $showGuide, onDismiss: { model.prefs.guideSeen = true }) { GuideView() }
+            .fullScreenCover(isPresented: $showGuide, onDismiss: { model.prefs.guideShown = true }) { GuideView() }
             .task(id: guideDue) {
                 guard guideDue else { return }
                 try? await Task.sleep(for: .seconds(1))

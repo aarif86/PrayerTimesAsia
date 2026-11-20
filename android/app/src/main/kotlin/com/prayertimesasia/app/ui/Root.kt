@@ -197,7 +197,7 @@ private fun RootContent(state: AppState) {
                 AppSheet({ state.pendingMasjid = null }) { MasjidLinkSheetContent(state, link) }
             }
             // New users see the quick guide once, right after choosing their place.
-            if (state.prefs.guideSeen != true && overlay == null && state.pendingMasjid == null) GuideDialog(state) {}
+            if (state.prefs.guideShown != true && overlay == null && state.pendingMasjid == null) GuideDialog(state) {}
         }
     }
 }

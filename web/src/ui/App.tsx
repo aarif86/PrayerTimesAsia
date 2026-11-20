@@ -197,7 +197,7 @@ export function App() {
       {sheet?.kind === 'move-out' && <MoveOutSheet />}
       {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
       {/* New users see the quick guide once, right after choosing their place. */}
-      {(sheet?.kind === 'guide' || (!s.prefs.guideSeen && !sheet && !s.pendingMasjid)) && <Guide onClose={closeSheet} />}
+      {(sheet?.kind === 'guide' || (!s.prefs.guideShown && !sheet && !s.pendingMasjid)) && <Guide onClose={closeSheet} />}
     </>
   )
 }
