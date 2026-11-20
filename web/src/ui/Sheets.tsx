@@ -156,9 +156,9 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
   let detail: string
   if (day.grade === 'A' && day.officialSource) {
     detail = via === 'feed'
-      ? "Published by the authority and loaded through Prayer Times Asia's own calendar feed, which a workflow rebuilds every week from the official table. Kept in this browser, so it works offline."
-      : 'Downloaded once a year from the authority and kept in this browser, so it works offline.'
-    if (day.sunriseCalculated) detail += ` ${s.name('sunrise')} is not in the feed, so it is calculated (never later than the official time).`
+      ? tr('source.feedDetail')
+      : tr('source.downloadedDetail')
+    if (day.sunriseCalculated) detail += ` ${tr('source.sunriseCalculated', { name: s.name('sunrise') })}`
   } else if (day.grade === 'A') {
     detail = `${parameterSummary(s.method)}. ${s.sourceSummary}`
   } else if (day.grade === 'B' || day.grade === 'C') {

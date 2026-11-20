@@ -16,7 +16,7 @@ import { alertSupport, requestPermission } from '../services/notifications'
 import { APPEARANCES, TODAY_STYLES } from '../services/prefs'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
-import { cycleAlert, ModeIcon, MODE_WORD, WakeChip } from './WakeUp'
+import { cycleAlert, ModeIcon, modeWord, WakeChip } from './WakeUp'
 import { alertMode } from '../core/alertMode'
 import { fmtDate, openSheet, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
@@ -495,7 +495,7 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: n
         {other != null && day.alternateSource && <div class="extra alt">{day.alternateSource} {store.formatted(other)}</div>}
       </div>
       <TimeText ms={t} size={27} />
-      <button class={`bell bell-${mode}`} aria-label={tr('today.bellAria', { name: store.name(p, t), mode: MODE_WORD[mode] })}
+      <button class={`bell bell-${mode}`} aria-label={tr('today.bellAria', { name: store.name(p, t), mode: modeWord(mode) })}
         onClick={(e) => { e.stopPropagation(); toggleNotify(p) }}
         onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); openSheet({ kind: 'wakeup', prayer: p }) }}>
         <ModeIcon mode={mode} />

@@ -80,10 +80,10 @@ struct SettingsView: View {
                         ForEach(SeasonPreview.allCases) { p in Text(p.label).tag(p) }
                     }
                 } header: {
-                    Text("Ramadan and Syawal")
+                    Text("Ramadan and Shawwal")
                 } footer: {
                     Text(model.prefs.seasonPreview == .off
-                         ? "Ramadan mode turns on by itself on the day your local religious authority announces. Testers can pretend it's Ramadan or Raya with the switch above."
+                         ? "Ramadan mode turns on by itself on the day your local religious authority announces. Testers can pretend it's Ramadan or Eid with the switch above."
                          : "Pretend mode is on. The app shows a pretend date, not today's. Turn it off before you rely on the times.")
                 }
 
@@ -166,7 +166,7 @@ struct SettingsView: View {
                     Toggle(isOn: $model.prefs.hadithInAlerts) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Add a hadith to wake-up alerts")
-                            Text("One short line under the Subuh and tahajjud alerts").font(.caption).foregroundStyle(.secondary)
+                            Text("One short line under the Fajr and tahajjud alerts").font(.caption).foregroundStyle(.secondary)
                         }
                     }
                 } header: {

@@ -69,9 +69,9 @@ enum IslamicDays {
         .ramadanStart: ("First day of Ramadan", "Awal Ramadan", "Awal Ramadan"),
         .nuzulQuran: ("Nuzul al-Quran", "Nuzul al-Quran", "Nuzulul Quran"),
         .lastTen: ("Last ten nights", "Sepuluh malam terakhir", "Sepuluh malam terakhir"),
-        .aidilfitri: ("Eid al-Fitr", "Hari Raya Aidilfitri", "Idul Fitri"),
+        .aidilfitri: ("Eid al-Fitr", "Hari Raya Aidilfitri", "Idulfitri"),
         .arafah: ("Day of Arafah", "Hari Arafah", "Hari Arafah"),
-        .aidiladha: ("Eid al-Adha", "Hari Raya Aidiladha", "Idul Adha"),
+        .aidiladha: ("Eid al-Adha", "Hari Raya Aidiladha", "Iduladha"),
         .tasyrik: ("Days of Tashriq", "Hari Tasyrik", "Hari Tasyrik"),
         .whiteDay: ("White days", "Hari putih", "Ayyamul bidh"),
     ]
@@ -90,9 +90,9 @@ enum IslamicDays {
         .nisfuSyaaban: ("Nisfu Sha'ban", "Nisfu Syaaban", "Nisfu Sya'ban"),
         .ramadanStart: ("Ramadan", "Awal Ramadan", "Awal Ramadan"),
         .nuzulQuran: ("Nuzul Quran", "Nuzul Quran", "Nuzulul Quran"),
-        .aidilfitri: ("Eid al-Fitr", "Aidilfitri", "Idul Fitri"),
+        .aidilfitri: ("Eid al-Fitr", "Aidilfitri", "Idulfitri"),
         .arafah: ("Arafah", "Arafah", "Arafah"),
-        .aidiladha: ("Eid al-Adha", "Aidiladha", "Idul Adha"),
+        .aidiladha: ("Eid al-Adha", "Aidiladha", "Iduladha"),
     ]
 
     private static func pick(_ t: (String, String, String), _ s: NamingStyle) -> String {
@@ -106,7 +106,9 @@ enum IslamicDays {
     static func monthShort(_ month: Int, _ s: NamingStyle) -> String {
         let i = max(0, min(11, month - 1))
         switch s {
-        case .malay, .indonesian:
+        case .indonesian:
+            return s.hijriMonths[i]
+        case .malay:
             return ["Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jamadil Awal", "Jamadil Akhir",
                     "Rejab", "Syaaban", "Ramadan", "Syawal", "Zulkaedah", "Zulhijjah"][i]
         case .international, .southAsian:
@@ -151,7 +153,7 @@ enum IslamicDays {
                   prayerTimes: "Jadwal salat",
                   months: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
                   week: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
-                  note: { a in a.map { "Awal Ramadan dan Idul Fitri mengikuti \($0) setelah diumumkan. Tanggal lain dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat." }
+                  note: { a in a.map { "Awal Ramadan dan Idulfitri mengikuti \($0) setelah diumumkan. Tanggal lain dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat." }
                       ?? "Tanggal dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat." },
                   notePublished: { "Tanggal ini mengikuti kalender Islam \($0). Awal Ramadan dan Lebaran mengikuti pengumumannya. Ikuti otoritas keagamaan setempat." })
         }

@@ -21,9 +21,9 @@ class MasjidListsTest {
     @Test fun readsASquareAndKeepsNearbyPlaces() {
         val json = """{"tile":"3_101","updated":"2026-11-07","places":[["n1",3.1418,101.6917,"Masjid Negara","",0],["w2",3.15,101.7,"","Jalan Ampang",1],["n3",3.9,101.9,"Far Away Masjid","",0]]}"""
         val all = MasjidLists.parse(json)!!
-        assertEquals(listOf("Masjid Negara", "Musollah", "Far Away Masjid"), all.map { it.name })
+        assertEquals(listOf("Masjid Negara", "Prayer room", "Far Away Masjid"), all.map { it.name })
         val near = MasjidLists.near(all, Coordinates(3.1390, 101.6869))
-        assertEquals(listOf("Masjid Negara", "Musollah"), near.map { it.name })
+        assertEquals(listOf("Masjid Negara", "Prayer room"), near.map { it.name })
         assertEquals(listOf(false, true), near.map { it.isMusollah })
         assertNull(MasjidLists.parse("oops"))
     }

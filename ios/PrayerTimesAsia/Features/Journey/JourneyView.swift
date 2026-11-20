@@ -112,7 +112,7 @@ struct JourneyView: View {
         GlassCard {
             VStack(alignment: .leading, spacing: 8) {
                 Text("FASTING ON THIS JOURNEY").font(.caption.weight(.heavy)).opacity(0.7)
-                Text("As a traveller you may choose not to fast today and replace it after Ramadan. If fasting is easy for you, fasting is better. The day counts as travel only if you left home before Subuh.")
+                Text("As a traveller you may choose not to fast today and replace it after Ramadan. If fasting is easy for you, fasting is better. The day counts as travel only if you left home before Fajr.")
                     .font(.footnote)
                 Text("Mark it on the Ramadan page so the app counts the day to replace.").font(.footnote).opacity(0.8)
             }

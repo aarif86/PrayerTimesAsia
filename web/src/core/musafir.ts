@@ -1,6 +1,7 @@
 import type { Coordinates } from './engine'
 import { distanceKm } from './geo'
 import { NAMES, isRightToLeft, type AsrSchool, type NamingStyle } from './prayer'
+import { appLocale, tr } from './appWords'
 
 /**
  * Traveller's concessions (rukhsah): shortening (qasar) and combining (jamak).
@@ -30,22 +31,13 @@ export function musafirStatus(home: Coordinates | null | undefined, current: Coo
 export function musafirGuidance(status: MusafirStatus, rules: MusafirRules, _naming: NamingStyle): { title: string; body: string } {
   switch (status.kind) {
     case 'home':
-      return { title: "You're home", body: `Pray in full. Travel concessions apply once you journey at least ${Math.trunc(rules.thresholdKm)} km.` }
+      return { title: tr('journey.homeTitle'), body: tr('journey.homeBody', { km: Math.trunc(rules.thresholdKm) }) }
     case 'nearby':
-      return { title: `Within ${Math.trunc(rules.thresholdKm)} km of home`, body: "That's short of the travel distance, so pray in full." }
+      return { title: tr('journey.nearbyTitle', { km: Math.trunc(rules.thresholdKm) }), body: tr('journey.nearbyBody') }
     case 'traveller':
-      if (allowsJamak(rules)) {
-        return { title: 'You are a musafir', body: 'You may shorten (qasar) and join (jamak) your prayers. Here is what changes for each one.' }
-      }
-      return {
-        title: 'You are a musafir',
-        body: 'You may shorten (qasr) your prayers. In the Hanafi school prayers are not joined outside Hajj. Here is what changes for each one.',
-      }
+      return { title: tr('journey.travellerTitle'), body: tr(allowsJamak(rules) ? 'journey.travellerBody' : 'journey.travellerHanafi') }
     case 'settled':
-      return {
-        title: 'Settled here',
-        body: `You've been here ${status.days} days. Staying longer than ${maxStayDays(rules)} days ends the travel concession, so pray in full.`,
-      }
+      return { title: tr('journey.settledTitle'), body: tr('journey.settledBody', { n: status.days, max: maxStayDays(rules) }) }
   }
 }
 
@@ -57,14 +49,16 @@ export function musafirPlan(rules: MusafirRules, naming: NamingStyle): PlanRow[]
   // Right-to-left names would scramble an English sentence, so use International there.
   const n = NAMES[isRightToLeft(naming) ? 'arabic' : naming]
   const j = allowsJamak(rules)
-  const join = (other: string) => (j ? `Can join with ${other}` : 'Not joined')
-  const short = 'Shortened from 4'
+  const join = (other: string) => (j ? tr('journey.canJoin', { name: other }) : tr('journey.notJoined'))
+  const short = tr('journey.shortened')
+  const same = tr('journey.noChange')
+  const rakaat = (k: number) => tr('journey.rakaat', { n: k })
   return [
-    { prayer: 'fajr', name: n.fajr, rakaat: '2 rakaat', change: 'No change', join: j ? 'Never joined' : 'Not joined' },
-    { prayer: 'dhuhr', name: n.dhuhr, rakaat: '2 rakaat', change: short, join: join(n.asr) },
-    { prayer: 'asr', name: n.asr, rakaat: '2 rakaat', change: short, join: join(n.dhuhr) },
-    { prayer: 'maghrib', name: n.maghrib, rakaat: '3 rakaat', change: 'No change', join: join(n.isha) },
-    { prayer: 'isha', name: n.isha, rakaat: '2 rakaat', change: short, join: join(n.maghrib) },
+    { prayer: 'fajr', name: n.fajr, rakaat: rakaat(2), change: same, join: j ? tr('journey.neverJoinedShort') : tr('journey.notJoined') },
+    { prayer: 'dhuhr', name: n.dhuhr, rakaat: rakaat(2), change: short, join: join(n.asr) },
+    { prayer: 'asr', name: n.asr, rakaat: rakaat(2), change: short, join: join(n.dhuhr) },
+    { prayer: 'maghrib', name: n.maghrib, rakaat: rakaat(3), change: same, join: join(n.isha) },
+    { prayer: 'isha', name: n.isha, rakaat: rakaat(2), change: short, join: join(n.maghrib) },
   ]
 }
 
@@ -72,9 +66,9 @@ export function musafirPlan(rules: MusafirRules, naming: NamingStyle): PlanRow[]
 export function musafirDistanceCheck(status: MusafirStatus, rules: MusafirRules): { counts: boolean; text: string } | null {
   const limit = Math.trunc(rules.thresholdKm)
   if (status.kind === 'home') return null
-  const km = Math.round(status.distanceKm).toLocaleString('en')
+  const km = Math.round(status.distanceKm).toLocaleString(appLocale())
   // Round down when short of the limit, so 80.6 km never reads "81 km, less than 81 km".
-  const shortKm = Math.floor(status.distanceKm).toLocaleString('en')
-  if (status.kind === 'nearby') return { counts: false, text: `You are ${shortKm} km from home. That is less than ${limit} km, so this trip does not count as travel yet.` }
-  return { counts: true, text: `You are ${km} km from home. That is more than ${limit} km, so this trip counts as travel.` }
+  const shortKm = Math.floor(status.distanceKm).toLocaleString(appLocale())
+  if (status.kind === 'nearby') return { counts: false, text: tr('journey.notTravel', { km: shortKm, limit }) }
+  return { counts: true, text: tr('journey.isTravel', { km, limit }) }
 }

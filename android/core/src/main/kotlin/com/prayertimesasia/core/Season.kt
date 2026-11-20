@@ -20,18 +20,18 @@ import java.time.temporal.ChronoUnit
 @Serializable
 enum class SeasonPreview(val label: String, val target: Pair<Int, Int>?) {
     OFF("Off (real dates)", null),
-    SIGHTING("Moon sighting night (29 Syaaban)", 8 to 29),
+    SIGHTING("Moon sighting night (29 Sha'ban)", 8 to 29),
     RAMADAN("Ramadan (day 12)", 9 to 12),
     LAST_TEN("Last ten nights (day 26)", 9 to 26),
-    RAYA("Hari Raya morning (1 Syawal)", 10 to 1),
-    SYAWAL("Syawal (day 8)", 10 to 8),
+    RAYA("Eid morning (1 Shawwal)", 10 to 1),
+    SYAWAL("Shawwal (day 8)", 10 to 8),
 }
 
 /** How a day's fast went. */
 @Serializable
 enum class FastMark(val label: String, val letter: String) {
     FASTED("Fasted", ""), PERIOD("Period", "P"), SICK("Sick", "S"), TRAVEL("Travelling", "T"),
-    OTHER("Other reason", "O"), QADHA("Replaced a fast", "G"), SYAWAL("Syawal fast", "");
+    OTHER("Other reason", "O"), QADHA("Replaced a fast", "G"), SYAWAL("Shawwal fast", "");
 
     val isMissed: Boolean get() = this in MISSED
 
