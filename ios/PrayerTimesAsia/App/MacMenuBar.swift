@@ -9,6 +9,11 @@ enum MacMenuBar {
     private static var plugin: NSObject?
     private static var looked = false
 
+    /// When the window opens or the place changes; alert changes come through WidgetBridge.
+    static func refresh(_ model: AppModel) {
+        if let snapshot = WidgetBridge.snapshot(model) { update(snapshot) }
+    }
+
     static func update(_ snapshot: WidgetSnapshot) {
         if !looked {
             looked = true

@@ -89,7 +89,8 @@ struct RootView: View {
             .tint(.primary)
             .onAppear { model.applyDemoTab() }
             #if targetEnvironment(macCatalyst)
-            .onAppear { MacWindow.fit() }
+            .onAppear { MacWindow.fit(); MacMenuBar.refresh(model) }
+            .onChange(of: model.activePlace?.name) { MacMenuBar.refresh(model) }
             #endif
             .sheet(isPresented: $model.showJourney) { JourneyView() }
             .sheet(isPresented: $model.showWakeUp) { WakeUpView() }
