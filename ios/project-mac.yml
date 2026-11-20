@@ -1,0 +1,38 @@
+# The Mac app: everything in project.yml (the iPhone app), plus what only the
+# Mac needs. The iPhone project is generated from project.yml alone, so nothing
+# here can change the iPhone build.
+#
+#   xcodegen generate --spec project-mac.yml
+
+include:
+  - project.yml
+
+settings:
+  base:
+    SUPPORTS_MACCATALYST: YES
+
+targets:
+  PrayerTimesAsia:
+    dependencies:
+      - target: MacMenuBar
+        embed: true
+        codeSign: false
+        platformFilter: macCatalyst
+        copy:
+          destination: plugins
+
+  # The menu bar item (next prayer at the top of the screen). Built for the
+  # Mac alone and packed inside the app, which loads it when it starts.
+  MacMenuBar:
+    type: bundle
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: MacMenuBar
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.prayertimesasia.app.menubar
+        SUPPORTS_MACCATALYST: NO
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSPrincipalClass: MenuBarPlugin
+        SKIP_INSTALL: YES

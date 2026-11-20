@@ -11,6 +11,9 @@ enum WidgetBridge {
     static func publish(_ model: AppModel) {
         guard let snapshot = snapshot(model) else { return }
         snapshot.save()
+        #if targetEnvironment(macCatalyst)
+        MacMenuBar.update(snapshot)
+        #endif
         WidgetCenter.shared.reloadAllTimelines()
         LiveCountdown.refresh(model)
     }

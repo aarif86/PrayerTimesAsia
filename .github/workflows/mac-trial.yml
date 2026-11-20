@@ -1,8 +1,8 @@
 name: Mac trial build
 
 # A trial only: builds the iPhone app as a Mac app (Mac Catalyst) without
-# signing, to list what stops it from compiling. It changes nothing in the
-# project and ships nothing. Run by hand, or on pushes to the planning branch.
+# signing, to list what stops it from compiling. It ships nothing.
+# Run by hand, or on pushes to the planning branch.
 
 on:
   workflow_dispatch:
@@ -35,16 +35,10 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
-      # Xcode only offers the Mac destination when the project itself says the
-      # app supports it, so switch that on in this run's copy of project.yml.
-      # Nothing is committed.
-      - name: Switch on Mac support for this run only
-        run: |
-          perl -pi -e 's/^    SWIFT_VERSION: "5.0"$/    SWIFT_VERSION: "5.0"\n    SUPPORTS_MACCATALYST: YES/' project.yml
-          grep -n "SUPPORTS_MACCATALYST" project.yml
-
+      # project-mac.yml is the iPhone project plus what only the Mac needs
+      # (Mac support switched on, and the menu bar item).
       - name: Generate Xcode project
-        run: xcodegen generate
+        run: xcodegen generate --spec project-mac.yml
 
       - name: Build as a Mac app (no signing)
         run: |
@@ -73,6 +67,7 @@ jobs:
           set -uo pipefail
           APP=$(find build/mac/Build/Products -name 'PrayerTimesAsia.app' -path '*maccatalyst*' | head -n1)
           echo "App: $APP"
+          find "$APP" -name "MacMenuBar.bundle" | grep . || echo "Menu bar piece is NOT inside the app"
           codesign --force --deep --sign - "$APP"
           mkdir -p macshots
           shot() {
