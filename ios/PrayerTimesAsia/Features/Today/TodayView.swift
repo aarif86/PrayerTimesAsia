@@ -689,7 +689,7 @@ struct TodayView: View {
                 .padding(.bottom, 16)
             }
             .scrollIndicators(.hidden)
-            .frame(width: 300)
+            .frame(width: 350)
 
             VStack(alignment: .leading, spacing: 8) {
                 sunDayNavigator(shown)
