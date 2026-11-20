@@ -4,6 +4,7 @@ import { store } from '../services/store'
 import { cardURL, ourCards, type CommunityCard } from '../core/communityCards'
 import { Hadith } from './Hadith'
 import { Kaaba } from './icons'
+import { tr } from '../core/appWords'
 
 /**
  * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
@@ -41,10 +42,10 @@ export function MakersCard({ card, placement, compact }: { card: CommunityCard; 
   return (
     <a ref={ref} class={`makers-card glass ${compact ? 'compact' : ''}`} href={cardURL(card, placement)} target="_blank" rel="noopener noreferrer sponsored"
       onClick={() => store.countCard('Card.tapped', facts)}
-      aria-label={`${PICKS_NAME}${sponsor ? ', sponsored' : ''}. ${card.title}, opens ${card.site}`}>
+      aria-label={`${PICKS_NAME}${sponsor ? `, ${tr('makers.sponsored')}` : ''}. ${tr('makers.opens', { name: card.title, site: card.site })}`}>
       <span class="makers-icon"><CardIcon card={card} compact={compact} /></span>
       <span class="makers-text">
-        <span class="makers-tag">{sponsor ? `${PICKS_NAME} · Sponsored` : PICKS_NAME}</span>
+        <span class="makers-tag">{sponsor ? `${PICKS_NAME} · ${tr('makers.sponsored')}` : PICKS_NAME}</span>
         <span class="makers-title">{card.title}</span>
         {!compact && <span class="makers-sub">{card.subtitle}</span>}
       </span>
@@ -58,9 +59,9 @@ export function MakersAbout({ placement, country }: { placement: string; country
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '8px' }}>
       <Hadith id="fixedTimes" tag="Al Quran" />
-      <h3 class="display" style={{ fontSize: '26px', fontWeight: 700, margin: 0 }}>Built fisabilillah</h3>
+      <h3 class="display" style={{ fontSize: '26px', fontWeight: 700, margin: 0 }}>{tr('makers.title')}</h3>
       <p class="secondary" style={{ margin: 0 }}>
-        Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).
+        {tr('makers.body')}
       </p>
       {ourCards(country, new Date()).map((c) => <MakersCard card={c} placement={placement} />)}
     </div>

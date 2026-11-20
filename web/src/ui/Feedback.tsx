@@ -4,6 +4,7 @@ import { NATIVE_APPS, phonePlatform } from '../core/nativeApps'
 import { store, useStore } from '../services/store'
 import { closeSheet, openSheet, Sheet, ToggleItem } from './common'
 import { VERSION } from './version'
+import { tr } from '../core/appWords'
 
 /**
  * "A note to the makers": a short note to Ustaz Aarif and the Nasar Digital team.
@@ -74,7 +75,7 @@ export function FeedbackSheet() {
           {kind === 'kind' && <ToggleItem label="You may share my words" sub="On our website, without your name." on={mayShare} onChange={setMayShare} />}
         </div>
         <a class="primary-btn" href={href} onClick={() => { store.update((x) => { x.feedbackSentAt = Date.now() }); setTimeout(closeSheet, 400) }}><Mail size={16} /> Send by email</a>
-        <button class="plain-btn" onClick={() => void copy()}><Copy size={16} />{copied ? 'Copied' : 'No email app? Copy the note'}</button>
+        <button class="plain-btn" onClick={() => void copy()}><Copy size={16} />{copied ? tr('common.copied') : 'No email app? Copy the note'}</button>
         <p class="footnote secondary">It goes to {FEEDBACK_EMAIL}. We reply within a few days, insyaAllah.</p>
       </div>
     </Sheet>

@@ -5,6 +5,9 @@
     <string name="welcome_countryMethod" formatted="false">Every country\'s own method</string>
     <string name="welcome_travel" formatted="false">Built for travel</string>
     <string name="welcome_qiblaGlance" formatted="false">Qibla in one glance</string>
+    <string name="welcome_countryMethodDetail" formatted="false">MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia, and sensible defaults everywhere else.</string>
+    <string name="welcome_travelDetail" formatted="false">Switches when you land, works offline, and tells you when you can shorten and combine prayers.</string>
+    <string name="welcome_qiblaDetail" formatted="false">A calm compass that lights up when you\'re facing the Kaaba.</string>
     <string name="welcome_useLocation" formatted="false">Use my location</string>
     <string name="welcome_chooseCity" formatted="false">Choose a city instead</string>
     <string name="welcome_bringIn" formatted="false">Bring in settings from another phone</string>
@@ -25,6 +28,7 @@
     <string name="common_none" formatted="false">None</string>
     <string name="common_now" formatted="false">Now</string>
     <string name="common_today" formatted="false">Today</string>
+    <string name="common_tomorrow" formatted="false">Tomorrow</string>
     <string name="common_remove" formatted="false">Remove</string>
     <string name="common_removeName" formatted="false">Remove {name}</string>
     <string name="common_tryAgain" formatted="false">Try again</string>
@@ -39,6 +43,7 @@
     <string name="common_km" formatted="false">{n} km</string>
     <string name="common_minBefore" formatted="false">{n} min before</string>
     <string name="common_automatic" formatted="false">Automatic</string>
+    <string name="common_and" formatted="false">and</string>
     <string name="common_automaticWith" formatted="false">Automatic · {name}</string>
     <string name="common_nameAutomatic" formatted="false">{name} · Automatic</string>
     <string name="common_searching" formatted="false">Searching…</string>
@@ -94,9 +99,29 @@
     <string name="today_backToToday" formatted="false">Back to today</string>
     <string name="today_datesSources" formatted="false">Ramadan and Eid dates with their sources</string>
     <string name="today_leftToPray" formatted="false">{time} left to pray</string>
+    <string name="today_leftLabel" formatted="false">left to pray</string>
+    <string name="today_untilName" formatted="false">until {name}</string>
+    <string name="today_yesterday" formatted="false">Yesterday</string>
+    <string name="today_inDays" formatted="false">In {n} days</string>
+    <string name="today_inDays_one" formatted="false">In {n} day</string>
+    <string name="today_daysAgo" formatted="false">{n} days ago</string>
+    <string name="today_daysAgo_one" formatted="false">{n} day ago</string>
+    <string name="today_imsakShort" formatted="false">Imsak</string>
+    <string name="today_dhuhaShort" formatted="false">Dhuha</string>
+    <string name="today_midnightShort" formatted="false">Midnight</string>
+    <string name="today_lastThirdShort" formatted="false">Last third</string>
+    <string name="today_imsakNote" formatted="false">10 minutes before Subuh. Finish sahur by now</string>
+    <string name="today_dhuhaNote" formatted="false">Sun a spear\'s length up (about 4½°)</string>
+    <string name="today_midnightNote" formatted="false">Halfway from Maghrib to Subuh</string>
+    <string name="today_lastThirdNote" formatted="false">Best time for tahajjud and dua</string>
     <string name="today_prayed" formatted="false">, prayed</string>
     <string name="today_moreTimes" formatted="false">Show more times</string>
     <string name="today_nowNext" formatted="false">Now {now}. {next} at {time}.</string>
+    <string name="today_inTime" formatted="false">in {time}</string>
+    <string name="today_nameNow" formatted="false">{name} now</string>
+    <string name="today_isNow" formatted="false">, now</string>
+    <string name="today_reviewAsk" formatted="false">Enjoying the app? A short review helps other Muslims find it.</string>
+    <string name="today_review" formatted="false">Review</string>
     <string name="today_jamaahIn" formatted="false">Jamaah in {time}</string>
     <string name="today_locationOff" formatted="false">Location is off</string>
     <string name="today_finding" formatted="false">Finding where you are…</string>
@@ -107,8 +132,9 @@
     <string name="hadith_hide" formatted="false">Hide this hadith</string>
     <string name="hadith_hidden" formatted="false">Hadith hidden here. Bring them all back in Settings, Hadith.</string>
     <string name="makers_title" formatted="false">Built fisabilillah</string>
-    <string name="makers_body" formatted="false">Prayer Times Asia is free, with no ad networks and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).</string>
+    <string name="makers_body" formatted="false">Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and the team at Nasar Digital (Nasar Pte Ltd).</string>
     <string name="makers_opens" formatted="false">{name}, opens {site}</string>
+    <string name="makers_sponsored" formatted="false">Sponsored</string>
     <string name="qibla_choosePlace" formatted="false">Choose a place to find the qibla.</string>
     <string name="qibla_title" formatted="false">Qibla</string>
     <string name="qibla_checkSun" formatted="false">Check with the sun</string>
@@ -117,6 +143,11 @@
     <string name="qibla_toMakkah" formatted="false">To Makkah</string>
     <string name="qibla_howTo" formatted="false">How to find the qibla</string>
     <string name="qibla_browserAsks" formatted="false">This browser asks before it shares the compass.</string>
+    <string name="qibla_compassOn" formatted="false">Turn on the compass</string>
+    <string name="qibla_compassOnLine" formatted="false">Tap here, then press Allow</string>
+    <string name="qibla_browserAsksHow" formatted="false">Your browser asks first before it shares the compass. Tap {button} at the top, then press {allow}. The dial then turns with your phone.</string>
+    <string name="qibla_allow" formatted="false">Allow</string>
+    <string name="qibla_tapStart" formatted="false">Tap to start</string>
     <string name="qibla_noCompassHelp" formatted="false">Use the qibla bearing above with a map, or the sun in Falak. Stand facing {deg}° ({point}). For example, line yourself up with the gold line on the map.</string>
     <string name="qibla_notAllowed" formatted="false">Compass access was not allowed.</string>
     <string name="qibla_noCompass" formatted="false">This device or browser has no compass.</string>
@@ -153,6 +184,11 @@
     <string name="falak_daysToGo" formatted="false">{n} days to go</string>
     <string name="falak_daysToGo_one" formatted="false">{n} day to go</string>
     <string name="falak_yourTime" formatted="false">your time</string>
+    <string name="falak_dateAtYourTime" formatted="false">{date} at {time} your time</string>
+    <string name="falak_passed" formatted="false">passed</string>
+    <string name="falak_minutes" formatted="false">{n} minutes</string>
+    <string name="falak_minutes_one" formatted="false">{n} minute</string>
+    <string name="falak_todayAt" formatted="false">today {time}</string>
     <string name="falak_qiblaDayExplain" formatted="false">Twice a year the sun stands directly over the Ka\'bah at Makkah noon (istiwa\' a\'zam). At that minute, every upright shadow wherever the sun is up points straight away from the Ka\'bah. It is the most exact qibla check there is, with nothing but a stick.</string>
     <string name="falak_qiblaDayVisible" formatted="false">Visible from here, the sun will be {deg}° up. Stand a straight stick upright on level ground and face from the shadow\'s tip to its base. The day before and after also work within about half a degree.</string>
     <string name="falak_qiblaDayDown" formatted="false">The sun is down here at that moment. Use the daily rashdul qiblat below, or the next Qibla Day.</string>
@@ -235,6 +271,7 @@
     <string name="myMasjid_replaces" formatted="false">This replaces {name}.</string>
     <string name="myMasjid_add" formatted="false">Add my masjid</string>
     <string name="myMasjid_usingApp" formatted="false">Using the iPhone or Android app? Open this in the app.</string>
+    <string name="myMasjid_usingAppAsk" formatted="false">Using the iPhone or Android app?</string>
     <string name="myMasjid_openInApp" formatted="false">Open this in the app</string>
     <string name="myMasjid_scanHelp" formatted="false">Your masjid has a Prayer Times Asia screen? Scan its QR code with your phone\'s camera to see its iqamah times on your Prayer screen.</string>
     <string name="myMasjid_shownAs" formatted="false">Shown as \"Jamaah\" on your Prayer screen.</string>
@@ -318,6 +355,17 @@
     <string name="settings_qiyamSub" formatted="false">The last third of the last ten nights</string>
     <string name="settings_wakeUp" formatted="false">Wake up</string>
     <string name="settings_wakeUpFoot" formatted="false">Also on the Prayer screen. Tap the alarm clock at the top.</string>
+    <string name="settings_alertsAlarms" formatted="false">Alerts and alarms</string>
+    <string name="settings_alertsAlarmsFoot" formatted="false">Each prayer Off, Notify or Alarm, {friday}, sahur, Ramadan and how it all sounds, in one place. Also on the Prayer screen. Tap the alarm clock at the top, or hold a bell.</string>
+    <string name="settings_nothingOn" formatted="false">Nothing is on</string>
+    <string name="settings_nNotify" formatted="false">{n} notify</string>
+    <string name="settings_nAlarms_one" formatted="false">{n} alarm</string>
+    <string name="settings_nAlarms" formatted="false">{n} alarms</string>
+    <string name="today_bellAria" formatted="false">{name} {mode}. Tap to change, hold for more</string>
+    <string name="settings_alarmsGroup" formatted="false">Alarms</string>
+    <string name="settings_alarmsGroupFoot" formatted="false">Wake up for {fajr}, sahur, alarms for each prayer, and when to leave for {friday}. Also on the Prayer screen. Tap the alarm clock at the top.</string>
+    <string name="today_nextAria" formatted="false">Next {name}, {time}.</string>
+    <string name="today_nextAt" formatted="false">Next {next} at {time}.</string>
     <string name="settings_alarms" formatted="false">Prayer alarms</string>
     <string name="settings_travel" formatted="false">Travel</string>
     <string name="settings_travelFoot" formatted="false">Jamak and qasar guidance, combined prayer windows and a log of where you\'ve prayed. We\'ll ask when you land in another country.</string>
@@ -394,6 +442,23 @@
     <string name="settings_until" formatted="false">Until</string>
     <string name="settings_jumuahFoot" formatted="false">A reminder on Fridays to get ready and leave in time. It uses your masjid\'s own {jumuah} time when you have set one in the Masjid tab, otherwise the start of {dhuhr}. {friday} is not required of women, travellers or the sick, who pray {prayer} instead.</string>
     <string name="settings_leave" formatted="false">Remind me to leave</string>
+    <string name="jumuah_leaveFor" formatted="false">Leave for {friday}</string>
+    <string name="jumuah_leaveForAria" formatted="false">Remind me to leave for {friday}</string>
+    <string name="jumuah_before" formatted="false">{span} before</string>
+    <string name="jumuah_nextToday" formatted="false">Today {leave}, for {friday} at {start}</string>
+    <string name="jumuah_nextFriday" formatted="false">Friday {leave}, for {friday} at {start}</string>
+    <string name="jumuah_ringAlarm" formatted="false">Ring as an alarm</string>
+    <string name="jumuah_ringAlarmSub" formatted="false">Rings like your other alarms, not a quiet notification</string>
+    <string name="jumuah_session" formatted="false">Which session</string>
+    <string name="jumuah_sessionAria" formatted="false">Which {friday} session</string>
+    <string name="jumuah_sessionSub" formatted="false">First at {dhuhr}, second from {time}</string>
+    <string name="jumuah_first" formatted="false">First</string>
+    <string name="jumuah_second" formatted="false">Second</string>
+    <string name="jumuah_ownTime" formatted="false">your masjid\'s own {friday} time</string>
+    <string name="jumuah_startOf" formatted="false">the start of {dhuhr}</string>
+    <string name="jumuah_foot" formatted="false">A reminder on Fridays to get ready and leave in time. It counts back from {from}.</string>
+    <string name="jumuah_footSg" formatted="false">Only some masjids in Singapore hold a second session. The Masjid tab shows which ones.</string>
+    <string name="jumuah_footWho" formatted="false">{friday} is not required of women, travellers or the sick, who pray {dhuhr} instead.</string>
     <string name="settings_moving" formatted="false">Moving to another phone</string>
     <string name="settings_movingFoot" formatted="false">Your places, choices and tracker history travel inside a QR code or link. No account, nothing uploaded. It works between the web, iPhone and Android.</string>
     <string name="settings_phoneApp" formatted="false">Phone app</string>
@@ -408,10 +473,18 @@
     <string name="settings_privacy2" formatted="false">Your exact location stays in this browser. The place name comes from a built in list, not a server.</string>
     <string name="settings_usage" formatted="false">Share anonymous usage counts</string>
     <string name="settings_usageSub" formatted="false">Tells us how many people use the app and in which city and country, so we know where to add official timetables. A random number stands in for you. No name, no exact location, no IP address kept.</string>
-    <string name="settings_osm" formatted="false">The Masjid map and search use OpenStreetMap services (map tiles and Overpass), which see the area you look at.</string>
+    <string name="settings_osm" formatted="false">The Masjid map and list use OpenStreetMap data. The map tiles, our weekly masjid list on GitHub and Overpass see only the area you look at.</string>
     <string name="settings_makers" formatted="false">From the makers</string>
     <string name="settings_makersFoot" formatted="false">Prayer Times Asia is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd). The only offers you will see are our own. No ad networks, nothing tracked.</string>
     <string name="settings_showOffers" formatted="false">Show offers on Prayer and Masjid</string>
+    <string name="settings_help" formatted="false">Help</string>
+    <string name="settings_helpFoot" formatted="false">A short tour that taps the real buttons, so you know where everything is.</string>
+    <string name="settings_showGuide" formatted="false">Show the quick guide</string>
+    <string name="settings_picksFoot" formatted="false">Barakah Picks is not a normal ad. It is one small space we check by hand for halal Muslim businesses and causes, safe for the whole family. No gambling, alcohol, riba or anything immodest, and never Google, Facebook or Instagram ads. Most picks are our own services, and paid ones are marked Sponsored. We keep only simple counts of how often each card is seen and tapped, never who you are.</string>
+    <string name="settings_picksRules" formatted="false">Our rules for Barakah Picks</string>
+    <string name="settings_showPicks" formatted="false">Show Barakah Picks</string>
+    <string name="settings_rate" formatted="false">Rate and review</string>
+    <string name="settings_sendNote" formatted="false">Send a note to the makers</string>
     <string name="settings_motto" formatted="false">Prayer Times Asia. Built in Asia, made for Muslims everywhere.</string>
     <string name="settings_aboutApp" formatted="false">About Prayer Times Asia</string>
     <string name="settings_sources" formatted="false">Sources and credits</string>
@@ -439,6 +512,11 @@
     <string name="source_title" formatted="false">Source</string>
     <string name="source_where" formatted="false">Where today\'s times come from</string>
     <string name="source_grade" formatted="false">Grade</string>
+    <string name="source_gradeA" formatted="false">Official</string>
+    <string name="source_gradeB" formatted="false">Masjid confirmed</string>
+    <string name="source_gradeC" formatted="false">Community verified</string>
+    <string name="source_gradeD" formatted="false">Calculated</string>
+    <string name="source_gradeF" formatted="false">Falak (observed)</string>
     <string name="source_gradeName" formatted="false">Grade {grade} · {name}</string>
     <string name="source_official" formatted="false">Official</string>
     <string name="source_differ" formatted="false">These two sources differ by more than 2 minutes. We show both rather than silently pick one. Follow your local masjid\'s practice.</string>
@@ -494,6 +572,20 @@
     <string name="install_title" formatted="false">Install Prayer Times Asia</string>
     <string name="install_menu" formatted="false">Use your browser\'s menu</string>
     <string name="install_app" formatted="false">Install app</string>
+    <string name="install_step2" formatted="false">Choose {icon} Add to Home Screen.</string>
+    <string name="install_menuHow" formatted="false">{menu} {app} or {home}. Once added, it opens like an app and works offline.</string>
+    <string name="alertsHelp_calendarRings" formatted="false">Your calendar app rings every prayer.</string>
+    <string name="tracker_streakLabel" formatted="false">day streak</string>
+    <string name="tracker_tickedOf" formatted="false">{n} of {total} prayers ticked</string>
+    <string name="tracker_excusedDays" formatted="false">{n} excused days</string>
+    <string name="tracker_excusedDays_one" formatted="false">{n} excused day</string>
+    <string name="calendar_byAuthority" formatted="false">Ramadan and Raya, by authority</string>
+    <string name="app_backToWebsite" formatted="false">Back to the prayertimes.asia website</string>
+    <string name="app_menuLeft" formatted="false">Move the menu to the left</string>
+    <string name="app_menuRight" formatted="false">Move the menu to the right</string>
+    <string name="app_toLeft" formatted="false">Move to the left</string>
+    <string name="app_toRight" formatted="false">Move to the right</string>
+    <string name="app_websiteHome" formatted="false">Website home</string>
     <string name="phone_welcomePrivacy" formatted="false">No outside ads. No account. Your location stays on your phone.</string>
     <string name="phone_privacyLocation" formatted="false">Your exact location never leaves your phone.</string>
     <string name="phone_privacyAds" formatted="false">No outside ads, no accounts, no tracking across other apps.</string>

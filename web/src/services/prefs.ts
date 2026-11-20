@@ -11,6 +11,9 @@ import {
   type AlarmSound, type PrayerAlarmTiming, type SahurDay, type SahurTiming, type WakeUpTiming,
 } from '../core/wakeup'
 
+export type AppLanguage = 'en' | 'ms' | 'id'
+export const APP_LANGUAGES: readonly AppLanguage[] = ['en', 'ms', 'id']
+
 export type Appearance = 'system' | 'light' | 'dark'
 export const APPEARANCES: Appearance[] = ['system', 'light', 'dark']
 /** Where the Sections bar sits on bigger screens (laptop, tablet): the arrow on the bar moves it. Phones always keep it at the bottom. */
@@ -45,6 +48,8 @@ export interface Preferences {
   methodOverrideID: string | null
   asrOverride: AsrSchool | null
   namingOverride: NamingStyle | null
+  /** The language of the app's words. null = from the browser's language (English unless Malay or Indonesian). */
+  appLanguageOverride: AppLanguage | null
   use24Hour: boolean
   hijriAdjustment: number
   notificationsEnabled: boolean
@@ -164,6 +169,7 @@ export const DEFAULT_PREFS: Preferences = {
   methodOverrideID: null,
   asrOverride: null,
   namingOverride: null,
+  appLanguageOverride: null,
   use24Hour: false,
   hijriAdjustment: 0,
   notificationsEnabled: false,
@@ -234,7 +240,7 @@ export const DEFAULT_PREFS: Preferences = {
 }
 
 const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat', 
-  'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'jakimZoneOverride',
+  'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'appLanguageOverride', 'jakimZoneOverride',
   'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
   'dhuhrAlarm', 'asrAlarm', 'maghribAlarm', 'ishaAlarm',
 ])
@@ -245,6 +251,7 @@ const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands', 'simple'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,
+  appLanguageOverride: APP_LANGUAGES,
   seasonPreview: SEASON_PREVIEWS,
   wakeUp: WAKE_UP_TIMINGS,
   sahurAlarm: SAHUR_TIMINGS,
