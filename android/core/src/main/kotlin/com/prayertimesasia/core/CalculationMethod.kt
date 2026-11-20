@@ -69,7 +69,7 @@ data class CalculationMethod(
             mapOf(Prayer.FAJR to 2.375, Prayer.SUNRISE to -1.375, Prayer.DHUHR to 3.0, Prayer.ASR to 2.25,
                 Prayer.MAGHRIB to 2.25, Prayer.ISHA to 2.375),
             true,
-            "Malaysia's 18° Subuh criterion (since 2019). Online, the app shows JAKIM's official e-Solat timetable for your zone; offline it calculates to within about 2 minutes.")
+            "Malaysia's 18° Fajr criterion (since 2019). Online, the app shows JAKIM's official e-Solat timetable for your zone; offline it calculates to within about 2 minutes.")
 
         val KEMENAG = CalculationMethod(
             "kemenag", "Kemenag · Indonesia", "Kemenag", 20.0, 18.0, null, null, null,

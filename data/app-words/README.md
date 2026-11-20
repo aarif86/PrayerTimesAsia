@@ -9,7 +9,7 @@ web, iPhone and Android apps will all read these lines, the way they all read
 - `{n}`, `{name}`, `{place}` and the other words in braces are filled in by the
   app. Every language must use the same ones as English.
 - A key ending in `_one` is the line for exactly one, like `{n} day to go`.
-- No colons or dashes. Malay is bahasa baku, as in Berita Harian, with no "lah"
+- No colons or dashes. A hyphen inside a word, like kira-kira or al-Fitr, is fine. Malay is bahasa baku, as in Berita Harian, with no "lah"
   or slang. Indonesian is plain standard Indonesian.
 - Prayer names are not in this list. They follow the prayer names setting, so a
   line uses `{name}` or `{prayer}` where a prayer name goes.

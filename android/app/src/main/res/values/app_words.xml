@@ -58,11 +58,11 @@
     <string name="style_bands" formatted="false">Colour Bands</string>
     <string name="style_simple" formatted="false">Big and Simple</string>
     <string name="preview_off" formatted="false">Off (real dates)</string>
-    <string name="preview_sighting" formatted="false">Moon sighting night (29 Syaaban)</string>
+    <string name="preview_sighting" formatted="false">Moon sighting night (29 Sha\'ban)</string>
     <string name="preview_ramadan" formatted="false">Ramadan (day 12)</string>
     <string name="preview_lastTen" formatted="false">Last ten nights (day 26)</string>
-    <string name="preview_raya" formatted="false">Hari Raya morning (1 Syawal)</string>
-    <string name="preview_syawal" formatted="false">Syawal (day 8)</string>
+    <string name="preview_raya" formatted="false">Eid morning (1 Shawwal)</string>
+    <string name="preview_syawal" formatted="false">Shawwal (day 8)</string>
     <string name="today_title" formatted="false">Prayer times</string>
     <string name="today_titleIn" formatted="false">Prayer times in {place}</string>
     <string name="today_appearanceButton" formatted="false">Appearance is {name}. Switches between Automatic, Light and Dark.</string>
@@ -110,9 +110,9 @@
     <string name="today_dhuhaShort" formatted="false">Dhuha</string>
     <string name="today_midnightShort" formatted="false">Midnight</string>
     <string name="today_lastThirdShort" formatted="false">Last third</string>
-    <string name="today_imsakNote" formatted="false">10 minutes before Subuh. Finish sahur by now</string>
+    <string name="today_imsakNote" formatted="false">10 minutes before Fajr. Finish sahur by now</string>
     <string name="today_dhuhaNote" formatted="false">Sun a spear\'s length up (about 4½°)</string>
-    <string name="today_midnightNote" formatted="false">Halfway from Maghrib to Subuh</string>
+    <string name="today_midnightNote" formatted="false">Halfway from Maghrib to Fajr</string>
     <string name="today_lastThirdNote" formatted="false">Best time for tahajjud and dua</string>
     <string name="today_prayed" formatted="false">, prayed</string>
     <string name="today_moreTimes" formatted="false">Show more times</string>
@@ -248,11 +248,11 @@
     <string name="falakTools_groundHow" formatted="false">Lay the phone flat where the stick will stand. Within 0.5° is good.</string>
     <string name="falakTools_stickHow" formatted="false">Hold the phone\'s long edge against the stick. Within 0.5° of vertical is good.</string>
     <string name="falakTools_tilt" formatted="false">A tilt of 1° moves a 1 m stick\'s shadow tip by about 1.7 cm, enough to shift a reading by a minute.</string>
-    <string name="masjid_title" formatted="false">Masjid and Musollah</string>
+    <string name="masjid_title" formatted="false">Masjids and prayer rooms</string>
     <string name="masjid_about" formatted="false">About this app</string>
     <string name="masjid_all" formatted="false">All</string>
     <string name="masjid_masjid" formatted="false">Masjid</string>
-    <string name="masjid_musollah" formatted="false">Musollah</string>
+    <string name="masjid_musollah" formatted="false">Prayer room</string>
     <string name="masjid_choosePlace" formatted="false">Choose a place</string>
     <string name="masjid_choosePlaceHelp" formatted="false">Allow location or pick a city on the Prayer tab.</string>
     <string name="masjid_busy" formatted="false">The free map server is busy. Still looking…</string>
@@ -338,18 +338,18 @@
     <string name="settings_place" formatted="false">Place</string>
     <string name="settings_notSet" formatted="false">Not set</string>
     <string name="settings_countryRules" formatted="false">Country rules</string>
-    <string name="settings_ramadan" formatted="false">Ramadan and Syawal</string>
-    <string name="settings_ramadanFoot" formatted="false">Ramadan mode turns on by itself on the first day your authority announces, and Syawal follows on Raya.</string>
+    <string name="settings_ramadan" formatted="false">Ramadan and Shawwal</string>
+    <string name="settings_ramadanFoot" formatted="false">Ramadan mode turns on by itself on the first day your authority announces, and Shawwal follows on Eid.</string>
     <string name="settings_aboutDays" formatted="false">About {n} days to Ramadan.</string>
     <string name="settings_tryRamadanFoot" formatted="false">Try Ramadan lets testers see every part of it now. It only changes this {where}, and the real dates come back when you turn it off.</string>
     <string name="settings_demo" formatted="false">demo</string>
     <string name="settings_browser" formatted="false">browser</string>
     <string name="settings_ramadanPage" formatted="false">Ramadan page</string>
-    <string name="settings_ramadanPageSub" formatted="false">Imsak and Berbuka, your fasts, doa, zakat fitrah, the last ten nights</string>
+    <string name="settings_ramadanPageSub" formatted="false">Imsak and iftar, your fasts, duas, zakat al-Fitr, the last ten nights</string>
     <string name="settings_tryRamadan" formatted="false">Try Ramadan (for testers)</string>
     <string name="settings_imsakAlert" formatted="false">Imsak alert</string>
     <string name="settings_imsakAlertSub" formatted="false">10 minutes before Imsak, in Ramadan</string>
-    <string name="settings_berbukaAlert" formatted="false">Berbuka alert</string>
+    <string name="settings_berbukaAlert" formatted="false">Iftar alert</string>
     <string name="settings_berbukaAlertSub" formatted="false">At Maghrib, in Ramadan</string>
     <string name="settings_qiyam" formatted="false">Qiyam reminder</string>
     <string name="settings_qiyamSub" formatted="false">The last third of the last ten nights</string>
@@ -403,7 +403,7 @@
     <string name="settings_showHadith" formatted="false">Show hadith in the app</string>
     <string name="settings_showHadithSub" formatted="false">A short hadith or ayah on some screens</string>
     <string name="settings_wakeHadith" formatted="false">Add a hadith to wake up alerts</string>
-    <string name="settings_wakeHadithSub" formatted="false">One short line under the Subuh and tahajjud alerts</string>
+    <string name="settings_wakeHadithSub" formatted="false">One short line under the Fajr and tahajjud alerts</string>
     <string name="settings_tracker" formatted="false">Tracker</string>
     <string name="settings_trackerFoot" formatted="false">Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only in this browser.</string>
     <string name="settings_trackerOn" formatted="false">Prayer tracker</string>
@@ -524,7 +524,7 @@
     <string name="source_jamaahHelp" formatted="false">Prayer time begins at the times on the Prayer screen. These are when the congregation prays.</string>
     <string name="source_grades" formatted="false">The grades</string>
     <string name="source_helpVerify" formatted="false">Help verify times here</string>
-    <string name="source_helpVerifySub" formatted="false">Send a mosque timetable, the method mosques here use, or an adhan time you heard</string>
+    <string name="source_helpVerifySub" formatted="false">Send a masjid timetable, the method masjids here use, or an azan time you heard</string>
     <string name="source_checked" formatted="false">Submissions are checked by a person before they change anyone\'s times, and shared openly under CC BY 4.0.</string>
     <string name="calendar_title" formatted="false">Calendar</string>
     <string name="calendar_follows" formatted="false">My community follows</string>
@@ -543,7 +543,7 @@
     <string name="journey_setHomeHelp" formatted="false">Tell us where home is and we\'ll work out when you count as a traveller.</string>
     <string name="journey_setHomeButton" formatted="false">Set home</string>
     <string name="journey_fasting" formatted="false">Fasting on this journey</string>
-    <string name="journey_fastingHelp" formatted="false">As a traveller you may choose not to fast, and replace the day after Ramadan. If fasting is easy, fasting is better. The day counts as travel when you left home before Subuh. Mark it on your Ramadan page so it is counted for you. Ask your local religious authority when unsure.</string>
+    <string name="journey_fastingHelp" formatted="false">As a traveller you may choose not to fast, and replace the day after Ramadan. If fasting is easy, fasting is better. The day counts as travel when you left home before Fajr. Mark it on your Ramadan page so it is counted for you. Ask your local religious authority when unsure.</string>
     <string name="journey_openRamadan" formatted="false">Open Ramadan</string>
     <string name="journey_combined" formatted="false">Combined windows today</string>
     <string name="journey_jamakExplain" formatted="false">Jamak taqdim means praying both in the first prayer\'s time. Jamak ta\'khir means praying both in the second prayer\'s time.</string>
@@ -579,7 +579,7 @@
     <string name="tracker_tickedOf" formatted="false">{n} of {total} prayers ticked</string>
     <string name="tracker_excusedDays" formatted="false">{n} excused days</string>
     <string name="tracker_excusedDays_one" formatted="false">{n} excused day</string>
-    <string name="calendar_byAuthority" formatted="false">Ramadan and Raya, by authority</string>
+    <string name="calendar_byAuthority" formatted="false">Ramadan and Eid, by authority</string>
     <string name="app_backToWebsite" formatted="false">Back to the prayertimes.asia website</string>
     <string name="app_menuLeft" formatted="false">Move the menu to the left</string>
     <string name="app_menuRight" formatted="false">Move the menu to the right</string>
@@ -615,7 +615,7 @@
     <string name="phone_showOnMap" formatted="false">Show on map</string>
     <string name="phone_showWhereIAm" formatted="false">Show where I am</string>
     <string name="phone_refreshList" formatted="false">Refresh the masjid list</string>
-    <string name="phone_lookingMore" formatted="false">Looking for more surau and musollah…</string>
+    <string name="phone_lookingMore" formatted="false">Looking for more prayer rooms…</string>
     <string name="phone_passed" formatted="false">passed</string>
     <string name="phone_cm" formatted="false">cm</string>
     <string name="phone_arNeeded" formatted="false">Needs a camera with AR</string>
@@ -630,8 +630,8 @@
     <string name="phone_imUp" formatted="false">I\'m up</string>
     <string name="phone_officialTimetables" formatted="false">Official timetables</string>
     <string name="phone_markRamadan" formatted="false">Mark it on the Ramadan page so the app counts the day to replace.</string>
-    <string name="phone_fastingToday" formatted="false">As a traveller you may choose not to fast today and replace it after Ramadan. If fasting is easy for you, fasting is better. The day counts as travel only if you left home before Subuh.</string>
-    <string name="phone_followAuthority" formatted="false">Follow your local religious authority for the start of Ramadan and Raya.</string>
+    <string name="phone_fastingToday" formatted="false">As a traveller you may choose not to fast today and replace it after Ramadan. If fasting is easy for you, fasting is better. The day counts as travel only if you left home before Fajr.</string>
+    <string name="phone_followAuthority" formatted="false">Follow your local religious authority for the start of Ramadan and Eid.</string>
     <string name="widget_big" formatted="false">Big widget</string>
     <string name="widget_lockScreen" formatted="false">Lock Screen</string>
     <string name="widget_liveCountdown" formatted="false">Live countdown</string>
@@ -639,22 +639,266 @@
     <string name="widget_addIphone" formatted="false">Touch and hold your Home Screen, tap Edit, then Add Widget and search for Prayer Times Asia.</string>
     <string name="widget_addAndroid" formatted="false">Touch and hold your home screen, tap Widgets and find Prayer Times Asia.</string>
     <string name="widget_setLocation" formatted="false">Open Prayer Times Asia to set your location.</string>
-    <string name="widget_thisWeek" formatted="false">Imsak and Berbuka this week</string>
+    <string name="widget_thisWeek" formatted="false">Imsak and iftar this week</string>
     <string name="verify_title" formatted="false">Help verify times</string>
     <string name="verify_howTo" formatted="false">How to contribute</string>
-    <string name="verify_timetable" formatted="false">Mosque timetable</string>
-    <string name="verify_sendTimetable" formatted="false">Send a mosque timetable from here</string>
-    <string name="verify_oneMonth" formatted="false">One month is enough. We work out the mosque\'s method so the whole year can be made from it.</string>
-    <string name="verify_method" formatted="false">Tell us which method mosques here use</string>
-    <string name="verify_mosquesFollow" formatted="false">Mosques here follow</string>
+    <string name="verify_timetable" formatted="false">Masjid timetable</string>
+    <string name="verify_sendTimetable" formatted="false">Send a masjid timetable from here</string>
+    <string name="verify_oneMonth" formatted="false">One month is enough. We work out the masjid\'s method so the whole year can be made from it.</string>
+    <string name="verify_method" formatted="false">Tell us which method masjids here use</string>
+    <string name="verify_mosquesFollow" formatted="false">Masjids here follow</string>
     <string name="verify_notSure" formatted="false">Not sure</string>
-    <string name="verify_adhan" formatted="false">Report an adhan time you heard</string>
+    <string name="verify_adhan" formatted="false">Report an azan time you heard</string>
     <string name="verify_heard" formatted="false">What you heard</string>
     <string name="verify_where" formatted="false">Where</string>
-    <string name="verify_sendAll" formatted="false">Send a mosque timetable photo, tell us which method mosques here use, or report an adhan time you heard.</string>
-    <string name="verify_checked" formatted="false">Checked by a person before it changes anyone\'s times. Only what you type or pick here is sent, not your location. Photos are kept as evidence and not shared again without the mosque\'s permission.</string>
+    <string name="verify_sendAll" formatted="false">Send a masjid timetable photo, tell us which method masjids here use, or report an azan time you heard.</string>
+    <string name="verify_checked" formatted="false">Checked by a person before it changes anyone\'s times. Only what you type or pick here is sent, not your location. Photos are kept as evidence and not shared again without the masjid\'s permission.</string>
     <string name="verify_license" formatted="false">Share under CC BY 4.0</string>
     <string name="phone_asrEarlier" formatted="false">Earlier (Shafi\'i)</string>
     <string name="phone_asrLater" formatted="false">Later (Hanafi)</string>
     <string name="phone_refreshShort" formatted="false">Refresh list</string>
+    <string name="alerts_title" formatted="false">Alerts and alarms</string>
+    <string name="alerts_chipNext" formatted="false">Alerts and alarms, next alarm at {time}</string>
+    <string name="alerts_modeOff" formatted="false">Off</string>
+    <string name="alerts_modeNotify" formatted="false">Notify</string>
+    <string name="alerts_modeAlarm" formatted="false">Alarm</string>
+    <string name="alerts_nowOff" formatted="false">{name} off</string>
+    <string name="alerts_nowNotify" formatted="false">{name} notification on</string>
+    <string name="alerts_nowAlarm" formatted="false">{name} alarm on</string>
+    <string name="alerts_today" formatted="false">today</string>
+    <string name="alerts_tomorrow" formatted="false">tomorrow</string>
+    <string name="alerts_whenEnds" formatted="false">When {name} ends</string>
+    <string name="alerts_atTime" formatted="false">At the time</string>
+    <string name="alerts_withAzan" formatted="false">with the azan</string>
+    <string name="alerts_headsUpN" formatted="false">heads up {n} min before</string>
+    <string name="alerts_alarmWhen" formatted="false">Alarm {when}</string>
+    <string name="alerts_alarmWhenNotify" formatted="false">Alarm {when}, notification at the time</string>
+    <string name="alerts_fridayAlarm" formatted="false">{when}, alarm</string>
+    <string name="alerts_fridayNotify" formatted="false">{when}, notification</string>
+    <string name="alerts_helpOff" formatted="false">Nothing for this prayer</string>
+    <string name="alerts_helpNotify" formatted="false">A notification with sound. Quiet when your phone is on silent or in a Focus.</string>
+    <string name="alerts_helpAlarm" formatted="false">Rings until you stop it, even on silent. Snooze 5 min.</string>
+    <string name="alerts_helpAlarmFajr" formatted="false">Wakes you every morning and moves with {name} wherever you are. Snooze 5 min.</string>
+    <string name="alerts_needsInstall" formatted="false">Add the app to your Home Screen for alerts</string>
+    <string name="alerts_webOpen" formatted="false">On the web, alerts ring only while this page is open</string>
+    <string name="alerts_tapFix" formatted="false">Tap to see how to fix it.</string>
+    <string name="alerts_usePhoneApp" formatted="false">For alarms that ring on silent and with the app closed, use the iPhone or Android app.</string>
+    <string name="alerts_checkPhone" formatted="false">Check my phone</string>
+    <string name="alerts_eachPrayer" formatted="false">Each prayer</string>
+    <string name="alerts_openPage" formatted="false">{name}, {summary}. Opens its page</string>
+    <string name="alerts_fridayLeave" formatted="false">{friday}, leave for the masjid</string>
+    <string name="alerts_headsUp" formatted="false">Heads up before</string>
+    <string name="alerts_headsUpSub" formatted="false">A notification before each prayer set to Notify</string>
+    <string name="alerts_headsUpSame" formatted="false">The same for every prayer set to Notify</string>
+    <string name="alerts_eachFoot" formatted="false">Tap a prayer\'s name for its times. Notify is a notification, quiet when your phone is on silent. Alarm rings until you stop it.</string>
+    <string name="alerts_nextAlarm" formatted="false">Next alarm {when} {time}</string>
+    <string name="alerts_nextAlarmFor" formatted="false">Next alarm {when} {time} for {name}</string>
+    <string name="alerts_nextAlarmSahur" formatted="false">Next alarm {when} {time} for sahur</string>
+    <string name="alerts_extras" formatted="false">Extras</string>
+    <string name="alerts_nudgeSub" formatted="false">About 30 minutes before a prayer\'s time ends, only if you haven\'t ticked it. Not for {name}.</string>
+    <string name="alerts_sound" formatted="false">Sound</string>
+    <string name="alerts_azanSub" formatted="false">Notifications open with the azan, and the {name} azan at {name}</string>
+    <string name="alerts_buzzSub" formatted="false">Every notification only buzzes. {name} keeps its sound.</string>
+    <string name="alerts_quietSub" formatted="false">Notifications only buzz at these times</string>
+    <string name="alerts_soundFoot" formatted="false">Buzz only and Quiet hours are for shift workers sleeping in the day, a baby asleep in the room, or a calm night. Alarms keep their sound.</string>
+    <string name="alerts_alarmSoundFoot" formatted="false">Tap a sound to hear it. Every alarm plays this sound.</string>
+    <string name="alerts_soundClassic" formatted="false">Classic alarm</string>
+    <string name="alerts_soundChime" formatted="false">Gentle chime</string>
+    <string name="alerts_soundBells" formatted="false">Rising bells</string>
+    <string name="alerts_soundBeeps" formatted="false">Soft beeps</string>
+    <string name="alerts_soundPhone" formatted="false">From my phone</string>
+    <string name="alerts_add30" formatted="false">Add the next 30 days of alarms to a calendar</string>
+    <string name="alerts_morningsHadith" formatted="false">O Allah, bless my ummah in their early mornings.</string>
+    <string name="alerts_morningsSource" formatted="false">The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi</string>
+    <string name="alerts_dayRamadan" formatted="false">Ramadan</string>
+    <string name="alerts_dayMonThu" formatted="false">Mondays and Thursdays</string>
+    <string name="alerts_dayWhite" formatted="false">White days (13, 14 and 15 of the Hijri month)</string>
+    <string name="alerts_dayEvery" formatted="false">Every day</string>
+    <string name="alerts_wakeTahajjud" formatted="false">30 min before {fajr} for tahajjud</string>
+    <string name="alerts_wakeAtFajr" formatted="false">At {fajr}</string>
+    <string name="alerts_wakeHourBefore" formatted="false">1 hour before {sunrise}</string>
+    <string name="alerts_wakeBeforeSunrise" formatted="false">{n} min before {sunrise}</string>
+    <string name="alerts_wakeAfterFajr" formatted="false">{n} min after {fajr} begins</string>
+    <string name="alerts_sahur60" formatted="false">1 hour before {fajr}</string>
+    <string name="alerts_sahur90" formatted="false">1 hour 30 min before {fajr}</string>
+    <string name="alerts_sahur120" formatted="false">2 hours before {fajr}</string>
+    <string name="alerts_onTime" formatted="false">On time</string>
+    <string name="alerts_beforeEnds" formatted="false">30 min before it ends</string>
+    <string name="alerts_minAfter" formatted="false">{n} min after</string>
+    <string name="alerts_howReach" formatted="false">How should {name} reach you?</string>
+    <string name="alerts_howReminder" formatted="false">How should the reminder reach you?</string>
+    <string name="alerts_when" formatted="false">When</string>
+    <string name="alerts_whenLeave" formatted="false">When to leave for {friday}</string>
+    <string name="alerts_notifyToo" formatted="false">Notification too</string>
+    <string name="alerts_notifyTooSub" formatted="false">A notification when {name} begins, as well as the alarm</string>
+    <string name="alerts_checkTitle" formatted="false">Make sure you hear it</string>
+    <string name="alerts_allowed" formatted="false">Notifications allowed</string>
+    <string name="alerts_blockedShort" formatted="false">Notifications are blocked</string>
+    <string name="alerts_notAllowedYet" formatted="false">Notifications not allowed yet</string>
+    <string name="alerts_allowHow" formatted="false">Allow them in your browser\'s site settings, the icon left of the address.</string>
+    <string name="alerts_allowButton" formatted="false">Allow notifications</string>
+    <string name="alerts_addHome" formatted="false">Add the app to your Home Screen</string>
+    <string name="alerts_addHomeSub" formatted="false">On iPhone and iPad, the web can only show alerts from the Home Screen.</string>
+    <string name="alerts_showMe" formatted="false">Show me how</string>
+    <string name="alerts_stayOpen" formatted="false">This page must stay open</string>
+    <string name="alerts_stayOpenSub" formatted="false">On the web, alerts and alarms ring only while Prayer Times Asia is open, in a tab or as an installed app.</string>
+    <string name="alerts_silent" formatted="false">Silent mode and Do Not Disturb</string>
+    <string name="alerts_silentSub" formatted="false">Web notifications stay quiet then. Only the phone app\'s alarms ring through.</string>
+    <string name="alerts_fridayIsNotify" formatted="false">{friday} reminder is a notification</string>
+    <string name="alerts_makeAlarmSub" formatted="false">Make it an alarm so it rings out loud.</string>
+    <string name="alerts_makeAlarm" formatted="false">Make it an alarm</string>
+    <string name="alerts_appSub" formatted="false">Alarms that ring on silent, even with the app closed</string>
+    <string name="notify_nudgeTitle" formatted="false">{name} time ends in {n} min</string>
+    <string name="notify_nudgeBody" formatted="false">{name} is open until {time}. Tick it in the app once you have prayed.</string>
+    <string name="notify_endsIn" formatted="false">{name} ends in {n} min</string>
+    <string name="notify_nameIn" formatted="false">{name} in {n} min</string>
+    <string name="notify_nameAt" formatted="false">{name} at {time}</string>
+    <string name="notify_ended" formatted="false">{name} has ended.</string>
+    <string name="notify_iftar" formatted="false">Time for iftar · {time}</string>
+    <string name="notify_iftarName" formatted="false">Time for iftar · {name} {time}</string>
+    <string name="notify_imsakIn" formatted="false">Imsak in 10 minutes · {time}</string>
+    <string name="notify_finishSahur" formatted="false">Finish your sahur. {name} at {time} · {place}</string>
+    <string name="notify_qiyamTitle" formatted="false">Night {night} · the last third has begun</string>
+    <string name="notify_qiyamOdd" formatted="false">An odd night of the last ten. Seek Lailatul Qadr.</string>
+    <string name="notify_qiyamEven" formatted="false">One of the last ten nights of Ramadan.</string>
+    <string name="notify_wakeSahur" formatted="false">Wake up for sahur</string>
+    <string name="notify_wakeTahajjud" formatted="false">Wake up for tahajjud</string>
+    <string name="notify_wakeFor" formatted="false">Wake up for {name}</string>
+    <string name="notify_atPlace" formatted="false">{name} at {time} · {place}</string>
+    <string name="notify_endsAtPlace" formatted="false">{name} ends at {time} · {place}</string>
+    <string name="notify_timeFor" formatted="false">Time for {name}</string>
+    <string name="notify_beganAt" formatted="false">{name} began at {time} · {place}</string>
+    <string name="notify_openUntil" formatted="false">{name} is open until {time} · {place}</string>
+    <string name="qibla_faceFromNorth" formatted="false">Face {deg}° from north</string>
+    <string name="qibla_youAreFacing" formatted="false">You\'re facing the qibla</string>
+    <string name="qibla_turnRight" formatted="false">Turn right {deg}°</string>
+    <string name="qibla_turnLeft" formatted="false">Turn left {deg}°</string>
+    <string name="qibla_turnRightAbout" formatted="false">Turn right, about {deg}°</string>
+    <string name="qibla_turnLeftAbout" formatted="false">Turn left, about {deg}°</string>
+    <string name="journey_homeTitle" formatted="false">You\'re home</string>
+    <string name="journey_homeBody" formatted="false">Pray in full. Travel concessions apply once you journey at least {km} km.</string>
+    <string name="journey_nearbyTitle" formatted="false">Within {km} km of home</string>
+    <string name="journey_nearbyBody" formatted="false">That\'s short of the travel distance, so pray in full.</string>
+    <string name="journey_travellerTitle" formatted="false">You are a traveller (musafir)</string>
+    <string name="journey_travellerBody" formatted="false">You may shorten (qasar) and join (jamak) your prayers. Here is what changes for each one.</string>
+    <string name="journey_travellerHanafi" formatted="false">You may shorten (qasar) your prayers. In the Hanafi school prayers are not joined outside Hajj. Here is what changes for each one.</string>
+    <string name="journey_settledTitle" formatted="false">Settled here</string>
+    <string name="journey_settledBody" formatted="false">You\'ve been here {n} days. Staying longer than {max} days ends the travel concession, so pray in full.</string>
+    <string name="journey_rakaat" formatted="false">{n} rakaat</string>
+    <string name="journey_noChange" formatted="false">No change</string>
+    <string name="journey_shortened" formatted="false">Shortened from 4</string>
+    <string name="journey_canJoin" formatted="false">Can join with {name}</string>
+    <string name="journey_notJoined" formatted="false">Not joined</string>
+    <string name="journey_neverJoinedShort" formatted="false">Never joined</string>
+    <string name="journey_notTravel" formatted="false">You are {km} km from home. That is less than {limit} km, so this trip does not count as travel yet.</string>
+    <string name="journey_isTravel" formatted="false">You are {km} km from home. That is more than {limit} km, so this trip counts as travel.</string>
+    <string name="masjid_walkMin" formatted="false">{n} min walk</string>
+    <string name="masjid_driveMin" formatted="false">{n} min drive</string>
+    <string name="masjid_openUntil" formatted="false">Open now, until {time}</string>
+    <string name="masjid_openAllDay" formatted="false">Open now, all day</string>
+    <string name="masjid_closedOpens" formatted="false">Closed now, opens {time}</string>
+    <string name="masjid_closedToday" formatted="false">Closed today</string>
+    <string name="masjid_openNow" formatted="false">Open now</string>
+    <string name="masjid_closedNow" formatted="false">Closed now</string>
+    <string name="masjid_women" formatted="false">Women\'s space</string>
+    <string name="masjid_wheelchair" formatted="false">Wheelchair access</string>
+    <string name="masjid_parking" formatted="false">Parking</string>
+    <string name="masjid_toilets" formatted="false">Toilets</string>
+    <string name="masjid_away" formatted="false">{distance} away</string>
+    <string name="masjid_twoFriday" formatted="false">Two Friday prayers, 2nd from {time}</string>
+    <string name="masjid_twoFridayChip" formatted="false">2 Friday prayers</string>
+    <string name="masjid_directions" formatted="false">Directions</string>
+    <string name="masjid_directionsTo" formatted="false">Directions to {name}</string>
+    <string name="masjid_drivingTo" formatted="false">Driving directions to {name}</string>
+    <string name="masjid_searchAgain" formatted="false">Search again from here</string>
+    <string name="masjid_findNear" formatted="false">Find prayer places near me</string>
+    <string name="masjid_locationOff" formatted="false">Location is turned off for this site. Showing places near {place}.</string>
+    <string name="masjid_locationFailed" formatted="false">Couldn\'t find where you are. Showing places near {place}.</string>
+    <string name="masjid_savedPlace" formatted="false">your saved place</string>
+    <string name="masjid_nearestYou" formatted="false">Nearest to you</string>
+    <string name="masjid_nearestTo" formatted="false">Nearest to {place}</string>
+    <string name="masjid_howGoing" formatted="false">How you\'re going</string>
+    <string name="masjid_walk" formatted="false">Walk</string>
+    <string name="masjid_drive" formatted="false">Drive</string>
+    <string name="masjid_openOnly" formatted="false">Open now only</string>
+    <string name="masjid_driveNote" formatted="false">Drive times are a rough guide. Your maps app shows the traffic, so a masjid a little further away may be quicker.</string>
+    <string name="masjid_choosePlaceBody" formatted="false">Tap the button above, or pick a city on the Prayer tab.</string>
+    <string name="masjid_nothingOpen" formatted="false">Nothing open right now</string>
+    <string name="masjid_nothingOpenBody" formatted="false">Only places with opening hours on the map count here. Turn off Open now only to see the rest.</string>
+    <string name="masjid_prayerRooms" formatted="false">prayer room</string>
+    <string name="masjid_masjidWord" formatted="false">masjid</string>
+    <string name="masjid_secondFriday" formatted="false">Second Friday prayer from {time}.</string>
+    <string name="masjid_secondFridayWomen" formatted="false">Second Friday prayer from {time}, with space for women.</string>
+    <string name="masjid_eidFitr" formatted="false">Eid al-Fitr prayer</string>
+    <string name="masjid_eidAdha" formatted="false">Eid al-Adha prayer</string>
+    <string name="masjid_eidAt" formatted="false">{name} at {times}.</string>
+    <string name="masjid_keptTop" formatted="false">Kept at the top</string>
+    <string name="masjid_keepTop" formatted="false">Keep it at the top</string>
+    <string name="masjid_makeMine" formatted="false">Make it my masjid</string>
+    <string name="masjid_report" formatted="false">Report a problem</string>
+    <string name="masjid_moreOnMap" formatted="false">{n} more within 15 km are on the map. Tap a pin to see its name and directions.</string>
+    <string name="masjid_moreOnMap_one" formatted="false">{n} more within 15 km is on the map. Tap a pin to see its name and directions.</string>
+    <string name="masjid_keepHint" formatted="false">Tap a place and choose Make it my masjid to keep it at the top.</string>
+    <string name="masjid_mapCredit" formatted="false">Places from OpenStreetMap, kept by volunteers. Missing one, or a pin in the wrong spot? {link}, no sign up needed.</string>
+    <string name="masjid_tellMap" formatted="false">Tell the map</string>
+    <string name="masjid_noFacilities" formatted="false">The map doesn\'t list this place\'s facilities yet.</string>
+    <string name="masjid_iqamahLine" formatted="false">Iqamah {times}</string>
+    <string name="masjid_iqamahHow" formatted="false">Iqamah times show here when your masjid puts up a Prayer Times Asia screen. Scan its QR code once.</string>
+    <string name="masjid_eidAtTime" formatted="false">Eid prayer at {time}.</string>
+    <string name="masjid_spaceWomen" formatted="false">Space for women</string>
+    <string name="masjid_showNearest3" formatted="false">Show the nearest 3</string>
+    <string name="masjid_seeAll" formatted="false">See all {n}</string>
+    <string name="masjid_eidNearest" formatted="false">{date}. Prayer times at the masjids nearest you.</string>
+    <string name="masjid_fromMuis" formatted="false">From the Islamic Religious Council of Singapore (MUIS). {link}</string>
+    <string name="masjid_fromMuisUpdated" formatted="false">From the Islamic Religious Council of Singapore (MUIS), updated {date}. No booking needed, except on public holidays. {link}</string>
+    <string name="masjid_seeMuis" formatted="false">See the MUIS list</string>
+    <string name="masjid_fridayToday" formatted="false">Friday prayer today</string>
+    <string name="masjid_fridaySg" formatted="false">Friday prayer in Singapore</string>
+    <string name="masjid_fridayHold" formatted="false">{n} masjids hold a second Friday prayer from {time}, for those who can\'t make the first one at {name}.</string>
+    <string name="masjid_women2" formatted="false">Space for women in the 2nd prayer</string>
+    <string name="myMasjid_atAzan" formatted="false">At the azan</string>
+    <string name="myMasjid_afterAzan" formatted="false">{n} min after azan</string>
+    <string name="feedback_title" formatted="false">A note to the makers</string>
+    <string name="feedback_intro" formatted="false">Ustaz Aarif and the Nasar Digital team read every note. Good or bad, it helps us make the app better for everyone.</string>
+    <string name="feedback_about" formatted="false">What is your note about?</string>
+    <string name="feedback_kind" formatted="false">A kind word</string>
+    <string name="feedback_kindHint" formatted="false">What has the app helped you with?</string>
+    <string name="feedback_idea" formatted="false">An idea</string>
+    <string name="feedback_ideaHint" formatted="false">What would make the app better for you?</string>
+    <string name="feedback_time" formatted="false">A time looks wrong</string>
+    <string name="feedback_timeHint" formatted="false">Which prayer, which day, and what does your masjid show?</string>
+    <string name="feedback_broke" formatted="false">Something is not working</string>
+    <string name="feedback_brokeHint" formatted="false">What did you tap, and what happened?</string>
+    <string name="feedback_yourNote" formatted="false">Your note</string>
+    <string name="feedback_addDetails" formatted="false">Add my city and app version</string>
+    <string name="feedback_addDetailsSub" formatted="false">Helps us check your times. Never your exact location.</string>
+    <string name="feedback_mayShare" formatted="false">You may share my words</string>
+    <string name="feedback_mayShareSub" formatted="false">On our website, without your name.</string>
+    <string name="feedback_send" formatted="false">Send by email</string>
+    <string name="feedback_copy" formatted="false">No email app? Copy the note</string>
+    <string name="feedback_goesTo" formatted="false">It goes to {email}. We reply within a few days, insha Allah.</string>
+    <string name="review_title" formatted="false">Rate and review</string>
+    <string name="review_intro" formatted="false">A few honest words help other Muslims find the app, and help Ustaz Aarif and the team keep going. Jazakallahu khairan.</string>
+    <string name="review_step1" formatted="false">{b} in the box below, in your own words.</string>
+    <string name="review_step1b" formatted="false">Write once</string>
+    <string name="review_step2" formatted="false">{b} to review. We copy your words for you.</string>
+    <string name="review_step2b" formatted="false">Tap a place</string>
+    <string name="review_step3" formatted="false">{b} in their review box, then {paste}. Come back and do the same for the next one.</string>
+    <string name="review_step3b" formatted="false">Tap and hold</string>
+    <string name="review_paste" formatted="false">Paste</string>
+    <string name="review_yourReview" formatted="false">Your review</string>
+    <string name="review_copiedHow" formatted="false">Copied. Tap and hold in the review box, then Paste.</string>
+    <string name="review_private" formatted="false">Something not right? Send a private note</string>
+    <string name="review_appStore" formatted="false">Review on the App Store</string>
+    <string name="review_appStoreSub" formatted="false">For the iPhone app</string>
+    <string name="review_play" formatted="false">Review on Google Play</string>
+    <string name="review_playSub" formatted="false">For the Android app</string>
+    <string name="review_google" formatted="false">Review Nasar Digital on Google</string>
+    <string name="review_googleSub" formatted="false">The team in Singapore who builds the app</string>
+    <string name="source_feedDetail" formatted="false">Published by the authority and loaded through Prayer Times Asia\'s own calendar feed, which a workflow rebuilds every week from the official table. Kept in this browser, so it works offline.</string>
+    <string name="source_downloadedDetail" formatted="false">Downloaded once a year from the authority and kept in this browser, so it works offline.</string>
+    <string name="source_sunriseCalculated" formatted="false">{name} is not in the feed, so it is calculated (never later than the official time).</string>
+    <string name="move_copyThis" formatted="false">Copy this link</string>
+    <string name="notify_testTitle" formatted="false">{name} · test alert</string>
+    <string name="notify_testBody" formatted="false">This is how prayer alerts will look on this device.</string>
 </resources>

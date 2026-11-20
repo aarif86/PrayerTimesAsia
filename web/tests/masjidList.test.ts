@@ -12,7 +12,7 @@ describe('ready-made masjid list on the web', () => {
     const p = parseTile({ places: [['n1', 1.3, 103.9, 'Masjid Al-Istighfar', 'Pasir Ris', 0], ['n2', 1.31, 103.91, '', '', 1], ['bad']] })
     expect(p).toHaveLength(2)
     expect(p![0]).toMatchObject({ id: 'n1', name: 'Masjid Al-Istighfar', isMusollah: false })
-    expect(p![1]).toMatchObject({ name: 'Musollah', isMusollah: true })
+    expect(p![1]).toMatchObject({ name: 'Prayer room', isMusollah: true })
     expect(parseTile({})).toBeNull()
   })
 })

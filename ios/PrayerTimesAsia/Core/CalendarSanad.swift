@@ -18,10 +18,10 @@ enum HijriEvent: String, Codable, CaseIterable, Identifiable, Sendable {
         switch (self, style) {
         case (.ramadan, _): "1 Ramadan"
         case (.syawal, .malay): "Hari Raya Aidilfitri"
-        case (.syawal, .indonesian): "Idul Fitri"
+        case (.syawal, .indonesian): "Idulfitri"
         case (.syawal, _): "Eid al-Fitr"
         case (.adha, .malay): "Hari Raya Aidiladha"
-        case (.adha, .indonesian): "Idul Adha"
+        case (.adha, .indonesian): "Iduladha"
         case (.adha, _): "Eid al-Adha"
         case (.muharram, .malay), (.muharram, .indonesian): "Awal Muharram"
         case (.muharram, _): "Islamic New Year"

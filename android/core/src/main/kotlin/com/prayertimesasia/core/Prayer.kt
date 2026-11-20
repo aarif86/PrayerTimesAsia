@@ -143,8 +143,10 @@ enum class NamingStyle(val raw: String) {
 
     val hijriMonths: List<String>
         get() = when (this) {
-            MALAY, INDONESIAN -> listOf("Muharram", "Safar", "Rabiulawal", "Rabiulakhir", "Jamadilawal", "Jamadilakhir",
+            MALAY -> listOf("Muharram", "Safar", "Rabiulawal", "Rabiulakhir", "Jamadilawal", "Jamadilakhir",
                 "Rejab", "Syaaban", "Ramadan", "Syawal", "Zulkaedah", "Zulhijjah")
+            INDONESIAN -> listOf("Muharam", "Safar", "Rabiulawal", "Rabiulakhir", "Jumadilawal", "Jumadilakhir",
+                "Rajab", "Syakban", "Ramadan", "Syawal", "Zulkaidah", "Zulhijah")
             INTERNATIONAL, SOUTH_ASIAN -> listOf("Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani",
                 "Jumada al-Ula", "Jumada al-Akhirah", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qa'dah", "Dhu al-Hijjah")
             TURKISH -> listOf("Muharrem", "Safer", "Rebiülevvel", "Rebiülahir", "Cemaziyelevvel", "Cemaziyelahir",

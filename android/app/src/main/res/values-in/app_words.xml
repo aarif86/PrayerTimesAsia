@@ -6,10 +6,10 @@
     <string name="welcome_travel" formatted="false">Dibuat untuk perjalanan</string>
     <string name="welcome_qiblaGlance" formatted="false">Kiblat sekali lihat</string>
     <string name="welcome_countryMethodDetail" formatted="false">MUIS di Singapura, JAKIM di Malaysia, Kemenag di Indonesia, dan pengaturan yang wajar di tempat lain.</string>
-    <string name="welcome_travelDetail" formatted="false">Berganti saat Anda mendarat, jalan tanpa internet, dan memberi tahu kapan Anda boleh qasar dan jamak salat.</string>
-    <string name="welcome_qiblaDetail" formatted="false">Kompas yang tenang dan menyala saat Anda menghadap Ka\'bah.</string>
-    <string name="welcome_useLocation" formatted="false">Pakai lokasi saya</string>
-    <string name="welcome_chooseCity" formatted="false">Pilih kota saja</string>
+    <string name="welcome_travelDetail" formatted="false">Berganti saat Anda mendarat, berfungsi tanpa internet, dan memberi tahu kapan Anda boleh mengqasar dan menjamak salat.</string>
+    <string name="welcome_qiblaDetail" formatted="false">Kompas yang tenang dan menyala saat Anda menghadap Kakbah.</string>
+    <string name="welcome_useLocation" formatted="false">Gunakan lokasi saya</string>
+    <string name="welcome_chooseCity" formatted="false">Pilih kota</string>
     <string name="welcome_bringIn" formatted="false">Ambil pengaturan dari ponsel lain</string>
     <string name="welcome_privacy" formatted="false">Tanpa iklan luar. Tanpa akun. Lokasi Anda tetap di perangkat Anda.</string>
     <string name="app_sections" formatted="false">Bagian</string>
@@ -58,7 +58,7 @@
     <string name="style_bands" formatted="false">Pita Warna</string>
     <string name="style_simple" formatted="false">Besar dan Sederhana</string>
     <string name="preview_off" formatted="false">Nonaktif (tanggal sebenarnya)</string>
-    <string name="preview_sighting" formatted="false">Malam rukyat (29 Syaban)</string>
+    <string name="preview_sighting" formatted="false">Malam rukyat (29 Syakban)</string>
     <string name="preview_ramadan" formatted="false">Ramadan (hari 12)</string>
     <string name="preview_lastTen" formatted="false">Sepuluh malam terakhir (hari 26)</string>
     <string name="preview_raya" formatted="false">Pagi Idulfitri (1 Syawal)</string>
@@ -74,15 +74,15 @@
     <string name="today_musafirButton" formatted="false">Musafir. Anda boleh mengqasar dan menjamak salat</string>
     <string name="today_musafirLine" formatted="false">Musafir. Anda boleh qasar dan jamak</string>
     <string name="today_musafirHide" formatted="false">Sembunyikan, tetap tampilkan tombol koper di atas</string>
-    <string name="today_changeLocation" formatted="false">Ganti lokasi</string>
+    <string name="today_changeLocation" formatted="false">Ubah lokasi</string>
     <string name="today_blessedTimes" formatted="false">{name}, Dhuha dan waktu malam yang mulia</string>
     <string name="today_before" formatted="false">Sebelum {name}</string>
     <string name="today_alertPrompt" formatted="false">Dapatkan pemberitahuan saat waktu salat tiba</string>
     <string name="today_welcomeTo" formatted="false">Selamat datang di {place}</string>
     <string name="today_welcome" formatted="false">Selamat datang</string>
-    <string name="today_switched" formatted="false">Beralih ke {method} ({country}), waktu setempat. Tetap jalan tanpa internet.</string>
+    <string name="today_switched" formatted="false">Beralih ke {method} ({country}), waktu setempat. Tetap berfungsi tanpa internet.</string>
     <string name="today_pinned" formatted="false">Waktu setempat dipakai. Anda telah menetapkan {method} di Pengaturan.</string>
-    <string name="today_switchAuto" formatted="false">Ganti otomatis</string>
+    <string name="today_switchAuto" formatted="false">Ganti secara otomatis</string>
     <string name="today_switchAutoSub" formatted="false">Ikuti metode setiap negara saat bepergian</string>
     <string name="today_musafirSub" formatted="false">Panduan jamak dan qasar saat Anda bepergian</string>
     <string name="today_asrHanafi" formatted="false">Ashar lebih akhir (Hanafi)</string>
@@ -97,10 +97,10 @@
     <string name="today_prevDay" formatted="false">Hari sebelumnya</string>
     <string name="today_nextDay" formatted="false">Hari berikutnya</string>
     <string name="today_backToToday" formatted="false">Kembali ke hari ini</string>
-    <string name="today_datesSources" formatted="false">Tanggal Ramadan dan Idul Fitri beserta sumbernya</string>
+    <string name="today_datesSources" formatted="false">Tanggal Ramadan dan Idulfitri beserta sumbernya</string>
     <string name="today_leftToPray" formatted="false">Sisa {time} untuk salat</string>
-    <string name="today_leftLabel" formatted="false">lagi untuk salat</string>
-    <string name="today_untilName" formatted="false">sebelum {name}</string>
+    <string name="today_leftLabel" formatted="false">tersisa untuk salat</string>
+    <string name="today_untilName" formatted="false">sampai {name}</string>
     <string name="today_yesterday" formatted="false">Kemarin</string>
     <string name="today_inDays" formatted="false">Dalam {n} hari</string>
     <string name="today_inDays_one" formatted="false">Dalam {n} hari</string>
@@ -132,12 +132,12 @@
     <string name="hadith_hide" formatted="false">Sembunyikan hadis ini</string>
     <string name="hadith_hidden" formatted="false">Hadis disembunyikan di sini. Tampilkan lagi di Pengaturan, Hadis.</string>
     <string name="makers_title" formatted="false">Dibuat fisabilillah</string>
-    <string name="makers_body" formatted="false">Prayer Times Asia gratis, tanpa iklan luar dan tanpa pelacakan. Aplikasi ini dibuat dan dirawat oleh Ustaz Aarif Raziff dan tim Nasar Digital (Nasar Pte Ltd).</string>
+    <string name="makers_body" formatted="false">Prayer Times Asia gratis, tanpa iklan luar dan tanpa pelacakan. Aplikasi ini dibuat dan dikelola oleh Ustaz Aarif Raziff dan tim Nasar Digital (Nasar Pte Ltd).</string>
     <string name="makers_opens" formatted="false">{name}, membuka {site}</string>
     <string name="makers_sponsored" formatted="false">Bersponsor</string>
     <string name="qibla_choosePlace" formatted="false">Pilih tempat untuk mencari kiblat.</string>
     <string name="qibla_title" formatted="false">Kiblat</string>
-    <string name="qibla_checkSun" formatted="false">Cek dengan matahari</string>
+    <string name="qibla_checkSun" formatted="false">Periksa dengan matahari</string>
     <string name="qibla_falakMode" formatted="false">Mode Falak, cari kiblat dari matahari</string>
     <string name="qibla_facing" formatted="false">Anda menghadap</string>
     <string name="qibla_toMakkah" formatted="false">Ke Makkah</string>
@@ -148,7 +148,7 @@
     <string name="qibla_browserAsksHow" formatted="false">Peramban Anda bertanya dulu sebelum membagikan kompas. Ketuk {button} di bagian atas, lalu tekan {allow}. Setelah itu piringan berputar mengikuti ponsel Anda.</string>
     <string name="qibla_allow" formatted="false">Izinkan</string>
     <string name="qibla_tapStart" formatted="false">Ketuk untuk mulai</string>
-    <string name="qibla_noCompassHelp" formatted="false">Pakai arah kiblat di atas dengan peta, atau matahari di Falak. Berdirilah menghadap {deg}° ({point}). Misalnya, sejajarkan diri dengan garis emas di peta.</string>
+    <string name="qibla_noCompassHelp" formatted="false">Gunakan arah kiblat di atas dengan peta, atau matahari di Falak. Berdirilah menghadap {deg}° ({point}). Misalnya, sejajarkan diri dengan garis emas di peta.</string>
     <string name="qibla_notAllowed" formatted="false">Akses kompas tidak diizinkan.</string>
     <string name="qibla_noCompass" formatted="false">Perangkat atau peramban ini tidak punya kompas.</string>
     <string name="qibla_step1" formatted="false">Pegang ponsel mendatar di depan Anda, layar menghadap ke atas.</string>
@@ -189,17 +189,17 @@
     <string name="falak_minutes" formatted="false">{n} menit</string>
     <string name="falak_minutes_one" formatted="false">{n} menit</string>
     <string name="falak_todayAt" formatted="false">hari ini {time}</string>
-    <string name="falak_qiblaDayExplain" formatted="false">Dua kali setahun matahari berada tepat di atas Kakbah saat tengah hari di Makkah (istiwa\' a\'zam). Pada menit itu, setiap bayangan tegak di mana pun matahari terlihat mengarah tepat membelakangi Kakbah. Ini cara paling tepat untuk mengecek kiblat, cukup dengan sebatang tongkat.</string>
-    <string name="falak_qiblaDayVisible" formatted="false">Terlihat dari sini, matahari akan berada {deg}° di atas ufuk. Tegakkan tongkat lurus di tanah datar dan menghadaplah dari ujung bayangan ke pangkalnya. Sehari sebelum dan sesudahnya juga bisa dipakai, dengan selisih sekitar setengah derajat.</string>
-    <string name="falak_qiblaDayDown" formatted="false">Matahari sudah terbenam di sini pada saat itu. Pakai rashdul kiblat harian di bawah, atau Hari Kiblat berikutnya.</string>
+    <string name="falak_qiblaDayExplain" formatted="false">Dua kali setahun matahari berada tepat di atas Kakbah saat tengah hari di Makkah (istiwa\' a\'zam). Pada menit itu, setiap bayangan tegak di mana pun matahari terlihat mengarah tepat membelakangi Kakbah. Ini cara paling tepat untuk memeriksa kiblat, cukup dengan sebatang tongkat.</string>
+    <string name="falak_qiblaDayVisible" formatted="false">Terlihat dari sini, matahari akan berada {deg}° di atas ufuk. Tegakkan tongkat lurus di tanah datar dan menghadaplah dari ujung bayangan ke pangkalnya. Sehari sebelum dan sesudahnya juga dapat dipakai, dengan selisih sekitar setengah derajat.</string>
+    <string name="falak_qiblaDayDown" formatted="false">Matahari sudah terbenam di sini pada saat itu. Gunakan rashdul kiblat harian di bawah, atau Hari Kiblat berikutnya.</string>
     <string name="falak_rashdulToday" formatted="false">Rashdul kiblat hari ini</string>
     <string name="falak_rashdulExplain" formatted="false">Saat matahari segaris dengan kiblat dari tempat Anda, sehingga setiap bayangan tegak jatuh di garis kiblat.</string>
     <string name="falak_rashdulNone" formatted="false">Tidak ada posisi matahari yang cukup tinggi hari ini. Berikutnya {date} pukul {time}.</string>
-    <string name="falak_rashdulNever" formatted="false">Matahari tidak segaris dengan kiblat dari sini dalam beberapa minggu ke depan. Pakai kompas atau Hari Kiblat.</string>
+    <string name="falak_rashdulNever" formatted="false">Matahari tidak segaris dengan kiblat dari sini dalam beberapa minggu ke depan. Gunakan kompas atau Hari Kiblat.</string>
     <string name="falak_degUp" formatted="false">{deg}° di atas ufuk</string>
     <string name="falak_rashdulGood" formatted="false">Berlaku sekitar 2 menit sebelum dan sesudahnya. Pastikan tongkat betul tegak dengan bandul atau tali yang digantung.</string>
     <string name="falak_stickTitle" formatted="false">Tongkat istiwa\' (tongkat bayangan)</string>
-    <string name="falak_stickHow" formatted="false">Tegakkan tongkat lurus di tanah datar. Pulpen di atas meja pun bisa. Ukur tongkat dan bayangannya dalam sentimeter.</string>
+    <string name="falak_stickHow" formatted="false">Tegakkan tongkat lurus di tanah datar. Pulpen di atas meja pun dapat digunakan. Ukur tongkat dan bayangannya dalam sentimeter.</string>
     <string name="falak_stickHeight" formatted="false">Tinggi tongkat</string>
     <string name="falak_forStick" formatted="false">Hari ini, untuk tongkat ini</string>
     <string name="falak_zawal" formatted="false">Zawal (bayangan terpendek)</string>
@@ -208,7 +208,7 @@
     <string name="falak_asrHanafi" formatted="false">Ashar, Hanafi (+2× tongkat)</string>
     <string name="falak_zawalExplain" formatted="false">{name} dimulai saat bayangan berhenti memendek dan mulai memanjang. Ashar dimulai saat bayangan sama dengan bayangan tengah hari ditambah tinggi tongkat (dua kali lipat untuk Hanafi).</string>
     <string name="falak_yourTimetable" formatted="false">Jadwal Anda menunjukkan {name} pukul {dhuhr} dan Ashar pukul {asr}. Jadwal menambahkan beberapa menit ihtiyat (sikap waspada) di atas hitungan matahari.</string>
-    <string name="falak_checkReading" formatted="false">Cek pembacaan</string>
+    <string name="falak_checkReading" formatted="false">Periksa pembacaan</string>
     <string name="falak_shadowLength" formatted="false">Panjang bayangan</string>
     <string name="falak_measuredAt" formatted="false">Diukur pukul</string>
     <string name="falak_gradeObservation" formatted="false">Tingkat F · pengamatan Anda</string>
@@ -218,21 +218,21 @@
     <string name="falak_ahead" formatted="false">{time} lebih cepat dari jam</string>
     <string name="falak_behind" formatted="false">{time} lebih lambat dari jam</string>
     <string name="falak_usualCauses" formatted="false">Penyebab umumnya tongkat yang tidak tegak, tanah yang tidak datar, atau ujung bayangan yang sulit terlihat. Coba lagi dengan tali bandul.</string>
-    <string name="falak_tooLow" formatted="false">Matahari tidak serendah itu pada sisi tengah hari ini. Ukur lagi, atau cek waktunya.</string>
+    <string name="falak_tooLow" formatted="false">Matahari tidak serendah itu pada waktu ini hari ini. Ukur lagi, atau periksa waktunya.</string>
     <string name="falak_asrBegun" formatted="false">Ashar ({school}) sudah masuk menurut bayangan Anda. Sudah melewati {length}.</string>
     <string name="falak_asrNotBegun" formatted="false">Ashar ({school}) belum masuk menurut bayangan Anda. Perlu mencapai {length}.</string>
     <string name="falak_morning" formatted="false">Pembacaan pagi, sebelum zawal. {name} belum masuk.</string>
     <string name="falak_skySigns" formatted="false">Tanda di langit</string>
-    <string name="falak_skyIntro" formatted="false">Hal yang digambarkan oleh waktu salat, agar Anda bisa melihatnya sendiri. Sebagai informasi saja, karena lampu kota, kabut asap dan gedung menutupi tanda ini, dan ulama berbeda pendapat tentang cara membaca fajar dan senja. Salatlah sesuai jadwal Anda.</string>
+    <string name="falak_skyIntro" formatted="false">Hal yang digambarkan oleh waktu salat, agar Anda dapat melihatnya sendiri. Sebagai informasi saja, karena lampu kota, kabut asap dan gedung menutupi tanda ini, dan ulama berbeda pendapat tentang cara membaca fajar dan senja. Salatlah sesuai jadwal Anda.</string>
     <string name="falak_signMaghrib" formatted="false">Seluruh piringan matahari sudah di bawah ufuk dan tepi atasnya sudah hilang. Paling jelas terlihat di laut atau tanah lapang. Di balik bukit atau gedung matahari hilang lebih awal, jadi jangan salat berdasarkan itu.</string>
     <string name="falak_signIsha" formatted="false">Cahaya merah (syafaq ahmar) sudah hilang dari langit barat. Inilah pendapat mazhab Syafii, Maliki dan Hanbali. Imam Abu Hanifah berpendapat yang dimaksud adalah cahaya putih sesudahnya. Jadwal memakai kedalaman matahari di bawah ufuk (sekitar 17° sampai 18°).</string>
     <string name="falak_signFajr" formatted="false">Fajar sadiq adalah cahaya putih tipis yang melebar ke samping di sepanjang ufuk timur dan makin terang. Bukan fajar kazib sebelumnya, yaitu tiang cahaya tegak yang samar lalu hilang lagi. Para peneliti masih memperdebatkan kedalaman tepat matahari saat fajar sadiq, jadi ini sebagai informasi saja.</string>
     <string name="falakTools_starting" formatted="false">Menyalakan kamera…</string>
     <string name="falakTools_noCamera" formatted="false">Kamera tidak tersedia</string>
-    <string name="falakTools_cameraHelp" formatted="false">Tampilan ini menggambar kiblat dan bayangan tongkat di atas kamera. Izinkan kamera, atau pakai kompas dan kartu di tab Falak.</string>
+    <string name="falakTools_cameraHelp" formatted="false">Tampilan ini menggambar kiblat dan bayangan tongkat di atas kamera. Izinkan kamera, atau gunakan kompas dan kartu di tab Falak.</string>
     <string name="falakTools_pointFloor" formatted="false">Arahkan kamera ke lantai di depan Anda.</string>
-    <string name="falakTools_useCompass" formatted="false">Pakai kompas</string>
-    <string name="falakTools_noCompass" formatted="false">Tidak ada kompas di perangkat ini, jadi garis tidak bisa ikut berputar.</string>
+    <string name="falakTools_useCompass" formatted="false">Gunakan kompas</string>
+    <string name="falakTools_noCompass" formatted="false">Tidak ada kompas di perangkat ini, jadi garis tidak dapat ikut berputar.</string>
     <string name="falakTools_goldLine" formatted="false">Garis emas menunjukkan kiblat</string>
     <string name="falakTools_darkBar" formatted="false">Batang gelap menunjukkan jatuhnya bayangan tongkat saat ini</string>
     <string name="falakTools_outdoors" formatted="false">Di luar saat cerah, bayangan sebenarnya harus jatuh di sepanjang batang gelap. Jika tidak, menjauhlah dari logam dan gerakkan ponsel membentuk angka 8 untuk mengkalibrasi ulang kompas. Jangan menatap matahari.</string>
@@ -244,7 +244,7 @@
     <string name="falakTools_notLevel" formatted="false">Belum datar. Atur sampai gelembung berubah hijau</string>
     <string name="falakTools_waitingMotion" formatted="false">Menunggu sensor gerak…</string>
     <string name="falakTools_noMotion" formatted="false">Perangkat ini tidak punya sensor gerak.</string>
-    <string name="falakTools_useMotion" formatted="false">Pakai sensor gerak</string>
+    <string name="falakTools_useMotion" formatted="false">Gunakan sensor gerak</string>
     <string name="falakTools_groundHow" formatted="false">Letakkan ponsel mendatar di tempat tongkat akan berdiri. Di bawah 0,5° sudah baik.</string>
     <string name="falakTools_stickHow" formatted="false">Tempelkan sisi panjang ponsel ke tongkat. Di bawah 0,5° dari tegak sudah baik.</string>
     <string name="falakTools_tilt" formatted="false">Kemiringan 1° menggeser ujung bayangan tongkat 1 m sekitar 1,7 cm, cukup untuk menggeser pembacaan satu menit.</string>
@@ -257,12 +257,12 @@
     <string name="masjid_choosePlaceHelp" formatted="false">Izinkan lokasi atau pilih kota di tab Salat.</string>
     <string name="masjid_busy" formatted="false">Server peta gratis sedang sibuk. Masih mencari…</string>
     <string name="masjid_searching" formatted="false">Mencari di sekitar…</string>
-    <string name="masjid_failed" formatted="false">Tidak bisa mencari</string>
+    <string name="masjid_failed" formatted="false">Tidak dapat mencari</string>
     <string name="masjid_nothing" formatted="false">Tidak ada yang tercatat di sekitar</string>
-    <string name="masjid_failedHelp" formatted="false">Server peta gratis tidak menjawab. Cek koneksi Anda, atau coba lagi sebentar lagi.</string>
-    <string name="masjid_nothingHelp" formatted="false">OpenStreetMap tidak mencatat {kind} dalam radius 15 km. Pakai tab Kiblat untuk salat di tempat Anda.</string>
+    <string name="masjid_failedHelp" formatted="false">Server peta gratis tidak menjawab. Periksa koneksi Anda, atau coba lagi sebentar lagi.</string>
+    <string name="masjid_nothingHelp" formatted="false">OpenStreetMap tidak mencatat {kind} dalam radius 15 km. Gunakan tab Kiblat untuk salat di tempat Anda.</string>
     <string name="masjid_walking" formatted="false">Petunjuk jalan kaki ke {name}</string>
-    <string name="masjid_credit" formatted="false">Daftar tempat dari kontributor OpenStreetMap. Ada yang belum ada? Siapa saja bisa menambahkannya di openstreetmap.org.</string>
+    <string name="masjid_credit" formatted="false">Daftar tempat dari kontributor OpenStreetMap. Ada yang belum ada? Siapa saja dapat menambahkannya di openstreetmap.org.</string>
     <string name="myMasjid_jumuah" formatted="false">Jumat</string>
     <string name="myMasjid_noTimes" formatted="false">Masjid ini belum mengatur waktu iqamahnya.</string>
     <string name="myMasjid_title" formatted="false">Masjid Anda</string>
@@ -270,8 +270,8 @@
     <string name="myMasjid_iqamah" formatted="false">Iqamah</string>
     <string name="myMasjid_replaces" formatted="false">Ini menggantikan {name}.</string>
     <string name="myMasjid_add" formatted="false">Tambahkan masjid saya</string>
-    <string name="myMasjid_usingApp" formatted="false">Memakai aplikasi iPhone atau Android? Buka ini di aplikasi.</string>
-    <string name="myMasjid_usingAppAsk" formatted="false">Memakai aplikasi iPhone atau Android?</string>
+    <string name="myMasjid_usingApp" formatted="false">Menggunakan aplikasi iPhone atau Android? Buka ini di aplikasi.</string>
+    <string name="myMasjid_usingAppAsk" formatted="false">Menggunakan aplikasi iPhone atau Android?</string>
     <string name="myMasjid_openInApp" formatted="false">Buka di aplikasi</string>
     <string name="myMasjid_scanHelp" formatted="false">Masjid Anda punya layar Prayer Times Asia? Pindai kode QR itu dengan kamera ponsel untuk melihat waktu iqamah di layar Salat Anda.</string>
     <string name="myMasjid_shownAs" formatted="false">Tampil sebagai \"Jamaah\" di layar Salat Anda.</string>
@@ -282,16 +282,16 @@
     <string name="move_otherPhone" formatted="false">Di ponsel lain, buka Prayer Times Asia › Pengaturan › Ambil pengaturan lalu pindai kode ini.</string>
     <string name="move_bringIn" formatted="false">Ambil pengaturan</string>
     <string name="move_noApp" formatted="false">Belum ada aplikasinya? Arahkan kameranya ke kode ini. Aplikasi web akan terbuka dengan pengaturan Anda.</string>
-    <string name="move_carries" formatted="false">Kode QR ini membawa {what}. Untuk membawa semuanya, pakai Salin tautan atau Bagikan.</string>
+    <string name="move_carries" formatted="false">Kode QR ini membawa {what}. Untuk membawa semuanya, gunakan Salin tautan atau Bagikan.</string>
     <string name="move_lastDays" formatted="false">riwayat pencatat {n} hari terakhir Anda</string>
     <string name="move_ramadanOnly" formatted="false">hanya catatan Ramadan tahun ini</string>
     <string name="move_shareTitle" formatted="false">Pengaturan Prayer Times Asia saya</string>
     <string name="move_private" formatted="false">Kode ini berisi tempat yang Anda simpan, jadi kirim hanya ke diri sendiri.</string>
     <string name="move_arrived" formatted="false">Pengaturan Anda sudah masuk.</string>
-    <string name="move_alertsAgain" formatted="false">Pemberitahuan salat butuh izin di setiap perangkat. Aktifkan di Pengaturan › Pemberitahuan.</string>
+    <string name="move_alertsAgain" formatted="false">Pemberitahuan salat memerlukan izin di setiap perangkat. Aktifkan di Pengaturan › Pemberitahuan.</string>
     <string name="move_bringHow" formatted="false">Di ponsel atau peramban lain, buka Pengaturan › Pindahkan pengaturan saya. Pindai kode QR itu dengan kamera ponsel ini, atau tempel tautannya di sini.</string>
     <string name="move_paste" formatted="false">Tempel tautan atau kode</string>
-    <string name="move_bad" formatted="false">Itu tidak tampak seperti kode pengaturan. Salin seluruh tautan dan coba lagi.</string>
+    <string name="move_bad" formatted="false">Itu bukan kode pengaturan. Salin seluruh tautan dan coba lagi.</string>
     <string name="move_willBring" formatted="false">Ini akan memasukkan</string>
     <string name="move_replaceNote" formatted="false">Pengaturan Anda di sini akan diganti. Riwayat pencatat ditambahkan ke yang sudah ada.</string>
     <string name="tracker_streak" formatted="false">{n} hari beruntun</string>
@@ -332,7 +332,7 @@
     <string name="wake_soundHelp" formatted="false">Ketuk suara untuk mendengarnya. Setiap alarm memakai suara ini. Azan akan masuk daftar setelah rekamannya siap.</string>
     <string name="wake_calendarRings" formatted="false">Kalender ponsel Anda membunyikan setiap alarm, meski halaman ini tertutup</string>
     <string name="wake_silent" formatted="false">Untuk alarm yang tetap berbunyi saat mode senyap</string>
-    <string name="wake_webOnly" formatted="false">Di web, alarm hanya bisa berbunyi saat Prayer Times Asia terbuka. Untuk setiap pagi, tambahkan ke kalender Anda atau pakai aplikasi iPhone atau Android.</string>
+    <string name="wake_webOnly" formatted="false">Di web, alarm hanya dapat berbunyi saat Prayer Times Asia terbuka. Untuk setiap pagi, tambahkan ke kalender Anda atau gunakan aplikasi iPhone atau Android.</string>
     <string name="settings_title" formatted="false">Pengaturan</string>
     <string name="settings_location" formatted="false">Lokasi</string>
     <string name="settings_place" formatted="false">Tempat</string>
@@ -341,22 +341,22 @@
     <string name="settings_ramadan" formatted="false">Ramadan dan Syawal</string>
     <string name="settings_ramadanFoot" formatted="false">Mode Ramadan aktif sendiri pada hari pertama yang diumumkan otoritas Anda, dan Syawal menyusul saat Idulfitri.</string>
     <string name="settings_aboutDays" formatted="false">Sekitar {n} hari lagi menuju Ramadan.</string>
-    <string name="settings_tryRamadanFoot" formatted="false">Coba Ramadan membuat penguji bisa melihat semua bagiannya sekarang. Hanya mengubah {where} ini, dan tanggal sebenarnya kembali saat Anda mematikannya.</string>
+    <string name="settings_tryRamadanFoot" formatted="false">Coba Ramadan membuat penguji dapat melihat semua bagiannya sekarang. Hanya mengubah {where} ini, dan tanggal sebenarnya kembali saat Anda mematikannya.</string>
     <string name="settings_demo" formatted="false">demo</string>
     <string name="settings_browser" formatted="false">peramban</string>
     <string name="settings_ramadanPage" formatted="false">Halaman Ramadan</string>
-    <string name="settings_ramadanPageSub" formatted="false">Imsak dan Berbuka, puasa Anda, doa, zakat fitrah, sepuluh malam terakhir</string>
+    <string name="settings_ramadanPageSub" formatted="false">Imsak dan berbuka, puasa Anda, doa, zakat fitrah, sepuluh malam terakhir</string>
     <string name="settings_tryRamadan" formatted="false">Coba Ramadan (untuk penguji)</string>
     <string name="settings_imsakAlert" formatted="false">Pemberitahuan Imsak</string>
     <string name="settings_imsakAlertSub" formatted="false">10 menit sebelum Imsak, saat Ramadan</string>
-    <string name="settings_berbukaAlert" formatted="false">Pemberitahuan Berbuka</string>
+    <string name="settings_berbukaAlert" formatted="false">Pengingat berbuka</string>
     <string name="settings_berbukaAlertSub" formatted="false">Saat Maghrib, saat Ramadan</string>
     <string name="settings_qiyam" formatted="false">Pengingat qiyam</string>
     <string name="settings_qiyamSub" formatted="false">Sepertiga malam terakhir pada sepuluh malam terakhir</string>
     <string name="settings_wakeUp" formatted="false">Bangun</string>
     <string name="settings_wakeUpFoot" formatted="false">Juga ada di layar Salat. Ketuk jam alarm di bagian atas.</string>
-    <string name="settings_alertsAlarms" formatted="false">Notifikasi dan alarm</string>
-    <string name="settings_alertsAlarmsFoot" formatted="false">Setiap salat Mati, Beri tahu atau Alarm, {friday}, sahur, Ramadan dan bunyinya, semuanya di satu tempat. Juga ada di layar Salat. Ketuk jam alarm di bagian atas, atau tahan ikon lonceng.</string>
+    <string name="settings_alertsAlarms" formatted="false">Pemberitahuan dan alarm</string>
+    <string name="settings_alertsAlarmsFoot" formatted="false">Setiap salat Mati, Beri tahu atau Alarm, {friday}, sahur, Ramadan dan suaranya, semuanya di satu tempat. Juga ada di layar Salat. Ketuk jam alarm di bagian atas, atau tahan ikon lonceng.</string>
     <string name="settings_nothingOn" formatted="false">Belum ada yang aktif</string>
     <string name="settings_nNotify" formatted="false">{n} beri tahu</string>
     <string name="settings_nAlarms_one" formatted="false">{n} alarm</string>
@@ -435,7 +435,7 @@
     <string name="settings_ends" formatted="false">{name} ({end} berakhir)</string>
     <string name="settings_testAlert" formatted="false">Kirim pemberitahuan uji</string>
     <string name="settings_quiet" formatted="false">Pemberitahuan senyap</string>
-    <string name="settings_quietFoot" formatted="false">Untuk pekerja shift yang tidur siang, bayi yang tidur di kamar, atau sekadar malam yang tenang. Pemberitahuan tetap datang, tapi hanya bergetar. {name} tetap bersuara agar bisa membangunkan Anda.</string>
+    <string name="settings_quietFoot" formatted="false">Untuk pekerja shift yang tidur siang, bayi yang tidur di kamar, atau sekadar malam yang tenang. Pemberitahuan tetap datang, tapi hanya bergetar. {name} tetap bersuara agar dapat membangunkan Anda.</string>
     <string name="settings_buzzOnly" formatted="false">Getar saja, tanpa suara</string>
     <string name="settings_quietHours" formatted="false">Jam senyap</string>
     <string name="settings_from" formatted="false">Dari</string>
@@ -460,13 +460,13 @@
     <string name="jumuah_footSg" formatted="false">Hanya sebagian masjid di Singapura mengadakan sesi kedua. Tab Masjid menunjukkan masjid mana saja.</string>
     <string name="jumuah_footWho" formatted="false">{friday} tidak wajib bagi perempuan, musafir atau orang sakit, yang salat {dhuhr} sebagai gantinya.</string>
     <string name="settings_moving" formatted="false">Pindah ke ponsel lain</string>
-    <string name="settings_movingFoot" formatted="false">Tempat, pilihan dan riwayat pencatat Anda pindah di dalam kode QR atau tautan. Tanpa akun, tanpa unggahan. Bisa antara web, iPhone dan Android.</string>
+    <string name="settings_movingFoot" formatted="false">Tempat, pilihan dan riwayat pencatat Anda pindah di dalam kode QR atau tautan. Tanpa akun, tanpa unggahan. Berfungsi di web, iPhone dan Android.</string>
     <string name="settings_phoneApp" formatted="false">Aplikasi ponsel</string>
     <string name="settings_install" formatted="false">Pasang</string>
-    <string name="settings_installFoot" formatted="false">Setelah dipasang, aplikasi terbuka dari Layar Utama atau dock, berjalan tanpa internet, dan di iPhone hanya cara ini yang membuat web bisa menampilkan pemberitahuan.</string>
+    <string name="settings_installFoot" formatted="false">Setelah dipasang, aplikasi terbuka dari Layar Utama atau dock, berjalan tanpa internet, dan di iPhone hanya cara ini yang membuat web dapat menampilkan pemberitahuan.</string>
     <string name="settings_addHome" formatted="false">Tambahkan Prayer Times Asia ke Layar Utama Anda</string>
     <string name="settings_accuracy" formatted="false">Ketepatan</string>
-    <string name="settings_accuracyFoot" formatted="false">Setiap hari menampilkan tingkat sumbernya. A resmi, B dikonfirmasi masjid, C dicek komunitas, D dihitung. F (falak) menandai pembacaan dari tongkat bayangan Anda sendiri, yang hanya mengecek waktu. Di Singapura, Malaysia dan Indonesia, aplikasi mengunduh jadwal resmi MUIS, JAKIM atau Kemenag untuk tahun itu (hanya tahun, kode zona atau nama kabupaten yang dikirim) dan menyimpannya di peramban ini untuk dipakai tanpa internet. Jika situs otoritas sedang mati, feed kalender aplikasi sendiri (dibuat tiap minggu dari tabel yang sama) yang dipakai. Di tempat lain, dan sebelum unduhan itu, waktu dihitung di peramban Anda dengan metode negara itu sendiri, mesin yang sama dengan aplikasi iPhone, dicek terhadap setiap hari jadwal MUIS, JAKIM dan Kemenag 2026. Untuk Singapura, tidak pernah lebih awal dari waktu resmi (paling lambat 2 menit). Untuk Malaysia dan Indonesia, selisihnya sekitar 2 menit.</string>
+    <string name="settings_accuracyFoot" formatted="false">Setiap hari menampilkan tingkat sumbernya. A resmi, B dikonfirmasi masjid, C diperiksa komunitas, D dihitung. F (falak) menandai pembacaan dari tongkat bayangan Anda sendiri, yang hanya memeriksa waktu. Di Singapura, Malaysia dan Indonesia, aplikasi mengunduh jadwal resmi MUIS, JAKIM atau Kemenag untuk tahun itu (hanya tahun, kode zona atau nama kabupaten yang dikirim) dan menyimpannya di peramban ini untuk dipakai tanpa internet. Jika situs otoritas sedang tidak dapat diakses, feed kalender aplikasi sendiri (dibuat tiap minggu dari tabel yang sama) yang dipakai. Di tempat lain, dan sebelum unduhan itu, waktu dihitung di peramban Anda dengan metode negara itu sendiri, mesin yang sama dengan aplikasi iPhone, diperiksa terhadap setiap hari jadwal MUIS, JAKIM dan Kemenag 2026. Untuk Singapura, tidak pernah lebih awal dari waktu resmi (paling lambat 2 menit). Untuk Malaysia dan Indonesia, selisihnya sekitar 2 menit.</string>
     <string name="settings_privacy" formatted="false">Privasi</string>
     <string name="settings_privacyFull" formatted="false">Rincian privasi lengkap</string>
     <string name="settings_privacy1" formatted="false">Tanpa iklan luar, tanpa akun, tanpa pelacakan di aplikasi atau situs lain.</string>
@@ -501,13 +501,13 @@
     <string name="places_homeHelp" formatted="false">Cari kota atau daerah tempat tinggal Anda, seperti Tampines, Shah Alam atau Bandung. Rumah dipakai untuk menentukan kapan Anda terhitung musafir.</string>
     <string name="places_current" formatted="false">Lokasi saat ini</string>
     <string name="places_locationBlocked" formatted="false">Dinonaktifkan untuk situs ini. Izinkan lokasi di pengaturan situs peramban Anda, atau cari di bawah.</string>
-    <string name="places_searchHelp" formatted="false">Ketik kota seperti Hanoi atau London, atau negara seperti Malaysia untuk melihat daftar kotanya. Waktu dihitung di peramban Anda, jadi tetap jalan tanpa internet. Lokasi Anda tidak pernah keluar dari perangkat ini.</string>
+    <string name="places_searchHelp" formatted="false">Ketik kota seperti Hanoi atau London, atau negara seperti Malaysia untuk melihat daftar kotanya. Waktu dihitung di peramban Anda, jadi tetap berfungsi tanpa internet. Lokasi Anda tidak pernah keluar dari perangkat ini.</string>
     <string name="places_fromOsm" formatted="false">Dari OpenStreetMap</string>
     <string name="places_nothingOnline" formatted="false">Tidak ditemukan secara online (atau tidak ada koneksi).</string>
     <string name="places_searchOsm" formatted="false">Cari \"{q}\" di OpenStreetMap</string>
     <string name="places_osmNote" formatted="false">Hanya kata yang Anda ketik yang dikirim ke pencarian Nominatim OpenStreetMap.</string>
     <string name="places_isHome" formatted="false">Apakah {place} rumah Anda?</string>
-    <string name="places_isHomeHelp" formatted="false">Kami menebaknya dari lokasi Anda saat pertama membuka aplikasi. Rumah dipakai untuk menentukan kapan Anda terhitung musafir, jadi mohon dicek.</string>
+    <string name="places_isHomeHelp" formatted="false">Kami menebaknya dari lokasi Anda saat pertama membuka aplikasi. Rumah dipakai untuk menentukan kapan Anda terhitung musafir, jadi mohon periksa.</string>
     <string name="places_yesHome" formatted="false">Ya, ini rumah saya</string>
     <string name="source_title" formatted="false">Sumber</string>
     <string name="source_where" formatted="false">Asal waktu hari ini</string>
@@ -525,13 +525,13 @@
     <string name="source_grades" formatted="false">Tingkat</string>
     <string name="source_helpVerify" formatted="false">Bantu verifikasi waktu di sini</string>
     <string name="source_helpVerifySub" formatted="false">Kirim jadwal masjid, metode yang dipakai masjid di sini, atau waktu azan yang Anda dengar</string>
-    <string name="source_checked" formatted="false">Setiap kiriman dicek oleh manusia sebelum mengubah waktu siapa pun, dan dibagikan terbuka dengan lisensi CC BY 4.0.</string>
+    <string name="source_checked" formatted="false">Setiap kiriman diperiksa oleh manusia sebelum mengubah waktu siapa pun, dan dibagikan terbuka dengan lisensi CC BY 4.0.</string>
     <string name="calendar_title" formatted="false">Kalender</string>
     <string name="calendar_follows" formatted="false">Komunitas saya mengikuti</string>
-    <string name="calendar_explain" formatted="false">Setiap negara bisa memulai Ramadan dan merayakan Idulfitri di hari berbeda, karena rukyat setempat dan metode yang berbeda. Pilih pengumuman yang diikuti masjid Anda.</string>
+    <string name="calendar_explain" formatted="false">Setiap negara dapat memulai Ramadan dan merayakan Idulfitri di hari berbeda, karena rukyat setempat dan metode yang berbeda. Pilih pengumuman yang diikuti masjid Anda.</string>
     <string name="calendar_ah" formatted="false">H</string>
     <string name="calendar_expected" formatted="false">Perkiraan</string>
-    <string name="calendar_estimateExplain" formatted="false">Perkiraan astronomi (kalender Umm al Qura). Tanggal setempat bisa berbeda sehari.</string>
+    <string name="calendar_estimateExplain" formatted="false">Perkiraan astronomi (kalender Umm al Qura). Tanggal setempat dapat berbeda sehari.</string>
     <string name="calendar_estimate" formatted="false">Perkiraan</string>
     <string name="calendar_announced" formatted="false">Diumumkan</string>
     <string name="calendar_notYet" formatted="false">{name} belum mengumumkan. Biasanya pada sore sebelumnya. Halaman ini diperbarui dalam beberapa jam.</string>
@@ -559,27 +559,27 @@
     <string name="journey_prayedAt" formatted="false">Tempat Anda salat</string>
     <string name="journey_notFatwa" formatted="false">Ini panduan umum tentang keringanan musafir (rukhsah), bukan fatwa. Jika ragu, ikuti otoritas agama setempat Anda.</string>
     <string name="alertsHelp_title" formatted="false">Pemberitahuan salat</string>
-    <string name="alertsHelp_iphone" formatted="false">Di iPhone dan iPad, pemberitahuan butuh aplikasi di Layar Utama Anda.</string>
+    <string name="alertsHelp_iphone" formatted="false">Di iPhone dan iPad, pemberitahuan memerlukan aplikasi di Layar Utama Anda.</string>
     <string name="alertsHelp_step1" formatted="false">Ketuk {icon} Bagikan di bilah alat Safari.</string>
     <string name="alertsHelp_step2" formatted="false">Pilih {icon} Tambahkan ke Layar Utama, lalu Tambah.</string>
     <string name="alertsHelp_step3" formatted="false">Buka Prayer Times Asia dari Layar Utama dan aktifkan pemberitahuan.</string>
-    <string name="alertsHelp_cant" formatted="false">Peramban ini tidak bisa menampilkan notifikasi.</string>
+    <string name="alertsHelp_cant" formatted="false">Peramban ini tidak dapat menampilkan notifikasi.</string>
     <string name="alertsHelp_blocked" formatted="false">Notifikasi diblokir untuk situs ini.</string>
     <string name="alertsHelp_allow" formatted="false">Izinkan notifikasi di pengaturan situs peramban Anda (ikon di kiri alamat), lalu coba lagi.</string>
-    <string name="alertsHelp_webOnly" formatted="false">Pemberitahuan web hanya berbunyi saat Prayer Times Asia terbuka. Untuk pemberitahuan saat tertutup, pakai Pengaturan › Tambahkan 30 hari ke depan ke kalender.</string>
+    <string name="alertsHelp_webOnly" formatted="false">Pemberitahuan web hanya berbunyi saat Prayer Times Asia terbuka. Untuk pemberitahuan saat tertutup, gunakan Pengaturan › Tambahkan 30 hari ke depan ke kalender.</string>
     <string name="install_addHome" formatted="false">Tambahkan ke Layar Utama</string>
-    <string name="install_tapAdd" formatted="false">Ketuk Tambah. Prayer Times Asia terbuka layar penuh dan berjalan tanpa internet.</string>
+    <string name="install_tapAdd" formatted="false">Ketuk Tambah. Prayer Times Asia terbuka layar penuh dan berfungsi tanpa internet.</string>
     <string name="install_title" formatted="false">Pasang Prayer Times Asia</string>
-    <string name="install_menu" formatted="false">Pakai menu peramban Anda</string>
+    <string name="install_menu" formatted="false">Gunakan menu peramban Anda</string>
     <string name="install_app" formatted="false">Pasang aplikasi</string>
     <string name="install_step2" formatted="false">Pilih {icon} Tambahkan ke Layar Utama.</string>
-    <string name="install_menuHow" formatted="false">{menu} {app} atau {home}. Setelah ditambahkan, ia terbuka seperti aplikasi dan tetap jalan tanpa internet.</string>
+    <string name="install_menuHow" formatted="false">{menu} {app} atau {home}. Setelah ditambahkan, aplikasi terbuka seperti aplikasi biasa dan berfungsi tanpa internet.</string>
     <string name="alertsHelp_calendarRings" formatted="false">Aplikasi kalender Anda akan berbunyi untuk setiap salat.</string>
     <string name="tracker_streakLabel" formatted="false">hari beruntun</string>
     <string name="tracker_tickedOf" formatted="false">{n} dari {total} salat dicentang</string>
     <string name="tracker_excusedDays" formatted="false">{n} hari uzur</string>
     <string name="tracker_excusedDays_one" formatted="false">{n} hari uzur</string>
-    <string name="calendar_byAuthority" formatted="false">Ramadan dan Lebaran, menurut otoritas</string>
+    <string name="calendar_byAuthority" formatted="false">Ramadan dan Idulfitri, menurut otoritas</string>
     <string name="app_backToWebsite" formatted="false">Kembali ke situs prayertimes.asia</string>
     <string name="app_menuLeft" formatted="false">Pindahkan menu ke kiri</string>
     <string name="app_menuRight" formatted="false">Pindahkan menu ke kanan</string>
@@ -591,21 +591,21 @@
     <string name="phone_privacyAds" formatted="false">Tanpa iklan luar, tanpa akun, tanpa pelacakan di aplikasi lain.</string>
     <string name="phone_masjidSearchApple" formatted="false">Pencarian masjid terdekat lewat Apple Maps dan OpenStreetMap (hanya area yang dikirim).</string>
     <string name="phone_masjidListAndroid" formatted="false">Daftar tempat dari OpenStreetMap (© kontributor OpenStreetMap), disimpan di ponsel Anda dan diperbarui tiap minggu. Hanya area yang dikirim.</string>
-    <string name="phone_searchCity" formatted="false">Cari kota mana pun, seperti Hanoi, Istanbul, London atau Toronto. Waktu dihitung di ponsel Anda, jadi tetap jalan tanpa internet.</string>
+    <string name="phone_searchCity" formatted="false">Cari kota mana pun, seperti Hanoi, Istanbul, London atau Toronto. Waktu dihitung di ponsel Anda, jadi tetap berfungsi tanpa internet.</string>
     <string name="phone_cityOrPlace" formatted="false">Kota atau tempat</string>
-    <string name="phone_homeGuess" formatted="false">Kami menebaknya dari lokasi ponsel Anda saat pertama membuka aplikasi. Rumah dipakai untuk menentukan kapan Anda terhitung musafir, jadi mohon dicek.</string>
+    <string name="phone_homeGuess" formatted="false">Kami menebaknya dari lokasi ponsel Anda saat pertama membuka aplikasi. Rumah dipakai untuk menentukan kapan Anda terhitung musafir, jadi mohon periksa.</string>
     <string name="phone_trackerKept" formatted="false">Ketuk salat di layar Salat setelah waktunya tiba untuk mencentangnya. Pencatat Anda hanya disimpan di ponsel ini. Tidak pernah diunggah, dan hanya pindah ke ponsel baru lewat Pindahkan pengaturan saya.</string>
     <string name="phone_trackerFoot" formatted="false">Ketuk salat di layar Salat setelah waktunya lewat untuk mencentangnya, dan jaga rangkaian beruntun. Ketuk rangkaian beruntun untuk menandai hari uzur (haid, sakit) agar tetap berlanjut. Hanya disimpan di ponsel ini.</string>
     <string name="phone_namesFoot" formatted="false">Otomatis menampilkan nama bahasa Inggris seperti Fajr dan Isha, atau bahasa ponsel Anda jika tersedia. Pilih bahasa Indonesia untuk Subuh dan Isya. Nama pilihan Anda tetap sama ke mana pun Anda pergi. Saat Anda bepergian ke tempat yang memakai kata lain, nama setempat tampil kecil di bawahnya, seperti Subuh di Kuala Lumpur, agar papan masjid mudah dipahami. Ejaan mengikuti jadwal setiap otoritas.</string>
-    <string name="phone_accuracyFoot" formatted="false">Setiap hari menampilkan tingkat sumbernya. A resmi, B dikonfirmasi masjid, C dicek komunitas, D dihitung. F (falak) menandai pembacaan dari tongkat bayangan Anda sendiri, yang hanya mengecek waktu. Di Singapura, Malaysia dan Indonesia, aplikasi mengunduh jadwal resmi MUIS, JAKIM atau Kemenag untuk tahun itu (hanya tahun, kode zona atau nama kabupaten yang dikirim) dan menyimpannya untuk dipakai tanpa internet. Di tempat lain, dan sebelum unduhan itu, waktu dihitung di ponsel Anda dengan metode negara itu sendiri. Hitungan itu dicek terhadap setiap hari jadwal MUIS, JAKIM dan Kemenag 2026. Untuk Singapura, tidak pernah lebih awal dari waktu resmi (paling lambat 2 menit). Untuk Malaysia dan Indonesia, selisihnya sekitar 2 menit.</string>
+    <string name="phone_accuracyFoot" formatted="false">Setiap hari menampilkan tingkat sumbernya. A resmi, B dikonfirmasi masjid, C diperiksa komunitas, D dihitung. F (falak) menandai pembacaan dari tongkat bayangan Anda sendiri, yang hanya memeriksa waktu. Di Singapura, Malaysia dan Indonesia, aplikasi mengunduh jadwal resmi MUIS, JAKIM atau Kemenag untuk tahun itu (hanya tahun, kode zona atau nama kabupaten yang dikirim) dan menyimpannya untuk dipakai tanpa internet. Di tempat lain, dan sebelum unduhan itu, waktu dihitung di ponsel Anda dengan metode negara itu sendiri. Hitungan itu diperiksa terhadap setiap hari jadwal MUIS, JAKIM dan Kemenag 2026. Untuk Singapura, tidak pernah lebih awal dari waktu resmi (paling lambat 2 menit). Untuk Malaysia dan Indonesia, selisihnya sekitar 2 menit.</string>
     <string name="phone_usageSub" formatted="false">Hitungan pemakaian memberi tahu kami berapa banyak orang yang memakai aplikasi dan di kota serta negara mana, agar kami tahu di mana perlu menambah jadwal resmi. Angka acak dipakai sebagai pengganti Anda. Tanpa nama, tanpa lokasi tepat, tanpa alamat IP yang disimpan.</string>
-    <string name="phone_alertsEachPhone" formatted="false">Pemberitahuan salat butuh izin di setiap ponsel. Aktifkan di Pengaturan › Pemberitahuan.</string>
-    <string name="phone_movingFoot" formatted="false">Tempat, pilihan dan riwayat pencatat Anda pindah di dalam kode QR atau tautan. Tanpa akun, tanpa unggahan. Bisa antara iPhone, Android dan web. Memulihkan iPhone baru dari cadangan iCloud juga membawanya.</string>
+    <string name="phone_alertsEachPhone" formatted="false">Pemberitahuan salat memerlukan izin di setiap ponsel. Aktifkan di Pengaturan › Pemberitahuan.</string>
+    <string name="phone_movingFoot" formatted="false">Tempat, pilihan dan riwayat pencatat Anda pindah di dalam kode QR atau tautan. Tanpa akun, tanpa unggahan. Berfungsi di iPhone, Android dan web. Memulihkan iPhone baru dari cadangan iCloud juga membawanya.</string>
     <string name="phone_settingsBack" formatted="false">Pengaturan Anda sudah kembali, persis seperti sebelumnya. Ponsel Anda menyimpan salinan pribadi, jadi menghapus aplikasi tidak menghilangkannya.</string>
     <string name="phone_bringHow" formatted="false">Di ponsel atau peramban lain, buka Pengaturan › Pindahkan pengaturan saya. Akan tampil kode QR dan tautan.</string>
     <string name="phone_scanQr" formatted="false">Pindai kode QR</string>
     <string name="phone_orPaste" formatted="false">Atau ketik atau tempel tautannya</string>
-    <string name="phone_cameraForScan" formatted="false">Ambil pengaturan butuh kamera untuk memindai kode QR. Tidak ada yang direkam. Anda juga bisa menempel tautannya.</string>
+    <string name="phone_cameraForScan" formatted="false">Ambil pengaturan memerlukan kamera untuk memindai kode QR. Tidak ada yang direkam. Anda juga dapat menempel tautannya.</string>
     <string name="phone_shareLink" formatted="false">Bagikan tautan</string>
     <string name="phone_cancel" formatted="false">Batal</string>
     <string name="phone_send" formatted="false">Kirim</string>
@@ -618,7 +618,7 @@
     <string name="phone_lookingMore" formatted="false">Mencari musala lainnya…</string>
     <string name="phone_passed" formatted="false">sudah lewat</string>
     <string name="phone_cm" formatted="false">cm</string>
-    <string name="phone_arNeeded" formatted="false">Butuh kamera dengan AR</string>
+    <string name="phone_arNeeded" formatted="false">Memerlukan kamera dengan AR</string>
     <string name="phone_arUnavailable" formatted="false">Tampilan ini memakai kamera untuk menggambar kiblat dan bayangan tongkat di lantai. Tidak tersedia di perangkat ini.</string>
     <string name="phone_arAndroid" formatted="false">Tampilan ini memakai kamera untuk menandai kiblat dan arah bayangan di sekitar Anda. Tidak ada yang direkam.</string>
     <string name="phone_pointFloor" formatted="false">Arahkan kamera ke lantai sampai tongkat terlihat.</string>
@@ -639,12 +639,12 @@
     <string name="widget_addIphone" formatted="false">Sentuh dan tahan Layar Utama Anda, ketuk Edit, lalu Tambah Widget dan cari Prayer Times Asia.</string>
     <string name="widget_addAndroid" formatted="false">Sentuh dan tahan layar utama Anda, ketuk Widget dan cari Prayer Times Asia.</string>
     <string name="widget_setLocation" formatted="false">Buka Prayer Times Asia untuk mengatur lokasi Anda.</string>
-    <string name="widget_thisWeek" formatted="false">Imsak dan Berbuka minggu ini</string>
+    <string name="widget_thisWeek" formatted="false">Imsak dan berbuka minggu ini</string>
     <string name="verify_title" formatted="false">Bantu verifikasi waktu</string>
     <string name="verify_howTo" formatted="false">Cara berkontribusi</string>
     <string name="verify_timetable" formatted="false">Jadwal masjid</string>
     <string name="verify_sendTimetable" formatted="false">Kirim jadwal masjid dari sini</string>
-    <string name="verify_oneMonth" formatted="false">Satu bulan sudah cukup. Kami mencari tahu metode masjid itu agar jadwal setahun penuh bisa dibuat.</string>
+    <string name="verify_oneMonth" formatted="false">Satu bulan sudah cukup. Kami mencari tahu metode masjid itu agar jadwal setahun penuh dapat dibuat.</string>
     <string name="verify_method" formatted="false">Beri tahu kami metode yang dipakai masjid di sini</string>
     <string name="verify_mosquesFollow" formatted="false">Masjid di sini mengikuti</string>
     <string name="verify_notSure" formatted="false">Tidak yakin</string>
@@ -652,9 +652,253 @@
     <string name="verify_heard" formatted="false">Yang Anda dengar</string>
     <string name="verify_where" formatted="false">Di mana</string>
     <string name="verify_sendAll" formatted="false">Kirim foto jadwal masjid, beri tahu kami metode yang dipakai masjid di sini, atau laporkan waktu azan yang Anda dengar.</string>
-    <string name="verify_checked" formatted="false">Dicek oleh manusia sebelum mengubah waktu siapa pun. Hanya yang Anda ketik atau pilih di sini yang dikirim, bukan lokasi Anda. Foto disimpan sebagai bukti dan tidak dibagikan ulang tanpa izin masjid.</string>
+    <string name="verify_checked" formatted="false">Diperiksa oleh manusia sebelum mengubah waktu siapa pun. Hanya yang Anda ketik atau pilih di sini yang dikirim, bukan lokasi Anda. Foto disimpan sebagai bukti dan tidak dibagikan ulang tanpa izin masjid.</string>
     <string name="verify_license" formatted="false">Bagikan dengan lisensi CC BY 4.0</string>
     <string name="phone_asrEarlier" formatted="false">Lebih awal (Syafii)</string>
     <string name="phone_asrLater" formatted="false">Lebih akhir (Hanafi)</string>
     <string name="phone_refreshShort" formatted="false">Muat ulang daftar</string>
+    <string name="alerts_title" formatted="false">Pemberitahuan dan alarm</string>
+    <string name="alerts_chipNext" formatted="false">Pemberitahuan dan alarm, alarm berikutnya pukul {time}</string>
+    <string name="alerts_modeOff" formatted="false">Mati</string>
+    <string name="alerts_modeNotify" formatted="false">Beri tahu</string>
+    <string name="alerts_modeAlarm" formatted="false">Alarm</string>
+    <string name="alerts_nowOff" formatted="false">{name} dimatikan</string>
+    <string name="alerts_nowNotify" formatted="false">Pemberitahuan {name} diaktifkan</string>
+    <string name="alerts_nowAlarm" formatted="false">Alarm {name} diaktifkan</string>
+    <string name="alerts_today" formatted="false">hari ini</string>
+    <string name="alerts_tomorrow" formatted="false">besok</string>
+    <string name="alerts_whenEnds" formatted="false">Saat waktu {name} berakhir</string>
+    <string name="alerts_atTime" formatted="false">Tepat pada waktunya</string>
+    <string name="alerts_withAzan" formatted="false">dengan azan</string>
+    <string name="alerts_headsUpN" formatted="false">pengingat {n} menit sebelum</string>
+    <string name="alerts_alarmWhen" formatted="false">Alarm {when}</string>
+    <string name="alerts_alarmWhenNotify" formatted="false">Alarm {when}, pemberitahuan tepat pada waktunya</string>
+    <string name="alerts_fridayAlarm" formatted="false">{when}, alarm</string>
+    <string name="alerts_fridayNotify" formatted="false">{when}, pemberitahuan</string>
+    <string name="alerts_helpOff" formatted="false">Tanpa pemberitahuan untuk salat ini</string>
+    <string name="alerts_helpNotify" formatted="false">Pemberitahuan dengan suara. Senyap saat ponsel Anda dalam mode senyap atau Fokus.</string>
+    <string name="alerts_helpAlarm" formatted="false">Berbunyi sampai Anda mematikannya, meski dalam mode senyap. Tunda 5 menit.</string>
+    <string name="alerts_helpAlarmFajr" formatted="false">Membangunkan Anda setiap pagi dan ikut bergeser dengan {name} di mana pun Anda berada. Tunda 5 menit.</string>
+    <string name="alerts_needsInstall" formatted="false">Tambahkan aplikasi ke Layar Utama untuk menerima pemberitahuan</string>
+    <string name="alerts_webOpen" formatted="false">Di web, pemberitahuan hanya berbunyi saat halaman ini terbuka</string>
+    <string name="alerts_tapFix" formatted="false">Ketuk untuk melihat cara memperbaikinya.</string>
+    <string name="alerts_usePhoneApp" formatted="false">Untuk alarm yang berbunyi dalam mode senyap dan saat aplikasi tertutup, gunakan aplikasi iPhone atau Android.</string>
+    <string name="alerts_checkPhone" formatted="false">Periksa ponsel saya</string>
+    <string name="alerts_eachPrayer" formatted="false">Setiap salat</string>
+    <string name="alerts_openPage" formatted="false">{name}, {summary}. Membuka halamannya</string>
+    <string name="alerts_fridayLeave" formatted="false">{friday}, berangkat ke masjid</string>
+    <string name="alerts_headsUp" formatted="false">Pengingat awal</string>
+    <string name="alerts_headsUpSub" formatted="false">Pemberitahuan sebelum setiap salat yang diatur ke Beri tahu</string>
+    <string name="alerts_headsUpSame" formatted="false">Sama untuk setiap salat yang diatur ke Beri tahu</string>
+    <string name="alerts_eachFoot" formatted="false">Ketuk nama salat untuk melihat waktunya. Beri tahu berarti pemberitahuan, yang senyap saat ponsel dalam mode senyap. Alarm berbunyi sampai Anda mematikannya.</string>
+    <string name="alerts_nextAlarm" formatted="false">Alarm berikutnya {when} {time}</string>
+    <string name="alerts_nextAlarmFor" formatted="false">Alarm berikutnya {when} {time} untuk {name}</string>
+    <string name="alerts_nextAlarmSahur" formatted="false">Alarm berikutnya {when} {time} untuk sahur</string>
+    <string name="alerts_extras" formatted="false">Tambahan</string>
+    <string name="alerts_nudgeSub" formatted="false">Sekitar 30 menit sebelum waktu salat habis, hanya jika belum dicentang. Tidak untuk {name}.</string>
+    <string name="alerts_sound" formatted="false">Suara</string>
+    <string name="alerts_azanSub" formatted="false">Pemberitahuan dibuka dengan azan, dan azan {name} pada waktu {name}</string>
+    <string name="alerts_buzzSub" formatted="false">Setiap pemberitahuan hanya bergetar. {name} tetap bersuara.</string>
+    <string name="alerts_quietSub" formatted="false">Pemberitahuan hanya bergetar pada jam ini</string>
+    <string name="alerts_soundFoot" formatted="false">Getar saja dan Jam senyap cocok untuk pekerja shift yang tidur siang, bayi yang tidur di kamar, atau malam yang tenang. Alarm tetap bersuara.</string>
+    <string name="alerts_alarmSoundFoot" formatted="false">Ketuk suara untuk mendengarnya. Setiap alarm memakai suara ini.</string>
+    <string name="alerts_soundClassic" formatted="false">Alarm klasik</string>
+    <string name="alerts_soundChime" formatted="false">Denting lembut</string>
+    <string name="alerts_soundBells" formatted="false">Lonceng yang makin keras</string>
+    <string name="alerts_soundBeeps" formatted="false">Bip pelan</string>
+    <string name="alerts_soundPhone" formatted="false">Dari ponsel saya</string>
+    <string name="alerts_add30" formatted="false">Tambahkan alarm 30 hari ke depan ke kalender</string>
+    <string name="alerts_morningsHadith" formatted="false">Ya Allah, berkahilah umatku pada pagi hari mereka.</string>
+    <string name="alerts_morningsSource" formatted="false">Sabda Nabi ﷺ, riwayat Abu Dawud dan at Tirmidzi</string>
+    <string name="alerts_dayRamadan" formatted="false">Ramadan</string>
+    <string name="alerts_dayMonThu" formatted="false">Senin dan Kamis</string>
+    <string name="alerts_dayWhite" formatted="false">Hari putih (13, 14 dan 15 bulan Hijriah)</string>
+    <string name="alerts_dayEvery" formatted="false">Setiap hari</string>
+    <string name="alerts_wakeTahajjud" formatted="false">30 menit sebelum {fajr} untuk tahajud</string>
+    <string name="alerts_wakeAtFajr" formatted="false">Pada waktu {fajr}</string>
+    <string name="alerts_wakeHourBefore" formatted="false">1 jam sebelum {sunrise}</string>
+    <string name="alerts_wakeBeforeSunrise" formatted="false">{n} menit sebelum {sunrise}</string>
+    <string name="alerts_wakeAfterFajr" formatted="false">{n} menit setelah masuk waktu {fajr}</string>
+    <string name="alerts_sahur60" formatted="false">1 jam sebelum {fajr}</string>
+    <string name="alerts_sahur90" formatted="false">1 jam 30 menit sebelum {fajr}</string>
+    <string name="alerts_sahur120" formatted="false">2 jam sebelum {fajr}</string>
+    <string name="alerts_onTime" formatted="false">Tepat waktu</string>
+    <string name="alerts_beforeEnds" formatted="false">30 menit sebelum waktunya habis</string>
+    <string name="alerts_minAfter" formatted="false">{n} menit setelah</string>
+    <string name="alerts_howReach" formatted="false">Bagaimana Anda ingin diingatkan untuk {name}?</string>
+    <string name="alerts_howReminder" formatted="false">Bagaimana Anda ingin diingatkan?</string>
+    <string name="alerts_when" formatted="false">Waktu</string>
+    <string name="alerts_whenLeave" formatted="false">Waktu berangkat ke {friday}</string>
+    <string name="alerts_notifyToo" formatted="false">Pemberitahuan juga</string>
+    <string name="alerts_notifyTooSub" formatted="false">Pemberitahuan saat masuk waktu {name}, selain alarm</string>
+    <string name="alerts_checkTitle" formatted="false">Pastikan Anda mendengarnya</string>
+    <string name="alerts_allowed" formatted="false">Notifikasi diizinkan</string>
+    <string name="alerts_blockedShort" formatted="false">Notifikasi diblokir</string>
+    <string name="alerts_notAllowedYet" formatted="false">Notifikasi belum diizinkan</string>
+    <string name="alerts_allowHow" formatted="false">Izinkan di pengaturan situs peramban Anda, yaitu ikon di kiri alamat.</string>
+    <string name="alerts_allowButton" formatted="false">Izinkan notifikasi</string>
+    <string name="alerts_addHome" formatted="false">Tambahkan aplikasi ke Layar Utama</string>
+    <string name="alerts_addHomeSub" formatted="false">Di iPhone dan iPad, web hanya dapat menampilkan pemberitahuan dari Layar Utama.</string>
+    <string name="alerts_showMe" formatted="false">Tunjukkan caranya</string>
+    <string name="alerts_stayOpen" formatted="false">Halaman ini harus tetap terbuka</string>
+    <string name="alerts_stayOpenSub" formatted="false">Di web, pemberitahuan dan alarm hanya berbunyi saat Prayer Times Asia terbuka, di tab atau sebagai aplikasi terpasang.</string>
+    <string name="alerts_silent" formatted="false">Mode senyap dan Jangan Ganggu</string>
+    <string name="alerts_silentSub" formatted="false">Notifikasi web akan senyap saat itu. Hanya alarm aplikasi ponsel yang tetap berbunyi.</string>
+    <string name="alerts_fridayIsNotify" formatted="false">Pengingat {friday} hanya pemberitahuan</string>
+    <string name="alerts_makeAlarmSub" formatted="false">Jadikan alarm agar berbunyi keras.</string>
+    <string name="alerts_makeAlarm" formatted="false">Jadikan alarm</string>
+    <string name="alerts_appSub" formatted="false">Alarm yang berbunyi dalam mode senyap, meski aplikasi tertutup</string>
+    <string name="notify_nudgeTitle" formatted="false">Waktu {name} berakhir dalam {n} menit</string>
+    <string name="notify_nudgeBody" formatted="false">Waktu {name} berlangsung sampai {time}. Centang di aplikasi setelah Anda salat.</string>
+    <string name="notify_endsIn" formatted="false">Waktu {name} berakhir dalam {n} menit</string>
+    <string name="notify_nameIn" formatted="false">{name} dalam {n} menit</string>
+    <string name="notify_nameAt" formatted="false">{name} pukul {time}</string>
+    <string name="notify_ended" formatted="false">Waktu {name} telah berakhir.</string>
+    <string name="notify_iftar" formatted="false">Waktu berbuka · {time}</string>
+    <string name="notify_iftarName" formatted="false">Waktu berbuka · {name} {time}</string>
+    <string name="notify_imsakIn" formatted="false">Imsak dalam 10 menit · {time}</string>
+    <string name="notify_finishSahur" formatted="false">Selesaikan sahur Anda. {name} pukul {time} · {place}</string>
+    <string name="notify_qiyamTitle" formatted="false">Malam {night} · sepertiga malam terakhir telah dimulai</string>
+    <string name="notify_qiyamOdd" formatted="false">Malam ganjil di sepuluh malam terakhir. Carilah Lailatul Qadar.</string>
+    <string name="notify_qiyamEven" formatted="false">Salah satu dari sepuluh malam terakhir Ramadan.</string>
+    <string name="notify_wakeSahur" formatted="false">Bangun untuk sahur</string>
+    <string name="notify_wakeTahajjud" formatted="false">Bangun untuk tahajud</string>
+    <string name="notify_wakeFor" formatted="false">Bangun untuk {name}</string>
+    <string name="notify_atPlace" formatted="false">{name} pukul {time} · {place}</string>
+    <string name="notify_endsAtPlace" formatted="false">Waktu {name} berakhir pukul {time} · {place}</string>
+    <string name="notify_timeFor" formatted="false">Waktunya {name}</string>
+    <string name="notify_beganAt" formatted="false">Waktu {name} dimulai pukul {time} · {place}</string>
+    <string name="notify_openUntil" formatted="false">Waktu {name} berlangsung sampai {time} · {place}</string>
+    <string name="qibla_faceFromNorth" formatted="false">Hadap {deg}° dari utara</string>
+    <string name="qibla_youAreFacing" formatted="false">Anda sudah menghadap kiblat</string>
+    <string name="qibla_turnRight" formatted="false">Putar ke kanan {deg}°</string>
+    <string name="qibla_turnLeft" formatted="false">Putar ke kiri {deg}°</string>
+    <string name="qibla_turnRightAbout" formatted="false">Putar ke kanan, sekitar {deg}°</string>
+    <string name="qibla_turnLeftAbout" formatted="false">Putar ke kiri, sekitar {deg}°</string>
+    <string name="journey_homeTitle" formatted="false">Anda berada di rumah</string>
+    <string name="journey_homeBody" formatted="false">Salatlah secara penuh. Keringanan musafir berlaku setelah Anda bepergian sedikitnya {km} km.</string>
+    <string name="journey_nearbyTitle" formatted="false">Dalam radius {km} km dari rumah</string>
+    <string name="journey_nearbyBody" formatted="false">Jarak ini belum mencapai jarak safar, jadi salatlah secara penuh.</string>
+    <string name="journey_travellerTitle" formatted="false">Anda seorang musafir</string>
+    <string name="journey_travellerBody" formatted="false">Anda boleh mengqasar dan menjamak salat. Berikut perubahan untuk setiap salat.</string>
+    <string name="journey_travellerHanafi" formatted="false">Anda boleh mengqasar salat. Dalam mazhab Hanafi, salat tidak dijamak kecuali saat haji. Berikut perubahan untuk setiap salat.</string>
+    <string name="journey_settledTitle" formatted="false">Sudah menetap di sini</string>
+    <string name="journey_settledBody" formatted="false">Anda sudah berada di sini {n} hari. Tinggal lebih dari {max} hari mengakhiri keringanan musafir, jadi salatlah secara penuh.</string>
+    <string name="journey_rakaat" formatted="false">{n} rakaat</string>
+    <string name="journey_noChange" formatted="false">Tidak berubah</string>
+    <string name="journey_shortened" formatted="false">Dipendekkan dari 4</string>
+    <string name="journey_canJoin" formatted="false">Boleh dijamak dengan {name}</string>
+    <string name="journey_notJoined" formatted="false">Tidak dijamak</string>
+    <string name="journey_neverJoinedShort" formatted="false">Tidak pernah dijamak</string>
+    <string name="journey_notTravel" formatted="false">Anda berada {km} km dari rumah. Jarak ini kurang dari {limit} km, jadi perjalanan ini belum terhitung safar.</string>
+    <string name="journey_isTravel" formatted="false">Anda berada {km} km dari rumah. Jarak ini lebih dari {limit} km, jadi perjalanan ini terhitung safar.</string>
+    <string name="masjid_walkMin" formatted="false">{n} menit jalan kaki</string>
+    <string name="masjid_driveMin" formatted="false">{n} menit berkendara</string>
+    <string name="masjid_openUntil" formatted="false">Buka sekarang, sampai {time}</string>
+    <string name="masjid_openAllDay" formatted="false">Buka sekarang, sepanjang hari</string>
+    <string name="masjid_closedOpens" formatted="false">Tutup sekarang, buka {time}</string>
+    <string name="masjid_closedToday" formatted="false">Tutup hari ini</string>
+    <string name="masjid_openNow" formatted="false">Buka sekarang</string>
+    <string name="masjid_closedNow" formatted="false">Tutup sekarang</string>
+    <string name="masjid_women" formatted="false">Ruang perempuan</string>
+    <string name="masjid_wheelchair" formatted="false">Akses kursi roda</string>
+    <string name="masjid_parking" formatted="false">Parkir</string>
+    <string name="masjid_toilets" formatted="false">Toilet</string>
+    <string name="masjid_away" formatted="false">{distance} dari sini</string>
+    <string name="masjid_twoFriday" formatted="false">Dua sesi salat Jumat, sesi kedua mulai {time}</string>
+    <string name="masjid_twoFridayChip" formatted="false">2 sesi Jumat</string>
+    <string name="masjid_directions" formatted="false">Petunjuk arah</string>
+    <string name="masjid_directionsTo" formatted="false">Petunjuk arah ke {name}</string>
+    <string name="masjid_drivingTo" formatted="false">Petunjuk berkendara ke {name}</string>
+    <string name="masjid_searchAgain" formatted="false">Cari lagi dari sini</string>
+    <string name="masjid_findNear" formatted="false">Cari tempat salat di dekat saya</string>
+    <string name="masjid_locationOff" formatted="false">Lokasi dinonaktifkan untuk situs ini. Menampilkan tempat di dekat {place}.</string>
+    <string name="masjid_locationFailed" formatted="false">Lokasi Anda tidak dapat ditemukan. Menampilkan tempat di dekat {place}.</string>
+    <string name="masjid_savedPlace" formatted="false">tempat yang Anda simpan</string>
+    <string name="masjid_nearestYou" formatted="false">Paling dekat dengan Anda</string>
+    <string name="masjid_nearestTo" formatted="false">Paling dekat dengan {place}</string>
+    <string name="masjid_howGoing" formatted="false">Cara Anda ke sana</string>
+    <string name="masjid_walk" formatted="false">Jalan kaki</string>
+    <string name="masjid_drive" formatted="false">Berkendara</string>
+    <string name="masjid_openOnly" formatted="false">Hanya yang buka</string>
+    <string name="masjid_driveNote" formatted="false">Waktu berkendara hanya perkiraan. Aplikasi peta Anda menunjukkan lalu lintas, jadi masjid yang sedikit lebih jauh mungkin lebih cepat.</string>
+    <string name="masjid_choosePlaceBody" formatted="false">Ketuk tombol di atas, atau pilih kota di tab Salat.</string>
+    <string name="masjid_nothingOpen" formatted="false">Tidak ada yang buka sekarang</string>
+    <string name="masjid_nothingOpenBody" formatted="false">Hanya tempat dengan jam buka di peta yang dihitung di sini. Matikan Hanya yang buka untuk melihat yang lain.</string>
+    <string name="masjid_prayerRooms" formatted="false">musala</string>
+    <string name="masjid_masjidWord" formatted="false">masjid</string>
+    <string name="masjid_secondFriday" formatted="false">Sesi kedua salat Jumat mulai {time}.</string>
+    <string name="masjid_secondFridayWomen" formatted="false">Sesi kedua salat Jumat mulai {time}, dengan ruang untuk perempuan.</string>
+    <string name="masjid_eidFitr" formatted="false">Salat Idulfitri</string>
+    <string name="masjid_eidAdha" formatted="false">Salat Iduladha</string>
+    <string name="masjid_eidAt" formatted="false">{name} pukul {times}.</string>
+    <string name="masjid_keptTop" formatted="false">Disimpan di atas</string>
+    <string name="masjid_keepTop" formatted="false">Simpan di atas</string>
+    <string name="masjid_makeMine" formatted="false">Jadikan masjid saya</string>
+    <string name="masjid_report" formatted="false">Laporkan masalah</string>
+    <string name="masjid_moreOnMap" formatted="false">{n} lagi dalam radius 15 km ada di peta. Ketuk pin untuk melihat nama dan petunjuk arahnya.</string>
+    <string name="masjid_moreOnMap_one" formatted="false">{n} lagi dalam radius 15 km ada di peta. Ketuk pin untuk melihat nama dan petunjuk arahnya.</string>
+    <string name="masjid_keepHint" formatted="false">Ketuk satu tempat dan pilih Jadikan masjid saya untuk menyimpannya di atas.</string>
+    <string name="masjid_mapCredit" formatted="false">Daftar tempat dari OpenStreetMap, dikelola oleh relawan. Ada yang belum ada, atau pin di tempat yang salah? {link}, tanpa perlu mendaftar.</string>
+    <string name="masjid_tellMap" formatted="false">Beri tahu peta</string>
+    <string name="masjid_noFacilities" formatted="false">Peta belum mencantumkan fasilitas tempat ini.</string>
+    <string name="masjid_iqamahLine" formatted="false">Iqamah {times}</string>
+    <string name="masjid_iqamahHow" formatted="false">Waktu iqamah tampil di sini saat masjid Anda memasang layar Prayer Times Asia. Pindai kode QR-nya sekali.</string>
+    <string name="masjid_eidAtTime" formatted="false">Salat Id pukul {time}.</string>
+    <string name="masjid_spaceWomen" formatted="false">Ruang untuk perempuan</string>
+    <string name="masjid_showNearest3" formatted="false">Tampilkan 3 yang terdekat</string>
+    <string name="masjid_seeAll" formatted="false">Lihat semua {n}</string>
+    <string name="masjid_eidNearest" formatted="false">{date}. Waktu salat di masjid yang paling dekat dengan Anda.</string>
+    <string name="masjid_fromMuis" formatted="false">Dari Majlis Ugama Islam Singapura (MUIS). {link}</string>
+    <string name="masjid_fromMuisUpdated" formatted="false">Dari Majlis Ugama Islam Singapura (MUIS), diperbarui {date}. Tidak perlu reservasi, kecuali pada hari libur nasional. {link}</string>
+    <string name="masjid_seeMuis" formatted="false">Lihat daftar MUIS</string>
+    <string name="masjid_fridayToday" formatted="false">Salat Jumat hari ini</string>
+    <string name="masjid_fridaySg" formatted="false">Salat Jumat di Singapura</string>
+    <string name="masjid_fridayHold" formatted="false">{n} masjid mengadakan sesi kedua salat Jumat mulai {time}, bagi yang tidak dapat hadir di sesi pertama pada waktu {name}.</string>
+    <string name="masjid_women2" formatted="false">Ruang perempuan di sesi kedua</string>
+    <string name="myMasjid_atAzan" formatted="false">Saat azan</string>
+    <string name="myMasjid_afterAzan" formatted="false">{n} menit setelah azan</string>
+    <string name="feedback_title" formatted="false">Catatan untuk pembuat aplikasi</string>
+    <string name="feedback_intro" formatted="false">Ustaz Aarif dan tim Nasar Digital membaca setiap catatan. Baik atau buruk, catatan Anda membantu kami membuat aplikasi ini lebih baik untuk semua.</string>
+    <string name="feedback_about" formatted="false">Catatan Anda tentang apa?</string>
+    <string name="feedback_kind" formatted="false">Kata yang baik</string>
+    <string name="feedback_kindHint" formatted="false">Apa yang sudah dibantu oleh aplikasi ini?</string>
+    <string name="feedback_idea" formatted="false">Ide</string>
+    <string name="feedback_ideaHint" formatted="false">Apa yang dapat membuat aplikasi ini lebih baik untuk Anda?</string>
+    <string name="feedback_time" formatted="false">Waktu tampak salah</string>
+    <string name="feedback_timeHint" formatted="false">Salat yang mana, hari apa, dan apa yang ditampilkan masjid Anda?</string>
+    <string name="feedback_broke" formatted="false">Ada yang tidak berfungsi</string>
+    <string name="feedback_brokeHint" formatted="false">Apa yang Anda ketuk, dan apa yang terjadi?</string>
+    <string name="feedback_yourNote" formatted="false">Catatan Anda</string>
+    <string name="feedback_addDetails" formatted="false">Sertakan kota dan versi aplikasi saya</string>
+    <string name="feedback_addDetailsSub" formatted="false">Membantu kami memeriksa waktu Anda. Tidak pernah lokasi tepat Anda.</string>
+    <string name="feedback_mayShare" formatted="false">Anda boleh membagikan kata-kata saya</string>
+    <string name="feedback_mayShareSub" formatted="false">Di situs kami, tanpa nama Anda.</string>
+    <string name="feedback_send" formatted="false">Kirim lewat email</string>
+    <string name="feedback_copy" formatted="false">Tidak ada aplikasi email? Salin catatan ini</string>
+    <string name="feedback_goesTo" formatted="false">Catatan ini dikirim ke {email}. Kami akan membalas dalam beberapa hari, insyaallah.</string>
+    <string name="review_title" formatted="false">Beri penilaian dan ulasan</string>
+    <string name="review_intro" formatted="false">Beberapa kata yang jujur membantu Muslim lain menemukan aplikasi ini, dan membantu Ustaz Aarif serta tim terus berkarya. Jazakallahu khairan.</string>
+    <string name="review_step1" formatted="false">{b} di kotak di bawah, dengan kata-kata Anda sendiri.</string>
+    <string name="review_step1b" formatted="false">Tulis sekali</string>
+    <string name="review_step2" formatted="false">{b} untuk memberi ulasan. Kami menyalin kata-kata Anda untuk Anda.</string>
+    <string name="review_step2b" formatted="false">Ketuk satu tempat</string>
+    <string name="review_step3" formatted="false">{b} di kotak ulasan mereka, lalu {paste}. Kembali ke sini dan lakukan hal yang sama untuk tempat berikutnya.</string>
+    <string name="review_step3b" formatted="false">Tekan lama</string>
+    <string name="review_paste" formatted="false">Tempel</string>
+    <string name="review_yourReview" formatted="false">Ulasan Anda</string>
+    <string name="review_copiedHow" formatted="false">Disalin. Tekan lama di kotak ulasan, lalu Tempel.</string>
+    <string name="review_private" formatted="false">Ada yang kurang tepat? Kirim catatan pribadi</string>
+    <string name="review_appStore" formatted="false">Ulas di App Store</string>
+    <string name="review_appStoreSub" formatted="false">Untuk aplikasi iPhone</string>
+    <string name="review_play" formatted="false">Ulas di Google Play</string>
+    <string name="review_playSub" formatted="false">Untuk aplikasi Android</string>
+    <string name="review_google" formatted="false">Ulas Nasar Digital di Google</string>
+    <string name="review_googleSub" formatted="false">Tim di Singapura yang membuat aplikasi ini</string>
+    <string name="source_feedDetail" formatted="false">Diterbitkan oleh otoritas dan dimuat lewat feed kalender Prayer Times Asia sendiri, yang dibuat ulang setiap minggu dari jadwal resmi. Disimpan di peramban ini, jadi tetap berfungsi tanpa internet.</string>
+    <string name="source_downloadedDetail" formatted="false">Diunduh setahun sekali dari otoritas dan disimpan di peramban ini, jadi tetap berfungsi tanpa internet.</string>
+    <string name="source_sunriseCalculated" formatted="false">{name} tidak ada di feed, jadi dihitung (tidak pernah lebih lambat dari waktu resmi).</string>
+    <string name="move_copyThis" formatted="false">Salin tautan ini</string>
+    <string name="notify_testTitle" formatted="false">{name} · pemberitahuan uji</string>
+    <string name="notify_testBody" formatted="false">Seperti inilah tampilan pemberitahuan salat di perangkat ini.</string>
 </resources>

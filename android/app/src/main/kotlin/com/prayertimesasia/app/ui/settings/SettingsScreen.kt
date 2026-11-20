@@ -151,7 +151,7 @@ fun SettingsScreen(
             item {
                 Section(tr(R.string.settings_ramadan),
                     if (p.seasonPreview == com.prayertimesasia.core.SeasonPreview.OFF)
-                        "Ramadan mode turns on by itself on the day your local religious authority announces. Testers can pretend it's Ramadan or Raya with the switch above."
+                        "Ramadan mode turns on by itself on the day your local religious authority announces. Testers can pretend it's Ramadan or Eid with the switch above."
                     else "Pretend mode is on. The app shows a pretend date, not today's. Turn it off before you rely on the times.") {
                     LinkRow(tr(R.string.settings_ramadanPage), Icons.Filled.NightsStay) { state.showRamadan = true }
                     PickerRow(tr(R.string.settings_tryRamadan), p.seasonPreview.label,

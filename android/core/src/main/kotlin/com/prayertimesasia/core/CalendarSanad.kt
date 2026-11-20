@@ -25,12 +25,12 @@ enum class HijriEvent(val raw: String) {
         RAMADAN -> "1 Ramadan"
         SYAWAL -> when (style) {
             NamingStyle.MALAY -> "Hari Raya Aidilfitri"
-            NamingStyle.INDONESIAN -> "Idul Fitri"
+            NamingStyle.INDONESIAN -> "Idulfitri"
             else -> "Eid al-Fitr"
         }
         ADHA -> when (style) {
             NamingStyle.MALAY -> "Hari Raya Aidiladha"
-            NamingStyle.INDONESIAN -> "Idul Adha"
+            NamingStyle.INDONESIAN -> "Iduladha"
             else -> "Eid al-Adha"
         }
         MUHARRAM -> when (style) {

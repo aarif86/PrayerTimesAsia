@@ -64,7 +64,7 @@ export const METHODS = {
     id: 'jakim', name: 'JAKIM · Malaysia', shortName: 'JAKIM', fajrAngle: 18, ishaAngle: 18,
     offsets: { fajr: 2.375, sunrise: -1.375, dhuhr: 3, asr: 2.25, maghrib: 2.25, isha: 2.375 },
     matchesOfficialTable: true,
-    note: "Malaysia's 18° Subuh criterion (since 2019). Online, the app shows JAKIM's official e-Solat timetable for your zone; offline it calculates to within about 2 minutes.",
+    note: "Malaysia's 18° Fajr criterion (since 2019). Online, the app shows JAKIM's official e-Solat timetable for your zone; offline it calculates to within about 2 minutes.",
   }),
   kemenag: M({
     id: 'kemenag', name: 'Kemenag · Indonesia', shortName: 'Kemenag', fajrAngle: 20, ishaAngle: 18,

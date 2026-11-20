@@ -79,7 +79,7 @@ object PrayerSpaces {
                 listOfNotNull(tags["addr:housenumber"], tags["addr:street"]).joinToString(" ").takeIf { it.isNotBlank() },
                 tags["addr:city"] ?: tags["addr:suburb"],
             ).joinToString(", ")
-            val display = name ?: if (musollah) "Musollah" else "Masjid"
+            val display = name ?: if (musollah) "Prayer room" else "Masjid"
             val key = "${display.lowercase()}|${Math.round(lat * 2000)}|${Math.round(lon * 2000)}"
             if (found.containsKey(key)) continue
             found[key] = PrayerSpace("$type/$id", display, address, point, km, musollah, facilitiesOf(tags), tags["opening_hours"]?.takeIf { it.isNotBlank() })

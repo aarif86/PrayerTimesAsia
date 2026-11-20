@@ -29,7 +29,7 @@ enum RamadanContent {
             arabic: "نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ شَهْرِ رَمَضَانَ هَذِهِ السَّنَةِ لِلّٰهِ تَعَالَى",
             rumi: "Nawaitu sauma ghadin 'an adā'i fardhi syahri Ramadhāna hādzihis sanati lillāhi ta'ālā",
             meaning: .init(en: "I intend to fast tomorrow, fulfilling the obligation of the month of Ramadan this year, for Allah Most High.", ms: "Sahaja aku berpuasa esok hari menunaikan fardhu bulan Ramadan tahun ini kerana Allah Taala.", id: "Aku berniat puasa esok hari untuk menunaikan kewajiban bulan Ramadan tahun ini karena Allah Taala."),
-            note: .init(en: "Made in the heart each night before Subuh. Saying it helps.", ms: "Niat di dalam hati setiap malam sebelum Subuh. Melafazkannya membantu.", id: "Diniatkan dalam hati setiap malam sebelum Subuh. Melafalkannya membantu.")),
+            note: .init(en: "Made in the heart each night before Fajr. Saying it helps.", ms: "Niat di dalam hati setiap malam sebelum Subuh. Melafazkannya membantu.", id: "Diniatkan dalam hati setiap malam sebelum Subuh. Melafalkannya membantu.")),
         Doa(id: .berbuka,
             title: .init(en: "Dua when breaking the fast", ms: "Doa berbuka puasa", id: "Doa berbuka puasa"),
             arabic: "اللَّهُمَّ لَكَ صُمْتُ وَبِكَ آمَنْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ",
@@ -49,17 +49,17 @@ enum RamadanContent {
             meaning: .init(en: "O Allah, You are Most Forgiving and You love to forgive, so forgive me.", ms: "Ya Allah, sesungguhnya Engkau Maha Pemaaf, Engkau suka memaafkan, maka maafkanlah aku.", id: "Ya Allah, sesungguhnya Engkau Maha Pemaaf dan menyukai maaf, maka maafkanlah aku."),
             note: .init(en: "Taught by the Prophet ﷺ to Aisyah. Reported by at Tirmidhi", ms: "Diajar Nabi ﷺ kepada Aisyah. Riwayat at Tirmizi", id: "Diajarkan Nabi ﷺ kepada Aisyah. Riwayat at Tirmidzi")),
         Doa(id: .takbir,
-            title: .init(en: "Takbir Raya", ms: "Takbir Raya", id: "Takbir Idul Fitri"),
+            title: .init(en: "Eid takbir", ms: "Takbir Raya", id: "Takbir Idulfitri"),
             arabic: "اللهُ أَكْبَرُ اللهُ أَكْبَرُ اللهُ أَكْبَرُ، لَا إِلٰهَ إِلَّا اللهُ وَاللهُ أَكْبَرُ، اللهُ أَكْبَرُ وَلِلّٰهِ الْحَمْدُ",
             rumi: "Allāhu akbar, Allāhu akbar, Allāhu akbar. Lā ilāha illallāhu wallāhu akbar. Allāhu akbar wa lillāhil hamd.",
             meaning: .init(en: "Allah is the Greatest (three times). There is no god but Allah, and Allah is the Greatest. Allah is the Greatest, and to Allah belongs all praise.", ms: "Allah Maha Besar (tiga kali). Tiada Tuhan melainkan Allah, dan Allah Maha Besar. Allah Maha Besar, dan bagi Allah segala puji.", id: "Allah Maha Besar (tiga kali). Tiada Tuhan selain Allah, dan Allah Maha Besar. Allah Maha Besar, dan bagi Allah segala puji."),
-            note: .init(en: "From Maghrib on Raya eve until the Raya prayer begins.", ms: "Dari Maghrib malam Raya hingga solat sunat Aidilfitri bermula.", id: "Dari Maghrib malam Idul Fitri hingga sholat Id dimulai.")),
+            note: .init(en: "From Maghrib on the eve of Eid until the Eid prayer begins.", ms: "Dari Maghrib malam Raya hingga solat sunat Aidilfitri bermula.", id: "Dari Maghrib malam Idulfitri hingga salat Id dimulai.")),
         Doa(id: .niatSyawal,
-            title: .init(en: "Intention for the six days of Syawal", ms: "Niat puasa enam Syawal", id: "Niat puasa Syawal"),
+            title: .init(en: "Intention for the six days of Shawwal", ms: "Niat puasa enam Syawal", id: "Niat puasa Syawal"),
             arabic: "نَوَيْتُ صَوْمَ غَدٍ عَنْ سُنَّةِ السِّتَّةِ مِنْ شَوَّالٍ لِلّٰهِ تَعَالَى",
             rumi: "Nawaitu sauma ghadin 'an sunnatis sittati min Syawwālin lillāhi ta'ālā",
-            meaning: .init(en: "I intend to fast tomorrow, one of the six sunnah days of Syawal, for Allah Most High.", ms: "Sahaja aku berpuasa esok hari sunat enam hari bulan Syawal kerana Allah Taala.", id: "Aku berniat puasa esok hari, sunnah enam hari bulan Syawal, karena Allah Taala."),
-            note: .init(en: "Fasting Ramadan then six days of Syawal is like fasting the whole year. Reported by Muslim", ms: "Puasa Ramadan diikuti enam hari Syawal seperti berpuasa setahun. Riwayat Muslim", id: "Puasa Ramadan lalu enam hari Syawal seperti puasa setahun. Riwayat Muslim")),
+            meaning: .init(en: "I intend to fast tomorrow, one of the six sunnah days of Shawwal, for Allah Most High.", ms: "Sahaja aku berpuasa esok hari sunat enam hari bulan Syawal kerana Allah Taala.", id: "Aku berniat puasa esok hari, sunnah enam hari bulan Syawal, karena Allah Taala."),
+            note: .init(en: "Fasting Ramadan then six days of Shawwal is like fasting the whole year. Reported by Muslim", ms: "Puasa Ramadan diikuti enam hari Syawal seperti berpuasa setahun. Riwayat Muslim", id: "Puasa Ramadan lalu enam hari Syawal seperti puasa setahun. Riwayat Muslim")),
         Doa(id: .niatQadha,
             title: .init(en: "Intention to replace a missed fast", ms: "Niat puasa ganti (qadha)", id: "Niat puasa qadha Ramadan"),
             arabic: "نَوَيْتُ صَوْمَ غَدٍ عَنْ قَضَاءِ فَرْضِ شَهْرِ رَمَضَانَ لِلّٰهِ تَعَالَى",
@@ -80,7 +80,7 @@ enum RamadanContent {
         "BN": [.init(name: "Majlis Ugama Islam Brunei", url: URL(string: "https://www.muib.gov.bn")!)],
     ]
 
-    static let zakatNote = Doa.Words(en: "Zakat fitrah is due from every Muslim who has enough for Raya, for themselves and those they support. Pay before the Raya prayer. Your authority sets this year's amount.", ms: "Zakat fitrah wajib atas setiap Muslim yang cukup keperluan Raya, untuk diri dan tanggungannya. Bayar sebelum solat sunat Aidilfitri. Kadar tahun ini ditetapkan oleh pihak berkuasa agama anda.", id: "Zakat fitrah wajib bagi setiap Muslim yang memiliki kelebihan untuk hari raya, bagi dirinya dan tanggungannya. Bayar sebelum sholat Id. Besarnya ditetapkan oleh otoritas setempat.")
+    static let zakatNote = Doa.Words(en: "Zakat al-Fitr is due from every Muslim who has enough for Eid, for themselves and those they support. Pay before the Eid prayer. Your authority sets this year's amount.", ms: "Zakat fitrah wajib atas setiap Muslim yang cukup keperluan Raya, untuk diri dan tanggungannya. Bayar sebelum solat sunat Aidilfitri. Kadar tahun ini ditetapkan oleh pihak berkuasa agama anda.", id: "Zakat fitrah wajib bagi setiap Muslim yang memiliki kelebihan untuk hari raya, bagi dirinya dan tanggungannya. Bayar sebelum salat Id. Besarnya ditetapkan oleh otoritas setempat.")
 
     /// quran.com opens at the right juz in the browser or the Quran app the phone prefers.
     static func juzLink(_ juz: Int) -> URL { URL(string: "https://quran.com/juz/\(max(1, min(30, juz)))")! }
@@ -99,7 +99,7 @@ enum FastMark: String, Codable, CaseIterable, Sendable {
         case .travel: "Travelling"
         case .other: "Other reason"
         case .qadha: "Replaced a fast"
-        case .syawal: "Syawal fast"
+        case .syawal: "Shawwal fast"
         }
     }
     var letter: String {

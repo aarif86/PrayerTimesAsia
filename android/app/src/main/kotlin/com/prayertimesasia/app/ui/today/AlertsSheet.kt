@@ -288,7 +288,7 @@ private fun ExtrasSection(state: AppState) {
     }
     Section(null) {
         SwitchRow("Imsak alert", p.imsakAlert, sub = "10 minutes before Imsak, in Ramadan") { on -> state.setRamadanAlert(on) { q, v -> q.copy(imsakAlert = v) } }
-        SwitchRow("Berbuka alert", p.berbukaAlert, sub = "At ${Prayer.MAGHRIB.name(r.naming)}, with the doa, in Ramadan") { on -> state.setRamadanAlert(on) { q, v -> q.copy(berbukaAlert = v) } }
+        SwitchRow("Iftar alert", p.berbukaAlert, sub = "At ${Prayer.MAGHRIB.name(r.naming)}, with the dua, in Ramadan") { on -> state.setRamadanAlert(on) { q, v -> q.copy(berbukaAlert = v) } }
         SwitchRow("Qiyam in the last ten nights", p.qiyamAlert, sub = "At the last third of the night") { on -> state.setRamadanAlert(on) { q, v -> q.copy(qiyamAlert = v) } }
         if (p.trackerEnabled) {
             SwitchRow("Nudge before time runs out", p.windowNudge, sub = "About 30 minutes before a prayer's time ends, only if you haven't ticked it") { on ->

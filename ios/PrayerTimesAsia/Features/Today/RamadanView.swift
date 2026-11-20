@@ -628,8 +628,8 @@ struct RamadanView: View {
     private var rayaShare: some View {
         Section(t(.sendRayaCard)) {
             TextField(t(.yourNameOrFamily), text: $rayaFrom)
-            let image = Image(uiImage: renderCard(RayaCardView(from: rayaFrom)))
-            ShareLink(item: image, preview: SharePreview("Selamat Hari Raya", image: image)) {
+            let image = Image(uiImage: renderCard(RayaCardView(from: rayaFrom, t: t)))
+            ShareLink(item: image, preview: SharePreview(t(.rayaCardTitle), image: image)) {
                 Label(t(.shareTheCard), systemImage: "square.and.arrow.up")
             }
         }
@@ -649,7 +649,7 @@ struct RamadanView: View {
             rows.append(.init(label: dateText(g, "EEE d MMM"), hijri: h.day, imsak: model.formatted(model.imsak(day)), berbuka: model.formatted(day.time(.maghrib))))
         }
         guard !rows.isEmpty else { return nil }
-        return Image(uiImage: renderCard(WeekCardView(place: model.activePlace?.name ?? "", rows: rows)))
+        return Image(uiImage: renderCard(WeekCardView(place: model.activePlace?.name ?? "", rows: rows, t: t)))
     }
 
     @MainActor private func renderCard<V: View>(_ view: V) -> UIImage {
@@ -659,18 +659,19 @@ struct RamadanView: View {
     }
 }
 
-/// This week's Imsak and Berbuka, for family chats.
+/// This week's Imsak and iftar, for family chats.
 private struct WeekCardView: View {
     struct Row: Hashable { let label: String; let hijri: Int; let imsak: String; let berbuka: String }
     let place: String
     let rows: [Row]
+    let t: RamadanWords.In
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Ramadan Kareem").font(.system(size: 22, weight: .bold)).foregroundStyle(gold)
                     Text(place).font(.system(size: 34, weight: .bold))
-                    Text("Imsak and Berbuka this week").font(.system(size: 17)).opacity(0.75)
+                    Text(t(.weekCardTitle)).font(.system(size: 17)).opacity(0.75)
                 }
                 Spacer()
                 Image(systemName: "moon.stars.fill").font(.system(size: 48)).foregroundStyle(gold)
@@ -679,7 +680,7 @@ private struct WeekCardView: View {
                 HStack {
                     VStack(alignment: .leading) {
                         Text(r.label).font(.system(size: 19, weight: .semibold))
-                        Text("\(r.hijri) Ramadan").font(.system(size: 13)).opacity(0.6)
+                        Text("\(r.hijri) \(t(.ramadan))").font(.system(size: 13)).opacity(0.6)
                     }
                     Spacer()
                     Text(r.imsak).font(.system(size: 21, weight: .semibold)).monospacedDigit().frame(width: 110, alignment: .trailing)
@@ -688,9 +689,9 @@ private struct WeekCardView: View {
                 .padding(.horizontal, 14).padding(.vertical, 10)
                 .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
             }
-            HStack { Spacer(); Text("IMSAK").frame(width: 110, alignment: .trailing); Text("BERBUKA").frame(width: 110, alignment: .trailing) }
+            HStack { Spacer(); Text(t(.imsak).uppercased()).frame(width: 110, alignment: .trailing); Text(t(.berbuka).uppercased()).frame(width: 110, alignment: .trailing) }
                 .font(.system(size: 12, weight: .bold)).opacity(0.6).padding(.horizontal, 14)
-            Text("Follow your local religious authority for the start of Ramadan and Raya.").font(.system(size: 13)).opacity(0.6)
+            Text(t(.weekCardFollow)).font(.system(size: 13)).opacity(0.6)
             Text("Prayer Times Asia · prayertimes.asia").font(.system(size: 14, weight: .medium)).opacity(0.75).frame(maxWidth: .infinity)
         }
         .padding(28)
@@ -699,17 +700,18 @@ private struct WeekCardView: View {
     }
 }
 
-/// A simple Hari Raya card with the sender's own words.
+/// A simple Eid card with the sender's own words.
 private struct RayaCardView: View {
     let from: String
+    let t: RamadanWords.In
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "moon.stars.fill").font(.system(size: 80)).foregroundStyle(gold).padding(.top, 40)
-            Text("Selamat Hari Raya\nAidilfitri").font(.system(size: 40, weight: .bold)).multilineTextAlignment(.center).foregroundStyle(gold)
-            Text("Maaf zahir dan batin").font(.system(size: 22, weight: .medium))
+            Text(t(.rayaCardTitle)).font(.system(size: 40, weight: .bold)).multilineTextAlignment(.center).foregroundStyle(gold)
+            Text(t(.maafZahirBatin)).font(.system(size: 22, weight: .medium))
             Text("Taqabbalallahu minna wa minkum").font(.system(size: 17)).opacity(0.8)
             if !from.trimmingCharacters(in: .whitespaces).isEmpty {
-                Text("From \(String(from.prefix(40)))").font(.system(size: 22, weight: .semibold)).padding(.top, 20)
+                Text(t(.rayaCardFrom, ["name": String(from.prefix(40))])).font(.system(size: 22, weight: .semibold)).padding(.top, 20)
             }
             Spacer(minLength: 30)
             Text("Prayer Times Asia · prayertimes.asia").font(.system(size: 14, weight: .medium)).opacity(0.7).padding(.bottom, 24)

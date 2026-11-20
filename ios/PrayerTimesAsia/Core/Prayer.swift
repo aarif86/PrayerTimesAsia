@@ -140,9 +140,12 @@ enum NamingStyle: String, CaseIterable, Codable, Identifiable, Sendable {
 
     var hijriMonths: [String] {
         switch self {
-        case .malay, .indonesian:
+        case .malay:
             ["Muharram", "Safar", "Rabiulawal", "Rabiulakhir", "Jamadilawal", "Jamadilakhir",
              "Rejab", "Syaaban", "Ramadan", "Syawal", "Zulkaedah", "Zulhijjah"]
+        case .indonesian:
+            ["Muharam", "Safar", "Rabiulawal", "Rabiulakhir", "Jumadilawal", "Jumadilakhir",
+             "Rajab", "Syakban", "Ramadan", "Syawal", "Zulkaidah", "Zulhijah"]
         case .international, .southAsian:
             ["Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani", "Jumada al-Ula", "Jumada al-Akhirah",
              "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qa'dah", "Dhu al-Hijjah"]
