@@ -344,10 +344,11 @@
        Reveals only hide content once the script has run (html.js), and all of it
        switches off for people who ask their device for less motion. */
     .sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-    .sky .glow { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; will-change: transform; }
-    .sky .g1 { width: 46vmax; height: 46vmax; background: #2a2f78; top: -18vmax; right: -12vmax; animation: drift1 26s ease-in-out infinite alternate; }
-    .sky .g2 { width: 40vmax; height: 40vmax; background: #3a1f52; bottom: -16vmax; left: -14vmax; animation: drift2 32s ease-in-out infinite alternate; }
-    .sky .g3 { width: 24vmax; height: 24vmax; background: #f39a4a; opacity: .12; top: 30%; left: 40%; animation: drift3 38s ease-in-out infinite alternate; }
+    /* Soft glows drawn as plain gradients. A blur filter this size made every frame slow on many computers. */
+    .sky .glow { position: absolute; border-radius: 50%; will-change: transform; }
+    .sky .g1 { width: 46vmax; height: 46vmax; background: radial-gradient(circle, #2a2f78b0 0%, #2a2f7860 38%, transparent 70%); top: -18vmax; right: -12vmax; animation: drift1 26s ease-in-out infinite alternate; }
+    .sky .g2 { width: 40vmax; height: 40vmax; background: radial-gradient(circle, #3a1f52b0 0%, #3a1f5260 38%, transparent 70%); bottom: -16vmax; left: -14vmax; animation: drift2 32s ease-in-out infinite alternate; }
+    .sky .g3 { width: 24vmax; height: 24vmax; background: radial-gradient(circle, #f39a4a26 0%, #f39a4a12 38%, transparent 70%); top: 30%; left: 40%; animation: drift3 38s ease-in-out infinite alternate; }
     .sky .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; animation: twinkle var(--d, 4s) ease-in-out var(--delay, 0s) infinite; }
     .sky .shoot { position: absolute; top: 12%; left: 70%; width: 120px; height: 1.5px; opacity: 0;
       background: linear-gradient(90deg, #fff, transparent); transform: rotate(-20deg); animation: shoot 11s ease-in 3s infinite; }
@@ -443,9 +444,9 @@
         radial-gradient(60% 50% at 80% 0%, #f7bd8f55 0%, transparent 70%),
         radial-gradient(50% 40% at 0% 100%, #e2b65a33 0%, transparent 70%),
         var(--night); }
-    [data-theme="light"] .sky .g1 { background: #f7bd8f; opacity: .45; }
-    [data-theme="light"] .sky .g2 { background: #e2b65a; opacity: .3; }
-    [data-theme="light"] .sky .g3 { background: #e7788f; opacity: .1; }
+    [data-theme="light"] .sky .g1 { background: radial-gradient(circle, #f7bd8f90 0%, #f7bd8f48 38%, transparent 70%); }
+    [data-theme="light"] .sky .g2 { background: radial-gradient(circle, #e2b65a60 0%, #e2b65a30 38%, transparent 70%); }
+    [data-theme="light"] .sky .g3 { background: radial-gradient(circle, #e7788f22 0%, #e7788f10 38%, transparent 70%); }
     [data-theme="light"] .sky .star, [data-theme="light"] .sky .shoot { display: none; }
     [data-theme="light"] header.top { background: rgba(242, 238, 233, 0.78); }
     [data-theme="light"] header.top.scrolled { background: rgba(242, 238, 233, 0.94); box-shadow: 0 10px 30px -22px #151A4566; }
