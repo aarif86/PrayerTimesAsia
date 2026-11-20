@@ -65,6 +65,8 @@ export interface MovedSettings {
   buzzOnly?: boolean
   largeText?: boolean
   jumuahReminderMinutes?: number
+  /** Singapore's first or second Friday session: 'first' | 'second'. */
+  jumuahSession?: string
   /** The Subuh wake-up alarm and the earlier sahur alarm. */
   wakeUp?: string
   sahurAlarm?: string
@@ -93,7 +95,7 @@ const SIMPLE_KEYS = [
   'showOffers', 'showLocalNames', 'trackerEnabled', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
   'dhuhrAlarm', 'asrAlarm', 'maghribAlarm', 'ishaAlarm', 'alarmSound',
   'windowNudge', 'quietHours', 'quietFrom', 'quietTo', 'buzzOnly', 'largeText', 'jumuahReminderMinutes',
-  'tarawihRakaat',
+  'tarawihRakaat', 'jumuahSession',
 ] as const satisfies readonly (keyof Preferences & keyof MovedSettings)[]
 
 function movedPlace(p: Place): MovedPlace {

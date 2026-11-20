@@ -401,7 +401,9 @@ struct Preferences: Codable, Equatable, Sendable {
     var guideSeen = false
     /// Fridays: a reminder this many minutes before Jumaat (0 = off).
     var jumuahReminderMinutes = 0
-    static let jumuahReminderChoices = [0, 20, 30, 45, 60, 90]
+    static let jumuahReminderChoices = JumuahLeave.choices
+    /// Singapore only: leave for the first Jumaat (at Zohor) or the second one some masjids hold from 2 PM.
+    var jumuahSession: JumuahSession = .first
     /// Short hadith and ayat on some screens (Core/HadithContent.swift).
     var showHadith = true
     /// One hadith line under prayer alerts and the Subuh alarm.
@@ -502,7 +504,8 @@ struct Preferences: Codable, Equatable, Sendable {
         // People already using the app before the quick guide came don't get it pushed at them; it waits in Settings.
         guideSeen = v(.guideSeen, hasOnboarded)
         jumuahReminderMinutes = v(.jumuahReminderMinutes, d.jumuahReminderMinutes)
-        if !Self.jumuahReminderChoices.contains(jumuahReminderMinutes) { jumuahReminderMinutes = 0 }
+        jumuahReminderMinutes = JumuahLeave.snap(jumuahReminderMinutes)
+        jumuahSession = v(.jumuahSession, d.jumuahSession)
         showHadith = v(.showHadith, d.showHadith)
         hadithInAlerts = v(.hadithInAlerts, d.hadithInAlerts)
         hiddenHadith = v(.hiddenHadith, d.hiddenHadith)

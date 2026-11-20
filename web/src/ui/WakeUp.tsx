@@ -11,6 +11,7 @@ import { alertSupport, anyAlarm, downloadWakeICS, nextWakeUp, requestPermission 
 import { store, useNow, useStore } from '../services/store'
 import { Sheet, ToggleItem } from './common'
 import { Hadith } from './Hadith'
+import { JumuahLeaveGroup } from './JumuahLeave'
 import { phoneAppOffer } from './pwa'
 
 /** The alarm clock on the Prayer screen: shows the next alarm's time when one is set. */
@@ -170,6 +171,8 @@ export function WakeUpSheet() {
         </div>
         <p class="group-foot">An alarm rings loudly until you stop it. If it rings at the very start of a prayer, it takes the place of that prayer's alert.</p>
       </section>
+
+      <JumuahLeaveGroup />
 
       <section>
         <h2 class="group-title">Alarm sound</h2>

@@ -88,6 +88,31 @@ describe('prayer alerts', () => {
     expect(upcomingAlerts(sg(2026, 11, 17, 6)).some((a) => a.id.endsWith('-jumuah'))).toBe(false)
   })
 
+  it('leaves 2 hours before the second Jumaat in Singapore, from 2 PM', () => {
+    use(SG, { jumuahReminderMinutes: 120, jumuahSession: 'second' })
+    const j = upcomingAlerts(sg(2026, 11, 20, 6)).find((a) => a.id.endsWith('-jumuah'))!
+    expect(local(j.at, 'Asia/Singapore')).toBe('2026-11-20 12:00')
+    expect(j.title).toBe("Time to leave for the second Jumu'ah")
+    expect(j.body).toBe("The second Jumu'ah starts from 2:00 PM, 2 hours from now.")
+    expect(j.title + j.body).not.toMatch(/[:\u2013\u2014]\s/)
+  })
+
+  it('counts back from Zohor outside Singapore, even with the second session saved', () => {
+    use(LONDON, { jumuahReminderMinutes: 60, jumuahSession: 'second' })
+    const now = zonedTime(2026, 11, 20, 6, 0, 0, 'Europe/London')
+    const j = upcomingAlerts(now).find((a) => a.id.endsWith('-jumuah'))!
+    expect(j.at).toBe(store.day(zonedTime(2026, 11, 20, 12, 0, 0, 'Europe/London'))!.times.dhuhr - 60 * 60_000)
+    expect(j.title).toBe("Time to leave for Jumu'ah")
+    expect(j.body).toMatch(/1 hour from now\.$/)
+  })
+
+  it('speaks Malay with Malay prayer names', () => {
+    use(SG, { jumuahReminderMinutes: 15, namingOverride: 'malay' })
+    const j = upcomingAlerts(sg(2026, 11, 20, 6)).find((a) => a.id.endsWith('-jumuah'))!
+    expect(j.title).toBe('Masa untuk bertolak ke solat Jumaat')
+    expect(j.body).toMatch(/^Solat Jumaat bermula pada .+, 15 minit lagi\.$/)
+  })
+
   it('goes quiet in quiet hours across midnight, but Subuh keeps its sound', () => {
     use(SG, { notificationsEnabled: true, quietHours: true, quietFrom: 20 * 60, quietTo: 6 * 60 })
     const list = upcomingAlerts(sg(2026, 11, 16, 9))

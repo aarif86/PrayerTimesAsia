@@ -3,6 +3,7 @@ package com.prayertimesasia.app.alarms
 import com.prayertimesasia.core.RamadanContent
 import com.prayertimesasia.core.AlertLines
 import com.prayertimesasia.core.HadithId
+import com.prayertimesasia.core.JumuahLeave
 import com.prayertimesasia.core.Hadith
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -71,12 +72,11 @@ object AlarmScheduler {
             if (offset < 0) continue
             val jumuah = p.jumuahReminderMinutes
             if (jumuah > 0 && r.isFriday(day.time(Prayer.DHUHR))) {
-                val start = day.jamaah[Prayer.DHUHR] ?: day.time(Prayer.DHUHR)
-                val at = start.minusSeconds(jumuah * 60L)
-                val name = Prayer.DHUHR.name(r.naming, true)
-                val where = if (day.jamaah[Prayer.DHUHR] != null) day.mosqueName?.let { " at $it" } ?: "" else ""
-                out += Alert("$key-jumuah", "$name in $jumuah min", "Time to get ready and leave for $name$where, ${r.formatted(start)}.",
-                    at, Kind.JUMUAH, silent = r.isSilent(at, Prayer.DHUHR))
+                val j = r.jumuahStart(day)
+                val at = j.at.minusSeconds(jumuah * 60L)
+                val (title, body) = JumuahLeave.words(RamadanContent.lang(r.naming), jumuah, Prayer.DHUHR.name(r.naming, true),
+                    j.second, r.formatted(j.at), j.where)
+                out += Alert("$key-jumuah", title, body, at, Kind.JUMUAH, silent = r.isSilent(at, Prayer.DHUHR))
             }
             val early = p.reminderMinutesBefore
             if (p.notificationsEnabled || early > 0) {

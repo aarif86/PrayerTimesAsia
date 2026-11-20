@@ -355,6 +355,8 @@ data class Preferences(
     val guideSeen: Boolean? = null,
     /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
     val jumuahReminderMinutes: Int = 0,
+    /** Singapore only: leave for the first Jumaat (at Zohor) or the second one some masjids hold from 2 PM. */
+    val jumuahSession: JumuahSession = JumuahSession.FIRST,
     /** Short hadith and ayat on some screens (HadithContent.kt). */
     val showHadith: Boolean = true,
     /** One hadith line under each prayer alert. */
@@ -409,7 +411,7 @@ data class Preferences(
         private fun Preferences.sane(): Preferences = copy(
             quietFrom = quietFrom.takeIf { it in 0 until 1440 } ?: 23 * 60,
             quietTo = quietTo.takeIf { it in 0 until 1440 } ?: 6 * 60,
-            jumuahReminderMinutes = jumuahReminderMinutes.takeIf { it in PrayerWindow.JUMUAH_REMINDER_CHOICES } ?: 0,
+            jumuahReminderMinutes = JumuahLeave.snap(jumuahReminderMinutes),
             // Isyak is open until Subuh: it has no "before it ends" alarm.
             ishaAlarm = ishaAlarm.takeIf { it != PrayerAlarmTiming.END_MINUS_30 },
             tarawihRakaat = tarawihRakaat?.takeIf { it in Tarawih.CHOICES },
