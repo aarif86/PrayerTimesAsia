@@ -94,7 +94,6 @@ import com.prayertimesasia.core.JakimZones
 import com.prayertimesasia.core.NamingStyle
 import com.prayertimesasia.core.Official
 import com.prayertimesasia.core.Prayer
-import com.prayertimesasia.core.PrayerWindow
 import com.prayertimesasia.app.CalendarFile
 import com.prayertimesasia.core.TodayStyle
 import java.time.LocalDate
@@ -148,7 +147,7 @@ fun SettingsScreen(
             }
             item {
                 val next = com.prayertimesasia.app.alarms.AlarmScheduler.nextWakeUp(r, state.now)
-                Section("Alarms", "Also on the Prayer screen. Tap the alarm clock at the top.") {
+                Section("Alarms", "Wake up for ${Prayer.FAJR.name(r.naming)}, sahur, alarms for each prayer, and when to leave for ${Prayer.DHUHR.name(r.naming, true)}. Also on the Prayer screen. Tap the alarm clock at the top.") {
                     ValueRow(tr(R.string.settings_alarms), when {
                         next != null -> "Next ${r.formatted(next.at)}"
                         p.anyAlarm -> "On"
@@ -296,16 +295,6 @@ fun SettingsScreen(
                         PickerRow(tr(R.string.settings_until), r.clock(p.quietTo), halfHours.map { r.clock(it) to it }, p.quietTo) { m ->
                             state.update { it.copy(quietTo = m) }
                         }
-                    }
-                }
-            }
-            item {
-                val friday = Prayer.DHUHR.name(r.naming, true)
-                val zohor = Prayer.DHUHR.name(r.naming)
-                Section(friday, "A reminder on Fridays to get ready and leave in time. It uses your masjid's own $friday time when you have set one in the Masjid tab, otherwise the start of $zohor. $friday is not required of women, travellers or the sick, who pray $zohor instead.") {
-                    PickerRow(tr(R.string.settings_leave), if (p.jumuahReminderMinutes == 0) "Off" else "${p.jumuahReminderMinutes} min before",
-                        PrayerWindow.JUMUAH_REMINDER_CHOICES.map { (if (it == 0) "Off" else "$it min before") to it }, p.jumuahReminderMinutes) { m ->
-                        if (m > 0) state.enableJumuahReminder(m) else state.update { it.copy(jumuahReminderMinutes = 0) }
                     }
                 }
             }

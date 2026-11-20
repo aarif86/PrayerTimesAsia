@@ -13,8 +13,10 @@ struct DayDial: View {
     let currentName: String
     let currentPrayer: Prayer
     let countdown: String
-    /// "left to pray" or "until Zohor", under the countdown.
+    /// "left to pray" or "until Zohor", under the countdown. Empty from Syuruk to Zohor.
     let label: String
+    /// Syuruk to Zohor: the centre names the next prayer ("Zohor", "in 53m"), not the one we are in.
+    var isNext = false
 
     private var midnight: Date {
         var cal = Calendar(identifier: .gregorian)
@@ -101,10 +103,12 @@ struct DayDial: View {
                         .font(Theme.display(size * 0.1, .semibold)).monospacedDigit()
                         .foregroundStyle(Theme.accentText)
                         .contentTransition(.numericText(countsDown: true))
-                    Text(label)
-                        .font(.system(size: size * 0.065, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1).minimumScaleFactor(0.7)
+                    if !label.isEmpty {
+                        Text(label)
+                            .font(.system(size: size * 0.065, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1).minimumScaleFactor(0.7)
+                    }
                 }
                 .padding(.horizontal, size * 0.18)
                 // Sized to the dial, not to the text size setting: it has to fit inside the circle.
@@ -115,6 +119,6 @@ struct DayDial: View {
         }
         .aspectRatio(1, contentMode: .fit)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Now \(currentName). \(countdown) \(label).")
+        .accessibilityLabel(isNext ? "Next \(currentName), \(countdown)." : "Now \(currentName). \(countdown) \(label).")
     }
 }

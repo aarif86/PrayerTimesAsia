@@ -511,6 +511,7 @@
 .simple-page { padding-bottom: 32px; }
 .simple-now { text-align: center; padding: 20px 4px 18px; display: flex; flex-direction: column; gap: 6px; }
 .simple-big { font-size: 56px; font-weight: 800; line-height: 1.05; }
+.simple-kicker { font-size: 13px; font-weight: 800; letter-spacing: 0.1em; color: var(--fg2); }
 .simple-left { font-size: 34px; font-weight: 700; }
 .simple-list { display: flex; flex-direction: column; gap: 10px; }
 .simple-row { display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 12px 20px; border-radius: 20px; background: var(--fill);

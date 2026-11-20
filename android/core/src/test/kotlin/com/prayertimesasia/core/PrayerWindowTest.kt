@@ -66,4 +66,20 @@ class PrayerWindowTest {
         assertEquals(23 * 60, bad.quietFrom)
         assertEquals(0, bad.jumuahReminderMinutes)
     }
+
+    @Test fun leaveForJumaatChoicesWordsAndOldValues() {
+        assertEquals(30, Preferences.decode("""{"jumuahReminderMinutes":20}""").jumuahReminderMinutes)
+        assertEquals(120, Preferences.decode("""{"jumuahReminderMinutes":90}""").jumuahReminderMinutes)
+        assertEquals(JumuahSession.FIRST, Preferences.decode("""{"jumuahSession":"third"}""").jumuahSession)
+        assertEquals("2 hours before", JumuahLeave.label(120))
+        assertEquals("1 hour before", JumuahLeave.label(60))
+        val ms = JumuahLeave.words(RamadanContent.Lang.MS, 15, "Jumaat", false, "1:05 PM", null)
+        assertEquals("Masa untuk bertolak ke solat Jumaat", ms.first)
+        assertEquals("Solat Jumaat bermula pada 1:05 PM, 15 minit lagi.", ms.second)
+        val p = Preferences(jumuahReminderMinutes = 120, jumuahSession = JumuahSession.SECOND, jumuahLeaveAlarm = true)
+        val back = MovedSettings.fromCode(MovedSettings.from(p).code)!!.appliedTo(Preferences())
+        assertEquals(120, back.jumuahReminderMinutes)
+        assertEquals(JumuahSession.SECOND, back.jumuahSession)
+        assertTrue(back.jumuahLeaveAlarm)
+    }
 }

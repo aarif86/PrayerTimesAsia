@@ -5,6 +5,7 @@ import com.prayertimesasia.core.Coordinates
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerAlarmTiming
+import com.prayertimesasia.core.JumuahSession
 import com.prayertimesasia.core.Preferences
 import com.prayertimesasia.core.Resolver
 import com.prayertimesasia.core.WakeUpTiming
@@ -58,6 +59,26 @@ class AlarmEdgeCasesTest {
         assertEquals(r.day(sgAt(2026, 11, 20, 12, 0))!!.time(Prayer.DHUHR).minusSeconds(1800), friday.at)
         // Monday to Wednesday: none.
         assertTrue(AlarmScheduler.plan(r, sgAt(2026, 11, 16, 6, 0)).none { it.kind == AlarmScheduler.Kind.JUMUAH })
+    }
+
+    @Test fun leavesTwoHoursBeforeTheSecondJumaatInSingapore() {
+        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, jumuahReminderMinutes = 120,
+            jumuahSession = JumuahSession.SECOND)
+        val j = AlarmScheduler.plan(resolver(prefs), sgAt(2026, 11, 20, 6, 0)).single { it.kind == AlarmScheduler.Kind.JUMUAH }
+        assertEquals(sgAt(2026, 11, 20, 12, 0), j.at)
+        assertEquals("Time to leave for the second Jumu'ah", j.title)
+        assertEquals("The second Jumu'ah starts from 2:00 PM, 2 hours from now.", j.body)
+    }
+
+    @Test fun leaveReminderRingsAsAnAlarmInsteadOfANotification() {
+        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, jumuahReminderMinutes = 45, jumuahLeaveAlarm = true)
+        val r = resolver(prefs)
+        assertTrue(prefs.anyAlarm)
+        val plan = AlarmScheduler.plan(r, sgAt(2026, 11, 20, 6, 0))
+        assertTrue(plan.none { it.kind == AlarmScheduler.Kind.JUMUAH })
+        val alarm = plan.single { it.id == "2026-11-20-jumuah-alarm" }
+        assertEquals(AlarmScheduler.Kind.WAKE, alarm.kind)
+        assertEquals(r.day(sgAt(2026, 11, 20, 12, 0))!!.time(Prayer.DHUHR).minusSeconds(45 * 60L), alarm.at)
     }
 
     @Test fun quietHoursAcrossMidnightButSubuhKeepsItsSound() {

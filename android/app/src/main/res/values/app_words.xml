@@ -84,6 +84,9 @@
     <string name="today_asrShafii" formatted="false">Earlier Asr (Shafi\'i)</string>
     <string name="today_calledHere" formatted="false">called {name} here</string>
     <string name="today_now" formatted="false">NOW</string>
+    <string name="today_next" formatted="false">NEXT</string>
+    <string name="today_nextIn" formatted="false">{name} in {time}</string>
+    <string name="today_in" formatted="false">in {time}</string>
     <string name="today_alertOff" formatted="false">Turn off alert</string>
     <string name="today_alertOn" formatted="false">Turn on alert</string>
     <string name="today_prevDay" formatted="false">Previous day</string>

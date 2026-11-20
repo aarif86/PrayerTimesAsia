@@ -84,6 +84,9 @@
     <string name="today_asrShafii" formatted="false">Asar awal (Syafie)</string>
     <string name="today_calledHere" formatted="false">disebut {name} di sini</string>
     <string name="today_now" formatted="false">SEKARANG</string>
+    <string name="today_next" formatted="false">SETERUSNYA</string>
+    <string name="today_nextIn" formatted="false">{name} dalam {time}</string>
+    <string name="today_in" formatted="false">dalam {time}</string>
     <string name="today_alertOff" formatted="false">Matikan makluman</string>
     <string name="today_alertOn" formatted="false">Hidupkan makluman</string>
     <string name="today_prevDay" formatted="false">Hari sebelumnya</string>

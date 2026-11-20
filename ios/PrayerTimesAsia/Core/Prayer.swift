@@ -28,6 +28,30 @@ enum Prayer: String, CaseIterable, Codable, Identifiable, Sendable {
     }
 }
 
+/// What leads a screen or widget. While a prayer's time is open, that prayer
+/// (NOW). Syuruk ends Subuh but starts no prayer, so from Syuruk to Zohor the
+/// next prayer leads instead (NEXT, "Zohor in 53m"), never "Sunrise". Same
+/// rule on Android and the web; the masjid screen already worked this way.
+struct PrayerLead {
+    let prayer: Prayer
+    let time: Date
+    let isNext: Bool
+
+    init?(current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) {
+        guard let current, let next else { return nil }
+        if current.prayer == .sunrise {
+            (prayer, time, isNext) = (next.prayer, next.time, true)
+        } else {
+            (prayer, time, isNext) = (current.prayer, current.time, false)
+        }
+    }
+
+    /// The prayer whose time is open now: nil between Syuruk and Zohor. Only this one is marked NOW.
+    static func open(_ current: (prayer: Prayer, time: Date)?) -> (prayer: Prayer, time: Date)? {
+        current?.prayer == .sunrise ? nil : current
+    }
+}
+
 /// How prayer names are spelled. Muslims across Asia say the same prayers with
 /// different words. The app uses *your* words (from your home, or your phone)
 /// wherever you are, and shows the local word underneath when you travel - so a
