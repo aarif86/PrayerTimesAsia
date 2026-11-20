@@ -901,4 +901,44 @@
     <string name="move_copyThis" formatted="false">Salin tautan ini</string>
     <string name="notify_testTitle" formatted="false">{name} · pemberitahuan uji</string>
     <string name="notify_testBody" formatted="false">Seperti inilah tampilan pemberitahuan salat di perangkat ini.</string>
+    <string name="source_summary_pinnedShort" formatted="false">Anda memilih {method} di Pengaturan.</string>
+    <string name="source_summary_tableShort" formatted="false">Jadwal resmi dari {authority}.</string>
+    <string name="source_summary_authorityShort" formatted="false">Mengikuti {authority}.</string>
+    <string name="source_summary_standardShort" formatted="false">Tidak ada jadwal resmi di sini, jadi aplikasi memakai {method}. Masjid setempat Anda mungkin berbeda beberapa menit.</string>
+    <string name="source_summary_pinned" formatted="false">Anda memilih {method} di Pengaturan. Pilihan Otomatis akan mengikuti {follow}.</string>
+    <string name="source_summary_mostUsed" formatted="false">metode yang paling banyak dipakai di sini</string>
+    <string name="source_summary_localAuthority" formatted="false">otoritas agama setempat</string>
+    <string name="source_summary_table" formatted="false">Jadwal resmi dari {authority}. Jika jadwal tidak dapat diunduh, aplikasi menghitungnya dengan metode yang sama.</string>
+    <string name="source_summary_authority" formatted="false">Mengikuti {authority}, dihitung di ponsel Anda dengan metode mereka sehingga tetap jalan tanpa internet.</string>
+    <string name="source_summary_standardNone" formatted="false">Belum ada jadwal resmi yang dapat dipakai aplikasi di sini, jadi aplikasi memakai {method}, yaitu metode standar.</string>
+    <string name="source_summary_standardEnd" formatted="false">Masjid setempat Anda mungkin berbeda beberapa menit. Anda dapat memilih metode lain di Pengaturan, atau mengirimkan jadwal masjid Anda kepada kami.</string>
+    <string name="source_summary_londonShort" formatted="false">London Unified Prayer Timetable dari East London Mosque, diikuti banyak masjid di London.</string>
+    <string name="source_summary_london" formatted="false">London Unified Prayer Timetable dari East London Mosque, diikuti banyak masjid di London. Jika jadwal tidak dapat diunduh, aplikasi memakai metode Moonsighting Committee. Masjid setempat Anda mungkin berbeda beberapa menit.</string>
+    <string name="source_methodName" formatted="false">Metode {method}</string>
+    <string name="source_explainA" formatted="false">Diterbitkan oleh otoritas agama nasional atau daerah, atau mengikuti persis metode yang diterbitkannya.</string>
+    <string name="source_explainB" formatted="false">Dari jadwal masjid yang disebutkan namanya, dicek dengan perhitungan kami.</string>
+    <string name="source_explainC" formatted="false">Metode dikonfirmasi oleh dua atau lebih kontributor setempat yang terpisah.</string>
+    <string name="source_explainD" formatted="false">Perhitungan astronomi di perangkat Anda. Metodenya ditampilkan. Masjid setempat mungkin berbeda beberapa menit.</string>
+    <string name="source_explainF" formatted="false">Dihitung dari pengamatan Anda sendiri atas bayangan matahari atau langit, dengan ± menit yang jujur. Untuk belajar dan mengecek, bukan untuk menggantikan tingkat di atas.</string>
+    <string name="method_note_muis" formatted="false">Majlis Ugama Islam Singapura. Saat daring, aplikasi menampilkan jadwal resmi MUIS. Tanpa internet, aplikasi menghitung sendiri dan tidak pernah lebih awal dari waktu resmi.</string>
+    <string name="method_note_jakim" formatted="false">Kriteria Subuh 18° Malaysia (sejak 2019). Saat daring, aplikasi menampilkan jadwal resmi e-Solat JAKIM untuk zona Anda. Tanpa internet, aplikasi menghitung dengan selisih sekitar 2 menit.</string>
+    <string name="method_note_kemenag" formatted="false">Kementerian Agama. Saat daring, aplikasi menampilkan jadwal resmi Kemenag untuk kota atau kabupaten Anda. Tanpa internet, aplikasi menghitung dengan koreksi yang disesuaikan pada jadwal lengkap 2026 untuk Jakarta, Surabaya dan Makassar.</string>
+    <string name="method_note_sea" formatted="false">Kebiasaan 20°/18° yang dipakai di seluruh Dunia Melayu. Pilihan awal yang wajar jika tidak ada jadwal nasional.</string>
+    <string name="method_note_mwl" formatted="false">Liga Muslim Dunia. Metode internasional yang paling banyak dipakai.</string>
+    <string name="method_note_karachi" formatted="false">Metode baku di Pakistan, India, Bangladesh dan Afganistan.</string>
+    <string name="method_note_ummalqura" formatted="false">Kalender resmi Arab Saudi, diikuti oleh Haramain di Makkah dan Madinah. Isya 90 menit setelah Magrib, 120 menit pada bulan Ramadan.</string>
+    <string name="method_note_dubai" formatted="false">Kebiasaan Uni Emirat Arab.</string>
+    <string name="method_note_qatar" formatted="false">Isya 90 menit setelah Magrib.</string>
+    <string name="method_note_kuwait" formatted="false">Kebiasaan Kuwait.</string>
+    <string name="method_note_diyanet" formatted="false">Metode Diyanet (Subuh 18°, Isya 17°, Asar pada satu panjang bayangan), dengan menit ihtiyat yang disesuaikan pada jadwal Istanbul yang diterbitkannya. Juga dipakai masjid Turki di seluruh Eropa.</string>
+    <string name="method_note_tehran" formatted="false">Institut Geofisika, Universitas Teheran. Magrib saat matahari berada 4,5° di bawah ufuk.</string>
+    <string name="method_note_egyptian" formatted="false">Otoritas Survei Umum Mesir. Juga umum dipakai di Suriah, Libia dan Sudan.</string>
+    <string name="method_note_isna" formatted="false">Islamic Society of North America. Diikuti banyak masjid di Amerika Serikat dan Kanada.</string>
+    <string name="method_note_moonsighting" formatted="false">Dibuat untuk negara di utara. Subuh dan Isya mengikuti musim sehingga malam musim panas tetap dapat dijalani. Umum dipakai di Inggris, Irlandia dan Amerika Utara.</string>
+    <string name="method_note_uoif" formatted="false">Sudut 12° yang dipakai Musulmans de France (dahulu UOIF). Subuh lebih lambat dan Isya lebih awal dibanding kebanyakan metode.</string>
+    <string name="method_note_russia" formatted="false">Dewan Rohani Muslim Rusia.</string>
+    <string name="method_note_algeria" formatted="false">Metode Kementerian Urusan Agama dan Wakaf Aljazair.</string>
+    <string name="method_note_tunisia" formatted="false">Metode Kementerian Urusan Agama Tunisia.</string>
+    <string name="method_note_morocco" formatted="false">Metode Kementerian Wakaf dan Urusan Islam Maroko.</string>
+    <string name="method_note_jordan" formatted="false">Metode Kementerian Wakaf dan Urusan Islam Yordania. Juga dipakai di Palestina.</string>
 </resources>
