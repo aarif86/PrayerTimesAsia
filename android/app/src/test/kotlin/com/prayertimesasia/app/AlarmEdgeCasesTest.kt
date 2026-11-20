@@ -70,6 +70,17 @@ class AlarmEdgeCasesTest {
         assertEquals("The second Jumu'ah starts from 2:00 PM, 2 hours from now.", j.body)
     }
 
+    @Test fun leaveReminderRingsAsAnAlarmInsteadOfANotification() {
+        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, jumuahReminderMinutes = 45, jumuahLeaveAlarm = true)
+        val r = resolver(prefs)
+        assertTrue(prefs.anyAlarm)
+        val plan = AlarmScheduler.plan(r, sgAt(2026, 11, 20, 6, 0))
+        assertTrue(plan.none { it.kind == AlarmScheduler.Kind.JUMUAH })
+        val alarm = plan.single { it.id == "2026-11-20-jumuah-alarm" }
+        assertEquals(AlarmScheduler.Kind.WAKE, alarm.kind)
+        assertEquals(r.day(sgAt(2026, 11, 20, 12, 0))!!.time(Prayer.DHUHR).minusSeconds(45 * 60L), alarm.at)
+    }
+
     @Test fun quietHoursAcrossMidnightButSubuhKeepsItsSound() {
         val r = resolver(on().copy(quietHours = true, quietFrom = 20 * 60, quietTo = 6 * 60))
         val plan = AlarmScheduler.plan(r, sgAt(2026, 11, 16, 9, 0))

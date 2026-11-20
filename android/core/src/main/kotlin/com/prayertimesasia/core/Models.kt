@@ -357,6 +357,8 @@ data class Preferences(
     val jumuahReminderMinutes: Int = 0,
     /** Singapore only: leave for the first Jumaat (at Zohor) or the second one some masjids hold from 2 PM. */
     val jumuahSession: JumuahSession = JumuahSession.FIRST,
+    /** The leave reminder rings like the prayer alarms (through silent and Do Not Disturb) instead of a notification. */
+    val jumuahLeaveAlarm: Boolean = false,
     /** Short hadith and ayat on some screens (HadithContent.kt). */
     val showHadith: Boolean = true,
     /** One hadith line under each prayer alert. */
@@ -397,7 +399,8 @@ data class Preferences(
 
     /** Is any alarm on: Subuh, sahur or one of the other prayers? */
     val anyAlarm: Boolean
-        get() = wakeUp != null || sahurAlarm != null || PrayerAlarmTiming.prayers.any { alarm(it) != null }
+        get() = wakeUp != null || sahurAlarm != null || PrayerAlarmTiming.prayers.any { alarm(it) != null } ||
+            (jumuahLeaveAlarm && jumuahReminderMinutes > 0)
 
     /** An alarm at the very start of this prayer rings instead of its alert. */
     fun alarmAtStart(prayer: Prayer): Boolean =

@@ -71,7 +71,8 @@ object AlarmScheduler {
             }
             if (offset < 0) continue
             val jumuah = p.jumuahReminderMinutes
-            if (jumuah > 0 && r.isFriday(day.time(Prayer.DHUHR))) {
+            // Rung as an alarm instead (wakeUps) when Ring as an alarm is on.
+            if (jumuah > 0 && !p.jumuahLeaveAlarm && r.isFriday(day.time(Prayer.DHUHR))) {
                 val j = r.jumuahStart(day)
                 val at = j.at.minusSeconds(jumuah * 60L)
                 val (title, body) = JumuahLeave.words(RamadanContent.lang(r.naming), jumuah, Prayer.DHUHR.name(r.naming, true),
@@ -181,6 +182,14 @@ object AlarmScheduler {
             val title = if (t == PrayerAlarmTiming.END_MINUS_30) "$name ends in 30 min" else "Time for $name"
             val body = if (prayer == Prayer.ISHA) "$name began at ${r.formatted(start)} · $placeName" else "$name is open until ${r.formatted(end)} · $placeName"
             out += Alert("$key-${prayer.raw}-alarm", title, body, t.date(start, end), Kind.WAKE)
+        }
+        // Leave for Jumaat, when it rings as an alarm.
+        val leave = p.jumuahReminderMinutes
+        if (p.jumuahLeaveAlarm && leave > 0 && r.isFriday(day.time(Prayer.DHUHR))) {
+            val j = r.jumuahStart(day)
+            val (title, body) = JumuahLeave.words(RamadanContent.lang(r.naming), leave, Prayer.DHUHR.name(r.naming, true),
+                j.second, r.formatted(j.at), j.where)
+            out += Alert("$key-jumuah-alarm", title, body, j.at.minusSeconds(leave * 60L), Kind.WAKE)
         }
         return out
     }

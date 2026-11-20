@@ -224,6 +224,9 @@ private fun JumuahLeaveSection(state: AppState) {
             JumuahLeave.CHOICES.map { JumuahLeave.label(it) to it }) { m ->
             if (m > 0) state.enableJumuahReminder(m) else state.update { it.copy(jumuahReminderMinutes = 0) }
         }
+        if (p.jumuahReminderMinutes > 0) {
+            SwitchRow("Ring as an alarm", p.jumuahLeaveAlarm, sub = "Rings even on silent or Do Not Disturb") { on -> state.setJumuahLeaveAlarm(on) }
+        }
         if (sg && p.jumuahReminderMinutes > 0) {
             val label = { s: JumuahSession -> if (s == JumuahSession.FIRST) "First" else "Second" }
             MenuRow("Which session", "First at $zohor, second from $twoPM", label(p.jumuahSession), true,

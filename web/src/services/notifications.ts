@@ -136,7 +136,8 @@ export function upcomingAlerts(now: number): Alert[] {
     }
     if (offset < 0) continue
     out.push(...ramadanAlerts(day, here))
-    if (jumuah > 0 && store.isFriday(day.times.dhuhr)) {
+    // Rung as an alarm instead (wakeUps) when Ring as an alarm is on.
+    if (jumuah > 0 && !prefs.jumuahLeaveAlarm && store.isFriday(day.times.dhuhr)) {
       const j = jumuahStart(day)
       const at = j.at - jumuah * 60_000
       const name = store.name('dhuhr', day.times.dhuhr)
@@ -187,7 +188,7 @@ export interface WakeUp { id: string; title: string; body: string; at: number; s
 
 /** Is any alarm on: Subuh, sahur or one of the other prayers? */
 export function anyAlarm(p = store.prefs): boolean {
-  return !!(p.wakeUp || p.sahurAlarm || ALARM_PRAYERS.some((x) => p[ALARM_KEY[x]]))
+  return !!(p.wakeUp || p.sahurAlarm || ALARM_PRAYERS.some((x) => p[ALARM_KEY[x]]) || (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0))
 }
 
 /** Does this prayer have an alarm at the very start, which stands in for its alert? */
@@ -231,6 +232,12 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
         body: prayer === 'isha' ? `${name} began at ${store.formatted(begins)} · ${place.name}` : `${name} is open until ${store.formatted(end)} · ${place.name}`,
         at: prayerAlarmTime(t, begins, end), sahur: false, prayer,
       })
+    }
+    // Leave for Jumaat, when it rings as an alarm.
+    if (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0 && store.isFriday(day.times.dhuhr)) {
+      const j = jumuahStart(day)
+      const w = leaveWords(lang3(store.naming), p.jumuahReminderMinutes, store.name('dhuhr', day.times.dhuhr), j.second, store.formatted(j.at), j.where)
+      out.push({ id: `${key}-jumuah-alarm`, ...w, at: j.at - p.jumuahReminderMinutes * 60_000, sahur: false })
     }
   }
   return out.filter((w) => w.at > now).sort((a, b) => a.at - b.at)

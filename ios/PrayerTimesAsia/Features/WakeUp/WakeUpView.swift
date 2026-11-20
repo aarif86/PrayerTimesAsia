@@ -269,6 +269,7 @@ struct WakeUpView: View {
             model.prefs.wakeUp = nil
             model.prefs.sahurAlarm = nil
             for prayer in PrayerAlarmTiming.prayers { model.prefs.setAlarm(nil, for: prayer) }
+            model.prefs.jumuahLeaveAlarm = false
         }
         Task {
             await WakeUpAlarm.stopRinging()

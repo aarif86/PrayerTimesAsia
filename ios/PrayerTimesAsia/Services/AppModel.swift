@@ -1001,7 +1001,8 @@ final class AppModel {
             }
             guard offset >= 0 else { continue }
             if offset < 6 { ramadan += ramadanAlerts(pd, here: here, maghribAlertOn: maghribAlertOn) }
-            if jumuah > 0 && isFriday(pd.time(.dhuhr)) {
+            // Rung as an alarm instead (wakeUpPlan) when Ring as an alarm is on.
+            if jumuah > 0 && !prefs.jumuahLeaveAlarm && isFriday(pd.time(.dhuhr)) {
                 let j = jumuahStart(pd)
                 let at = j.at.addingTimeInterval(Double(-jumuah) * 60)
                 let w = JumuahLeave.words(lineLang, minutes: jumuah, name: Prayer.dhuhr.name(naming, isFriday: true),
@@ -1051,7 +1052,7 @@ final class AppModel {
         let wakeUps = plan.filter { $0.prayer == nil || $0.date < soon }.map { ($0.date, $0.title) }
         let sound = prefs.alarmSound
         let notificationAlerts = ramadan + alerts
-        let notificationsOn = onTime || early > 0 || nudges || jumuah > 0 || !ramadan.isEmpty
+        let notificationsOn = onTime || early > 0 || nudges || (jumuah > 0 && !prefs.jumuahLeaveAlarm) || !ramadan.isEmpty
         // Demo screenshots never ask for alarm permission.
         let isDemo = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") }
         Task {
@@ -1113,6 +1114,14 @@ final class AppModel {
                     ? "\(name) ends in 30 min · \(formatted(end))"
                     : prayer == .isha ? "Time for \(name) · \(formatted(start))" : "Time for \(name) · open until \(formatted(end))"
                 out.append(WakeUp(date: timing.date(start: start, end: end), title: title, isSahur: false, prayer: prayer))
+            }
+            // Leave for Jumaat, when it rings as an alarm.
+            let leaveMinutes = prefs.jumuahReminderMinutes
+            if prefs.jumuahLeaveAlarm && leaveMinutes > 0 && isFriday(pd.time(.dhuhr)) {
+                let j = jumuahStart(pd)
+                let w = JumuahLeave.words(RamadanContent.lang(naming), minutes: leaveMinutes, name: Prayer.dhuhr.name(naming, isFriday: true),
+                                          second: j.second, at: formatted(j.at), where: j.where_)
+                out.append(WakeUp(date: j.at.addingTimeInterval(Double(-leaveMinutes) * 60), title: "\(w.title) · \(formatted(j.at))", isSahur: false))
             }
         }
         var seen = Set<Date>()

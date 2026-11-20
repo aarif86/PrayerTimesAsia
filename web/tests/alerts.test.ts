@@ -106,6 +106,16 @@ describe('prayer alerts', () => {
     expect(j.body).toMatch(/1 hour from now\.$/)
   })
 
+  it('rings the leave reminder as an alarm instead of a notification when asked', () => {
+    use(SG, { jumuahReminderMinutes: 45, jumuahLeaveAlarm: true })
+    const now = sg(2026, 11, 20, 6)
+    expect(upcomingAlerts(now).some((a) => a.id.endsWith('-jumuah'))).toBe(false)
+    const alarm = wakeUps(now, 1).find((w) => w.id === '2026-11-20-jumuah-alarm')!
+    expect(alarm.at).toBe(store.day(sg(2026, 11, 20, 12))!.times.dhuhr - 45 * 60_000)
+    expect(alarm.title).toBe("Time to leave for Jumu'ah")
+    expect(nextWakeUp(now)?.id).toBe('2026-11-20-jumuah-alarm')
+  })
+
   it('speaks Malay with Malay prayer names', () => {
     use(SG, { jumuahReminderMinutes: 15, namingOverride: 'malay' })
     const j = upcomingAlerts(sg(2026, 11, 20, 6)).find((a) => a.id.endsWith('-jumuah'))!

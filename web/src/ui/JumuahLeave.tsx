@@ -4,7 +4,8 @@ import { JUMUAH_LEAVE_CHOICES, leaveChoiceLabel, SECOND_SESSION_FROM, type Jumua
 import { prayerName } from '../core/prayer'
 import { alertSupport, nextJumuahLeave, permission, requestPermission } from '../services/notifications'
 import { store, useNow, useStore } from '../services/store'
-import { openSheet } from './common'
+import { openSheet, ToggleItem } from './common'
+import { stopAlarm } from '../services/alarmSound'
 
 /**
  * "Leave for Jumaat", in the Prayer alarms sheet, its one home. Same
@@ -44,6 +45,10 @@ export function JumuahLeaveGroup({ title = true }: { title?: boolean }) {
             {JUMUAH_LEAVE_CHOICES.map((v) => <option value={String(v)}>{leaveChoiceLabel(v)}</option>)}
           </select>
         </label>
+        {p.jumuahReminderMinutes > 0 && (
+          <ToggleItem label="Ring as an alarm" sub="Rings like your other alarms, not a quiet notification" on={p.jumuahLeaveAlarm}
+            onChange={(v) => { store.update((x) => { x.jumuahLeaveAlarm = v }); if (v && alertSupport() === 'supported') void requestPermission(); if (!v) stopAlarm() }} />
+        )}
         {sg && p.jumuahReminderMinutes > 0 && (
           <label class="item">
             <span class="label">Which session<span class="sub">First at {s.name('dhuhr')}, second from {twoPM}</span></span>

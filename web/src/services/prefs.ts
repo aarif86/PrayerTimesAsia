@@ -131,6 +131,8 @@ export interface Preferences {
   jumuahReminderMinutes: number
   /** Singapore only: leave for the first Jumaat (at Zohor) or the second one some masjids hold from 2 PM. */
   jumuahSession: JumuahSession
+  /** The leave reminder rings like the prayer alarms instead of a quiet notification. */
+  jumuahLeaveAlarm: boolean
   /** Short hadith and ayat on some screens (see core/hadith.ts). */
   showHadith: boolean
   /** One hadith line under prayer alerts and the Subuh alarm. */
@@ -218,6 +220,7 @@ export const DEFAULT_PREFS: Preferences = {
   guideSeen: false,
   jumuahReminderMinutes: 0,
   jumuahSession: 'first',
+  jumuahLeaveAlarm: false,
   showHadith: true,
   hadithInAlerts: true,
   hiddenHadith: [],

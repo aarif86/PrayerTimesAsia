@@ -31,6 +31,21 @@ struct JumuahLeaveSection: View {
             }
             .pickerStyle(.menu)
             .accessibilityLabel("Remind me to leave for \(friday)")
+            if model.prefs.jumuahReminderMinutes > 0 {
+                Toggle(isOn: Binding(
+                    get: { model.prefs.jumuahLeaveAlarm },
+                    set: { on in
+                        Task {
+                            if on { _ = await NotificationScheduler.requestPermission() } else { await WakeUpAlarm.stopRinging() }
+                            withAnimation { model.prefs.jumuahLeaveAlarm = on }
+                        }
+                    })) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Ring as an alarm")
+                        Text("Rings even on silent or in a Focus").font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
+            }
             if sg && model.prefs.jumuahReminderMinutes > 0 {
                 Picker(selection: Binding(
                     get: { model.prefs.jumuahSession },

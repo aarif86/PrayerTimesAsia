@@ -67,6 +67,7 @@ data class MovedSettings(
     val jumuahReminderMinutes: Int? = null,
     /** Singapore's first or second Friday session. */
     val jumuahSession: String? = null,
+    val jumuahLeaveAlarm: Boolean? = null,
     /** The Ramadan record: how each day's fast went (FastMark raw values; an unknown one is skipped), and the days Tarawih was prayed and the juz read. */
     val fastLog: Map<String, String>? = null,
     val tarawihLog: List<String>? = null,
@@ -156,6 +157,7 @@ data class MovedSettings(
             largeText = largeText ?: d.largeText,
             jumuahReminderMinutes = jumuahReminderMinutes?.let(JumuahLeave::snap) ?: 0,
             jumuahSession = JumuahSession.of(jumuahSession) ?: JumuahSession.FIRST,
+            jumuahLeaveAlarm = jumuahLeaveAlarm ?: false,
             fastLog = fasts,
             tarawihLog = p.tarawihLog + tarawihLog.orEmpty().filter { DAY.matches(it) },
             quranLog = p.quranLog + quranLog.orEmpty().filter { DAY.matches(it) },
@@ -313,6 +315,7 @@ data class MovedSettings(
                 largeText = changed(p.largeText, d.largeText),
                 jumuahReminderMinutes = changed(p.jumuahReminderMinutes, d.jumuahReminderMinutes),
                 jumuahSession = changed(p.jumuahSession, d.jumuahSession)?.raw,
+                jumuahLeaveAlarm = changed(p.jumuahLeaveAlarm, d.jumuahLeaveAlarm),
                 fastLog = p.fastLog.takeIf { it.isNotEmpty() }?.mapValues { it.value.name.lowercase() }?.toSortedMap(),
                 tarawihLog = p.tarawihLog.takeIf { it.isNotEmpty() }?.sorted(),
                 quranLog = p.quranLog.takeIf { it.isNotEmpty() }?.sorted(),

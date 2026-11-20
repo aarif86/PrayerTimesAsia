@@ -75,6 +75,7 @@ export function WakeUpSheet() {
       x.wakeUp = null
       x.sahurAlarm = null
       for (const prayer of ALARM_PRAYERS) x[ALARM_KEY[prayer]] = null
+      x.jumuahLeaveAlarm = false
     })
     stopAlarm()
   }

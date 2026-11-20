@@ -64,6 +64,7 @@ struct MovedSettings: Codable, Equatable {
     var jumuahReminderMinutes: Int?
     /// Singapore's first or second Friday session.
     var jumuahSession: String?
+    var jumuahLeaveAlarm: Bool?
     /// The Ramadan record: how each day's fast went, and the days Tarawih was prayed and the juz read.
     var fastLog: [String: FastMark]?
     var tarawihLog: [String]?
@@ -127,6 +128,7 @@ struct MovedSettings: Codable, Equatable {
         largeText = field(.largeText)
         jumuahReminderMinutes = field(.jumuahReminderMinutes)
         jumuahSession = field(.jumuahSession)
+        jumuahLeaveAlarm = field(.jumuahLeaveAlarm)
         if let log: [String: Lenient<FastMark>] = field(.fastLog) {
             fastLog = log.compactMapValues { $0.value }
         }
@@ -199,6 +201,7 @@ extension MovedSettings {
         largeText = changed(p.largeText, d.largeText)
         jumuahReminderMinutes = changed(p.jumuahReminderMinutes, d.jumuahReminderMinutes)
         jumuahSession = changed(p.jumuahSession, d.jumuahSession)?.rawValue
+        jumuahLeaveAlarm = changed(p.jumuahLeaveAlarm, d.jumuahLeaveAlarm)
         fastLog = p.fastLog.isEmpty ? nil : p.fastLog
         tarawihLog = p.tarawihLog.isEmpty ? nil : p.tarawihLog.sorted()
         quranLog = p.quranLog.isEmpty ? nil : p.quranLog.sorted()
@@ -255,6 +258,7 @@ extension MovedSettings {
         out.largeText = largeText ?? d.largeText
         out.jumuahReminderMinutes = jumuahReminderMinutes.map(JumuahLeave.snap) ?? 0
         out.jumuahSession = jumuahSession.flatMap(JumuahSession.init(rawValue:)) ?? .first
+        out.jumuahLeaveAlarm = jumuahLeaveAlarm ?? false
         for (day, mark) in fastLog ?? [:] where Self.isDay(day) { out.fastLog[day] = mark }
         out.tarawihLog.formUnion((tarawihLog ?? []).filter(Self.isDay))
         out.quranLog.formUnion((quranLog ?? []).filter(Self.isDay))

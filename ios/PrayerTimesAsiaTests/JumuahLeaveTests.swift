@@ -28,10 +28,12 @@ final class JumuahLeaveTests: XCTestCase {
 
     func testSessionMovesAndDecodes() throws {
         var p = Preferences()
-        p.jumuahReminderMinutes = 120; p.jumuahSession = .second
+        p.jumuahReminderMinutes = 120; p.jumuahSession = .second; p.jumuahLeaveAlarm = true
         let back = MovedSettings(p).applied(to: Preferences())
         XCTAssertEqual(back.jumuahReminderMinutes, 120)
         XCTAssertEqual(back.jumuahSession, .second)
+        XCTAssertTrue(back.jumuahLeaveAlarm)
+        XCTAssertTrue(back.anyAlarm)
         let old = try JSONDecoder().decode(Preferences.self, from: Data(#"{"jumuahReminderMinutes":90,"jumuahSession":"third"}"#.utf8))
         XCTAssertEqual(old.jumuahReminderMinutes, 120)
         XCTAssertEqual(old.jumuahSession, .first)
