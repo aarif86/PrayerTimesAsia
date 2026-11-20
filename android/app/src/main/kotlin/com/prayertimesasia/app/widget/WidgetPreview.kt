@@ -68,7 +68,7 @@ fun TimetableCardPreview(m: WidgetModel, size: Dp = 340.dp) {
 
 @Composable
 private fun ClassicList(m: WidgetModel) {
-    val current = m.current?.first
+    val current = m.open
     Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(
             Modifier.clip(CircleShape).border(1.dp, peach.copy(alpha = 0.75f), CircleShape).padding(horizontal = 10.dp, vertical = 4.dp),
@@ -121,17 +121,20 @@ private fun ClassicList(m: WidgetModel) {
 
 @Composable
 private fun Dial(m: WidgetModel) {
-    val current = m.current
+    val lead = m.lead
+    val current = com.prayertimesasia.core.PrayerLead.open(m.current)
     val next = m.next
     Column(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(136.dp), contentAlignment = Alignment.Center) {
                 Canvas(Modifier.fillMaxSize()) { drawDialRing(m) }
-                if (current != null && next != null) {
+                if (lead != null && next != null) {
+                    val count = TimeFormat.countdown(next.second.secondsSince(m.now))
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(m.names.getValue(current.first).let { if (current.first == Prayer.ISHA && current.second < m.day.time(Prayer.FAJR)) it else it },
-                            fontFamily = Rounded, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text(TimeFormat.countdown(next.second.secondsSince(m.now)), style = display(13.sp), color = peach)
+                        Text(if (lead.isNext) "NEXT" else "NOW", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.8.sp,
+                            color = Color.White.copy(alpha = 0.85f))
+                        Text(m.names.getValue(lead.prayer), fontFamily = Rounded, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(if (lead.isNext) "in $count" else "$count left", style = display(13.sp), color = peach)
                     }
                 }
             }
@@ -146,11 +149,12 @@ private fun Dial(m: WidgetModel) {
             Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 row.forEach { p ->
                     val isCurrent = p == current?.first
+                    val isNext = lead?.isNext == true && p == lead.prayer
                     val passed = m.day.time(p) <= m.now && !isCurrent
                     Column(
                         Modifier.weight(1f).fillMaxSize().alpha(if (passed) 0.6f else 1f).clip(RoundedCornerShape(12.dp))
-                            .background(p.tint.copy(alpha = if (isCurrent) 0.35f else 0.14f))
-                            .then(if (isCurrent) Modifier.border(1.dp, p.tint.copy(alpha = 0.8f), RoundedCornerShape(12.dp)) else Modifier),
+                            .background(if (isNext) Color.White.copy(alpha = 0.2f) else p.tint.copy(alpha = if (isCurrent) 0.35f else 0.14f))
+                            .then(if (isCurrent || isNext) Modifier.border(1.dp, if (isNext) Color.White.copy(alpha = 0.9f) else p.tint.copy(alpha = 0.8f), RoundedCornerShape(12.dp)) else Modifier),
                         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
                     ) {
                         Text(m.names.getValue(p), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.85f))
@@ -185,7 +189,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawDialRing(m: Wid
 
 @Composable
 private fun Bands(m: WidgetModel) {
-    val current = m.current?.first
+    val current = m.open
     val countdown = m.countdownRow()
     val next = m.next
     Column(Modifier.fillMaxSize()) {
