@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// "Leave for Jumaat", in the Prayer alarms sheet, its one home.
-/// Singapore also gets the first or second session.
-/// Same as web ui/JumuahLeave.tsx and Android JumuahLeaveRows.
+/// "Leave for Jumaat": when to leave, on the Friday page of Alerts and alarms
+/// (Off, Notify or Alarm is chosen above it). Singapore also gets the first or
+/// second session. Same as web ui/WakeUp.tsx FridayPage and Android.
 struct JumuahLeaveSection: View {
     @Environment(AppModel.self) private var model
 
@@ -12,39 +12,21 @@ struct JumuahLeaveSection: View {
         let sg = model.activePlace.map { MasjidExtras.inSingapore($0.coordinates, countryCode: $0.countryCode) } ?? false
         let twoPM = secondClock
         Section {
-            Picker(selection: Binding(
-                get: { model.prefs.jumuahReminderMinutes },
-                set: { minutes in
-                    Task {
-                        if minutes > 0, !(await NotificationScheduler.requestPermission()) { return }
-                        withAnimation { model.prefs.jumuahReminderMinutes = minutes }
-                    }
-                })) {
-                ForEach(JumuahLeave.choices, id: \.self) { Text(JumuahLeave.label($0)).tag($0) }
-            } label: {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Remind me to leave")
-                    if let next = model.nextJumuahLeave() {
-                        Text(nextText(next, friday: friday)).font(.footnote).foregroundStyle(.secondary).monospacedDigit()
-                    }
-                }
-            }
-            .pickerStyle(.menu)
-            .accessibilityLabel("Remind me to leave for \(friday)")
             if model.prefs.jumuahReminderMinutes > 0 {
-                Toggle(isOn: Binding(
-                    get: { model.prefs.jumuahLeaveAlarm },
-                    set: { on in
-                        Task {
-                            if on { _ = await NotificationScheduler.requestPermission() } else { await WakeUpAlarm.stopRinging() }
-                            withAnimation { model.prefs.jumuahLeaveAlarm = on }
-                        }
-                    })) {
+                Picker(selection: Binding(
+                    get: { model.prefs.jumuahReminderMinutes },
+                    set: { minutes in withAnimation { model.prefs.jumuahReminderMinutes = minutes } })) {
+                    ForEach(JumuahLeave.choices.filter { $0 > 0 }, id: \.self) { Text(JumuahLeave.label($0)).tag($0) }
+                } label: {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Ring as an alarm")
-                        Text("Rings even on silent or in a Focus").font(.footnote).foregroundStyle(.secondary)
+                        Text("When")
+                        if let next = model.nextJumuahLeave() {
+                            Text(nextText(next, friday: friday)).font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                        }
                     }
                 }
+                .pickerStyle(.menu)
+                .accessibilityLabel("When to leave for \(friday)")
             }
             if sg && model.prefs.jumuahReminderMinutes > 0 {
                 Picker(selection: Binding(
@@ -60,8 +42,6 @@ struct JumuahLeaveSection: View {
                 }
                 .pickerStyle(.menu)
             }
-        } header: {
-            Text("Leave for \(friday)")
         } footer: {
             let from = sg && model.prefs.jumuahSession == .second ? twoPM
                 : model.myMasjidHere?.jumuah != nil ? "your masjid's own \(friday) time" : "the start of \(zohor)"

@@ -519,6 +519,8 @@ struct Preferences: Codable, Equatable, Sendable {
         reviewTappedAt = v(.reviewTappedAt, d.reviewTappedAt)
         reviewDraft = v(.reviewDraft, d.reviewDraft)
         starBoxAskedAt = v(.starBoxAskedAt, d.starBoxAskedAt)
+        // One Off, Notify or Alarm per prayer in Alerts and alarms (AlertMode.swift).
+        unifyAlerts()
     }
 
     /// Set when `load()` brought settings back from the keychain copy.
