@@ -2,6 +2,7 @@ import type { ComponentChildren, JSX } from 'preact'
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { Info, X } from 'lucide-preact'
 import type { PrayerDay } from '../core/engine'
+import type { Prayer } from '../core/prayer'
 import { sourceAuthority } from '../core/official'
 import type { SourceGrade } from '../core/sources'
 import { store } from '../services/store'
@@ -47,7 +48,7 @@ export const GRADE_TINT: Record<SourceGrade, string> = {
 export type SheetKind =
   | { kind: 'places'; forHome?: boolean } | { kind: 'sanad'; day: PrayerDay } | { kind: 'calendar' } | { kind: 'makers'; placement: string }
   | { kind: 'journey' } | { kind: 'level' } | { kind: 'ar' } | { kind: 'alerts-help' } | { kind: 'credits' } | { kind: 'install' }
-  | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup' }
+  | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup'; prayer?: Prayer | 'friday'; view?: 'check' }
   | { kind: 'guide' } | { kind: 'feedback' } | { kind: 'review' }
 
 let current: SheetKind | null = null

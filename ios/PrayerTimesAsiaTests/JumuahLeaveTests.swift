@@ -4,9 +4,12 @@ import XCTest
 /// Same cases as web/tests/alerts.test.ts and prefs.test.ts (Leave for Jumaat).
 final class JumuahLeaveTests: XCTestCase {
     func testChoicesAndOldValues() {
-        XCTAssertEqual(JumuahLeave.choices, [0, 15, 30, 45, 60, 120])
+        XCTAssertEqual(JumuahLeave.choices, [0, 15, 30, 45, 60, 90, 120, 150, 180])
         XCTAssertEqual(JumuahLeave.snap(20), 30)
-        XCTAssertEqual(JumuahLeave.snap(90), 120)
+        XCTAssertEqual(JumuahLeave.snap(90), 90)
+        XCTAssertEqual(JumuahLeave.snap(180), 180)
+        XCTAssertEqual(JumuahLeave.span(150, .en), "2 hours 30 min")
+        XCTAssertEqual(JumuahLeave.span(90, .ms), "1 jam 30 minit")
         XCTAssertEqual(JumuahLeave.snap(120), 120)
         XCTAssertEqual(JumuahLeave.snap(17), 0)
         XCTAssertEqual(JumuahLeave.label(120), "2 hours before")
@@ -34,8 +37,8 @@ final class JumuahLeaveTests: XCTestCase {
         XCTAssertEqual(back.jumuahSession, .second)
         XCTAssertTrue(back.jumuahLeaveAlarm)
         XCTAssertTrue(back.anyAlarm)
-        let old = try JSONDecoder().decode(Preferences.self, from: Data(#"{"jumuahReminderMinutes":90,"jumuahSession":"third"}"#.utf8))
-        XCTAssertEqual(old.jumuahReminderMinutes, 120)
+        let old = try JSONDecoder().decode(Preferences.self, from: Data(#"{"jumuahReminderMinutes":20,"jumuahSession":"third"}"#.utf8))
+        XCTAssertEqual(old.jumuahReminderMinutes, 30)
         XCTAssertEqual(old.jumuahSession, .first)
     }
 }

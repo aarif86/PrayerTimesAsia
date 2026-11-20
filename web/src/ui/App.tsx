@@ -185,7 +185,7 @@ export function App() {
       {sheet?.kind === 'journey' && <JourneySheet />}
       {sheet?.kind === 'tracker' && <TrackerSheet />}
       {sheet?.kind === 'ramadan' && <RamadanSheet />}
-      {sheet?.kind === 'wakeup' && <WakeUpSheet />}
+      {sheet?.kind === 'wakeup' && <WakeUpSheet start={sheet.prayer} view={sheet.view} />}
       {sheet?.kind === 'level' && <LevelSheet />}
       {sheet?.kind === 'ar' && <ARScreen />}
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}

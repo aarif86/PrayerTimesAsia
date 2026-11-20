@@ -7,7 +7,7 @@ import type { Lang3 } from './ramadanContent'
  */
 
 /** Minutes before Jumaat. 0 is off. */
-export const JUMUAH_LEAVE_CHOICES = [0, 15, 30, 45, 60, 120]
+export const JUMUAH_LEAVE_CHOICES = [0, 15, 30, 45, 60, 90, 120, 150, 180]
 
 /** First session at Zohor, or the second one some Singapore masjids hold from 2 PM. */
 export type JumuahSession = 'first' | 'second'
@@ -15,19 +15,19 @@ export type JumuahSession = 'first' | 'second'
 /** "14:00", from the Islamic Religious Council of Singapore (MUIS) list in data/friday-sg.json. */
 export const SECOND_SESSION_FROM = FRIDAY_SG.secondSessionFrom
 
-/** The older choices 20 and 90 move up to 30 and 120, so the reminder still comes early enough. Anything else is off. */
+/** The older choice 20 moves up to 30, so the reminder still comes early enough. Anything else not on the list is off. */
 export function snapLeaveMinutes(m: unknown): number {
   if (m === 20) return 30
-  if (m === 90) return 120
   return typeof m === 'number' && JUMUAH_LEAVE_CHOICES.includes(m) ? m : 0
 }
 
-/** "15 min", "1 hour", "2 hours" in the alert's language. */
+/** "15 min", "1 hour", "1 hour 30 min", "3 hours" in the alert's language. */
 export function leaveSpan(minutes: number, lang: Lang3): string {
-  if (minutes >= 60 && minutes % 60 === 0) {
-    const h = minutes / 60
-    if (lang === 'en') return h === 1 ? '1 hour' : `${h} hours`
-    return `${h} jam`
+  if (minutes >= 60 && minutes % 30 === 0) {
+    const h = Math.floor(minutes / 60)
+    const half = minutes % 60 === 30
+    if (lang === 'en') return half ? `${h} ${h === 1 ? 'hour' : 'hours'} 30 min` : h === 1 ? '1 hour' : `${h} hours`
+    return half ? `${h} jam 30 ${lang === 'ms' ? 'minit' : 'menit'}` : `${h} jam`
   }
   return lang === 'en' ? `${minutes} min` : lang === 'ms' ? `${minutes} minit` : `${minutes} menit`
 }

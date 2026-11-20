@@ -23,8 +23,16 @@ final class AppModel {
     /// Settings opens as a sheet from the gear on Today.
     /// Journey opens as a sheet (from Settings or the musafir chip).
     var showJourney = false
-    /// Wake up for Subuh (the alarm chip on the Prayer screen, or Settings).
+    /// Alerts and alarms (the alarm chip on the Prayer screen, Settings, or holding a bell).
     var showWakeUp = false
+    /// The page Alerts and alarms opens on: a prayer's page when a bell was held.
+    var alertsStart: AlertsPage?
+
+    /// Alerts and alarms, opened on one prayer's page (or the main list when nil).
+    func openAlerts(_ page: AlertsPage? = nil) {
+        alertsStart = page
+        showWakeUp = true
+    }
     /// "Welcome back" after a reinstall brought the settings back.
     var showWelcomeBack = false
     /// A masjid from a screen's QR code, waiting for the user to say yes.
@@ -1080,6 +1088,18 @@ final class AppModel {
 
     /// The next wake-up or sahur alarm, looking a week ahead (the sahur alarm
     /// may be days away). Stops at the first day that has one.
+    /// When a choice would next ring: today if it is still ahead, else tomorrow.
+    func nextTime(_ date: (PrayerDay) -> Date) -> String? {
+        let now = Date.now
+        for offset in 0..<2 {
+            if let d = self.day(containing: noon(now, plus: offset)) {
+                let t = date(d)
+                if t > now { return formatted(t) }
+            }
+        }
+        return nil
+    }
+
     func nextWakeUp(after now: Date) -> WakeUp? {
         guard prefs.anyAlarm else { return nil }
         for offset in 0..<8 {

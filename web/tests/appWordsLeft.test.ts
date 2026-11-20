@@ -24,6 +24,8 @@ const KEEP = new Set([
 const NOT_YET: Record<string, number> = {
   'Masjid.tsx': 63,
   'Feedback.tsx': 26,
+  // Rebuilt as the one Alerts and alarms sheet on main (#136) after this list was made. Next to move.
+  'WakeUp.tsx': 94,
 }
 
 const NON_TEXT_ATTRS = new Set(['style', 'class', 'transform', 'd', 'href', 'patternTransform', 'points', 'viewBox', 'key', 'target', 'rel', 'id',

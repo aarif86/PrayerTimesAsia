@@ -20,24 +20,28 @@ enum class JumuahSession(val raw: String) {
  */
 object JumuahLeave {
     /** Minutes before Jumaat. 0 is off. */
-    val CHOICES = listOf(0, 15, 30, 45, 60, 120)
+    val CHOICES = listOf(0, 15, 30, 45, 60, 90, 120, 150, 180)
 
     /** "14:00", from the Islamic Religious Council of Singapore (MUIS) list. */
     const val SECOND_SESSION_FROM = MasjidExtras.FRIDAY_SECOND_FROM
 
-    /** The older choices 20 and 90 move up to 30 and 120, so the reminder still comes early enough. Anything else is off. */
+    /** The older choice 20 moves up to 30, so the reminder still comes early enough. Anything else not on the list is off. */
     fun snap(m: Int): Int = when (m) {
         20 -> 30
-        90 -> 120
         in CHOICES -> m
         else -> 0
     }
 
     /** "15 min", "1 hour", "2 hours" in the alert's language. */
     fun span(minutes: Int, lang: RamadanContent.Lang): String {
-        if (minutes >= 60 && minutes % 60 == 0) {
+        if (minutes >= 60 && minutes % 30 == 0) {
             val h = minutes / 60
-            return if (lang == RamadanContent.Lang.EN) (if (h == 1) "1 hour" else "$h hours") else "$h jam"
+            val half = minutes % 60 == 30
+            return when (lang) {
+                RamadanContent.Lang.EN -> if (half) "$h ${if (h == 1) "hour" else "hours"} 30 min" else if (h == 1) "1 hour" else "$h hours"
+                RamadanContent.Lang.MS -> if (half) "$h jam 30 minit" else "$h jam"
+                RamadanContent.Lang.ID -> if (half) "$h jam 30 menit" else "$h jam"
+            }
         }
         return when (lang) {
             RamadanContent.Lang.EN -> "$minutes min"

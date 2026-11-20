@@ -1,13 +1,13 @@
-import { azanAvailable } from '../services/azan'
-import { useEffect, useState } from 'preact/hooks'
-import { AlarmClock, ArrowDownToLine, ArrowRightLeft, BellRing, Briefcase, CalendarPlus, ChevronRight, Download, Hand, Lightbulb, Mail, MapPinned, MapPinOff, MoonStar, Printer, Smartphone, Star } from 'lucide-preact'
+import { alertMode } from '../core/alertMode'
+import { useEffect } from 'preact/hooks'
+import { AlarmClock, ArrowDownToLine, ArrowRightLeft, Briefcase, CalendarPlus, ChevronRight, Download, Hand, Lightbulb, Mail, MapPinned, MapPinOff, MoonStar, Printer, Smartphone, Star } from 'lucide-preact'
 import { JAKIM_ZONES } from '../core/jakimZones'
 import { ALL_METHODS } from '../core/methods'
 import { feedName, FEEDS_BASE, nearestJakimZone } from '../core/official'
-import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, prayerName, type NamingStyle, type Prayer } from '../core/prayer'
+import { NAMING_LABEL, NAMING_LANGUAGE, NAMING_STYLES, PRAYERS, prayerName, type NamingStyle } from '../core/prayer'
 import { flag, profileMethod } from '../core/regions'
-import { alertSupport, downloadICS, anyAlarm, nextWakeUp, permission, requestPermission, testAlert, WORK_PRAYERS } from '../services/notifications'
-import { APPEARANCES, DEFAULT_REMINDER_MINUTES, REMINDER_CHOICES, APP_LANGUAGES, type AppLanguage, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
+import { downloadICS, anyAlarm, nextWakeUp, WORK_PRAYERS } from '../services/notifications'
+import { APPEARANCES, APP_LANGUAGES, type AppLanguage, TODAY_STYLES, type Appearance, type TodayStyle } from '../services/prefs'
 import { browserLocales, store, useStore } from '../services/store'
 import { openSheet, SelectItem, ToggleItem } from './common'
 import { ourCards } from '../core/communityCards'
@@ -21,8 +21,6 @@ import { VERSION } from './version'
 import { APP_LANGUAGE_LABEL, appearanceLabel, appLangFromLocales, styleLabel, tr } from '../core/appWords'
 export { VERSION }
 
-/** Every half hour of the day, in minutes past midnight. */
-const HALF_HOURS = Array.from({ length: 48 }, (_, i) => i * 30)
 
 
 
@@ -43,34 +41,18 @@ export function SettingsScreen() {
   const source = s.officialSource
   const appOffer = phoneAppOffer()
   const feed = source ? feedName(source) : null
-  const [perm, setPerm] = useState(permission())
-  const support = alertSupport()
   useEffect(() => {
     if (s.demo && new URLSearchParams(location.search).get('settings') === 'makers') {
       setTimeout(() => document.getElementById('makers')?.scrollIntoView({ block: 'start' }), 300)
     }
   }, [])
 
-  const setAlerts = async (on: boolean) => {
-    if (!on) { store.update((x) => { x.notificationsEnabled = false }); return }
-    if (support !== 'supported') { openSheet({ kind: 'alerts-help' }); return }
-    const ok = await requestPermission()
-    setPerm(permission())
-    if (ok) store.update((x) => { x.notificationsEnabled = true })
-    else openSheet({ kind: 'alerts-help' })
-  }
-
-  const setReminder = async (on: boolean) => {
-    if (!on) { store.update((x) => { x.reminderMinutesBefore = 0 }); return }
-    if (support !== 'supported') { openSheet({ kind: 'alerts-help' }); return }
-    const ok = await requestPermission()
-    setPerm(permission())
-    if (ok) store.update((x) => { x.reminderMinutesBefore = DEFAULT_REMINDER_MINUTES })
-    else openSheet({ kind: 'alerts-help' })
-  }
-  const reminderOn = p.reminderMinutesBefore > 0 && perm === 'granted'
   const nextWake = nextWakeUp(s.now())
-  const wakeValue = nextWake ? `Next ${s.formatted(nextWake.at)}` : anyAlarm(p) ? tr('common.on') : tr('common.off')
+  const wakeValue = nextWake ? `Next ${s.formatted(nextWake.at)}` : ''
+  const counts = { notify: 0, alarm: 0 }
+  for (const pr of PRAYERS) { const m = alertMode(p, pr); if (m !== 'off') counts[m]++ }
+  const alertsSummary = counts.notify + counts.alarm === 0 && !anyAlarm(p) ? tr('settings.nothingOn')
+    : [counts.notify && tr('settings.nNotify', { n: counts.notify }), counts.alarm && tr('settings.nAlarms', { n: counts.alarm })].filter(Boolean).join(', ') || tr('common.on')
 
 
   const timetable = !source ? tr('settings.calculated')
@@ -88,6 +70,13 @@ export function SettingsScreen() {
         <div class="item"><span class="label">{tr('settings.countryRules')}</span><span class="value">{s.profile.code ? `${flag(s.profile.code)} ${s.profile.name}` : s.profile.name}</span></div>
       </Group>
 
+      <Group title={tr('settings.alertsAlarms')} foot={tr('settings.alertsAlarmsFoot', { friday: prayerName('dhuhr', s.naming, true) })}>
+        <button class="item" onClick={() => openSheet({ kind: 'wakeup' })}>
+          <AlarmClock size={20} /><span class="label">{tr('settings.alertsAlarms')}<span class="sub">{alertsSummary}</span></span>
+          <span class="value">{wakeValue}</span><ChevronRight size={16} class="secondary" />
+        </button>
+      </Group>
+
       <Group title={tr('settings.ramadan')} foot={<>
         {tr('settings.ramadanFoot')} {(() => { const d = daysToRamadan(s.now()); return d != null && d > 0 && !s.isSeasonPreview ? tr('settings.aboutDays', { n: d }) : '' })()}
         {' '}{tr('settings.tryRamadanFoot', { where: s.demo ? tr('settings.demo') : tr('settings.browser') })}
@@ -98,17 +87,8 @@ export function SettingsScreen() {
         <SelectItem label={tr('settings.tryRamadan')} value={p.seasonPreview}
           options={SEASON_PREVIEWS.map((v) => ({ value: v, label: SEASON_PREVIEW_LABEL[v] }))}
           onChange={(v) => store.update((x) => { x.seasonPreview = v as SeasonPreview })} />
-        <ToggleItem label={tr('settings.imsakAlert')} sub={tr('settings.imsakAlertSub')} on={p.imsakAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.imsakAlert = v }) }} />
-        <ToggleItem label={tr('settings.berbukaAlert')} sub={tr('settings.berbukaAlertSub')} on={p.berbukaAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.berbukaAlert = v }) }} />
-        <ToggleItem label={tr('settings.qiyam')} sub={tr('settings.qiyamSub')} on={p.qiyamAlert} onChange={(v) => { if (v) void requestPermission().then(() => setPerm(permission())); store.update((x) => { x.qiyamAlert = v }) }} />
       </Group>
 
-      <Group title={tr('settings.alarmsGroup')} foot={tr('settings.alarmsGroupFoot', { fajr: s.name('fajr'), friday: prayerName('dhuhr', s.naming, true) })}>
-        <button class="item" onClick={() => openSheet({ kind: 'wakeup' })}>
-          <AlarmClock size={20} /><span class="label">{tr('settings.alarms')}</span>
-          <span class="value">{wakeValue}</span><ChevronRight size={16} class="secondary" />
-        </button>
-      </Group>
 
       <Group title={tr('settings.travel')} foot={tr('settings.travelFoot')}>
         <ToggleItem label={tr('settings.musafir')} on={p.musafirEnabled} onChange={(v) => store.update((x) => { x.musafirEnabled = v })} />
@@ -172,10 +152,6 @@ export function SettingsScreen() {
 
       <Group title={tr('settings.tracker')} foot={tr('settings.trackerFoot')}>
         <ToggleItem label={tr('settings.trackerOn')} on={p.trackerEnabled} onChange={(v) => store.update((x) => { x.trackerEnabled = v })} />
-        {p.trackerEnabled && (
-          <ToggleItem label={tr('settings.nudge')} on={p.windowNudge} onChange={(v) => store.update((x) => { x.windowNudge = v })}
-            sub={tr('settings.nudgeSub', { name: s.name('isha'), until: s.name('fajr') })} />
-        )}
       </Group>
 
       <Group title={tr('settings.display')}>
@@ -198,43 +174,7 @@ export function SettingsScreen() {
         </div>
       </Group>
 
-      <Group title={tr('settings.alerts')} foot={<>
-        {tr('settings.alertsFoot')} <b>{tr('settings.alertsWeb')}</b>
-        {perm === 'denied' && ` ${tr('settings.blocked')}`}
-      </>}>
-        <ToggleItem label={tr('settings.prayerAlerts')} on={p.notificationsEnabled && perm === 'granted'} onChange={(v) => void setAlerts(v)} />
-        {p.notificationsEnabled && perm === 'granted' && azanAvailable() && (
-          <ToggleItem label={tr('settings.azan')} on={p.azanSound} onChange={(v) => store.update((x) => { x.azanSound = v })} />
-        )}
-        <ToggleItem label={tr('settings.reminder')} on={reminderOn} onChange={(v) => void setReminder(v)} />
-        {reminderOn && (
-          <SelectItem label={tr('settings.remindMe')} value={String(p.reminderMinutesBefore)}
-            options={REMINDER_CHOICES.map((m) => ({ value: String(m), label: tr('common.minBefore', { n: m }) }))}
-            onChange={(v) => store.update((x) => { x.reminderMinutesBefore = parseInt(v, 10) })} />
-        )}
-        {(p.notificationsEnabled || p.reminderMinutesBefore > 0) && perm === 'granted' && (
-          <>
-            {PRAYERS.map((pr: Prayer) => (
-              <ToggleItem label={pr === 'sunrise' ? tr('settings.ends', { name: s.name(pr), end: s.name('fajr') }) : s.name(pr)} on={p.notifyPrayers.includes(pr)}
-                onChange={(v) => store.update((x) => { x.notifyPrayers = v ? [...new Set([...x.notifyPrayers, pr])] : x.notifyPrayers.filter((q) => q !== pr) })} />
-            ))}
-            <button class="item" onClick={testAlert}><BellRing size={20} /><span class="label">{tr('settings.testAlert')}</span></button>
-          </>
-        )}
-      </Group>
 
-      <Group title={tr('settings.quiet')} foot={tr('settings.quietFoot', { name: s.name('fajr') })}>
-        <ToggleItem label={tr('settings.buzzOnly')} on={p.buzzOnly} onChange={(v) => store.update((x) => { x.buzzOnly = v })} />
-        <ToggleItem label={tr('settings.quietHours')} on={p.quietHours} onChange={(v) => store.update((x) => { x.quietHours = v })} />
-        {p.quietHours && (
-          <>
-            <SelectItem label={tr('settings.from')} value={String(p.quietFrom)} options={HALF_HOURS.map((m) => ({ value: String(m), label: s.clock(m) }))}
-              onChange={(v) => store.update((x) => { x.quietFrom = parseInt(v, 10) })} />
-            <SelectItem label={tr('settings.until')} value={String(p.quietTo)} options={HALF_HOURS.map((m) => ({ value: String(m), label: s.clock(m) }))}
-              onChange={(v) => store.update((x) => { x.quietTo = parseInt(v, 10) })} />
-          </>
-        )}
-      </Group>
 
 
       <Group title={tr('settings.moving')} foot={tr('settings.movingFoot')}>
