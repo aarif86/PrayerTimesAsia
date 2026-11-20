@@ -132,7 +132,7 @@
     <string name="hadith_hide" formatted="false">Sembunyikan hadis ini</string>
     <string name="hadith_hidden" formatted="false">Hadis disembunyikan di sini. Paparkan semula dalam Tetapan, Hadis.</string>
     <string name="makers_title" formatted="false">Dibina fisabilillah</string>
-    <string name="makers_body" formatted="false">Prayer Times Asia adalah percuma, tanpa iklan luar dan tanpa penjejakan. Ia dibina dan dijaga oleh Ustaz Aarif Raziff dan Ustazah Nasibah, bersama pasukan Nasar Digital (Nasar Pte Ltd).</string>
+    <string name="makers_body" formatted="false">Prayer Times Asia adalah percuma, tanpa iklan luar dan tanpa penjejakan. Ia dibina dan dijaga oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama pasukan Nasar Digital (Nasar Pte Ltd).</string>
     <string name="makers_opens" formatted="false">{name}, membuka {site}</string>
     <string name="makers_sponsored" formatted="false">Tajaan</string>
     <string name="qibla_choosePlace" formatted="false">Pilih tempat untuk mencari kiblat.</string>
@@ -475,7 +475,7 @@
     <string name="settings_usageSub" formatted="false">Memberitahu kami berapa ramai yang menggunakan aplikasi dan di bandar serta negara mana, supaya kami tahu di mana perlu menambah jadual waktu rasmi. Nombor rawak digunakan sebagai ganti anda. Tiada nama, tiada lokasi tepat, tiada alamat IP disimpan.</string>
     <string name="settings_osm" formatted="false">Peta dan senarai Masjid menggunakan data OpenStreetMap. Jubin peta, senarai masjid mingguan kami di GitHub dan Overpass hanya melihat kawasan yang anda lihat.</string>
     <string name="settings_makers" formatted="false">Daripada pembina</string>
-    <string name="settings_makersFoot" formatted="false">Prayer Times Asia adalah percuma dan dibina fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah, bersama Nasar Digital (Nasar Pte Ltd). Tawaran yang anda lihat hanyalah tawaran kami sendiri. Tiada rangkaian iklan, tiada penjejakan.</string>
+    <string name="settings_makersFoot" formatted="false">Prayer Times Asia adalah percuma dan dibina fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama Nasar Digital (Nasar Pte Ltd). Tawaran yang anda lihat hanyalah tawaran kami sendiri. Tiada rangkaian iklan, tiada penjejakan.</string>
     <string name="settings_showOffers" formatted="false">Paparkan tawaran pada Solat dan Masjid</string>
     <string name="settings_help" formatted="false">Bantuan</string>
     <string name="settings_helpFoot" formatted="false">Lawatan ringkas yang menekan butang sebenar, supaya anda tahu letak semuanya.</string>

@@ -179,7 +179,7 @@ PRIVATE BY DESIGN
 No third-party ads. No account. No tracking. Your exact location never leaves your phone.
 
 WHO MAKES IT
-Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah, with Nasar Digital (Nasar Pte Ltd). It started on a family trip to Vietnam, when none of our prayer apps worked and everyone turned to Ustaz Aarif to ask when to pray. Back home, our parents had the same trouble with apps full of ads that play the azan out loud on the train. So we built one for the people we love, and for you.
+Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd). It started on a family trip to Vietnam, when none of our prayer apps worked and everyone turned to Ustaz Aarif to ask when to pray. Back home, our parents had the same trouble with apps full of ads that play the azan out loud on the train. So we built one for the people we love, and for you.
 
 Musafir guidance is general information, not a fatwa - when unsure, follow your local religious authority.
 
