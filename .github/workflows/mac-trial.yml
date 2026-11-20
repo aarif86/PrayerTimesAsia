@@ -21,7 +21,7 @@ jobs:
       run:
         working-directory: ios
     permissions:
-      contents: read
+      contents: write   # only to publish pictures to the `screenshots-mac-trial` branch
     timeout-minutes: 30
     steps:
       - name: Checkout
@@ -65,6 +65,49 @@ jobs:
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
           exit "$STATUS"
+
+      # Opens the built app on this cloud Mac and takes pictures of the screen.
+      # The app is signed "ad hoc" (no Apple account) only so that it can start here.
+      - name: Open the Mac app and take pictures
+        run: |
+          set -uo pipefail
+          APP=$(find build/mac/Build/Products -name 'PrayerTimesAsia.app' -path '*maccatalyst*' | head -n1)
+          echo "App: $APP"
+          codesign --force --deep --sign - "$APP"
+          mkdir -p macshots
+          shot() {
+            NAME=$1; shift
+            pkill -x PrayerTimesAsia || true
+            sleep 1
+            open -n "$APP" --args "$@"
+            sleep 10
+            if pgrep -x PrayerTimesAsia >/dev/null; then echo "$NAME: app is running"; else echo "$NAME: app is NOT running"; fi
+            screencapture -x "macshots/$NAME.png" || echo "$NAME: no picture"
+          }
+          shot 1-today -demo -tab today
+          shot 2-today-light -demo -tab today -light
+          shot 3-qibla -demo -tab qibla
+          shot 4-masjid -demo -tab nearby
+          shot 5-settings -demo -tab settings
+          shot 6-travel -demo-travel -tab journey
+          pkill -x PrayerTimesAsia || true
+          ls -la macshots
+          # Any crash report from the app, so a failed start explains itself.
+          ls ~/Library/Logs/DiagnosticReports/ 2>/dev/null | grep -i prayer || echo "No crash reports."
+          for f in ~/Library/Logs/DiagnosticReports/*PrayerTimesAsia*; do [ -f "$f" ] && head -n 60 "$f"; done || true
+
+      - name: Publish the pictures
+        if: always()
+        run: |
+          set -euo pipefail
+          [ -d macshots ] && [ -n "$(ls macshots)" ] || { echo "No pictures."; exit 0; }
+          cd macshots
+          git init -q -b screenshots-mac-trial
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Mac trial pictures for ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" screenshots-mac-trial
 
       - name: Keep the full log
         if: always()
