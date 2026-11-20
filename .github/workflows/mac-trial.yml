@@ -48,6 +48,7 @@ jobs:
 
       - name: Build as a Mac app (no signing)
         run: |
+          set +e
           set -uo pipefail
           xcodebuild build \
             -project PrayerTimesAsia.xcodeproj \
@@ -60,7 +61,7 @@ jobs:
             echo "## Mac trial build"
             if [ "$STATUS" -eq 0 ]; then echo "Built with no errors."; else echo "Did not build. Errors found:"; fi
             echo '```'
-            grep -E "error:" build.log | sed -E 's#^.*/ios/##' | sort -u | head -n 200 || true
+            grep -E "error:|error " build.log | grep -v "^note" | sed -E 's#^.*/ios/##' | sort -u | head -n 300 || true
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
           exit "$STATUS"
