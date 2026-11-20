@@ -69,22 +69,10 @@ struct TodayView: View {
                 }
                 .background(BandsPalette.header.ignoresSafeArea())
                 .environment(\.colorScheme, .dark)
-            } else if Device.isMac && model.prefs.todayStyle == .centre {
-                // A Mac window is wide: the dial on the left, the day's times beside it.
-                GeometryReader { geo in
-                    if geo.size.width >= 600 {
-                        AnyView(macCentrePage(now: now, day: day, shown: shown, current: current, next: next))
-                    } else {
-                        ScrollView {
-                            AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
-                        }
-                        .scrollIndicators(.hidden)
-                    }
-                }
             } else {
             ViewThatFits(in: .vertical) {
                 if model.prefs.todayStyle == .centre {
-                    AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
+                    centreOrMacPage(now: now, day: day, shown: shown, current: current, next: next)
                 } else if model.prefs.todayStyle == .dial {
                     AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
                 } else {
@@ -654,6 +642,27 @@ struct TodayView: View {
     }
 
     // MARK: Mac, two parts side by side
+
+    /// Phones get the Centre page as before. A Mac window is wide, so there the
+    /// dial sits on the left with the day's times beside it. Kept behind AnyView
+    /// so the Prayer screen's SwiftUI type is no deeper on iPhone than it was
+    /// (a deeper type once crashed the app at launch, build 30).
+    private func centreOrMacPage(now: Date, day: PrayerDay, shown: PrayerDay,
+                                 current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> AnyView {
+        guard Device.isMac else {
+            return AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
+        }
+        return AnyView(GeometryReader { geo in
+            if geo.size.width >= 600 {
+                AnyView(macCentrePage(now: now, day: day, shown: shown, current: current, next: next))
+            } else {
+                AnyView(ScrollView {
+                    centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                }
+                .scrollIndicators(.hidden))
+            }
+        })
+    }
 
     /// The Centre style on a wide Mac window: the dial, the place and the notes
     /// in a column on the left, the day's times filling the right.
