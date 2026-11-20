@@ -89,6 +89,8 @@ import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.TodayStyle
 import kotlinx.coroutines.delay
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /** Which sheet or full-screen view is open over the tabs. */
 sealed class Overlay {
@@ -276,7 +278,7 @@ fun TabBar(state: AppState, modifier: Modifier = Modifier) {
 private fun WidgetPreviewContent(state: AppState) {
     Column(Modifier.fillMaxWidth().padding(Dims.gutter), horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Big widget", style = Txt.headline, color = Palette.primary)
+        Text(tr(R.string.widget_big), style = Txt.headline, color = Palette.primary)
         WidgetModel.from(state.resolver, state.now)?.let { TimetableCardPreview(it) }
         Text("Touch and hold your home screen, tap Widgets and find Prayer Times Asia. Choose \"Today's timetable\". It follows your Prayer screen style.",
             style = Txt.footnote, color = Palette.secondary)

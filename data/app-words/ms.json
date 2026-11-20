@@ -360,6 +360,8 @@
   "settings.nudge": "Peringatan sebelum waktu tamat",
   "settings.nudgeSub": "Satu makluman lembut lebih kurang 30 minit sebelum waktu solat tamat, hanya jika anda belum menandanya. Tidak untuk {name}, yang waktunya berterusan hingga {until}. Tidak berbunyi semasa dijeda.",
   "settings.display": "Paparan",
+  "settings.language": "Bahasa",
+  "settings.languageFoot": "Perkataan pada setiap skrin. Nama solat mempunyai tetapan tersendiri.",
   "settings.appearance": "Rupa",
   "settings.prayerScreen": "Skrin solat",
   "settings.biggerText": "Teks lebih besar",

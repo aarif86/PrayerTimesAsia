@@ -66,6 +66,8 @@ import com.prayertimesasia.core.WakeUpTiming
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /** The alarm clock on the Prayer screen: shows the next alarm's time when one is set. */
 @Composable
@@ -185,7 +187,7 @@ internal fun PrayerAlarmRow(state: AppState, prayer: Prayer) {
             Icon(Icons.Filled.ArrowDropDown, null, Modifier.size(20.dp), tint = Palette.secondary)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(text = { Text("Off") }, onClick = { open = false; state.setPrayerAlarm(prayer, null) })
+            DropdownMenuItem(text = { Text(tr(R.string.common_off)) }, onClick = { open = false; state.setPrayerAlarm(prayer, null) })
             PrayerAlarmTiming.choices(prayer).forEach { t ->
                 DropdownMenuItem(text = { Text(t.label) }, onClick = { open = false; state.setPrayerAlarm(prayer, t) })
             }
@@ -208,7 +210,7 @@ internal fun AlarmSoundSection(state: AppState) {
     val ringtoneName = p.alarmRingtone?.let { raw ->
         runCatching { android.media.RingtoneManager.getRingtone(context, android.net.Uri.parse(raw))?.getTitle(context) }.getOrNull()
     }
-    Section("Alarm sound", "Tap a sound to hear it. Every alarm plays this sound. The azan will join the list once the recordings are ready.") {
+    Section(tr(R.string.wake_sound), tr(R.string.wake_soundHelp)) {
         listOf(AlarmSound.CLASSIC, AlarmSound.CHIME, AlarmSound.BELLS, AlarmSound.BEEPS).forEach { sound ->
             SoundRow(sound.label, null, p.alarmSound == sound) {
                 state.update { it.copy(alarmSound = sound) }

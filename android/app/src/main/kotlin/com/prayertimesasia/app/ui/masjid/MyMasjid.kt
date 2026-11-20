@@ -27,6 +27,8 @@ import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.ui.today.SectionHeader
 import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /** "13:15" as the user reads times: 1:15 PM, or 13:15. */
 private fun clock(hhmm: String, h24: Boolean): String {
@@ -53,12 +55,12 @@ fun MasjidLinkSheetContent(state: AppState, link: MasjidLink) {
         Icon(Icons.Filled.Brightness2, null, Modifier.size(30.dp), tint = Palette.accent)
         Spacer(Modifier.height(6.dp))
         Text(link.name, style = Txt.headline, color = Palette.primary, textAlign = TextAlign.Center)
-        Text("Add it as your masjid and its iqamah times show on your Prayer screen whenever you're nearby.",
+        Text(tr(R.string.myMasjid_addExplain),
             style = Txt.subheadline, color = Palette.secondary, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 4.dp))
         Column(Modifier.fillMaxWidth()) {
             SectionHeader("Iqamah")
             val rows = rules(state, link)
-            if (rows.isEmpty()) Text("This masjid hasn't set its iqamah times yet.", style = Txt.body, color = Palette.secondary)
+            if (rows.isEmpty()) Text(tr(R.string.myMasjid_noTimes), style = Txt.body, color = Palette.secondary)
             rows.forEach { (label, value) ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                     Text(label, style = Txt.body, color = Palette.primary, modifier = Modifier.weight(1f))
