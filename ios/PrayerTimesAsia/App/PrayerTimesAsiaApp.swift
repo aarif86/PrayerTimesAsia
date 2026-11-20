@@ -86,6 +86,7 @@ struct RootView: View {
                     .tabItem { Label("Settings", systemImage: "gearshape") }
                     .tag(AppModel.Tab.settings)
             }
+            .modifier(MacSidebar())
             .tint(.primary)
             .onAppear { model.applyDemoTab() }
             #if targetEnvironment(macCatalyst)
@@ -121,5 +122,17 @@ private struct LargeTextModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         if on { content.dynamicTypeSize(max(phone, .xxxLarge)) } else { content }
+    }
+}
+
+/// On a Mac the tabs sit in a side bar on the left, the way Mail and Notes
+/// do, instead of the pill at the top. Phones and iPads are unchanged.
+private struct MacSidebar: ViewModifier {
+    func body(content: Content) -> some View {
+        if Device.isMac, #available(iOS 18.0, *) {
+            content.tabViewStyle(.sidebarAdaptable)
+        } else {
+            content
+        }
     }
 }
