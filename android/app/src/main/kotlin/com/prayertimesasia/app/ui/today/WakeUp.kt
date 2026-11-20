@@ -208,12 +208,12 @@ private fun JumuahLeaveSection(state: AppState) {
     val twoPM = JumuahLeave.SECOND_SESSION_FROM.split(":").mapNotNull { it.toIntOrNull() }
         .let { if (it.size == 2) r.clock(it[0] * 60 + it[1]) else JumuahLeave.SECOND_SESSION_FROM }
     val from = when {
-        sg && p.jumuahSession == JumuahSession.SECOND -> "the second session at $twoPM"
+        sg && p.jumuahSession == JumuahSession.SECOND -> twoPM
         r.myMasjidHere?.jumuah != null -> "your masjid's own $friday time"
         else -> "the start of $zohor"
     }
     val foot = "A reminder on Fridays to get ready and leave in time. It counts back from $from." +
-        (if (sg) " In Singapore some masjids hold a second session from $twoPM. The Masjid tab shows which ones." else "") +
+        (if (sg) " Only some masjids in Singapore hold a second session. The Masjid tab shows which ones." else "") +
         " $friday is not required of women, travellers or the sick, who pray $zohor instead."
     val next = r.nextJumuahLeave(state.now)?.let { (leave, j) ->
         val day = if (r.dayKey(leave) == r.dayKey(state.now)) "Today" else "Friday"
@@ -225,8 +225,8 @@ private fun JumuahLeaveSection(state: AppState) {
             if (m > 0) state.enableJumuahReminder(m) else state.update { it.copy(jumuahReminderMinutes = 0) }
         }
         if (sg && p.jumuahReminderMinutes > 0) {
-            val label = { s: JumuahSession -> if (s == JumuahSession.FIRST) "First, at $zohor" else "Second, from $twoPM" }
-            MenuRow("Which session", null, label(p.jumuahSession), true,
+            val label = { s: JumuahSession -> if (s == JumuahSession.FIRST) "First" else "Second" }
+            MenuRow("Which session", "First at $zohor, second from $twoPM", label(p.jumuahSession), true,
                 JumuahSession.entries.map { label(it) to it }) { v -> state.update { it.copy(jumuahSession = v) } }
         }
     }

@@ -31,7 +31,7 @@ export function JumuahLeaveGroup({ title = true }: { title?: boolean }) {
   const nextText = next
     ? `${s.dayKey(next.leave) === s.dayKey(now) ? 'Today' : 'Friday'} ${s.formatted(next.leave)}, for ${friday} at ${s.formatted(next.start)}`
     : null
-  const firstFrom = sg && p.jumuahSession === 'second' ? `the second session at ${twoPM}` : s.myMasjidHere?.jumuah ? `your masjid's own ${friday} time` : `the start of ${s.name('dhuhr')}`
+  const firstFrom = sg && p.jumuahSession === 'second' ? twoPM : s.myMasjidHere?.jumuah ? `your masjid's own ${friday} time` : `the start of ${s.name('dhuhr')}`
 
   return (
     <section>
@@ -46,18 +46,18 @@ export function JumuahLeaveGroup({ title = true }: { title?: boolean }) {
         </label>
         {sg && p.jumuahReminderMinutes > 0 && (
           <label class="item">
-            <span class="label">Which session</span>
+            <span class="label">Which session<span class="sub">First at {s.name('dhuhr')}, second from {twoPM}</span></span>
             <select class="inline-select" value={p.jumuahSession} aria-label={`Which ${friday} session`}
               onChange={(e) => { const v = (e.target as HTMLSelectElement).value as JumuahSession; store.update((x) => { x.jumuahSession = v }) }}>
-              <option value="first">First, at {s.name('dhuhr')}</option>
-              <option value="second">Second, from {twoPM}</option>
+              <option value="first">First</option>
+              <option value="second">Second</option>
             </select>
           </label>
         )}
       </div>
       <p class="group-foot">
         {`A reminder on Fridays to get ready and leave in time. It counts back from ${firstFrom}.`}
-        {sg && ` In Singapore some masjids hold a second session from ${twoPM}. The Masjid tab shows which ones.`}
+        {sg && ' Only some masjids in Singapore hold a second session. The Masjid tab shows which ones.'}
         {` ${friday} is not required of women, travellers or the sick, who pray ${s.name('dhuhr')} instead.`}
       </p>
     </section>

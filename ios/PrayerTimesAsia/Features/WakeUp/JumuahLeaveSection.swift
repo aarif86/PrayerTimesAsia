@@ -32,21 +32,26 @@ struct JumuahLeaveSection: View {
             .pickerStyle(.menu)
             .accessibilityLabel("Remind me to leave for \(friday)")
             if sg && model.prefs.jumuahReminderMinutes > 0 {
-                Picker("Which session", selection: Binding(
+                Picker(selection: Binding(
                     get: { model.prefs.jumuahSession },
                     set: { model.prefs.jumuahSession = $0 })) {
-                    Text("First, at \(zohor)").tag(JumuahSession.first)
-                    Text("Second, from \(twoPM)").tag(JumuahSession.second)
+                    Text("First").tag(JumuahSession.first)
+                    Text("Second").tag(JumuahSession.second)
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Which session")
+                        Text("First at \(zohor), second from \(twoPM)").font(.footnote).foregroundStyle(.secondary)
+                    }
                 }
                 .pickerStyle(.menu)
             }
         } header: {
             Text("Leave for \(friday)")
         } footer: {
-            let from = sg && model.prefs.jumuahSession == .second ? "the second session at \(twoPM)"
+            let from = sg && model.prefs.jumuahSession == .second ? twoPM
                 : model.myMasjidHere?.jumuah != nil ? "your masjid's own \(friday) time" : "the start of \(zohor)"
             Text("A reminder on Fridays to get ready and leave in time. It counts back from \(from)."
-                 + (sg ? " In Singapore some masjids hold a second session from \(twoPM). The Masjid tab shows which ones." : "")
+                 + (sg ? " Only some masjids in Singapore hold a second session. The Masjid tab shows which ones." : "")
                  + " \(friday) is not required of women, travellers or the sick, who pray \(zohor) instead.")
         }
     }
