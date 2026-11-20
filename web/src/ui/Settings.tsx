@@ -118,7 +118,7 @@ export function SettingsScreen() {
         <button class="item" onClick={() => downloadICS()}>
           <Download size={20} /><span class="label">{tr('settings.add30')}<span class="sub">{tr('settings.add30Sub', { place: place?.name ?? tr('settings.yourPlace') })}</span></span>
         </button>
-        <button class="item" onClick={() => downloadICS(WORK_PRAYERS)}>
+        <button class="item" id="demo-work" onClick={() => downloadICS(WORK_PRAYERS)}>
           <Briefcase size={20} /><span class="label">{tr('settings.workCalendar', { names: `${s.name('dhuhr')} ${tr('common.and')} ${s.name('asr')}` })}<span class="sub">{tr('settings.workCalendarSub')}</span></span>
         </button>
         <a class="item" href="print/">

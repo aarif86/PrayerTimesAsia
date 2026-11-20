@@ -2,6 +2,238 @@
 
 What's new in Prayer Times Asia, newest first.
 
+## Leave for Jumaat
+
+*1.0.0 (build 40) · 20 November 2026*
+
+A reminder to set off for Friday prayer, and the next prayer leads after sunrise.
+
+**New**
+
+- Leave for Jumaat lives with the prayer alarms. Choose how early, from 15 minutes to 2 hours, and in Singapore pick the first or second session.
+- Leave for Jumaat can ring as a real alarm, through silent mode and Focus, like the prayer alarms.
+
+**Improved**
+
+- From Syuruk until Zohor, every look and widget now counts down to Zohor instead of showing Sunrise.
+
+## Barakah Picks and a clearer masjid map
+
+*1.0.0 (build 39) · 19 November 2026*
+
+One small card of good causes near you, and a map that shows how far things are.
+
+**New**
+
+- Barakah Picks, one small card under Show more with good causes and halal businesses we check by hand for your country. You can turn it off in Settings.
+
+**Improved**
+
+- The masjid map shows a beaming dot where you are, with rings at 1, 2 and 5 km.
+
+## A quick guide, a Hijri calendar and a new Masjid tab
+
+*1.0.0 (build 38) · 19 November 2026*
+
+New users get a short tour, and the date on the Prayer screen opens a Hijri calendar.
+
+**New**
+
+- A short guide the first time you open the app, with a small phone that taps the real buttons. Replay it any time from Settings, Help.
+- Tap the date on the Prayer screen for the whole Hijri month, with the important days marked.
+- Free wall calendar and a whole Islamic year on one page, ready to print.
+- Rate and review, with a private note to us if something is wrong.
+
+**Improved**
+
+- The Masjid tab shows the nearest five first, with walk or drive time, your own masjid, facilities and Friday prayer sessions in Singapore.
+
+## Easier for everyone
+
+*1.0.0 (build 37) · 19 November 2026*
+
+Bigger text, screen readers and clearer colours across the app.
+
+**Improved**
+
+- Works with bigger text and with VoiceOver on iPhone and TalkBack on Android.
+- Deeper colours on the Colour Bands look, easier to read in daylight.
+- Ramadan last ten nights and the Tarawih counter in calmer colours.
+
+## Opens straight away
+
+*1.0.0 (build 36) · 17 November 2026*
+
+No more waiting on Finding where you are.
+
+**Improved**
+
+- The app opens on your last place at once, then quietly checks where you are.
+
+## Ramadan extras and a letter for work
+
+*1.0.0 (build 35) · 17 November 2026*
+
+More for Ramadan, and help asking for prayer breaks.
+
+**New**
+
+- Berbuka countdown widgets for the home screen.
+- A Tarawih counter for 8 or 20 rakaat.
+- A short letter that explains prayer breaks to your boss or your school, ready to print.
+- A note for long summer days in places far from the equator.
+
+**Fixed**
+
+- Times on the day the clocks change are right again.
+
+## Ramadan in Malay and Indonesian
+
+*1.0.0 (build 33) · 12 November 2026*
+
+Ramadan screens in your language, and London times from the London Unified Prayer Timetable.
+
+**New**
+
+- Ramadan screens in Malay and Indonesian.
+- London now uses the London Unified Prayer Timetable.
+
+**Improved**
+
+- Move my settings now carries your Ramadan fasts, Tarawih and juz.
+
+## Widget fix
+
+*1.0.0 (build 32) · 11 November 2026*
+
+The big timetable widget shows the times again.
+
+**Fixed**
+
+- The big timetable widget showed grey bars only. Fixed.
+
+## Crash fix
+
+*1.0.0 (build 31) · 10 November 2026*
+
+The app opens again on every iPhone.
+
+**Fixed**
+
+- Build 30 could close itself on opening. Fixed.
+
+## Shorter prayer alerts
+
+*1.0.0 (build 30) · 9 November 2026*
+
+Alerts that are short and kind, in English, Malay and Indonesian.
+
+**Improved**
+
+- Prayer alerts use short lines that change each day.
+- Prayer names are in English by default. Change them in Settings.
+- A short moving clock greets you when the app opens. Turn it off in Settings.
+
+## Same settings after a new phone
+
+*1.0.0 (build 25) · 9 November 2026*
+
+Delete the app or change phones and your settings come back.
+
+**New**
+
+- Your home, alarms and look come back after you delete the app or move to a new phone.
+
+**Improved**
+
+- Your home place is only changed when you say so, with Change home.
+
+**Fixed**
+
+- Prayer alarms no longer ring again after Stop or Off.
+
+## A short hadith where it helps
+
+*1.0.0 (build 23) · 8 November 2026*
+
+Short, authentic hadith in the right places, each with its reference.
+
+**New**
+
+- A short hadith beside the Prayer screen, tracker, alarms and Ramadan. Close any of them, or turn them off in Settings.
+- A new app icon, a compass ring with a fine kawung batik pattern, and the same look inside the app.
+
+## Alarms for every prayer
+
+*1.0.0 (build 19) · 8 November 2026*
+
+Real alarms that ring, with Snooze.
+
+**New**
+
+- An alarm for any of the five prayers, with a choice of sound and Snooze for five minutes.
+- Big and Simple, large clear times with nothing extra on the screen.
+
+**Improved**
+
+- One clear countdown, like 19m left to pray.
+- The Living Sky is easier to read by day.
+- Faster masjid search, with ready made lists for each country.
+
+## Ready for Ramadan
+
+*1.0.0 (build 15) · 7 November 2026*
+
+Sahur to Raya, and alarms to wake up for Subuh.
+
+**New**
+
+- Ramadan and Syawal, with sahur and berbuka countdowns, fasting tracker and Raya.
+- Wake up for Subuh, a tahajjud alarm and a sahur alarm.
+- Quiet hours, buzz only alerts, a Jumaat reminder and your work calendar.
+
+**Improved**
+
+- The Journey screen shows each prayer's plan when you travel.
+
+## Worldwide, local authority first
+
+*1.0.0 (build 13) · 6 November 2026*
+
+Prayer times in 143 countries, following each country's religious authority.
+
+**New**
+
+- 143 countries, with the local religious authority first.
+- A reminder before each prayer, as well as the alert when it starts.
+- Prayer names in Arabic, Urdu, Bangla and French too.
+- Azan alerts and a pause in the prayer tracker for haid or illness.
+
+## Our promises
+
+*1.0.0 (build 12) · 29 October 2026*
+
+Free forever, no outside ads, your data stays yours, open for anyone to see.
+
+**New**
+
+- The four promises are in the app, and the code is open for anyone to check.
+
+## Print, find and move
+
+*1.0.0 (build 11) · 28 October 2026*
+
+A printable calendar, a better masjid search and an easy way to move your settings.
+
+**New**
+
+- Print a monthly prayer calendar for the fridge or the surau wall.
+- Move my settings to a new phone with a QR code, with nothing to sign up for.
+
+**Improved**
+
+- Masjid search on iPhone uses Apple Maps and OpenStreetMap together, so more places show.
+
 ## Centre Dial first
 
 *1.0.0 (build 10) · 25 October 2026*

@@ -4,45 +4,81 @@
   "roadmap": [
     {
       "status": "now",
+      "title": "App Store and Google Play",
+      "text": "The iPhone and Android apps leave testing and go free on the App Store and Google Play. Phones come first, and every other device joins when it is ready.",
+      "source": "team"
+    },
+    {
+      "status": "now",
+      "title": "The whole app in Malay and Indonesian",
+      "text": "Every screen in Bahasa Melayu and Bahasa Indonesia, not only the prayer names and Ramadan.",
+      "source": "user"
+    },
+    {
+      "status": "now",
+      "title": "One place for alerts and alarms",
+      "text": "Set each prayer to Off, Notify or Alarm in one screen, with a check that tells you what might stop it ringing.",
+      "source": "user"
+    },
+    {
+      "status": "now",
       "title": "Falak review",
       "text": "A member of the falak committee in Singapore checks Falak Mode before it loses its 'pending review' label.",
+      "source": "falak"
+    },
+    {
+      "status": "next",
+      "title": "Mac",
+      "text": "The same app on your Mac, with the next prayer in the menu bar and alerts. A Mac has no compass, so the qibla compass stays on the phone.",
       "source": "team"
     },
     {
       "status": "next",
-      "title": "Time Sensitive prayer alerts",
-      "text": "Alerts that break through Focus modes so you never miss a prayer.",
+      "title": "Apple Watch and Wear OS",
+      "text": "The next prayer on your wrist, a gentle tap when it is time, and the qibla inside the watch app.",
+      "source": "team"
+    },
+    {
+      "status": "next",
+      "title": "Windows",
+      "text": "The web app as a Windows app from the Microsoft Store, with the next prayer beside the clock and alerts.",
+      "source": "team"
+    },
+    {
+      "status": "next",
+      "title": "TV at home",
+      "text": "Today's times on the big screen on Apple TV, Android TV and Google TV.",
+      "source": "team"
+    },
+    {
+      "status": "next",
+      "title": "Time Sensitive alerts on iPhone",
+      "text": "Prayer notifications that come through a Work or Do Not Disturb Focus, like the alarms already do.",
       "source": "user"
     },
     {
       "status": "next",
+      "title": "Masjid screen with local masjids",
+      "text": "Trying the free masjid display screen with a few masjids in Singapore first.",
+      "source": "community"
+    },
+    {
+      "status": "later",
       "title": "Badal Haji season",
       "text": "Order reminders around six months before Aidiladha for Badal Haji.",
       "source": "team"
     },
     {
-      "status": "next",
-      "title": "Badal.my for Malaysia",
-      "text": "Badal Haji & Umrah for Malaysians, shown to users in Malaysia.",
-      "source": "team"
-    },
-    {
       "status": "later",
-      "title": "App Store launch",
-      "text": "From TestFlight to the App Store, free.",
+      "title": "Badal.my for Malaysia",
+      "text": "Badal Haji and Umrah for Malaysians, shown to users in Malaysia.",
       "source": "team"
     },
     {
       "status": "later",
       "title": "Masjid timetables",
-      "text": "Jamaah times and Jumu'ah from local masjids, verified by the community.",
+      "text": "Jamaah times and Jumaat from local masjids, checked by the community.",
       "source": "community"
-    },
-    {
-      "status": "later",
-      "title": "Website",
-      "text": "Changelog, roadmap and feature requests on the web.",
-      "source": "team"
     }
   ],
   "requests": [
@@ -107,9 +143,9 @@
       "source": "user"
     },
     {
-      "status": "next",
-      "build": null,
-      "title": "Prayer alerts during Focus / Do Not Disturb",
+      "status": "done",
+      "build": 19,
+      "title": "Prayer alarms that ring through Focus and silent mode",
       "source": "user"
     },
     {
@@ -146,6 +182,36 @@
       "status": "done",
       "build": 9,
       "title": "Night feel on every tab when Automatic",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 15,
+      "title": "A tracker pause for haid or illness",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 19,
+      "title": "Big and simple times for our parents",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 25,
+      "title": "Keep my settings when I change phones",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 38,
+      "title": "A Hijri calendar to look up dates",
+      "source": "user"
+    },
+    {
+      "status": "done",
+      "build": 40,
+      "title": "A reminder to leave for Jumaat",
       "source": "user"
     }
   ]
