@@ -54,6 +54,9 @@ import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.app.alarms.Notifications
 import com.prayertimesasia.core.AlarmSound
+import com.prayertimesasia.core.JumuahLeave
+import com.prayertimesasia.core.JumuahSession
+import com.prayertimesasia.core.MasjidExtras
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerAlarmTiming
 import com.prayertimesasia.core.PrayerDay
@@ -63,17 +66,18 @@ import com.prayertimesasia.core.WakeUpTiming
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /** The alarm clock on the Prayer screen: shows the next alarm's time when one is set. */
 @Composable
 fun WakeChip(state: AppState, background: Color = Palette.primary.copy(alpha = 0.1f)) {
     val next = AlarmScheduler.nextWakeUp(state.resolver, state.now)
-    val fajr = Prayer.FAJR.name(state.resolver.naming)
     // A 48 dp touch area around the smaller chip.
     Box(
         Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).clip(CircleShape)
-            .clickable { state.showWakeUp = true }
-            .semantics(mergeDescendants = true) { contentDescription = next?.let { "Next alarm at ${state.resolver.formatted(it.at)}" } ?: "Prayer alarms, wake up for $fajr: set an alarm" },
+            .clickable { state.openAlerts() }
+            .semantics(mergeDescendants = true) { contentDescription = next?.let { "Alerts and alarms, next alarm at ${state.resolver.formatted(it.at)}" } ?: "Alerts and alarms" },
         contentAlignment = Alignment.Center,
     ) {
         Row(
@@ -94,104 +98,72 @@ fun WakeChip(state: AppState, background: Color = Palette.primary.copy(alpha = 0
 }
 
 /**
- * Prayer alarms: Subuh first (with the earlier sahur alarm), then the other four
- * prayers and the sound they all play.
- * "Allahumma barik li ummati fi bukuriha" (Abu Dawud, Tirmidhi).
+ * "Leave for Jumaat", its one home. Singapore also gets the first or second session.
+ * Same as web ui/JumuahLeave.tsx and iOS JumuahLeaveSection.
  */
 @Composable
-fun WakeUpSheetContent(state: AppState) {
+internal fun JumuahLeaveSection(state: AppState) {
     val r = state.resolver
     val p = state.prefs
-    val fajr = Prayer.FAJR.name(r.naming)
-    val context = LocalContext.current
-    val snoozed = remember(state.snoozeTick, state.now) { AlarmScheduler.hasSnooze(context) }
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
-        Column(Modifier.padding(horizontal = 32.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Prayer alarms", style = Txt.title3, color = Palette.primary)
-            val next = AlarmScheduler.nextWakeUp(r, state.now)
-            if (next != null) {
-                val forPrayer = Prayer.entries.firstOrNull { next.id.endsWith("-${it.raw}-alarm") }
-                val what = when {
-                    next.id.endsWith("sahur") -> " for sahur"
-                    forPrayer != null -> " for ${r.prayerName(forPrayer, next.at)}"
-                    else -> ""
-                }
-                Text("Next alarm ${whenText(state, next.at)} ${r.formatted(next.at)}$what",
-                    style = Txt.subheadlineSemibold, color = Palette.sunArc, modifier = Modifier.padding(top = 4.dp))
-            } else {
-                Text("No alarms are on", style = Txt.subheadlineSemibold, color = Palette.secondary, modifier = Modifier.padding(top = 4.dp))
+    val friday = Prayer.DHUHR.name(r.naming, true)
+    val zohor = Prayer.DHUHR.name(r.naming)
+    val sg = r.activePlace?.let { MasjidExtras.inSingapore(it.coordinates, it.countryCode) } == true
+    val twoPM = JumuahLeave.SECOND_SESSION_FROM.split(":").mapNotNull { it.toIntOrNull() }
+        .let { if (it.size == 2) r.clock(it[0] * 60 + it[1]) else JumuahLeave.SECOND_SESSION_FROM }
+    val from = when {
+        sg && p.jumuahSession == JumuahSession.SECOND -> twoPM
+        r.myMasjidHere?.jumuah != null -> "your masjid's own $friday time"
+        else -> "the start of $zohor"
+    }
+    val foot = "A reminder on Fridays to get ready and leave in time. It counts back from $from." +
+        (if (sg) " Only some masjids in Singapore hold a second session. The Masjid tab shows which ones." else "") +
+        " $friday is not required of women, travellers or the sick, who pray $zohor instead."
+    val next = r.nextJumuahLeave(state.now)?.let { (leave, j) ->
+        val day = if (r.dayKey(leave) == r.dayKey(state.now)) "Today" else "Friday"
+        "$day ${r.formatted(leave)}, for $friday at ${r.formatted(j.at)}"
+    }
+    if (p.jumuahReminderMinutes <= 0) {
+        Text(foot, style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 32.dp, vertical = 12.dp))
+        return
+    }
+    Section("When", foot) {
+        MenuRow("Remind me", next, JumuahLeave.label(p.jumuahReminderMinutes), true,
+            JumuahLeave.CHOICES.filter { it > 0 }.map { JumuahLeave.label(it) to it }) { m -> state.update { it.copy(jumuahReminderMinutes = m) } }
+        if (sg) {
+            val label = { s: JumuahSession -> if (s == JumuahSession.FIRST) "First" else "Second" }
+            MenuRow("Which session", "First at $zohor, second from $twoPM", label(p.jumuahSession), true,
+                JumuahSession.entries.map { label(it) to it }) { v -> state.update { it.copy(jumuahSession = v) } }
+        }
+    }
+}
+
+/** A row with a drop down menu of choices, like the prayer alarm rows. */
+@Composable
+internal fun <T> MenuRow(label: String, sub: String?, value: String, on: Boolean, options: List<Pair<String, T>>, onPick: (T) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable { open = true }.padding(horizontal = 16.dp, vertical = 10.dp)
+                .semantics { contentDescription = "$label, $value" },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(label, style = Txt.body, color = Palette.primary)
+                if (sub != null) Text(sub, style = Txt.footnote.copy(fontFeatureSettings = "tnum"), color = Palette.secondary)
             }
+            Text(value, style = Txt.body, color = if (on) Palette.sunArc else Palette.secondary)
+            Icon(Icons.Filled.ArrowDropDown, null, Modifier.size(20.dp), tint = Palette.secondary)
         }
-        if (snoozed || p.anyAlarm) {
-            Section(null) {
-                if (snoozed) ChoiceRow("Stop the snoozed alarm", null, false) { state.stopRinging() }
-                if (p.anyAlarm) ChoiceRow("Turn off all alarms", null, false) { state.turnOffAllAlarms() }
-            }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            options.forEach { (name, v) -> DropdownMenuItem(text = { Text(name) }, onClick = { open = false; onPick(v) }) }
         }
-
-        Section(null, if (p.wakeUp != null) "Rings every morning and moves with $fajr wherever you are. Pick one time." else "Turn on to wake up for $fajr every morning.") {
-            SwitchRow("$fajr alarm", p.wakeUp != null) { on -> if (on) state.setWakeUp(WakeUpTiming.AT_FAJR) else state.turnOffWakeUp() }
-            if (p.wakeUp != null) {
-                WakeUpTiming.entries.forEach { t ->
-                    ChoiceRow(t.label(r.naming), timeSoon(state) { t.date(it) }, p.wakeUp == t) { state.setWakeUp(t) }
-                }
-            }
-        }
-
-        Section(null, "An earlier alarm to eat sahur before a fast, or for a longer night prayer.") {
-            SwitchRow("Sahur alarm", p.sahurAlarm != null) { on -> if (on) state.setSahurAlarm(SahurTiming.entries.first()) else state.turnOffSahurAlarm() }
-            if (p.sahurAlarm != null) {
-                SahurTiming.entries.forEach { t ->
-                    ChoiceRow(t.label(r.naming), timeSoon(state) { t.date(it) }, p.sahurAlarm == t) { state.setSahurAlarm(t) }
-                }
-            }
-        }
-
-        if (p.sahurAlarm != null) {
-            Section("Sahur alarm rings on", "Ramadan and the white days follow the Hijri date in the app. Please follow your local religious authority for the start of Ramadan.") {
-                SahurDay.entries.forEach { d ->
-                    val everyDay = SahurDay.EVERY_DAY in p.sahurDays && d != SahurDay.EVERY_DAY
-                    SwitchRow(d.label, d in p.sahurDays || everyDay) { on ->
-                        if (everyDay) return@SwitchRow
-                        state.update {
-                            val days = if (on) it.sahurDays + d else it.sahurDays - d
-                            it.copy(sahurDays = days.ifEmpty { setOf(SahurDay.EVERY_DAY) })
-                        }
-                    }
-                }
-            }
-        }
-
-        Section("Other prayers", "An alarm rings loudly until you stop it. If it rings at the very start of a prayer, it takes the place of that prayer's alert.") {
-            PrayerAlarmTiming.prayers.forEach { prayer -> PrayerAlarmRow(state, prayer) }
-        }
-
-        AlarmSoundSection(state)
-
-        Column(Modifier.padding(horizontal = 32.dp).padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("اللَّهُمَّ بَارِكْ لِأُمَّتِي فِي بُكُورِهَا", style = Txt.title3.copy(textDirection = TextDirection.Rtl),
-                color = Palette.primary, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
-            Text("“O Allah, bless my ummah in their early mornings.”", style = Txt.body.copy(fontStyle = FontStyle.Italic), color = Palette.primary)
-            Text("The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi", style = Txt.footnote, color = Palette.secondary)
-        }
-        Column(Modifier.padding(horizontal = 16.dp).padding(top = 8.dp)) {
-            if (p.wakeUp == WakeUpTiming.FAJR_MINUS_30) HadithView(state, HadithId.NIGHT_PRAYER, line = true)
-            if (p.sahurAlarm != null) {
-                HadithView(state, HadithId.MON_THU, line = true)
-                HadithView(state, HadithId.WHITE_DAYS, line = true)
-            }
-        }
-
-        Text("Rings like an alarm, even when the phone is on silent, and keeps ringing until you tap I'm up. " +
-            "Snooze 5 min rings it once more in 5 minutes. Turning an alarm off also stops a snooze. " +
-            "If it stays quiet, allow Alarms and reminders for this app in your phone's settings.",
-            style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp))
     }
 }
 
 /** One prayer's alarm as a menu: Off, on time, minutes after, or before it ends. */
 @Composable
-private fun PrayerAlarmRow(state: AppState, prayer: Prayer) {
+internal fun PrayerAlarmRow(state: AppState, prayer: Prayer) {
     val r = state.resolver
     val name = prayer.name(r.naming)
     val current = state.prefs.alarm(prayer)
@@ -215,7 +187,7 @@ private fun PrayerAlarmRow(state: AppState, prayer: Prayer) {
             Icon(Icons.Filled.ArrowDropDown, null, Modifier.size(20.dp), tint = Palette.secondary)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(text = { Text("Off") }, onClick = { open = false; state.setPrayerAlarm(prayer, null) })
+            DropdownMenuItem(text = { Text(tr(R.string.common_off)) }, onClick = { open = false; state.setPrayerAlarm(prayer, null) })
             PrayerAlarmTiming.choices(prayer).forEach { t ->
                 DropdownMenuItem(text = { Text(t.label) }, onClick = { open = false; state.setPrayerAlarm(prayer, t) })
             }
@@ -225,7 +197,7 @@ private fun PrayerAlarmRow(state: AppState, prayer: Prayer) {
 
 /** The sound every alarm plays, each heard for a few seconds when tapped, or a ringtone from the phone. */
 @Composable
-private fun AlarmSoundSection(state: AppState) {
+internal fun AlarmSoundSection(state: AppState) {
     val context = LocalContext.current
     val p = state.prefs
     val preview = remember { AlarmPreview() }
@@ -238,7 +210,7 @@ private fun AlarmSoundSection(state: AppState) {
     val ringtoneName = p.alarmRingtone?.let { raw ->
         runCatching { android.media.RingtoneManager.getRingtone(context, android.net.Uri.parse(raw))?.getTitle(context) }.getOrNull()
     }
-    Section("Alarm sound", "Tap a sound to hear it. Every alarm plays this sound. The azan will join the list once the recordings are ready.") {
+    Section(tr(R.string.wake_sound), tr(R.string.wake_soundHelp)) {
         listOf(AlarmSound.CLASSIC, AlarmSound.CHIME, AlarmSound.BELLS, AlarmSound.BEEPS).forEach { sound ->
             SoundRow(sound.label, null, p.alarmSound == sound) {
                 state.update { it.copy(alarmSound = sound) }
@@ -259,7 +231,7 @@ private fun AlarmSoundSection(state: AppState) {
 }
 
 @Composable
-private fun SoundRow(label: String, detail: String?, selected: Boolean, onClick: () -> Unit) {
+internal fun SoundRow(label: String, detail: String?, selected: Boolean, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 10.dp)
             .semantics { contentDescription = "$label${if (selected) ", selected" else ""}, tap to hear it" },
@@ -276,7 +248,7 @@ private fun SoundRow(label: String, detail: String?, selected: Boolean, onClick:
 }
 
 /** A few seconds of an alarm sound, played as an alarm so it is heard on silent too. */
-private class AlarmPreview {
+internal class AlarmPreview {
     private var ringtone: android.media.Ringtone? = null
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
 
@@ -300,7 +272,7 @@ private class AlarmPreview {
 }
 
 @Composable
-private fun ChoiceRow(label: String, detail: String?, selected: Boolean, onClick: () -> Unit) {
+internal fun ChoiceRow(label: String, detail: String?, selected: Boolean, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 10.dp)
             .semantics { if (selected) contentDescription = "$label, selected" },
@@ -314,7 +286,7 @@ private fun ChoiceRow(label: String, detail: String?, selected: Boolean, onClick
 }
 
 /** When this choice would next ring (this morning if it is still ahead, else tomorrow). */
-private fun timeSoon(state: AppState, at: (PrayerDay) -> Instant): String? {
+internal fun timeSoon(state: AppState, at: (PrayerDay) -> Instant): String? {
     for (offset in 0..1) {
         val day = state.resolver.day(state.now, offset) ?: continue
         val t = at(day)
@@ -323,7 +295,7 @@ private fun timeSoon(state: AppState, at: (PrayerDay) -> Instant): String? {
     return null
 }
 
-private fun whenText(state: AppState, at: Instant): String {
+internal fun whenText(state: AppState, at: Instant): String {
     val zone = state.resolver.zone
     val day = at.atZone(zone).toLocalDate()
     val today = state.now.atZone(zone).toLocalDate()

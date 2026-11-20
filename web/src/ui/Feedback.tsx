@@ -4,6 +4,7 @@ import { NATIVE_APPS, phonePlatform } from '../core/nativeApps'
 import { store, useStore } from '../services/store'
 import { closeSheet, openSheet, Sheet, ToggleItem } from './common'
 import { VERSION } from './version'
+import { tr, trWith, type AppWordKey } from '../core/appWords'
 
 /**
  * "A note to the makers": a short note to Ustaz Aarif and the Nasar Digital team.
@@ -14,11 +15,11 @@ export const FEEDBACK_EMAIL = 'salam@prayertimes.asia'
 
 export type NoteKind = 'kind' | 'idea' | 'time' | 'broke'
 
-const KINDS: { id: NoteKind; label: string; subject: string; icon: typeof Heart; hint: string }[] = [
-  { id: 'kind', label: 'A kind word', subject: 'A kind word', icon: Heart, hint: 'What has the app helped you with?' },
-  { id: 'idea', label: 'An idea', subject: 'An idea', icon: Lightbulb, hint: 'What would make the app better for you?' },
-  { id: 'time', label: 'A time looks wrong', subject: 'A time looks wrong', icon: Clock, hint: 'Which prayer, which day, and what does your masjid show?' },
-  { id: 'broke', label: 'Something is not working', subject: 'Something is not working', icon: Wrench, hint: 'What did you tap, and what happened?' },
+const KINDS: { id: NoteKind; label: AppWordKey; subject: string; icon: typeof Heart; hint: AppWordKey }[] = [
+  { id: 'kind', label: 'feedback.kind', subject: 'A kind word', icon: Heart, hint: 'feedback.kindHint' },
+  { id: 'idea', label: 'feedback.idea', subject: 'An idea', icon: Lightbulb, hint: 'feedback.ideaHint' },
+  { id: 'time', label: 'feedback.time', subject: 'A time looks wrong', icon: Clock, hint: 'feedback.timeHint' },
+  { id: 'broke', label: 'feedback.broke', subject: 'Something is not working', icon: Wrench, hint: 'feedback.brokeHint' },
 ]
 
 function platform(): string {
@@ -50,32 +51,32 @@ export function FeedbackSheet() {
     : null
   const mail = noteEmail(kind, text, details, mayShare)
   const href = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(mail.subject)}&body=${encodeURIComponent(mail.body)}`
-  const hint = KINDS.find((x) => x.id === kind)!.hint
+  const hint = tr(KINDS.find((x) => x.id === kind)!.hint)
 
   const copy = async () => {
     try { await navigator.clipboard.writeText(`To ${FEEDBACK_EMAIL}\n${mail.subject}\n\n${mail.body}`); setCopied(true) } catch { /* the address is shown below anyway */ }
   }
 
   return (
-    <Sheet title="A note to the makers">
+    <Sheet title={tr('feedback.title')}>
       <div class="help feedback">
-        <p class="subhead">Ustaz Aarif and the Nasar Digital team read every note. Good or bad, it helps us make the app better for everyone.</p>
-        <div class="feedback-kinds" role="radiogroup" aria-label="What is your note about?">
+        <p class="subhead">{tr('feedback.intro')}</p>
+        <div class="feedback-kinds" role="radiogroup" aria-label={tr('feedback.about')}>
           {KINDS.map((k) => (
             <button class={`chip${kind === k.id ? ' on' : ''}`} role="radio" aria-checked={kind === k.id} onClick={() => setKind(k.id)}>
-              <k.icon size={15} />{k.label}
+              <k.icon size={15} />{tr(k.label)}
             </button>
           ))}
         </div>
-        <textarea class="feedback-text" rows={5} placeholder={hint} value={text} aria-label="Your note"
+        <textarea class="feedback-text" rows={5} placeholder={hint} value={text} aria-label={tr('feedback.yourNote')}
           onInput={(e) => { setText((e.target as HTMLTextAreaElement).value); setCopied(false) }} />
         <div class="group">
-          <ToggleItem label="Add my city and app version" sub="Helps us check your times. Never your exact location." on={addDetails} onChange={setAddDetails} />
-          {kind === 'kind' && <ToggleItem label="You may share my words" sub="On our website, without your name." on={mayShare} onChange={setMayShare} />}
+          <ToggleItem label={tr('feedback.addDetails')} sub={tr('feedback.addDetailsSub')} on={addDetails} onChange={setAddDetails} />
+          {kind === 'kind' && <ToggleItem label={tr('feedback.mayShare')} sub={tr('feedback.mayShareSub')} on={mayShare} onChange={setMayShare} />}
         </div>
-        <a class="primary-btn" href={href} onClick={() => { store.update((x) => { x.feedbackSentAt = Date.now() }); setTimeout(closeSheet, 400) }}><Mail size={16} /> Send by email</a>
-        <button class="plain-btn" onClick={() => void copy()}><Copy size={16} />{copied ? 'Copied' : 'No email app? Copy the note'}</button>
-        <p class="footnote secondary">It goes to {FEEDBACK_EMAIL}. We reply within a few days, insyaAllah.</p>
+        <a class="primary-btn" href={href} onClick={() => { store.update((x) => { x.feedbackSentAt = Date.now() }); setTimeout(closeSheet, 400) }}><Mail size={16} /> {tr('feedback.send')}</a>
+        <button class="plain-btn" onClick={() => void copy()}><Copy size={16} />{copied ? tr('common.copied') : tr('feedback.copy')}</button>
+        <p class="footnote secondary">{tr('feedback.goesTo', { email: FEEDBACK_EMAIL })}</p>
       </div>
     </Sheet>
   )
@@ -94,9 +95,9 @@ export function reviewLinks(platform: 'ios' | 'android' | null, apps = NATIVE_AP
   const out: ReviewLink[] = []
   const appStore = apps.ios.appStoreId || (showAllStores ? '0000000000' : '')
   const play = apps.android.onGooglePlay || showAllStores
-  if (appStore && platform !== 'android') out.push({ id: 'appstore', title: 'Review on the App Store', sub: 'For the iPhone app', href: `https://apps.apple.com/app/id${appStore}?action=write-review` })
-  if (play && platform !== 'ios') out.push({ id: 'play', title: 'Review on Google Play', sub: 'For the Android app', href: `https://play.google.com/store/apps/details?id=${apps.packageName}&showAllReviews=true` })
-  out.push({ id: 'google', title: 'Review Nasar Digital on Google', sub: 'The team in Singapore who builds the app', href: NASAR_GOOGLE_REVIEW })
+  if (appStore && platform !== 'android') out.push({ id: 'appstore', title: tr('review.appStore'), sub: tr('review.appStoreSub'), href: `https://apps.apple.com/app/id${appStore}?action=write-review` })
+  if (play && platform !== 'ios') out.push({ id: 'play', title: tr('review.play'), sub: tr('review.playSub'), href: `https://play.google.com/store/apps/details?id=${apps.packageName}&showAllReviews=true` })
+  out.push({ id: 'google', title: tr('review.google'), sub: tr('review.googleSub'), href: NASAR_GOOGLE_REVIEW })
   return out
 }
 
@@ -112,28 +113,28 @@ export function ReviewSheet() {
     if (words.trim()) { navigator.clipboard?.writeText(words.trim()).then(() => setCopiedFor(id), () => undefined) }
   }
   return (
-    <Sheet title="Rate and review">
+    <Sheet title={tr('review.title')}>
       <div class="help feedback">
-        <p class="subhead">A few honest words help other Muslims find the app, and help Ustaz Aarif and the team keep going. Jazakallahu khairan.</p>
+        <p class="subhead">{tr('review.intro')}</p>
         <ol class="review-steps">
-          <li><b>Write once</b> in the box below, in your own words.</li>
-          <li><b>Tap a place</b> to review. We copy your words for you.</li>
-          <li><b>Tap and hold</b> in their review box, then <b>Paste</b>. Come back and do the same for the next one.</li>
+          <li>{trWith('review.step1', { b: <b>{tr('review.step1b')}</b> })}</li>
+          <li>{trWith('review.step2', { b: <b>{tr('review.step2b')}</b> })}</li>
+          <li>{trWith('review.step3', { b: <b>{tr('review.step3b')}</b>, paste: <b>{tr('review.paste')}</b> })}</li>
         </ol>
-        <textarea class="feedback-text review-words" rows={4} aria-label="Your review"
-          placeholder="What has the app helped you with?"
+        <textarea class="feedback-text review-words" rows={4} aria-label={tr('review.yourReview')}
+          placeholder={tr('feedback.kindHint')}
           value={words} onInput={(e) => { setWords((e.target as HTMLTextAreaElement).value); setCopiedFor(null) }}
           onBlur={() => store.update((x) => { x.reviewDraft = words })} />
         <div class="group review-links">
           {links.map((l) => (
             <a class="item" href={l.href} target="_blank" rel="noopener noreferrer" onClick={() => tapped(l.id)}>
               {l.id === 'google' ? <MapPin size={20} class="accent" /> : <Star size={20} class="accent" />}
-              <span class="label">{l.title}<span class="sub">{copiedFor === l.id ? 'Copied. Tap and hold in the review box, then Paste.' : l.sub}</span></span>
+              <span class="label">{l.title}<span class="sub">{copiedFor === l.id ? tr('review.copiedHow') : l.sub}</span></span>
               <ChevronRight size={16} class="secondary" />
             </a>
           ))}
         </div>
-        <button class="plain-btn" onClick={() => openSheet({ kind: 'feedback' })}><Mail size={16} /> Something not right? Send a private note</button>
+        <button class="plain-btn" onClick={() => openSheet({ kind: 'feedback' })}><Mail size={16} /> {tr('review.private')}</button>
       </div>
     </Sheet>
   )

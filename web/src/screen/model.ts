@@ -215,8 +215,8 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     fullScreen: 'Press OK or click for full screen', edit: 'Edit screen', source: 'Times', getApp: 'Prayer times on your phone',
     noPlace: 'Choose the masjid\'s location to show prayer times.',
     nowTag: 'Now', inTag: (d) => `in ${d}`, scan: 'Scan for iqamah times',
-    tarawih: 'Tarawih', afterIsha: 'after Isyak', qiyam: 'Qiyamullail', eid: 'Hari Raya prayer', ramadanDay: (n) => `Ramadan day ${n}`,
-    raya: 'Selamat Hari Raya Aidilfitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'The last ten nights',
+    tarawih: 'Tarawih', afterIsha: 'after Isha', qiyam: 'Qiyamullail', eid: 'Eid prayer', ramadanDay: (n) => `Ramadan day ${n}`,
+    raya: 'Eid Mubarak', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'The last ten nights',
   },
   ms: {
     next: 'Seterusnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Sila senyapkan telefon bimbit anda',
@@ -229,12 +229,12 @@ export const WORDS: Record<ScreenLanguage, Words> = {
   },
   id: {
     next: 'Berikutnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Mohon nonaktifkan nada dering ponsel',
-    inPrayer: 'Sholat sedang berlangsung', khutbah: 'Khutbah', khutbahIn: 'Khutbah dalam', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Akhir ${n}`,
-    fullScreen: 'Tekan OK atau klik untuk layar penuh', edit: 'Ubah layar', source: 'Jadwal', getApp: 'Jadwal sholat di ponsel Anda',
-    noPlace: 'Pilih lokasi masjid untuk menampilkan jadwal sholat.',
+    inPrayer: 'Salat sedang berlangsung', khutbah: 'Khutbah', khutbahIn: 'Khutbah dalam', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Akhir ${n}`,
+    fullScreen: 'Tekan OK atau klik untuk layar penuh', edit: 'Ubah layar', source: 'Jadwal', getApp: 'Jadwal salat di ponsel Anda',
+    noPlace: 'Pilih lokasi masjid untuk menampilkan jadwal salat.',
     nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Pindai untuk jadwal iqamah',
-    tarawih: 'Tarawih', afterIsha: 'setelah Isya', qiyam: 'Qiyamul lail', eid: 'Sholat Idul Fitri', ramadanDay: (n) => `${n} Ramadan`,
-    raya: 'Selamat Hari Raya Idul Fitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'Sepuluh malam terakhir',
+    tarawih: 'Tarawih', afterIsha: 'setelah Isya', qiyam: 'Qiyamul lail', eid: 'Salat Idulfitri', ramadanDay: (n) => `${n} Ramadan`,
+    raya: 'Selamat Hari Raya Idulfitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'Sepuluh malam terakhir',
   },
 }
 

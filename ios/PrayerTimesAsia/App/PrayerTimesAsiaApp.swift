@@ -24,7 +24,9 @@ struct PrayerTimesAsiaApp: App {
                 }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { model.appBecameActive(); model.tickSky() }
+                    if phase == .active { model.usageVisible(true) } else if phase == .background { model.usageVisible(false) }
                 }
+                .onChange(of: model.selectedTab) { _, tab in model.usageScreen(tab) }
                 .onChange(of: model.location.location) { _, location in
                     if let location { model.handle(location: location) }
                     model.tickSky()
@@ -44,6 +46,12 @@ struct RootView: View {
     // then fades. Always on a fresh install, then as Settings > Opening screen says.
     // Skipped for the CI screenshots.
     @State private var opening: Bool?
+    @State private var showGuide = false
+
+    /// The quick guide is still to come, and nothing else is on screen in its way.
+    private var guideDue: Bool {
+        model.prefs.hasOnboarded && !model.prefs.guideShown && opening != true && !model.showWelcomeBack && !showGuide
+    }
 
     var body: some View {
         ZStack {
@@ -87,9 +95,15 @@ struct RootView: View {
             .sheet(isPresented: $model.showWakeUp) { WakeUpView() }
             .sheet(item: $model.pendingMasjid) { MasjidLinkSheet(link: $0) }
             // New users see the quick guide once, right after choosing their place.
-            .fullScreenCover(isPresented: Binding(
-                get: { !model.prefs.guideSeen && opening != true },
-                set: { if !$0 { model.prefs.guideSeen = true } })) { GuideView() }
+            // It waits a moment first: the place list (or "Bring in settings") sheet and
+            // the location question are still closing then, and iOS quietly drops a
+            // screen that tries to open over them, so the guide never showed.
+            .fullScreenCover(isPresented: $showGuide, onDismiss: { model.prefs.guideShown = true }) { GuideView() }
+            .task(id: guideDue) {
+                guard guideDue else { return }
+                try? await Task.sleep(for: .seconds(1))
+                if guideDue { showGuide = true }
+            }
             .alert("Welcome back", isPresented: $model.showWelcomeBack) {
                 Button("OK") {}
             } message: {

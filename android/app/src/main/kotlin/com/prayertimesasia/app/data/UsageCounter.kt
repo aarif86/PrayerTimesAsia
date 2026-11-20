@@ -3,6 +3,7 @@ package com.prayertimesasia.app.data
 import android.content.Context
 import android.os.Build
 import com.prayertimesasia.app.BuildConfig
+import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Place
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,6 +15,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import java.time.LocalDate
 import java.util.Locale
 import java.util.UUID
 
@@ -61,6 +63,93 @@ class UsageCounter(context: Context) {
         Unit
     }
 
+    enum class CardEvent(val type: String) { SEEN("Card.seen"), TAPPED("Card.tapped") }
+
+    /**
+     * Counts a Barakah Picks card seen (once a day on this phone) or tapped. Only
+     * the card and the usual anonymous keys are sent, never who tapped.
+     * AppState.countCard checks Settings first. Never throws.
+     */
+    suspend fun countCard(event: CardEvent, card: CommunityCard, placement: String, place: Place?): Unit = withContext(Dispatchers.IO) {
+        runCatching<Unit> {
+            if (event == CardEvent.SEEN) {
+                val today = LocalDate.now().toString()
+                val key = SEEN_PREFIX + card.id
+                if (!shouldCountSeen(sp.getString(key, null), today)) return@runCatching
+                sp.edit().putString(key, today).apply()
+            }
+            if (!sp.contains(ID)) sp.edit().putString(ID, UUID.randomUUID().toString()).apply()
+            val id = sp.getString(ID, null) ?: return@runCatching
+            val appId = config()?.activeAppId ?: return@runCatching
+            val body = payload(BuildConfig.VERSION_NAME, Build.VERSION.RELEASE ?: "?", Locale.getDefault().toLanguageTag(),
+                place?.district ?: place?.name, place?.countryCode).toMutableMap()
+            body["Card.id"] = card.id
+            body["Card.kind"] = card.kind.name.lowercase()
+            body["Card.placement"] = placement
+            Http.postJson(ENDPOINT, signals(appId, id, listOf(event.type), body, BuildConfig.DEBUG))
+        }
+        Unit
+    }
+
+    // A day of use (App.daySummary): minutes on screen, opens and screens used on
+    // one day, kept on the phone and sent once, as one event, on the first open of
+    // a later day. The same as the web and iPhone apps (docs/analytics.md).
+
+    private var activeSince: Long? = null
+
+    private fun readTally(): DayTally? = sp.getString(TALLY, null)?.let { DayTally.decode(it) }
+    private fun writeTally(t: DayTally) { sp.edit().putString(TALLY, t.encode()).apply() }
+
+    /** The app came on screen: one open for today, start the clock, and send the last day's summary if due. */
+    suspend fun tallyStart(place: Place?): Unit = withContext(Dispatchers.IO) {
+        runCatching<Unit> {
+            val (tally, finished) = roll(readTally(), LocalDate.now().toString())
+            writeTally(tally.copy(opens = tally.opens + 1))
+            activeSince = System.currentTimeMillis()
+            if (finished == null) return@runCatching
+            if (!sp.contains(ID)) sp.edit().putString(ID, UUID.randomUUID().toString()).apply()
+            val id = sp.getString(ID, null) ?: return@runCatching
+            val appId = config()?.activeAppId ?: return@runCatching
+            val base = payload(BuildConfig.VERSION_NAME, Build.VERSION.RELEASE ?: "?", Locale.getDefault().toLanguageTag(),
+                place?.district ?: place?.name, place?.countryCode)
+            Http.postJson(ENDPOINT, signals(appId, id, listOf("App.daySummary"), dayPayload(base, finished), BuildConfig.DEBUG))
+        }
+        Unit
+    }
+
+    /** The app left the screen: adds the time since it came on. */
+    fun tallyStop() {
+        val since = activeSince ?: return
+        activeSince = null
+        runCatching { writeTally(roll(readTally(), LocalDate.now().toString()).first.addSeconds((System.currentTimeMillis() - since) / 1000.0)) }
+    }
+
+    /** A screen (tab) was used today. */
+    fun tallyScreen(screen: String) {
+        runCatching { writeTally(roll(readTally(), LocalDate.now().toString()).first.addScreen(screen)) }
+    }
+
+    data class DayTally(val day: String, val seconds: Double = 0.0, val opens: Int = 0, val screens: List<String> = emptyList()) {
+        fun addSeconds(s: Double) = copy(seconds = seconds + Math.round(s.coerceIn(0.0, MAX_STRETCH_S)).toDouble())
+        fun addScreen(screen: String) = if (screen in screens) this else copy(screens = screens + screen)
+        fun encode(): String = buildJsonObject {
+            put("day", day); put("seconds", seconds); put("opens", opens)
+            put("screens", JsonArray(screens.map { JsonPrimitive(it) }))
+        }.toString()
+
+        companion object {
+            fun decode(text: String): DayTally? = runCatching {
+                val o = Json.parseToJsonElement(text).jsonObject
+                DayTally(
+                    o["day"]!!.jsonPrimitive.content,
+                    o["seconds"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
+                    o["opens"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
+                    (o["screens"] as? JsonArray)?.map { it.jsonPrimitive.content } ?: emptyList(),
+                )
+            }.getOrNull()
+        }
+    }
+
     /** The switch and App ID from the repo, re-read at most twice a day. */
     private fun config(): Config? {
         val cached = sp.getString(CONFIG, null)?.let { Config.decode(it) }
@@ -82,6 +171,42 @@ class UsageCounter(context: Context) {
         private const val CONFIG_AT = "configAt"
 
         fun shouldCountOpen(last: Long?, now: Long): Boolean = last == null || now - last >= OPEN_GAP_MS
+
+        /** A card counts as seen once a day on each phone, however often it scrolls past. */
+        fun shouldCountSeen(lastSeenDay: String?, today: String): Boolean = lastSeenDay != today
+        private const val SEEN_PREFIX = "cardSeen."
+        private const val TALLY = "day"
+
+        /** One stretch on screen counts at most this long (a phone left open on a table). */
+        const val MAX_STRETCH_S = 2 * 3_600.0
+        val SCREENS = listOf("prayer", "qibla", "falak", "masjid", "settings")
+
+        /** Today's tally, and the older one if it has anything to send. */
+        fun roll(t: DayTally?, today: String): Pair<DayTally, DayTally?> = when {
+            t != null && t.day == today -> t to null
+            t != null && (t.seconds > 0 || t.opens > 0) -> DayTally(today) to t
+            else -> DayTally(today) to null
+        }
+
+        fun minutesBand(minutes: Double): String = when {
+            minutes < 1 -> "under 1"
+            minutes < 5 -> "1 to 5"
+            minutes < 15 -> "5 to 15"
+            minutes < 30 -> "15 to 30"
+            minutes < 60 -> "30 to 60"
+            else -> "over 60"
+        }
+
+        fun dayPayload(base: Map<String, String>, t: DayTally): Map<String, String> {
+            val out = base.toMutableMap()
+            out["Day.date"] = t.day
+            out["Day.minutes"] = Math.round(t.seconds / 60).toString()
+            out["Day.minutesBand"] = minutesBand(t.seconds / 60)
+            out["Day.opens"] = t.opens.toString()
+            out["Day.screens"] = t.screens.sorted().joinToString(",")
+            for (s in SCREENS) out["Used.$s"] = (s in t.screens).toString()
+            return out
+        }
 
         /** A place name fit to count: not the "Current location" placeholder, and short. */
         fun cleanCity(name: String?): String? = name?.trim()?.takeIf { it.isNotEmpty() && it != "Current location" }?.take(60)

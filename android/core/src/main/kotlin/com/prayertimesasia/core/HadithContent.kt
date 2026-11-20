@@ -37,14 +37,14 @@ data class Hadith(
             Hadith(
                 HadithId.COOL_PRAYERS,
                 "مَنْ صَلَّى الْبَرْدَيْنِ دَخَلَ الْجَنَّةَ",
-                Doa.Words("Whoever prays the two cool prayers, Subuh and Asar, will enter Paradise.", "Sesiapa yang solat dua waktu sejuk, Subuh dan Asar, akan masuk syurga.", "Siapa yang salat dua waktu sejuk, Subuh dan Asar, akan masuk surga."),
+                Doa.Words("Whoever prays the two cool prayers, Fajr and Asr, will enter Paradise.", "Sesiapa yang solat dua waktu sejuk, Subuh dan Asar, akan masuk syurga.", "Siapa yang salat dua waktu sejuk, Subuh dan Asar, akan masuk surga."),
                 Doa.Words("The Prophet ﷺ, narrated by al Bukhari", "Sabda Nabi ﷺ, riwayat al Bukhari", "Sabda Nabi ﷺ, riwayat al Bukhari"),
                 "Sahih al Bukhari 574",
             ),
             Hadith(
                 HadithId.SYURUK,
                 "لاَ صَلاَةَ بَعْدَ الصُّبْحِ حَتَّى تَرْتَفِعَ الشَّمْسُ",
-                Doa.Words("No prayer after Subuh until the sun has risen. Syuruk is sunrise, when Subuh time ends. It is not a prayer.", "Tiada solat selepas Subuh sehingga matahari naik. Syuruk ialah waktu matahari terbit, tamatnya waktu Subuh. Ia bukan waktu solat.", "Tidak ada salat setelah Subuh hingga matahari naik. Syuruk adalah terbit matahari, saat waktu Subuh berakhir. Ia bukan waktu salat."),
+                Doa.Words("No prayer after Fajr until the sun has risen. Sunrise is when Fajr time ends. It is not a prayer.", "Tiada solat selepas Subuh sehingga matahari naik. Syuruk ialah waktu matahari terbit, tamatnya waktu Subuh. Ia bukan waktu solat.", "Tidak ada salat setelah Subuh hingga matahari naik. Syuruk adalah terbit matahari, saat waktu Subuh berakhir. Ia bukan waktu salat."),
                 Doa.Words("The Prophet ﷺ, narrated by al Bukhari", "Sabda Nabi ﷺ, riwayat al Bukhari", "Sabda Nabi ﷺ, riwayat al Bukhari"),
                 "Sahih al Bukhari 586",
             ),
@@ -72,7 +72,7 @@ data class Hadith(
             Hadith(
                 HadithId.NIGHT_PRAYER,
                 "أَفْضَلُ الصَّلاَةِ بَعْدَ الْفَرِيضَةِ صَلاَةُ اللَّيْلِ",
-                Doa.Words("The best prayer after the fardhu is the night prayer.", "Solat paling utama selepas solat fardhu ialah solat malam.", "Salat paling utama setelah salat fardu adalah salat malam."),
+                Doa.Words("The best prayer after the obligatory prayers is the night prayer.", "Solat paling utama selepas solat fardhu ialah solat malam.", "Salat paling utama setelah salat fardu adalah salat malam."),
                 Doa.Words("The Prophet ﷺ, narrated by Muslim", "Sabda Nabi ﷺ, riwayat Muslim", "Sabda Nabi ﷺ, riwayat Muslim"),
                 "Sahih Muslim 1163a",
             ),

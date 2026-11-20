@@ -50,7 +50,7 @@ data class DemoConfig(
             nowForStreak.atZone(sgt).toLocalDate().minusDays(back.toLong()).toString() to Prayer.obligatory.toSet()
         }
         var p = Preferences(
-            hasOnboarded = true, guideSeen = true, useGPS = false, home = pasirRis, homeConfirmed = true, manualPlace = pasirRis, lastCountryCode = "SG",
+            hasOnboarded = true, guideShown = true, useGPS = false, home = pasirRis, homeConfirmed = true, manualPlace = pasirRis, lastCountryCode = "SG",
             trackerEnabled = true, prayedLog = log, appearance = appearance, todayStyle = style, showMore = showMore,
         )
         if (review) p = p.copy(openDayCount = 10)

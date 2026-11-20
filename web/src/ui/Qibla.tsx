@@ -6,6 +6,7 @@ import { useCompass } from '../services/sensors'
 import { useStore } from '../services/store'
 import { Kaaba } from './icons'
 import { QiblaMapButton } from './QiblaMap'
+import { appLocale, tr, trWith } from '../core/appWords'
 
 /** Lights up inside 4°, goes out past 6°, so it doesn't flicker at the edge. */
 const ENTER = 4, LEAVE = 6
@@ -35,14 +36,14 @@ export function QiblaScreen() {
       try { navigator.vibrate?.(30) } catch { /* not supported */ }
     }
   }, [delta == null ? null : Math.round(delta * 10)])
-  if (!place) return <div class="page"><p class="headline" style={{ textAlign: 'center', marginTop: '40vh' }}>Choose a place to find the qibla.</p></div>
+  if (!place) return <div class="page"><p class="headline" style={{ textAlign: 'center', marginTop: '40vh' }}>{tr('qibla.choosePlace')}</p></div>
   const isAligned = demoAligned || aligned
-  const instruction = delta == null ? `Face ${Math.round(bearing)}° from north`
-    : isAligned ? "You're facing the Qibla" : delta > 0 ? `Turn right ${Math.round(Math.abs(delta))}°` : `Turn left ${Math.round(Math.abs(delta))}°`
+  const instruction = delta == null ? tr('qibla.faceFromNorth', { deg: Math.round(bearing) })
+    : isAligned ? tr('qibla.youAreFacing') : tr(delta > 0 ? 'qibla.turnRight' : 'qibla.turnLeft', { deg: Math.round(Math.abs(delta)) })
   // Spoken in steps of 10 degrees, so a screen reader is not interrupted at every degree.
   const step = delta == null ? 0 : Math.max(10, Math.round(Math.abs(delta) / 10) * 10)
   const spoken = delta == null ? instruction
-    : isAligned ? instruction : `${delta > 0 ? 'Turn right' : 'Turn left'}, about ${step}°`
+    : isAligned ? instruction : tr(delta > 0 ? 'qibla.turnRightAbout' : 'qibla.turnLeftAbout', { deg: step })
   const hasCompass = demoAligned || compass.state === 'active'
   // iPhone Safari only shares the compass after a tap, so the tap goes first and big.
   const askFirst = compass.state === 'needs-permission' && !demoAligned
@@ -51,52 +52,51 @@ export function QiblaScreen() {
   return (
     <div class="page qibla">
       <div class="qibla-head">
-        <h1 class="h-title">Qibla</h1>
+        <h1 class="h-title">{tr('qibla.title')}</h1>
         <div class={`qibla-instruction ${isAligned ? 'ok' : ''}`} aria-hidden="true">{instruction}</div>
         <span class="sr-only" aria-live="polite">{spoken}</span>
         {askFirst && (
             <button class="compass-on" onClick={turnOn}>
               <CompassIcon size={26} />
               <span class="compass-on-text">
-                <span class="compass-on-title">Turn on the compass</span>
-                <span class="compass-on-line">Tap here, then press Allow</span>
+                <span class="compass-on-title">{tr('qibla.compassOn')}</span>
+                <span class="compass-on-line">{tr('qibla.compassOnLine')}</span>
               </span>
             </button>
         )}
-        <button class="chip" onClick={() => s.setTab('falak')} aria-label="Falak Mode: find the qibla from the sun"><Sun size={15} fill="currentColor" />Check with the sun</button>
+        <button class="chip" onClick={() => s.setTab('falak')} aria-label={tr('qibla.falakMode')}><Sun size={15} fill="currentColor" />{tr('qibla.checkSun')}</button>
       </div>
       <QiblaDial bearing={bearing} heading={heading != null ? dial.current.heading : 0} delta={delta} aligned={isAligned} onTap={askFirst ? turnOn : undefined} />
       <div class="glass card stats">
-        <Stat label="Qibla" value={`${Math.round(bearing)}° ${compassPoint(bearing)}`} />
+        <Stat label={tr('qibla.title')} value={`${Math.round(bearing)}° ${compassPoint(bearing)}`} />
         <span class="vline" />
-        <Stat label="You're facing" value={heading != null ? `${Math.round(fix(heading, 360))}° ${compassPoint(heading)}` : '-'} />
+        <Stat label={tr('qibla.facing')} value={heading != null ? `${Math.round(fix(heading, 360))}° ${compassPoint(heading)}` : '-'} />
         <span class="vline" />
-        <Stat label="To Makkah" value={`${Math.round(distanceKm(place.coordinates, KAABA)).toLocaleString('en')} km`} />
+        <Stat label={tr('qibla.toMakkah')} value={`${Math.round(distanceKm(place.coordinates, KAABA)).toLocaleString(appLocale())} km`} />
       </div>
       <div class="glass card steps">
-        <div class="headline" style={{ marginBottom: '12px' }}>How to find the qibla</div>
+        <div class="headline" style={{ marginBottom: '12px' }}>{tr('qibla.howTo')}</div>
         {askFirst && (
           <Step icon={<CompassIcon size={20} class="gold" />}>
-            Your browser asks first before it shares the compass. Tap <b>Turn on the compass</b> at the top, then press <b>Allow</b>. The dial then turns with your phone.
+            {trWith('qibla.browserAsksHow', { button: <b>{tr('qibla.compassOn')}</b>, allow: <b>{tr('qibla.allow')}</b> })}
           </Step>
         )}
         {(compass.state === 'unavailable' || compass.state === 'denied') && !demoAligned && (
           <>
             <Step icon={<MapIcon size={20} class="gold" />}>
-              {compass.state === 'denied' ? 'Compass access was not allowed.' : 'This device or browser has no compass.'} Use the qibla bearing above with a map,
-              or the sun in Falak. Stand facing {Math.round(bearing)}° ({compassPoint(bearing)}). For example, line yourself up with the gold line on the map.
+              {compass.state === 'denied' ? tr('qibla.notAllowed') : tr('qibla.noCompass')} {tr('qibla.noCompassHelp', { deg: Math.round(bearing), point: compassPoint(bearing) })}
             </Step>
             <div style={{ marginTop: '12px' }}><QiblaMapButton /></div>
           </>
         )}
         {(hasCompass || askFirst || compass.state === 'starting') && (
           <>
-            <Step icon={<Num n={1} />}>Hold your phone flat in front of you, screen facing up.</Step>
-            <Step icon={<Num n={2} />}>Turn your whole body slowly until the Ka'bah reaches the marker at the top.</Step>
-            <Step icon={<Num n={3} />}>When the dial turns green{('vibrate' in navigator) ? ' and your phone taps' : ''}, you're facing the qibla.</Step>
+            <Step icon={<Num n={1} />}>{tr('qibla.step1')}</Step>
+            <Step icon={<Num n={2} />}>{tr('qibla.step2')}</Step>
+            <Step icon={<Num n={3} />}>{('vibrate' in navigator) ? tr('qibla.step3') : tr('qibla.step3NoTap')}</Step>
             {!demoAligned && compass.state === 'active' && (compass.accuracy == null ? false : compass.accuracy < 0 || compass.accuracy > 25) && (
               <Step icon={<TriangleAlert size={20} style={{ color: 'var(--warning)' }} />}>
-                The compass needs calibrating: wave your phone in a figure-8 a few times, away from cars, laptops and magnetic cases.
+                {tr('qibla.calibrate')}
               </Step>
             )}
             <div style={{ marginTop: '4px' }}><QiblaMapButton /></div>
@@ -168,7 +168,7 @@ function QiblaDial({ bearing, heading, delta, aligned, onTap }: { bearing: numbe
       stroke-opacity={major ? 0.9 : mid ? 0.55 : 0.25} stroke-width={mid ? 2 : 1} stroke-linecap="round" transform={`rotate(${i * 5} ${half} ${half})`} />)
   }
   return (
-    <div class={`qibla-dial ${aligned ? 'aligned' : ''}`} style={{ width: `${size}px`, height: `${size}px` }} role="img" aria-label={aligned ? 'Facing the qibla' : 'Qibla compass'}>
+    <div class={`qibla-dial ${aligned ? 'aligned' : ''}`} style={{ width: `${size}px`, height: `${size}px` }} role="img" aria-label={aligned ? tr('qibla.facingQibla') : tr('qibla.compass')}>
       <span class="top-marker" />
       <div class="face" />
       {aligned && <span class="ripple" />}
@@ -191,7 +191,7 @@ function QiblaDial({ bearing, heading, delta, aligned, onTap }: { bearing: numbe
       </svg>
       <div class="centre" style={{ width: `${size * 0.42}px`, height: `${size * 0.42}px` }}>
         {aligned
-          ? <div class="aligned-mark"><Check size={size * 0.12} strokeWidth={3.2} /><span>Aligned</span></div>
+          ? <div class="aligned-mark"><Check size={size * 0.12} strokeWidth={3.2} /><span>{tr('qibla.aligned')}</span></div>
           : delta != null
             ? <Navigation2 size={size * 0.15} class="gold arrow" fill="currentColor" style={{ transform: `rotate(${delta}deg)` }} />
             : <Navigation2 size={size * 0.08} style={{ opacity: 0.6 }} />}
@@ -201,7 +201,7 @@ function QiblaDial({ bearing, heading, delta, aligned, onTap }: { bearing: numbe
         // the one keyboard and screen reader users reach, and a button inside role="img" is not allowed.
         <div class="centre centre-tap" aria-hidden="true" style={{ width: `${size * 0.42}px`, height: `${size * 0.42}px` }} onClick={onTap}>
           <CompassIcon size={size * 0.1} />
-          <span>Tap to start</span>
+          <span>{tr('qibla.tapStart')}</span>
         </div>
       )}
     </div>

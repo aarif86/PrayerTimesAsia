@@ -96,7 +96,7 @@ struct NearbyView: View {
                 }
             }
             .background(SkyNow())
-            .navigationTitle("Masjid & Musollah")
+            .navigationTitle("Masjids and prayer rooms")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -144,15 +144,26 @@ struct NearbyView: View {
                 Marker(m.name, systemImage: "star.fill", coordinate: CLLocationCoordinate2D(latitude: m.lat, longitude: m.lng))
                     .tint(Theme.accent)
             }
-            // Drawn after the pins so it sits on top of them.
+            // Rings at 1, 2 and 5 km, labelled at the bottom, so a pin reads as near or far at a glance.
             if let you = youCoordinate {
-                Annotation(nearMe != nil ? "You are here" : "Searching from here", coordinate: you, anchor: .center) {
-                    ZStack {
-                        Circle().fill(.blue.opacity(0.18)).frame(width: 44, height: 44)
-                        Circle().fill(.blue).frame(width: 18, height: 18)
-                            .overlay(Circle().stroke(.white, lineWidth: 3))
-                            .shadow(radius: 2)
+                ForEach(Self.ringsKm, id: \.self) { km in
+                    MapCircle(center: you, radius: km * 1000)
+                        .foregroundStyle(km == Self.ringsKm.first ? Color.blue.opacity(0.07) : .clear)
+                        .stroke(Color.blue.opacity(0.55), style: StrokeStyle(lineWidth: 1.5, dash: [5, 7]))
+                    Annotation("", coordinate: CLLocationCoordinate2D(latitude: you.latitude - km / 111.2, longitude: you.longitude), anchor: .center) {
+                        Text(ringLabel(km))
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(Color.blue)
+                            .padding(.horizontal, 7).padding(.vertical, 2)
+                            .background(.regularMaterial, in: Capsule())
+                            .overlay(Capsule().stroke(Color.blue.opacity(0.35)))
+                            .accessibilityHidden(true)
                     }
+                    .annotationTitles(.hidden)
+                }
+                // Drawn after the pins so it sits on top of them.
+                Annotation(nearMe != nil ? "You are here" : "Searching from here", coordinate: you, anchor: .center) {
+                    YouBeacon()
                 }
                 .annotationTitles(.hidden)
             }
@@ -211,6 +222,15 @@ struct NearbyView: View {
         .padding(10)
     }
 
+    static let ringsKm: [Double] = [1, 2, 5]
+
+    /// "1 km, 13 min" on foot, "5 km, 12 min" by car.
+    private func ringLabel(_ km: Double) -> String {
+        let trip = MasjidExtras.tripText(km, mode: mode)?
+            .replacingOccurrences(of: " walk", with: "").replacingOccurrences(of: " drive", with: "")
+        return "\(Int(km)) km" + (trip.map { ", \($0)" } ?? "")
+    }
+
     private var youCoordinate: CLLocationCoordinate2D? {
         here.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
     }
@@ -218,7 +238,7 @@ struct NearbyView: View {
     /// Centre on you at walking scale (about 3 km across), or about 12 km when driving.
     private func showYou(animated: Bool) {
         guard let you = youCoordinate else { return }
-        let span: Double = mode == .walk ? 3_000 : 8_000
+        let span: Double = mode == .walk ? 3_000 : 11_000
         let target = MapCameraPosition.region(MKCoordinateRegion(center: you, latitudinalMeters: span, longitudinalMeters: span))
         if animated { withAnimation { camera = target } } else { camera = target }
     }
@@ -371,7 +391,7 @@ struct NearbyView: View {
                 Text(busy ? "The connection is slow. Places will appear here as soon as they arrive."
                      : search.failed ? "Searching needs an internet connection."
                      : openOnly ? "Only places with opening hours on the map count here. Turn off Open now only to see the rest."
-                     : "Neither Apple Maps nor OpenStreetMap lists a \(kind == .musollah ? "musollah" : "masjid") within 15 km. Use the Qibla tab to pray where you are.")
+                     : "Neither Apple Maps nor OpenStreetMap lists a \(kind == .musollah ? "prayer room" : "masjid") within 15 km. Use the Qibla tab to pray where you are.")
             } actions: {
                 if busy || search.failed {
                     Button("Try again") { slow = false; search.retry() }
@@ -382,7 +402,7 @@ struct NearbyView: View {
             if search.isAddingMore {
                 HStack(spacing: 6) {
                     ProgressView().controlSize(.mini)
-                    Text("Looking for more surau and musollah…")
+                    Text("Looking for more prayer rooms…")
                 }
                 .font(.caption).foregroundStyle(.secondary)
                 .padding(.horizontal)
@@ -576,7 +596,7 @@ private struct SpaceRow: View {
         guard let r = m.jamaah[p.rawValue] else { return nil }
         return "\(p.name(model.naming)) \(r.fixed.map { MasjidExtras.clock($0, use24: use24) } ?? "+\(r.after ?? 0) min")"
     }
-    if let j = m.jumuah { parts.append("Jumaat \(MasjidExtras.clock(j, use24: use24))") }
+    if let j = m.jumuah { parts.append("\(Prayer.dhuhr.name(model.naming, isFriday: true)) \(MasjidExtras.clock(j, use24: use24))") }
     return parts.isEmpty ? nil : parts.joined(separator: ", ")
 }
 
@@ -627,7 +647,7 @@ private struct YourMasjidCard: View {
                     Text("\(eid.shortName) prayer at \(raya.sessions.map { MasjidExtras.clock($0.time, use24: use24) }.joined(separator: ", ")).")
                         .foregroundStyle(Theme.accentText)
                 } else if let e = link.eid {
-                    Text("Hari Raya prayer at \(MasjidExtras.clock(e, use24: use24)).").foregroundStyle(Theme.accentText)
+                    Text("Eid prayer at \(MasjidExtras.clock(e, use24: use24)).").foregroundStyle(Theme.accentText)
                 }
             }
             .font(.footnote)
@@ -680,7 +700,7 @@ private struct FridayCard: View {
                 Image(systemName: "calendar").foregroundStyle(Theme.accentText).frame(width: 24)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(today ? "Friday prayer today" : "Friday prayer in Singapore").font(.headline)
-                    Text("\(list.count) masjids hold a second Friday prayer from \(MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24)), for those who can't make the first one at Zohor.")
+                    Text("\(list.count) masjids hold a second Friday prayer from \(MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24)), for those who can't make the first one at \(Prayer.dhuhr.name(model.naming)).")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }
@@ -819,5 +839,32 @@ private struct EidCard: View {
         guard let d = f.date(from: event.date) else { return event.date }
         f.dateFormat = "EEEE d MMMM"
         return f.string(from: d)
+    }
+}
+
+/// Where you are: a blue dot with soft waves beaming out from it.
+private struct YouBeacon: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var beaming = false
+
+    var body: some View {
+        ZStack {
+            ForEach(0..<2) { i in
+                Circle()
+                    .fill(RadialGradient(colors: [.blue.opacity(0.45), .blue.opacity(0.15), .clear],
+                                         center: .center, startRadius: 0, endRadius: 9))
+                    .frame(width: 18, height: 18)
+                    .scaleEffect(reduceMotion ? 2.6 : (beaming ? 9 : 1))
+                    .opacity(reduceMotion ? (i == 0 ? 0.5 : 0) : (beaming ? 0 : 0.9))
+                    .animation(reduceMotion ? nil : .easeOut(duration: 2.6).repeatForever(autoreverses: false).delay(Double(i) * 1.3),
+                               value: beaming)
+            }
+            Circle().fill(.blue).frame(width: 18, height: 18)
+                .overlay(Circle().stroke(.white, lineWidth: 3))
+                .shadow(color: .blue.opacity(0.4), radius: 4)
+        }
+        .frame(width: 170, height: 170)
+        .allowsHitTesting(false)
+        .onAppear { beaming = true }
     }
 }

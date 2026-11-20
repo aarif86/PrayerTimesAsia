@@ -98,7 +98,7 @@ struct GuideView: View {
     }
 
     private func finish() {
-        model.prefs.guideSeen = true
+        model.prefs.guideShown = true
         dismiss()
     }
 }

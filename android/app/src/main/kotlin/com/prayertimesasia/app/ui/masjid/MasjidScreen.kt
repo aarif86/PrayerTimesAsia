@@ -5,6 +5,16 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -94,7 +104,6 @@ import com.prayertimesasia.core.MasjidLists
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerSpace
 import com.prayertimesasia.core.PrayerSpaces
-import com.prayertimesasia.core.fmt
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -108,8 +117,10 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
-private enum class Kind(val label: String) { ALL("All"), MASJID("Masjid"), MUSOLLAH("Musollah") }
+private enum class Kind(val label: String) { ALL("All"), MASJID("Masjid"), MUSOLLAH("Prayer room") }
 
 /** What the Masjid tab last found, kept while the app runs so switching tabs doesn't search again. */
 object NearbyCache {
@@ -272,7 +283,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
         LazyColumn(Modifier.fillMaxSize()) {
             item {
                 Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-                    Text("Masjid & Musollah", style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
+                    Text("Masjids and prayer rooms", style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
                     Box(Modifier.align(Alignment.CenterEnd).size(40.dp).clip(CircleShape).clickable(onClickLabel = "About this app", onClick = openAbout),
                         contentAlignment = Alignment.Center) {
                         Icon(Icons.Outlined.Info, "About this app", Modifier.size(26.dp), tint = Palette.primary)
@@ -280,7 +291,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                 }
             }
             if (here != null) item {
-                Radar(here, visible, selected, Modifier.fillMaxWidth().height(260.dp).padding(horizontal = Dims.gutter)) { selected = it }
+                Radar(here, visible, selected, mode, Modifier.fillMaxWidth().height(260.dp).padding(horizontal = Dims.gutter)) { selected = it }
             }
             item {
                 Column(Modifier.padding(horizontal = Dims.gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -322,7 +333,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                 loading && spaces.isEmpty() -> item {
                     Column(Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         CircularProgressIndicator(color = Palette.accent)
-                        Text("Searching nearby…", style = Txt.subheadline, color = Palette.primary)
+                        Text(tr(R.string.masjid_searching), style = Txt.subheadline, color = Palette.primary)
                     }
                 }
                 visible.isEmpty() -> item {
@@ -330,7 +341,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                         if (failed) "Couldn't search" else if (openOnly) "Nothing open right now" else "Nothing listed nearby",
                         if (failed) "Searching needs an internet connection."
                         else if (openOnly) "Only places with opening hours on the map count here. Turn off Open now only to see the rest."
-                        else "OpenStreetMap has no ${if (kind == Kind.MUSOLLAH) "musollah" else "masjid"} listed within 15 km. Use the Qibla tab to pray where you are.",
+                        else "OpenStreetMap has no ${if (kind == Kind.MUSOLLAH) "prayer room" else "masjid"} listed within 15 km. Use the Qibla tab to pray where you are.",
                         onRetry = if (failed) ({ attempt += 1 }) else null,
                     )
                 }
@@ -489,7 +500,7 @@ private fun YourMasjid(state: AppState, m: MasjidLink, from: Coordinates, mode: 
     val naming = state.resolver.naming
     val parts = Prayer.obligatory.mapNotNull { p ->
         m.jamaah[p.raw]?.let { r -> "${p.name(naming)} ${r.fixed?.let { MasjidExtras.clock(it, h24) } ?: "+${r.after} min"}" }
-    } + listOfNotNull(m.jumuah?.let { "Jumaat ${MasjidExtras.clock(it, h24)}" })
+    } + listOfNotNull(m.jumuah?.let { "${Prayer.DHUHR.name(naming, true)} ${MasjidExtras.clock(it, h24)}" })
     val friday = if (singapore) MasjidExtras.fridayAt(c) else null
     val raya = eid?.let { MasjidExtras.eidAt(it, m.name, c) }
     GlassCard(Modifier.fillMaxWidth(), padding = 14.dp) {
@@ -507,7 +518,7 @@ private fun YourMasjid(state: AppState, m: MasjidLink, from: Coordinates, mode: 
                 }
                 if (raya != null && eid != null) Text("${eid.shortName} prayer at ${raya.sessions.joinToString(", ") { MasjidExtras.clock(it.time, h24) }}.",
                     style = Txt.footnoteSemibold, color = Palette.accentText)
-                else m.eid?.let { Text("Hari Raya prayer at ${MasjidExtras.clock(it, h24)}.", style = Txt.footnoteSemibold, color = Palette.accentText) }
+                else m.eid?.let { Text("Eid prayer at ${MasjidExtras.clock(it, h24)}.", style = Txt.footnoteSemibold, color = Palette.accentText) }
                 Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CapsuleButton("Directions", style = Txt.footnoteSemibold) { directions(context, c, m.name, mode) }
                     CapsuleButton("Remove", style = Txt.footnoteSemibold, background = Color.Transparent, contentColor = Palette.secondary) { state.forgetMasjid() }
@@ -529,7 +540,7 @@ private fun FridayCard(from: Coordinates, today: Boolean, mode: TripMode, h24: B
             Icon(Icons.Filled.Event, null, Modifier.size(22.dp), tint = Palette.accent)
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(if (today) "Friday prayer today" else "Friday prayer in Singapore", style = Txt.headline, color = Palette.primary)
-                Text("${list.size} masjids hold a second Friday prayer from ${MasjidExtras.clock(MasjidExtras.FRIDAY_SECOND_FROM, h24)}, for those who can't make the first one at Zohor.",
+                Text("${list.size} masjids hold a second Friday prayer from ${MasjidExtras.clock(MasjidExtras.FRIDAY_SECOND_FROM, h24)}, for those who can't make the first one.",
                     style = Txt.footnote, color = Palette.secondary)
             }
         }
@@ -621,19 +632,31 @@ private fun Empty(title: String, body: String, onRetry: (() -> Unit)? = null) {
         Icon(Icons.Filled.Brightness2, null, Modifier.size(36.dp), tint = Palette.secondary)
         Text(title, style = Txt.headline, color = Palette.primary)
         Text(body, style = Txt.subheadline, color = Palette.secondary, textAlign = TextAlign.Center)
-        if (onRetry != null) OutlinedButton(onClick = onRetry) { Text("Try again") }
+        if (onRetry != null) OutlinedButton(onClick = onRetry) { Text(tr(R.string.common_tryAgain)) }
     }
 }
 
-/** You in the middle, each place at its bearing and distance; rings every kilometre or so. */
+/**
+ * You in the middle with soft waves beaming out, each place at its bearing and
+ * distance, and rings at 1, 2 and 5 km (labelled with the walk or drive time)
+ * so a place reads as near or far at a glance.
+ */
 @Composable
-private fun Radar(center: Coordinates, spaces: List<PrayerSpace>, selected: String?, modifier: Modifier, onSelect: (String) -> Unit) {
+private fun Radar(center: Coordinates, spaces: List<PrayerSpace>, selected: String?, mode: TripMode, modifier: Modifier, onSelect: (String) -> Unit) {
     val primary = Palette.primary
     val accent = Palette.accent
     val musollah = Prayer.FAJR.tint
     val north = Palette.north
-    val maxKm = max(1.0, (spaces.take(12).maxOfOrNull { it.distanceKm } ?: 2.0) * 1.1)
+    val you = Color(0xFF0A84FF)
+    val material = Palette.materialStrong
+    val far = spaces.take(12).maxOfOrNull { it.distanceKm } ?: 2.0
+    val maxKm = max(5.5, far * 1.1)
+    val rings = listOf(1.0, 2.0, 5.0) + if (maxKm > 11) listOf(10.0) else emptyList()
     val layout = remember { mutableListOf<Pair<String, Offset>>() }
+    val measurer = rememberTextMeasurer()
+    val labelStyle = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = you)
+    val beam by rememberInfiniteTransition(label = "beam").animateFloat(
+        0f, 1f, infiniteRepeatable(tween(2600, easing = LinearOutSlowInEasing)), label = "beam")
     Box(modifier.clip(RoundedCornerShape(Dims.corner)).background(Palette.material)) {
         Canvas(Modifier.fillMaxSize().pointerInput(spaces) {
             detectTapGestures { tap ->
@@ -644,19 +667,23 @@ private fun Radar(center: Coordinates, spaces: List<PrayerSpace>, selected: Stri
         }) {
             val c = this.center
             val radius = size.minDimension / 2 - 18.dp.toPx()
-            val step = when { maxKm > 8 -> 5.0; maxKm > 3 -> 2.0; maxKm > 1.2 -> 1.0; else -> 0.5 }
-            var ring = step
-            while (ring <= maxKm) {
-                drawCircle(primary.copy(alpha = 0.15f), (ring / maxKm * radius).toFloat(), c, style = Stroke(1.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()))))
-                ring += step
+            // Square-root scale keeps the nearest places from piling onto you; rings use the same scale.
+            fun at(km: Double) = (sqrt(km / maxKm).coerceAtMost(1.0) * radius).toFloat()
+            rings.forEachIndexed { i, km ->
+                if (i == 0) drawCircle(you.copy(alpha = 0.07f), at(km), c)
+                drawCircle(you.copy(alpha = 0.5f), at(km), c, style = Stroke(1.5.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 7.dp.toPx()))))
+            }
+            // Waves beaming out from you.
+            for (k in 0..1) {
+                val p = (beam + k * 0.5f) % 1f
+                drawCircle(you.copy(alpha = 0.4f * (1 - p)), 9.dp.toPx() + p * at(1.0) * 1.2f, c)
             }
             drawLine(north.copy(alpha = 0.7f), Offset(c.x, c.y - radius - 6.dp.toPx()), Offset(c.x, c.y - radius + 6.dp.toPx()), 2.dp.toPx())
             val placed = mutableListOf<Pair<String, Offset>>()
             for (s in spaces) {
                 val b = Math.toRadians(Geo.bearing(center, s.coordinates))
-                val d = (sqrt(s.distanceKm / maxKm).coerceAtMost(1.0) * radius).toFloat()
-                // Square-root scale keeps the nearest places from piling onto you.
+                val d = at(s.distanceKm)
                 val p = Offset((c.x + sin(b) * d).toFloat(), (c.y - cos(b) * d).toFloat())
                 placed += s.id to p
                 val color = if (s.isMusollah) musollah else accent
@@ -666,14 +693,25 @@ private fun Radar(center: Coordinates, spaces: List<PrayerSpace>, selected: Stri
             }
             layout.clear()
             layout.addAll(placed)
-            drawCircle(Color.White, 9.dp.toPx(), c)
-            drawCircle(Color(0xFF0A84FF), 6.dp.toPx(), c)
+            // Ring labels at the bottom of each ring.
+            for (km in rings) {
+                val trip = MasjidExtras.tripText(km, mode)?.removeSuffix(" walk")?.removeSuffix(" drive")
+                val text = "${km.roundToInt()} km" + (trip?.let { ", $it" } ?: "")
+                val m = measurer.measure(text, labelStyle)
+                val w = m.size.width + 12.dp.toPx()
+                val h = m.size.height + 2.dp.toPx()
+                val y = c.y + at(km)
+                if (y + h / 2 > size.height) continue
+                drawRoundRect(material, Offset(c.x - w / 2, y - h / 2), Size(w, h), CornerRadius(h / 2))
+                drawText(m, topLeft = Offset(c.x - m.size.width / 2f, y - m.size.height / 2f))
+            }
+            drawCircle(Color.White, 10.dp.toPx(), c)
+            drawCircle(you, 7.dp.toPx(), c)
         }
         Text("N", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = north, modifier = Modifier.align(Alignment.TopCenter).padding(top = 2.dp))
-        val scale = if (maxKm >= 1) "${fmt("%.0f", maxKm)} km" else "${(maxKm * 1000).roundToInt()} m"
-        Text("You · up to $scale", style = Txt.caption, color = Palette.secondary, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
+        Text("You, rings at 1, 2 and 5 km", style = Txt.caption, color = Palette.secondary, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
         spaces.firstOrNull { it.id == selected }?.let {
-            Text(it.name, style = Txt.captionSemibold, color = Palette.primary, maxLines = 1,
+            Text(it.name, style = Txt.captionSemibold, color = primary, maxLines = 1,
                 modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp).clip(CircleShape).background(Palette.materialStrong).padding(horizontal = 10.dp, vertical = 4.dp))
         }
     }

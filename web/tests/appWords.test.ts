@@ -36,7 +36,8 @@ describe('shared app words in English, Malay and Indonesian', () => {
       for (const [k, line] of Object.entries(w)) {
         expect(line.length, `${lang}.${k}`).toBeGreaterThan(0)
         expect(line, `${lang}.${k}`).toBe(line.trim())
-        expect(line, `${lang}.${k}`).not.toMatch(/[:–—-]/)
+        // A hyphen inside a word (kira-kira, al-Fitr) is fine, a dash is not.
+        expect(line, `${lang}.${k}`).not.toMatch(/[:–—]|(?<!\w)-|-(?!\w)/)
         if (lang === 'ms') expect(line, `ms.${k}`).not.toMatch(/\blah\b/i)
       }
     }

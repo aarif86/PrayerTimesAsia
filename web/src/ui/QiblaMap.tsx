@@ -3,14 +3,15 @@ import { Map as MapIcon } from 'lucide-preact'
 import { compassPoint, qiblaBearing } from '../core/geo'
 import { store } from '../services/store'
 import { Sheet } from './common'
+import { tr } from '../core/appWords'
 
 /** "Qibla on the map": the line to the Ka'bah over the streets around you - works with no compass at all. */
 export function QiblaMapButton() {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <button class="plain-btn" onClick={() => setOpen(true)}><MapIcon size={16} />Show the qibla on a map</button>
-      {open && <Sheet title="Qibla on the map" full onDone={() => setOpen(false)}><QiblaMapView /></Sheet>}
+      <button class="plain-btn" onClick={() => setOpen(true)}><MapIcon size={16} />{tr('qibla.showMap')}</button>
+      {open && <Sheet title={tr('qibla.onMap')} full onDone={() => setOpen(false)}><QiblaMapView /></Sheet>}
     </>
   )
 }
@@ -37,11 +38,10 @@ function QiblaMapView() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: 'calc(100% - 60px)' }}>
       <p class="subhead" style={{ margin: 0 }}>
-        The gold line runs from {place.name} to the Ka'bah: {Math.round(bearing)}° {compassPoint(bearing)} from true north. Line yourself up with a street or
-        building edge that runs the same way.
+        {tr('qibla.mapLine', { place: place.name, deg: `${Math.round(bearing)}° ${compassPoint(bearing)}` })}
       </p>
       <div ref={el} class="map-box" style={{ flex: 1, minHeight: '320px' }} />
-      {failed && <p class="footnote secondary">The map needs an internet connection.</p>}
+      {failed && <p class="footnote secondary">{tr('qibla.mapOffline')}</p>}
     </div>
   )
 }

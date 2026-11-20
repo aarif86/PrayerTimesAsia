@@ -13,11 +13,15 @@ import com.prayertimesasia.app.data.PrefsStore
 import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
+import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.Coordinates
 import com.prayertimesasia.core.MasjidLink
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.nextAlertMode
+import com.prayertimesasia.core.withAlertMode
+import com.prayertimesasia.core.withFridayMode
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.Preferences
 import com.prayertimesasia.core.Resolver
@@ -75,12 +79,23 @@ class AppState(
     val isCheckingLocation: Boolean
         get() = prefs.useGPS && location.hasPermission && !hasFreshFix && gpsPlace != null
     var now by mutableStateOf(fixedNow ?: Instant.now())
-    var selectedTab by mutableStateOf(Tab.PRAYER)
+    private var tab by mutableStateOf(Tab.PRAYER)
+    var selectedTab: Tab
+        get() = tab
+        set(value) { tab = value; usageScreen(value) }
     var showJourney by mutableStateOf(false)
     var showTracker by mutableStateOf(false)
     var showRamadan by mutableStateOf(false)
-    /** Wake up for Subuh (the alarm clock on the Prayer screen, or Settings). */
+    /** Alerts and alarms (the alarm clock on the Prayer screen, Settings, or holding a bell). */
     var showWakeUp by mutableStateOf(false)
+    /** The page Alerts and alarms opens on: "check", "friday", a prayer's raw name, or null for the list. */
+    var alertsPage by mutableStateOf<String?>(null)
+
+    /** Alerts and alarms, opened on one page (or the main list when null). */
+    fun openAlerts(page: String? = null) {
+        alertsPage = page
+        showWakeUp = true
+    }
     /** A day picked in the month calendar, to show on the Prayer screen (days from today). */
     var showDayRequest by mutableStateOf<Int?>(null)
     /** A masjid from a screen's QR code, waiting for the user to say yes. */
@@ -350,7 +365,7 @@ class AppState(
     fun turnOffAllAlarms() {
         stopRinging()
         update { p ->
-            com.prayertimesasia.core.PrayerAlarmTiming.prayers.fold(p.copy(wakeUp = null, sahurAlarm = null)) { acc, prayer -> acc.withAlarm(prayer, null) }
+            com.prayertimesasia.core.PrayerAlarmTiming.prayers.fold(p.copy(wakeUp = null, sahurAlarm = null, jumuahLeaveAlarm = false)) { acc, prayer -> acc.withAlarm(prayer, null) }
         }
     }
 
@@ -363,6 +378,14 @@ class AppState(
     /** Bumped when a snooze is stopped, so the alarm sheet looks again. */
     var snoozeTick by mutableStateOf(0)
 
+    /** "Ring as an alarm" for the leave reminder, like the other alarms. Off also stops it if it is ringing. */
+    fun setJumuahLeaveAlarm(on: Boolean) {
+        scope.launch {
+            if (on) permissions?.notifications() else stopRinging()
+            update { it.copy(jumuahLeaveAlarm = on) }
+        }
+    }
+
     /** "Leave for Jumaat": asks for notification permission, then reminds [minutes] before Jumaat on Fridays. */
     fun enableJumuahReminder(minutes: Int) {
         scope.launch {
@@ -372,12 +395,33 @@ class AppState(
         }
     }
 
-    fun toggleNotify(prayer: Prayer) {
-        if (!prefs.notificationsEnabled) {
-            enableAlerts(setOf(prayer))
+    /** Off, Notify or Alarm for one prayer (Alerts and alarms). Asks for permission when something turns on. */
+    fun setAlertMode(prayer: Prayer, mode: com.prayertimesasia.core.AlertMode) {
+        if (mode == com.prayertimesasia.core.AlertMode.OFF) {
+            stopRinging()
+            update { it.withAlertMode(mode, prayer) }
             return
         }
-        update { p -> p.copy(notifyPrayers = if (prayer in p.notifyPrayers) p.notifyPrayers - prayer else p.notifyPrayers + prayer) }
+        scope.launch {
+            permissions?.notifications()
+            update { it.withAlertMode(mode, prayer) }
+        }
+    }
+
+    /** The bell on the Prayer screen: Off, then Notify, then Alarm. */
+    fun cycleAlert(prayer: Prayer) = setAlertMode(prayer, prefs.nextAlertMode(prayer))
+
+    /** Off, Notify or Alarm for Leave for Jumaat. */
+    fun setFridayMode(mode: com.prayertimesasia.core.AlertMode) {
+        if (mode == com.prayertimesasia.core.AlertMode.OFF) {
+            stopRinging()
+            update { it.withFridayMode(mode) }
+            return
+        }
+        scope.launch {
+            permissions?.notifications()
+            update { it.withFridayMode(mode) }
+        }
     }
 
     fun rescheduleAlerts() {
@@ -435,6 +479,26 @@ class AppState(
             delay(8_000)
             if (prefs.shareUsage) usage.countOpen(resolver.activePlace)
         }
+    }
+
+    private val usageOn: Boolean get() = prefs.shareUsage && prefs.hasOnboarded && sideEffects && fixedNow == null
+
+    /** Minutes on screen, opens and screens used today, sent as one summary the next day. */
+    fun usageVisible(visible: Boolean) {
+        if (!visible) { if (sideEffects) usage.tallyStop(); return }
+        if (!usageOn) return
+        scope.launch { usage.tallyStart(resolver.activePlace) }
+        usageScreen(selectedTab)
+    }
+
+    private fun usageScreen(tab: Tab) {
+        if (usageOn) usage.tallyScreen(tab.name.lowercase())
+    }
+
+    /** Anonymous count of a Barakah Picks card seen (once a day) or tapped (docs/community-cards.md). */
+    fun countCard(event: UsageCounter.CardEvent, card: CommunityCard, placement: String) {
+        if (!prefs.shareUsage || !sideEffects || fixedNow != null) return
+        scope.launch { usage.countCard(event, card, placement, resolver.activePlace) }
     }
 
     /** The day [offset] days from today, or today. */

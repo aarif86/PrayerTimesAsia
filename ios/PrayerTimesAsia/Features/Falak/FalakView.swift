@@ -443,7 +443,7 @@ private struct SkySignsCard: View {
                      "The whole disc of the sun has gone below the horizon - its upper edge has disappeared. Best seen over the sea or open land; behind hills or buildings it vanishes early, so don't pray by that.")
                 sign("Isha", .isha, day, "moon.stars",
                      "The red glow (shafaq ahmar) has gone from the western sky - the view of the Shafi'i, Maliki and Hanbali schools. Imam Abu Hanifah held it is the white glow that follows it. Timetables use the sun's depth below the horizon (about 17°-18°) instead.")
-                sign("Subuh", .fajr, day, "sunrise",
+                sign("Fajr", .fajr, day, "sunrise",
                      "True dawn (fajr sadiq): a thin whiteness spreading sideways along the eastern horizon, growing steadily. Not the false dawn (fajr kazib) before it: a faint upright column of light that fades again. Researchers still debate the exact depth of the sun at true dawn, so this stays informational.")
             }
         }

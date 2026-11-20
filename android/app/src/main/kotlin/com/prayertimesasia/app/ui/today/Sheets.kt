@@ -70,6 +70,8 @@ import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 val SourceGrade.icon: ImageVector
     get() = when (this) {
@@ -142,7 +144,7 @@ fun SanadSheetContent(state: AppState, day: PrayerDay) {
     }
     LazyColumn(Modifier.fillMaxWidth().padding(horizontal = Dims.gutter)) {
         item {
-            Text("Source", style = Txt.headline, color = Palette.primary, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
+            Text(tr(R.string.source_title), style = Txt.headline, color = Palette.primary, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
             SectionHeader("Where today's times come from")
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Icon(day.grade.icon, null, Modifier.size(28.dp), tint = day.grade.tint)
@@ -195,9 +197,9 @@ fun SanadSheetContent(state: AppState, day: PrayerDay) {
         }
         item {
             SectionHeader("Help verify times here")
-            Text("Send a mosque timetable photo, tell us which method mosques here use, or report an adhan time you heard.",
+            Text(tr(R.string.verify_sendAll),
                 style = Txt.subheadline, color = Palette.primary)
-            Text("How to contribute", style = Txt.subheadlineSemibold, color = Palette.accentText,
+            Text(tr(R.string.verify_howTo), style = Txt.subheadlineSemibold, color = Palette.accentText,
                 modifier = Modifier.padding(vertical = 10.dp).clickable {
                     runCatching { uri.openUri("https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md") }
                 })
@@ -219,7 +221,7 @@ fun CalendarSheetContent(state: AppState, onShowDay: ((Int) -> Unit)? = null) {
     LaunchedEffect(Unit) { if (state.sideEffects) state.directories.refreshIfStale() }
     LazyColumn(Modifier.fillMaxWidth().padding(horizontal = Dims.gutter)) {
         item {
-            Text("Calendar", style = Txt.headline, color = Palette.primary)
+            Text(tr(R.string.calendar_title), style = Txt.headline, color = Palette.primary)
             HijriMonthCard(state, onShowDay)
             SectionHeader("My community follows")
             Row(Modifier.fillMaxWidth().clickable { picking = !picking }.padding(vertical = 8.dp)) {
@@ -235,7 +237,7 @@ fun CalendarSheetContent(state: AppState, onShowDay: ((Int) -> Unit)? = null) {
                     }
                 }
             }
-            Text("Countries can start Ramadan and celebrate Eid on different days, because of local moon sighting and different methods. Pick whose announcement your masjid follows.",
+            Text(tr(R.string.calendar_explain),
                 style = Txt.footnote, color = Palette.secondary)
         }
         items(CalendarSanad.upcoming(state.now, r.zone)) { item ->
@@ -270,7 +272,7 @@ private fun CalendarRow(title: String, date: String, detail: String, status: Cal
         Column(Modifier.weight(1f)) {
             Text(title, style = if (highlight) Txt.subheadlineSemibold.copy(fontWeight = FontWeight.Bold) else Txt.subheadlineSemibold, color = Palette.primary)
             Text(detail, style = Txt.caption, color = Palette.secondary)
-            if (link != null) Text("Source", style = Txt.caption, color = Palette.accentText, modifier = Modifier.clickable { link() })
+            if (link != null) Text(tr(R.string.source_title), style = Txt.caption, color = Palette.accentText, modifier = Modifier.clickable { link() })
         }
         Column(horizontalAlignment = Alignment.End) {
             Text(date, style = Txt.subheadlineSemibold, color = Palette.primary)
@@ -301,7 +303,7 @@ fun PlacesSheetContent(state: AppState, forHome: Boolean = false, onDone: () -> 
         OutlinedTextField(
             value = query, onValueChange = { query = it }, singleLine = true,
             leadingIcon = { Icon(Icons.Filled.Search, null) },
-            placeholder = { Text("City or place") },
+            placeholder = { Text(tr(R.string.phone_cityOrPlace)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Palette.primary, unfocusedTextColor = Palette.primary,
                 focusedBorderColor = Palette.accent, cursorColor = Palette.accent),
@@ -315,7 +317,7 @@ fun PlacesSheetContent(state: AppState, forHome: Boolean = false, onDone: () -> 
                             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Icon(Icons.Filled.MyLocation, null, tint = Palette.accent)
                             Column(Modifier.weight(1f)) {
-                                Text("Where I am now", style = Txt.body, color = Palette.primary)
+                                Text(tr(R.string.places_whereNow), style = Txt.body, color = Palette.primary)
                                 Text(here.name + (here.countryName?.let { ", $it" } ?: ""), style = Txt.caption, color = Palette.secondary)
                             }
                         }
@@ -330,7 +332,7 @@ fun PlacesSheetContent(state: AppState, forHome: Boolean = false, onDone: () -> 
                     }
                 }
                 item {
-                    Text("Search the town or area where you live, like Tampines, Shah Alam or Bandung. Home is used to work out when you count as a traveller.",
+                    Text(tr(R.string.places_homeHelp),
                         style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(vertical = 16.dp))
                 }
             } else if (query.isBlank()) {
@@ -339,10 +341,10 @@ fun PlacesSheetContent(state: AppState, forHome: Boolean = false, onDone: () -> 
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Icon(Icons.Filled.MyLocation, null, tint = Palette.accent)
                         Column(Modifier.weight(1f)) {
-                            Text("Current location", style = Txt.body, color = Palette.primary)
+                            Text(tr(R.string.places_current), style = Txt.body, color = Palette.primary)
                             state.gpsPlace?.let { Text(it.name, style = Txt.caption, color = Palette.secondary) }
                         }
-                        if (state.prefs.useGPS) Text("On", style = Txt.subheadline, color = Palette.secondary)
+                        if (state.prefs.useGPS) Text(tr(R.string.common_on), style = Txt.subheadline, color = Palette.secondary)
                     }
                     HorizontalDivider(color = Palette.primary.copy(alpha = 0.1f))
                 }
@@ -356,7 +358,7 @@ fun PlacesSheetContent(state: AppState, forHome: Boolean = false, onDone: () -> 
                     }
                 }
                 item {
-                    Text("Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated on your phone, so they keep working offline.",
+                    Text(tr(R.string.phone_searchCity),
                         style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(vertical = 16.dp))
                 }
             } else {
@@ -378,7 +380,7 @@ private fun PlaceRow(place: Place, selected: Boolean, onRemove: (() -> Unit)?, o
         }
         if (selected) Icon(Icons.Filled.Check, null, tint = Palette.accent)
         if (onRemove != null) {
-            Text("Remove", style = Txt.caption, color = Palette.secondary, modifier = Modifier.quietClick(onRemove).padding(6.dp))
+            Text(tr(R.string.common_remove), style = Txt.caption, color = Palette.secondary, modifier = Modifier.quietClick(onRemove).padding(6.dp))
         }
     }
 }

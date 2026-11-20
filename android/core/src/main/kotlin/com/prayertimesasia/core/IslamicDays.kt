@@ -68,9 +68,9 @@ object IslamicDays {
         IslamicDayKind.RAMADAN_START to listOf("First day of Ramadan", "Awal Ramadan", "Awal Ramadan"),
         IslamicDayKind.NUZUL_QURAN to listOf("Nuzul al-Quran", "Nuzul al-Quran", "Nuzulul Quran"),
         IslamicDayKind.LAST_TEN to listOf("Last ten nights", "Sepuluh malam terakhir", "Sepuluh malam terakhir"),
-        IslamicDayKind.AIDILFITRI to listOf("Eid al-Fitr", "Hari Raya Aidilfitri", "Idul Fitri"),
+        IslamicDayKind.AIDILFITRI to listOf("Eid al-Fitr", "Hari Raya Aidilfitri", "Idulfitri"),
         IslamicDayKind.ARAFAH to listOf("Day of Arafah", "Hari Arafah", "Hari Arafah"),
-        IslamicDayKind.AIDILADHA to listOf("Eid al-Adha", "Hari Raya Aidiladha", "Idul Adha"),
+        IslamicDayKind.AIDILADHA to listOf("Eid al-Adha", "Hari Raya Aidiladha", "Iduladha"),
         IslamicDayKind.TASYRIK to listOf("Days of Tashriq", "Hari Tasyrik", "Hari Tasyrik"),
         IslamicDayKind.WHITE_DAY to listOf("White days", "Hari putih", "Ayyamul bidh"),
     )
@@ -89,9 +89,9 @@ object IslamicDays {
         IslamicDayKind.NISFU_SYAABAN to listOf("Nisfu Sha'ban", "Nisfu Syaaban", "Nisfu Sya'ban"),
         IslamicDayKind.RAMADAN_START to listOf("Ramadan", "Awal Ramadan", "Awal Ramadan"),
         IslamicDayKind.NUZUL_QURAN to listOf("Nuzul Quran", "Nuzul Quran", "Nuzulul Quran"),
-        IslamicDayKind.AIDILFITRI to listOf("Eid al-Fitr", "Aidilfitri", "Idul Fitri"),
+        IslamicDayKind.AIDILFITRI to listOf("Eid al-Fitr", "Aidilfitri", "Idulfitri"),
         IslamicDayKind.ARAFAH to listOf("Arafah", "Arafah", "Arafah"),
-        IslamicDayKind.AIDILADHA to listOf("Eid al-Adha", "Aidiladha", "Idul Adha"),
+        IslamicDayKind.AIDILADHA to listOf("Eid al-Adha", "Aidiladha", "Iduladha"),
     )
 
     fun name(k: IslamicDayKind, s: NamingStyle): String = names.getValue(k)[lang(s)]
@@ -101,7 +101,8 @@ object IslamicDays {
     fun monthShort(month: Int, s: NamingStyle): String {
         val i = (month - 1).coerceIn(0, 11)
         return when (s) {
-            NamingStyle.MALAY, NamingStyle.INDONESIAN -> listOf("Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jamadil Awal", "Jamadil Akhir",
+            NamingStyle.INDONESIAN -> s.hijriMonths[i]
+            NamingStyle.MALAY -> listOf("Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jamadil Awal", "Jamadil Akhir",
                 "Rejab", "Syaaban", "Ramadan", "Syawal", "Zulkaedah", "Zulhijjah")[i]
             NamingStyle.INTERNATIONAL, NamingStyle.SOUTH_ASIAN -> listOf("Muharram", "Safar", "Rabi I", "Rabi II", "Jumada I", "Jumada II",
                 "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhul Qa'dah", "Dhul Hijjah")[i]
@@ -129,7 +130,7 @@ object IslamicDays {
             "Geser tanggal Hijriah", "Tidak digeser", "Sehari lebih awal", "Sehari lebih lambat", "hari", "Jadwal salat",
             listOf("Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"),
             listOf("Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"),
-            { a -> if (a != null) "Awal Ramadan dan Idul Fitri mengikuti $a setelah diumumkan. Tanggal lain dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat."
+            { a -> if (a != null) "Awal Ramadan dan Idulfitri mengikuti $a setelah diumumkan. Tanggal lain dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat."
                 else "Tanggal dihitung lebih dulu dan bisa berbeda sehari di daerah Anda. Ikuti otoritas keagamaan setempat." },
             { a -> "Tanggal ini mengikuti kalender Islam $a. Awal Ramadan dan Lebaran mengikuti pengumumannya. Ikuti otoritas keagamaan setempat." })
         else -> Words("Today", "and", "No special days this month.", "Print the whole year",

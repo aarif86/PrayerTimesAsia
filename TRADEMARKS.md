@@ -1,8 +1,8 @@
 # Using the Prayer Times Asia name
 
 The code is open for everyone ([NOTICE.md](NOTICE.md)). The name, the app icon and
-the prayertimes.asia address are not. They tell people "this is the free, ad-free,
-private app they trust", so they stay with the official project.
+the prayertimes.asia address are not. They tell people "this is the free, private app
+with no outside ads that they trust", so they stay with the official project.
 
 ## Welcome, no need to ask
 

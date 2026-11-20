@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_PREFS, decodePreferences } from '../src/services/prefs'
-import { featuredOffer, offerURL } from '../src/ui/Makers'
 
 describe('Preferences', () => {
   it('keep old values and default the new ones (iOS testOldPreferencesStillDecode)', () => {
@@ -22,11 +21,16 @@ describe('Preferences', () => {
   })
 })
 
-describe('From the makers', () => {
-  it('offers Badal to Singapore and NasarDigital elsewhere, with the iOS utm tags', () => {
-    expect(featuredOffer('SG')).toBe('badal')
-    expect(featuredOffer('MY')).toBe('digital')
-    expect(offerURL('badal', 'prayer')).toBe('https://badal.sg/?utm_source=prayertimesasia&utm_medium=app&utm_campaign=prayer')
-    expect(offerURL('digital', 'masjid')).toBe('https://nasardigital.com/?utm_source=prayertimesasia&utm_medium=app&utm_campaign=masjid')
+describe('Leave for Jumaat', () => {
+  it('moves old choices up to the next one and keeps the session sane', () => {
+    expect(decodePreferences({ jumuahReminderMinutes: 20 }).jumuahReminderMinutes).toBe(30)
+    expect(decodePreferences({ jumuahReminderMinutes: 90 }).jumuahReminderMinutes).toBe(90)
+    expect(decodePreferences({ jumuahReminderMinutes: 180 }).jumuahReminderMinutes).toBe(180)
+    expect(decodePreferences({ jumuahReminderMinutes: 100 }).jumuahReminderMinutes).toBe(0)
+    expect(decodePreferences({ jumuahReminderMinutes: 120 }).jumuahReminderMinutes).toBe(120)
+    expect(decodePreferences({ jumuahReminderMinutes: -5 }).jumuahReminderMinutes).toBe(0)
+    expect(decodePreferences({ jumuahReminderMinutes: 17 }).jumuahReminderMinutes).toBe(0)
+    expect(decodePreferences({ jumuahSession: 'third' }).jumuahSession).toBe('first')
+    expect(decodePreferences({ jumuahSession: 'second' }).jumuahSession).toBe('second')
   })
 })

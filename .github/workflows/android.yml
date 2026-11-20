@@ -3,9 +3,9 @@ name: Android
 on:
   push:
     branches: [main]
-    paths: ['android/**', 'testdata/**', '.github/workflows/android.yml']
+    paths: ['android/**', 'testdata/**', 'data/app-words/**', '.github/workflows/android.yml']
   pull_request:
-    paths: ['android/**', 'testdata/**', '.github/workflows/android.yml']
+    paths: ['android/**', 'testdata/**', 'data/app-words/**', '.github/workflows/android.yml']
   workflow_dispatch:
 
 permissions:
@@ -33,6 +33,9 @@ jobs:
           java-version: 17
 
       - uses: gradle/actions/setup-gradle@v4
+
+      - name: Android words match the shared word list (data/app-words)
+        run: python3 ../tools/build_android_words.py --check
 
       - name: Core tests (the prayer engine, Falak, Hijri, parsers)
         run: ./gradlew :core:test 2>&1 | tee -a build.log; exit ${PIPESTATUS[0]}

@@ -1,210 +1,284 @@
 import AudioToolbox
 import AVFoundation
 import SwiftUI
+import UserNotifications
+#if canImport(AlarmKit)
+import AlarmKit
+#endif
 
-/// Prayer alarms: Subuh first (with the earlier sahur alarm), then the other
-/// four prayers and the sound they all play. Opened from the alarm chip on the
-/// Prayer screen (and from Settings).
+/// The pages inside Alerts and alarms.
+enum AlertsPage: Hashable {
+    case prayer(Prayer)
+    case friday
+    case check
+}
+
+/// Alerts and alarms: one screen for every sound the app makes. Each prayer is
+/// Off, Notify or Alarm, then the extras, then how it all sounds. Opened from
+/// Settings, the alarm clock on the Prayer screen, and by holding a bell.
+/// Same as web ui/WakeUp.tsx and Android WakeUp.kt.
 /// "Allahumma barik li ummati fi bukuriha" (Abu Dawud, Tirmidhi).
 struct WakeUpView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @State private var path: [AlertsPage] = []
 
+    var body: some View {
+        NavigationStack(path: $path) {
+            AlertsMainList(path: $path)
+                .navigationTitle("Alerts and alarms")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+                }
+                .navigationDestination(for: AlertsPage.self) { page in
+                    AlertsPageView(page: page)
+                }
+        }
+        .onAppear {
+            if let start = model.alertsStart { path = [start]; model.alertsStart = nil }
+        }
+        .onDisappear { AlarmPreview.stop() }
+    }
+}
+
+/// One page, kept apart so the main list stays a small view.
+private struct AlertsPageView: View {
+    let page: AlertsPage
+    var body: some View {
+        switch page {
+        case .prayer(let prayer): AnyView(PrayerAlertPage(prayer: prayer))
+        case .friday: AnyView(FridayAlertPage())
+        case .check: AnyView(CheckPhonePage())
+        }
+    }
+}
+
+/// Ask once for notifications (and alarms on iOS 26) the first time anything is on.
+@MainActor
+func askForAlerts() async {
+    _ = await NotificationScheduler.requestPermission()
+}
+
+/// Off, Notify, Alarm in a row.
+struct AlertModePicker: View {
+    let name: String
+    let modes: [AlertMode]
+    let value: AlertMode
+    let pick: (AlertMode) -> Void
+
+    var body: some View {
+        Picker(name, selection: Binding(get: { value }, set: { pick($0) })) {
+            ForEach(modes) { Text($0.word).tag($0) }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .fixedSize()
+        .accessibilityLabel(name)
+    }
+}
+
+/// Changes one prayer, asking for permission or stopping a ringing alarm as needed.
+@MainActor
+func applyAlertMode(_ mode: AlertMode, _ prayer: Prayer, model: AppModel) {
+    withAnimation { model.prefs.setAlertMode(mode, prayer) }
+    Task {
+        if mode == .off { await WakeUpAlarm.stopRinging() } else { await askForAlerts() }
+    }
+}
+
+@MainActor
+func applyFridayMode(_ mode: AlertMode, model: AppModel) {
+    withAnimation { model.prefs.setFridayMode(mode) }
+    Task {
+        if mode == .off { await WakeUpAlarm.stopRinging() } else { await askForAlerts() }
+    }
+}
+
+/// The short line under a prayer's name.
+@MainActor
+func alertSummary(_ prayer: Prayer, model: AppModel) -> String {
+    let p = model.prefs
+    switch p.alertMode(prayer) {
+    case .off: return "Off"
+    case .notify:
+        if prayer == .sunrise { return "When \(Prayer.fajr.name(model.naming)) ends" }
+        var parts = ["At the time"]
+        if Azan.isAvailable && p.azanSound { parts.append("with the azan") }
+        if p.reminderMinutesBefore > 0 { parts.append("heads up \(p.reminderMinutesBefore) min before") }
+        return parts.joined(separator: ", ")
+    case .alarm:
+        let label = prayer == .fajr ? (p.wakeUp?.label(model.naming) ?? "") : (p.alarm(for: prayer)?.label ?? "")
+        let when = label.prefix(1).lowercased() + label.dropFirst()
+        return p.notifies(prayer) && !p.alarmAtStart(prayer) ? "Alarm \(when), notification at the time" : "Alarm \(when)"
+    }
+}
+
+@MainActor
+func fridaySummary(model: AppModel) -> String {
+    let p = model.prefs
+    switch p.fridayMode {
+    case .off: return "Off"
+    case .notify: return "\(JumuahLeave.label(p.jumuahReminderMinutes)), notification"
+    case .alarm: return "\(JumuahLeave.label(p.jumuahReminderMinutes)), alarm"
+    }
+}
+
+// MARK: - The main list
+
+private struct AlertsMainList: View {
+    @Environment(AppModel.self) private var model
+    @Binding var path: [AlertsPage]
+
+    var body: some View {
+        Form {
+            CheckCardSection(path: $path)
+            EachPrayerSection(path: $path)
+            NextAlarmSection()
+            ExtrasSection()
+            SoundSection()
+            AlarmSoundSection()
+            WakeHadithSection()
+        }
+    }
+}
+
+private struct CheckCardSection: View {
+    @Binding var path: [AlertsPage]
+    var body: some View {
+        Section {
+            Button { path.append(.check) } label: {
+                VStack(alignment: .leading, spacing: 6) {
+                    Label("On silent or in a Focus, only alarms ring", systemImage: "bell.badge")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text("Notifications stay quiet then. Set a prayer to Alarm if you need to hear it.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                    Text("Check my phone")
+                        .font(.footnote.weight(.bold))
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(Capsule().fill(Theme.sunArc))
+                        .foregroundStyle(.black)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+private struct EachPrayerSection: View {
+    @Environment(AppModel.self) private var model
+    @Binding var path: [AlertsPage]
+
+    var body: some View {
+        let friday = Prayer.dhuhr.name(model.naming, isFriday: true)
+        Section {
+            ForEach(Prayer.allCases) { prayer in
+                row(name: prayer.name(model.naming), summary: alertSummary(prayer, model: model),
+                    modes: AlertMode.modes(for: prayer), value: model.prefs.alertMode(prayer),
+                    open: { path.append(.prayer(prayer)) },
+                    pick: { applyAlertMode($0, prayer, model: model) })
+            }
+            row(name: "\(friday), leave for the masjid", summary: fridaySummary(model: model),
+                modes: AlertMode.allCases, value: model.prefs.fridayMode,
+                open: { path.append(.friday) },
+                pick: { applyFridayMode($0, model: model) })
+            HeadsUpPicker()
+        } header: {
+            Text("Each prayer")
+        } footer: {
+            Text("Tap a prayer's name for its times. Notify is a notification, quiet when your phone is on silent or in a Focus. Alarm rings until you stop it, even on silent.")
+        }
+    }
+
+    private func row(name: String, summary: String, modes: [AlertMode], value: AlertMode,
+                     open: @escaping () -> Void, pick: @escaping (AlertMode) -> Void) -> some View {
+        HStack(spacing: 10) {
+            Button(action: open) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name).foregroundStyle(.primary)
+                    Text(summary).font(.footnote).foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("\(name), \(summary)")
+            .accessibilityHint("Opens its page")
+            AlertModePicker(name: name, modes: modes, value: value, pick: pick)
+        }
+    }
+}
+
+/// "Heads up before": one time for every prayer set to Notify.
+private struct HeadsUpPicker: View {
+    @Environment(AppModel.self) private var model
+    var body: some View {
+        Picker(selection: Binding(
+            get: { model.prefs.reminderMinutesBefore },
+            set: { minutes in
+                model.prefs.reminderMinutesBefore = minutes
+                if minutes > 0 { Task { await askForAlerts() } }
+            })) {
+            Text("Off").tag(0)
+            ForEach(Preferences.reminderChoices, id: \.self) { Text("\($0) min before").tag($0) }
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Heads up before")
+                Text("A notification before each prayer set to Notify").font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+        .pickerStyle(.menu)
+    }
+}
+
+private struct NextAlarmSection: View {
+    @Environment(AppModel.self) private var model
     /// A prayer alarm is ringing or snoozed right now (checked every few seconds).
     @State private var ringing = false
 
     var body: some View {
-        let fajr = Prayer.fajr.name(model.naming)
-        NavigationStack {
-            Form {
-                // What is on, and one tap to stop it all.
-                Section {
-                    if ringing {
-                        Button {
-                            Task {
-                                await WakeUpAlarm.stopRinging()
-                                ringing = WakeUpAlarm.isRingingOrSnoozed
-                            }
-                        } label: {
-                            Label("Stop the snoozed alarm", systemImage: "stop.circle.fill")
-                                .font(.body.weight(.semibold))
-                        }
+        Section {
+            if ringing {
+                Button {
+                    Task {
+                        await WakeUpAlarm.stopRinging()
+                        ringing = WakeUpAlarm.isRingingOrSnoozed
                     }
-                    if let next = model.nextWakeUp(after: .now) {
-                        LabeledContent("Next alarm", value: nextText(next))
-                    } else {
-                        Text("No alarms are on").foregroundStyle(.secondary)
-                    }
-                    if model.prefs.anyAlarm {
-                        Button(role: .destructive) { turnOffAll() } label: {
-                            Label("Turn off all alarms", systemImage: "alarm.waves.left.and.right")
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                }
-
-                Section {
-                    Toggle("\(fajr) alarm", isOn: Binding(
-                        get: { model.prefs.wakeUp != nil },
-                        set: { setWakeUp($0 ? .atFajr : nil) }))
-                    if model.prefs.wakeUp != nil {
-                        ForEach(WakeUpTiming.allCases) { timing in
-                            choice(timing.label(model.naming), detail: timeToday(timing.date), selected: model.prefs.wakeUp == timing) {
-                                setWakeUp(timing)
-                            }
-                        }
-                    }
-                } footer: {
-                    Text(model.prefs.wakeUp != nil
-                         ? "Rings every morning and moves with \(fajr) wherever you are. Pick one time."
-                         : "Turn on to wake up for \(fajr) every morning.")
-                }
-
-                Section {
-                    Toggle("Sahur alarm", isOn: Binding(
-                        get: { model.prefs.sahurAlarm != nil },
-                        set: { setSahur($0 ? SahurTiming.allCases.first : nil) }))
-                    if model.prefs.sahurAlarm != nil {
-                        ForEach(SahurTiming.allCases) { timing in
-                            choice(timing.label(model.naming), detail: timeToday(timing.date), selected: model.prefs.sahurAlarm == timing) {
-                                setSahur(timing)
-                            }
-                        }
-                    }
-                } footer: {
-                    Text("An earlier alarm to eat sahur before a fast, or for a longer night prayer.")
-                }
-
-                if model.prefs.sahurAlarm != nil {
-                    Section {
-                        ForEach(SahurDay.allCases) { day in
-                            Toggle(day.label, isOn: Binding(
-                                get: { model.prefs.sahurDays.contains(day) },
-                                set: { on in
-                                    if on { model.prefs.sahurDays.insert(day) } else { model.prefs.sahurDays.remove(day) }
-                                    if model.prefs.sahurDays.isEmpty { model.prefs.sahurDays = [.everyDay] }
-                                }))
-                            .disabled(day != .everyDay && model.prefs.sahurDays.contains(.everyDay))
-                        }
-                    } header: {
-                        Text("Sahur alarm rings on")
-                    } footer: {
-                        Text("Ramadan and the white days follow the Hijri date in the app. Please follow your local religious authority for the start of Ramadan.")
-                    }
-                }
-
-                Section {
-                    ForEach(PrayerAlarmTiming.prayers) { prayer in
-                        prayerPicker(prayer)
-                    }
-                } header: {
-                    Text("Other prayers")
-                } footer: {
-                    Text("An alarm rings loudly until you stop it. If it rings at the very start of a prayer, it takes the place of that prayer's alert.")
-                }
-
-                Section {
-                    ForEach(AlarmSound.choices) { sound in
-                        let on = (model.prefs.alarmSound == .phone ? .classic : model.prefs.alarmSound) == sound
-                        Button {
-                            model.prefs.alarmSound = sound
-                            AlarmPreview.play(sound)
-                        } label: {
-                            HStack {
-                                Image(systemName: "play.circle").foregroundStyle(.secondary)
-                                Text(sound.label).foregroundStyle(.primary)
-                                Spacer()
-                                Image(systemName: "checkmark").font(.body.weight(.semibold))
-                                    .foregroundStyle(Theme.sunArc)
-                                    .opacity(on ? 1 : 0)
-                            }
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityHint("Plays the sound")
-                        .accessibilityAddTraits(on ? .isSelected : [])
-                    }
-                } header: {
-                    Text("Alarm sound")
-                } footer: {
-                    Text("Tap a sound to hear it. Every alarm plays this sound. Classic is your iPhone's own alarm. The azan will join the list once the recordings are ready.")
-                }
-
-                Section {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("اللَّهُمَّ بَارِكْ لِأُمَّتِي فِي بُكُورِهَا")
-                            .font(.title3)
-                            .multilineTextAlignment(.trailing)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                        Text("“O Allah, bless my ummah in their early mornings.”")
-                            .font(.body.italic())
-                        Text("The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi")
-                            .font(.footnote).foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 4)
-                    if model.prefs.wakeUp == .fajrMinus30 {
-                        HadithView(id: .nightPrayer, style: .line).hadithRow()
-                    }
-                    if model.prefs.sahurAlarm != nil {
-                        HadithView(id: .monThu, style: .line).hadithRow()
-                        HadithView(id: .whiteDays, style: .line).hadithRow()
-                    }
-                }
-
-                Section {
-                    Text(alarmNote)
-                        .font(.footnote).foregroundStyle(.secondary)
+                } label: {
+                    Label("Stop the snoozed alarm", systemImage: "stop.circle.fill")
+                        .font(.body.weight(.semibold))
                 }
             }
-            .navigationTitle("Prayer alarms")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+            if let next = model.nextWakeUp(after: .now) {
+                LabeledContent("Next alarm", value: nextText(next))
+            } else {
+                Text("No alarms are on").foregroundStyle(.secondary)
             }
-            .onDisappear { AlarmPreview.stop() }
-            .task {
-                while !Task.isCancelled {
-                    ringing = WakeUpAlarm.isRingingOrSnoozed
-                    try? await Task.sleep(for: .seconds(2))
+            if model.prefs.anyAlarm {
+                Button(role: .destructive) { turnOffAll() } label: {
+                    Label("Turn off all alarms", systemImage: "alarm.waves.left.and.right")
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+            }
+        } footer: {
+            Text(alarmNote)
+        }
+        .task {
+            while !Task.isCancelled {
+                ringing = WakeUpAlarm.isRingingOrSnoozed
+                try? await Task.sleep(for: .seconds(2))
             }
         }
     }
 
     private var alarmNote: String {
         if #available(iOS 26.0, *) {
-            return "A real alarm that rings even in Silent mode and Focus, like the Clock app. Tap Stop to end it. Snooze 5 min rings it once more in 5 minutes, and the Stop button on the Lock Screen ends a snooze for good."
+            return "An alarm rings even in Silent mode and Focus, like the Clock app. Tap Stop to end it. Snooze 5 min rings it once more in 5 minutes."
         }
-        return "On this iPhone the alarm comes as a notification. From iOS 26 it rings like a real alarm, even in Silent mode."
-    }
-
-    private func choice(_ title: String, detail: String? = nil, selected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack {
-                Text(title).foregroundStyle(.primary)
-                Spacer()
-                if let detail { Text(detail).foregroundStyle(.secondary).monospacedDigit() }
-                Image(systemName: "checkmark").font(.body.weight(.semibold))
-                    .foregroundStyle(Theme.accentText)
-                    .opacity(selected ? 1 : 0)
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(selected ? .isSelected : [])
-    }
-
-    /// The time this choice would ring tomorrow morning (or this morning, before Subuh).
-    private func timeToday(_ date: (PrayerDay) -> Date) -> String? {
-        let now = Date.now
-        for offset in 0..<2 {
-            if let day = model.day(containing: model.noon(now, plus: offset)) {
-                let t = date(day)
-                if t > now { return model.formatted(t) }
-            }
-        }
-        return nil
+        return "On this iPhone an alarm comes as a notification. From iOS 26 it rings like a real alarm, even in Silent mode."
     }
 
     private func nextText(_ w: AppModel.WakeUp) -> String {
@@ -219,54 +293,13 @@ struct WakeUpView: View {
         return "\(when) \(model.formatted(w.date))\(what)"
     }
 
-    /// One prayer's alarm, as a menu: Off, on time, minutes after, or before it ends.
-    private func prayerPicker(_ prayer: Prayer) -> some View {
-        let name = prayer.name(model.naming)
-        let current = model.prefs.alarm(for: prayer)
-        return Picker(selection: Binding(
-            get: { current },
-            set: { timing in
-                Task {
-                    if timing != nil { _ = await NotificationScheduler.requestPermission() } else { await WakeUpAlarm.stopRinging() }
-                    withAnimation { model.prefs.setAlarm(timing, for: prayer) }
-                }
-            })) {
-            Text("Off").tag(PrayerAlarmTiming?.none)
-            ForEach(PrayerAlarmTiming.choices(for: prayer)) { timing in
-                Text(timing.label).tag(PrayerAlarmTiming?.some(timing))
-            }
-        } label: {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(name)
-                if let current, let t = timeToday({ current.date(start: $0.time(prayer), end: PrayerAlarmTiming.end(of: prayer, in: $0)) }) {
-                    Text(t).font(.footnote).foregroundStyle(.secondary).monospacedDigit()
-                }
-            }
-        }
-        .pickerStyle(.menu)
-        .accessibilityLabel("\(name) alarm")
-    }
-
-    private func setWakeUp(_ timing: WakeUpTiming?) {
-        Task {
-            if timing != nil { _ = await NotificationScheduler.requestPermission() } else { await WakeUpAlarm.stopRinging() }
-            withAnimation { model.prefs.wakeUp = timing }
-        }
-    }
-
-    private func setSahur(_ timing: SahurTiming?) {
-        Task {
-            if timing != nil { _ = await NotificationScheduler.requestPermission() } else { await WakeUpAlarm.stopRinging() }
-            withAnimation { model.prefs.sahurAlarm = timing }
-        }
-    }
-
     /// Every alarm Off, and anything ringing or snoozed stops now.
     private func turnOffAll() {
         withAnimation {
             model.prefs.wakeUp = nil
             model.prefs.sahurAlarm = nil
             for prayer in PrayerAlarmTiming.prayers { model.prefs.setAlarm(nil, for: prayer) }
+            model.prefs.jumuahLeaveAlarm = false
         }
         Task {
             await WakeUpAlarm.stopRinging()
@@ -275,9 +308,469 @@ struct WakeUpView: View {
     }
 }
 
-/// A few seconds of an alarm sound, to hear it before choosing. Plays even in
-/// Silent mode, like the alarm itself will.
+private struct ExtrasSection: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        Section {
+            Toggle(isOn: Binding(
+                get: { model.prefs.sahurAlarm != nil },
+                set: { setSahur($0 ? SahurTiming.allCases.first : nil) })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Sahur alarm")
+                    Text("An earlier alarm to eat sahur before a fast, or for a longer night prayer").font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            if model.prefs.sahurAlarm != nil {
+                ForEach(SahurTiming.allCases) { timing in
+                    AlarmChoiceRow(title: timing.label(model.naming), detail: model.nextTime(timing.date), selected: model.prefs.sahurAlarm == timing) {
+                        setSahur(timing)
+                    }
+                }
+            }
+        } header: {
+            Text("Extras")
+        }
+        if model.prefs.sahurAlarm != nil {
+            Section {
+                ForEach(SahurDay.allCases) { day in
+                    Toggle(day.label, isOn: Binding(
+                        get: { model.prefs.sahurDays.contains(day) },
+                        set: { on in
+                            if on { model.prefs.sahurDays.insert(day) } else { model.prefs.sahurDays.remove(day) }
+                            if model.prefs.sahurDays.isEmpty { model.prefs.sahurDays = [.everyDay] }
+                        }))
+                    .disabled(day != .everyDay && model.prefs.sahurDays.contains(.everyDay))
+                }
+            } header: {
+                Text("Sahur alarm rings on")
+            } footer: {
+                Text("Ramadan and the white days follow the Hijri date in the app. Please follow your local religious authority for the start of Ramadan.")
+            }
+        }
+        Section {
+            ramadanSwitch("Imsak alert", "10 minutes before Imsak, in Ramadan", \.imsakAlert)
+            ramadanSwitch("Iftar alert", "At Maghrib, with the dua, in Ramadan", \.berbukaAlert)
+            ramadanSwitch("Qiyam in the last ten nights", "At the last third of the night", \.qiyamAlert)
+            if model.prefs.trackerEnabled {
+                Toggle(isOn: Binding(get: { model.prefs.windowNudge }, set: { model.prefs.windowNudge = $0 })) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Nudge before time runs out")
+                        Text("About 30 minutes before a prayer's time ends, only if you haven't ticked it").font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
+    private func ramadanSwitch(_ title: String, _ detail: String, _ key: WritableKeyPath<Preferences, Bool>) -> some View {
+        Toggle(isOn: Binding(
+            get: { model.prefs[keyPath: key] },
+            set: { on in
+                model.prefs[keyPath: key] = on
+                if on { Task { await askForAlerts() } }
+            })) {
+            VStack(alignment: .leading, spacing: 2) { Text(title); Text(detail).font(.footnote).foregroundStyle(.secondary) }
+        }
+    }
+
+    private func setSahur(_ timing: SahurTiming?) {
+        Task {
+            if timing != nil { await askForAlerts() } else { await WakeUpAlarm.stopRinging() }
+            withAnimation { model.prefs.sahurAlarm = timing }
+        }
+    }
+}
+
+private struct SoundSection: View {
+    @Environment(AppModel.self) private var model
+    /// Every half hour of the day, in minutes past midnight.
+    private static let halfHours = Array(stride(from: 0, to: 1440, by: 30))
+
+    var body: some View {
+        Section {
+            if Azan.isAvailable {
+                Toggle("Play the azan", isOn: Binding(get: { model.prefs.azanSound }, set: { model.prefs.azanSound = $0 }))
+            }
+            Toggle(isOn: Binding(get: { model.prefs.buzzOnly }, set: { model.prefs.buzzOnly = $0 })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Buzz only, no sound")
+                    Text("Every notification only buzzes. \(Prayer.fajr.name(model.naming)) keeps its sound.").font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            Toggle("Quiet hours", isOn: Binding(get: { model.prefs.quietHours }, set: { model.prefs.quietHours = $0 }))
+            if model.prefs.quietHours {
+                Picker("From", selection: Binding(get: { model.prefs.quietFrom }, set: { model.prefs.quietFrom = $0 })) {
+                    ForEach(Self.halfHours, id: \.self) { Text(model.clock($0)).tag($0) }
+                }
+                Picker("Until", selection: Binding(get: { model.prefs.quietTo }, set: { model.prefs.quietTo = $0 })) {
+                    ForEach(Self.halfHours, id: \.self) { Text(model.clock($0)).tag($0) }
+                }
+            }
+        } header: {
+            Text("Sound")
+        } footer: {
+            Text("Buzz only and Quiet hours are for shift workers sleeping in the day, a baby asleep in the room, or a calm night. Notifications only buzz then. Alarms keep their sound.")
+        }
+    }
+}
+
+private struct AlarmSoundSection: View {
+    @Environment(AppModel.self) private var model
+    var body: some View {
+        Section {
+            ForEach(AlarmSound.choices) { sound in
+                let on = (model.prefs.alarmSound == .phone ? .classic : model.prefs.alarmSound) == sound
+                Button {
+                    model.prefs.alarmSound = sound
+                    AlarmPreview.play(sound)
+                } label: {
+                    HStack {
+                        Image(systemName: "play.circle").foregroundStyle(.secondary)
+                        Text(sound.label).foregroundStyle(.primary)
+                        Spacer()
+                        Image(systemName: "checkmark").font(.body.weight(.semibold))
+                            .foregroundStyle(Theme.sunArc)
+                            .opacity(on ? 1 : 0)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Plays the sound")
+                .accessibilityAddTraits(on ? .isSelected : [])
+            }
+        } header: {
+            Text("Alarm sound")
+        } footer: {
+            Text("Tap a sound to hear it. Every alarm plays this sound. Classic is your iPhone's own alarm.")
+        }
+    }
+}
+
+private struct WakeHadithSection: View {
+    @Environment(AppModel.self) private var model
+    var body: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("اللَّهُمَّ بَارِكْ لِأُمَّتِي فِي بُكُورِهَا")
+                    .font(.title3)
+                    .multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                Text("“O Allah, bless my ummah in their early mornings.”")
+                    .font(.body.italic())
+                Text("The Prophet ﷺ, narrated by Abu Dawud and Tirmidhi")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 4)
+            if model.prefs.sahurAlarm != nil {
+                HadithView(id: .monThu, style: .line).hadithRow()
+                HadithView(id: .whiteDays, style: .line).hadithRow()
+            }
+        }
+    }
+}
+
+/// A choice with a tick, and the time it would next ring.
+struct AlarmChoiceRow: View {
+    let title: String
+    var detail: String? = nil
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Text(title).foregroundStyle(.primary)
+                Spacer()
+                if let detail { Text(detail).foregroundStyle(.secondary).monospacedDigit() }
+                Image(systemName: "checkmark").font(.body.weight(.semibold))
+                    .foregroundStyle(Theme.accentText)
+                    .opacity(selected ? 1 : 0)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
+/// The big Off, Notify, Alarm cards on a prayer's page.
+private struct ModeCards: View {
+    let modes: [AlertMode]
+    let value: AlertMode
+    var alarmHelp: String? = nil
+    let pick: (AlertMode) -> Void
+
+    var body: some View {
+        ForEach(modes) { mode in
+            Button { pick(mode) } label: {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: mode.symbol)
+                        .frame(width: 22)
+                        .foregroundStyle(mode == .alarm ? Theme.sunArc : Color.primary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(mode.word).font(.body.weight(.semibold)).foregroundStyle(.primary)
+                        Text(mode == .alarm ? (alarmHelp ?? mode.help) : mode.help)
+                            .font(.footnote).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer()
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Theme.sunArc)
+                        .opacity(value == mode ? 1 : 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(value == mode ? .isSelected : [])
+        }
+    }
+}
+
+// MARK: - One prayer's page
+
+private struct PrayerAlertPage: View {
+    @Environment(AppModel.self) private var model
+    let prayer: Prayer
+
+    var body: some View {
+        let name = prayer.name(model.naming)
+        let p = model.prefs
+        let mode = p.alertMode(prayer)
+        Form {
+            Section {
+                ModeCards(modes: AlertMode.modes(for: prayer), value: mode,
+                          alarmHelp: prayer == .fajr ? "Wakes you every morning and moves with \(name) wherever you are. Snooze 5 min." : nil) {
+                    applyAlertMode($0, prayer, model: model)
+                }
+            } header: {
+                Text("How should \(name) reach you?")
+            }
+            if mode == .alarm && prayer == .fajr {
+                Section("When") {
+                    ForEach(WakeUpTiming.allCases) { timing in
+                        AlarmChoiceRow(title: timing.label(model.naming), detail: model.nextTime(timing.date), selected: p.wakeUp == timing) {
+                            withAnimation { model.prefs.wakeUp = timing }
+                        }
+                    }
+                }
+            }
+            if mode == .alarm && PrayerAlarmTiming.prayers.contains(prayer) {
+                Section("When") {
+                    ForEach(PrayerAlarmTiming.choices(for: prayer)) { timing in
+                        AlarmChoiceRow(title: timing.label,
+                                       detail: model.nextTime({ timing.date(start: $0.time(prayer), end: PrayerAlarmTiming.end(of: prayer, in: $0)) }),
+                                       selected: p.alarm(for: prayer) == timing) {
+                            withAnimation { model.prefs.setAlarm(timing, for: prayer) }
+                        }
+                    }
+                }
+            }
+            if mode == .alarm && !p.alarmAtStart(prayer) {
+                Section {
+                    Toggle(isOn: Binding(get: { model.prefs.notifies(prayer) }, set: { on in model.prefs.setNotify(on, prayer) })) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Notification too")
+                            Text("A notification when \(name) begins, as well as the alarm").font(.footnote).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+            if mode == .notify && prayer != .sunrise {
+                Section {
+                    HeadsUpPicker()
+                } footer: {
+                    Text("The same for every prayer set to Notify.")
+                }
+            }
+            if prayer == .fajr && p.wakeUp == .fajrMinus30 {
+                Section { HadithView(id: .nightPrayer, style: .line).hadithRow() }
+            }
+        }
+        .navigationTitle(name)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - Friday
+
+private struct FridayAlertPage: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let friday = Prayer.dhuhr.name(model.naming, isFriday: true)
+        Form {
+            Section {
+                ModeCards(modes: AlertMode.allCases, value: model.prefs.fridayMode) {
+                    applyFridayMode($0, model: model)
+                }
+            } header: {
+                Text("How should the reminder reach you?")
+            }
+            JumuahLeaveSection()
+        }
+        .navigationTitle("Leave for \(friday)")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - Check my phone
+
+/// What this iPhone allows, read from its own settings, with a way to fix each one.
+private struct CheckPhonePage: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.openURL) private var openURL
+    @State private var notifications: UNAuthorizationStatus = .notDetermined
+    @State private var timeSensitive: UNNotificationSetting = .notSupported
+    @State private var alarms: AlarmAccess = .unknown
+
+    enum AlarmAccess { case unknown, allowed, denied, notAsked, oldIOS }
+
+    var body: some View {
+        let friday = Prayer.dhuhr.name(model.naming, isFriday: true)
+        let notifyCount = Prayer.obligatory.filter { model.prefs.alertMode($0) == .notify }.count
+        Form {
+            Section {
+                switch notifications {
+                case .authorized, .provisional, .ephemeral:
+                    CheckRow(ok: true, title: "Notifications allowed")
+                case .denied:
+                    CheckRow(ok: false, title: "Notifications are turned off", detail: "Turn them on in Settings, Notifications, Prayer Times Asia.",
+                             button: "Open Settings") { openSettings() }
+                default:
+                    CheckRow(ok: false, title: "Notifications not allowed yet", button: "Allow notifications") {
+                        Task { await askForAlerts(); await refresh() }
+                    }
+                }
+                switch alarms {
+                case .allowed:
+                    CheckRow(ok: true, title: "Alarms allowed", detail: "Your alarms ring even on silent and in a Focus.")
+                case .denied:
+                    CheckRow(ok: false, title: "Alarms are turned off", detail: "Without them, alarms come as quiet notifications.",
+                             button: "Open Settings") { openSettings() }
+                case .notAsked:
+                    CheckRow(ok: false, title: "Alarms not allowed yet", button: "Allow alarms") {
+                        Task { await requestAlarms(); await refresh() }
+                    }
+                case .oldIOS:
+                    CheckRow(ok: false, title: "Alarms come as notifications on this iPhone", detail: "From iOS 26 they ring like the Clock app, even on silent.")
+                case .unknown:
+                    EmptyView()
+                }
+                if timeSensitive == .enabled {
+                    CheckRow(ok: true, title: "Time Sensitive is on", detail: "Notifications come through a Focus.")
+                } else {
+                    CheckRow(ok: false, title: "A Focus can hold notifications back",
+                             detail: "In Settings, Focus, pick each Focus you use (Work, Sleep) and add Prayer Times Asia under Apps. Alarms always come through.",
+                             button: "Open Settings") { openSettings() }
+                }
+                CheckRow(ok: false, title: "The silent switch mutes notifications",
+                         detail: "No app can sound a notification on silent. Alarms still ring. If you need to hear a prayer, set it to Alarm.")
+                if model.prefs.fridayMode == .notify {
+                    CheckRow(ok: false, title: "\(friday) reminder is a notification", detail: "Make it an alarm so it rings through silent and Focus.",
+                             button: "Make it an alarm") { applyFridayMode(.alarm, model: model) }
+                }
+                if notifyCount > 0 {
+                    CheckRow(ok: true, title: notifyCount == 1 ? "1 prayer is set to Notify" : "\(notifyCount) prayers are set to Notify",
+                             detail: "They stay quiet on silent. Change any of them to Alarm on the list.")
+                }
+            }
+        }
+        .navigationTitle("Make sure you hear it")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await refresh() }
+    }
+
+    private func openSettings() {
+        if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
+    }
+
+    private func refresh() async {
+        let s = await UNUserNotificationCenter.current().notificationSettings()
+        notifications = s.authorizationStatus
+        timeSensitive = s.timeSensitiveSetting
+        alarms = currentAlarmAccess()
+    }
+
+    private func currentAlarmAccess() -> AlarmAccess {
+        #if canImport(AlarmKit)
+        if #available(iOS 26.0, *) {
+            switch AlarmManager.shared.authorizationState {
+            case .authorized: return .allowed
+            case .denied: return .denied
+            case .notDetermined: return .notAsked
+            @unknown default: return .unknown
+            }
+        }
+        #endif
+        return .oldIOS
+    }
+
+    private func requestAlarms() async {
+        #if canImport(AlarmKit)
+        if #available(iOS 26.0, *) {
+            _ = try? await AlarmManager.shared.requestAuthorization()
+        }
+        #endif
+    }
+}
+
+private struct CheckRow: View {
+    let ok: Bool
+    let title: String
+    var detail: String? = nil
+    var button: String? = nil
+    var action: (() -> Void)? = nil
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: ok ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                .foregroundStyle(ok ? Color.green : Color.orange)
+                .font(.title3)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.body.weight(.semibold))
+                if let detail { Text(detail).font(.footnote).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
+                if let button, let action {
+                    Button(button, action: action)
+                        .buttonStyle(.bordered)
+                        .font(.footnote.weight(.semibold))
+                        .padding(.top, 2)
+                }
+            }
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+// MARK: - The bell on the Prayer screen
+
+/// Tap a bell: Off, then Notify, then Alarm, then Off again.
 @MainActor
+func cycleAlert(_ prayer: Prayer, model: AppModel) {
+    applyAlertMode(model.prefs.nextAlertMode(prayer), prayer, model: model)
+}
+
+/// Hold a bell (or tap a prayer on the dial): pick Off, Notify or Alarm, or open its page.
+struct AlertMenuItems: View {
+    @Environment(AppModel.self) private var model
+    let prayer: Prayer
+
+    var body: some View {
+        let mode = model.prefs.alertMode(prayer)
+        ForEach(AlertMode.modes(for: prayer)) { m in
+            Button { applyAlertMode(m, prayer, model: model) } label: {
+                Label(m == mode ? "\(m.word), on now" : m.word, systemImage: m.symbol)
+            }
+        }
+        Button { model.openAlerts(.prayer(prayer)) } label: {
+            Label("\(prayer.name(model.naming)) in Alerts and alarms", systemImage: "slider.horizontal.3")
+        }
+    }
+}
+
+/// A few seconds of an alarm sound, heard when a sound is tapped.
 enum AlarmPreview {
     private static var player: AVAudioPlayer?
 

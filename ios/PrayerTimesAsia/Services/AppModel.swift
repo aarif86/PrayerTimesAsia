@@ -23,8 +23,16 @@ final class AppModel {
     /// Settings opens as a sheet from the gear on Today.
     /// Journey opens as a sheet (from Settings or the musafir chip).
     var showJourney = false
-    /// Wake up for Subuh (the alarm chip on the Prayer screen, or Settings).
+    /// Alerts and alarms (the alarm chip on the Prayer screen, Settings, or holding a bell).
     var showWakeUp = false
+    /// The page Alerts and alarms opens on: a prayer's page when a bell was held.
+    var alertsStart: AlertsPage?
+
+    /// Alerts and alarms, opened on one prayer's page (or the main list when nil).
+    func openAlerts(_ page: AlertsPage? = nil) {
+        alertsStart = page
+        showWakeUp = true
+    }
     /// "Welcome back" after a reinstall brought the settings back.
     var showWelcomeBack = false
     /// A masjid from a screen's QR code, waiting for the user to say yes.
@@ -130,7 +138,7 @@ final class AppModel {
         var p = Preferences()
         p.hasOnboarded = true
         // Screenshots skip the quick guide unless they ask for it.
-        p.guideSeen = !args.contains("-guide")
+        p.guideShown = !args.contains("-guide")
         p.useGPS = false
         p.home = home
         p.homeConfirmed = true
@@ -629,6 +637,37 @@ final class AppModel {
         }
     }
 
+    private var usageOn: Bool { prefs.shareUsage && prefs.hasOnboarded && !Self.isDemo }
+
+    /// Minutes on screen, opens and screens used today, sent as one summary the next day.
+    func usageVisible(_ visible: Bool) {
+        guard usageOn else { if !visible { UsageCounter.tallyStop() }; return }
+        if visible {
+            UsageCounter.tallyStart(place: activePlace)
+            usageScreen(selectedTab)
+        } else {
+            UsageCounter.tallyStop()
+        }
+    }
+
+    func usageScreen(_ tab: Tab) {
+        guard usageOn else { return }
+        switch tab {
+        case .today: UsageCounter.tallyScreen("prayer")
+        case .qibla: UsageCounter.tallyScreen("qibla")
+        case .falak: UsageCounter.tallyScreen("falak")
+        case .nearby: UsageCounter.tallyScreen("masjid")
+        case .settings: UsageCounter.tallyScreen("settings")
+        case .journey, .wakeup: break
+        }
+    }
+
+    /// Anonymous count of a Barakah Picks card seen (once a day) or tapped (docs/community-cards.md).
+    func countCard(_ event: UsageCounter.CardEvent, card: CommunityCard, placement: String) {
+        guard prefs.shareUsage, !Self.isDemo else { return }
+        UsageCounter.countCard(event, card: card, placement: placement, place: activePlace)
+    }
+
     private static var isDemo: Bool { ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") || $0 == "-widget-preview" } }
 
     /// Called when GPS moves. Reverse-geocodes when online; falls back to the
@@ -878,11 +917,11 @@ final class AppModel {
         if s.phase == .ramadan {
             if prefs.imsakAlert {
                 out.append(.init(id: id + "-imsak", title: "Imsak in 10 minutes · \(formatted(imsak(pd)))",
-                                 body: "Finish your sahur. Subuh at \(formatted(pd.time(.fajr))) · \(here)",
+                                 body: "Finish your sahur. \(Prayer.fajr.name(naming)) at \(formatted(pd.time(.fajr))) · \(here)",
                                  fireDate: imsak(pd).addingTimeInterval(-600), silent: isSilent(imsak(pd), prayer: .fajr)))
             }
             if prefs.berbukaAlert && !maghribAlertOn {
-                out.append(.init(id: id + "-berbuka", title: "Time to berbuka · \(formatted(pd.time(.maghrib)))",
+                out.append(.init(id: id + "-berbuka", title: "Time for iftar · \(formatted(pd.time(.maghrib)))",
                                  body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu. Ramadan day \(s.ramadanDay ?? 0) · \(here)",
                                  fireDate: pd.time(.maghrib), silent: isSilent(pd.time(.maghrib), prayer: .maghrib)))
             }
@@ -898,6 +937,43 @@ final class AppModel {
     }
 
     // MARK: Notifications
+
+    /// Singapore's choice of the second Friday session applies only while the place shown is in Singapore.
+    var secondJumuahHere: Bool {
+        guard prefs.jumuahSession == .second, let place = activePlace else { return false }
+        return MasjidExtras.inSingapore(place.coordinates, countryCode: place.countryCode)
+    }
+
+    /// When Jumaat starts on this Friday, for the "Leave for Jumaat" reminder: your masjid's
+    /// own Jumaat time when it has one, else the start of Zohor. In Singapore you can pick
+    /// the second session instead, from 2 PM.
+    func jumuahStart(_ pd: PrayerDay) -> (at: Date, second: Bool, where_: String?) {
+        if secondJumuahHere {
+            let p = JumuahLeave.secondSessionFrom.split(separator: ":").compactMap { Int($0) }
+            var cal = Calendar(identifier: .gregorian)
+            cal.timeZone = timeZone
+            if p.count == 2, let d = cal.date(from: DateComponents(year: pd.year, month: pd.month, day: pd.day, hour: p[0], minute: p[1])) {
+                let mine = myMasjidHere
+                let where_ = mine.flatMap { MasjidExtras.fridayAt($0.coordinates) != nil ? $0.name : nil }
+                return (d, true, where_)
+            }
+        }
+        let start = pd.jamaah[.dhuhr] ?? pd.time(.dhuhr)
+        return (start, false, pd.jamaah[.dhuhr] != nil ? pd.mosqueName : nil)
+    }
+
+    /// The coming Friday's reminder (today's while it is still ahead): when it comes and when Jumaat starts.
+    func nextJumuahLeave(now: Date = .now) -> (leave: Date, start: Date, second: Bool)? {
+        let minutes = prefs.jumuahReminderMinutes
+        guard minutes > 0, activePlace != nil else { return nil }
+        for offset in 0..<8 {
+            guard let pd = day(containing: noon(now, plus: offset)), isFriday(pd.time(.dhuhr)) else { continue }
+            let j = jumuahStart(pd)
+            let leave = j.at.addingTimeInterval(Double(-minutes) * 60)
+            if leave > now { return (leave, j.at, j.second) }
+        }
+        return nil
+    }
 
     func scheduleNotifications() {
         guard let place = activePlace else { return }
@@ -933,13 +1009,13 @@ final class AppModel {
             }
             guard offset >= 0 else { continue }
             if offset < 6 { ramadan += ramadanAlerts(pd, here: here, maghribAlertOn: maghribAlertOn) }
-            if jumuah > 0 && isFriday(pd.time(.dhuhr)) {
-                let start = pd.jamaah[.dhuhr] ?? pd.time(.dhuhr)
-                let at = start.addingTimeInterval(Double(-jumuah) * 60)
-                let name = Prayer.dhuhr.name(naming, isFriday: true)
-                let where_ = pd.jamaah[.dhuhr] != nil ? pd.mosqueName.map { " at \($0)" } ?? "" : ""
-                alerts.append(.init(id: "\(pd.year)-\(pd.month)-\(pd.day)-jumuah", title: "\(name) in \(jumuah) min",
-                                    body: "Time to get ready and leave for \(name)\(where_), \(formatted(start)).",
+            // Rung as an alarm instead (wakeUpPlan) when Ring as an alarm is on.
+            if jumuah > 0 && !prefs.jumuahLeaveAlarm && isFriday(pd.time(.dhuhr)) {
+                let j = jumuahStart(pd)
+                let at = j.at.addingTimeInterval(Double(-jumuah) * 60)
+                let w = JumuahLeave.words(lineLang, minutes: jumuah, name: Prayer.dhuhr.name(naming, isFriday: true),
+                                          second: j.second, at: formatted(j.at), where: j.where_)
+                alerts.append(.init(id: "\(pd.year)-\(pd.month)-\(pd.day)-jumuah", title: w.title, body: w.body,
                                     fireDate: at, silent: isSilent(at, prayer: .dhuhr)))
             }
             for prayer in Prayer.allCases where prefs.notifyPrayers.contains(prayer) {
@@ -965,7 +1041,7 @@ final class AppModel {
                     continue
                 }
                 if prayer == .maghrib && isRamadanDay(time) {
-                    alerts.append(.init(id: id, title: "Time to berbuka · \(name) \(formatted(time))",
+                    alerts.append(.init(id: id, title: "Time for iftar · \(name) \(formatted(time))",
                                         body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu", fireDate: time,
                                         sound: prefs.azanSound ? .azan : .standard, silent: silent))
                     continue
@@ -984,7 +1060,7 @@ final class AppModel {
         let wakeUps = plan.filter { $0.prayer == nil || $0.date < soon }.map { ($0.date, $0.title) }
         let sound = prefs.alarmSound
         let notificationAlerts = ramadan + alerts
-        let notificationsOn = onTime || early > 0 || nudges || jumuah > 0 || !ramadan.isEmpty
+        let notificationsOn = onTime || early > 0 || nudges || (jumuah > 0 && !prefs.jumuahLeaveAlarm) || !ramadan.isEmpty
         // Demo screenshots never ask for alarm permission.
         let isDemo = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") }
         Task {
@@ -1012,6 +1088,18 @@ final class AppModel {
 
     /// The next wake-up or sahur alarm, looking a week ahead (the sahur alarm
     /// may be days away). Stops at the first day that has one.
+    /// When a choice would next ring: today if it is still ahead, else tomorrow.
+    func nextTime(_ date: (PrayerDay) -> Date) -> String? {
+        let now = Date.now
+        for offset in 0..<2 {
+            if let d = self.day(containing: noon(now, plus: offset)) {
+                let t = date(d)
+                if t > now { return formatted(t) }
+            }
+        }
+        return nil
+    }
+
     func nextWakeUp(after now: Date) -> WakeUp? {
         guard prefs.anyAlarm else { return nil }
         for offset in 0..<8 {
@@ -1046,6 +1134,14 @@ final class AppModel {
                     ? "\(name) ends in 30 min · \(formatted(end))"
                     : prayer == .isha ? "Time for \(name) · \(formatted(start))" : "Time for \(name) · open until \(formatted(end))"
                 out.append(WakeUp(date: timing.date(start: start, end: end), title: title, isSahur: false, prayer: prayer))
+            }
+            // Leave for Jumaat, when it rings as an alarm.
+            let leaveMinutes = prefs.jumuahReminderMinutes
+            if prefs.jumuahLeaveAlarm && leaveMinutes > 0 && isFriday(pd.time(.dhuhr)) {
+                let j = jumuahStart(pd)
+                let w = JumuahLeave.words(RamadanContent.lang(naming), minutes: leaveMinutes, name: Prayer.dhuhr.name(naming, isFriday: true),
+                                          second: j.second, at: formatted(j.at), where: j.where_)
+                out.append(WakeUp(date: j.at.addingTimeInterval(Double(-leaveMinutes) * 60), title: "\(w.title) · \(formatted(j.at))", isSahur: false))
             }
         }
         var seen = Set<Date>()
