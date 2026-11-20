@@ -1,0 +1,18 @@
+Assalamualaikum, and thank you for testing.
+
+New in this build
+Leave for Jumaat. Find it with the prayer alarms, choose how early you want to leave, and in Singapore pick the first or second session. It can ring as a real alarm too.
+From Syuruk until Zohor, the Prayer screen and widgets now count down to Zohor.
+Barakah Picks. One small card under Show more, with good causes we check by hand. You can turn it off in Settings.
+The masjid map shows where you are, with rings at 1, 2 and 5 km.
+
+Please try
+Set an alarm for one prayer and let it ring with the phone locked and on silent.
+Tap the date on the Prayer screen and look through the Hijri calendar.
+Open the Masjid tab and check that the nearest masjids look right.
+Compare today's times with your local masjid.
+
+Tell us what you find
+Take a screenshot and tap Share Beta Feedback, or email salam@prayertimes.asia.
+
+Always follow your local religious authority.
