@@ -901,4 +901,50 @@
     <string name="move_copyThis" formatted="false">Copy this link</string>
     <string name="notify_testTitle" formatted="false">{name} · test alert</string>
     <string name="notify_testBody" formatted="false">This is how prayer alerts will look on this device.</string>
+    <string name="phone_alerts_back" formatted="false">Back to Alerts and alarms</string>
+    <string name="phone_alerts_silentTitle" formatted="false">On silent or Do Not Disturb, only alarms ring</string>
+    <string name="phone_alerts_silentSub" formatted="false">Notifications stay quiet then. Set a prayer to Alarm if you need to hear it.</string>
+    <string name="phone_alerts_notifyBefore" formatted="false">Notification, and {n} min before</string>
+    <string name="phone_alerts_notifyAtTime" formatted="false">Notification at the time</string>
+    <string name="phone_alerts_notifyToo" formatted="false">{text}, notification too</string>
+    <string name="phone_alerts_minShort" formatted="false">{n} min</string>
+    <string name="phone_alerts_eachFoot" formatted="false">Tap a prayer\'s name for its times. Notify is a notification, quiet when your phone is on silent or Do Not Disturb. Alarm rings until you stop it, even on silent.</string>
+    <string name="phone_alerts_alarmFoot" formatted="false">An alarm rings like the Clock app, even when the phone is on silent, until you tap I\'m up. Snooze 5 min rings it once more in 5 minutes.</string>
+    <string name="phone_alerts_nextAt" formatted="false">{when} {time}</string>
+    <string name="phone_alerts_nextAtFor" formatted="false">{when} {time} for {name}</string>
+    <string name="phone_alerts_nextAtSahur" formatted="false">{when} {time} for sahur</string>
+    <string name="phone_alerts_iftarSub" formatted="false">At {name}, with the dua, in Ramadan</string>
+    <string name="phone_alerts_qiyam" formatted="false">Qiyam in the last ten nights</string>
+    <string name="phone_alerts_qiyamSub" formatted="false">At the last third of the night</string>
+    <string name="phone_alerts_nudgeSub" formatted="false">About 30 minutes before a prayer\'s time ends, only if you haven\'t ticked it</string>
+    <string name="phone_alerts_soundFoot" formatted="false">Buzz only and Quiet hours are for shift workers sleeping in the day, a baby asleep in the room, or a calm night. Notifications only buzz then. Alarms keep their sound.</string>
+    <string name="phone_alerts_helpNotify" formatted="false">A notification with sound. Quiet when your phone is on silent or Do Not Disturb.</string>
+    <string name="phone_alerts_helpAlarm" formatted="false">Rings until you stop it, even on silent and Do Not Disturb. Snooze 5 min.</string>
+    <string name="phone_check_notifications" formatted="false">Notifications</string>
+    <string name="phone_check_notificationsFoot" formatted="false">Notify uses these. They follow your phone\'s sound settings.</string>
+    <string name="phone_check_notifyOn" formatted="false">Notifications are allowed</string>
+    <string name="phone_check_notifyOff" formatted="false">Notifications are turned off for this app</string>
+    <string name="phone_check_notifyOffSub" formatted="false">Nothing will reach you until they are on.</string>
+    <string name="phone_check_silent" formatted="false">Your phone is on silent or vibrate</string>
+    <string name="phone_check_soundOn" formatted="false">Your phone\'s sound is on</string>
+    <string name="phone_check_silentSub" formatted="false">Notifications only buzz now. Alarms still ring.</string>
+    <string name="phone_check_dndOn" formatted="false">Do Not Disturb is on</string>
+    <string name="phone_check_dndOff" formatted="false">Do Not Disturb is off</string>
+    <string name="phone_check_dndSub" formatted="false">Notifications wait until it ends, unless you allow this app in Do Not Disturb. Alarms still ring.</string>
+    <string name="phone_check_allowApp" formatted="false">Allow this app</string>
+    <string name="phone_check_alarmsFoot" formatted="false">Alarm uses these. An alarm rings like the Clock app, through silent and Do Not Disturb.</string>
+    <string name="phone_check_exactOn" formatted="false">Alarms ring at the exact minute</string>
+    <string name="phone_check_exactOff" formatted="false">Alarms and reminders are not allowed</string>
+    <string name="phone_check_exactOffSub" formatted="false">Without this, alarms and alerts can come a few minutes late.</string>
+    <string name="phone_check_batteryOn" formatted="false">Battery saver leaves the app alone</string>
+    <string name="phone_check_batteryOff" formatted="false">Battery saver may hold alerts back</string>
+    <string name="phone_check_batteryOffSub" formatted="false">Some phones put apps to sleep. Let this app run in the background so alerts come on time.</string>
+    <string name="phone_check_change" formatted="false">Change</string>
+    <string name="phone_check_fridayNotify" formatted="false">Your {friday} reminder is a notification, so it stays quiet on silent.</string>
+    <string name="phone_check_makeAlarm" formatted="false">Make the {friday} reminder an alarm</string>
+    <string name="phone_check_tip" formatted="false">Tip. If you keep your phone on silent at work or in the masjid, set the prayers you must not miss to Alarm.</string>
+    <string name="phone_check_needsLook" formatted="false">Needs a look</string>
+    <string name="phone_alerts_pickRingtone" formatted="false">Pick a ringtone</string>
+    <string name="phone_alerts_selected" formatted="false">{label}, selected</string>
+    <string name="phone_alerts_selectedTap" formatted="false">{label}, selected, tap to hear it</string>
 </resources>

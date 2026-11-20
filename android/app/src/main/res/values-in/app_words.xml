@@ -901,4 +901,50 @@
     <string name="move_copyThis" formatted="false">Salin tautan ini</string>
     <string name="notify_testTitle" formatted="false">{name} · pemberitahuan uji</string>
     <string name="notify_testBody" formatted="false">Seperti inilah tampilan pemberitahuan salat di perangkat ini.</string>
+    <string name="phone_alerts_back" formatted="false">Kembali ke Pemberitahuan dan alarm</string>
+    <string name="phone_alerts_silentTitle" formatted="false">Dalam mode senyap atau Jangan Ganggu, hanya alarm yang berbunyi</string>
+    <string name="phone_alerts_silentSub" formatted="false">Pemberitahuan akan senyap saat itu. Atur salat ke Alarm jika Anda perlu mendengarnya.</string>
+    <string name="phone_alerts_notifyBefore" formatted="false">Pemberitahuan, dan {n} menit sebelum</string>
+    <string name="phone_alerts_notifyAtTime" formatted="false">Pemberitahuan tepat pada waktunya</string>
+    <string name="phone_alerts_notifyToo" formatted="false">{text}, beserta pemberitahuan</string>
+    <string name="phone_alerts_minShort" formatted="false">{n} menit</string>
+    <string name="phone_alerts_eachFoot" formatted="false">Ketuk nama salat untuk melihat waktunya. Beri tahu berarti pemberitahuan, yang senyap saat ponsel dalam mode senyap atau Jangan Ganggu. Alarm berbunyi sampai Anda mematikannya, meski dalam mode senyap.</string>
+    <string name="phone_alerts_alarmFoot" formatted="false">Alarm berbunyi seperti aplikasi Jam, meski ponsel dalam mode senyap, sampai Anda mengetuk Saya sudah bangun. Tunda 5 menit membunyikannya sekali lagi setelah 5 menit.</string>
+    <string name="phone_alerts_nextAt" formatted="false">{when} {time}</string>
+    <string name="phone_alerts_nextAtFor" formatted="false">{when} {time} untuk {name}</string>
+    <string name="phone_alerts_nextAtSahur" formatted="false">{when} {time} untuk sahur</string>
+    <string name="phone_alerts_iftarSub" formatted="false">Pada waktu {name}, beserta doa, di bulan Ramadan</string>
+    <string name="phone_alerts_qiyam" formatted="false">Qiyamullail di sepuluh malam terakhir</string>
+    <string name="phone_alerts_qiyamSub" formatted="false">Pada sepertiga malam terakhir</string>
+    <string name="phone_alerts_nudgeSub" formatted="false">Sekitar 30 menit sebelum waktu salat habis, hanya jika belum dicentang</string>
+    <string name="phone_alerts_soundFoot" formatted="false">Getar saja dan Jam senyap cocok untuk pekerja shift yang tidur siang, bayi yang tidur di kamar, atau malam yang tenang. Pemberitahuan hanya bergetar saat itu. Alarm tetap bersuara.</string>
+    <string name="phone_alerts_helpNotify" formatted="false">Pemberitahuan dengan suara. Senyap saat ponsel Anda dalam mode senyap atau Jangan Ganggu.</string>
+    <string name="phone_alerts_helpAlarm" formatted="false">Berbunyi sampai Anda mematikannya, meski dalam mode senyap dan Jangan Ganggu. Tunda 5 menit.</string>
+    <string name="phone_check_notifications" formatted="false">Pemberitahuan</string>
+    <string name="phone_check_notificationsFoot" formatted="false">Beri tahu memakai pengaturan ini. Semuanya mengikuti pengaturan suara ponsel Anda.</string>
+    <string name="phone_check_notifyOn" formatted="false">Pemberitahuan diizinkan</string>
+    <string name="phone_check_notifyOff" formatted="false">Pemberitahuan dimatikan untuk aplikasi ini</string>
+    <string name="phone_check_notifyOffSub" formatted="false">Tidak ada yang akan sampai kepada Anda sampai pemberitahuan diaktifkan.</string>
+    <string name="phone_check_silent" formatted="false">Ponsel Anda dalam mode senyap atau getar</string>
+    <string name="phone_check_soundOn" formatted="false">Suara ponsel Anda aktif</string>
+    <string name="phone_check_silentSub" formatted="false">Pemberitahuan hanya bergetar sekarang. Alarm tetap berbunyi.</string>
+    <string name="phone_check_dndOn" formatted="false">Jangan Ganggu aktif</string>
+    <string name="phone_check_dndOff" formatted="false">Jangan Ganggu nonaktif</string>
+    <string name="phone_check_dndSub" formatted="false">Pemberitahuan menunggu sampai Jangan Ganggu selesai, kecuali jika Anda mengizinkan aplikasi ini dalam Jangan Ganggu. Alarm tetap berbunyi.</string>
+    <string name="phone_check_allowApp" formatted="false">Izinkan aplikasi ini</string>
+    <string name="phone_check_alarmsFoot" formatted="false">Alarm memakai pengaturan ini. Alarm berbunyi seperti aplikasi Jam, meski dalam mode senyap dan Jangan Ganggu.</string>
+    <string name="phone_check_exactOn" formatted="false">Alarm berbunyi tepat pada menitnya</string>
+    <string name="phone_check_exactOff" formatted="false">Alarm dan pengingat tidak diizinkan</string>
+    <string name="phone_check_exactOffSub" formatted="false">Tanpa pengaturan ini, alarm dan pemberitahuan bisa terlambat beberapa menit.</string>
+    <string name="phone_check_batteryOn" formatted="false">Penghemat baterai tidak mengganggu aplikasi ini</string>
+    <string name="phone_check_batteryOff" formatted="false">Penghemat baterai mungkin menahan pemberitahuan</string>
+    <string name="phone_check_batteryOffSub" formatted="false">Beberapa ponsel menidurkan aplikasi. Biarkan aplikasi ini berjalan di latar belakang agar pemberitahuan datang tepat waktu.</string>
+    <string name="phone_check_change" formatted="false">Ubah</string>
+    <string name="phone_check_fridayNotify" formatted="false">Pengingat {friday} Anda berupa pemberitahuan, jadi senyap dalam mode senyap.</string>
+    <string name="phone_check_makeAlarm" formatted="false">Jadikan pengingat {friday} sebagai alarm</string>
+    <string name="phone_check_tip" formatted="false">Tip. Jika ponsel Anda selalu dalam mode senyap di tempat kerja atau di masjid, atur salat yang tidak boleh Anda lewatkan ke Alarm.</string>
+    <string name="phone_check_needsLook" formatted="false">Perlu dicek</string>
+    <string name="phone_alerts_pickRingtone" formatted="false">Pilih nada dering</string>
+    <string name="phone_alerts_selected" formatted="false">{label}, dipilih</string>
+    <string name="phone_alerts_selectedTap" formatted="false">{label}, dipilih, ketuk untuk mendengarnya</string>
 </resources>
