@@ -7,7 +7,7 @@ import SwiftUI
 /// hardly any masjid or surau), where OpenStreetMap fills the gaps.
 struct PrayerSpace: Identifiable, Hashable {
     enum Kind: String, CaseIterable, Identifiable {
-        case all = "All", masjid = "Masjid", musollah = "Musollah"
+        case all = "All", masjid = "Masjid", musollah = "Prayer room"
         var id: String { rawValue }
     }
 
@@ -18,6 +18,12 @@ struct PrayerSpace: Identifiable, Hashable {
     var distanceKm: Double
     let isMusollah: Bool
     let item: MKMapItem
+    /// Letters from the map data: w women's space, a wheelchair, p parking, t toilets.
+    var facilities: String = ""
+    /// OpenStreetMap opening_hours ("Mo-Su 10:00-22:00"), mostly musollahs in malls.
+    var hours: String? = nil
+
+    var coordinates: Coordinates { Coordinates(latitude: coordinate.latitude, longitude: coordinate.longitude) }
 
     static func == (a: PrayerSpace, b: PrayerSpace) -> Bool { a.id == b.id }
     func hash(into h: inout Hasher) { h.combine(id) }
@@ -186,7 +192,8 @@ final class NearbySearch {
         let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
         item.name = p.name
         return PrayerSpace(id: "osm/\(p.id)", name: p.name, address: p.address, coordinate: coordinate,
-                           distanceKm: 0, isMusollah: p.isMusollah, item: item)
+                           distanceKm: 0, isMusollah: p.isMusollah, item: item,
+                           facilities: p.facilities, hours: p.hours)
     }
 
     /// Refresh: fetch this area's ready-made list again (last week's copy stays
@@ -309,6 +316,7 @@ final class NearbySearch {
                   let lon = (e["lon"] ?? mid?["lon"]) as? Double else { continue }
             let tags = e["tags"] as? [String: String] ?? [:]
             let rawName = [tags["name:en"], tags["name"]].compactMap { $0 }.first { !$0.isEmpty } ?? ""
+            if !rawName.isEmpty, isGraveOrShrine(rawName) { continue }
             let lower = rawName.lowercased()
             let kindTag = (tags["place_of_worship:type"] ?? tags["place_of_worship"] ?? "").lowercased()
             let isMusollah = musollahWords.contains { lower.contains($0) }
@@ -316,7 +324,7 @@ final class NearbySearch {
             let point = Coordinates(latitude: lat, longitude: lon)
             let km = Geo.distanceKm(center, point)
             guard km <= 15 else { continue }
-            let name = rawName.isEmpty ? (isMusollah ? "Musollah" : "Masjid") : rawName
+            let name = rawName.isEmpty ? (isMusollah ? "Prayer room" : "Masjid") : rawName
             let key = "\(name.lowercased())|\((lat * 2000).rounded())|\((lon * 2000).rounded())"
             guard found[key] == nil else { continue }
             let street = [tags["addr:housenumber"], tags["addr:street"]].compactMap { $0 }.joined(separator: " ")
@@ -325,17 +333,41 @@ final class NearbySearch {
             let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
             let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
             item.name = name
+            let hours = tags["opening_hours"].flatMap { $0.trimmingCharacters(in: .whitespaces).isEmpty ? nil : $0 }
             found[key] = PrayerSpace(id: "osm/\(e["type"] as? String ?? "node")/\(e["id"] as? Int ?? 0)",
                                      name: name, address: address, coordinate: coordinate, distanceKm: km,
-                                     isMusollah: isMusollah, item: item)
+                                     isMusollah: isMusollah, item: item,
+                                     facilities: facilities(tags), hours: hours)
         }
         return found.values.sorted { $0.distanceKm < $1.distanceKm }
+    }
+
+    /// The same letters the weekly list builder writes (tools/build_masjid_list.py).
+    nonisolated static func facilities(_ tags: [String: String]) -> String {
+        let yes: Set<String> = ["yes", "designated", "limited", "separate", "only"]
+        func has(_ key: String) -> Bool { tags[key].map { yes.contains($0.lowercased()) } ?? false }
+        var out = ""
+        if ["female", "women", "prayer_room:female", "female_prayer_room"].contains(where: has) { out += "w" }
+        if has("wheelchair") { out += "a" }
+        if let p = tags["parking"]?.lowercased(), !p.isEmpty, p != "no" { out += "p" }
+        if has("toilets") { out += "t" }
+        return out
+    }
+
+    /// Graves and shrines that OpenStreetMap tags as places of worship (Kubur Kassim,
+    /// Keramat Radin Mas). Not places to pray in, unless the name also says masjid or surau.
+    nonisolated static func isGraveOrShrine(_ name: String) -> Bool {
+        let n = name.lowercased()
+        guard n.range(of: #"\b(kubur|keramat|makam|maqam|tomb|grave|cemetery|perkuburan|dargah|shrine)\b"#, options: .regularExpression) != nil
+        else { return false }
+        return n.range(of: #"\b(masjid|mosque|surau|musolla|musalla|musholla|mushola|prayer)\b"#, options: .regularExpression) == nil
     }
 
     /// Search for "mosque" also returns shops and streets named after one; keep
     /// results whose name says what they are.
     static func looksLikePrayerSpace(_ name: String) -> Bool {
         let n = name.lowercased()
+        if isGraveOrShrine(name) { return false }
         // Bus stops, stations and roads named after a mosque ("Darul Ghufran Mosque
         // Stop", "Mosque Street") - but keep "Masjid Jalan Kebun".
         let transport = [" stop", "bus ", "station", "mrt", "lrt", "car park", "carpark", " exit", "halte"]
@@ -348,206 +380,6 @@ final class NearbySearch {
                      "prayer", "jami", "islamic cent", "islamic center", "camii", "cami ", "masjed", "مسجد",
                      "清真寺", "モスク", "모스크", "nhà thờ hồi giáo", "มัสยิด"]
         return words.contains { n.contains($0) }
-    }
-}
-
-struct NearbyView: View {
-    @Environment(AppModel.self) private var model
-    @State private var search = NearbySearch()
-    @State private var kind: PrayerSpace.Kind = .all
-    @State private var camera: MapCameraPosition = .automatic
-    @State private var selected: PrayerSpace?
-    @State private var showAbout = false
-    @State private var slow = false
-
-    private var visible: [PrayerSpace] {
-        switch kind {
-        case .all: search.spaces
-        case .masjid: search.spaces.filter { !$0.isMusollah }
-        case .musollah: search.spaces.filter(\.isMusollah)
-        }
-    }
-
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                Map(position: $camera, selection: $selected) {
-                    ForEach(visible) { space in
-                        Marker(space.name, systemImage: space.isMusollah ? "house.fill" : "moon.stars.fill",
-                               coordinate: space.coordinate)
-                            .tint(space.isMusollah ? Prayer.fajr.tint : Theme.accent)
-                            .tag(space)
-                    }
-                    // Drawn after the pins so it sits on top of them.
-                    if let you = youCoordinate {
-                        Annotation("You are here", coordinate: you, anchor: .center) {
-                            ZStack {
-                                Circle().fill(.blue.opacity(0.18)).frame(width: 44, height: 44)
-                                Circle().fill(.blue).frame(width: 18, height: 18)
-                                    .overlay(Circle().stroke(.white, lineWidth: 3))
-                                    .shadow(radius: 2)
-                            }
-                        }
-                        .annotationTitles(.visible)
-                    }
-                }
-                .frame(height: 300)
-                .overlay(alignment: .bottomTrailing) {
-                    if youCoordinate != nil {
-                        Button { selected = nil; showYou(animated: true) } label: {
-                            Image(systemName: "location.fill")
-                                .font(.body.weight(.semibold))
-                                .frame(width: 44, height: 44)
-                                .background(.regularMaterial, in: Circle())
-                        }
-                        .accessibilityLabel("Show where I am")
-                        .padding(12)
-                    }
-                }
-
-                // The list sits on frosted glass so its text stays easy to read
-                // over every sky colour, from bright Subuh to deep Isyak.
-                VStack(spacing: 0) {
-                Picker("Type", selection: $kind) {
-                    ForEach(PrayerSpace.Kind.allCases) { Text($0.rawValue).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .padding([.horizontal, .top])
-
-                if let place = model.activePlace {
-                    Label("Distances from you, near \(place.name)", systemImage: "location.fill")
-                        .font(.footnote).foregroundStyle(.secondary).lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal).padding(.vertical, 8)
-                }
-
-                MyMasjidRow()
-                    .padding(.bottom, 8)
-
-                if search.isAddingMore && !search.spaces.isEmpty {
-                    HStack(spacing: 6) {
-                        ProgressView().controlSize(.mini)
-                        Text("Looking for more surau and musollah…")
-                    }
-                    .font(.caption).foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal).padding(.bottom, 6)
-                    .transition(.opacity)
-                }
-
-                list
-                }
-                .background(.regularMaterial,
-                            in: UnevenRoundedRectangle(topLeadingRadius: 22, topTrailingRadius: 22, style: .continuous))
-            }
-            .background(SkyNow())
-            .navigationTitle("Masjid & Musollah")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button { slow = false; search.refresh() } label: { Image(systemName: "arrow.clockwise") }
-                        .accessibilityLabel("Refresh the masjid list")
-                        .disabled(model.activePlace == nil)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { showAbout = true } label: { Image(systemName: "info.circle") }
-                        .accessibilityLabel("About this app")
-                }
-            }
-            .sheet(isPresented: $showAbout) { MakersSheet(placement: "masjid") }
-            .task(id: model.activePlace?.coordinates) {
-                guard let c = model.activePlace?.coordinates else { return }
-                slow = false
-                showYou(animated: false)
-                search.search(around: c, country: model.activePlace?.countryCode)
-            }
-            .onChange(of: selected) { _, space in
-                if let space {
-                    withAnimation { camera = .camera(MapCamera(centerCoordinate: space.coordinate, distance: 1500)) }
-                }
-            }
-        }
-    }
-
-    private var youCoordinate: CLLocationCoordinate2D? {
-        model.activePlace.map { CLLocationCoordinate2D(latitude: $0.coordinates.latitude, longitude: $0.coordinates.longitude) }
-    }
-
-    /// Centre on you at walking scale (about 3 km across), rather than zooming
-    /// out to fit every pin within 15 km, which hid where you are.
-    private func showYou(animated: Bool) {
-        guard let you = youCoordinate else { return }
-        let target = MapCameraPosition.region(MKCoordinateRegion(center: you, latitudinalMeters: 3_000, longitudinalMeters: 3_000))
-        if animated { withAnimation { camera = target } } else { camera = target }
-    }
-
-    @ViewBuilder
-    private var list: some View {
-        if model.activePlace == nil {
-            ContentUnavailableView("Choose a place", systemImage: "location.slash",
-                                   description: Text("Allow location or pick a city on the Today tab."))
-        } else if (search.isLoading || search.isAddingMore) && search.spaces.isEmpty && !slow {
-            ProgressView("Searching nearby…").frame(maxHeight: .infinity)
-                .task {
-                    // Never leave a bare spinner: after a few seconds say so and offer Try again.
-                    try? await Task.sleep(for: .seconds(6))
-                    slow = true
-                }
-        } else if visible.isEmpty {
-            let busy = search.isLoading || search.isAddingMore
-            ContentUnavailableView {
-                Label(busy ? "Still looking" : search.failed ? "Couldn't search" : "Nothing listed nearby",
-                      systemImage: "moon.stars")
-            } description: {
-                Text(busy ? "The connection is slow. Places will appear here as soon as they arrive."
-                     : search.failed ? "Searching needs an internet connection."
-                     : "Neither Apple Maps nor OpenStreetMap lists a \(kind == .musollah ? "musollah" : "masjid") within 15 km. Use the Qibla tab to pray where you are.")
-            } actions: {
-                if busy || search.failed {
-                    Button("Try again") { slow = false; search.retry() }
-                        .buttonStyle(.bordered)
-                }
-            }
-        } else {
-            List {
-                ForEach(visible) { space in
-                    Button { selected = space } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: space.isMusollah ? "house.fill" : "moon.stars.fill")
-                                .foregroundStyle(space.isMusollah ? Prayer.fajr.tint : Theme.accent)
-                                .frame(width: 24)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(space.name).font(.body.weight(.semibold)).foregroundStyle(.primary)
-                                if !space.address.isEmpty {
-                                    Text(space.address).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                                }
-                            }
-                            Spacer()
-                            Text(space.distanceKm < 1 ? "\(Int(space.distanceKm * 1000)) m"
-                                 : String(format: "%.1f km", space.distanceKm))
-                                .font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
-                        }
-                    }
-                    .listRowBackground(Color.clear)
-                .swipeActions {
-                        Button("Directions") {
-                            space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeWalking])
-                        }
-                        .tint(.blue)
-                    }
-                    .contextMenu {
-                        Button("Walking directions", systemImage: "figure.walk") {
-                            space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeWalking])
-                        }
-                        Button("Driving directions", systemImage: "car.fill") {
-                            space.item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
-                        }
-                    }
-                }
-            }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-        }
     }
 }
 

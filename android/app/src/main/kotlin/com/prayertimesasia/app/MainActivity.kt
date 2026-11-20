@@ -90,6 +90,12 @@ class MainActivity : ComponentActivity(), Permissions {
     override fun onResume() {
         super.onResume()
         state.appBecameActive()
+        state.usageVisible(true)
+    }
+
+    override fun onPause() {
+        state.usageVisible(false)
+        super.onPause()
     }
 
     override fun onDestroy() {

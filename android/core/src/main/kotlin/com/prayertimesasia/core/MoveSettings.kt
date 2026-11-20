@@ -65,6 +65,9 @@ data class MovedSettings(
     val buzzOnly: Boolean? = null,
     val largeText: Boolean? = null,
     val jumuahReminderMinutes: Int? = null,
+    /** Singapore's first or second Friday session. */
+    val jumuahSession: String? = null,
+    val jumuahLeaveAlarm: Boolean? = null,
     /** The Ramadan record: how each day's fast went (FastMark raw values; an unknown one is skipped), and the days Tarawih was prayed and the juz read. */
     val fastLog: Map<String, String>? = null,
     val tarawihLog: List<String>? = null,
@@ -152,7 +155,9 @@ data class MovedSettings(
             quietTo = quietTo?.takeIf { it in 0 until 1440 } ?: d.quietTo,
             buzzOnly = buzzOnly ?: d.buzzOnly,
             largeText = largeText ?: d.largeText,
-            jumuahReminderMinutes = jumuahReminderMinutes?.takeIf { it in PrayerWindow.JUMUAH_REMINDER_CHOICES } ?: 0,
+            jumuahReminderMinutes = jumuahReminderMinutes?.let(JumuahLeave::snap) ?: 0,
+            jumuahSession = JumuahSession.of(jumuahSession) ?: JumuahSession.FIRST,
+            jumuahLeaveAlarm = jumuahLeaveAlarm ?: false,
             fastLog = fasts,
             tarawihLog = p.tarawihLog + tarawihLog.orEmpty().filter { DAY.matches(it) },
             quranLog = p.quranLog + quranLog.orEmpty().filter { DAY.matches(it) },
@@ -237,7 +242,7 @@ data class MovedSettings(
         const val VERSION = 1
         const val PREFIX = "PTA1."
         /** The web app's address; a phone camera that scans the QR code opens it straight into "Bring in settings". */
-        const val LINK_BASE = "https://aarif86.github.io/PrayerTimesAsia/app/#move="
+        const val LINK_BASE = "https://prayertimes.asia/app/#move="
         /** Phone cameras read a QR code of this many characters off a screen without fuss. */
         const val QR_MAX_CHARACTERS = 1500
         /** How far back "this year's Ramadan record" reaches from its newest day: the month itself, Syawal and the replaced fasts after it. */
@@ -309,6 +314,8 @@ data class MovedSettings(
                 buzzOnly = changed(p.buzzOnly, d.buzzOnly),
                 largeText = changed(p.largeText, d.largeText),
                 jumuahReminderMinutes = changed(p.jumuahReminderMinutes, d.jumuahReminderMinutes),
+                jumuahSession = changed(p.jumuahSession, d.jumuahSession)?.raw,
+                jumuahLeaveAlarm = changed(p.jumuahLeaveAlarm, d.jumuahLeaveAlarm),
                 fastLog = p.fastLog.takeIf { it.isNotEmpty() }?.mapValues { it.value.name.lowercase() }?.toSortedMap(),
                 tarawihLog = p.tarawihLog.takeIf { it.isNotEmpty() }?.sorted(),
                 quranLog = p.quranLog.takeIf { it.isNotEmpty() }?.sorted(),

@@ -7,6 +7,7 @@ import { hijriMonths } from '../core/prayer'
 import { daysApart, publishedHijri, type CivilDay } from '../core/season'
 import { store, useNow, useStore } from '../services/store'
 import { closeSheet, showDayOnPrayerScreen } from './common'
+import { appLocale, tr } from '../core/appWords'
 
 /** The days of one Gregorian month, each with its Hijri date as this community counts it. */
 function monthDays(year: number, month: number): { g: CivilDay; h: HijriDate }[] {
@@ -20,7 +21,7 @@ function monthDays(year: number, month: number): { g: CivilDay; h: HijriDate }[]
 const shortAuthority = (id: string) => authorityName(id).replace(/\s*\(.*\)\s*$/, '')
 
 function fmtCivil(g: CivilDay, style: 'long' | 'short' = 'long'): string {
-  return new Intl.DateTimeFormat('en-GB', {
+  return new Intl.DateTimeFormat(appLocale(), {
     timeZone: 'UTC', weekday: style === 'long' ? 'long' : 'short', day: 'numeric', month: style === 'long' ? 'long' : 'short',
     ...(style === 'long' ? { year: 'numeric' } : {}),
   }).format(new Date(Date.UTC(g.year, g.month - 1, g.day))).replace(',', '')
@@ -61,12 +62,12 @@ export function HijriMonthCard() {
   return (
     <div class="glass card hcal" style={{ marginTop: '10px' }}>
       <div class="hcal-head">
-        <button class="round-btn hcal-prev" aria-label="Previous month" onClick={() => move(-1)}><ChevronLeft size={18} /></button>
+        <button class="round-btn hcal-prev" aria-label={tr('tracker.prevMonth')} onClick={() => move(-1)}><ChevronLeft size={18} /></button>
         <div class="hcal-title">
           <h3>{words.months[shown.m - 1]} {shown.y}</h3>
           <div class="hcal-hspan">{hijriSpan}</div>
         </div>
-        <button class="round-btn hcal-next" aria-label="Next month" onClick={() => move(1)}><ChevronRight size={18} /></button>
+        <button class="round-btn hcal-next" aria-label={tr('tracker.nextMonth')} onClick={() => move(1)}><ChevronRight size={18} /></button>
       </div>
       <div class="hcal-grid">
         {words.week.map((w, i) => <span class={`hcal-wd secondary${i === 5 ? ' fri' : ''}`} aria-hidden="true">{w}</span>)}
@@ -101,7 +102,7 @@ export function HijriMonthCard() {
             <div class="caption secondary">{fmtCivil(sel.g)}</div>
             {islamicDaysOf(sel.h).map((k) => <div class="caption accent" style={{ fontWeight: 600 }}>{islamicDayName(k.kind, s.naming)}</div>)}
           </div>
-          <button class="pill-btn quiet" onClick={() => goTo(sel.g)}>{s.naming === 'malay' ? 'Waktu solat' : s.naming === 'indonesian' ? 'Jadwal salat' : 'Prayer times'}</button>
+          <button class="pill-btn quiet" onClick={() => goTo(sel.g)}>{tr('today.title')}</button>
         </div>
       ) : (
         <div class="hcal-list">

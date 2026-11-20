@@ -166,7 +166,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .scr-dim {
   position: absolute !important; inset: 0; z-index: 5 !important; background: #020309; display: grid; place-content: center; text-align: center;
-  gap: calc(var(--u) * 1.6); color: rgba(235, 235, 245, 0.42);
+  gap: calc(var(--u) * 1.6); color: rgba(235, 235, 245, 0.6);
 }
 .scr-dim h2 { margin: 0; font-family: var(--font-display); font-size: calc(var(--u) * 6); font-weight: 700; }
 .scr-dim p { margin: 0; font-size: calc(var(--u) * 3.4); }

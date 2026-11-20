@@ -150,8 +150,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                 </div>
               ))}
             </div>
-            <label class="check"><input id="s-showiq" type="checkbox" checked={c.showIqamah} onChange={(e) => set({ showIqamah: (e.target as HTMLInputElement).checked })} /> Also print the iqamah times on the screen (most jemaah only need the prayer times)</label>
-            <label class="check"><input id="s-showqr" type="checkbox" checked={c.showQr} onChange={(e) => set({ showQr: (e.target as HTMLInputElement).checked })} /> Show a QR code that jemaah scan to see these iqamah times in the Prayer Times Asia app</label>
+            <label class="check"><input id="s-showiq" type="checkbox" checked={c.showIqamah} onChange={(e) => set({ showIqamah: (e.target as HTMLInputElement).checked })} /> Also print the iqamah times on the screen (most people only need the prayer times)</label>
+            <label class="check"><input id="s-showqr" type="checkbox" checked={c.showQr} onChange={(e) => set({ showQr: (e.target as HTMLInputElement).checked })} /> Show a QR code that people scan to see these iqamah times in the Prayer Times Asia app</label>
             <label for="s-jumuah">Friday khutbah starts (24-hour, for example 13:00)</label>
             <TimeField id="s-jumuah" value={c.jumuah} placeholder="13:00" onChange={(v) => set({ jumuah: v })} />
             <div class="setup-iq two">
@@ -174,16 +174,16 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
           </fieldset>
 
           <fieldset>
-            <legend><span class="step">4</span>Ramadan and Raya <span class="muted small">(optional)</span></legend>
-            <p class="muted small">In Ramadan the screen adds Imsak, calls Maghrib Berbuka and shows the Ramadan day. It starts and ends on the days {c.place ? 'your country\'s authority' : 'the authority'} announces.</p>
+            <legend><span class="step">4</span>Ramadan and Eid <span class="muted small">(optional)</span></legend>
+            <p class="muted small">In Ramadan the screen adds Imsak, calls Maghrib Iftar and shows the Ramadan day. It starts and ends on the days {c.place ? 'your country\'s authority' : 'the authority'} announces.</p>
             <div class="setup-iq two">
               <div>
-                <label for="s-ishaex">Extra minutes before Isyak iqamah</label>
+                <label for="s-ishaex">Extra minutes before Isha iqamah</label>
                 <input id="s-ishaex" type="number" min={0} max={60} value={c.ramadan.ishaExtra}
                   onInput={(e) => setRamadan({ ishaExtra: Math.max(0, Math.min(60, +(e.target as HTMLInputElement).value || 0)) })} />
               </div>
               <div>
-                <label for="s-tarawih">Tarawih starts (empty means after Isyak)</label>
+                <label for="s-tarawih">Tarawih starts (empty means after Isha)</label>
                 <TimeField id="s-tarawih" value={c.ramadan.tarawihAt} placeholder="21:15" onChange={(v) => setRamadan({ tarawihAt: v })} />
               </div>
               <div>
@@ -191,12 +191,12 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                 <TimeField id="s-qiyam" value={c.ramadan.qiyamAt} placeholder="03:30" onChange={(v) => setRamadan({ qiyamAt: v })} />
               </div>
               <div>
-                <label for="s-eid">Hari Raya prayer</label>
+                <label for="s-eid">Eid prayer</label>
                 <TimeField id="s-eid" value={c.ramadan.eidAt} placeholder="08:00" onChange={(v) => setRamadan({ eidAt: v })} />
               </div>
             </div>
             <label class="check"><input id="s-showtarawih" type="checkbox" checked={c.ramadan.tarawih} onChange={(e) => setRamadan({ tarawih: (e.target as HTMLInputElement).checked })} /> Show Tarawih in Ramadan</label>
-            <p class="muted small">The Raya prayer time also goes into the QR code, so jemaah see it in the app on Raya morning.</p>
+            <p class="muted small">The Eid prayer time also goes into the QR code, so the congregation sees it in the app on Eid morning.</p>
             <label for="s-preview">Try it before Ramadan</label>
             <select id="s-preview" value={c.ramadan.preview} onChange={(e) => setRamadan({ preview: (e.target as HTMLSelectElement).value as SeasonPreview })}>
               {SEASON_PREVIEWS.map((v) => <option key={v} value={v}>{SEASON_PREVIEW_LABEL[v]}</option>)}
@@ -232,7 +232,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <select id="s-hijri" value={String(c.hijriAdj)} onChange={(e) => set({ hijriAdj: +(e.target as HTMLSelectElement).value })}>
               {[-2, -1, 0, 1, 2].map((n) => <option key={n} value={String(n)}>{n > 0 ? `+${n}` : n}</option>)}
             </select>
-            <label class="check"><input id="s-occasion" type="checkbox" checked={c.occasion} onChange={(e) => set({ occasion: (e.target as HTMLInputElement).checked })} /> Count down to the next big date (1 Ramadan, Hari Raya Aidilfitri, Hari Raya Aidiladha, Maal Hijrah and Maulidur Rasul), from 100 days before. Dates your country's authority has announced come first.</label>
+            <label class="check"><input id="s-occasion" type="checkbox" checked={c.occasion} onChange={(e) => set({ occasion: (e.target as HTMLInputElement).checked })} /> Count down to the next big date (1 Ramadan, Eid al-Fitr, Eid al-Adha, Islamic New Year and Mawlid), from 100 days before. Dates your country's authority has announced come first.</label>
             <label class="check"><input id="s-kaaba" type="checkbox" checked={c.kaabaDays} onChange={(e) => set({ kaabaDays: (e.target as HTMLInputElement).checked })} /> On the two days a year the sun stands over the Kaaba (about 27 or 28 May and 15 or 16 July), show the exact time, so jemaah can check the qibla by the sun</label>
             <label class="check"><input id="s-report" type="checkbox" checked={c.report} onChange={(e) => set({ report: (e.target as HTMLInputElement).checked })} /> Let Prayer Times Asia know this screen is running (the masjid's name, city and look, a few times a day, so we can help if something goes wrong)</label>
           </fieldset>

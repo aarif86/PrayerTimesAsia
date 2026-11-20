@@ -33,4 +33,25 @@ final class UsageCounterTests: XCTestCase {
         XCTAssertTrue(try JSONDecoder().decode(Preferences.self, from: Data("{}".utf8)).shareUsage)
         XCTAssertFalse(try JSONDecoder().decode(Preferences.self, from: Data(#"{"shareUsage":false}"#.utf8)).shareUsage)
     }
+
+    func testADayOfUseIsSentOnceTheNextDay() {
+        var t = UsageCounter.DayTally(day: "2026-11-17")
+        XCTAssertNil(UsageCounter.roll(t, today: "2026-11-17").finished)
+        XCTAssertNil(UsageCounter.roll(t, today: "2026-11-18").finished, "an empty day sends nothing")
+        t.opens = 3
+        t = UsageCounter.adding(10 * 3_600, to: t)
+        XCTAssertEqual(t.seconds, UsageCounter.maxStretch, "a phone left open counts two hours at most")
+        t = UsageCounter.adding(screen: "qibla", to: UsageCounter.adding(screen: "prayer", to: UsageCounter.adding(screen: "prayer", to: t)))
+        let rolled = UsageCounter.roll(t, today: "2026-11-18")
+        XCTAssertEqual(rolled.finished, t)
+        XCTAssertEqual(rolled.tally, UsageCounter.DayTally(day: "2026-11-18"))
+        let p = UsageCounter.dayPayload(["App.platform": "ios"], t)
+        XCTAssertEqual(p["Day.minutes"], "120")
+        XCTAssertEqual(p["Day.minutesBand"], "over 60")
+        XCTAssertEqual(p["Day.opens"], "3")
+        XCTAssertEqual(p["Day.screens"], "prayer,qibla")
+        XCTAssertEqual(p["Used.qibla"], "true")
+        XCTAssertEqual(p["Used.masjid"], "false")
+        XCTAssertEqual(UsageCounter.minutesBand(4.9), "1 to 5")
+    }
 }

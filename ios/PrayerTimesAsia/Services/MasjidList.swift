@@ -18,6 +18,10 @@ final class MasjidList {
         let name: String
         let address: String
         let isMusollah: Bool
+        /// Letters from the map data: w women's space, a wheelchair, p parking, t toilets.
+        var facilities: String = ""
+        /// OpenStreetMap opening_hours, mostly for musollahs in malls.
+        var hours: String? = nil
     }
 
     struct Index {
@@ -156,7 +160,8 @@ final class MasjidList {
         return Index(tiles: Set(tiles), countries: Set(countries.keys))
     }
 
-    /// `{"places": [[id, lat, lon, name, address, musollah 0/1], ...]}`
+    /// `{"places": [[id, lat, lon, name, address, musollah 0/1, facilities?, opening_hours?], ...]}`
+    /// The last two columns are optional; graves and shrines are left out.
     nonisolated static func parse(_ data: Data) -> [Place]? {
         guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let rows = root["places"] as? [[Any]] else { return nil }
@@ -165,9 +170,12 @@ final class MasjidList {
                   let lat = (row[1] as? NSNumber)?.doubleValue, let lon = (row[2] as? NSNumber)?.doubleValue else { return nil }
             let musollah = (row[5] as? NSNumber)?.intValue == 1
             let name = (row[3] as? String) ?? ""
+            if !name.isEmpty, NearbySearch.isGraveOrShrine(name) { return nil }
+            let hours = row.count > 7 ? (row[7] as? String).flatMap { $0.isEmpty ? nil : $0 } : nil
             return Place(id: id, latitude: lat, longitude: lon,
-                         name: name.isEmpty ? (musollah ? "Musollah" : "Masjid") : name,
-                         address: (row[4] as? String) ?? "", isMusollah: musollah)
+                         name: name.isEmpty ? (musollah ? "Prayer room" : "Masjid") : name,
+                         address: (row[4] as? String) ?? "", isMusollah: musollah,
+                         facilities: row.count > 6 ? (row[6] as? String) ?? "" : "", hours: hours)
         }
     }
 }

@@ -34,7 +34,7 @@ object RamadanContent {
             arabic = "نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ شَهْرِ رَمَضَانَ هَذِهِ السَّنَةِ لِلّٰهِ تَعَالَى",
             rumi = "Nawaitu sauma ghadin 'an adā'i fardhi syahri Ramadhāna hādzihis sanati lillāhi ta'ālā",
             meaning = Doa.Words("I intend to fast tomorrow, fulfilling the obligation of the month of Ramadan this year, for Allah Most High.", "Sahaja aku berpuasa esok hari menunaikan fardhu bulan Ramadan tahun ini kerana Allah Taala.", "Aku berniat puasa esok hari untuk menunaikan kewajiban bulan Ramadan tahun ini karena Allah Taala."),
-            note = Doa.Words("Made in the heart each night before Subuh. Saying it helps.", "Niat di dalam hati setiap malam sebelum Subuh. Melafazkannya membantu.", "Diniatkan dalam hati setiap malam sebelum Subuh. Melafalkannya membantu."),
+            note = Doa.Words("Made in the heart each night before Fajr. Saying it helps.", "Niat di dalam hati setiap malam sebelum Subuh. Melafazkannya membantu.", "Diniatkan dalam hati setiap malam sebelum Subuh. Melafalkannya membantu."),
         ),
         Doa(
             DoaId.BERBUKA,
@@ -62,19 +62,19 @@ object RamadanContent {
         ),
         Doa(
             DoaId.TAKBIR,
-            title = Doa.Words("Takbir Raya", "Takbir Raya", "Takbir Idul Fitri"),
+            title = Doa.Words("Eid takbir", "Takbir Raya", "Takbir Idulfitri"),
             arabic = "اللهُ أَكْبَرُ اللهُ أَكْبَرُ اللهُ أَكْبَرُ، لَا إِلٰهَ إِلَّا اللهُ وَاللهُ أَكْبَرُ، اللهُ أَكْبَرُ وَلِلّٰهِ الْحَمْدُ",
             rumi = "Allāhu akbar, Allāhu akbar, Allāhu akbar. Lā ilāha illallāhu wallāhu akbar. Allāhu akbar wa lillāhil hamd.",
             meaning = Doa.Words("Allah is the Greatest (three times). There is no god but Allah, and Allah is the Greatest. Allah is the Greatest, and to Allah belongs all praise.", "Allah Maha Besar (tiga kali). Tiada Tuhan melainkan Allah, dan Allah Maha Besar. Allah Maha Besar, dan bagi Allah segala puji.", "Allah Maha Besar (tiga kali). Tiada Tuhan selain Allah, dan Allah Maha Besar. Allah Maha Besar, dan bagi Allah segala puji."),
-            note = Doa.Words("From Maghrib on Raya eve until the Raya prayer begins.", "Dari Maghrib malam Raya hingga solat sunat Aidilfitri bermula.", "Dari Maghrib malam Idul Fitri hingga sholat Id dimulai."),
+            note = Doa.Words("From Maghrib on the eve of Eid until the Eid prayer begins.", "Dari Maghrib malam Raya hingga solat sunat Aidilfitri bermula.", "Dari Maghrib malam Idulfitri hingga salat Id dimulai."),
         ),
         Doa(
             DoaId.NIAT_SYAWAL,
-            title = Doa.Words("Intention for the six days of Syawal", "Niat puasa enam Syawal", "Niat puasa Syawal"),
+            title = Doa.Words("Intention for the six days of Shawwal", "Niat puasa enam Syawal", "Niat puasa Syawal"),
             arabic = "نَوَيْتُ صَوْمَ غَدٍ عَنْ سُنَّةِ السِّتَّةِ مِنْ شَوَّالٍ لِلّٰهِ تَعَالَى",
             rumi = "Nawaitu sauma ghadin 'an sunnatis sittati min Syawwālin lillāhi ta'ālā",
-            meaning = Doa.Words("I intend to fast tomorrow, one of the six sunnah days of Syawal, for Allah Most High.", "Sahaja aku berpuasa esok hari sunat enam hari bulan Syawal kerana Allah Taala.", "Aku berniat puasa esok hari, sunnah enam hari bulan Syawal, karena Allah Taala."),
-            note = Doa.Words("Fasting Ramadan then six days of Syawal is like fasting the whole year. Reported by Muslim", "Puasa Ramadan diikuti enam hari Syawal seperti berpuasa setahun. Riwayat Muslim", "Puasa Ramadan lalu enam hari Syawal seperti puasa setahun. Riwayat Muslim"),
+            meaning = Doa.Words("I intend to fast tomorrow, one of the six sunnah days of Shawwal, for Allah Most High.", "Sahaja aku berpuasa esok hari sunat enam hari bulan Syawal kerana Allah Taala.", "Aku berniat puasa esok hari, sunnah enam hari bulan Syawal, karena Allah Taala."),
+            note = Doa.Words("Fasting Ramadan then six days of Shawwal is like fasting the whole year. Reported by Muslim", "Puasa Ramadan diikuti enam hari Syawal seperti berpuasa setahun. Riwayat Muslim", "Puasa Ramadan lalu enam hari Syawal seperti puasa setahun. Riwayat Muslim"),
         ),
         Doa(
             DoaId.NIAT_QADHA,
@@ -102,9 +102,9 @@ object RamadanContent {
     )
 
     val zakatNote = Doa.Words(
-        "Zakat fitrah is due from every Muslim who has enough for Raya, for themselves and those they support. Pay before the Raya prayer. Your authority sets this year's amount.",
+        "Zakat al-Fitr is due from every Muslim who has enough for Eid, for themselves and those they support. Pay before the Eid prayer. Your authority sets this year's amount.",
         "Zakat fitrah wajib atas setiap Muslim yang cukup keperluan Raya, untuk diri dan tanggungannya. Bayar sebelum solat sunat Aidilfitri. Kadar tahun ini ditetapkan oleh pihak berkuasa agama anda.",
-        "Zakat fitrah wajib bagi setiap Muslim yang memiliki kelebihan untuk hari raya, bagi dirinya dan tanggungannya. Bayar sebelum sholat Id. Besarnya ditetapkan oleh otoritas setempat.",
+        "Zakat fitrah wajib bagi setiap Muslim yang memiliki kelebihan untuk hari raya, bagi dirinya dan tanggungannya. Bayar sebelum salat Id. Besarnya ditetapkan oleh otoritas setempat.",
     )
 
     fun juzLink(juz: Int): String = "https://quran.com/juz/${juz.coerceIn(1, 30)}"

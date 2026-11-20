@@ -24,7 +24,9 @@ struct PrayerTimesAsiaApp: App {
                 }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { model.appBecameActive(); model.tickSky() }
+                    if phase == .active { model.usageVisible(true) } else if phase == .background { model.usageVisible(false) }
                 }
+                .onChange(of: model.selectedTab) { _, tab in model.usageScreen(tab) }
                 .onChange(of: model.location.location) { _, location in
                     if let location { model.handle(location: location) }
                     model.tickSky()
@@ -86,6 +88,10 @@ struct RootView: View {
             .sheet(isPresented: $model.showJourney) { JourneyView() }
             .sheet(isPresented: $model.showWakeUp) { WakeUpView() }
             .sheet(item: $model.pendingMasjid) { MasjidLinkSheet(link: $0) }
+            // New users see the quick guide once, right after choosing their place.
+            .fullScreenCover(isPresented: Binding(
+                get: { !model.prefs.guideSeen && opening != true },
+                set: { if !$0 { model.prefs.guideSeen = true } })) { GuideView() }
             .alert("Welcome back", isPresented: $model.showWelcomeBack) {
                 Button("OK") {}
             } message: {

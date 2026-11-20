@@ -41,6 +41,8 @@ import com.prayertimesasia.core.Hadith
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.core.RamadanContent
 import kotlinx.coroutines.delay
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /**
  * A short hadith or ayah, as a card or a softer line (core HadithContent.kt).
@@ -61,9 +63,9 @@ fun HadithView(state: AppState, id: HadithId, modifier: Modifier = Modifier, tag
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text("Hadith hidden here. Bring them all back in Settings, Hadith.", style = Txt.subheadline, color = Palette.primary,
+                Text(tr(R.string.hadith_hidden), style = Txt.subheadline, color = Palette.primary,
                     modifier = Modifier.weight(1f))
-                Text("Undo", style = Txt.subheadline.copy(fontWeight = FontWeight.Bold), color = Palette.accentText,
+                Text(tr(R.string.common_undo), style = Txt.subheadline.copy(fontWeight = FontWeight.Bold), color = Palette.accentText,
                     modifier = Modifier.clickable {
                         state.update { it.copy(hiddenHadith = it.hiddenHadith - id.key) }
                         justHidden = false

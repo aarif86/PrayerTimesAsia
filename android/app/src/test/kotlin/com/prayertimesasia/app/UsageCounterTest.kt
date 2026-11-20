@@ -53,4 +53,24 @@ class UsageCounterTest {
         assertTrue(Preferences.decode("{}").shareUsage)
         assertFalse(Preferences.decode("""{"shareUsage":false}""").shareUsage)
     }
+
+    @Test fun aDayOfUseIsSentOnceTheNextDay() {
+        val empty = UsageCounter.DayTally("2026-11-17")
+        assertNull(UsageCounter.roll(empty, "2026-11-17").second)
+        assertNull("an empty day sends nothing", UsageCounter.roll(empty, "2026-11-18").second)
+        val t = empty.copy(opens = 3).addSeconds(10 * 3_600.0).addScreen("prayer").addScreen("prayer").addScreen("qibla")
+        assertEquals(UsageCounter.MAX_STRETCH_S, t.seconds, 0.0)
+        val (today, finished) = UsageCounter.roll(t, "2026-11-18")
+        assertEquals(t, finished)
+        assertEquals(UsageCounter.DayTally("2026-11-18"), today)
+        assertEquals(t, UsageCounter.DayTally.decode(t.encode()))
+        val p = UsageCounter.dayPayload(mapOf("App.platform" to "android"), t)
+        assertEquals("120", p["Day.minutes"])
+        assertEquals("over 60", p["Day.minutesBand"])
+        assertEquals("3", p["Day.opens"])
+        assertEquals("prayer,qibla", p["Day.screens"])
+        assertEquals("true", p["Used.qibla"])
+        assertEquals("false", p["Used.masjid"])
+        assertEquals("1 to 5", UsageCounter.minutesBand(4.9))
+    }
 }

@@ -85,8 +85,9 @@ describe('occasion countdown', () => {
   })
 
   it('names the dates in the masjid\'s words', () => {
-    expect(occasionName('aidiladha', SG)).toBe('Hari Raya Aidiladha')
-    expect(occasionName('aidiladha', { ...SG, lang: 'id' })).toBe('Idul Adha')
+    expect(occasionName('aidiladha', SG)).toBe('Eid al-Adha')
+    expect(occasionName('aidiladha', { ...SG, lang: 'ms' })).toBe('Hari Raya Aidiladha')
+    expect(occasionName('aidiladha', { ...SG, lang: 'id' })).toBe('Iduladha')
     expect(occasionName('aidiladha', LA)).toBe('Eid al-Adha')
     expect(WORDS.en.occasion('Maal Hijrah', 12)).toBe('Maal Hijrah in 12 days')
     expect(WORDS.ms.occasion('Maal Hijrah', 1)).toBe('Esok Maal Hijrah')

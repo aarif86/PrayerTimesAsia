@@ -24,9 +24,12 @@ import { dayKey, daysBetween, deviceTimeZone, noonDaysAfter, ymdKey, zoned, zone
 export { parseCivil, civilKey }
 import { CITIES, nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
+import { appLangFromLocales, setAppLang } from '../core/appWords'
+import type { Lang3 } from '../core/ramadanContent'
 import { DEFAULT_PREFS, loadPreferences, savePreferences, TODAY_STYLES, type Preferences, type TodayStyle } from './prefs'
 import { fetchOK, readJSON, readString, writeJSON, writeString } from './storage'
-import { countAppOpen } from './usage'
+import { countAppOpen, countCard, tallyScreen, tallyStart, tallyStop, type CardFacts } from './usage'
+import { VERSION } from '../ui/version'
 
 export type Tab = 'today' | 'qibla' | 'falak' | 'masjid' | 'settings'
 export const TABS: Tab[] = ['today', 'qibla', 'falak', 'masjid', 'settings']
@@ -67,6 +70,7 @@ class AppStore {
   constructor() {
     this.demo = parseDemo()
     this.prefs = this.demo ? demoPreferences(this.demo) : loadPreferences()
+    setAppLang(this.appLang)
     if (this.demo?.tab) this.tab = this.demo.tab
     const m = readJSON<MosqueDataset>('ptasia.mosques')
     if (m?.mosques) this.mosques = m
@@ -106,6 +110,18 @@ class AppStore {
     this.emit()
   }
 
+  /** Picked from the Masjid tab: pinned at the top. Keeps iqamah times a QR code already gave it. */
+  chooseMasjid(name: string, c: { latitude: number; longitude: number }): void {
+    const old = this.prefs.myMasjid
+    const same = old && Math.abs(old.lat - c.latitude) < 0.003 && Math.abs(old.lng - c.longitude) < 0.003
+    this.update((p) => {
+      p.myMasjid = same ? old : {
+        name: name.slice(0, 80), lat: +c.latitude.toFixed(4), lng: +c.longitude.toFixed(4),
+        tz: this.activePlace?.timeZoneID ?? deviceTimeZone(), cc: this.activePlace?.countryCode ?? null, jamaah: {}, jumuah: null,
+      }
+    })
+  }
+
   forgetMasjid(): void {
     this.update((p) => { p.myMasjid = null })
   }
@@ -126,6 +142,7 @@ class AppStore {
   }
 
   emit(): void {
+    setAppLang(this.appLang)
     this.revision++
     this.dayCache.clear()
     for (const fn of this.listeners) fn()
@@ -150,15 +167,44 @@ class AppStore {
   setTab(tab: Tab): void {
     this.tab = tab
     this.emit()
+    if (this.usageOn) tallyScreen(tab === 'today' ? 'prayer' : tab)
   }
 
   // MARK: Where and which rules
+
+  /** Counts separate days the app was opened, on this device only (for the one gentle note card). */
+  countOpenDay(): void {
+    if (this.demo || !this.prefs.hasOnboarded) return
+    const d = new Date(), key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+    if (this.prefs.lastOpenDay === key) return
+    this.update((p) => { p.lastOpenDay = key; p.openDayCount += 1 })
+  }
 
   /** Anonymous count of this open, once the place is known (see services/usage.ts). */
   countOpen(version: string): void {
     if (this.demo || !this.prefs.shareUsage || !this.prefs.hasOnboarded) return
     const p = this.activePlace
     countAppOpen(version, { city: p?.name, countryCode: p?.countryCode })
+  }
+
+  private get usageOn(): boolean { return !this.demo && this.prefs.shareUsage && this.prefs.hasOnboarded }
+
+  /** The app came on screen or left it: minutes and opens per day (services/usage.ts, App.daySummary). */
+  usageVisible(visible: boolean): void {
+    if (!this.usageOn) return
+    if (!visible) { tallyStop(); return }
+    const p = this.activePlace
+    tallyStart(VERSION.replace(' (web)', ''), { city: p?.name, countryCode: p?.countryCode })
+    tallyScreen(this.tab === 'today' ? 'prayer' : this.tab)
+  }
+
+  /** Anonymous count of a Barakah Picks card seen or tapped (docs/community-cards.md). */
+  countCard(event: 'Card.seen' | 'Card.tapped', card: CardFacts): void {
+    if (this.demo || !this.prefs.shareUsage) return
+    const p = this.activePlace
+    const d = new Date()
+    const today = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+    countCard(event, VERSION.replace(' (web)', ''), { city: p?.name, countryCode: p?.countryCode }, card, today)
   }
 
   /** Showing the last known place while the browser checks where we are now. */
@@ -186,6 +232,14 @@ class AppStore {
   /** The same in one sentence or two, for the welcome card. */
   get sourceShort(): string { return officialSummary(this.officialSource, true) ?? sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true) }
   get asrSchool(): AsrSchool { return this.prefs.asrOverride ?? this.profile.asr }
+  /** The language of the app's words: the user's pick in Settings, else Malay or Indonesian prayer names if picked, else the browser's language (English unless Malay or Indonesian). */
+  get appLang(): Lang3 {
+    if (this.prefs.appLanguageOverride) return this.prefs.appLanguageOverride
+    // Someone who already picked Malay or Indonesian prayer names keeps the Ramadan page and alerts in that language.
+    if (this.prefs.namingOverride === 'malay') return 'ms'
+    if (this.prefs.namingOverride === 'indonesian') return 'id'
+    return appLangFromLocales(browserLocales())
+  }
   get personalNaming(): NamingStyle { return personalNaming(navigatorLocale()) }
   /** Your names, from your browser's language (English unless it has names in it), not from where you are. */
   get naming(): NamingStyle { return this.prefs.namingOverride ?? this.personalNaming }
@@ -741,13 +795,24 @@ class AppStore {
   }
 }
 
-function navigatorLocale(): string {
+export function navigatorLocale(): string {
   // A language picked on our website (same address) comes first, then the browser's.
   try {
     const site = localStorage.getItem('pta-lang')
     if (site && site !== 'en') return site
   } catch { /* storage blocked */ }
   try { return navigator.language || 'en' } catch { return 'en' }
+}
+
+/** The browser's languages in order, with a language picked on our website (same address) first. */
+export function browserLocales(): string[] {
+  const out: string[] = []
+  try {
+    const site = localStorage.getItem('pta-lang')
+    if (site) out.push(site)
+  } catch { /* storage blocked */ }
+  try { out.push(...(navigator.languages?.length ? navigator.languages : [navigator.language || 'en'])) } catch { out.push('en') }
+  return out
 }
 
 function parseDemo(): Demo | null {
@@ -791,6 +856,8 @@ function demoPreferences(demo: Demo): Preferences {
   p.manualPlace = PASIR_RIS
   p.lastCountryCode = 'SG'
   p.trackerEnabled = true
+  // Screenshots skip the quick guide unless they ask for it (?guide=1).
+  p.guideSeen = q.get('guide') !== '1'
   for (let back = 1; back <= 3; back++) {
     p.prayedLog[dayKey(now - back * 86_400_000, 'Asia/Singapore')] = [...OBLIGATORY]
   }
@@ -832,6 +899,11 @@ function demoPreferences(demo: Demo): Preferences {
   p.appPromptDismissed = q.get('appprompt') !== 'on'
   if (q.get('masjid') === 'on') p.myMasjid = DEMO_MASJID
   if (q.get('large') === '1') p.largeText = true
+  // ?lang=ms or ?lang=id: the app's words in Malay or Indonesian (screenshots stay English otherwise).
+  const lang = q.get('lang')
+  p.appLanguageOverride = lang === 'ms' || lang === 'id' ? lang : 'en'
+  // ?note=on: ten days of use, so the one gentle "note to the makers" line shows (screenshots).
+  if (q.get('note') === 'on') p.openDayCount = 10
   const naming = q.get('naming') as NamingStyle | null
   if (naming) p.namingOverride = naming
   if (demo.variant === 'visitor') {

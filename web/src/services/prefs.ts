@@ -1,3 +1,5 @@
+import { unifyAlerts } from '../core/alertMode'
+import { JUMUAH_LEAVE_CHOICES, snapLeaveMinutes, type JumuahSession } from '../core/jumuahLeave'
 import { TARAWIH_RAKAAT } from '../core/tarawih'
 import type { MasjidLink } from '../core/masjidLink'
 import type { Place } from '../core/place'
@@ -8,6 +10,9 @@ import {
   ALARM_SOUNDS, DEFAULT_SAHUR_DAYS, PRAYER_ALARM_TIMINGS, SAHUR_DAYS, SAHUR_TIMINGS, WAKE_UP_TIMINGS,
   type AlarmSound, type PrayerAlarmTiming, type SahurDay, type SahurTiming, type WakeUpTiming,
 } from '../core/wakeup'
+
+export type AppLanguage = 'en' | 'ms' | 'id'
+export const APP_LANGUAGES: readonly AppLanguage[] = ['en', 'ms', 'id']
 
 export type Appearance = 'system' | 'light' | 'dark'
 export const APPEARANCES: Appearance[] = ['system', 'light', 'dark']
@@ -43,6 +48,8 @@ export interface Preferences {
   methodOverrideID: string | null
   asrOverride: AsrSchool | null
   namingOverride: NamingStyle | null
+  /** The language of the app's words. null = from the browser's language (English unless Malay or Indonesian). */
+  appLanguageOverride: AppLanguage | null
   use24Hour: boolean
   hijriAdjustment: number
   notificationsEnabled: boolean
@@ -124,14 +131,32 @@ export interface Preferences {
   menuSide: MenuSide
   /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
   showOpening: boolean
+  /** The quick guide (seven swipe cards) was seen or skipped. Settings opens it again. */
+  guideSeen: boolean
   /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
   jumuahReminderMinutes: number
+  /** Singapore only: leave for the first Jumaat (at Zohor) or the second one some masjids hold from 2 PM. */
+  jumuahSession: JumuahSession
+  /** The leave reminder rings like the prayer alarms instead of a quiet notification. */
+  jumuahLeaveAlarm: boolean
   /** Short hadith and ayat on some screens (see core/hadith.ts). */
   showHadith: boolean
   /** One hadith line under prayer alerts and the Subuh alarm. */
   hadithInAlerts: boolean
   /** Hadith closed with their ✕, by id. Turning Show hadith back on brings them all back. */
   hiddenHadith: string[]
+  /** Separate days the app was opened, for the one gentle "note to the makers" card. */
+  openDayCount: number
+  /** "yyyy-MM-dd" of the last counted open. */
+  lastOpenDay: string
+  /** When a note to the makers was last started (ms), 0 = never. */
+  feedbackSentAt: number
+  /** The one gentle "note to the makers" card was closed or used; it never comes back. */
+  noteCardDone: boolean
+  /** When a public review link was last tapped (ms), 0 = never. */
+  reviewTappedAt: number
+  /** The review words written once in Rate and review, kept on this device to paste in each store. */
+  reviewDraft: string
 }
 
 export const DEFAULT_PREFS: Preferences = {
@@ -144,6 +169,7 @@ export const DEFAULT_PREFS: Preferences = {
   methodOverrideID: null,
   asrOverride: null,
   namingOverride: null,
+  appLanguageOverride: null,
   use24Hour: false,
   hijriAdjustment: 0,
   notificationsEnabled: false,
@@ -198,14 +224,23 @@ export const DEFAULT_PREFS: Preferences = {
   largeText: false,
   menuSide: 'auto',
   showOpening: true,
+  guideSeen: false,
   jumuahReminderMinutes: 0,
+  jumuahSession: 'first',
+  jumuahLeaveAlarm: false,
   showHadith: true,
   hadithInAlerts: true,
   hiddenHadith: [],
+  openDayCount: 0,
+  lastOpenDay: '',
+  feedbackSentAt: 0,
+  noteCardDone: false,
+  reviewTappedAt: 0,
+  reviewDraft: '',
 }
 
 const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat', 
-  'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'jakimZoneOverride',
+  'manualPlace', 'home', 'methodOverrideID', 'asrOverride', 'namingOverride', 'appLanguageOverride', 'jakimZoneOverride',
   'lastCountryCode', 'arrivedAt', 'communityAuthority', 'myMasjid', 'trackerPausedSince', 'wakeUp', 'sahurAlarm',
   'dhuhrAlarm', 'asrAlarm', 'maghribAlarm', 'ishaAlarm',
 ])
@@ -216,6 +251,7 @@ const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands', 'simple'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,
+  appLanguageOverride: APP_LANGUAGES,
   seasonPreview: SEASON_PREVIEWS,
   wakeUp: WAKE_UP_TIMINGS,
   sahurAlarm: SAHUR_TIMINGS,
@@ -265,9 +301,14 @@ export function decodePreferences(raw: unknown): Preferences {
   }
   // Minutes past midnight must be a real time of day.
   for (const k of ['quietFrom', 'quietTo'] as const) if (!Number.isInteger(out[k]) || out[k] < 0 || out[k] >= 1440) out[k] = DEFAULT_PREFS[k]
-  if (!JUMUAH_REMINDER_CHOICES.includes(out.jumuahReminderMinutes)) out.jumuahReminderMinutes = 0
+  out.jumuahReminderMinutes = snapLeaveMinutes(out.jumuahReminderMinutes)
+  if (out.jumuahSession !== 'second') out.jumuahSession = 'first'
   // Isyak is open until Subuh: it has no "before it ends" alarm.
   if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
+  // One Off, Notify or Alarm per prayer in Alerts and alarms (core/alertMode.ts).
+  unifyAlerts(out)
+  // People already using the app before the quick guide came don't get it pushed at them; it waits in Settings.
+  if (!('guideSeen' in r) && out.hasOnboarded) out.guideSeen = true
   return out
 }
 
@@ -303,4 +344,4 @@ export const DEFAULT_REMINDER_MINUTES = 15
 export const REMINDER_CHOICES = [5, 10, 15, 20, 30, 45, 60]
 
 /** "Leave for Jumaat": how long before the khutbah. 0 is off. */
-export const JUMUAH_REMINDER_CHOICES = [0, 20, 30, 45, 60, 90]
+export const JUMUAH_REMINDER_CHOICES = JUMUAH_LEAVE_CHOICES

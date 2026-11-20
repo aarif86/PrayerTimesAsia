@@ -29,4 +29,5 @@ The same items are on the GitHub Project board (Issues). Ticked off here and the
 - [ ] Google Play release build (after the account exists).
 - [ ] App Store release (listing, screenshots, review).
 - [x] One shared set of "expected prayer times" in a shared folder that the iPhone, Android and web tests all read - done: [`testdata/`](testdata/). The iPhone and Android tests now also check every day of 2026, like the web.
+- [ ] Hari Raya Aidilfitri 1448 prayer sessions: when MUIS posts its list (about 1 to 2 weeks before Raya, early March 2027), type it into `data/eid-sg.json`. Also recheck the second Friday prayer list in `data/friday-sg.json` against the MUIS Friday prayers page.
 - [ ] Tidy old work branches once the owner is happy (keep `design-dial-header`, the saved earlier design).

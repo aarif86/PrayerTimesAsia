@@ -277,17 +277,16 @@ export function kaabaMomentToday(now: number, c: ScreenConfig): number | null {
   return null
 }
 
-/** Occasion names follow the masjid's words: Malay names in Singapore, Malaysia and Brunei, Indonesian in Indonesia. */
+/** Occasion names follow the screen's words: English, Malay or Indonesian. */
 export function occasionName(id: Occasion, c: ScreenConfig): string {
-  const cc = c.place?.cc ?? ''
-  const style = c.lang === 'ms' ? 'malay' : c.lang === 'id' ? 'indonesian'
-    : ['SG', 'MY', 'BN'].includes(cc) ? 'malay' : cc === 'ID' ? 'indonesian' : 'english'
+  // English stays English, Malay baku, Indonesian standard, as everywhere else in the app.
+  const style = c.lang === 'ms' ? 'malay' : c.lang === 'id' ? 'indonesian' : 'english'
   return OCCASION_NAMES[style][id]
 }
 
 const OCCASION_NAMES: Record<'malay' | 'indonesian' | 'english', Record<Occasion, string>> = {
   malay: { ramadan: '1 Ramadan', aidilfitri: 'Hari Raya Aidilfitri', aidiladha: 'Hari Raya Aidiladha', maalHijrah: 'Maal Hijrah', maulid: 'Maulidur Rasul' },
-  indonesian: { ramadan: '1 Ramadan', aidilfitri: 'Idul Fitri', aidiladha: 'Idul Adha', maalHijrah: 'Tahun Baru Islam', maulid: 'Maulid Nabi' },
+  indonesian: { ramadan: '1 Ramadan', aidilfitri: 'Idulfitri', aidiladha: 'Iduladha', maalHijrah: 'Tahun Baru Islam', maulid: 'Maulid Nabi' },
   english: { ramadan: '1 Ramadan', aidilfitri: 'Eid al-Fitr', aidiladha: 'Eid al-Adha', maalHijrah: 'Islamic New Year', maulid: 'Mawlid' },
 }
 
@@ -322,8 +321,8 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     fullScreen: 'Press OK or click for full screen', edit: 'Edit screen', source: 'Times', getApp: 'Prayer times on your phone',
     noPlace: 'Choose the masjid\'s location to show prayer times.',
     nowTag: 'Now', inTag: (d) => `in ${d}`, scan: 'Scan for iqamah times',
-    tarawih: 'Tarawih', afterIsha: 'after Isyak', qiyam: 'Qiyamullail', eid: 'Hari Raya prayer', ramadanDay: (n) => `Ramadan day ${n}`,
-    raya: 'Selamat Hari Raya Aidilfitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'The last ten nights',
+    tarawih: 'Tarawih', afterIsha: 'after Isha', qiyam: 'Qiyamullail', eid: 'Eid prayer', ramadanDay: (n) => `Ramadan day ${n}`,
+    raya: 'Eid Mubarak', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'The last ten nights',
     occasion: (n, d) => d === 0 ? `${n} today` : d === 1 ? `${n} tomorrow` : `${n} in ${d} days`,
     kaaba: 'Sun over the Kaaba', kaabaAt: 'today at', kaabaHint: 'face the sun and you face the qibla',
   },
@@ -340,12 +339,12 @@ export const WORDS: Record<ScreenLanguage, Words> = {
   },
   id: {
     next: 'Berikutnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Mohon nonaktifkan nada dering ponsel',
-    inPrayer: 'Sholat sedang berlangsung', khutbah: 'Khutbah', khutbahIn: 'Khutbah dalam', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Akhir ${n}`,
-    fullScreen: 'Tekan OK atau klik untuk layar penuh', edit: 'Ubah layar', source: 'Jadwal', getApp: 'Jadwal sholat di ponsel Anda',
-    noPlace: 'Pilih lokasi masjid untuk menampilkan jadwal sholat.',
+    inPrayer: 'Salat sedang berlangsung', khutbah: 'Khutbah', khutbahIn: 'Khutbah dalam', imsak: 'Imsak', iftar: 'Berbuka', ends: (n) => `Akhir ${n}`,
+    fullScreen: 'Tekan OK atau klik untuk layar penuh', edit: 'Ubah layar', source: 'Jadwal', getApp: 'Jadwal salat di ponsel Anda',
+    noPlace: 'Pilih lokasi masjid untuk menampilkan jadwal salat.',
     nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Pindai untuk jadwal iqamah',
-    tarawih: 'Tarawih', afterIsha: 'setelah Isya', qiyam: 'Qiyamul lail', eid: 'Sholat Idul Fitri', ramadanDay: (n) => `${n} Ramadan`,
-    raya: 'Selamat Hari Raya Idul Fitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'Sepuluh malam terakhir',
+    tarawih: 'Tarawih', afterIsha: 'setelah Isya', qiyam: 'Qiyamul lail', eid: 'Salat Idulfitri', ramadanDay: (n) => `${n} Ramadan`,
+    raya: 'Selamat Hari Raya Idulfitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'Sepuluh malam terakhir',
     occasion: (n, d) => d === 0 ? `Hari ini ${n}` : d === 1 ? `Besok ${n}` : `${d} hari lagi ${n}`,
     kaaba: 'Matahari tepat di atas Ka\'bah', kaabaAt: 'hari ini pukul', kaabaHint: 'menghadap matahari berarti menghadap kiblat',
   },

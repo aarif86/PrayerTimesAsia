@@ -36,6 +36,7 @@ import com.prayertimesasia.app.R
 import com.prayertimesasia.core.OpeningClock
 import com.prayertimesasia.core.OpeningMove
 import com.prayertimesasia.core.OpeningPose
+import com.prayertimesasia.app.ui.components.tr
 
 /**
  * Shown over the app for a moment as it opens: the icon's dial on Night Navy, moving for
@@ -97,7 +98,7 @@ fun OpeningScreen(move: OpeningMove, reduceMotion: Boolean, onDone: () -> Unit) 
         }
         Text("Prayer Times Asia", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold,
             modifier = Modifier.offset(y = 132.dp + 8.dp * (1 - p.nameIn.toFloat())).graphicsLayer { alpha = p.nameIn.toFloat() })
-        Text("Built fisabilillah in Singapore", color = Brand.moonText.copy(alpha = 0.78f), fontSize = 14.sp,
+        Text(tr(R.string.settings_builtIn), color = Brand.moonText.copy(alpha = 0.78f), fontSize = 14.sp,
             modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 40.dp)
                 .graphicsLayer { alpha = p.lineIn.toFloat(); translationY = (8 * (1 - p.lineIn)).toFloat() * density })
     }

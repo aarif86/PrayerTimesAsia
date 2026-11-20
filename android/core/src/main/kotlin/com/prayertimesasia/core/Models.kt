@@ -297,7 +297,7 @@ data class Preferences(
 
     val appearance: Appearance = Appearance.SYSTEM,
     val todayStyle: TodayStyle = TodayStyle.CENTRE,
-    /** The makers' own offers (Badal, NasarDigital) on the Prayer and Masjid screens. */
+    /** The small community card under Show more (docs/community-cards.md). */
     val showOffers: Boolean = true,
     /** Travel concessions (jamak, qasar) and the Journey screen. Off until the user turns it on. */
     val musafirEnabled: Boolean = false,
@@ -347,14 +347,36 @@ data class Preferences(
     val largeText: Boolean = false,
     /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
     val showOpening: Boolean = true,
+    /**
+     * The quick guide (swipe cards) was seen or skipped; Settings > Help opens it again.
+     * Null until set. decode() turns it to true for settings saved before the guide came
+     * by someone already set up, so they don't get it pushed at them; anything not true shows it.
+     */
+    val guideSeen: Boolean? = null,
     /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
     val jumuahReminderMinutes: Int = 0,
+    /** Singapore only: leave for the first Jumaat (at Zohor) or the second one some masjids hold from 2 PM. */
+    val jumuahSession: JumuahSession = JumuahSession.FIRST,
+    /** The leave reminder rings like the prayer alarms (through silent and Do Not Disturb) instead of a notification. */
+    val jumuahLeaveAlarm: Boolean = false,
     /** Short hadith and ayat on some screens (HadithContent.kt). */
     val showHadith: Boolean = true,
     /** One hadith line under each prayer alert. */
     val hadithInAlerts: Boolean = true,
     /** Hadith closed with their X, by key. Turning Show hadith back on brings them all back. */
     val hiddenHadith: List<String> = emptyList(),
+    /** Separate days the app was opened, for the one gentle review line and Google's star box. */
+    val openDayCount: Int = 0,
+    /** "yyyy-M-d" of the last counted open. */
+    val lastOpenDay: String = "",
+    /** The one gentle review line was closed or used; it never comes back. */
+    val noteCardDone: Boolean = false,
+    /** When a public review link was last tapped (epoch ms), 0 = never. */
+    val reviewTappedAt: Long = 0,
+    /** The review words written once in Rate and review, kept to paste in each place. */
+    val reviewDraft: String = "",
+    /** When Google's own star box was last asked for (epoch ms), 0 = never. */
+    val starBoxAskedAt: Long = 0,
 ) {
     fun encode(): String = CoreJson.encodeToString(serializer(), this)
 
@@ -377,7 +399,8 @@ data class Preferences(
 
     /** Is any alarm on: Subuh, sahur or one of the other prayers? */
     val anyAlarm: Boolean
-        get() = wakeUp != null || sahurAlarm != null || PrayerAlarmTiming.prayers.any { alarm(it) != null }
+        get() = wakeUp != null || sahurAlarm != null || PrayerAlarmTiming.prayers.any { alarm(it) != null } ||
+            (jumuahLeaveAlarm && jumuahReminderMinutes > 0)
 
     /** An alarm at the very start of this prayer rings instead of its alert. */
     fun alarmAtStart(prayer: Prayer): Boolean =
@@ -385,16 +408,18 @@ data class Preferences(
 
     companion object {
         fun decode(text: String?): Preferences =
-            (text?.let { runCatching { CoreJson.decodeFromString(serializer(), it) }.getOrNull() } ?: Preferences()).sane()
+            (text?.let { runCatching { CoreJson.decodeFromString(serializer(), it) }.getOrNull() } ?: Preferences()).sane().unifyAlerts()
 
         /** Times of day must be real ones and the Jumaat reminder one of the choices. */
         private fun Preferences.sane(): Preferences = copy(
             quietFrom = quietFrom.takeIf { it in 0 until 1440 } ?: 23 * 60,
             quietTo = quietTo.takeIf { it in 0 until 1440 } ?: 6 * 60,
-            jumuahReminderMinutes = jumuahReminderMinutes.takeIf { it in PrayerWindow.JUMUAH_REMINDER_CHOICES } ?: 0,
+            jumuahReminderMinutes = JumuahLeave.snap(jumuahReminderMinutes),
             // Isyak is open until Subuh: it has no "before it ends" alarm.
             ishaAlarm = ishaAlarm.takeIf { it != PrayerAlarmTiming.END_MINUS_30 },
             tarawihRakaat = tarawihRakaat?.takeIf { it in Tarawih.CHOICES },
+            // Settings from before the guide came, already set up: count it as seen.
+            guideSeen = guideSeen ?: if (hasOnboarded) true else null,
         )
     }
 }

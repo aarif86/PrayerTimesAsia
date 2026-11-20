@@ -2,9 +2,11 @@ import type { ComponentChildren, JSX } from 'preact'
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { Info, X } from 'lucide-preact'
 import type { PrayerDay } from '../core/engine'
+import type { Prayer } from '../core/prayer'
 import { sourceAuthority } from '../core/official'
-import { GRADE_TITLE, type SourceGrade } from '../core/sources'
+import type { SourceGrade } from '../core/sources'
 import { store } from '../services/store'
+import { appLocale, gradeTitle, tr } from '../core/appWords'
 
 /** A time with its AM/PM set smaller on the same baseline. Never wraps. */
 export function TimeText({ ms, size = 28, weight = 600, class: cls, style }: { ms: number; size?: number; weight?: number; class?: string; style?: JSX.CSSProperties }) {
@@ -46,7 +48,8 @@ export const GRADE_TINT: Record<SourceGrade, string> = {
 export type SheetKind =
   | { kind: 'places'; forHome?: boolean } | { kind: 'sanad'; day: PrayerDay } | { kind: 'calendar' } | { kind: 'makers'; placement: string }
   | { kind: 'journey' } | { kind: 'level' } | { kind: 'ar' } | { kind: 'alerts-help' } | { kind: 'credits' } | { kind: 'install' }
-  | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup' }
+  | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup'; prayer?: Prayer | 'friday'; view?: 'check' }
+  | { kind: 'guide' } | { kind: 'feedback' } | { kind: 'review' }
 
 let current: SheetKind | null = null
 const listeners = new Set<() => void>()
@@ -97,7 +100,7 @@ export function Sheet({ title, label, children, full, onDone }: { title?: string
         <div class="sheet-head">
           <span style={{ width: '64px' }} />
           {title ? <h2>{title}</h2> : <span />}
-          <button class="done" onClick={done}>Done</button>
+          <button class="done" onClick={done}>{tr('common.done')}</button>
         </div>
         {children}
       </div>
@@ -145,25 +148,25 @@ export function Segmented<T extends string | number>({ value, options, onChange 
 export function SourceBadge({ day, compact }: { day: PrayerDay; compact?: boolean }) {
   const grade = day.grade
   const shortSource = grade === 'A'
-    ? `${GRADE_TITLE[grade]} · ${store.officialSource && day.officialSource ? sourceAuthority(store.officialSource) : store.method.shortName}`
-    : grade === 'B' || grade === 'C' ? day.mosqueName ?? GRADE_TITLE[grade] : `${GRADE_TITLE[grade]} · ${store.method.shortName}`
+    ? `${gradeTitle(grade)} · ${store.officialSource && day.officialSource ? sourceAuthority(store.officialSource) : store.method.shortName}`
+    : grade === 'B' || grade === 'C' ? day.mosqueName ?? gradeTitle(grade) : `${gradeTitle(grade)} · ${store.method.shortName}`
   const sourceName = day.officialSource ?? `${store.method.shortName} method`
   return (
     <button class={`source-badge ${compact ? 'compact' : 'full'}`} onClick={() => openSheet({ kind: 'sanad', day })}
-      aria-label={`Source: grade ${grade}, ${GRADE_TITLE[grade]}, ${sourceName}. Shows where these times come from.`}>
+      aria-label={tr('common.sourceBadge', { grade, name: gradeTitle(grade), detail: sourceName })}>
       <span class="grade" style={{ background: GRADE_TINT[grade] }}>{grade}</span>
-      <span class="src">{compact ? shortSource : `${GRADE_TITLE[grade]} · ${sourceName}`}</span>
+      <span class="src">{compact ? shortSource : `${gradeTitle(grade)} · ${sourceName}`}</span>
       {!compact && <span class="spacer" />}
       <Info size={compact ? 12 : 15} style={{ opacity: 0.7, flex: 'none' }} />
     </button>
   )
 }
 
-export function CloseButton({ onClick, label = 'Close' }: { onClick: () => void; label?: string }) {
+export function CloseButton({ onClick, label = tr('common.close') }: { onClick: () => void; label?: string }) {
   return <button class="round-btn" onClick={onClick} aria-label={label}><X size={16} /></button>
 }
 
 /** Formats a date in the place's zone. */
 export function fmtDate(ms: number, opts: Intl.DateTimeFormatOptions): string {
-  return new Intl.DateTimeFormat('en-GB', { timeZone: store.timeZone, ...opts }).format(new Date(ms)).replace(',', '')
+  return new Intl.DateTimeFormat(appLocale(), { timeZone: store.timeZone, ...opts }).format(new Date(ms)).replace(',', '')
 }

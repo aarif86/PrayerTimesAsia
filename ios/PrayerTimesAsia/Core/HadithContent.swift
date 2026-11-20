@@ -31,13 +31,13 @@ struct Hadith: Identifiable, Sendable {
         Hadith(
             id: .coolPrayers,
             arabic: "مَنْ صَلَّى الْبَرْدَيْنِ دَخَلَ الْجَنَّةَ",
-            meaning: .init(en: "Whoever prays the two cool prayers, Subuh and Asar, will enter Paradise.", ms: "Sesiapa yang solat dua waktu sejuk, Subuh dan Asar, akan masuk syurga.", id: "Siapa yang salat dua waktu sejuk, Subuh dan Asar, akan masuk surga."),
+            meaning: .init(en: "Whoever prays the two cool prayers, Fajr and Asr, will enter Paradise.", ms: "Sesiapa yang solat dua waktu sejuk, Subuh dan Asar, akan masuk syurga.", id: "Siapa yang salat dua waktu sejuk, Subuh dan Asar, akan masuk surga."),
             source: .init(en: "The Prophet ﷺ, narrated by al Bukhari", ms: "Sabda Nabi ﷺ, riwayat al Bukhari", id: "Sabda Nabi ﷺ, riwayat al Bukhari"),
             ref: "Sahih al Bukhari 574"),
         Hadith(
             id: .syuruk,
             arabic: "لاَ صَلاَةَ بَعْدَ الصُّبْحِ حَتَّى تَرْتَفِعَ الشَّمْسُ",
-            meaning: .init(en: "No prayer after Subuh until the sun has risen. Syuruk is sunrise, when Subuh time ends. It is not a prayer.", ms: "Tiada solat selepas Subuh sehingga matahari naik. Syuruk ialah waktu matahari terbit, tamatnya waktu Subuh. Ia bukan waktu solat.", id: "Tidak ada salat setelah Subuh hingga matahari naik. Syuruk adalah terbit matahari, saat waktu Subuh berakhir. Ia bukan waktu salat."),
+            meaning: .init(en: "No prayer after Fajr until the sun has risen. Sunrise is when Fajr time ends. It is not a prayer.", ms: "Tiada solat selepas Subuh sehingga matahari naik. Syuruk ialah waktu matahari terbit, tamatnya waktu Subuh. Ia bukan waktu solat.", id: "Tidak ada salat setelah Subuh hingga matahari naik. Syuruk adalah terbit matahari, saat waktu Subuh berakhir. Ia bukan waktu salat."),
             source: .init(en: "The Prophet ﷺ, narrated by al Bukhari", ms: "Sabda Nabi ﷺ, riwayat al Bukhari", id: "Sabda Nabi ﷺ, riwayat al Bukhari"),
             ref: "Sahih al Bukhari 586"),
         Hadith(
@@ -61,7 +61,7 @@ struct Hadith: Identifiable, Sendable {
         Hadith(
             id: .nightPrayer,
             arabic: "أَفْضَلُ الصَّلاَةِ بَعْدَ الْفَرِيضَةِ صَلاَةُ اللَّيْلِ",
-            meaning: .init(en: "The best prayer after the fardhu is the night prayer.", ms: "Solat paling utama selepas solat fardhu ialah solat malam.", id: "Salat paling utama setelah salat fardu adalah salat malam."),
+            meaning: .init(en: "The best prayer after the obligatory prayers is the night prayer.", ms: "Solat paling utama selepas solat fardhu ialah solat malam.", id: "Salat paling utama setelah salat fardu adalah salat malam."),
             source: .init(en: "The Prophet ﷺ, narrated by Muslim", ms: "Sabda Nabi ﷺ, riwayat Muslim", id: "Sabda Nabi ﷺ, riwayat Muslim"),
             ref: "Sahih Muslim 1163a"),
         Hadith(

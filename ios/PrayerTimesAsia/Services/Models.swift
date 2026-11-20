@@ -332,6 +332,7 @@ struct Preferences: Codable, Equatable, Sendable {
     /// Is any alarm on: Subuh, sahur or one of the other prayers?
     var anyAlarm: Bool {
         wakeUp != nil || sahurAlarm != nil || PrayerAlarmTiming.prayers.contains { alarm(for: $0) != nil }
+            || (jumuahLeaveAlarm && jumuahReminderMinutes > 0)
     }
 
     /// An alarm at the very start of this prayer rings instead of its alert.
@@ -350,7 +351,7 @@ struct Preferences: Codable, Equatable, Sendable {
         get { stylePick ?? .centre }
         set { stylePick = newValue }
     }
-    /// The makers' own offers (Badal, NasarDigital) on the Prayer and Masjid screens.
+    /// The small community card under Show more (docs/community-cards.md).
     var showOffers = true
     /// Travel concessions (jamak, qasar) and the Journey screen. Off until the
     /// user turns it on - offered when they land in another country.
@@ -397,15 +398,33 @@ struct Preferences: Codable, Equatable, Sendable {
     var largeText = false
     /// The moving opening screen. Off goes straight to the app; it still shows the first time.
     var showOpening = true
+    /// The quick guide (swipe cards) was seen or skipped. Settings > Help opens it again.
+    var guideSeen = false
     /// Fridays: a reminder this many minutes before Jumaat (0 = off).
     var jumuahReminderMinutes = 0
-    static let jumuahReminderChoices = [0, 20, 30, 45, 60, 90]
+    static let jumuahReminderChoices = JumuahLeave.choices
+    /// Singapore only: leave for the first Jumaat (at Zohor) or the second one some masjids hold from 2 PM.
+    var jumuahSession: JumuahSession = .first
+    /// The leave reminder rings like the prayer alarms (through Silent mode and Focus) instead of a quiet notification.
+    var jumuahLeaveAlarm = false
     /// Short hadith and ayat on some screens (Core/HadithContent.swift).
     var showHadith = true
     /// One hadith line under prayer alerts and the Subuh alarm.
     var hadithInAlerts = true
     /// Hadith closed with their ✕, by id. Turning Show hadith back on brings them all back.
     var hiddenHadith: [String] = []
+    /// Separate days the app was opened, for the one gentle review line and Apple's star box.
+    var openDayCount = 0
+    /// "yyyy-MM-dd" of the last counted open.
+    var lastOpenDay = ""
+    /// The one gentle review line was closed or used; it never comes back.
+    var noteCardDone = false
+    /// When a public review link was last tapped (seconds since 1970), 0 = never.
+    var reviewTappedAt: Double = 0
+    /// The review words written once in Rate and review, kept to paste in each place.
+    var reviewDraft = ""
+    /// When Apple's own star box was last asked for (seconds since 1970), 0 = never.
+    var starBoxAskedAt: Double = 0
 
     private static let key = "preferences.v1"
 
@@ -485,11 +504,23 @@ struct Preferences: Codable, Equatable, Sendable {
         buzzOnly = v(.buzzOnly, d.buzzOnly)
         largeText = v(.largeText, d.largeText)
         showOpening = v(.showOpening, d.showOpening)
+        // People already using the app before the quick guide came don't get it pushed at them; it waits in Settings.
+        guideSeen = v(.guideSeen, hasOnboarded)
         jumuahReminderMinutes = v(.jumuahReminderMinutes, d.jumuahReminderMinutes)
-        if !Self.jumuahReminderChoices.contains(jumuahReminderMinutes) { jumuahReminderMinutes = 0 }
+        jumuahReminderMinutes = JumuahLeave.snap(jumuahReminderMinutes)
+        jumuahSession = v(.jumuahSession, d.jumuahSession)
+        jumuahLeaveAlarm = v(.jumuahLeaveAlarm, d.jumuahLeaveAlarm)
         showHadith = v(.showHadith, d.showHadith)
         hadithInAlerts = v(.hadithInAlerts, d.hadithInAlerts)
         hiddenHadith = v(.hiddenHadith, d.hiddenHadith)
+        openDayCount = v(.openDayCount, d.openDayCount)
+        lastOpenDay = v(.lastOpenDay, d.lastOpenDay)
+        noteCardDone = v(.noteCardDone, d.noteCardDone)
+        reviewTappedAt = v(.reviewTappedAt, d.reviewTappedAt)
+        reviewDraft = v(.reviewDraft, d.reviewDraft)
+        starBoxAskedAt = v(.starBoxAskedAt, d.starBoxAskedAt)
+        // One Off, Notify or Alarm per prayer in Alerts and alarms (AlertMode.swift).
+        unifyAlerts()
     }
 
     /// Set when `load()` brought settings back from the keychain copy.

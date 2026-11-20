@@ -27,6 +27,7 @@ struct TodayView: View {
         .sheet(isPresented: $showPlaces) { PlacesView() }
         .sheet(isPresented: $showCalendar) { CalendarSanadView { days in withAnimation(.snappy) { dayOffset = days } } }
         .sheet(isPresented: $showTracker) { TrackerView() }
+        .asksForStarsWhenCalm()
         .onAppear {
             // Demo screenshots: Show more only when asked, never carried over from a previous run.
             let args = ProcessInfo.processInfo.arguments
@@ -129,7 +130,7 @@ struct TodayView: View {
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             if dayOffset == 0 { TodayNotes(now: now) }
             PrayerList(day: shown, now: now,
-                       current: dayOffset == 0 ? current?.prayer : nil,
+                       current: dayOffset == 0 ? PrayerLead.open(current)?.prayer : nil,
                        next: dayOffset == 0 ? next : nil,
                        showMore: showMore, fill: fill)
                 .frame(maxHeight: fill ? .infinity : nil, alignment: .top)
@@ -138,8 +139,9 @@ struct TodayView: View {
                     withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
                 })
             showMoreButton
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                CommunityCardSlot(now: now, next: next)
             }
         }
         .padding(.horizontal, Theme.gutter)
@@ -188,12 +190,13 @@ struct TodayView: View {
     @ViewBuilder
     private func headerDial(now: Date, day: PrayerDay, current: (prayer: Prayer, time: Date)?,
                             next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
-        if let current, let next, let tomorrow = model.day(containing: model.noon(now, plus: 1)) {
+        if let lead = PrayerLead(current: current, next: next), let next, let tomorrow = model.day(containing: model.noon(now, plus: 1)) {
             DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
-                    currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
-                    currentPrayer: current.prayer,
+                    currentName: lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time)),
+                    currentPrayer: lead.prayer,
                     countdown: PrayerCountdown(now: now, next: next, model: model).count,
-                    label: PrayerCountdown(now: now, next: next, model: model).label)
+                    label: PrayerCountdown(now: now, next: next, model: model).label,
+                    isNext: lead.isNext)
                 .frame(width: size, height: size)
         }
     }
@@ -295,8 +298,9 @@ struct TodayView: View {
                 })
             dayRow(shown)
             showMoreButton
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                CommunityCardSlot(now: now, next: next)
             }
         }
         .padding(.horizontal, Theme.gutter)
@@ -355,11 +359,11 @@ struct TodayView: View {
                      extraLine: shown.jamaah[p] != nil || shown.alternate[p] != nil, tint: p.tint)
         } + blessed.map { DialMark(id: $0.0.rawValue, date: $0.1, minor: true) }
         HeroDial(now: now, day: shown, nextFajr: nextFajr, timeZone: model.timeZone,
-                currentPrayer: isToday ? current?.prayer : nil, marks: marks,
+                currentPrayer: isToday ? PrayerLead(current: current, next: next)?.prayer : nil, marks: marks,
                 label: { mark, size in
                     if let prayer = Prayer(rawValue: mark.id) {
                         PrayerMark(prayer: prayer, time: mark.date, now: now, size: size, day: shown,
-                                   isCurrent: isToday && prayer == current?.prayer)
+                                   isCurrent: isToday && prayer == PrayerLead.open(current)?.prayer)
                     } else if let b = blessed.first(where: { $0.0.rawValue == mark.id }) {
                         BlessedMark(blessed: b.0, time: b.1, now: now, size: size)
                     }
@@ -410,22 +414,26 @@ struct TodayView: View {
     }
 
     /// The dial's centre: the prayer we are in and the time left until the next.
+    /// From Syuruk to Zohor no prayer is open, so it names the next one instead.
     @ViewBuilder
     private func dialCentre(now: Date, shown: PrayerDay, current: (prayer: Prayer, time: Date)?,
                         next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
-        if let current, let next {
+        if let lead = PrayerLead(current: current, next: next), let next {
+            let count = PrayerCountdown(now: now, next: next, model: model)
             VStack(spacing: size * 0.006) {
-                Text("NOW").font(.system(size: size * 0.028, weight: .heavy)).tracking(0.6)
-                    .foregroundStyle(current.prayer.textTint)
-                Text(current.prayer.name(model.naming, isFriday: model.isFriday(current.time)))
+                Text(lead.isNext ? "NEXT" : "NOW").font(.system(size: size * 0.028, weight: .heavy)).tracking(0.6)
+                    .foregroundStyle(lead.prayer.textTint)
+                Text(lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time)))
                     .font(Theme.display(size * 0.085, .bold))
-                Text(PrayerCountdown(now: now, next: next, model: model).count)
+                Text(count.count)
                     .font(Theme.display(size * 0.066, .semibold)).monospacedDigit()
                     .foregroundStyle(Theme.accentText)
                     .contentTransition(.numericText(countsDown: true))
-                Text(PrayerCountdown(now: now, next: next, model: model).label)
-                    .font(.system(size: size * 0.034, weight: .medium))
-                    .foregroundStyle(.secondary)
+                if !count.label.isEmpty {
+                    Text(count.label)
+                        .font(.system(size: size * 0.034, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
             }
             .lineLimit(1)
             .minimumScaleFactor(0.6)
@@ -492,8 +500,8 @@ struct TodayView: View {
                     appearanceButton
                     styleButton
                 }
-                if let current, let next, dayOffset == 0 {
-                    Text("\(current.prayer.name(model.naming, isFriday: model.isFriday(current.time))) now · \(PrayerCountdown(now: now, next: next, model: model).text)")
+                if let lead = PrayerLead(current: current, next: next), let next, dayOffset == 0 {
+                    Text("\(lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time)))\(lead.isNext ? "" : " now ·") \(PrayerCountdown(now: now, next: next, model: model).text)")
                         .font(.subheadline.weight(.semibold)).monospacedDigit()
                         .foregroundStyle(.white.opacity(0.75))
                         .contentTransition(.numericText(countsDown: true))
@@ -510,7 +518,7 @@ struct TodayView: View {
             VStack(spacing: 0) {
                 ForEach(Prayer.allCases) { prayer in
                     PrayerBand(prayer: prayer, time: shown.time(prayer), now: now,
-                               isCurrent: dayOffset == 0 && prayer == current?.prayer,
+                               isCurrent: dayOffset == 0 && prayer == PrayerLead.open(current)?.prayer,
                                next: dayOffset == 0 && prayer == next?.prayer ? next : nil,
                                fill: fill)
                 }
@@ -530,8 +538,9 @@ struct TodayView: View {
                     Spacer(minLength: 8)
                     showMoreButton.fixedSize()
                 }
+                if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore {
-                    MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                    CommunityCardSlot(now: now, next: next)
                 }
             }
             .padding(.horizontal, Theme.gutter)
@@ -580,12 +589,13 @@ struct TodayView: View {
                             current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             ZStack(alignment: .topTrailing) {
-                if let current, let next, let tomorrow = model.day(containing: model.noon(now, plus: 1)) {
+                if let lead = PrayerLead(current: current, next: next), let next, let tomorrow = model.day(containing: model.noon(now, plus: 1)) {
                     DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
-                            currentName: current.prayer.name(model.naming, isFriday: model.isFriday(current.time)),
-                            currentPrayer: current.prayer,
+                            currentName: lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time)),
+                            currentPrayer: lead.prayer,
                             countdown: PrayerCountdown(now: now, next: next, model: model).count,
-                            label: PrayerCountdown(now: now, next: next, model: model).label)
+                            label: PrayerCountdown(now: now, next: next, model: model).label,
+                            isNext: lead.isNext)
                         .frame(width: 148, height: 148)
                         .frame(maxWidth: .infinity)
                 }
@@ -608,7 +618,7 @@ struct TodayView: View {
             if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
             sunDayNavigator(shown)
             PrayerList(day: shown, now: now,
-                       current: dayOffset == 0 ? current?.prayer : nil,
+                       current: dayOffset == 0 ? PrayerLead.open(current)?.prayer : nil,
                        next: dayOffset == 0 ? next : nil,
                        showMore: showMore, fill: fill)
                 .frame(maxHeight: fill ? .infinity : nil, alignment: .top)
@@ -621,8 +631,9 @@ struct TodayView: View {
                 Spacer(minLength: 8)
                 showMoreButton.fixedSize()
             }
+            if dayOffset == 0 { ReviewLine(now: now) }
             if model.prefs.showOffers && showMore {
-                MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                CommunityCardSlot(now: now, next: next)
             }
         }
         .padding(.horizontal, Theme.gutter)
@@ -653,7 +664,7 @@ struct TodayView: View {
                 if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
                 sunDayNavigator(shown)
                 PrayerList(day: shown, now: now,
-                           current: dayOffset == 0 ? current?.prayer : nil,
+                           current: dayOffset == 0 ? PrayerLead.open(current)?.prayer : nil,
                            next: dayOffset == 0 ? next : nil,
                            showMore: showMore)
                     .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { v in
@@ -662,8 +673,9 @@ struct TodayView: View {
                     })
                 showMoreButton
                 SourceBadge(day: shown)
+                if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore {
-                    MakersCard(offer: .featured(for: model.offerCountry), placement: "prayer", compact: true)
+                    CommunityCardSlot(now: now, next: next)
                 }
             }
             .padding(.horizontal, Theme.gutter)
@@ -675,8 +687,8 @@ struct TodayView: View {
     /// Left: where we are in the day. Right: streak and settings. One row.
     private func sunTopBar(now: Date, current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
         HStack(alignment: .top, spacing: 8) {
-            if let current, let next {
-                sunStatus(current: current, next: next, now: now)
+            if let lead = PrayerLead(current: current, next: next), let next {
+                sunStatus(lead: lead, next: next, now: now)
             }
             Spacer(minLength: 0)
             sunJourneyButton
@@ -719,16 +731,17 @@ struct TodayView: View {
         .accessibilityHint("Change location")
     }
 
-    /// "Isyak · 9h 22m until Subuh" - small, top left.
-    private func sunStatus(current: (prayer: Prayer, time: Date), next: (prayer: Prayer, time: Date), now: Date) -> some View {
-        let currentName = current.prayer.name(model.naming, isFriday: model.isFriday(current.time))
+    /// "Isyak · 9h 22m left to pray" - small, top left. From Syuruk to Zohor
+    /// the next prayer leads: "Zohor · in 53m".
+    private func sunStatus(lead: PrayerLead, next: (prayer: Prayer, time: Date), now: Date) -> some View {
+        let leadName = lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time))
         let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
         let remaining = next.time.timeIntervalSince(now)
         let count = PrayerCountdown(now: now, next: next, model: model)
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                Circle().fill(current.prayer.tint).frame(width: 9, height: 9)
-                Text(currentName).font(.system(.title, design: .rounded, weight: .bold))
+                Circle().fill(lead.prayer.tint).frame(width: 9, height: 9)
+                Text(leadName).font(.system(.title, design: .rounded, weight: .bold))
                     .lineLimit(1).minimumScaleFactor(0.5)
             }
             Text(count.text)
@@ -740,7 +753,9 @@ struct TodayView: View {
                 .background(Color.primary.opacity(0.1), in: Capsule())
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Now \(currentName). \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))")
+        .accessibilityLabel(lead.isNext
+            ? "Next \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))"
+            : "Now \(leadName). \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))")
     }
 
     private func sunDayNavigator(_ shown: PrayerDay) -> some View {
@@ -903,7 +918,7 @@ struct TodayView: View {
     private func wakeChip(_ now: Date) -> some View {
         let next = model.nextWakeUp(after: now)
         let fajr = Prayer.fajr.name(model.naming)
-        return Button { model.showWakeUp = true } label: {
+        return Button { model.openAlerts() } label: {
             HStack(spacing: 4) {
                 Image(systemName: next == nil ? "alarm" : "alarm.fill")
                 if let next {
@@ -917,8 +932,8 @@ struct TodayView: View {
             .background(next == nil ? Color.primary.opacity(0.1) : Theme.sunArc.opacity(0.3), in: Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(next.map { "Next alarm at \(model.formatted($0.date))" } ?? "Prayer alarms, wake up for \(fajr): set an alarm")
-        .accessibilityHint("Alarms for \(fajr), sahur and every prayer, and the alarm sound.")
+        .accessibilityLabel(next.map { "Next alarm at \(model.formatted($0.date))" } ?? "Alerts and alarms")
+        .accessibilityHint("Off, Notify or Alarm for \(fajr) and every prayer, sahur, and how they sound.")
     }
 
     private func streakChip(_ now: Date) -> some View {
@@ -1060,7 +1075,7 @@ private struct PrayerList: View {
         let isCurrent = prayer == current && time <= now
         let isNext = prayer == next?.prayer && next?.time == time
         let passed = time <= now && !isCurrent
-        let notifying = model.prefs.notificationsEnabled && model.prefs.notifyPrayers.contains(prayer)
+        let mode = model.prefs.alertMode(prayer)
         let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
         let prayed = trackable && model.isPrayed(prayer, on: time)
         return HStack(spacing: 12) {
@@ -1103,17 +1118,20 @@ private struct PrayerList: View {
             Spacer(minLength: 6)
             TimeText(parts: model.timeParts(time), size: 27)
             Group {
-                Button { toggleNotify(prayer) } label: {
-                    Image(systemName: notifying ? "bell.fill" : "bell.slash")
+                Button { cycleAlert(prayer, model: model) } label: {
+                    Image(systemName: mode.symbol)
                         .font(.subheadline)
-                        .opacity(notifying ? 0.95 : 0.4)
+                        .foregroundStyle(mode == .alarm ? Theme.sunArc : Color.primary)
+                        .opacity(mode == .off ? 0.4 : 0.95)
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                         // 44 pt to tap, but laid out at the old 30 by 34 so rows keep their height.
                         .padding(.horizontal, -7).padding(.vertical, -5)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(notifying ? "Turn off alert" : "Turn on alert")
+                .accessibilityLabel("\(prayer.name(model.naming)) \(mode.word)")
+                .accessibilityHint("Tap to change. Hold for more.")
+                .contextMenu { AlertMenuItems(prayer: prayer) }
             }
         }
         .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, fill ? 8 : 12)
@@ -1165,21 +1183,6 @@ private struct PrayerList: View {
         .transition(.opacity.combined(with: .move(edge: .top)))
     }
 
-    private func toggleNotify(_ prayer: Prayer) {
-        Task {
-            if !model.prefs.notificationsEnabled {
-                guard await NotificationScheduler.requestPermission() else { return }
-                model.prefs.notificationsEnabled = true
-                model.prefs.notifyPrayers = [prayer]
-                return
-            }
-            if model.prefs.notifyPrayers.contains(prayer) {
-                model.prefs.notifyPrayers.remove(prayer)
-            } else {
-                model.prefs.notifyPrayers.insert(prayer)
-            }
-        }
-    }
 }
 
 // MARK: - Times on the dial
@@ -1197,14 +1200,11 @@ private struct PrayerMark: View {
 
     var body: some View {
         let passed = time <= now && !isCurrent
-        let notifying = model.prefs.notificationsEnabled && model.prefs.notifyPrayers.contains(prayer)
+        let mode = model.prefs.alertMode(prayer)
         let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
         let prayed = trackable && model.isPrayed(prayer, on: time)
         Menu {
-            Button { toggleNotify() } label: {
-                Label(notifying ? "Turn off alert" : "Alert me at \(prayer.name(model.naming))",
-                      systemImage: notifying ? "bell.slash" : "bell")
-            }
+            AlertMenuItems(prayer: prayer)
             if trackable {
                 Button { withAnimation(.snappy) { model.togglePrayed(prayer, on: time) } } label: {
                     Label(prayed ? "Mark as not prayed" : "Mark as prayed",
@@ -1219,7 +1219,9 @@ private struct PrayerMark: View {
                         .foregroundStyle(isCurrent ? prayer.textTint : Color.primary.opacity(0.75))
                     if prayed {
                         Image(systemName: "checkmark.circle.fill").font(.system(size: size * 0.03)).foregroundStyle(.green)
-                    } else if model.prefs.notificationsEnabled && !notifying && prayer.isObligatory {
+                    } else if mode == .alarm {
+                        Image(systemName: "alarm.fill").font(.system(size: size * 0.026)).opacity(0.8)
+                    } else if model.prefs.notificationsEnabled && mode == .off && prayer.isObligatory {
                         Image(systemName: "bell.slash").font(.system(size: size * 0.026)).opacity(0.5)
                     }
                 }
@@ -1258,21 +1260,6 @@ private struct PrayerMark: View {
         return "\(own) · \(local)"
     }
 
-    private func toggleNotify() {
-        Task {
-            if !model.prefs.notificationsEnabled {
-                guard await NotificationScheduler.requestPermission() else { return }
-                model.prefs.notificationsEnabled = true
-                model.prefs.notifyPrayers = [prayer]
-                return
-            }
-            if model.prefs.notifyPrayers.contains(prayer) {
-                model.prefs.notifyPrayers.remove(prayer)
-            } else {
-                model.prefs.notifyPrayers.insert(prayer)
-            }
-        }
-    }
 }
 
 /// A blessed time inside the dial, smaller and quieter than the prayers.
@@ -1327,15 +1314,12 @@ private struct PrayerBand: View {
     let fill: Bool
 
     var body: some View {
-        let notifying = model.prefs.notificationsEnabled && model.prefs.notifyPrayers.contains(prayer)
+        let mode = model.prefs.alertMode(prayer)
         let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
         let prayed = trackable && model.isPrayed(prayer, on: time)
         let parts = model.timeParts(time)
         Menu {
-            Button { toggleNotify() } label: {
-                Label(notifying ? "Turn off alert" : "Alert me at \(prayer.name(model.naming))",
-                      systemImage: notifying ? "bell.slash" : "bell")
-            }
+            AlertMenuItems(prayer: prayer)
             if trackable {
                 Button { withAnimation(.snappy) { model.togglePrayed(prayer, on: time) } } label: {
                     Label(prayed ? "Mark as not prayed" : "Mark as prayed",
@@ -1370,7 +1354,9 @@ private struct PrayerBand: View {
                     if let suffix = parts.suffix { Text(suffix).font(.system(size: 22, weight: .bold)) }
                 }
                 .fixedSize()
-                if model.prefs.notificationsEnabled && !notifying && prayer.isObligatory {
+                if mode == .alarm {
+                    Image(systemName: "alarm.fill").font(.caption).opacity(0.85)
+                } else if model.prefs.notificationsEnabled && mode == .off && prayer.isObligatory {
                     Image(systemName: "bell.slash").font(.caption).opacity(0.6)
                 }
             }
@@ -1388,21 +1374,6 @@ private struct PrayerBand: View {
         .accessibilityLabel("\(prayer.name(model.naming)), \(model.formatted(time))\(isCurrent ? ", now" : "")\(prayed ? ", prayed" : "")")
     }
 
-    private func toggleNotify() {
-        Task {
-            if !model.prefs.notificationsEnabled {
-                guard await NotificationScheduler.requestPermission() else { return }
-                model.prefs.notificationsEnabled = true
-                model.prefs.notifyPrayers = [prayer]
-                return
-            }
-            if model.prefs.notifyPrayers.contains(prayer) {
-                model.prefs.notifyPrayers.remove(prayer)
-            } else {
-                model.prefs.notifyPrayers.insert(prayer)
-            }
-        }
-    }
 }
 
 /// A blessed time under Show more: a thinner, quiet grey band.

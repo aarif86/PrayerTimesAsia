@@ -41,6 +41,7 @@ import com.prayertimesasia.app.ui.theme.display
 import com.prayertimesasia.app.ui.theme.textTint
 import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.Prayer
+import com.prayertimesasia.core.PrayerLead
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.TimeFormat
 import com.prayertimesasia.core.secondsSince
@@ -51,11 +52,12 @@ import java.time.Instant
  * ticked) it says how long is left to pray it: "19m left to pray". Every
  * prayer's time ends when the next one starts (Subuh at Syuruk), so this is
  * the same moment as the next prayer, said the way busy people ask it.
- * Between Syuruk and Zohor, or once ticked, it counts to the next prayer.
- * Same wording as the web and iPhone.
+ * Once ticked it counts to the next prayer ("1h 05m until Asar"). Between
+ * Syuruk and Zohor the next prayer's name already leads, so it only says
+ * "in 53m". Same wording as the web and iPhone.
  */
 class Countdown(val count: String, val label: String, val urgent: Boolean, val done: Boolean) {
-    val text: String get() = "$count $label"
+    val text: String get() = if (label.isEmpty()) count else "$count $label"
 
     companion object {
         fun of(state: AppState, now: Instant, next: Pair<Prayer, Instant>): Countdown {
@@ -64,6 +66,8 @@ class Countdown(val count: String, val label: String, val urgent: Boolean, val d
             val done = w != null && state.prefs.trackerEnabled && r.isPrayed(w.prayer, w.start)
             return if (w != null && !done) {
                 Countdown(TimeFormat.short(w.end.secondsSince(now)), "left to pray", w.prayer != Prayer.ISHA && now >= w.nudgeAt, false)
+            } else if (w == null && r.current(now)?.first == Prayer.SUNRISE) {
+                Countdown("in ${TimeFormat.short(next.second.secondsSince(now))}", "", false, done)
             } else {
                 Countdown(TimeFormat.short(next.second.secondsSince(now)), "until ${r.prayerName(next.first, next.second)}", false, done)
             }
@@ -93,9 +97,11 @@ fun SimplePage(state: AppState, day: PrayerDay, current: Pair<Prayer, Instant>?,
         if (!state.prefs.notificationsEnabled && !state.prefs.alertsPromptDismissed) AlertsPrompt(state)
         Column(Modifier.fillMaxWidth().padding(vertical = 14.dp), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            if (current != null) {
+            val lead = PrayerLead.of(current, next)
+            if (lead != null) {
+                if (lead.isNext) Text("NEXT", style = Txt.subheadlineSemibold.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp), color = Palette.secondary)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(r.prayerName(current.first, current.second), style = display(52.sp, FontWeight.ExtraBold), color = current.first.textTint,
+                    Text(r.prayerName(lead.prayer, lead.time), style = display(52.sp, FontWeight.ExtraBold), color = lead.prayer.textTint,
                         maxLines = 1)
                     if (t?.done == true) Icon(Icons.Filled.CheckCircle, "Prayed", Modifier.size(34.dp), tint = Palette.accent)
                 }
@@ -109,7 +115,8 @@ fun SimplePage(state: AppState, day: PrayerDay, current: Pair<Prayer, Instant>?,
             val time = day.time(prayer)
             val trackable = state.prefs.trackerEnabled && prayer != Prayer.SUNRISE && time <= now
             val prayed = trackable && r.isPrayed(prayer, time)
-            val isNow = current?.first == prayer && current.second == time
+            val open = PrayerLead.open(current)
+            val isNow = open?.first == prayer && open.second == time
             val shape = RoundedCornerShape(20.dp)
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 76.dp).leftBar(prayer.tint, 5.dp, 14.dp).clip(shape)

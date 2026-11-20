@@ -30,9 +30,17 @@ jobs:
         run: python3 tools/build_bundled_calendar.py --check
       - name: Check the country tables match data/countries.json
         run: python3 tools/gen_countries.py --check
+      - name: Check the phone copies of the Friday and Raya masjid lists
+        run: python3 tools/gen_masjid_extras.py --check
       - name: Check the Ramadan words match data/ramadan-words.json
         run: python3 tools/build_ramadan_words.py --check
+      - name: Check the community cards match data/community-cards.json and our ad rules
+        run: python3 tools/build_community_cards.py --check
+      - name: Check the quick guide words match data/guide-words.json
+        run: python3 tools/build_guide_words.py --check
       - name: Check the shared app words in data/app-words
         run: python3 tools/check_app_words.py
+      - name: Android string resources match the shared app words
+        run: python3 tools/build_android_words.py --check
       - name: Compare with official timetables
         run: python3 tools/validate_official.py ${{ github.event.inputs.zones }}

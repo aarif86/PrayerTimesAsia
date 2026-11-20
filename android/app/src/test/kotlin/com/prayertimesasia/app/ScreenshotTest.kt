@@ -132,6 +132,22 @@ class ScreenshotTest {
         ).sortedBy { it.distanceKm }
         shoot("09-masjid", d(TodayStyle.LIST, tab = Tab.MASJID))
     }
+    @Test fun masjid_yours() {
+        masjid_places()
+        shoot("09b-masjid-yours", d(TodayStyle.LIST, tab = Tab.MASJID)) { it.pendingMasjid = masjidLink; it.followPendingMasjid() }
+    }
+    private fun masjid_places() {
+        val home = Coordinates(1.3721, 103.9474)
+        fun at(name: String, lat: Double, lng: Double, musollah: Boolean, address: String, f: String = "", h: String? = null) =
+            Coordinates(lat, lng).let { PrayerSpace(name, name, address, it, Geo.distanceKm(home, it), musollah, f, h) }
+        NearbyCache.around = home
+        NearbyCache.spaces = listOf(
+            at("Musollah@Pasir Ris Mall", 1.3735, 103.9495, true, "Pasir Ris Drive 3", "wt", "Mo-Su 10:00-22:00"),
+            at("Masjid Al-Istighfar", 1.37106, 103.96412, false, "Pasir Ris Walk", "wap"),
+            at("Masjid Darul Ghufran", 1.3554, 103.93991, false, "Tampines Avenue 5"),
+            at("Masjid Al-Ansar", 1.3285, 103.9200, false, "Bedok North Avenue 1"),
+        ).sortedBy { it.distanceKm }
+    }
     private val masjidLink = MasjidLink.parse(
         "prayertimesasia://masjid?n=Example+Masjid,+Pasir+Ris&ll=1.3735,103.9490&tz=Asia/Singapore&cc=SG&i=15,10,10,5,10&j=13:00")!!
 
@@ -145,6 +161,14 @@ class ScreenshotTest {
     @Test fun wake_up() = shoot("10c-wake-up", d(TodayStyle.CENTRE)) { s ->
         s.update { it.copy(wakeUp = WakeUpTiming.FAJR_MINUS_30, sahurAlarm = SahurTiming.FAJR_MINUS_90, asrAlarm = com.prayertimesasia.core.PrayerAlarmTiming.PLUS_10) }
         s.showWakeUp = true
+    }
+    @Test fun alerts_prayer_page() = shoot("10d-alerts-prayer-page", d(TodayStyle.CENTRE)) { s ->
+        s.update { it.copy(asrAlarm = com.prayertimesasia.core.PrayerAlarmTiming.PLUS_10) }
+        s.openAlerts("asr")
+    }
+    @Test fun alerts_friday_page() = shoot("10e-alerts-friday-page", d(TodayStyle.CENTRE)) { s ->
+        s.update { it.copy(jumuahReminderMinutes = 90, jumuahLeaveAlarm = true) }
+        s.openAlerts("friday")
     }
     @Test fun wake_chip() = shoot("02c-today-centre-wake-chip", d(TodayStyle.CENTRE)) { s ->
         s.update { it.copy(wakeUp = WakeUpTiming.AT_FAJR) }

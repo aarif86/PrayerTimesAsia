@@ -1,3 +1,4 @@
+import { FeedbackSheet, ReviewSheet } from './Feedback'
 import type { ComponentType } from 'preact'
 import { SiteHomeButton } from './SiteHome'
 import { lazy, Suspense } from 'preact/compat'
@@ -5,7 +6,7 @@ import { useEffect, useLayoutEffect } from 'preact/hooks'
 import { ChevronsLeft, ChevronsRight, Compass, Globe2, Plane } from 'lucide-preact'
 import { scheduleAlerts } from '../services/notifications'
 import { store, TABS, useNow, useStore, type Tab } from '../services/store'
-import { openSheet, useSheet } from './common'
+import { closeSheet, openSheet, useSheet } from './common'
 import { TabFalak, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
 import { LivingSky } from './LivingSky'
 import { takeMoveFromLink } from './moveLink'
@@ -15,6 +16,7 @@ import { TodayScreen } from './Today'
 import { RamadanSheet } from './Ramadan'
 import { VERSION } from './version'
 import { WakeUpSheet } from './WakeUp'
+import { tr } from '../core/appWords'
 
 const MasjidScreen = lazy(() => import('./Masjid'))
 // Screens and sheets the first screen never shows load when first opened (and are kept offline like the rest).
@@ -27,6 +29,7 @@ const TrackerSheet = later(() => import('./Tracker').then((m) => m.TrackerSheet)
 const MasjidLinkSheet = later(() => import('./MyMasjid').then((m) => m.MasjidLinkSheet))
 const MoveInSheet = later(() => import('./Move').then((m) => m.MoveInSheet))
 const MoveOutSheet = later(() => import('./Move').then((m) => m.MoveOutSheet))
+const Guide = later(() => import('./Guide').then((m) => m.Guide))
 
 /**
  * A lazy piece failed to download: usually a new version went live and its old
@@ -63,7 +66,7 @@ function warmUpScreens(): ReturnType<typeof setTimeout> {
   }, 2500)
 }
 
-const TAB_LABEL: Record<Tab, string> = { today: 'Prayer', qibla: 'Qibla', falak: 'Falak', masjid: 'Masjid', settings: 'Settings' }
+const tabLabel = (tab: Tab): string => ({ today: tr('tab.prayer'), qibla: tr('tab.qibla'), falak: tr('tab.falak'), masjid: tr('tab.masjid'), settings: tr('tab.settings') })[tab]
 const TAB_ICON: Record<Tab, (p: { size?: number }) => preact.JSX.Element> = {
   today: TabPrayer, qibla: TabQibla, falak: TabFalak, masjid: TabMasjid, settings: TabSettings,
 }
@@ -96,9 +99,10 @@ export function App() {
     document.documentElement.dataset.theme = scheme
     document.documentElement.toggleAttribute('data-large-text', s.prefs.largeText)
     document.documentElement.dataset.menu = s.prefs.menuSide
+    document.documentElement.lang = s.appLang
     const meta = document.querySelector('meta[name="theme-color"]')
     meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
-  }, [scheme, bands, s.prefs.largeText, s.prefs.menuSide])
+  }, [scheme, bands, s.prefs.largeText, s.prefs.menuSide, s.appLang])
 
   useEffect(() => {
     const moved = takeMoveFromLink()
@@ -107,14 +111,20 @@ export function App() {
     s.refreshOfficial()
     void s.refreshData()
     // Counted a few seconds in, so the GPS place has usually arrived.
-    const count = () => setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000)
+    const count = () => { s.countOpenDay(); setTimeout(() => s.countOpen(VERSION.replace(' (web)', '')), 8000) }
     count()
-    const onVisible = () => { if (document.visibilityState === 'visible') { s.refreshOfficial(); void s.refreshData(); scheduleAlerts(); count() } }
+    s.usageVisible(true)
+    const onVisible = () => {
+      s.usageVisible(document.visibilityState === 'visible')
+      if (document.visibilityState === 'visible') { s.refreshOfficial(); void s.refreshData(); scheduleAlerts(); count() }
+    }
+    const onHide = () => s.usageVisible(false)
+    addEventListener('pagehide', onHide)
     // On moon sighting nights the announcement can arrive while the app is open.
     const poll = setInterval(() => { void s.refreshData() }, 10 * 60_000)
     document.addEventListener('visibilitychange', onVisible)
     const warm = warmUpScreens()
-    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(poll); clearTimeout(warm) }
+    return () => { document.removeEventListener('visibilitychange', onVisible); removeEventListener('pagehide', onHide); clearInterval(poll); clearTimeout(warm) }
   }, [])
 
   // Re-arm the next prayer alert whenever anything changes.
@@ -147,19 +157,23 @@ export function App() {
         </main>
       </div>
       {/* Big screens have room beside the app: a way back to the website. */}
-      <a class="site-link" href="../">&larr; prayertimes.asia</a>
-      <nav class="tabbar" aria-label="Sections">
+      <a class="site-link" href="../" aria-label={tr('app.backToWebsite')}>
+        <span class="site-link-arrow" aria-hidden="true">&larr;</span>
+        <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" width="24" height="24" />
+        <span>prayertimes.asia</span>
+      </a>
+      <nav class="tabbar" aria-label={tr('app.sections')}>
         {TABS.map((t) => {
           const Icon = TAB_ICON[t]
           return (
             <button aria-current={s.tab === t ? 'page' : undefined} onClick={() => { s.setTab(t); document.getElementById('main')?.scrollTo({ top: 0 }) }}>
-              <Icon size={25} /><span>{TAB_LABEL[t]}</span>
+              <Icon size={25} /><span>{tabLabel(t)}</span>
             </button>
           )
         })}
         {/* Bigger screens: the bar sits at the side, and this arrow slides it across. Hidden on phones (bottom bar). */}
-        <button class="tabbar-move" aria-label={s.prefs.menuSide === 'right' ? 'Move the menu to the left' : 'Move the menu to the right'}
-          title={s.prefs.menuSide === 'right' ? 'Move to the left' : 'Move to the right'}
+        <button class="tabbar-move" aria-label={s.prefs.menuSide === 'right' ? tr('app.menuLeft') : tr('app.menuRight')}
+          title={s.prefs.menuSide === 'right' ? tr('app.toLeft') : tr('app.toRight')}
           onClick={() => store.update((p) => { p.menuSide = p.menuSide === 'right' ? 'left' : 'right' })}>
           {s.prefs.menuSide === 'right' ? <ChevronsLeft size={18} /> : <ChevronsRight size={18} />}
         </button>
@@ -171,15 +185,19 @@ export function App() {
       {sheet?.kind === 'journey' && <JourneySheet />}
       {sheet?.kind === 'tracker' && <TrackerSheet />}
       {sheet?.kind === 'ramadan' && <RamadanSheet />}
-      {sheet?.kind === 'wakeup' && <WakeUpSheet />}
+      {sheet?.kind === 'wakeup' && <WakeUpSheet start={sheet.prayer} view={sheet.view} />}
       {sheet?.kind === 'level' && <LevelSheet />}
       {sheet?.kind === 'ar' && <ARScreen />}
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}
       {sheet?.kind === 'install' && <InstallSheet />}
       {sheet?.kind === 'credits' && <CreditsSheet />}
+      {sheet?.kind === 'feedback' && <FeedbackSheet />}
+      {sheet?.kind === 'review' && <ReviewSheet />}
       {s.pendingMasjid && !sheet && <MasjidLinkSheet m={s.pendingMasjid} />}
       {sheet?.kind === 'move-out' && <MoveOutSheet />}
       {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
+      {/* New users see the quick guide once, right after choosing their place. */}
+      {(sheet?.kind === 'guide' || (!s.prefs.guideSeen && !sheet && !s.pendingMasjid)) && <Guide onClose={closeSheet} />}
     </>
   )
 }
@@ -191,19 +209,19 @@ function Onboarding() {
         <div class="spacer" />
         <div>
           <h1 class="display onb-title">Prayer Times<br />Asia</h1>
-          <p class="onb-lead">Wherever you land, know when to pray and which way to face.</p>
+          <p class="onb-lead">{tr('welcome.tagline')}</p>
         </div>
         <div class="onb-features">
-          <Feature icon={<Globe2 size={24} />} title="Every country's own method" detail="MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia, and sensible defaults everywhere else." />
-          <Feature icon={<Plane size={24} />} title="Built for travel" detail="Switches when you land, works offline, and tells you when you can shorten and combine prayers." />
-          <Feature icon={<Compass size={24} />} title="Qibla in one glance" detail="A calm compass that lights up when you're facing the Kaaba." />
+          <Feature icon={<Globe2 size={24} />} title={tr('welcome.countryMethod')} detail={tr('welcome.countryMethodDetail')} />
+          <Feature icon={<Plane size={24} />} title={tr('welcome.travel')} detail={tr('welcome.travelDetail')} />
+          <Feature icon={<Compass size={24} />} title={tr('welcome.qiblaGlance')} detail={tr('welcome.qiblaDetail')} />
         </div>
         <div class="spacer" />
         <div class="onb-actions">
-          <button class="onb-primary" onClick={() => { store.update((p) => { p.hasOnboarded = true }); store.useGPS() }}>Use my location</button>
-          <button class="onb-secondary" onClick={() => { store.update((p) => { p.hasOnboarded = true; p.useGPS = false }); openSheet({ kind: 'places' }) }}>Choose a city instead</button>
-          <button class="onb-secondary" onClick={() => openSheet({ kind: 'move-in' })}>Bring in settings from another phone</button>
-          <p class="caption" style={{ opacity: 0.75, textAlign: 'center' }}>No third-party ads. No account. Your location stays on your device.</p>
+          <button class="onb-primary" onClick={() => { store.update((p) => { p.hasOnboarded = true }); store.useGPS() }}>{tr('welcome.useLocation')}</button>
+          <button class="onb-secondary" onClick={() => { store.update((p) => { p.hasOnboarded = true; p.useGPS = false }); openSheet({ kind: 'places' }) }}>{tr('welcome.chooseCity')}</button>
+          <button class="onb-secondary" onClick={() => openSheet({ kind: 'move-in' })}>{tr('welcome.bringIn')}</button>
+          <p class="caption" style={{ opacity: 0.75, textAlign: 'center' }}>{tr('welcome.privacy')}</p>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The azan recordings are looked up by name (alarms/Azan.kt), so resource shrinking must keep them. -->
+<!-- The azan recordings (alarms/Azan.kt) and the quick guide pictures (ui/guide/Guide.kt) are looked up by name, so resource shrinking must keep them. -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@raw/azan,@raw/azan_subuh" />
+    tools:keep="@raw/azan,@raw/azan_subuh,@drawable/guide_step_*" />

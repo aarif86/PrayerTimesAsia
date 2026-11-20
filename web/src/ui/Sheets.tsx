@@ -11,7 +11,7 @@ import { musafirDistanceCheck, musafirGuidance, musafirPlan } from '../core/musa
 import { isInAsia, isNear, placeProfile, placeSubtitle, type Place } from '../core/place'
 import { OBLIGATORY } from '../core/prayer'
 import { flag, profileFor, timeZoneForPlace } from '../core/regions'
-import { GRADE_EXPLANATION, GRADE_TITLE, mosqueMethod, type SourceGrade } from '../core/sources'
+import { GRADE_EXPLANATION, mosqueMethod, type SourceGrade } from '../core/sources'
 import { isValidTimeZone, noonDaysAfter } from '../core/tz'
 import { searchCities } from '../services/cities'
 import { alertSupport } from '../services/notifications'
@@ -22,6 +22,7 @@ import { TabJourney } from './icons'
 import { HijriMonthCard } from './HijriCalendar'
 import { MakersAbout } from './Makers'
 import { canInstall, install, isIOS } from './pwa'
+import { appLocale, gradeTitle, tr, trWith } from '../core/appWords'
 
 // ---------- Places ----------
 
@@ -75,16 +76,16 @@ export function PlacesSheet({ forHome = false }: { forHome?: boolean } = {}) {
         <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: 'block' }}>{p.name}</span>{placeSubtitle(p) && <span class="sub">{placeSubtitle(p)}</span>}</span>
         {(forHome ? !!s.prefs.home && isNear(s.prefs.home, p) : !s.prefs.useGPS && !!s.prefs.manualPlace && isNear(s.prefs.manualPlace, p)) && <Check size={18} class="accent" />}
       </button>
-      {saved && <button aria-label={`Remove ${p.name}`} class="secondary" style={{ padding: '6px' }}
+      {saved && <button aria-label={tr('common.removeName', { name: p.name })} class="secondary" style={{ padding: '6px' }}
         onClick={() => store.update((x) => { x.savedPlaces = x.savedPlaces.filter((q) => q.id !== p.id) })}><Trash2 size={16} /></button>}
     </div>
   )
   return (
-    <Sheet title={forHome ? 'Where is home?' : 'Location'} full>
+    <Sheet title={forHome ? tr('places.whereHome') : tr('settings.location')} full>
       <label class="search-box">
         <Search size={17} class="secondary" />
-        <input type="search" placeholder="City or country" value={query} autoFocus={!s.demo}
-          onInput={(e) => setQuery((e.target as HTMLInputElement).value)} aria-label="City or country" />
+        <input type="search" placeholder={tr('places.search')} value={query} autoFocus={!s.demo}
+          onInput={(e) => setQuery((e.target as HTMLInputElement).value)} aria-label={tr('places.search')} />
       </label>
       {!query && forHome ? (
         <>
@@ -92,51 +93,51 @@ export function PlacesSheet({ forHome = false }: { forHome?: boolean } = {}) {
             <div class="group" style={{ marginTop: '14px' }}>
               <button class="item" onClick={() => pick(here)}>
                 <Navigation size={18} fill="currentColor" />
-                <span class="label">Where I am now<span class="sub">{here.name}{here.countryName ? `, ${here.countryName}` : ''}</span></span>
+                <span class="label">{tr('places.whereNow')}<span class="sub">{here.name}{here.countryName ? `, ${here.countryName}` : ''}</span></span>
               </button>
             </div>
           )}
           {s.prefs.savedPlaces.filter((p) => p.name !== 'Current location').length > 0 && (
             <>
-              <h3 class="group-title" style={{ fontSize: '15px' }}>Saved places</h3>
+              <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('places.saved')}</h3>
               <div class="group">{s.prefs.savedPlaces.filter((p) => p.name !== 'Current location').map((p) => row(p))}</div>
             </>
           )}
-          <p class="group-foot">Search the town or area where you live, like Tampines, Shah Alam or Bandung. Home is used to work out when you count as a traveller.</p>
+          <p class="group-foot">{tr('places.homeHelp')}</p>
         </>
       ) : !query ? (
         <>
           <div class="group" style={{ marginTop: '14px' }}>
             <button class="item" onClick={() => { store.useGPS(); closeSheet() }}>
               <Navigation size={18} fill="currentColor" />
-              <span class="label">Current location{s.gpsPlace && <span class="sub">{s.gpsPlace.name}</span>}
-                {s.gpsStatus === 'denied' && <span class="sub">Turned off for this site. Allow location in your browser's site settings, or search below.</span>}</span>
-              {s.gpsStatus === 'denied' ? <span class="value">Off</span> : s.prefs.useGPS && <span class="value">On</span>}
+              <span class="label">{tr('places.current')}{s.gpsPlace && <span class="sub">{s.gpsPlace.name}</span>}
+                {s.gpsStatus === 'denied' && <span class="sub">{tr('places.locationBlocked')}</span>}</span>
+              {s.gpsStatus === 'denied' ? <span class="value">{tr('common.off')}</span> : s.prefs.useGPS && <span class="value">{tr('common.on')}</span>}
             </button>
           </div>
           {s.prefs.savedPlaces.length > 0 && (
             <>
-              <h3 class="group-title" style={{ fontSize: '15px' }}>Saved places</h3>
+              <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('places.saved')}</h3>
               <div class="group">{s.prefs.savedPlaces.map((p) => row(p, true))}</div>
             </>
           )}
-          <p class="group-foot">Type a city like Hanoi or London, or a country like Malaysia to see its cities. Times are calculated in your browser, so they keep working offline. Your location never leaves this device.</p>
+          <p class="group-foot">{tr('places.searchHelp')}</p>
         </>
       ) : (
         <>
           {builtIn.length > 0 && <div class="group" style={{ marginTop: '14px' }}>{builtIn.map((p) => row(p))}</div>}
           {online && online.length > 0 && (
             <>
-              <h3 class="group-title" style={{ fontSize: '15px' }}>From OpenStreetMap</h3>
+              <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('places.fromOsm')}</h3>
               <div class="group">{online.map((p) => row(p))}</div>
             </>
           )}
-          {online && online.length === 0 && <p class="group-foot">Nothing found online (or no connection).</p>}
+          {online && online.length === 0 && <p class="group-foot">{tr('places.nothingOnline')}</p>}
           <div style={{ marginTop: '14px' }}>
             <button class="plain-btn" onClick={() => void searchOnline()} disabled={searching}>
-              <Globe size={16} />{searching ? 'Searching…' : `Search OpenStreetMap for "${query}"`}
+              <Globe size={16} />{searching ? tr('common.searching') : tr('places.searchOsm', { q: query })}
             </button>
-            <p class="group-foot" style={{ marginLeft: 0 }}>Only the words you type are sent to OpenStreetMap's Nominatim search.</p>
+            <p class="group-foot" style={{ marginLeft: 0 }}>{tr('places.osmNote')}</p>
           </div>
         </>
       )}
@@ -155,27 +156,27 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
   let detail: string
   if (day.grade === 'A' && day.officialSource) {
     detail = via === 'feed'
-      ? "Published by the authority and loaded through Prayer Times Asia's own calendar feed, which a workflow rebuilds every week from the official table. Kept in this browser, so it works offline."
-      : 'Downloaded once a year from the authority and kept in this browser, so it works offline.'
-    if (day.sunriseCalculated) detail += ` ${s.name('sunrise')} is not in the feed, so it is calculated (never later than the official time).`
+      ? tr('source.feedDetail')
+      : tr('source.downloadedDetail')
+    if (day.sunriseCalculated) detail += ` ${tr('source.sunriseCalculated', { name: s.name('sunrise') })}`
   } else if (day.grade === 'A') {
     detail = `${parameterSummary(s.method)}. ${s.sourceSummary}`
   } else if (day.grade === 'B' || day.grade === 'C') {
     const m = s.nearbyMosque
     detail = (m && mosqueMethod(m)?.note) ?? GRADE_EXPLANATION[day.grade]
   } else {
-    detail = `${parameterSummary(s.method)} · ${s.asrSchool === 'hanafi' ? 'Hanafi' : "Shafi'i"} Asr. ${s.sourceSummary} ${s.method.note}`
+    detail = `${parameterSummary(s.method)} · ${s.asrSchool === 'hanafi' ? tr('settings.hanafi') : tr('settings.shafii')} Asr. ${s.sourceSummary} ${s.method.note}`
   }
   const alternates = OBLIGATORY.filter((p) => day.alternate[p] != null)
   const jamaah = OBLIGATORY.filter((p) => day.jamaah[p] != null)
   return (
-    <Sheet title="Source" full>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>Where today's times come from</h3>
+    <Sheet title={tr('source.title')} full>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('source.where')}</h3>
       <div class="group">
         <div class="item" style={{ alignItems: 'flex-start' }}>
           <Icon size={28} style={{ color: GRADE_TINT[day.grade], flex: 'none' }} />
           <div>
-            <div class="headline">Grade {day.grade} · {GRADE_TITLE[day.grade]}</div>
+            <div class="headline">{tr('source.gradeName', { grade: day.grade, name: gradeTitle(day.grade) })}</div>
             <div class="subhead">{day.officialSource ?? s.method.name}</div>
             <div class="footnote secondary" style={{ marginTop: '4px' }}>{detail}</div>
           </div>
@@ -183,34 +184,34 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
       </div>
       {day.alternateSource && alternates.length > 0 && (
         <>
-          <h3 class="group-title" style={{ fontSize: '15px' }}>{day.officialSource ?? 'Official'} · {day.alternateSource}</h3>
+          <h3 class="group-title" style={{ fontSize: '15px' }}>{day.officialSource ?? tr('source.official')} · {day.alternateSource}</h3>
           <div class="group">{alternates.map((p) => <div class="item"><span class="label">{s.name(p, day.times.dhuhr)}</span><span class="value">{s.formatted(day.times[p])} · {s.formatted(day.alternate[p]!)}</span></div>)}</div>
-          <p class="group-foot">These two sources differ by more than 2 minutes. We show both rather than silently pick one; follow your local masjid's practice.</p>
+          <p class="group-foot">{tr('source.differ')}</p>
         </>
       )}
       {day.mosqueName && jamaah.length > 0 && (
         <>
-          <h3 class="group-title" style={{ fontSize: '15px' }}>Jamaah at {day.mosqueName}</h3>
+          <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('source.jamaahAt', { name: day.mosqueName ?? '' })}</h3>
           <div class="group">{jamaah.map((p) => <div class="item"><span class="label">{s.name(p, day.times.dhuhr)}</span><span class="value">{s.formatted(day.jamaah[p]!)}</span></div>)}</div>
-          <p class="group-foot">Prayer time begins at the times on the Prayer screen; these are when the congregation prays.</p>
+          <p class="group-foot">{tr('source.jamaahHelp')}</p>
         </>
       )}
-      <h3 class="group-title" style={{ fontSize: '15px' }}>The grades</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('source.grades')}</h3>
       <div class="group">
         {(['A', 'B', 'C', 'D', 'F'] as SourceGrade[]).map((g) => (
           <div class="item" style={{ alignItems: 'flex-start' }}>
             <span class="grade-dot" style={{ background: GRADE_TINT[g] }}>{g}</span>
-            <div><div class="subhead" style={{ fontWeight: 600 }}>{GRADE_TITLE[g]}</div><div class="footnote secondary">{GRADE_EXPLANATION[g]}</div></div>
+            <div><div class="subhead" style={{ fontWeight: 600 }}>{gradeTitle(g)}</div><div class="footnote secondary">{GRADE_EXPLANATION[g]}</div></div>
           </div>
         ))}
       </div>
-      <h3 class="group-title" style={{ fontSize: '15px' }}>Help verify times here</h3>
+      <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('source.helpVerify')}</h3>
       <div class="group">
         <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">
-          <span class="label">Send a mosque timetable, the method mosques here use, or an adhan time you heard</span>
+          <span class="label">{tr('source.helpVerifySub')}</span>
         </a>
       </div>
-      <p class="group-foot">Submissions are checked by a person before they change anyone's times, and shared openly under CC-BY 4.0.</p>
+      <p class="group-foot">{tr('source.checked')}</p>
     </Sheet>
   )
 }
@@ -219,7 +220,7 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
 
 function fmtYMD(d: { year: number; month: number; day: number } | null): string {
   if (!d) return '-'
-  return new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+  return new Intl.DateTimeFormat(appLocale(), { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
     .format(new Date(Date.UTC(d.year, d.month - 1, d.day))).replace(',', '')
 }
 
@@ -229,53 +230,53 @@ export function CalendarSheet() {
   useEffect(() => { void store.refreshData() }, [])
   const mine = s.communityAuthority
   return (
-    <Sheet title="Calendar" full>
+    <Sheet title={tr('calendar.title')} full>
       <HijriMonthCard />
-      <h3 class="group-title" style={{ fontSize: '15px', marginTop: '22px' }}>Ramadan and Raya, by authority</h3>
+      <h3 class="group-title" style={{ fontSize: '15px', marginTop: '22px' }}>{tr('calendar.byAuthority')}</h3>
       <div class="group">
         <label class="item">
-          <span class="label">My community follows</span>
+          <span class="label">{tr('calendar.follows')}</span>
           <select value={s.prefs.communityAuthority ?? 'auto'} onChange={(e) => {
             const v = (e.target as HTMLSelectElement).value
             store.update((x) => { x.communityAuthority = v === 'auto' ? null : v })
           }}>
-            <option value="auto">Automatic · {mine ? authorityName(mine) : 'none'}</option>
+            <option value="auto">{tr('common.automaticWith', { name: mine ? authorityName(mine) : tr('common.none') })}</option>
             {AUTHORITIES.map((a) => <option value={a.id}>{a.name}</option>)}
           </select>
         </label>
       </div>
-      <p class="group-foot">Countries can start Ramadan and celebrate Eid on different days, because of local moon sighting and different methods. Pick whose announcement your masjid follows.</p>
+      <p class="group-foot">{tr('calendar.explain')}</p>
       {upcomingEvents(now, s.timeZone).map((u) => {
         const entries = s.announcements(u.event, u.hijriYear)
           .sort((a, b) => (a.authority === mine ? 0 : 1) - (b.authority === mine ? 0 : 1) || a.authority.localeCompare(b.authority))
         const announcedMine = entries.some((a) => a.authority === mine && a.status === 'announced')
         return (
           <section>
-            <h3 class="group-title" style={{ fontSize: '15px' }}>{eventTitle(u.event, s.naming)} {u.hijriYear} AH</h3>
+            <h3 class="group-title" style={{ fontSize: '15px' }}>{eventTitle(u.event, s.naming)} {u.hijriYear} {tr('calendar.ah')}</h3>
             <div class="group">
               <div class="item" style={{ alignItems: 'flex-start' }}>
-                <div class="label"><div class="subhead" style={{ fontWeight: 600 }}>Expected</div><div class="caption secondary">Astronomical estimate (Umm al-Qura calendar). Local dates may differ by a day.</div></div>
-                <div style={{ textAlign: 'right' }}><div class="subhead mono" style={{ fontWeight: 600 }}>{fmtYMD(expectedDate(u.event, u.hijriYear))}</div><div class="caption secondary" style={{ fontWeight: 800 }}>Estimate</div></div>
+                <div class="label"><div class="subhead" style={{ fontWeight: 600 }}>{tr('calendar.expected')}</div><div class="caption secondary">{tr('calendar.estimateExplain')}</div></div>
+                <div style={{ textAlign: 'right' }}><div class="subhead mono" style={{ fontWeight: 600 }}>{fmtYMD(expectedDate(u.event, u.hijriYear))}</div><div class="caption secondary" style={{ fontWeight: 800 }}>{tr('calendar.estimate')}</div></div>
               </div>
               {entries.map((a) => (
                 <div class="item" style={{ alignItems: 'flex-start' }}>
                   <div class="label">
                     <div class="subhead" style={{ fontWeight: a.authority === mine ? 700 : 600 }}>{authorityName(a.authority)}</div>
                     <div class="caption secondary">{basisLabel(a.basis)}</div>
-                    {a.source_url && <a class="caption accent" href={a.source_url} target="_blank" rel="noopener noreferrer">Source</a>}
+                    {a.source_url && <a class="caption accent" href={a.source_url} target="_blank" rel="noopener noreferrer">{tr('source.title')}</a>}
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div class="subhead mono" style={{ fontWeight: 600 }}>{fmtYMD(announcementDate(a))}</div>
-                    <div class="caption" style={{ fontWeight: 800, color: a.status === 'announced' ? 'var(--grade-a)' : 'var(--fg2)' }}>{a.status === 'announced' ? 'Announced' : 'Expected'}</div>
+                    <div class="caption" style={{ fontWeight: 800, color: a.status === 'announced' ? 'var(--grade-a)' : 'var(--fg2)' }}>{a.status === 'announced' ? tr('calendar.announced') : tr('calendar.expected')}</div>
                   </div>
                 </div>
               ))}
-              {!announcedMine && mine && <div class="item footnote secondary">{authorityName(mine)} hasn't announced yet. It usually does the evening before; this page updates within a few hours.</div>}
+              {!announcedMine && mine && <div class="item footnote secondary">{tr('calendar.notYet', { name: authorityName(mine) })}</div>}
             </div>
           </section>
         )
       })}
-      <p class="group-foot">Every date shows who set it and how: moon sighting, calculation, or following another authority. Dates are shared openly under CC-BY 4.0.</p>
+      <p class="group-foot">{tr('calendar.sanad')}</p>
     </Sheet>
   )
 }
@@ -292,12 +293,12 @@ export function JourneySheet() {
   const today = s.day(now), tomorrow = s.day(noonDaysAfter(now, 1, s.timeZone))
   const home = s.prefs.home
   return (
-    <Sheet title="Journey" full>
+    <Sheet title={tr('settings.journey')} full>
       {home && !s.prefs.homeConfirmed ? <HomeQuestion /> : <div class="glass card" style={{ marginTop: '10px' }}>
         {g && status ? (
           <>
             <div class="row" style={{ gap: '10px' }}>{status.kind === 'traveller' ? <span class="journey-badge"><TabJourney size={18} /></span> : <House size={28} />}<span style={{ fontSize: '22px', fontWeight: 700 }}>{g.title}</span></div>
-            {km != null && <div style={{ margin: '8px 0' }}><span class="display mono" style={{ fontSize: '48px', fontWeight: 600 }}>{Math.round(km).toLocaleString('en')} km</span><span class="headline">  from home</span></div>}
+            {km != null && <div style={{ margin: '8px 0' }}><span class="display mono" style={{ fontSize: '48px', fontWeight: 600 }}>{Math.round(km).toLocaleString(appLocale())}</span><span class="headline">  {tr('journey.fromHome', { km: '' }).trim()}</span></div>}
             <p style={{ margin: '6px 0', opacity: 0.9 }}>{g.body}</p>
             {status.kind === 'traveller' && (
               <div class="musafir-plan">
@@ -309,45 +310,45 @@ export function JourneySheet() {
                 ))}
               </div>
             )}
-            {s.prefs.arrivedAt != null && (status.kind === 'traveller' || status.kind === 'settled') && <div class="subhead" style={{ fontWeight: 600, opacity: 0.8 }}>Day {s.daysHere(now) + 1} in {s.profile.name || 'this place'}</div>}
+            {s.prefs.arrivedAt != null && (status.kind === 'traveller' || status.kind === 'settled') && <div class="subhead" style={{ fontWeight: 600, opacity: 0.8 }}>{tr('journey.day', { n: s.daysHere(now) + 1 })} · {s.profile.name || tr('journey.thisPlace')}</div>}
           </>
         ) : (
-          <><div style={{ fontSize: '22px', fontWeight: 700 }}>Set your home</div><p style={{ opacity: 0.85 }}>Tell us where home is and we'll work out when you count as a traveller.</p>
-            <button class="pill-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}><House size={16} /> Set home</button></>
+          <><div style={{ fontSize: '22px', fontWeight: 700 }}>{tr('journey.setHome')}</div><p style={{ opacity: 0.85 }}>{tr('journey.setHomeHelp')}</p>
+            <button class="pill-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}><House size={16} /> {tr('journey.setHomeButton')}</button></>
         )}
       </div>}
       {status?.kind === 'traveller' && s.isRamadanDay(now) && (
         <div class="glass card" style={{ marginTop: '16px' }}>
-          <div class="caps" style={{ opacity: 0.7 }}>Fasting on this journey</div>
-          <p class="footnote" style={{ opacity: 0.9, margin: '8px 0 0' }}>As a traveller you may choose not to fast, and replace the day after Ramadan. If fasting is easy, fasting is better. The day counts as travel when you left home before Subuh. Mark it on your Ramadan page so it is counted for you. Ask your local religious authority when unsure.</p>
-          <button class="pill-btn" style={{ marginTop: '10px' }} onClick={() => openSheet({ kind: 'ramadan' })}>Open Ramadan</button>
+          <div class="caps" style={{ opacity: 0.7 }}>{tr('journey.fasting')}</div>
+          <p class="footnote" style={{ opacity: 0.9, margin: '8px 0 0' }}>{tr('journey.fastingHelp')}</p>
+          <button class="pill-btn" style={{ marginTop: '10px' }} onClick={() => openSheet({ kind: 'ramadan' })}>{tr('journey.openRamadan')}</button>
         </div>
       )}
       {status?.kind === 'traveller' && s.asrSchool !== 'hanafi' && today && tomorrow && (
         <div class="glass card" style={{ marginTop: '16px' }}>
-          <div class="row"><span class="caps" style={{ opacity: 0.7 }}>Combined windows today</span><span class="spacer" /><span class="caption" style={{ opacity: 0.6, fontWeight: 600 }}>Pending shariah review</span></div>
+          <div class="row"><span class="caps" style={{ opacity: 0.7 }}>{tr('journey.combined')}</span><span class="spacer" /><span class="caption" style={{ opacity: 0.6, fontWeight: 600 }}>{tr('falak.pendingReview')}</span></div>
           <div class="row headline" style={{ marginTop: '10px' }}><span>{s.name('dhuhr')} + {s.name('asr')}</span><span class="spacer" /><span class="mono">{s.formatted(today.times.dhuhr)} – {s.formatted(today.times.maghrib)}</span></div>
           <div class="row headline" style={{ marginTop: '6px' }}><span>{s.name('maghrib')} + {s.name('isha')}</span><span class="spacer" /><span class="mono">{s.formatted(today.times.maghrib)} – {s.formatted(tomorrow.times.fajr)}</span></div>
-          <p class="footnote" style={{ opacity: 0.85 }}>Jamak taqdim means praying both in the first prayer's time. Jamak ta'khir means praying both in the second prayer's time. {s.name('fajr')} is never joined.</p>
+          <p class="footnote" style={{ opacity: 0.85 }}>{tr('journey.jamakExplain')} {tr('journey.neverJoined', { name: s.name('fajr') })}</p>
         </div>
       )}
       <div class="glass card row" style={{ marginTop: '16px' }}>
         <div style={{ flex: 1 }}>
-          <div class="caps" style={{ opacity: 0.7 }}>Home</div>
-          <div class="headline">{home ? `${flag(placeProfile(home).code)} ${home.name}` : 'Not set'}</div>
+          <div class="caps" style={{ opacity: 0.7 }}>{tr('journey.home')}</div>
+          <div class="headline">{home ? `${flag(placeProfile(home).code)} ${home.name}` : tr('settings.notSet')}</div>
           {home && placeSubtitle(home) && <div class="subhead" style={{ opacity: 0.75 }}>{placeSubtitle(home)}</div>}
         </div>
-        <button class="plain-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}><House size={16} />{home ? 'Change home' : 'Set home'}</button>
+        <button class="plain-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}><House size={16} />{home ? tr('journey.changeHome') : tr('journey.setHomeButton')}</button>
       </div>
       <div class="glass card" style={{ marginTop: '16px' }}>
-        <div class="caps" style={{ opacity: 0.7, marginBottom: '10px' }}>Travel distance</div>
+        <div class="caps" style={{ opacity: 0.7, marginBottom: '10px' }}>{tr('journey.distance')}</div>
         {s.asrSchool === 'hanafi'
-          ? <div class="subhead">In the Hanafi school the travel distance is about 78 km, for stays of up to 15 days. Prayers are shortened but not joined.</div>
+          ? <div class="subhead">{tr('journey.hanafi')}</div>
           : <>
             <Segmented value={s.prefs.musafirThresholdKm} onChange={(v) => store.update((x) => { x.musafirThresholdKm = v })}
-              options={[{ value: 81, label: '81 km (2 marhalah)' }, { value: 89, label: '89 km' }]} />
-            <div class="subhead" style={{ opacity: 0.85, marginTop: '10px' }}>Most of Southeast Asia uses 81 km, which is two marhalah. Some scholars use 89 km. Pick the one your local religious authority uses.</div>
-            <div class="subhead" style={{ opacity: 0.85, marginTop: '8px' }}>In the Shafi'i school this holds for stays of up to 3 days, not counting the day you arrive and the day you leave.</div>
+              options={[{ value: 81, label: tr('journey.km81') }, { value: 89, label: tr('journey.km89') }]} />
+            <div class="subhead" style={{ opacity: 0.85, marginTop: '10px' }}>{tr('journey.distanceHelp')}</div>
+            <div class="subhead" style={{ opacity: 0.85, marginTop: '8px' }}>{tr('journey.shafii')}</div>
           </>}
         {status && (() => {
           const c = musafirDistanceCheck(status, rules)
@@ -361,7 +362,7 @@ export function JourneySheet() {
       </div>
       {s.prefs.trip.length > 0 && (
         <div class="glass card" style={{ marginTop: '16px' }}>
-          <div class="caps" style={{ opacity: 0.7, marginBottom: '10px' }}>Where you've prayed</div>
+          <div class="caps" style={{ opacity: 0.7, marginBottom: '10px' }}>{tr('journey.prayedAt')}</div>
           {s.prefs.trip.slice(0, 12).map((t) => (
             <div class="row" style={{ gap: '10px', marginBottom: '8px' }}>
               <span>{profileFor(t.countryCode) ? flag(t.countryCode) : '🌏'}</span>
@@ -371,7 +372,7 @@ export function JourneySheet() {
           ))}
         </div>
       )}
-      <p class="caption" style={{ opacity: 0.7, marginTop: '16px' }}>This is general guidance on the traveller's concessions (rukhsah), not a fatwa. When unsure, follow your local religious authority.</p>
+      <p class="caption" style={{ opacity: 0.7, marginTop: '16px' }}>{tr('journey.notFatwa')}</p>
     </Sheet>
   )
 }
@@ -381,23 +382,23 @@ export function JourneySheet() {
 export function AlertsHelpSheet() {
   const support = alertSupport()
   return (
-    <Sheet title="Prayer alerts">
+    <Sheet title={tr('alertsHelp.title')}>
       <div class="help">
         {support === 'needs-install' && (
           <>
-            <p class="headline">On iPhone and iPad, alerts need the app on your Home Screen.</p>
+            <p class="headline">{tr('alertsHelp.iphone')}</p>
             <ol class="subhead">
-              <li>Tap <Share size={15} /> Share in Safari's toolbar.</li>
-              <li>Choose <SquarePlus size={15} /> Add to Home Screen, then Add.</li>
-              <li>Open Prayer Times Asia from the Home Screen and turn alerts on.</li>
+              <li>{trWith('alertsHelp.step1', { icon: <Share size={15} /> })}</li>
+              <li>{trWith('alertsHelp.step2', { icon: <SquarePlus size={15} /> })}</li>
+              <li>{tr('alertsHelp.step3')}</li>
             </ol>
           </>
         )}
-        {support === 'unsupported' && <p class="headline">This browser can't show notifications.</p>}
-        {support === 'supported' && <p class="headline">Notifications are blocked for this site.</p>}
-        {support === 'supported' && <p class="subhead">Allow notifications in your browser's site settings (the icon left of the address), then try again.</p>}
-        <p class="subhead">Web alerts ring only while Prayer Times Asia is open. For alerts that ring when it's closed, use <b>Settings › Add the next 30 days to a calendar</b>. Your calendar app rings every prayer.</p>
-        <button class="primary-btn" onClick={closeSheet}>OK</button>
+        {support === 'unsupported' && <p class="headline">{tr('alertsHelp.cant')}</p>}
+        {support === 'supported' && <p class="headline">{tr('alertsHelp.blocked')}</p>}
+        {support === 'supported' && <p class="subhead">{tr('alertsHelp.allow')}</p>}
+        <p class="subhead">{tr('alertsHelp.webOnly')} {tr('alertsHelp.calendarRings')}</p>
+        <button class="primary-btn" onClick={closeSheet}>{tr('common.ok')}</button>
       </div>
     </Sheet>
   )
@@ -405,18 +406,18 @@ export function AlertsHelpSheet() {
 
 export function InstallSheet() {
   return (
-    <Sheet title="Add to Home Screen">
+    <Sheet title={tr('install.addHome')}>
       <div class="help">
         {isIOS() ? (
           <ol class="subhead">
-            <li>Tap <Share size={15} /> Share in Safari's toolbar.</li>
-            <li>Choose <SquarePlus size={15} /> Add to Home Screen.</li>
-            <li>Tap Add. Prayer Times Asia opens full screen and works offline.</li>
+            <li>{trWith('alertsHelp.step1', { icon: <Share size={15} /> })}</li>
+            <li>{trWith('install.step2', { icon: <SquarePlus size={15} /> })}</li>
+            <li>{tr('install.tapAdd')}</li>
           </ol>
         ) : canInstall() ? (
-          <button class="primary-btn" onClick={() => void install().then(closeSheet)}>Install Prayer Times Asia</button>
+          <button class="primary-btn" onClick={() => void install().then(closeSheet)}>{tr('install.title')}</button>
         ) : (
-          <p class="subhead">Use your browser's menu: <b>Install app</b> or <b>Add to Home screen</b>. Once added, it opens like an app and works offline.</p>
+          <p class="subhead">{trWith('install.menuHow', { menu: tr('install.menu'), app: <b>{tr('install.app')}</b>, home: <b>{tr('install.addHome')}</b> })}</p>
         )}
       </div>
     </Sheet>
@@ -437,7 +438,7 @@ const CREDITS: [string, string, string | null][] = [
 
 export function CreditsSheet() {
   return (
-    <Sheet title="Sources & credits" full>
+    <Sheet title={tr('settings.sources')} full>
       <div class="group" style={{ marginTop: '10px' }}>
         {CREDITS.map(([t, d, u]) => (
           <div class="item" style={{ display: 'block' }}>
@@ -452,7 +453,7 @@ export function CreditsSheet() {
 }
 
 export function MakersSheet({ placement }: { placement: string }) {
-  return <Sheet label="About Prayer Times Asia"><MakersAbout placement={placement} /></Sheet>
+  return <Sheet label={tr('settings.aboutApp')}><MakersAbout placement={placement} country={store.offerCountry} /></Sheet>
 }
 
 
@@ -467,11 +468,11 @@ export function HomeQuestion() {
   if (!home || s.prefs.homeConfirmed) return null
   return (
     <div class="glass card home-question" style={{ marginTop: '10px' }}>
-      <div class="row" style={{ gap: '10px' }}><House size={28} /><span style={{ fontSize: '20px', fontWeight: 700 }}>Is {home.name} your home?</span></div>
-      <p class="subhead" style={{ opacity: 0.85 }}>We guessed it from where you were when you first opened the app. Home is used to work out when you count as a traveller, so please check it.</p>
+      <div class="row" style={{ gap: '10px' }}><House size={28} /><span style={{ fontSize: '20px', fontWeight: 700 }}>{tr('places.isHome', { place: home.name })}</span></div>
+      <p class="subhead" style={{ opacity: 0.85 }}>{tr('places.isHomeHelp')}</p>
       <div class="row" style={{ gap: '10px', flexWrap: 'wrap' }}>
-        <button class="pill-btn" onClick={() => store.confirmHome()}>Yes, this is home</button>
-        <button class="plain-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}>Change home</button>
+        <button class="pill-btn" onClick={() => store.confirmHome()}>{tr('places.yesHome')}</button>
+        <button class="plain-btn" onClick={() => openSheet({ kind: 'places', forHome: true })}>{tr('journey.changeHome')}</button>
       </div>
     </div>
   )

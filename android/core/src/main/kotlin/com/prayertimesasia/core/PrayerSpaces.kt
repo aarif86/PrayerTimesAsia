@@ -16,6 +16,10 @@ data class PrayerSpace(
     val coordinates: Coordinates,
     val distanceKm: Double,
     val isMusollah: Boolean,
+    /** Letters from OpenStreetMap: w women's space, a wheelchair, p parking, t toilets. */
+    val facilities: String = "",
+    /** OpenStreetMap opening_hours, mostly on prayer rooms in malls. */
+    val hours: String? = null,
 )
 
 /**
@@ -67,6 +71,7 @@ object PrayerSpaces {
                 // OSM is already filtered to Muslim places of worship; only drop the obvious lookalikes.
                 if (isTransportOrStreet(lower)) continue
             }
+            if (name != null && isGraveOrShrine(name)) continue
             val point = Coordinates(lat, lon)
             val km = Geo.distanceKm(center, point)
             if (km > maxKm) continue
@@ -74,12 +79,32 @@ object PrayerSpaces {
                 listOfNotNull(tags["addr:housenumber"], tags["addr:street"]).joinToString(" ").takeIf { it.isNotBlank() },
                 tags["addr:city"] ?: tags["addr:suburb"],
             ).joinToString(", ")
-            val display = name ?: if (musollah) "Musollah" else "Masjid"
+            val display = name ?: if (musollah) "Prayer room" else "Masjid"
             val key = "${display.lowercase()}|${Math.round(lat * 2000)}|${Math.round(lon * 2000)}"
             if (found.containsKey(key)) continue
-            found[key] = PrayerSpace("$type/$id", display, address, point, km, musollah)
+            found[key] = PrayerSpace("$type/$id", display, address, point, km, musollah, facilitiesOf(tags), tags["opening_hours"]?.takeIf { it.isNotBlank() })
         }
         return found.values.sortedBy { it.distanceKm }
+    }
+
+    private val yes = setOf("yes", "designated", "limited", "separate", "only")
+
+    /** The same letters the weekly list builder writes (tools/build_masjid_list.py). */
+    fun facilitiesOf(tags: Map<String, String>): String = buildString {
+        if (listOf("female", "women", "prayer_room:female", "female_prayer_room").any { tags[it]?.lowercase() in yes }) append('w')
+        if (tags["wheelchair"]?.lowercase() in yes) append('a')
+        if (tags["parking"]?.lowercase().let { it != null && it != "" && it != "no" }) append('p')
+        if (tags["toilets"]?.lowercase() in yes) append('t')
+    }
+
+    /**
+     * Graves and shrines that OpenStreetMap tags as places of worship (Kubur Kassim,
+     * Keramat Radin Mas). Not places to pray in, unless the name also says masjid or surau.
+     */
+    fun isGraveOrShrine(name: String): Boolean {
+        val n = name.lowercase()
+        if (!Regex("\\b(kubur|keramat|makam|maqam|tomb|grave|cemetery|perkuburan|dargah|shrine)\\b").containsMatchIn(n)) return false
+        return !Regex("\\b(masjid|mosque|surau|musolla|musalla|musholla|mushola|prayer)\\b").containsMatchIn(n)
     }
 
     private fun isTransportOrStreet(n: String): Boolean {
@@ -98,7 +123,7 @@ object PrayerSpaces {
      */
     fun looksLikePrayerSpace(name: String): Boolean {
         val n = name.lowercase()
-        if (isTransportOrStreet(n)) return false
+        if (isTransportOrStreet(n) || isGraveOrShrine(name)) return false
         val words = listOf("masjid", "mosque", "mesjid", "musolla", "musalla", "musholla", "mushola", "surau",
             "prayer", "jami", "islamic cent", "islamic center", "camii", "cami ", "masjed", "مسجد",
             "清真寺", "モスク", "모스크", "nhà thờ hồi giáo", "มัสยิด")

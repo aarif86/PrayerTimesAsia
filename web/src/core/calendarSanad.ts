@@ -13,8 +13,8 @@ export const EVENT_DAY: Record<HijriEvent, number> = { '1_ramadan': 1, '1_syawal
 export function eventTitle(e: HijriEvent, style: NamingStyle): string {
   switch (e) {
     case '1_ramadan': return '1 Ramadan'
-    case '1_syawal': return style === 'malay' ? 'Hari Raya Aidilfitri' : style === 'indonesian' ? 'Idul Fitri' : 'Eid al-Fitr'
-    case '10_zulhijjah': return style === 'malay' ? 'Hari Raya Aidiladha' : style === 'indonesian' ? 'Idul Adha' : 'Eid al-Adha'
+    case '1_syawal': return style === 'malay' ? 'Hari Raya Aidilfitri' : style === 'indonesian' ? 'Idulfitri' : 'Eid al-Fitr'
+    case '10_zulhijjah': return style === 'malay' ? 'Hari Raya Aidiladha' : style === 'indonesian' ? 'Iduladha' : 'Eid al-Adha'
     case '1_muharram': return style === 'malay' || style === 'indonesian' ? 'Awal Muharram' : 'Islamic New Year'
   }
 }

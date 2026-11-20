@@ -5,6 +5,7 @@ import { applyMoved, decodeMove, describeMoved, encodeForQR, encodeMove, movedFr
 import { store } from '../services/store'
 import { closeSheet, Sheet } from './common'
 import { moveLink } from './moveLink'
+import { tr } from '../core/appWords'
 export { moveLink, takeMoveFromLink } from './moveLink'
 
 
@@ -13,7 +14,7 @@ function QR({ text }: { text: string }) {
   let path = ''
   qr.data.forEach((row, y) => row.forEach((on, x) => { if (on) path += `M${x} ${y}h1v1h-1z` }))
   return (
-    <svg class="move-qr" viewBox={`0 0 ${qr.size} ${qr.size}`} shape-rendering="crispEdges" role="img" aria-label="QR code with your settings">
+    <svg class="move-qr" viewBox={`0 0 ${qr.size} ${qr.size}`} shape-rendering="crispEdges" role="img" aria-label={tr('move.qrAlt')}>
       <rect width={qr.size} height={qr.size} fill="#fff" />
       <path d={path} fill="#000" />
     </svg>
@@ -33,30 +34,30 @@ export function MoveOutSheet() {
 
   const copy = async () => {
     if (!full) return
-    try { await navigator.clipboard.writeText(full); setCopied(true) } catch { prompt('Copy this link', full) }
+    try { await navigator.clipboard.writeText(full); setCopied(true) } catch { prompt(tr('move.copyThis'), full) }
   }
   const canShare = typeof navigator.share === 'function'
 
   return (
-    <Sheet title="Move my settings">
+    <Sheet title={tr('move.title')}>
       <div class="help">
-        <p class="subhead">Your places, choices and tracker history, packed into one code. Nothing is uploaded: the settings are inside the code itself.</p>
+        <p class="subhead">{tr('move.intro')}</p>
         <div class="move-qr-wrap">{qr ? <QR text={qr.link} /> : <div class="move-qr" />}</div>
         <ol class="subhead">
-          <li>On the other phone, open Prayer Times Asia › Settings › <b>Bring in settings</b> and scan this code.</li>
-          <li>No app there? Point its camera at the code: it opens the web app with your settings.</li>
+          <li>{tr('move.otherPhone')}</li>
+          <li>{tr('move.noApp')}</li>
         </ol>
         {qr && (qr.keptDays != null || qr.ramadanTrimmed) && (
-          <p class="footnote secondary">The QR code carries {[
-            qr.keptDays != null ? `your last ${qr.keptDays} days of tracker history` : null,
-            qr.ramadanTrimmed ? "only this year's Ramadan record" : null,
-          ].filter(Boolean).join(' and ')}. To bring all of it, use Copy link or Share.</p>
+          <p class="footnote secondary">{tr('move.carries', { what: [
+            qr.keptDays != null ? tr('move.lastDays', { n: qr.keptDays }) : null,
+            qr.ramadanTrimmed ? tr('move.ramadanOnly') : null,
+          ].filter(Boolean).join(` ${tr('common.and')} `) })}</p>
         )}
         <div class="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
-          <button class="plain-btn" disabled={!full} onClick={() => void copy()}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Copied' : 'Copy link'}</button>
-          {canShare && <button class="plain-btn" disabled={!full} onClick={() => void navigator.share({ title: 'My Prayer Times Asia settings', url: full! }).catch(() => {})}><Share2 size={16} />Share</button>}
+          <button class="plain-btn" disabled={!full} onClick={() => void copy()}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? tr('common.copied') : tr('common.copyLink')}</button>
+          {canShare && <button class="plain-btn" disabled={!full} onClick={() => void navigator.share({ title: tr('move.shareTitle'), url: full! }).catch(() => {})}><Share2 size={16} />{tr('common.share')}</button>}
         </div>
-        <p class="footnote secondary">The code includes your saved places, so only send it to yourself.</p>
+        <p class="footnote secondary">{tr('move.private')}</p>
       </div>
     </Sheet>
   )
@@ -85,28 +86,28 @@ export function MoveInSheet({ code: initial }: { code?: string }) {
 
   if (done) {
     return (
-      <Sheet title="Bring in settings">
+      <Sheet title={tr('move.bringIn')}>
         <div class="help">
-          <p class="headline">Your settings are here.</p>
-          {moved?.notifyPrayers || moved?.reminderMinutesBefore ? <p class="subhead">Prayer alerts need permission on each device: turn them on in Settings › Alerts.</p> : null}
-          <button class="primary-btn" onClick={closeSheet}>Done</button>
+          <p class="headline">{tr('move.arrived')}</p>
+          {moved?.notifyPrayers || moved?.reminderMinutesBefore ? <p class="subhead">{tr('move.alertsAgain')}</p> : null}
+          <button class="primary-btn" onClick={closeSheet}>{tr('common.done')}</button>
         </div>
       </Sheet>
     )
   }
 
   return (
-    <Sheet title="Bring in settings">
+    <Sheet title={tr('move.bringIn')}>
       <div class="help">
-        <p class="subhead">On your other phone or browser, open Settings › <b>Move my settings</b>. Scan its QR code with this phone's camera, or paste its link here.</p>
-        <textarea class="move-paste" rows={3} placeholder="Paste the link or code" value={text} onInput={(e) => setText((e.target as HTMLTextAreaElement).value)} />
-        {error && <p class="footnote" style={{ color: 'var(--danger, #e5484d)' }}>That doesn't look like a settings code. Copy the whole link and try again.</p>}
+        <p class="subhead">{tr('move.bringHow')}</p>
+        <textarea class="move-paste" rows={3} placeholder={tr('move.paste')} value={text} onInput={(e) => setText((e.target as HTMLTextAreaElement).value)} />
+        {error && <p class="footnote" style={{ color: 'var(--danger, #e5484d)' }}>{tr('move.bad')}</p>}
         {moved && (
           <>
-            <p class="subhead" style={{ fontWeight: 600 }}>This will bring in:</p>
+            <p class="subhead" style={{ fontWeight: 600 }}>{tr('move.willBring')}</p>
             <ul class="subhead move-list">{describeMoved(moved).map((l) => <li>{l}</li>)}</ul>
-            <p class="footnote secondary">Your settings here are replaced. Tracker history is added to what's already here.</p>
-            <button class="primary-btn" onClick={bringIn}>Bring in settings</button>
+            <p class="footnote secondary">{tr('move.replaceNote')}</p>
+            <button class="primary-btn" onClick={bringIn}>{tr('move.bringIn')}</button>
           </>
         )}
       </div>
