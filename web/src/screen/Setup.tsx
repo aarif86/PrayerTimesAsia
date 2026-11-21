@@ -196,7 +196,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         </section>
 
         {/* Step 2 */}
-        <section class="sp-step" aria-labelledby="sp-s2">
+        <section class="sp-step sp-step2" aria-labelledby="sp-s2">
           <h2 id="sp-s2"><span class="sp-num">2</span>Choose what shows</h2>
           <div class="sp-studio">
             <div class="sp-left">
