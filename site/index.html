@@ -346,11 +346,13 @@
     .ex-tv { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(160deg, #0d1436, #1a1446); border: 6px solid #05070f; border-radius: 12px; }
     .ex-big { font-size: 1.7rem; font-weight: 800; letter-spacing: .02em; font-variant-numeric: tabular-nums; color: var(--gold); line-height: 1.1; }
     .ex-qr { width: 58px; height: 58px; border-radius: 6px; flex: none; }
-    .ask-band { text-align: center; border-radius: 30px; padding: 56px 28px; border: 1px solid var(--card-line);
+    .ask-band { text-align: center; border-radius: 30px; padding: 72px 28px; border: 1px solid var(--card-line);
       background: radial-gradient(70% 120% at 50% 0%, #f39a4a33, transparent 70%), linear-gradient(135deg, #1d2160, #2b1a4f 60%, #3d1f3f); }
     .ask-band .lead { margin: 0 auto; }
     .ask-band .btns { justify-content: center; margin-top: 26px; }
-    .review-band { margin-top: 28px; border-radius: 30px; padding: 44px 28px; border: 1px solid var(--card-line); background: var(--card); max-width: 760px; margin-left: auto; margin-right: auto; }
+    .review-band { margin-top: 56px; border-radius: 30px; padding: 64px 28px; border: 1px solid var(--card-line); background: var(--card); }
+    .review-private { text-align: center; }
+    .review-band > * { max-width: 760px; margin-left: auto; margin-right: auto; }
     .review-head { text-align: center; }
     .review-head .lead { margin: 0 auto; }
     .review-steps { margin: 22px auto 16px; padding-left: 22px; color: var(--muted); line-height: 1.6; max-width: 560px; }
@@ -367,7 +369,7 @@
     .review-copied { text-align: center; color: var(--gold); margin: 12px 0 0; }
     .review-private { text-align: center; margin: 16px 0 0; font-size: 0.95rem; }
     .review-private a { color: var(--muted); }
-    @media (max-width: 720px) { .review-links { grid-template-columns: 1fr; } .review-band { padding: 32px 18px; } }
+    @media (max-width: 720px) { .review-links { grid-template-columns: 1fr; } .review-band { padding: 40px 18px; margin-top: 40px; } }
     @media (prefers-reduced-motion: reduce) { .review-link { transition: none; } }
 
     /* ---------- Motion ---------- */
