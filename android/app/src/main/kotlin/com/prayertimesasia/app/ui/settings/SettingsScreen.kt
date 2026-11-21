@@ -260,7 +260,8 @@ private fun SettingsPage(title: String, back: () -> Unit, content: @Composable C
 
 /** A main-page row: a small coloured icon, the name, and the current choice on the right. */
 @Composable
-private fun NavRow(label: String, icon: ImageVector, color: Color, value: String = "", onClick: () -> Unit) = RowShell(onClick) {
+private fun NavRow(label: String, icon: ImageVector, color: Color, value: String = "", onClick: () -> Unit) =
+    RowShell(onClick, if (value.isEmpty()) label else "$label, $value") {
     Box(Modifier.size(30.dp).clip(RoundedCornerShape(8.dp)).background(color), contentAlignment = Alignment.Center) {
         Icon(icon, null, Modifier.size(18.dp), tint = Color.White)
     }
@@ -565,10 +566,13 @@ fun Section(title: String?, footer: String? = null, content: @Composable ColumnS
 }
 
 @Composable
-private fun RowShell(onClick: (() -> Unit)?, content: @Composable RowScope.() -> Unit) {
+private fun RowShell(onClick: (() -> Unit)?, description: String? = null, content: @Composable RowScope.() -> Unit) {
     Column {
         Row(
-            Modifier.fillMaxWidth().heightIn(min = 52.dp).then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            Modifier.fillMaxWidth().heightIn(min = 52.dp)
+                // A spoken name for the whole row, so a row cut off at the screen's edge still has one.
+                .then(if (description != null) Modifier.semantics { contentDescription = description } else Modifier)
+                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
