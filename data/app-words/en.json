@@ -754,6 +754,7 @@
   "notify.ended": "{name} has ended.",
   "notify.iftar": "Time for iftar · {time}",
   "notify.iftarName": "Time for iftar · {name} {time}",
+  "notify.breakFast": "Time to break your fast",
   "notify.imsakIn": "Imsak in 10 minutes · {time}",
   "notify.finishSahur": "Finish your sahur. {name} at {time} · {place}",
   "notify.qiyamTitle": "Night {night} · the last third has begun",

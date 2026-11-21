@@ -106,7 +106,7 @@ object AlarmScheduler {
                         else -> Sound.AZAN
                     }
                     if (prayer == Prayer.MAGHRIB && r.isRamadanDay(time)) {
-                        out += Alert(id, "Time for iftar · $name ${r.formatted(time)}", BERBUKA_DOA, time, Kind.PRAYER, sound,
+                        out += Alert(id, "Time for iftar · $name ${r.formatted(time)}", BREAK_FAST, time, Kind.PRAYER, sound,
                             silent = r.isSilent(time, prayer))
                         continue
                     }
@@ -124,7 +124,7 @@ object AlarmScheduler {
         return out.filter { it.at > now }.sortedBy { it.at }.take(48)
     }
 
-    private const val BERBUKA_DOA = "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu"
+    private const val BREAK_FAST = "Time to break your fast"
 
     /** Ramadan's own alerts: Imsak (10 minutes before), Berbuka at Maghrib, qiyam in the last ten nights. */
     private fun ramadanAlerts(r: Resolver, day: PrayerDay, key: String, here: String, maghribAlertOn: Boolean): List<Alert> {
@@ -139,7 +139,7 @@ object AlarmScheduler {
             }
             if (p.berbukaAlert && !maghribAlertOn) {
                 out += Alert("$key-berbuka", "Time for iftar · ${r.formatted(day.time(Prayer.MAGHRIB))}",
-                    "$BERBUKA_DOA. Ramadan day ${s.ramadanDay ?: 0} · $here", day.time(Prayer.MAGHRIB), Kind.PRAYER, silent = r.isSilent(day.time(Prayer.MAGHRIB), Prayer.MAGHRIB))
+                    "$BREAK_FAST. Ramadan day ${s.ramadanDay ?: 0} · $here", day.time(Prayer.MAGHRIB), Kind.PRAYER, silent = r.isSilent(day.time(Prayer.MAGHRIB), Prayer.MAGHRIB))
             }
         }
         val night = s.nightTonight

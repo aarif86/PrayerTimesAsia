@@ -754,6 +754,7 @@
   "notify.ended": "Waktu {name} telah tamat.",
   "notify.iftar": "Waktu berbuka · {time}",
   "notify.iftarName": "Waktu berbuka · {name} {time}",
+  "notify.breakFast": "Masa untuk berbuka puasa",
   "notify.imsakIn": "Imsak dalam 10 minit · {time}",
   "notify.finishSahur": "Habiskan sahur anda. {name} pada {time} · {place}",
   "notify.qiyamTitle": "Malam {night} · sepertiga malam terakhir telah bermula",

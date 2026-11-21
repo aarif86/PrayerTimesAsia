@@ -756,6 +756,7 @@
     <string name="notify_ended" formatted="false">{name} has ended.</string>
     <string name="notify_iftar" formatted="false">Time for iftar · {time}</string>
     <string name="notify_iftarName" formatted="false">Time for iftar · {name} {time}</string>
+    <string name="notify_breakFast" formatted="false">Time to break your fast</string>
     <string name="notify_imsakIn" formatted="false">Imsak in 10 minutes · {time}</string>
     <string name="notify_finishSahur" formatted="false">Finish your sahur. {name} at {time} · {place}</string>
     <string name="notify_qiyamTitle" formatted="false">Night {night} · the last third has begun</string>
