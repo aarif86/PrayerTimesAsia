@@ -866,7 +866,7 @@ struct TodayView: View {
     }
 
     /// Tap to try the next Prayer screen style; touch and hold to pick one.
-    /// The choice is kept (Settings > Display shows the same).
+    /// The choice is kept (Settings, Look and feel shows the same).
     private var styleButton: some View {
         Button {
             let all = TodayStyle.allCases

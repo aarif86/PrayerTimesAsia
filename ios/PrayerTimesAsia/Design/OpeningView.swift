@@ -4,7 +4,7 @@ import SwiftUI
 /// about a second in one of eleven ways, then it fades. All eleven come round once, in a
 /// shuffled order, before any repeats, and never the same one twice in a row. The clock
 /// hands always sweep round to the real time. Reduce Motion keeps the dial still.
-/// Settings > Opening screen turns it off, but it always shows the first time.
+/// Settings, Look and feel, Moving dial turns it off, but it always shows the first time.
 /// The same movements play on Android (OpeningScreen.kt) and the web app (index.html).
 struct OpeningView: View {
     @Binding var isShowing: Bool
