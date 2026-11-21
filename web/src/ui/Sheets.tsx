@@ -433,6 +433,7 @@ const CREDITS: [string, string, string | null][] = [
   ['Maps and places', 'Map data © OpenStreetMap contributors (ODbL), tiles © CARTO, masjid lists built weekly from OpenStreetMap with the Overpass API, place search through Nominatim.', 'https://www.openstreetmap.org/copyright'],
   ['Icons and fonts', 'Lucide icons (ISC); Inter and Nunito (SIL Open Font Licence).', 'https://lucide.dev'],
   ['Community data', 'Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.', 'https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md'],
+  ['Design', 'The Colour Bands look and the prayer colours are inspired by prayertime.sg by AwsamTech. With thanks to Ustaz Shahib Amin Syukran, who designed the original.', 'https://prayertime.sg'],
   ['This app', 'Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.', 'https://github.com/aarif86/PrayerTimesAsia'],
 ]
 

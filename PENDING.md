@@ -26,7 +26,7 @@ and where it's heading is in [docs/website/roadmap.md](docs/website/roadmap.md).
 - [ ] **Falak committee review** - send [docs/falak-review.md](docs/falak-review.md) to the MUIS Falak Committee. Their notes go on the board.
 - [ ] **Worldwide sources** - read [docs/worldwide-times.md](docs/worldwide-times.md) (ideally with the falak committee) and tell Claude anything to change.
 - [ ] **Native speakers** - Malay and Indonesian for the app, website and store text; Arabic, Urdu, Bangla, Turkish and French for the website pages and prayer names.
-- [ ] **prayertime.sg designer** - ask if we may add "shared with the blessing of its maker" to the Colour Bands tribute.
+- [ ] **prayertime.sg designer** - asked Ustaz Shahib Amin (AwsamTech) on WhatsApp for the design style. Waiting for his yes and how he wants to be credited. The credit lines wait in a draft pull request until then. Keep "shared with the blessing of its maker" off until he agrees.
 
 ### Information Claude needs
 
