@@ -38,6 +38,7 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -122,12 +123,12 @@ internal fun dialBitmap(m: WidgetModel, px: Int, labels: Boolean = false): Bitma
         }
         Prayer.all.forEach { p ->
             val at = Math.toRadians((angle(m.day.time(p)) - 90 + 7).toDouble())
-            val rr = r * if (p == Prayer.SUNRISE) 0.5f else 0.72f
+            val rr = r * if (Prayer.all.indexOf(p) % 2 == 0) 0.74f else 0.5f
             val cx = px / 2f + (Math.cos(at) * rr).toFloat()
             val cy = px / 2f + (Math.sin(at) * rr).toFloat()
-            text.textSize = px * 0.052f; text.alpha = 200
+            text.textSize = px * 0.046f; text.alpha = 200
             c.drawText(m.names.getValue(p), cx, cy - px * 0.005f, text)
-            text.textSize = px * 0.06f; text.alpha = 255
+            text.textSize = px * 0.052f; text.alpha = 255
             val t = m.times.getValue(p)
             c.drawText(t.first + (t.second?.let { " $it" } ?: ""), cx, cy + px * 0.058f, text)
         }
@@ -232,6 +233,9 @@ internal fun NextPrayerContent(context: Context) {
     // Large is the whole day in the Prayer screen's own look, as on the iPhone.
     if (size.width >= 240.dp && size.height >= 240.dp) return TimetableBody(context, m, size)
     val wide = size.width >= 240.dp
+    // The small and wide cards are only about 110 dp tall: tighter padding and type so nothing is cut off.
+    val pad = if (size.height < 150.dp) 9.dp else 14.dp
+    val timeSize = if (size.width < 150.dp) 22 else if (size.height < 150.dp) 24 else 26
     Box(
         GlanceModifier.fillMaxSize().appWidgetBackground().cornerRadius(22.dp)
             .let { mod ->
@@ -241,7 +245,7 @@ internal fun NextPrayerContent(context: Context) {
             }
             .clickable(actionStartActivity<MainActivity>()),
     ) {
-        Row(GlanceModifier.fillMaxSize().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(GlanceModifier.fillMaxSize().padding(pad), verticalAlignment = Alignment.CenterVertically) {
             Column(GlanceModifier.defaultWeight()) {
                 Text("${m.placeName} ${m.flag}", style = style(11, FontWeight.Medium, white(0.85f)), maxLines = 1)
                 Spacer(GlanceModifier.defaultWeight())
@@ -250,14 +254,14 @@ internal fun NextPrayerContent(context: Context) {
                     // Ramadan: Berbuka through the fasting day, Imsak at night. The next prayer
                     // stays underneath when it is a different moment (not Maghrib at Berbuka).
                     Text(fast.label, style = style(17, FontWeight.Bold), maxLines = 1)
-                    Text(fast.time, style = style(26, FontWeight.Bold), maxLines = 1)
+                    Text(fast.time, style = style(timeSize, FontWeight.Bold), maxLines = 1)
                     Countdown(context, fast.at)
                     if (kotlin.math.abs(next.second.epochSecond - fast.at.epochSecond) >= 60) {
                         Text("${m.nextName ?: ""} ${m.nextTime ?: ""}", style = style(11, FontWeight.Medium, white(0.8f)), maxLines = 1)
                     }
                 } else {
                     Text(m.nextName ?: "", style = style(17, FontWeight.Bold))
-                    Text(m.nextTime ?: "", style = style(26, FontWeight.Bold), maxLines = 1)
+                    Text(m.nextTime ?: "", style = style(timeSize, FontWeight.Bold), maxLines = 1)
                     Countdown(context, next.second)
                 }
             }
@@ -268,11 +272,11 @@ internal fun NextPrayerContent(context: Context) {
                         val isCurrent = p == m.open
                         val t = m.times.getValue(p)
                         Row(
-                            GlanceModifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp).cornerRadius(10.dp)
+                            GlanceModifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = if (size.height < 150.dp) 0.dp else 2.dp).cornerRadius(10.dp)
                                 .background(if (isCurrent) Color.White.copy(alpha = 0.22f) else Color.Transparent),
                         ) {
-                            Text(m.names.getValue(p), style = style(12, if (isCurrent) FontWeight.Bold else FontWeight.Medium), modifier = GlanceModifier.defaultWeight())
-                            Text(t.first + (t.second?.let { " $it" } ?: ""), style = style(12))
+                            Text(m.names.getValue(p), style = style(if (size.height < 150.dp) 11 else 12, if (isCurrent) FontWeight.Bold else FontWeight.Medium), modifier = GlanceModifier.defaultWeight())
+                            Text(t.first + (t.second?.let { " $it" } ?: ""), style = style(if (size.height < 150.dp) 11 else 12))
                         }
                     }
                 }
@@ -382,14 +386,14 @@ private fun TimetableBody(context: Context, m: WidgetModel, size: DpSize) {
             val next = m.next
             if (lead != null && next != null) {
                 Text(if (lead.isNext) "NEXT PRAYER" else "PRAYER NOW", style = style(sz(11), FontWeight.Bold, white(0.8f)))
-                Text(m.names.getValue(lead.prayer), style = style(sz(30), FontWeight.Bold), maxLines = 1)
+                Text(m.names.getValue(lead.prayer), style = style(sz(if (tall) 28 else 22), FontWeight.Bold), maxLines = 1)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Countdown(context, next.second, big = !compact)
+                    Countdown(context, next.second, big = tall)
                     Text(if (lead.isNext) "  to go" else "  left", style = style(sz(13), FontWeight.Medium, white(0.85f)))
                 }
             }
-            Spacer(GlanceModifier.height(6.dp))
-            PrayerRows(context, m, ::sz, GlanceModifier.fillMaxWidth().defaultWeight(), withHeader = false, onlyFive = true, bigger = true)
+            Spacer(GlanceModifier.height(4.dp))
+            PrayerRows(context, m, ::sz, GlanceModifier.fillMaxWidth().defaultWeight(), withHeader = false, onlyFive = true, bigger = tall)
         }
         // Short widgets: the plain list.
         else -> Column(base.then(sky).padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -416,12 +420,10 @@ private fun BandsBody(context: Context, m: WidgetModel, base: GlanceModifier, sz
                 GlanceModifier.fillMaxWidth().defaultWeight().background(BandsPalette.color(p)).padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(m.names.getValue(p), style = style(sz(21), FontWeight.Bold))
-                        if (isCurrent) Text("  NOW", style = style(sz(10), FontWeight.Bold))
-                    }
-                    if (countdown?.first == p) RowCountdown(context, m, countdown.second)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(m.names.getValue(p), style = style(sz(20), FontWeight.Bold))
+                    if (isCurrent) Text("  NOW", style = style(sz(10), FontWeight.Bold))
+                    if (countdown?.first == p) { Spacer(GlanceModifier.width(6.dp)); RowCountdown(context, m, countdown.second) }
                 }
                 Spacer(GlanceModifier.defaultWeight())
                 Text(t.first, style = style(sz(25)))
@@ -473,7 +475,7 @@ private fun TimesGrid(m: WidgetModel, modifier: GlanceModifier) {
                     val t = m.times.getValue(p)
                     val isNext = m.lead?.isNext == true && p == m.lead?.prayer
                     Column(
-                        GlanceModifier.defaultWeight().fillMaxSize().cornerRadius(12.dp)
+                        GlanceModifier.defaultWeight().fillMaxHeight().cornerRadius(12.dp)
                             .background(if (isNext) Color.White.copy(alpha = 0.24f) else p.tint.copy(alpha = if (isCurrent) 0.4f else 0.16f)),
                         horizontalAlignment = Alignment.CenterHorizontally, verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -509,9 +511,9 @@ private fun PrayerRows(
             ) {
                 Box(GlanceModifier.width(3.dp).height(18.dp).cornerRadius(2.dp).background(p.tint)) {}
                 Spacer(GlanceModifier.width(8.dp))
-                Column(GlanceModifier.defaultWeight()) {
-                    Text(m.names.getValue(p) + if (isCurrent) "  · NOW" else "", style = style(sz(if (bigger) 19 else 16), FontWeight.Medium, white(alpha)))
-                    if (!onlyFive && countdown?.first == p) RowCountdown(context, m, countdown.second)
+                Row(GlanceModifier.defaultWeight(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(m.names.getValue(p) + if (isCurrent) "  · NOW" else "", style = style(sz(if (bigger) 19 else 16), FontWeight.Medium, white(alpha)), maxLines = 1)
+                    if (!onlyFive && countdown?.first == p) { Spacer(GlanceModifier.width(6.dp)); RowCountdown(context, m, countdown.second) }
                 }
                 Text(t.first, style = style(sz(if (bigger) 25 else 22), FontWeight.Bold, white(alpha)))
                 t.second?.let { Text(" $it", style = style(sz(11), FontWeight.Bold, white(alpha * 0.7f))) }

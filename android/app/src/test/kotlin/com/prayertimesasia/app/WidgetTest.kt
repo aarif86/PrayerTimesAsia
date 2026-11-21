@@ -75,7 +75,9 @@ class WidgetTest {
         val d = ctx.resources.displayMetrics.density
         val pad = (16 * d).toInt()
         val host = FrameLayout(ctx).apply { setBackgroundColor(Color.rgb(0x1F, 0x8A, 0x8F)); setPadding(pad, pad, pad, pad) }
-        host.addView(rv.apply(ctx, host))
+        val view = rv.apply(ctx, host)
+        showCountdowns(view)
+        host.addView(view)
         host.measure(View.MeasureSpec.makeMeasureSpec((w * d).toInt() + 2 * pad, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec((h * d).toInt() + 2 * pad, View.MeasureSpec.EXACTLY))
         host.layout(0, 0, host.measuredWidth, host.measuredHeight)
@@ -83,6 +85,17 @@ class WidgetTest {
         host.draw(android.graphics.Canvas(bmp))
         val file = java.io.File("build/outputs/roborazzi/w-$name.png").also { it.parentFile?.mkdirs() }
         file.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    /** A Chronometer only ticks once it is on screen; write what it would show so the pictures are true to life. */
+    private fun showCountdowns(v: View) {
+        if (v is android.widget.Chronometer) {
+            val secs = ((v.base - android.os.SystemClock.elapsedRealtime()) / 1000).coerceAtLeast(0)
+            val h = secs / 3600
+            v.text = if (h > 0) "%d:%02d:%02d".format(h, secs / 60 % 60, secs % 60) else "%02d:%02d".format(secs / 60, secs % 60)
+        } else if (v is android.view.ViewGroup) {
+            for (i in 0 until v.childCount) showCountdowns(v.getChildAt(i))
+        }
     }
 
     private fun d(style: TodayStyle, now: java.time.Instant, appearance: Appearance = Appearance.DARK) =
