@@ -451,7 +451,8 @@ internal fun StreetMap(
 
         if (selected == null) {
             Box(Modifier.align(Alignment.TopEnd).padding(12.dp).size(48.dp).clip(CircleShape)
-                .clickable(onClickLabel = "Show where I am") { camera.show(center, spanFor(mode), animate = true) },
+                .clickable(onClickLabel = "Show where I am") { camera.show(center, spanFor(mode), animate = true) }
+                .semantics { contentDescription = "Show where I am" },
                 contentAlignment = Alignment.Center) {
                 Box(Modifier.size(44.dp).clip(CircleShape).background(material), contentAlignment = Alignment.Center) {
                     Icon(Icons.Filled.NearMe, "Show where I am", Modifier.size(22.dp), tint = you)

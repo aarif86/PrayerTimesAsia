@@ -76,6 +76,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.prayertimesasia.app.ui.components.CapsuleButton
 import com.prayertimesasia.app.ui.components.GlassCard
@@ -418,7 +419,8 @@ private fun PinCard(s: PrayerSpace, mode: TripMode, h24: Boolean, hours: Opening
             Icon(if (mode == TripMode.WALK) Icons.AutoMirrored.Filled.DirectionsWalk else Icons.Filled.DirectionsCar, null, Modifier.size(16.dp), tint = Color.Black.copy(alpha = 0.82f))
             Text("Directions", style = Txt.footnoteSemibold, color = Color.Black.copy(alpha = 0.82f))
         }
-        Box(Modifier.size(48.dp).clip(CircleShape).clickable(onClickLabel = "Close", onClick = onClose), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(48.dp).clip(CircleShape).clickable(onClickLabel = "Close", onClick = onClose).semantics { contentDescription = "Close" },
+            contentAlignment = Alignment.Center) {
             Icon(Icons.Filled.Close, "Close", Modifier.size(18.dp), tint = Palette.secondary)
         }
     }
@@ -603,7 +605,9 @@ private fun FridayCard(from: Coordinates, today: Boolean, mode: TripMode, h24: B
                         MasjidExtras.tripText(km, mode)?.let { Text(it, style = Txt.caption, color = Palette.secondary) }
                     }
                 }
-                Box(Modifier.size(48.dp).clip(CircleShape).clickable(onClickLabel = "Directions to ${m.name}") { directions(context, m.coordinates, m.name, mode) },
+                // The words sit on the button itself, so a screen reader has them even when the round icon is half scrolled away.
+                Box(Modifier.size(48.dp).clip(CircleShape).clickable(onClickLabel = "Directions to ${m.name}") { directions(context, m.coordinates, m.name, mode) }
+                    .semantics { contentDescription = "Directions to ${m.name}" },
                     contentAlignment = Alignment.Center) {
                     Box(Modifier.size(36.dp).clip(CircleShape).background(Palette.accent.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
                         Icon(if (mode == TripMode.WALK) Icons.AutoMirrored.Filled.DirectionsWalk else Icons.Filled.DirectionsCar,
