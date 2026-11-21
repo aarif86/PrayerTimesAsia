@@ -324,10 +324,20 @@ function isPlace(v: unknown): v is Place {
 
 const KEY = 'ptasia.preferences.v1'
 
+/** A new visitor's 24 hour setting follows the device's own clock; after that it is their choice. */
+export function deviceUses24Hour(): boolean {
+  try {
+    const cycle = new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions().hourCycle
+    return cycle === 'h23' || cycle === 'h24'
+  } catch {
+    return false
+  }
+}
+
 export function loadPreferences(): Preferences {
   try {
     const s = localStorage.getItem(KEY)
-    return s ? decodePreferences(JSON.parse(s)) : structuredClone(DEFAULT_PREFS)
+    return s ? decodePreferences(JSON.parse(s)) : { ...structuredClone(DEFAULT_PREFS), use24Hour: deviceUses24Hour() }
   } catch {
     return structuredClone(DEFAULT_PREFS)
   }

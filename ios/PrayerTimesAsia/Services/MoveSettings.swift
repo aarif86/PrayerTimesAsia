@@ -168,7 +168,7 @@ extension MovedSettings {
         methodOverrideID = p.methodOverrideID
         asrOverride = p.asrOverride
         namingOverride = p.namingOverride
-        use24Hour = changed(p.use24Hour, d.use24Hour)
+        use24Hour = changed(p.use24Hour, false)  // always against 12 hour, since a fresh iPhone now copies the phone clock
         hijriAdjustment = changed(p.hijriAdjustment, d.hijriAdjustment)
         notifyPrayers = changed(p.notifyPrayers, d.notifyPrayers).map { set in Prayer.allCases.filter { set.contains($0) } }
         reminderMinutesBefore = changed(p.reminderMinutesBefore, d.reminderMinutesBefore)
