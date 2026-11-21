@@ -208,3 +208,19 @@ select.sp-input option { background: #161a36; color: #fff; }
   .sp-step2 .sp-right { grid-column: 2; grid-row: 1 / span 2; }
   .sp-step2 > .sp-more { grid-column: 1 / -1; grid-row: 3; }
 }
+
+/* Pairing with the TV */
+.sp-pairbox { display: grid; gap: 12px; padding: 18px; border-radius: 20px; border: 1.5px solid color-mix(in srgb, var(--sp-gold) 55%, transparent); background: color-mix(in srgb, var(--sp-gold) 7%, transparent); }
+.sp-pairbox h3, .sp-or { margin: 0; font-size: 1.2rem; }
+.sp-or { margin-top: 10px; }
+.sp-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; font-size: 1.05rem; }
+.sp-steps li::marker { color: var(--sp-gold); font-weight: 800; }
+.sp-pairrow { display: flex; flex-wrap: wrap; gap: 10px; }
+.sp-codein { flex: 1 1 200px; width: auto; letter-spacing: 0.15em; font-weight: 800; text-transform: uppercase; }
+.sp-pairrow .sp-btn { flex: 1 1 200px; }
+.sp-ok { margin: 0; color: var(--sp-green); font-weight: 800; }
+.sp-pairbar { position: sticky; top: 70px; z-index: 9; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-radius: 20px;
+  background: var(--sp-card); border: 1.5px solid var(--sp-gold); box-shadow: var(--sp-shadow); }
+.sp-pairbar div { display: grid; min-width: 0; }
+.sp-pairbar span { color: var(--sp-muted); font-size: 0.98rem; }
+.sp-pairbar-msg { margin: 0; text-align: center; font-size: 1.1rem; }

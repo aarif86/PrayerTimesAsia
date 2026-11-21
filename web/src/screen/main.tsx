@@ -8,7 +8,7 @@ import { ensureTable } from '../services/officialTables'
 import { readJSON, readString, writeJSON, writeString } from '../services/storage'
 import { countScreenRunning, SCREEN_EVERY_MS } from '../services/usage'
 import { registerServiceWorker } from '../ui/pwa'
-import { configFromHash, decodeConfig, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, shortCodeFromHash, type ScreenConfig } from './config'
+import { configFromHash, decodeConfig, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, isTvHash, sanitize, shortCodeFromHash, type ScreenConfig } from './config'
 import { Display } from './Display'
 import { withPlace } from './place'
 import { Frame } from './Frame'
@@ -16,7 +16,8 @@ import { officialSourceForScreen, setScreenAnnouncements, setScreenClock, WORDS 
 import type { CalendarDataset } from '../core/calendarSanad'
 import { fetchOK } from '../services/storage'
 import { Setup } from './Setup'
-import { loadShortLink, checkClock, CLOCK_WARN_MS, nextClockFix, PING_EVERY_MS, pingScreen, saveClockFix, savedClockFix } from './live'
+import { PAIR_KEY, PAIR_SYNC_MS, PairScreen, type TvPair } from './pair'
+import { loadShortLink, pairSync, checkClock, CLOCK_WARN_MS, nextClockFix, PING_EVERY_MS, pingScreen, saveClockFix, savedClockFix } from './live'
 import { withBundled } from '../core/bundledCalendar'
 import './screen.css'
 
@@ -115,13 +116,35 @@ function App() {
   const [config, setConfig] = useState<ScreenConfig | null>(initialConfig)
   const code = shortCodeFromHash(location.hash)
   const link = useShortLink(code, config != null, setConfig)
-  const [editing, setEditing] = useState(() => (!config && !code) || location.hash.includes('setup') || query.has('setup'))
+  const tv = isTvHash(location.hash)
+  const [editing, setEditing] = useState(() => (!config && !code && !tv) || location.hash.includes('setup') || query.has('setup'))
   const now = useClock()
   // No place chosen: the TV works out a place from its own time zone.
+  // A paired TV looks for changes from the phone, now and every 10 minutes.
+  useEffect(() => {
+    if (!config || fixedNow != null || query.has('demo')) return
+    let stop = false
+    const look = async () => {
+      const pair = readJSON<TvPair>(PAIR_KEY)
+      if (!pair || !navigator.onLine) return
+      const r = await pairSync(pair.code, pair.tvKey, pair.rev)
+      if (stop || !r || r === 'gone' || !r.c) return
+      const next = decodeConfig(r.c)
+      if (!next) return
+      const c = sanitize(next)
+      writeJSON(STORAGE, c); writeJSON(PAIR_KEY, { ...pair, rev: r.rev }); setConfig(c)
+    }
+    void look()
+    const id = setInterval(look, PAIR_SYNC_MS)
+    return () => { stop = true; clearInterval(id) }
+  }, [config != null])
   const placed = useMemo(() => (config ? withPlace(config) : null), [config])
   // The setup page is in English; the screen speaks its chosen language (screen readers, TV translation prompts).
   useEffect(() => { document.documentElement.lang = editing || !config ? 'en' : config.lang }, [editing, config])
 
+  if (!config && tv && !code && !editing) {
+    return <PairScreen onPaired={(c, pair) => { writeJSON(STORAGE, c); writeJSON(PAIR_KEY, pair); writeString(CODE_KEY, ''); setConfig(c) }} />
+  }
   if (!config && code && !editing) {
     return <div class="scr scr-empty"><p>{link === 'failed' ? 'Could not open this link yet. Check that the TV is online. Trying again.' : 'Opening your masjid screen'}</p></div>
   }
@@ -129,6 +152,7 @@ function App() {
     return <Setup initial={config ?? DEFAULT_CONFIG} now={now} onOpen={(c) => {
       writeJSON(STORAGE, c)
       writeString(CODE_KEY, '')
+      writeJSON(PAIR_KEY, null)  // Changed on the TV itself: the phone no longer controls it.
       history.replaceState(null, '', `${location.pathname}${location.search}#c=${encodeConfig(c)}`)
       setConfig(c)
       setEditing(false)

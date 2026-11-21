@@ -423,3 +423,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* The TV's clock was found to be wrong: a small note for the committee, bottom left. */
 .screen-clockwarn { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: 16px; margin: 0; max-width: min(46ch, 60vw); z-index: 20;
   font-size: 14px; line-height: 1.35; color: #1b1630; background: rgb(255, 214, 128); padding: 8px 14px; border-radius: 12px; opacity: 0.92; }
+
+/* The TV's pairing screen (prayertimes.asia/tv): big, plain, readable from across the room. */
+.pair { min-height: 100%; display: grid; align-content: center; justify-items: center; gap: 3vh; padding: 4vh 5vw; text-align: center; background: var(--bg); color: var(--fg); }
+.pair h1 { margin: 0; font-family: var(--font-display); font-size: clamp(2rem, 6vw, 4.5rem); font-weight: 800; }
+.pair-lead { margin: 0; font-size: clamp(1.1rem, 2.6vw, 2rem); color: var(--fg2); max-width: 30em; }
+.pair-lead b { color: var(--fg); }
+.pair-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 5vw; }
+.pair-qr { width: min(34vh, 60vw); aspect-ratio: 1; background: #fff; border-radius: 16px; padding: 8px; }
+.pair-qr.empty { opacity: 0.3; }
+.pair-code { display: grid; gap: 1vh; }
+.pair-code span { font-size: clamp(1rem, 2.4vw, 1.8rem); color: var(--fg2); }
+.pair-code b { font-family: var(--font-display); font-size: clamp(2.6rem, 9vw, 7rem); letter-spacing: 0.08em; white-space: nowrap; color: var(--gold); }
+.pair-hint { margin: 0; font-size: clamp(1rem, 2vw, 1.5rem); color: var(--fg2); max-width: 34em; }
+.pair-foot { margin: 0; font-size: 1rem; color: var(--fg3); }

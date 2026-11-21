@@ -262,6 +262,15 @@ export function shortCodeFromHash(hash: string): string | null {
   return m ? m[1] : null
 }
 
+/** The pairing code from a hash like "#pair=K7M3QX" (the QR code on the TV), or null. */
+export function pairCodeFromHash(hash: string): string | null {
+  const m = /(?:^#|&)pair=([A-Za-z2-9]{6})(?:&|$)/.exec(hash)
+  return m ? m[1].toUpperCase() : null
+}
+
+/** "#tv": the short address prayertimes.asia/tv sends a TV to. */
+export const isTvHash = (hash: string): boolean => /(?:^#|&)tv(?:&|$)/.test(hash)
+
 /** The `c=` value from a location hash like "#c=eyJ2Ijox...". */
 export function configFromHash(hash: string): ScreenConfig | null {
   const m = /(?:^#|&)c=([A-Za-z0-9_-]+)/.exec(hash)

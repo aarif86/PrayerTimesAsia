@@ -93,3 +93,43 @@ test('short screen links: save, same settings same code, fetch, refuse junk', as
   assert.equal((await call(h.screenLinkSave, { method: 'POST', body: { c: notV1 } })).code, 400);
   assert.equal((await call(h.screenLinkSave, { method: 'GET' })).code, 405);
 });
+
+test('pairing a TV: code, claim, sync, update, wrong keys, run out', async () => {
+  const db = fakeDb();
+  const h = handlers({ onRequest, db, FieldValue, Timestamp: TS, hash: (s) => 'h' + s });
+  const c1 = Buffer.from(JSON.stringify({ v: 1, name: 'One' })).toString('base64url');
+  const c2 = Buffer.from(JSON.stringify({ v: 1, name: 'Two' })).toString('base64url');
+  const start = await call(h.screenPairStart, { method: 'POST' });
+  assert.equal(start.code, 200);
+  const { code, tvKey } = start.body;
+  assert.match(code, /^[A-HJKMNP-Z2-9]{6}$/);
+  // Waiting: nothing yet.
+  assert.deepEqual((await call(h.screenPairSync, { query: { code, key: tvKey, rev: '0' } })).body, { rev: 0 });
+  // A wrong TV key is told nothing.
+  assert.equal((await call(h.screenPairSync, { query: { code, key: 'x'.repeat(30), rev: '0' } })).code, 404);
+  // The phone types the code in lower case with a space; it still works.
+  const claim = await call(h.screenPairClaim, { method: 'POST', body: JSON.stringify({ code: code.toLowerCase().slice(0, 3) + ' ' + code.slice(3).toLowerCase(), c: c1 }) });
+  assert.equal(claim.code, 200);
+  const { editKey } = claim.body;
+  // Claimed once only.
+  assert.equal((await call(h.screenPairClaim, { method: 'POST', body: { code, c: c2 } })).code, 404);
+  // The TV now gets the settings, then nothing new.
+  const got = await call(h.screenPairSync, { query: { code, key: tvKey, rev: '0' } });
+  assert.equal(got.body.c, c1);
+  assert.deepEqual((await call(h.screenPairSync, { query: { code, key: tvKey, rev: String(got.body.rev) } })).body, { rev: 1 });
+  // Updates need the phone's key.
+  assert.equal((await call(h.screenPairUpdate, { method: 'POST', body: { code, editKey: 'y'.repeat(30), c: c2 } })).code, 403);
+  assert.equal((await call(h.screenPairUpdate, { method: 'POST', body: { code, editKey: tvKey, c: c2 } })).code, 403);
+  assert.equal((await call(h.screenPairUpdate, { method: 'POST', body: { code, editKey, c: c2 } })).body.rev, 2);
+  assert.equal((await call(h.screenPairSync, { query: { code, key: tvKey, rev: '1' } })).body.c, c2);
+  // Junk is refused.
+  assert.equal((await call(h.screenPairClaim, { method: 'POST', body: { code: 'nope', c: c1 } })).code, 400);
+  assert.equal((await call(h.screenPairClaim, { method: 'POST', body: { code: 'ABCDEF', c: 'not-settings' } })).code, 400);
+  // An unclaimed code runs out after 15 minutes.
+  const s2 = await call(h.screenPairStart, { method: 'POST' });
+  const id2 = s2.body.code;
+  const d = db.docs.get(`screenPairs/${id2}`);
+  d.created = TS.fromMillis(Date.now() - 16 * 60_000);
+  assert.equal((await call(h.screenPairClaim, { method: 'POST', body: { code: id2, c: c1 } })).code, 404);
+  assert.equal((await call(h.screenPairSync, { query: { code: id2, key: s2.body.tvKey, rev: '0' } })).code, 410);
+});

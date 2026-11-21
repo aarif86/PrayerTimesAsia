@@ -204,3 +204,15 @@ describe('screen on clock-change nights', () => {
     expect(dayOf(p.at)).toBe('2026-10-25')
   })
 })
+
+describe('Masjid screen links', () => {
+  it('reads the short code, the pairing code and the TV address from the hash', async () => {
+    const { shortCodeFromHash, pairCodeFromHash, isTvHash } = await import('../src/screen/config')
+    expect(shortCodeFromHash('#k=k3x9Qm2aB')).toBe('k3x9Qm2aB')
+    expect(shortCodeFromHash('#k=short')).toBeNull()
+    expect(pairCodeFromHash('#pair=k7m3qx')).toBe('K7M3QX')
+    expect(pairCodeFromHash('#pair=K7M3Q')).toBeNull()
+    expect(isTvHash('#tv')).toBe(true)
+    expect(isTvHash('#c=abc')).toBe(false)
+  })
+})

@@ -127,7 +127,25 @@ function linkCode(c, salt, createHash) {
   return out;
 }
 
-module.exports = { LINK_CODE_RE, validLinkConfig, linkCode, SLOT_MIN, LIVE_WINDOW_MS, NEW_IDS_PER_NETWORK_PER_DAY, NEW_IDS_PER_DAY, RANGES, validId, screenFacts, tally, dayMix, sgParts, summarize, parseDays, callerAddress };
+// Pairing a TV (like signing in to a TV app, with no account):
+// POST /screenPairStart            TV -> {"code":"K7M3QX","tvKey":"...","rev":0}   the TV shows the code
+// POST /screenPairClaim {code, c}  phone -> {"editKey":"..."}                    the committee's settings, for that code
+// GET  /screenPairSync?code=&key=&rev=  TV -> {"rev":n} or {"rev":n,"c":"..."}    when the settings are newer than rev
+// POST /screenPairUpdate {code, editKey, c}  phone -> {"rev":n}                  later changes, no new link
+// The TV holds `tvKey` and the phone holds `editKey`; only a hash of the phone's key is stored. An unclaimed code lasts 15 minutes.
+const PAIR_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0 O 1 I L
+const PAIR_RE = /^[A-Z2-9]{6}$/;
+const PAIR_KEY_RE = /^[A-Za-z0-9_-]{24,48}$/;
+const PAIR_WAIT_MS = 15 * 60_000;
+const PAIR_STARTS_PER_NETWORK_PER_DAY = 30;
+const PAIR_STARTS_PER_DAY = 3000;
+const PAIR_TRIES_PER_NETWORK_PER_DAY = 60;   // claims, updates, wrong codes included
+const PAIR_TRIES_PER_DAY = 20000;
+
+/** What a person typed, tidied: capitals, no spaces or dashes. */
+const tidyPairCode = (v) => String(v || '').toUpperCase().replace(/[\s-]/g, '');
+
+module.exports = { PAIR_ALPHABET, PAIR_RE, PAIR_WAIT_MS, tidyPairCode, LINK_CODE_RE, validLinkConfig, linkCode, SLOT_MIN, LIVE_WINDOW_MS, NEW_IDS_PER_NETWORK_PER_DAY, NEW_IDS_PER_DAY, RANGES, validId, screenFacts, tally, dayMix, sgParts, summarize, parseDays, callerAddress };
 
 /** The HTTPS functions; index.js passes in what it already has. */
 module.exports.handlers = function handlers({ onRequest, db, FieldValue, Timestamp, hash }) {
@@ -273,5 +291,97 @@ module.exports.handlers = function handlers({ onRequest, db, FieldValue, Timesta
     return res.json({ c: doc.data().c });
   });
 
-  return { screenPing, screenCount, screenStats, screenLinkSave, screenLink };
+  const randomKey = () => crypto.randomBytes(18).toString('base64url');
+  const sha = (k) => crypto.createHash('sha256').update(String(k)).digest('hex');
+  const sameKey = (key, storedHash) => {
+    if (typeof key !== 'string' || !PAIR_KEY_RE.test(key) || typeof storedHash !== 'string') return false;
+    const a = Buffer.from(sha(key)), b = Buffer.from(storedHash);
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  };
+  const bodyOf = (req) => {
+    let body = req.body;
+    if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = null; } }
+    return body && typeof body === 'object' ? body : {};
+  };
+  /** Counts one pairing call for this network, and says whether it is still within the daily limits. */
+  async function withinLimit(prefix, req, now, perNetwork, all) {
+    const day = sgParts(now).date;
+    const lim = db.doc(`limits/${prefix}-${hash(`${prefix}|${day}|${callerAddress(req)}`)}`);
+    const tot = db.doc(`limits/${prefix}-all-${day}`);
+    return db.runTransaction(async (tx) => {
+      const [l, a] = await Promise.all([tx.get(lim), tx.get(tot)]);
+      if ((l.data()?.n || 0) >= perNetwork || (a.data()?.n || 0) >= all) return false;
+      const expires = new Date(now + 2 * 86400e3);
+      tx.set(lim, { n: FieldValue.increment(1), expires }, { merge: true });
+      tx.set(tot, { n: FieldValue.increment(1), expires }, { merge: true });
+      return true;
+    });
+  }
+
+  const screenPairStart = onRequest(opts, async (req, res) => {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+    const now = Date.now();
+    if (!(await withinLimit('pst', req, now, PAIR_STARTS_PER_NETWORK_PER_DAY, PAIR_STARTS_PER_DAY))) return res.status(429).json({ error: 'too many codes today' });
+    for (let i = 0; i < 8; i++) {
+      const bytes = crypto.randomBytes(6);
+      let code = '';
+      for (let j = 0; j < 6; j++) code += PAIR_ALPHABET[bytes[j] % PAIR_ALPHABET.length];
+      const ref = db.doc(`screenPairs/${code}`);
+      const doc = await ref.get();
+      // A code is free when nobody has it, or when it was never claimed and has run out.
+      if (doc.exists && !(doc.data().c == null && now - doc.data().created.toMillis() > PAIR_WAIT_MS)) continue;
+      const tvKey = randomKey();
+      await ref.set({ tvHash: sha(tvKey), c: null, rev: 0, created: Timestamp.fromMillis(now) });
+      return res.status(200).json({ code, tvKey, rev: 0, validMinutes: PAIR_WAIT_MS / 60_000 });
+    }
+    return res.status(500).json({ error: 'try again' });
+  });
+
+  const screenPairClaim = onRequest(opts, async (req, res) => {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+    const body = bodyOf(req);
+    const code = tidyPairCode(body.code);
+    if (!PAIR_RE.test(code) || !validLinkConfig(body.c)) return res.status(400).json({ error: 'bad code or settings' });
+    const now = Date.now();
+    if (!(await withinLimit('pcl', req, now, PAIR_TRIES_PER_NETWORK_PER_DAY, PAIR_TRIES_PER_DAY))) return res.status(429).json({ error: 'too many tries today' });
+    const ref = db.doc(`screenPairs/${code}`);
+    const doc = await ref.get();
+    const d = doc.exists ? doc.data() : null;
+    if (!d || d.c != null || now - d.created.toMillis() > PAIR_WAIT_MS) return res.status(404).json({ error: 'no such code, or it ran out' });
+    const editKey = randomKey();
+    await ref.update({ c: body.c, rev: 1, editHash: sha(editKey), claimed: Timestamp.fromMillis(now) });
+    return res.status(200).json({ editKey, rev: 1 });
+  });
+
+  const screenPairSync = onRequest(opts, async (req, res) => {
+    if (req.method !== 'GET') return res.status(405).json({ error: 'GET only' });
+    const code = tidyPairCode(req.query.code);
+    const rev = Number(req.query.rev) || 0;
+    if (!PAIR_RE.test(code)) return res.status(400).json({ error: 'bad code' });
+    const doc = await db.doc(`screenPairs/${code}`).get();
+    const d = doc.exists ? doc.data() : null;
+    if (!d || !sameKey(req.query.key, d.tvHash)) return res.status(404).json({ error: 'not paired' });
+    res.set('Cache-Control', 'no-store');
+    if (d.c != null && d.rev > rev) return res.json({ rev: d.rev, c: d.c });
+    if (d.c == null && Date.now() - d.created.toMillis() > PAIR_WAIT_MS) return res.status(410).json({ error: 'code ran out' });
+    return res.json({ rev: d.rev });
+  });
+
+  const screenPairUpdate = onRequest(opts, async (req, res) => {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+    const body = bodyOf(req);
+    const code = tidyPairCode(body.code);
+    if (!PAIR_RE.test(code) || !validLinkConfig(body.c)) return res.status(400).json({ error: 'bad code or settings' });
+    const now = Date.now();
+    if (!(await withinLimit('pcl', req, now, PAIR_TRIES_PER_NETWORK_PER_DAY, PAIR_TRIES_PER_DAY))) return res.status(429).json({ error: 'too many tries today' });
+    const ref = db.doc(`screenPairs/${code}`);
+    const doc = await ref.get();
+    const d = doc.exists ? doc.data() : null;
+    if (!d || d.c == null || !sameKey(body.editKey, d.editHash)) return res.status(403).json({ error: 'not allowed' });
+    const rev = (d.rev || 1) + 1;
+    await ref.update({ c: body.c, rev });
+    return res.status(200).json({ rev });
+  });
+
+  return { screenPing, screenCount, screenStats, screenLinkSave, screenLink, screenPairStart, screenPairClaim, screenPairSync, screenPairUpdate };
 };

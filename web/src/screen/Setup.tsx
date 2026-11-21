@@ -6,17 +6,20 @@ import { deviceTimeZone, zoned } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable } from '../services/officialTables'
 import {
-  encodeConfig, iqamahText, isHHMM, MAX_FRIDAY_NOTE, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah, READY_NOTICES,
+  encodeConfig, iqamahText, pairCodeFromHash, isHHMM, MAX_FRIDAY_NOTE, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah, READY_NOTICES,
   type Obligatory, type ScreenConfig, type ScreenHide, type ScreenLanguage, type ScreenLook, type ScreenPlace,
 } from './config'
 import { Display } from './Display'
 import { fallbackPlace } from './place'
+import { readJSON, writeJSON } from '../services/storage'
 import { Frame } from './Frame'
 import { name, officialSourceForScreen } from './model'
 import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
-import { saveShortLink, useLiveScreenCount } from './live'
+import { PAIR_CODE_RE, pairClaim, pairUpdate, saveShortLink, tidyPairCode, useLiveScreenCount } from './live'
 import { ModeButton, Sky, useSiteTheme } from './sky'
 import './setup.css'
+
+const EDITOR_KEY = 'ptasia.screen.editor'
 
 const LOOK_CHOICES: { id: ScreenLook; label: string; hint: string }[] = [
   { id: 'night', label: 'Sky', hint: 'The sky outside, changing with the hour, like the app' },
@@ -55,6 +58,12 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const [, setTables] = useState(0)
   const [theme, flipTheme] = useSiteTheme()
   const live = useLiveScreenCount()
+  // Pairing: the TV's code (typed, or from the QR code the TV shows), and the TV this phone paired with before.
+  const [pairInput, setPairInput] = useState(() => pairCodeFromHash(location.hash) ?? '')
+  const [editor, setEditor] = useState(() => readJSON<{ code: string; editKey: string }>(EDITOR_KEY))
+  const [pairMsg, setPairMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [pairBusy, setPairBusy] = useState(false)
+  const fromQr = pairCodeFromHash(location.hash)
 
   const set = (change: Partial<ScreenConfig>) => setC((old) => ({ ...old, ...change }))
   const setHide = (key: keyof ScreenHide, hidden: boolean) => setC((old) => ({ ...old, hide: { ...old.hide, [key]: hidden } }))
@@ -126,6 +135,29 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const share = async () => {
     try { await navigator.share({ title: `${c.name || 'Masjid'} prayer screen`, text: 'Open this link on the masjid TV', url: await getLink() }); flash('shared') } catch { /* closed */ }
   }
+  const pairNow = async () => {
+    const code = tidyPairCode(pairInput)
+    if (!PAIR_CODE_RE.test(code)) { setPairMsg({ ok: false, text: 'The code has 6 letters or numbers. Look at the TV and type it again.' }); return }
+    setPairBusy(true); setPairMsg(null)
+    const r = await pairClaim(code, encodeConfig(c))
+    setPairBusy(false)
+    if (typeof r === 'object') {
+      const e = { code, editKey: r.editKey }
+      writeJSON(EDITOR_KEY, e); setEditor(e); setPairInput('')
+      setPairMsg({ ok: true, text: 'Done. Your TV is showing your masjid screen now. To change something later, come back here and tap Update my TV.' })
+    } else setPairMsg({ ok: false, text: r === 'offline' ? 'No internet on this phone. Try again.' : r === 'busy' ? 'Too many tries today. Try again tomorrow, or send the link below.' : 'That code did not work. It runs out after 15 minutes, so check the TV for the newest code.' })
+  }
+  const updateNow = async () => {
+    if (!editor) return
+    setPairBusy(true); setPairMsg(null)
+    const r = await pairUpdate(editor.code, editor.editKey, encodeConfig(c))
+    setPairBusy(false)
+    if (r === 'ok') setPairMsg({ ok: true, text: 'Updated. The TV changes within about 10 minutes, or at once if you reopen its page.' })
+    else if (r === 'forgotten') { writeJSON(EDITOR_KEY, null); setEditor(null); setPairMsg({ ok: false, text: 'This phone can no longer change that TV. Pair again with the code the TV shows.' }) }
+    else setPairMsg({ ok: false, text: r === 'busy' ? 'Too many tries today. Try again tomorrow.' : 'No internet on this phone. Try again.' })
+  }
+  const forgetTv = () => { writeJSON(EDITOR_KEY, null); setEditor(null); setPairMsg(null) }
+
   // No place chosen: the TV (and this preview) use a place from the device's own time zone, so nothing is blank.
   const guess = useMemo(() => fallbackPlace(), [])
   const effective = c.place ? c : { ...c, place: guess }
@@ -141,6 +173,13 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       </header>
 
       <main class="sp-main">
+        {fromQr && !pairMsg?.ok && (
+          <div class="sp-pairbar" role="region" aria-label="Pairing with the TV">
+            <div><b>Setting up the TV with code {fromQr}</b><span>Choose what shows below, then tap the button.</span></div>
+            <button type="button" class="sp-btn sp-btn-primary" onClick={pairNow} disabled={pairBusy}>{pairBusy ? 'Sending' : 'Show on my TV'}</button>
+          </div>
+        )}
+        {fromQr && pairMsg && <p class={`sp-pairbar-msg ${pairMsg.ok ? 'sp-ok' : 'sp-error'}`} role="status">{pairMsg.text}</p>}
         <section class="sp-hero">
           <p class="sp-eyebrow">For Masjids</p>
           <h1>Put prayer times on your Masjid TV</h1>
@@ -159,8 +198,6 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         <section class="sp-step" aria-labelledby="sp-s1">
           <h2 id="sp-s1"><span class="sp-num">1</span>Add your masjid <span class="sp-opt">Optional</span></h2>
           <p class="sp-hint">You can skip this step. The screen then works out the times from the TV's own time zone.</p>
-          <label class="sp-label" for="s-name">Masjid name</label>
-          <input id="s-name" class="sp-input" value={c.name} maxLength={80} placeholder="Masjid Al Falah" onInput={(e) => set({ name: (e.target as HTMLInputElement).value })} />
 
           <p class="sp-label">Where is it?</p>
           {c.place ? (
@@ -193,6 +230,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               )}
             </>
           )}
+          <label class="sp-label" for="s-name">Masjid name (optional)</label>
+          <input id="s-name" class="sp-input" value={c.name} maxLength={80} placeholder="Masjid Al Falah" onInput={(e) => set({ name: (e.target as HTMLInputElement).value })} />
         </section>
 
         {/* Step 2 */}
@@ -360,6 +399,31 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         <section class="sp-step" aria-labelledby="sp-s3">
           <h2 id="sp-s3"><span class="sp-num">3</span>Open it on the TV</h2>
           {!c.place && <p class="sp-hint">No masjid added, so the TV uses the times for its own time zone. Add your masjid in step 1 for exact times.</p>}
+
+          <div class="sp-pairbox">
+            <h3>Easiest: pair with the code on the TV</h3>
+            <ol class="sp-steps">
+              <li>On the TV, open the web browser and go to <b>prayertimes.asia/tv</b></li>
+              <li>The TV shows a code. Scan its QR code with this phone, or type the code here.</li>
+            </ol>
+            {editor && (
+              <div class="sp-chosen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                <div><b>This phone controls your TV ({editor.code})</b><span>Changes you make above go to it.</span></div>
+                <button type="button" class="sp-link-btn" onClick={forgetTv}>Forget</button>
+              </div>
+            )}
+            {editor && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={updateNow} disabled={pairBusy}>{pairBusy ? 'Sending' : 'Update my TV'}</button>}
+            <div class="sp-pairrow">
+              <input id="s-pair" class="sp-input sp-codein" value={pairInput} maxLength={9} placeholder="Code, like K7M3QX" aria-label="The code shown on the TV"
+                autoCapitalize="characters" autoComplete="off" onInput={(e) => setPairInput((e.target as HTMLInputElement).value.toUpperCase())} />
+              <button type="button" class={`sp-btn${editor ? '' : ' sp-btn-primary'}`} onClick={pairNow} disabled={pairBusy || !pairInput.trim()}>{pairBusy ? 'Sending' : editor ? 'Pair a new TV' : 'Show on my TV'}</button>
+            </div>
+            {pairMsg && <p class={pairMsg.ok ? 'sp-ok' : 'sp-error'} role="status">{pairMsg.text}</p>}
+          </div>
+
+          <h3 class="sp-or">Or send the link</h3>
+          <p class="sp-hint">For a TV where you would rather type nothing, or to try it on your own computer. Open the link on the TV or computer.</p>
           <div class="sp-actions">
             {canShare && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={share}>{copied === 'shared' ? 'Sent' : 'Send the link'}</button>}
             <button type="button" class={`sp-btn sp-btn-big${canShare ? '' : ' sp-btn-primary'}`} onClick={copy}>{copied === 'copied' ? 'Copied' : 'Copy the link'}</button>
@@ -379,7 +443,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <ol>
               <li>Buy an Android TV box, or a Google TV streamer, and plug it into the TV with the HDMI cable. Prices vary by country, often under 100 US dollars. We do not suggest the Amazon Fire TV stick for this, because it is less reliable at starting an app on its own.</li>
               <li>On the box, open the app store and install <b>Fully Kiosk Browser</b>. It is free to try, and a small watermark shows until you pay for it. The full version costs about 11 US dollars once for each TV.</li>
-              <li>Open Fully Kiosk Browser and paste your masjid link as the Start URL. Use Send the link above to get the link onto the box, or type it in.</li>
+              <li>Open Fully Kiosk Browser and type <b>prayertimes.asia/tv</b> as the Start URL. The first time, the TV shows a code. Pair it with your phone as in step 3. After that, this address opens your masjid screen by itself.</li>
               <li>In its settings, turn on "Autostart on boot". Now after a power cut the screen comes back by itself.</li>
               <li>In the box's own settings, turn on automatic date and time, so the clock stays right.</li>
             </ol>
