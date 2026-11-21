@@ -11,6 +11,7 @@ import datetime
 import html
 import json
 import os
+import re
 import sys
 
 src, out = sys.argv[1:3]
@@ -21,8 +22,14 @@ GITHUB = 'https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/website/chan
 SHOWN = 6  # newest releases open on the page, the rest sit under "Earlier releases"
 
 
+def plain(s):
+    """Public copy rule, no colons or dashes. Older lines written as "Name: what it does" become two sentences."""
+    s = (s or '').replace('\u2014', ',').replace('\u2013', ',')
+    return re.sub(r':\s+(\w)', lambda m: '. ' + m.group(1).upper(), s)
+
+
 def e(s):
-    return html.escape(s or '', quote=True)
+    return html.escape(plain(s), quote=True)
 
 
 def pretty(d):
