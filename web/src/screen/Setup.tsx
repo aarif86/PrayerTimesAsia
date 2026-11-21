@@ -369,6 +369,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       </main>
 
       <footer class="sp-foot">
+        <p class="sp-ask">Questions or ideas for your masjid screen? <a href="mailto:salam@prayertimes.asia?subject=Masjid%20screen">Email salam@prayertimes.asia</a></p>
         <p>Always follow your local religious authority.</p>
         <p><a href="../../">prayertimes.asia</a></p>
       </footer>

@@ -173,3 +173,4 @@ select.sp-input option { background: #161a36; color: #fff; }
   .sp-tv { padding: 6px; border-radius: 16px; }
   .sp-howto li { font-size: 1.08rem; }
 }
+.sp-foot .sp-ask { font-size: 1.05rem; color: var(--sp-text); margin-bottom: 10px; }
