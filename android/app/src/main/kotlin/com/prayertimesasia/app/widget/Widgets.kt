@@ -71,10 +71,15 @@ private fun white(alpha: Float) = ColorProvider(Color.White.copy(alpha = alpha))
 private fun style(size: Int, weight: FontWeight = FontWeight.Normal, color: ColorProvider = white) =
     TextStyle(color = color, fontSize = size.sp, fontWeight = weight)
 
+/** Tests only: draw the widgets from this demo state (and its fixed clock) instead of the app's. */
+internal var widgetTestState: com.prayertimesasia.app.AppState? = null
+
 private fun model(context: Context, style: TodayStyle? = null): WidgetModel? {
-    val app = context.applicationContext as? PrayerApp ?: return null
-    val r = app.state.resolver
-    return WidgetModel.from(r, Instant.now(), style ?: r.prefs.todayStyle)
+    val state = widgetTestState ?: (context.applicationContext as? PrayerApp)?.state ?: return null
+    // widgetResolver() still finds a place when the process was just started (a resize, a reboot)
+    // and GPS has not answered yet, so the widget never flashes "set your location" by mistake.
+    val r = state.widgetResolver()
+    return runCatching { WidgetModel.from(r, state.fixedNow ?: Instant.now(), style ?: r.prefs.todayStyle) }.getOrNull()
 }
 
 /** The Living Sky behind a widget, as a small bitmap the launcher stretches (it's a smooth gradient). */
@@ -142,17 +147,26 @@ private fun RowCountdown(context: Context, m: WidgetModel, label: String) {
     }
 }
 
+/** Only when the phone truly knows no place yet. Still a proper card, and a tap opens the app. */
 @Composable
 private fun Empty() {
-    Box(GlanceModifier.fillMaxSize().background(Color(0xFF0C1A3A)).padding(12.dp), contentAlignment = Alignment.Center) {
-        Text("Open Prayer Times Asia to set your location.", style = style(13))
+    val night = SkyColors.night.readable
+    Box(
+        GlanceModifier.fillMaxSize().appWidgetBackground().cornerRadius(22.dp)
+            .background(ImageProvider(Bitmap.createBitmap(intArrayOf(night.top.color.toArgb(), night.bottom.color.toArgb()), 1, 2, Bitmap.Config.ARGB_8888)), ContentScale.FillBounds)
+            .padding(14.dp).clickable(actionStartActivity<MainActivity>()),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text("Tap to open Prayer Times Asia and choose where you are.", style = style(13, FontWeight.Medium))
     }
 }
 
 // MARK: Next prayer (small and medium)
 
 class NextPrayerWidget : GlanceAppWidget() {
-    override val sizeMode = SizeMode.Responsive(setOf(DpSize(110.dp, 110.dp), DpSize(250.dp, 110.dp)))
+    // Small, medium (wide) and large. Responsive means the launcher swaps between these layouts by itself
+    // while the widget is dragged bigger or smaller, so a resize never waits on the app.
+    override val sizeMode = SizeMode.Responsive(setOf(DpSize(110.dp, 110.dp), DpSize(250.dp, 110.dp), DpSize(250.dp, 250.dp)))
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent { NextPrayerContent(context) }
@@ -160,10 +174,13 @@ class NextPrayerWidget : GlanceAppWidget() {
 }
 
 @Composable
-private fun NextPrayerContent(context: Context) {
+internal fun NextPrayerContent(context: Context) {
     val m = model(context) ?: return Empty()
     val next = m.next ?: return Empty()
-    val wide = LocalSize.current.width >= 240.dp
+    val size = LocalSize.current
+    // Large is the whole day in the Prayer screen's own look, as on the iPhone.
+    if (size.width >= 240.dp && size.height >= 240.dp) return TimetableBody(context, m, size)
+    val wide = size.width >= 240.dp
     Box(
         GlanceModifier.fillMaxSize().appWidgetBackground().cornerRadius(22.dp)
             .background(ImageProvider(skyBitmap(m)), ContentScale.FillBounds)
@@ -216,7 +233,9 @@ class NextPrayerWidgetReceiver : GlanceAppWidgetReceiver() {
 // MARK: Today's timetable (large), in the Prayer screen's style
 
 class TimetableWidget : GlanceAppWidget() {
-    override val sizeMode = SizeMode.Exact
+    // Not Exact: Exact redraws from scratch at every step of a resize. These breakpoints let the
+    // launcher switch layouts on its own, smoothly.
+    override val sizeMode = SizeMode.Responsive(setOf(DpSize(180.dp, 180.dp), DpSize(250.dp, 250.dp), DpSize(250.dp, 400.dp)))
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent { TimetableContent(context) }
@@ -224,15 +243,25 @@ class TimetableWidget : GlanceAppWidget() {
 }
 
 @Composable
-private fun TimetableContent(context: Context) {
+internal fun TimetableContent(context: Context) {
     val m = model(context) ?: return Empty()
+    TimetableBody(context, m, LocalSize.current)
+}
+
+/** The whole day in the style picked on the Prayer screen. Shared by "Today's timetable" and the large Next prayer. */
+@Composable
+private fun TimetableBody(context: Context, m: WidgetModel, size: DpSize) {
     val base = GlanceModifier.fillMaxSize().appWidgetBackground().cornerRadius(24.dp).clickable(actionStartActivity<MainActivity>())
-    when (m.style) {
+    // Short widgets shrink the type and use a list that fits, so every time stays readable.
+    val compact = size.height < 240.dp
+    val k = if (compact) 0.78f else 1f
+    fun sz(x: Int) = (x * k).toInt()
+    when (if (compact && (m.style == TodayStyle.DIAL || m.style == TodayStyle.CENTRE)) TodayStyle.LIST else m.style) {
         TodayStyle.BANDS -> Column(base.background(BandsPalette.header)) {
             val countdown = m.countdownRow()
             Column(GlanceModifier.fillMaxWidth().padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(m.hijri, style = style(17, FontWeight.Bold), maxLines = 1)
-                Text("${m.placeName} ${m.flag}  ·  ${m.sourceLabel}", style = style(11, FontWeight.Medium, white(0.65f)), maxLines = 1)
+                Text(m.hijri, style = style(sz(17), FontWeight.Bold), maxLines = 1)
+                Text("${m.placeName} ${m.flag}  ·  ${m.sourceLabel}", style = style(sz(11), FontWeight.Medium, white(0.65f)), maxLines = 1)
             }
             Prayer.all.forEach { p ->
                 val isCurrent = p == m.open
@@ -243,14 +272,14 @@ private fun TimetableContent(context: Context) {
                 ) {
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(m.names.getValue(p), style = style(21, FontWeight.Bold))
-                            if (isCurrent) Text("  NOW", style = style(10, FontWeight.Bold))
+                            Text(m.names.getValue(p), style = style(sz(21), FontWeight.Bold))
+                            if (isCurrent) Text("  NOW", style = style(sz(10), FontWeight.Bold))
                         }
                         if (countdown?.first == p) RowCountdown(context, m, countdown.second)
                     }
                     Spacer(GlanceModifier.defaultWeight())
-                    Text(t.first, style = style(25))
-                    t.second?.let { Text(" $it", style = style(15)) }
+                    Text(t.first, style = style(sz(25)))
+                    t.second?.let { Text(" $it", style = style(sz(15))) }
                 }
             }
         }
@@ -305,8 +334,8 @@ private fun TimetableContent(context: Context) {
         }
         else -> Column(base.background(ImageProvider(skyBitmap(m)), ContentScale.FillBounds).padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("TODAY · ${m.placeName} ${m.flag}", style = style(11, FontWeight.Bold), maxLines = 1)
-            Text("${m.dateLine} · ${m.hijri}", style = style(12, color = white(0.75f)), maxLines = 1)
+            Text("TODAY · ${m.placeName} ${m.flag}", style = style(sz(11), FontWeight.Bold), maxLines = 1)
+            Text("${m.dateLine} · ${m.hijri}", style = style(sz(12), color = white(0.75f)), maxLines = 1)
             Spacer(GlanceModifier.height(6.dp))
             Column(GlanceModifier.fillMaxWidth().defaultWeight().cornerRadius(18.dp).background(Color.Black.copy(alpha = 0.18f)).padding(5.dp)) {
                 val countdown = m.countdownRow()
@@ -323,11 +352,11 @@ private fun TimetableContent(context: Context) {
                         Box(GlanceModifier.width(3.dp).height(18.dp).cornerRadius(2.dp).background(p.tint)) {}
                         Spacer(GlanceModifier.width(8.dp))
                         Column(GlanceModifier.defaultWeight()) {
-                            Text(m.names.getValue(p) + if (isCurrent) "  · NOW" else "", style = style(16, FontWeight.Medium, white(alpha)))
+                            Text(m.names.getValue(p) + if (isCurrent) "  · NOW" else "", style = style(sz(16), FontWeight.Medium, white(alpha)))
                             if (countdown?.first == p) RowCountdown(context, m, countdown.second)
                         }
-                        Text(t.first, style = style(22, FontWeight.Bold, white(alpha)))
-                        t.second?.let { Text(" $it", style = style(11, FontWeight.Bold, white(alpha * 0.7f))) }
+                        Text(t.first, style = style(sz(22), FontWeight.Bold, white(alpha)))
+                        t.second?.let { Text(" $it", style = style(sz(11), FontWeight.Bold, white(alpha * 0.7f))) }
                     }
                 }
             }
