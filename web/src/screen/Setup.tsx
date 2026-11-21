@@ -6,10 +6,11 @@ import { deviceTimeZone, zoned } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable } from '../services/officialTables'
 import {
-  encodeConfig, EXAMPLE_PLACE, iqamahText, isHHMM, MAX_FRIDAY_NOTE, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah, READY_NOTICES,
+  encodeConfig, iqamahText, isHHMM, MAX_FRIDAY_NOTE, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah, READY_NOTICES,
   type Obligatory, type ScreenConfig, type ScreenHide, type ScreenLanguage, type ScreenLook, type ScreenPlace,
 } from './config'
 import { Display } from './Display'
+import { fallbackPlace } from './place'
 import { Frame } from './Frame'
 import { name, officialSourceForScreen } from './model'
 import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
@@ -18,12 +19,12 @@ import { ModeButton, Sky, useSiteTheme } from './sky'
 import './setup.css'
 
 const LOOK_CHOICES: { id: ScreenLook; label: string; hint: string }[] = [
-  { id: 'night', label: 'Night', hint: 'Dark and calm, good for a dim prayer hall' },
-  { id: 'day', label: 'Day', hint: 'Light, good for a bright hall or the foyer' },
+  { id: 'night', label: 'Sky', hint: 'The sky outside, changing with the hour, like the app' },
   { id: 'board', label: 'Board', hint: 'The times as a list, easy to read from far' },
   { id: 'bands', label: 'Bands', hint: 'Each prayer in its own colour, like the app' },
   { id: 'dial', label: 'Day Dial', hint: 'The whole day as a ring, like the app' },
   { id: 'sunpath', label: 'Sun Path', hint: 'The sun moving across the day, like the app' },
+  { id: 'simple', label: 'Simple', hint: 'Plain and calm, with no moving sky' },
 ]
 
 /** What the committee can switch off. Shown as "Show" switches, so on means it is on the TV. */
@@ -111,8 +112,10 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const share = async () => {
     try { await navigator.share({ title: `${c.name || 'Masjid'} prayer screen`, text: 'Open this link on the masjid TV', url: link }); flash('shared') } catch { /* closed */ }
   }
-  // Until a location is chosen the preview shows an example, so it is never blank.
-  const preview = c.place ? c : { ...c, place: EXAMPLE_PLACE, name: c.name || 'Your masjid' }
+  // No place chosen: the TV (and this preview) use a place from the device's own time zone, so nothing is blank.
+  const guess = useMemo(() => fallbackPlace(), [])
+  const effective = c.place ? c : { ...c, place: guess }
+  const preview = { ...effective, name: c.name || 'Your masjid' }
   const countryName = c.place?.cc ? profileFor(c.place.cc)?.name ?? c.place.cc : null
 
   return (
@@ -132,7 +135,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <p class="sp-live" aria-live="polite"><i class="sp-dot" aria-hidden="true" /><b>{live.toLocaleString('en')}</b> masjid {live === 1 ? 'screen is' : 'screens are'} on right now</p>
           )}
           <ol class="sp-map" aria-hidden="true">
-            <li><b>1</b>Pick your masjid</li>
+            <li><b>1</b>Add your masjid</li>
             <li><b>2</b>Choose what shows</li>
             <li><b>3</b>Open it on the TV</li>
           </ol>
@@ -140,7 +143,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
 
         {/* Step 1 */}
         <section class="sp-step" aria-labelledby="sp-s1">
-          <h2 id="sp-s1"><span class="sp-num">1</span>Pick your masjid</h2>
+          <h2 id="sp-s1"><span class="sp-num">1</span>Add your masjid <span class="sp-opt">Optional</span></h2>
+          <p class="sp-hint">You can skip this step. The screen then works out the times from the TV's own time zone.</p>
           <label class="sp-label" for="s-name">Masjid name</label>
           <input id="s-name" class="sp-input" value={c.name} maxLength={80} placeholder="Masjid Al Falah" onInput={(e) => set({ name: (e.target as HTMLInputElement).value })} />
 
@@ -180,36 +184,48 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         {/* Step 2 */}
         <section class="sp-step" aria-labelledby="sp-s2">
           <h2 id="sp-s2"><span class="sp-num">2</span>Choose what shows</h2>
-          <div class="sp-tv">
-            <Frame class="sp-preview"><Display config={preview} now={now} /></Frame>
-          </div>
-          {!c.place && <p class="sp-hint center">This is an example. Your own times show once you pick your masjid.</p>}
+          <div class="sp-studio">
+            <div class="sp-left">
+              <div class="sp-tv">
+                <Frame class="sp-preview"><Display config={preview} now={now} /></Frame>
+              </div>
+              {!c.place && <p class="sp-hint center">Times shown are a guide until you add your masjid in step 1.</p>}
 
-          <p class="sp-label">Look</p>
-          <div class="sp-looks" role="radiogroup" aria-label="Look">
-            {LOOK_CHOICES.map((l) => (
-              <button key={l.id} type="button" role="radio" aria-checked={c.look === l.id} class={`sp-chip${c.look === l.id ? ' on' : ''}`} onClick={() => set({ look: l.id })}>{l.label}</button>
-            ))}
-          </div>
-          <p class="sp-hint">{LOOK_CHOICES.find((l) => l.id === c.look)?.hint}</p>
+              <p class="sp-label">Look</p>
+              <div class="sp-looks" role="radiogroup" aria-label="Look">
+                {LOOK_CHOICES.map((l) => (
+                  <button key={l.id} type="button" role="radio" aria-checked={c.look === l.id} class={`sp-chip${c.look === l.id ? ' on' : ''}`} onClick={() => set({ look: l.id })}>{l.label}</button>
+                ))}
+              </div>
+              <p class="sp-hint">{LOOK_CHOICES.find((l) => l.id === c.look)?.hint}</p>
+              <div class="sp-modes" role="radiogroup" aria-label="Light or dark">
+                {(['dark', 'light'] as const).map((m) => (
+                  <button key={m} type="button" role="radio" aria-checked={c.mode === m} class={`sp-chip${c.mode === m ? ' on' : ''}`} onClick={() => set({ mode: m })}>{m === 'dark' ? 'Dark' : 'Light'}</button>
+                ))}
+              </div>
+              <p class="sp-hint">Dark suits a dim prayer hall. Light suits a bright hall or the foyer.</p>
+            </div>
 
-          <p class="sp-label">Show on the TV</p>
-          <div class="sp-toggles">
-            {SHOW_CHOICES.map((s) => (
-              <label key={s.key} class={`sp-toggle${c.hide[s.key] ? '' : ' on'}`}>
-                <input type="checkbox" checked={!c.hide[s.key]} onChange={(e) => setHide(s.key, !(e.target as HTMLInputElement).checked)} />
-                <span class="sp-switch" aria-hidden="true" />
-                <span class="sp-tl"><b>{s.label}</b><small>{s.example}</small></span>
-              </label>
-            ))}
-            <label class={`sp-toggle${c.showQr ? ' on' : ''}`}>
-              <input type="checkbox" checked={c.showQr} onChange={(e) => set({ showQr: (e.target as HTMLInputElement).checked })} />
-              <span class="sp-switch" aria-hidden="true" />
-              <span class="sp-tl"><b>QR code</b><small>People scan it to see the iqamah times</small></span>
-            </label>
-            <div class="sp-toggle locked on">
-              <svg class="sp-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-              <span class="sp-tl"><b>prayertimes.asia</b><small>Always shown, so others can find it too</small></span>
+            <div class="sp-right">
+              <p class="sp-label">Show on the TV</p>
+              <div class="sp-toggles">
+                {SHOW_CHOICES.map((s) => (
+                  <label key={s.key} class={`sp-toggle${c.hide[s.key] ? '' : ' on'}`}>
+                    <input type="checkbox" checked={!c.hide[s.key]} onChange={(e) => setHide(s.key, !(e.target as HTMLInputElement).checked)} />
+                    <span class="sp-switch" aria-hidden="true" />
+                    <span class="sp-tl"><b>{s.label}</b><small>{s.example}</small></span>
+                  </label>
+                ))}
+                <label class={`sp-toggle${c.showQr ? ' on' : ''}`}>
+                  <input type="checkbox" checked={c.showQr} onChange={(e) => set({ showQr: (e.target as HTMLInputElement).checked })} />
+                  <span class="sp-switch" aria-hidden="true" />
+                  <span class="sp-tl"><b>QR code</b><small>People scan it to see the iqamah times</small></span>
+                </label>
+                <div class="sp-toggle locked on">
+                  <svg class="sp-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+                  <span class="sp-tl"><b>prayertimes.asia</b><small>Always shown, so others can find it too</small></span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -329,10 +345,10 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         {/* Step 3 */}
         <section class="sp-step" aria-labelledby="sp-s3">
           <h2 id="sp-s3"><span class="sp-num">3</span>Open it on the TV</h2>
-          {!c.place && <p class="sp-error">Pick your masjid in step 1 first.</p>}
+          {!c.place && <p class="sp-hint">No masjid added, so the TV uses the times for its own time zone. Add your masjid in step 1 for exact times.</p>}
           <div class="sp-actions">
-            {canShare && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={share} disabled={!c.place}>{copied === 'shared' ? 'Sent' : 'Send the link'}</button>}
-            <button type="button" class={`sp-btn sp-btn-big${canShare ? '' : ' sp-btn-primary'}`} onClick={copy} disabled={!c.place}>{copied === 'copied' ? 'Copied' : 'Copy the link'}</button>
+            {canShare && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={share}>{copied === 'shared' ? 'Sent' : 'Send the link'}</button>}
+            <button type="button" class={`sp-btn sp-btn-big${canShare ? '' : ' sp-btn-primary'}`} onClick={copy}>{copied === 'copied' ? 'Copied' : 'Copy the link'}</button>
           </div>
           <ol class="sp-howto">
             <li><span class="sp-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z" /></svg></span>Send the link to yourself, on WhatsApp or email.</li>
@@ -353,8 +369,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             </ol>
           </details>
           <div class="sp-actions">
-            <button type="button" class="sp-btn" onClick={() => onOpen(c)} disabled={!c.place}>Try it full screen here</button>
-            <a class="sp-btn" href={`../print/#c=${encodeConfig({ ...c, showIqamah: true })}&sheet=month`} target="_blank" rel="noopener">Print a timetable</a>
+            <button type="button" class="sp-btn" onClick={() => onOpen(c)}>Try it full screen here</button>
+            <a class="sp-btn" href={`../print/#c=${encodeConfig({ ...effective, showIqamah: true })}&sheet=month`} target="_blank" rel="noopener">Print a timetable</a>
           </div>
           <details id="screen-link-box" class="sp-showlink">
             <summary>Show the link</summary>

@@ -56,7 +56,7 @@ html.is-setup #app { height: auto; min-height: 100%; }
 .sp-mode { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--sp-line); background: var(--sp-card); color: var(--sp-gold); cursor: pointer; display: grid; place-items: center; padding: 0; }
 .sp-mode svg { width: 21px; height: 21px; }
 
-.sp-main { max-width: 860px; margin: 0 auto; padding: 36px 16px 24px; display: grid; gap: 28px; }
+.sp-main { max-width: 1080px; margin: 0 auto; padding: 36px 16px 24px; display: grid; gap: 28px; }
 
 /* Hero */
 .sp-hero { text-align: center; display: grid; justify-items: center; gap: 14px; padding: 12px 0 4px; }
@@ -181,3 +181,20 @@ select.sp-input option { background: #161a36; color: #fff; }
 .sp-guide summary { cursor: pointer; font-weight: 800; font-size: 1.08rem; }
 .sp-guide ol { margin: 12px 0 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 1.02rem; }
 .sp-guide li::marker { color: var(--sp-gold); font-weight: 800; }
+
+/* Optional tag on step 1 */
+.sp-opt { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sp-muted); border: 1.5px solid var(--sp-field-line); border-radius: 999px; padding: 3px 12px; }
+
+/* Step 2: preview and looks on the left, the switches on the right, so a change shows at once. */
+.sp-studio { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.sp-left { display: grid; gap: 12px; position: sticky; top: 74px; min-width: 0; }
+.sp-right { display: grid; gap: 12px; min-width: 0; }
+.sp-right .sp-label, .sp-left .sp-label { margin-top: 0; }
+.sp-studio .sp-toggles { grid-template-columns: 1fr; }
+.sp-modes { display: flex; gap: 10px; }
+.sp-modes .sp-chip { flex: 1; }
+@media (max-width: 860px) {
+  .sp-studio { grid-template-columns: 1fr; }
+  .sp-left { position: static; }
+}
+.sp-studio .sp-toggle { min-height: 56px; padding: 10px 14px; }

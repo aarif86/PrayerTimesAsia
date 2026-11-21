@@ -16,12 +16,13 @@ export interface IqamahRule { after?: number; fixed?: string }
 export type ScreenLanguage = 'en' | 'ms' | 'id'
 
 /**
- * Night (dark, the default), Day (light, for bright halls), Board (a departure-board list),
- * and three from the app's Prayer screen styles: Bands (coloured bands), Dial (the Day Dial)
- * and Sun Path (the sun's arc over the day).
+ * Six designs, each in Light or Dark (`mode`): Sky (the app's Living Sky, id 'night'), Board (a departure-board list),
+ * Bands (coloured bands), Day Dial, Sun Path, and Simple (plain and calm).
+ * Old links that say 'day' still work: they open as Sky in Light.
  */
-export type ScreenLook = 'night' | 'day' | 'board' | 'bands' | 'dial' | 'sunpath'
-export const LOOKS: readonly ScreenLook[] = ['night', 'day', 'board', 'bands', 'dial', 'sunpath']
+export type ScreenLook = 'night' | 'board' | 'bands' | 'dial' | 'sunpath' | 'simple'
+export const LOOKS: readonly ScreenLook[] = ['night', 'board', 'bands', 'dial', 'sunpath', 'simple']
+export type ScreenMode = 'dark' | 'light'
 
 export interface ScreenPlace {
   name: string
@@ -44,6 +45,8 @@ export interface ScreenConfig {
   arabic: boolean
   lang: ScreenLanguage
   look: ScreenLook
+  /** Light or Dark, for any design. */
+  mode: ScreenMode
   iqamah: Partial<Record<Obligatory, IqamahRule>>
   /** Print iqamah times beside the azan times (off: the countdown after the azan still runs). */
   showIqamah: boolean
@@ -113,6 +116,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   arabic: false,
   lang: 'en',
   look: 'night',
+  mode: 'dark',
   iqamah: { fajr: { after: 10 }, dhuhr: { after: 10 }, asr: { after: 10 }, maghrib: { after: 5 }, isha: { after: 10 } },
   showIqamah: false,
   showQr: true,
@@ -195,6 +199,8 @@ export function sanitize(raw: unknown): ScreenConfig {
   out.arabic = r.arabic === true
   if (r.lang === 'en' || r.lang === 'ms' || r.lang === 'id') out.lang = r.lang
   if (LOOKS.includes(r.look as ScreenLook)) out.look = r.look as ScreenLook
+  else if (r.look === 'day') { out.look = 'night'; out.mode = 'light' }
+  if (r.mode === 'dark' || r.mode === 'light') out.mode = r.mode
   if (r.iqamah && typeof r.iqamah === 'object') {
     out.iqamah = {}
     for (const prayer of OBLIGATORY_PRAYERS) {

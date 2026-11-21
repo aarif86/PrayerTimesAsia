@@ -2,7 +2,7 @@ import '@fontsource-variable/inter/wght.css'
 import '@fontsource-variable/nunito/wght.css'
 import '../ui/flags.css'
 import { render } from 'preact'
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useMemo, useState } from 'preact/hooks'
 import { zoned } from '../core/tz'
 import { ensureTable } from '../services/officialTables'
 import { readJSON, writeJSON } from '../services/storage'
@@ -10,6 +10,7 @@ import { countScreenRunning, SCREEN_EVERY_MS } from '../services/usage'
 import { registerServiceWorker } from '../ui/pwa'
 import { configFromHash, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, type ScreenConfig } from './config'
 import { Display } from './Display'
+import { withPlace } from './place'
 import { Frame } from './Frame'
 import { officialSourceForScreen, setScreenAnnouncements, setScreenClock, WORDS } from './model'
 import type { CalendarDataset } from '../core/calendarSanad'
@@ -54,7 +55,7 @@ export const DEMO_CONFIG: ScreenConfig = {
 function initialConfig(): ScreenConfig | null {
   // ?demo&look=day&lang=ms for screenshots of each variation.
   if (query.has('demo')) {
-    return sanitize({ ...DEMO_CONFIG, look: query.get('look'), lang: query.get('lang') ?? 'en', names: query.get('names') ?? DEMO_CONFIG.names,
+    return sanitize({ ...DEMO_CONFIG, look: query.get('look'), mode: query.get('mode') ?? (query.get('look') === 'day' ? 'light' : 'dark'), lang: query.get('lang') ?? 'en', names: query.get('names') ?? DEMO_CONFIG.names,
       // ?season=ramadan|lastTen|raya: the committee's Ramadan preview, with typical settings.
       showIqamah: query.has('iqamah'),
       ramadan: { ishaExtra: 5, tarawih: true, tarawihAt: null, qiyamAt: '03:30', eidAt: '08:00', preview: query.get('season') ?? 'off' } })
@@ -68,6 +69,9 @@ function initialConfig(): ScreenConfig | null {
 /** How far the TV's own clock is off, from the last check-in (0 until then). The screen counts from the corrected time. */
 let clockFix = fixedNow == null && !query.has('demo') ? savedClockFix() : 0
 const screenNow = () => Date.now() + clockFix
+
+/** The look the dashboard counts: Sky in Light keeps its old name, Day. */
+const reportLook = (c: ScreenConfig): string => (c.look === 'night' && c.mode === 'light' ? 'day' : c.look)
 
 function useClock(): number {
   const [now, setNow] = useState(fixedNow ?? screenNow())
@@ -86,6 +90,8 @@ function App() {
   const [config, setConfig] = useState<ScreenConfig | null>(initialConfig)
   const [editing, setEditing] = useState(() => !config || location.hash.includes('setup') || query.has('setup'))
   const now = useClock()
+  // No place chosen: the TV works out a place from its own time zone.
+  const placed = useMemo(() => (config ? withPlace(config) : null), [config])
   // The setup page is in English; the screen speaks its chosen language (screen readers, TV translation prompts).
   useEffect(() => { document.documentElement.lang = editing || !config ? 'en' : config.lang }, [editing, config])
 
@@ -97,7 +103,7 @@ function App() {
       setEditing(false)
     }} />
   }
-  return <Screen config={config} now={now} onEdit={() => { history.replaceState(null, '', `${location.pathname}#setup`); setEditing(true) }} />
+  return <Screen config={placed!} now={now} onEdit={() => { history.replaceState(null, '', `${location.pathname}#setup`); setEditing(true) }} />
 }
 
 function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; onEdit: () => void }) {
@@ -134,7 +140,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
     if (fixedNow != null || query.has('demo') || !config.report || !config.place) return
     const checkIn = () => countScreenRunning(SCREEN_VERSION, {
       masjid: config.name, city: config.place?.district || config.place?.name || null,
-      countryCode: config.place?.cc ?? null, look: config.look, language: config.lang,
+      countryCode: config.place?.cc ?? null, look: reportLook(config), language: config.lang,
     })
     const first = setTimeout(checkIn, 20_000)
     const id = setInterval(checkIn, SCREEN_EVERY_MS)
@@ -146,7 +152,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
   useEffect(() => {
     if (fixedNow != null || query.has('demo') || !config.place) return
     if (clockFix) setScreenClock(screenNow)
-    const ping = () => (config.report ? pingScreen({ cc: config.place?.cc ?? null, look: config.look, lang: config.lang }) : checkClock()).then((off) => {
+    const ping = () => (config.report ? pingScreen({ cc: config.place?.cc ?? null, look: reportLook(config), lang: config.lang }) : checkClock()).then((off) => {
       if (off == null) return
       clockFix = nextClockFix(clockFix, off)
       saveClockFix(clockFix)
