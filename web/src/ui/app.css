@@ -370,3 +370,20 @@ input, select, textarea { font: inherit; color: inherit; }
 .check-dot.ok { background: #2E8B6A; }
 .check-fix { margin-top: 8px; font-size: 14px; padding: 7px 12px; }
 .bell.bell-alarm { color: var(--gold, #E2B65A); }
+
+/* Alerts and alarms: the time and Change under each prayer that is on */
+.mode-block { flex-direction: column; align-items: stretch; gap: 8px; padding-right: 10px; }
+.mode-block .mode-row { display: flex; align-items: center; padding: 0; }
+.mode-block .mode-row-name { display: block; }
+.mode-chip { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 8px 10px; border-radius: 10px; background: var(--glass); border: 1px solid var(--stroke); color: inherit; text-align: left; font-size: 13px; }
+.mode-chip-alarm > svg:first-child { color: var(--gold, #E2B65A); }
+.mode-chip-text { flex: 1; min-width: 0; }
+.mode-chip-go { display: inline-flex; align-items: center; gap: 2px; color: var(--accent); font-weight: 700; white-space: nowrap; }
+.alarm-set-toast { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 12px 14px; border-radius: 14px; background: var(--sheet-solid); border: 1px solid var(--gold, #E2B65A); font-weight: 600; font-size: 14px; }
+.alarm-set-toast > svg { color: var(--gold, #E2B65A); flex: none; }
+.alarm-set-toast span { flex: 1; min-width: 0; }
+.alarm-set-toast button { color: var(--accent); font-weight: 700; white-space: nowrap; }
+.alert-big { display: flex; align-items: center; gap: 14px; padding: 14px 16px; margin-bottom: 18px; }
+.alert-big b { display: block; font-size: 28px; line-height: 1.1; }
+.alert-big .sub { display: block; font-size: 13px; color: var(--fg2); margin-top: 2px; }
+.alert-big > svg { flex: none; }

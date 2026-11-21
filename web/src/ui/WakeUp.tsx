@@ -1,5 +1,5 @@
 import { AlarmClock, AlarmClockCheck, Bell, BellOff, BellRing, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, Download, Play, Smartphone } from 'lucide-preact'
-import { useState } from 'preact/hooks'
+import { useEffect, useState } from 'preact/hooks'
 import { alertMode, fridayMode, modesFor, notifies, setAlertMode, setFridayMode, setNotify, type AlertMode } from '../core/alertMode'
 import type { PrayerDay } from '../core/engine'
 import { inSingapore } from '../core/friday'
@@ -69,13 +69,80 @@ export function cycleAlert(prayer: Prayer): string {
 
 /** When this choice would next ring: today if it is still ahead, else tomorrow. */
 function soon(now: number, at: (d: PrayerDay) => number): string | null {
+  const t = soonAt(now, at)
+  return t === null ? null : store.formatted(t)
+}
+
+/** The same, as a time. */
+function soonAt(now: number, at: (d: PrayerDay) => number): number | null {
   for (let offset = 0; offset < 2; offset++) {
     const day = store.day(noonDaysAfter(now, offset, store.timeZone))
     if (!day) continue
     const t = at(day)
-    if (t > now) return store.formatted(t)
+    if (t > now) return t
   }
   return null
+}
+
+/** "A notification at Maghrib. About 7:18 PM here." when the app knows the time. */
+function withAbout(text: string, time: string | null): string {
+  return time ? `${text} ${tr('alerts.aboutHere', { time })}` : text
+}
+
+/** When a prayer's alert next comes: the alarm's own time, or the prayer's start for Notify. */
+function alertNext(now: number, prayer: Prayer): number | null {
+  const p = store.prefs
+  const mode = alertMode(p, prayer)
+  if (mode === 'off') return null
+  if (mode === 'notify') return soonAt(now, (d) => d.times[prayer])
+  if (prayer === 'fajr') return p.wakeUp ? soonAt(now, (d) => wakeUpTime(p.wakeUp!, d)) : null
+  const t = p[ALARM_KEY[prayer as AlarmPrayer]]
+  if (!t) return null
+  return soonAt(now, (d) => {
+    const end = { dhuhr: d.times.asr, asr: d.times.maghrib, maghrib: d.times.isha, isha: d.times.isha }[prayer as AlarmPrayer]
+    return prayerAlarmTime(t, d.times[prayer as AlarmPrayer], end)
+  })
+}
+
+/** The bar under a prayer that is on: "Alarm 6:20 AM" in bold, then what it is. */
+function chipWords(now: number, prayer: Prayer): [string, string] {
+  const p = store.prefs
+  const mode = alertMode(p, prayer)
+  const at = alertNext(now, prayer)
+  const time = at === null ? '' : store.formatted(at)
+  if (mode === 'off') return [modeWord('off'), '']
+  if (mode === 'notify') {
+    const lead = time ? tr('alerts.chipNotify', { time }) : modeWord('notify')
+    if (prayer === 'sunrise') return [lead, tr('alerts.whenEnds', { name: store.name('fajr') })]
+    const parts: string[] = []
+    if (azanAvailable() && p.azanSound) parts.push(tr('alerts.withAzan'))
+    if (p.reminderMinutesBefore > 0) parts.push(tr('alerts.earlyN', { n: p.reminderMinutesBefore }))
+    return [lead, parts.length ? parts.join(', ') : tr('alerts.whenBegins')]
+  }
+  const timing = prayer === 'fajr' ? wakeUpLabel(p.wakeUp!, store.naming) : prayerAlarmLabel(p[ALARM_KEY[prayer as AlarmPrayer]]!)
+  const atStart = prayer === 'fajr' ? p.wakeUp === 'atFajr' : p[ALARM_KEY[prayer as AlarmPrayer]] === 'atStart'
+  let rest = timing.charAt(0).toLocaleLowerCase(appLocale()) + timing.slice(1)
+  if (notifies(p, prayer) && !atStart) rest += `, ${tr('alerts.notifAtTime')}`
+  return [time ? tr('alerts.chipAlarm', { time }) : modeWord('alarm'), rest]
+}
+
+/** One prayer in the list: its name and Off, Notify, Alarm, then a bar with the time and Change when it is on. */
+function ModeBlock({ name, mode, modes, words, open, pick }: { name: string; mode: AlertMode; modes: AlertMode[]; words: [string, string]; open: () => void; pick: (m: AlertMode) => void }) {
+  return (
+    <div class="item mode-block">
+      <div class="mode-row">
+        <span class="label mode-row-name">{name}{mode === 'off' && <span class="sub">{modeWord('off')}</span>}</span>
+        <ModeSwitch name={name} modes={modes} value={mode} pick={pick} />
+      </div>
+      {mode !== 'off' && (
+        <button class={`mode-chip mode-chip-${mode}`} onClick={open} aria-label={tr('alerts.changeAria', { name, summary: words.filter(Boolean).join(', ') })}>
+          <ModeIcon mode={mode} size={15} />
+          <span class="mode-chip-text"><b>{words[0]}</b>{words[1] && `, ${words[1]}`}</span>
+          <span class="mode-chip-go">{tr('alerts.change')}<ChevronRight size={14} /></span>
+        </button>
+      )}
+    </div>
+  )
 }
 
 function whenText(now: number, at: number): string {
@@ -86,30 +153,6 @@ function whenText(now: number, at: number): string {
   return new Date(at).toLocaleDateString(appLocale(), { weekday: 'long', timeZone: tz })
 }
 
-/** The short line under a prayer's name in the list. */
-function summary(prayer: Prayer): string {
-  const p = store.prefs
-  const mode = alertMode(p, prayer)
-  if (mode === 'off') return modeWord('off')
-  if (prayer === 'sunrise') return tr('alerts.whenEnds', { name: store.name('fajr') })
-  if (mode === 'notify') {
-    const parts = [tr('alerts.atTime')]
-    if (azanAvailable() && p.azanSound) parts.push(tr('alerts.withAzan'))
-    if (p.reminderMinutesBefore > 0) parts.push(tr('alerts.headsUpN', { n: p.reminderMinutesBefore }))
-    return parts.join(', ')
-  }
-  const timing = prayer === 'fajr' ? wakeUpLabel(p.wakeUp!, store.naming) : prayerAlarmLabel(p[ALARM_KEY[prayer as AlarmPrayer]]!)
-  const atStart = prayer === 'fajr' ? p.wakeUp === 'atFajr' : p[ALARM_KEY[prayer as AlarmPrayer]] === 'atStart'
-  const when = timing.charAt(0).toLocaleLowerCase(appLocale()) + timing.slice(1)
-  return tr(notifies(p, prayer) && !atStart ? 'alerts.alarmWhenNotify' : 'alerts.alarmWhen', { when })
-}
-
-function fridaySummary(): string {
-  const p = store.prefs
-  const mode = fridayMode(p)
-  if (mode === 'off') return modeWord('off')
-  return tr(mode === 'alarm' ? 'alerts.fridayAlarm' : 'alerts.fridayNotify', { when: leaveChoiceLabel(p.jumuahReminderMinutes) })
-}
 
 /** Off, Notify, Alarm in a row. */
 function ModeSwitch({ name, modes, value, pick }: { name: string; modes: AlertMode[]; value: AlertMode; pick: (m: AlertMode) => void }) {
@@ -193,7 +236,19 @@ function MainPage({ open }: { open: (v: View) => void }) {
   const issues = problems()
   
   const setSahur = (t: SahurTiming | null) => { store.update((x) => { x.sahurAlarm = t }); if (t) void ask(); else stopAlarm() }
-  const pick = (prayer: Prayer, m: AlertMode) => { store.update((x) => setAlertMode(x, prayer, m)); if (m === 'off') stopAlarm(); else void ask() }
+  const [justSet, setJustSet] = useState<Prayer | null>(null)
+  useEffect(() => {
+    if (!justSet) return
+    const t = setTimeout(() => setJustSet(null), 6000)
+    return () => clearTimeout(t)
+  }, [justSet])
+  const pick = (prayer: Prayer, m: AlertMode) => {
+    const was = alertMode(store.prefs, prayer)
+    store.update((x) => setAlertMode(x, prayer, m))
+    if (m === 'off') stopAlarm(); else void ask()
+    setJustSet(m === 'alarm' && was !== 'alarm' ? prayer : null)
+  }
+  const justAt = justSet ? alertNext(now, justSet) : null
   const pickFriday = (m: AlertMode) => { store.update((x) => setFridayMode(x, m)); if (m === 'off') stopAlarm(); else void ask() }
   const turnOffAll = () => {
     store.update((x) => {
@@ -211,6 +266,13 @@ function MainPage({ open }: { open: (v: View) => void }) {
 
   return (
     <Sheet title={tr('alerts.title')} full>
+      {justSet && justAt !== null && (
+        <div class="alarm-set-toast" role="status">
+          <AlarmClock size={18} />
+          <span>{tr('alerts.alarmSet', { name: s.name(justSet), time: s.formatted(justAt) })}</span>
+          <button onClick={() => { const pr = justSet; setJustSet(null); open({ kind: 'prayer', prayer: pr }) }}>{tr('alerts.changeTime')}</button>
+        </div>
+      )}
       <button class={`glass card check-card ${issues.length ? 'warn' : ''}`} onClick={() => open({ kind: 'check' })}>
         <span class="check-card-head">
           {issues.length ? <CircleAlert size={18} /> : <CircleCheck size={18} />}
@@ -223,23 +285,13 @@ function MainPage({ open }: { open: (v: View) => void }) {
       <section>
         <h2 class="group-title">{tr('alerts.eachPrayer')}</h2>
         <div class="group">
-          {PRAYERS.map((prayer) => {
-            const name = prayer === 'sunrise' ? `${s.name(prayer)}` : s.name(prayer)
-            return (
-              <div class="item mode-row">
-                <button class="mode-row-name" onClick={() => open({ kind: 'prayer', prayer })} aria-label={tr('alerts.openPage', { name, summary: summary(prayer) })}>
-                  <span class="label">{name}<span class="sub">{summary(prayer)}</span></span>
-                </button>
-                <ModeSwitch name={name} modes={modesFor(prayer)} value={alertMode(p, prayer)} pick={(m) => pick(prayer, m)} />
-              </div>
-            )
-          })}
-          <div class="item mode-row">
-            <button class="mode-row-name" onClick={() => open({ kind: 'friday' })} aria-label={tr('alerts.openPage', { name: tr('alerts.fridayLeave', { friday }), summary: fridaySummary() })}>
-              <span class="label">{tr('alerts.fridayLeave', { friday })}<span class="sub">{fridaySummary()}</span></span>
-            </button>
-            <ModeSwitch name={tr('alerts.fridayLeave', { friday })} modes={['off', 'notify', 'alarm']} value={fridayMode(p)} pick={pickFriday} />
-          </div>
+          {PRAYERS.map((prayer) => (
+            <ModeBlock name={s.name(prayer)} mode={alertMode(p, prayer)} modes={modesFor(prayer)} words={chipWords(now, prayer)}
+              open={() => open({ kind: 'prayer', prayer })} pick={(m) => pick(prayer, m)} />
+          ))}
+          <ModeBlock name={tr('alerts.fridayLeave', { friday })} mode={fridayMode(p)} modes={['off', 'notify', 'alarm']}
+            words={[modeWord(fridayMode(p)), tr('alerts.fridayStarts', { when: leaveChoiceLabel(p.jumuahReminderMinutes).toLocaleLowerCase(appLocale()) })]}
+            open={() => open({ kind: 'friday' })} pick={pickFriday} />
           <label class="item">
             <span class="label">{tr('alerts.headsUp')}<span class="sub">{tr('alerts.headsUpSub')}</span></span>
             <select class="inline-select" value={String(p.reminderMinutesBefore)} aria-label={tr('alerts.headsUp')}
@@ -266,9 +318,9 @@ function MainPage({ open }: { open: (v: View) => void }) {
       </section>
 
       <section>
-        <h2 class="group-title" id="demo-extras">{tr('alerts.extras')}</h2>
+        <h2 class="group-title" id="demo-extras">{tr('alerts.fasting')}</h2>
         <div class="group">
-          <ToggleItem label={tr('wake.sahur')} sub={tr('wake.sahurSub')} on={!!p.sahurAlarm} onChange={(v) => setSahur(v ? SAHUR_TIMINGS[0] : null)} />
+          <ToggleItem label={tr('wake.sahur')} sub={tr('wake.sahurSub', { name: s.name('fajr') })} on={!!p.sahurAlarm} onChange={(v) => setSahur(v ? SAHUR_TIMINGS[0] : null)} />
           {p.sahurAlarm && SAHUR_TIMINGS.map((t) => (
             <Choice label={sahurLabel(t, s.naming)} detail={soon(now, (d) => sahurTime(t, d))} on={p.sahurAlarm === t} pick={() => setSahur(t)} />
           ))}
@@ -296,23 +348,29 @@ function MainPage({ open }: { open: (v: View) => void }) {
         </section>
       )}
       <section>
+        <h2 class="group-title">{tr('alerts.ramadanOnly')}</h2>
         <div class="group">
-          {ramadanSwitch(tr('settings.imsakAlert'), tr('settings.imsakAlertSub'), 'imsakAlert')}
-          {ramadanSwitch(tr('settings.berbukaAlert'), tr('settings.berbukaAlertSub'), 'berbukaAlert')}
-          {ramadanSwitch(tr('settings.qiyam'), tr('settings.qiyamSub'), 'qiyamAlert')}
-          {p.trackerEnabled && (
+          {ramadanSwitch(tr('settings.imsakAlert'), withAbout(tr('settings.imsakAlertSub'), soon(now, (d) => store.imsak(d) - 10 * 60_000)), 'imsakAlert')}
+          {ramadanSwitch(tr('settings.berbukaAlert'), withAbout(tr('settings.berbukaAlertSub', { name: s.name('maghrib') }), soon(now, (d) => d.times.maghrib)), 'berbukaAlert')}
+          {ramadanSwitch(tr('settings.qiyam'), withAbout(tr('settings.qiyamSub'), soon(now, (d) => store.blessed(d).find(([b]) => b === 'lastThird')?.[1] ?? 0)), 'qiyamAlert')}
+        </div>
+        <p class="group-foot">{tr('alerts.ramadanFoot')}</p>
+      </section>
+      {p.trackerEnabled && (
+        <section>
+          <div class="group">
             <ToggleItem label={tr('settings.nudge')} on={p.windowNudge} onChange={(v) => store.update((x) => { x.windowNudge = v })}
               sub={tr('alerts.nudgeSub', { name: s.name('isha') })} />
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       <section>
         <h2 class="group-title" id="demo-sound">{tr('alerts.sound')}</h2>
         <div class="group">
           {azanAvailable() && <ToggleItem label={tr('settings.azan')} sub={tr('alerts.azanSub', { name: s.name('fajr') })} on={p.azanSound} onChange={(v) => store.update((x) => { x.azanSound = v })} />}
-          <ToggleItem label={tr('settings.buzzOnly')} sub={tr('alerts.buzzSub', { name: s.name('fajr') })} on={p.buzzOnly} onChange={(v) => store.update((x) => { x.buzzOnly = v })} />
-          <ToggleItem label={tr('settings.quietHours')} sub={tr('alerts.quietSub')} on={p.quietHours} onChange={(v) => store.update((x) => { x.quietHours = v })} />
+          <ToggleItem label={tr('settings.buzzOnly')} sub={tr('alerts.buzzSub')} on={p.buzzOnly} onChange={(v) => store.update((x) => { x.buzzOnly = v })} />
+          <ToggleItem label={tr('settings.quietHours')} sub={tr('alerts.quietSub', { name: s.name('fajr') })} on={p.quietHours} onChange={(v) => store.update((x) => { x.quietHours = v })} />
           {p.quietHours && (
             <>
               <label class="item"><span class="label">{tr('settings.from')}</span>
@@ -392,27 +450,37 @@ function PrayerPage({ prayer, back }: { prayer: Prayer; back: () => void }) {
   const setWake = (t: WakeUpTiming) => store.update((x) => { x.wakeUp = t })
   const setPrayerAlarm = (pr: AlarmPrayer, t: PrayerAlarmTiming) => store.update((x) => { x[ALARM_KEY[pr]] = t })
   const atStart = prayer === 'fajr' ? p.wakeUp === 'atFajr' : prayer !== 'sunrise' && p[ALARM_KEY[prayer as AlarmPrayer]] === 'atStart'
+  const nextAt = alertNext(now, prayer)
+  const bigLine = nextAt === null ? '' : tr(mode === 'alarm' ? 'alerts.bigAlarm' : 'alerts.bigNotify', { name, when: whenText(now, nextAt) })
 
   return (
     <Sheet title={name} full>
       <BackBar back={back} />
+      {mode !== 'off' && nextAt !== null && (
+        <div class="glass card alert-big">
+          <ModeIcon mode={mode} size={28} />
+          <span><b class="mono">{s.formatted(nextAt)}</b>
+            <span class="sub">{bigLine}</span></span>
+        </div>
+      )}
       <h2 class="group-title">{tr('alerts.howReach', { name })}</h2>
       <ModeCards modes={modesFor(prayer)} value={mode} pick={pick}
         alarmHelp={prayer === 'fajr' ? tr('alerts.helpAlarmFajr', { name }) : undefined} />
 
       {mode === 'alarm' && prayer === 'fajr' && (
         <section>
-          <h2 class="group-title">{tr('alerts.when')}</h2>
+          <h2 class="group-title">{tr('alerts.whenAlarm')}</h2>
           <div class="group">
             {WAKE_UP_TIMINGS.map((t) => (
               <Choice label={wakeUpLabel(t, s.naming)} detail={soon(now, (d) => wakeUpTime(t, d))} on={p.wakeUp === t} pick={() => setWake(t)} />
             ))}
           </div>
+          <p class="group-foot">{tr('alerts.movesWith', { name })}</p>
         </section>
       )}
       {mode === 'alarm' && prayer !== 'fajr' && prayer !== 'sunrise' && (
         <section>
-          <h2 class="group-title">{tr('alerts.when')}</h2>
+          <h2 class="group-title">{tr('alerts.whenAlarm')}</h2>
           <div class="group">
             {prayerAlarmChoices(prayer as AlarmPrayer).map((t) => (
               <Choice label={prayerAlarmLabel(t)} on={p[ALARM_KEY[prayer as AlarmPrayer]] === t} pick={() => setPrayerAlarm(prayer as AlarmPrayer, t)}

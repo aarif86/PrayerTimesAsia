@@ -77,7 +77,7 @@ const shots = [
   ['38-prayer-alarms', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
     await p.click('button[aria-label^="Alerts and alarms"]'); await p.waitForTimeout(400)
     await p.click('.sheet .mode-switch[aria-label="Asar"] .mode-alarm'); await p.waitForTimeout(200)
-    await p.click('.sheet .mode-row-name[aria-label^="Asar"]'); await p.waitForTimeout(300)
+    await p.click('.sheet .mode-chip[aria-label^="Asar"]'); await p.waitForTimeout(300)
     await p.click('text=10 min after'); await p.waitForTimeout(300)
   }],
   ['34-time-left-subuh', { style: 'sunpath', appearance: 'system', now: '2026-10-25T06:45:00+08:00', tracker: 'on' }],
@@ -98,6 +98,21 @@ const shots = [
     await p.click('button[aria-label^="Alerts and alarms"]'); await p.waitForTimeout(400)
     await p.click('.sheet [aria-label="Sahur alarm"]'); await p.waitForTimeout(300)
     await p.evaluate(() => [...document.querySelectorAll('.sheet *')].find((h) => h.textContent === 'Sahur alarm')?.scrollIntoView({ block: 'center' }))
+  }],
+  // Alerts and alarms: the time and Change under a prayer, its page, and the Ramadan switches in plain words.
+  ['49-alert-change', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
+    await p.click('button[aria-label^="Alerts and alarms"]'); await p.waitForTimeout(400)
+    await p.click('.sheet .mode-switch[aria-label="Fajr"] .mode-alarm'); await p.waitForTimeout(200)
+    await p.click('.sheet .mode-chip[aria-label^="Fajr"]'); await p.waitForTimeout(400)
+  }],
+  ['49b-alert-list', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
+    await p.click('button[aria-label^="Alerts and alarms"]'); await p.waitForTimeout(400)
+    await p.click('.sheet .mode-switch[aria-label="Fajr"] .mode-alarm'); await p.waitForTimeout(200)
+    await p.click('.sheet .mode-switch[aria-label="Dhuhr"] .mode-notify'); await p.waitForTimeout(200)
+  }],
+  ['50-alert-extras', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
+    await p.click('button[aria-label^="Alerts and alarms"]'); await p.waitForTimeout(400)
+    await p.evaluate(() => document.getElementById('demo-extras')?.scrollIntoView({ block: 'start' }))
   }],
   // Hijri calendar: tap the date on the Prayer screen.
   ['45-hijri-calendar', { style: 'list', appearance: 'dark', now: '2026-11-19T21:00:00+08:00' }, (p) => p.click('.date-main')],

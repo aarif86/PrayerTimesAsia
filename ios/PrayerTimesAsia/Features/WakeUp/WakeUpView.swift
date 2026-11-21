@@ -95,32 +95,38 @@ func applyFridayMode(_ mode: AlertMode, model: AppModel) {
     }
 }
 
-/// The short line under a prayer's name.
+/// When a prayer's alert next comes: the alarm's own time, or the prayer's start for Notify.
 @MainActor
-func alertSummary(_ prayer: Prayer, model: AppModel) -> String {
+func alertNextDate(_ prayer: Prayer, model: AppModel) -> Date? {
     let p = model.prefs
     switch p.alertMode(prayer) {
-    case .off: return "Off"
-    case .notify:
-        if prayer == .sunrise { return "When \(Prayer.fajr.name(model.naming)) ends" }
-        var parts = ["At the time"]
-        if Azan.isAvailable && p.azanSound { parts.append("with the azan") }
-        if p.reminderMinutesBefore > 0 { parts.append("heads up \(p.reminderMinutesBefore) min before") }
-        return parts.joined(separator: ", ")
+    case .off: return nil
+    case .notify: return model.nextDate { $0.time(prayer) }
     case .alarm:
-        let label = prayer == .fajr ? (p.wakeUp?.label(model.naming) ?? "") : (p.alarm(for: prayer)?.label ?? "")
-        let when = label.prefix(1).lowercased() + label.dropFirst()
-        return p.notifies(prayer) && !p.alarmAtStart(prayer) ? "Alarm \(when), notification at the time" : "Alarm \(when)"
+        if prayer == .fajr { return p.wakeUp.flatMap { w in model.nextDate { w.date(in: $0) } } }
+        guard let timing = p.alarm(for: prayer) else { return nil }
+        return model.nextDate { timing.date(start: $0.time(prayer), end: PrayerAlarmTiming.end(of: prayer, in: $0)) }
     }
 }
 
+/// The bar under a prayer that is on: "Alarm 6:20 AM" in bold, then what it is.
 @MainActor
-func fridaySummary(model: AppModel) -> String {
+func alertChipWords(_ prayer: Prayer, model: AppModel) -> (lead: String, rest: String) {
     let p = model.prefs
-    switch p.fridayMode {
-    case .off: return "Off"
-    case .notify: return "\(JumuahLeave.label(p.jumuahReminderMinutes)), notification"
-    case .alarm: return "\(JumuahLeave.label(p.jumuahReminderMinutes)), alarm"
+    let at = alertNextDate(prayer, model: model).map { " " + model.formatted($0) } ?? ""
+    switch p.alertMode(prayer) {
+    case .off: return ("Off", "")
+    case .notify:
+        if prayer == .sunrise { return ("Notification\(at)", "when \(Prayer.fajr.name(model.naming)) ends") }
+        var parts: [String] = []
+        if Azan.isAvailable && p.azanSound { parts.append("with the azan") }
+        if p.reminderMinutesBefore > 0 { parts.append("early reminder \(p.reminderMinutesBefore) min before") }
+        return ("Notification\(at)", parts.isEmpty ? "when it begins" : parts.joined(separator: ", "))
+    case .alarm:
+        let label = prayer == .fajr ? (p.wakeUp?.label(model.naming) ?? "") : (p.alarm(for: prayer)?.label ?? "")
+        var rest = label.prefix(1).lowercased() + label.dropFirst()
+        if p.notifies(prayer) && !p.alarmAtStart(prayer) { rest += ", notification at the time" }
+        return ("Alarm\(at)", rest)
     }
 }
 
@@ -129,16 +135,39 @@ func fridaySummary(model: AppModel) -> String {
 private struct AlertsMainList: View {
     @Environment(AppModel.self) private var model
     @Binding var path: [AlertsPage]
+    /// A prayer just switched to Alarm here: a short line says when it rings, with Change time.
+    @State private var justSet: Prayer?
 
     var body: some View {
         Form {
             CheckCardSection(path: $path)
-            EachPrayerSection(path: $path)
+            EachPrayerSection(path: $path, justSet: $justSet)
             NextAlarmSection()
             ExtrasSection()
             SoundSection()
             AlarmSoundSection()
             WakeHadithSection()
+        }
+        .safeAreaInset(edge: .bottom) {
+            if let prayer = justSet, let at = alertNextDate(prayer, model: model) {
+                HStack(spacing: 10) {
+                    Image(systemName: "alarm.fill").foregroundStyle(Theme.sunArc)
+                    Text("\(prayer.name(model.naming)) alarm set for \(model.formatted(at))")
+                        .font(.subheadline.weight(.semibold))
+                    Spacer(minLength: 4)
+                    Button("Change time") { justSet = nil; path.append(.prayer(prayer)) }
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(Theme.sunArc)
+                }
+                .padding(.horizontal, 16).padding(.vertical, 12)
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .padding(.horizontal, 16).padding(.bottom, 8)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .task(id: prayer) {
+                    try? await Task.sleep(for: .seconds(6))
+                    withAnimation { justSet = nil }
+                }
+            }
         }
     }
 }
@@ -171,44 +200,76 @@ private struct CheckCardSection: View {
 private struct EachPrayerSection: View {
     @Environment(AppModel.self) private var model
     @Binding var path: [AlertsPage]
+    @Binding var justSet: Prayer?
 
     var body: some View {
         let friday = Prayer.dhuhr.name(model.naming, isFriday: true)
         Section {
             ForEach(Prayer.allCases) { prayer in
-                row(name: prayer.name(model.naming), summary: alertSummary(prayer, model: model),
-                    modes: AlertMode.modes(for: prayer), value: model.prefs.alertMode(prayer),
+                let mode = model.prefs.alertMode(prayer)
+                let chip = alertChipWords(prayer, model: model)
+                row(name: prayer.name(model.naming), mode: mode, lead: chip.lead, rest: chip.rest,
+                    modes: AlertMode.modes(for: prayer),
                     open: { path.append(.prayer(prayer)) },
-                    pick: { applyAlertMode($0, prayer, model: model) })
+                    pick: { new in
+                        let was = model.prefs.alertMode(prayer)
+                        applyAlertMode(new, prayer, model: model)
+                        withAnimation { justSet = (new == .alarm && was != .alarm) ? prayer : nil }
+                    })
             }
-            row(name: "\(friday), leave for the masjid", summary: fridaySummary(model: model),
-                modes: AlertMode.allCases, value: model.prefs.fridayMode,
+            let fridayMode = model.prefs.fridayMode
+            row(name: "\(friday), leave for the masjid", mode: fridayMode,
+                lead: fridayMode == .off ? "Off" : (fridayMode == .alarm ? "Alarm" : "Notification"),
+                rest: "\(JumuahLeave.label(model.prefs.jumuahReminderMinutes).lowercased()) it starts",
+                modes: AlertMode.allCases,
                 open: { path.append(.friday) },
                 pick: { applyFridayMode($0, model: model) })
             HeadsUpPicker()
         } header: {
             Text("Each prayer")
         } footer: {
-            Text("Tap a prayer's name for its times. Notify is a notification, quiet when your phone is on silent or in a Focus. Alarm rings until you stop it, even on silent.")
+            Text("Pick Off, Notify or Alarm. Tap Change to choose the exact time. Notify is a notification, quiet when your phone is on silent or in a Focus. Alarm rings until you stop it, even on silent.")
         }
     }
 
-    private func row(name: String, summary: String, modes: [AlertMode], value: AlertMode,
+    private func row(name: String, mode: AlertMode, lead: String, rest: String, modes: [AlertMode],
                      open: @escaping () -> Void, pick: @escaping (AlertMode) -> Void) -> some View {
-        HStack(spacing: 10) {
-            Button(action: open) {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(name).foregroundStyle(.primary)
-                    Text(summary).font(.footnote).foregroundStyle(.secondary)
+                    if mode == .off { Text("Off").font(.footnote).foregroundStyle(.secondary) }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
+                AlertModePicker(name: name, modes: modes, value: mode, pick: pick)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("\(name), \(summary)")
-            .accessibilityHint("Opens its page")
-            AlertModePicker(name: name, modes: modes, value: value, pick: pick)
+            if mode != .off {
+                Button(action: open) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Image(systemName: mode.symbol)
+                            .foregroundStyle(mode == .alarm ? Theme.sunArc : Color.primary)
+                            .font(.footnote)
+                        (Text(lead).fontWeight(.semibold) + Text(rest.isEmpty ? "" : ", \(rest)"))
+                            .font(.footnote)
+                            .foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Text("Change")
+                            .font(.footnote.weight(.bold))
+                            .foregroundStyle(Theme.sunArc)
+                        Image(systemName: "chevron.right")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(Theme.sunArc)
+                    }
+                    .padding(.horizontal, 10).padding(.vertical, 8)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.15)))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(name), \(lead), \(rest)")
+                .accessibilityHint("Change the time")
+            }
         }
+        .padding(.vertical, 2)
     }
 }
 
@@ -226,8 +287,8 @@ private struct HeadsUpPicker: View {
             ForEach(Preferences.reminderChoices, id: \.self) { Text("\($0) min before").tag($0) }
         } label: {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Heads up before")
-                Text("A notification before each prayer set to Notify").font(.footnote).foregroundStyle(.secondary)
+                Text("Early reminder")
+                Text("An extra notification this many minutes before each prayer set to Notify").font(.footnote).foregroundStyle(.secondary)
             }
         }
         .pickerStyle(.menu)
@@ -318,7 +379,7 @@ private struct ExtrasSection: View {
                 set: { setSahur($0 ? SahurTiming.allCases.first : nil) })) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Sahur alarm")
-                    Text("An earlier alarm to eat sahur before a fast, or for a longer night prayer").font(.footnote).foregroundStyle(.secondary)
+                    Text("An alarm before \(Prayer.fajr.name(model.naming)) so you can eat before you fast. You choose the time and the days. Rings even on silent.").font(.footnote).foregroundStyle(.secondary)
                 }
             }
             if model.prefs.sahurAlarm != nil {
@@ -329,7 +390,7 @@ private struct ExtrasSection: View {
                 }
             }
         } header: {
-            Text("Extras")
+            Text("Fasting")
         }
         if model.prefs.sahurAlarm != nil {
             Section {
@@ -348,19 +409,33 @@ private struct ExtrasSection: View {
                 Text("Ramadan and the white days follow the Hijri date in the app. Please follow your local religious authority for the start of Ramadan.")
             }
         }
+        let maghrib = Prayer.maghrib.name(model.naming)
         Section {
-            ramadanSwitch("Imsak alert", "10 minutes before Imsak, in Ramadan", \.imsakAlert)
-            ramadanSwitch("Iftar alert", "At Maghrib, with the dua, in Ramadan", \.berbukaAlert)
-            ramadanSwitch("Qiyam in the last ten nights", "At the last third of the night", \.qiyamAlert)
-            if model.prefs.trackerEnabled {
+            ramadanSwitch("Imsak reminder", "A notification 10 minutes before Imsak, so you finish eating in time.\(about { model.imsak($0).addingTimeInterval(-600) })", \.imsakAlert)
+            ramadanSwitch("Iftar reminder", "A notification at \(maghrib) when it is time to break your fast.\(about { $0.time(.maghrib) })", \.berbukaAlert)
+            ramadanSwitch("Qiyam reminder, last ten nights",
+                          "On the last ten nights of Ramadan, a notification when the last third of the night begins, the best time for qiyam.\(model.nextLastThird().map { " About \(model.formatted($0)) here." } ?? "")",
+                          \.qiyamAlert)
+        } header: {
+            Text("Ramadan only")
+        } footer: {
+            Text("These are notifications, so they stay quiet on silent. Ramadan follows the date in the app. Please follow your local religious authority.")
+        }
+        if model.prefs.trackerEnabled {
+            Section {
                 Toggle(isOn: Binding(get: { model.prefs.windowNudge }, set: { model.prefs.windowNudge = $0 })) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Nudge before time runs out")
-                        Text("About 30 minutes before a prayer's time ends, only if you haven't ticked it").font(.footnote).foregroundStyle(.secondary)
+                        Text("A notification about 30 minutes before a prayer's time ends, only if you have not ticked it in your tracker").font(.footnote).foregroundStyle(.secondary)
                     }
                 }
             }
         }
+    }
+
+    /// " About 5:23 AM here." when the app knows the time.
+    private func about(_ date: (PrayerDay) -> Date) -> String {
+        model.nextTime(date).map { " About \($0) here." } ?? ""
     }
 
     private func ramadanSwitch(_ title: String, _ detail: String, _ key: WritableKeyPath<Preferences, Bool>) -> some View {
@@ -390,15 +465,25 @@ private struct SoundSection: View {
     var body: some View {
         Section {
             if Azan.isAvailable {
-                Toggle("Play the azan", isOn: Binding(get: { model.prefs.azanSound }, set: { model.prefs.azanSound = $0 }))
+                Toggle(isOn: Binding(get: { model.prefs.azanSound }, set: { model.prefs.azanSound = $0 })) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Play the azan")
+                        Text("Prayer notifications play the azan instead of a short tone").font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
             }
             Toggle(isOn: Binding(get: { model.prefs.buzzOnly }, set: { model.prefs.buzzOnly = $0 })) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Buzz only, no sound")
-                    Text("Every notification only buzzes. \(Prayer.fajr.name(model.naming)) keeps its sound.").font(.footnote).foregroundStyle(.secondary)
+                    Text("Buzz only")
+                    Text("Notifications vibrate without sound, all day. Alarms still ring.").font(.footnote).foregroundStyle(.secondary)
                 }
             }
-            Toggle("Quiet hours", isOn: Binding(get: { model.prefs.quietHours }, set: { model.prefs.quietHours = $0 }))
+            Toggle(isOn: Binding(get: { model.prefs.quietHours }, set: { model.prefs.quietHours = $0 })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Quiet hours")
+                    Text("Between the times you pick, notifications only vibrate. \(Prayer.fajr.name(model.naming)) and alarms keep their sound.").font(.footnote).foregroundStyle(.secondary)
+                }
+            }
             if model.prefs.quietHours {
                 Picker("From", selection: Binding(get: { model.prefs.quietFrom }, set: { model.prefs.quietFrom = $0 })) {
                     ForEach(Self.halfHours, id: \.self) { Text(model.clock($0)).tag($0) }
@@ -539,25 +624,45 @@ private struct PrayerAlertPage: View {
         let p = model.prefs
         let mode = p.alertMode(prayer)
         Form {
+            if mode != .off, let at = alertNextDate(prayer, model: model) {
+                Section {
+                    HStack(spacing: 14) {
+                        Image(systemName: mode.symbol)
+                            .font(.title)
+                            .foregroundStyle(mode == .alarm ? Theme.sunArc : Color.primary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(model.formatted(at)).font(.title.weight(.semibold)).monospacedDigit()
+                            Text("Your \(name) \(mode == .alarm ? "alarm rings" : "notification comes") \(dayWord(at)) at this time")
+                                .font(.footnote).foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                    .accessibilityElement(children: .combine)
+                }
+            }
             Section {
                 ModeCards(modes: AlertMode.modes(for: prayer), value: mode,
-                          alarmHelp: prayer == .fajr ? "Wakes you every morning and moves with \(name) wherever you are. Snooze 5 min." : nil) {
+                          alarmHelp: prayer == .fajr ? "Rings like the Clock app, even on silent, every morning. It follows \(name) wherever you are. Snooze 5 min." : nil) {
                     applyAlertMode($0, prayer, model: model)
                 }
             } header: {
                 Text("How should \(name) reach you?")
             }
             if mode == .alarm && prayer == .fajr {
-                Section("When") {
+                Section {
                     ForEach(WakeUpTiming.allCases) { timing in
                         AlarmChoiceRow(title: timing.label(model.naming), detail: model.nextTime(timing.date), selected: p.wakeUp == timing) {
                             withAnimation { model.prefs.wakeUp = timing }
                         }
                     }
+                } header: {
+                    Text("When should the alarm ring?")
+                } footer: {
+                    Text("The time moves a little each day with \(name).")
                 }
             }
             if mode == .alarm && PrayerAlarmTiming.prayers.contains(prayer) {
-                Section("When") {
+                Section("When should the alarm ring?") {
                     ForEach(PrayerAlarmTiming.choices(for: prayer)) { timing in
                         AlarmChoiceRow(title: timing.label,
                                        detail: model.nextTime({ timing.date(start: $0.time(prayer), end: PrayerAlarmTiming.end(of: prayer, in: $0)) }),
@@ -590,6 +695,12 @@ private struct PrayerAlertPage: View {
         }
         .navigationTitle(name)
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func dayWord(_ date: Date) -> String {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = model.timeZone
+        return cal.isDateInToday(date) ? "today" : "tomorrow"
     }
 }
 
