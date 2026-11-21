@@ -19,7 +19,7 @@ export interface CountryRow {
 export const COUNTRY_ROWS: CountryRow[] = [
   { code: "SG", name: "Singapore", methodID: "muis", asr: "standard", naming: "malay", source: "table", authority: "MUIS, the Islamic Religious Council of Singapore" },
   { code: "MY", name: "Malaysia", methodID: "jakim", asr: "standard", naming: "malay", source: "table", authority: "JAKIM e-Solat, for your state zone" },
-  { code: "BN", name: "Brunei", methodID: "sea", asr: "standard", naming: "malay", source: "standard", note: "The Ministry of Religious Affairs publishes a timetable the app cannot read yet, so it uses the 20° and 18° convention of the Malay world." },
+  { code: "BN", name: "Brunei", methodID: "sea", asr: "standard", naming: "malay", source: "table", authority: "the Ministry of Religious Affairs, Brunei" },
   { code: "ID", name: "Indonesia", methodID: "kemenag", asr: "standard", naming: "indonesian", source: "table", authority: "Kemenag, the Ministry of Religious Affairs" },
   { code: "TH", name: "Thailand", methodID: "sea", asr: "standard", naming: "arabic", source: "standard", note: "The app uses the 20° and 18° convention of the Malay world." },
   { code: "VN", name: "Vietnam", methodID: "sea", asr: "standard", naming: "arabic", source: "standard", note: "The app uses the 20° and 18° convention of the Malay world." },

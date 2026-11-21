@@ -1,7 +1,9 @@
 package com.prayertimesasia.core
 
+import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 /** A Singapore masjid with a second Friday prayer (MUIS list, data/friday-sg.json). */
 data class FridayMosque(val name: String, val district: String, val lat: Double, val lng: Double, val womenSession2: Boolean) {
@@ -70,6 +72,25 @@ object MasjidExtras {
         TripMode.WALK -> if (km > 2) null else "${max(1, (km / 0.08).roundToInt())} min walk"
         TripMode.DRIVE -> "${max(2, (km * 2 + 2).roundToInt())} min drive"
     }
+
+    /** Ring sets for the map, each a 1 2 5 step like a map's distance scale, from very close to far out. */
+    val RING_SETS: List<List<Double>> = listOf(
+        listOf(0.25, 0.5, 1.0), listOf(0.5, 1.0, 2.0), listOf(1.0, 2.0, 5.0), listOf(2.0, 5.0, 10.0), listOf(5.0, 10.0, 20.0))
+
+    /** Labels sit on each ring this far below the right hand side, in degrees, so they line up like a ruler. */
+    const val RING_LABEL_ANGLE = 35.0
+
+    /**
+     * The three rings that suit what the map shows: the widest set whose outer label still lands
+     * on screen. Half the map's width and height in km. Walk opens on 500 m, 1 and 2 km, Drive on 1, 2 and 5 km.
+     */
+    fun ringsFor(halfWidthKm: Double, halfHeightKm: Double): List<Double> {
+        val a = Math.toRadians(RING_LABEL_ANGLE)
+        return RING_SETS.lastOrNull { s -> s.last() * cos(a) <= halfWidthKm * 0.9 && s.last() * sin(a) <= halfHeightKm * 0.9 } ?: RING_SETS.first()
+    }
+
+    /** "500 m" or "2 km". */
+    fun ringDistance(km: Double): String = if (km < 1) "${(km * 1000).roundToInt()} m" else "${km.roundToInt()} km"
 
     /** A note on OpenStreetMap at this spot, for a volunteer to fix or add the place. No sign up needed. */
     fun reportUrl(c: Coordinates): String =

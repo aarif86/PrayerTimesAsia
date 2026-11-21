@@ -51,4 +51,14 @@ class WorldTest {
         assertEquals(setOf("2026-11-11"), table.keys)
         assertEquals("16:17", table["2026-11-11"]?.get("maghrib"))
     }
+
+    @Test fun bruneiMinistryTimetableByZone() {
+        fun bn(lat: Double, lng: Double) = Place(name = "x", countryCode = "BN", timeZoneId = "Asia/Brunei", coordinates = Coordinates(lat, lng))
+        val sea = CalculationMethod.withId("sea")!!
+        assertEquals(OfficialSource.Brunei("BRN01"), Official.source(bn(4.9031, 114.9398), sea, null)) // Bandar Seri Begawan
+        assertEquals(OfficialSource.Brunei("BRN02"), Official.source(bn(4.8028, 114.6497), sea, null)) // Tutong
+        assertEquals(OfficialSource.Brunei("BRN03"), Official.source(bn(4.5836, 114.2312), sea, null)) // Kuala Belait
+        assertEquals(null, Official.source(bn(4.9031, 114.9398), CalculationMethod.MWL, null))
+        assertEquals("https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/bn-brn03.json", Official.bruneiFeed("BRN03"))
+    }
 }

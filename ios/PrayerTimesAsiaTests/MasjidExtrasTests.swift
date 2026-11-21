@@ -52,4 +52,14 @@ final class MasjidExtrasTests: XCTestCase {
         XCTAssertEqual(p[0].hours, "Mo-Su 10:00-22:00")
         XCTAssertEqual(p[1].facilities, "")
     }
+
+    func testRingsFollowTheZoom() {
+        // A 390 by 260 map: Walk opens about 3 km tall, Drive about 11 km tall.
+        XCTAssertEqual(MasjidExtras.rings(halfWidthKm: 2.25, halfHeightKm: 1.5), [0.5, 1, 2])
+        XCTAssertEqual(MasjidExtras.rings(halfWidthKm: 8.25, halfHeightKm: 5.5), [1, 2, 5])
+        XCTAssertEqual(MasjidExtras.rings(halfWidthKm: 30, halfHeightKm: 20), [5, 10, 20])
+        XCTAssertEqual(MasjidExtras.rings(halfWidthKm: 0.3, halfHeightKm: 0.2), [0.25, 0.5, 1])
+        XCTAssertEqual(MasjidExtras.ringDistance(0.5), "500 m")
+        XCTAssertEqual(MasjidExtras.ringDistance(2), "2 km")
+    }
 }

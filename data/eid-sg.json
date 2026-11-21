@@ -1,6 +1,6 @@
 {
  "version": 1,
  "country": "SG",
- "about": "Hari Raya prayer sessions at each Singapore masjid, typed in from the Islamic Religious Council of Singapore (MUIS) page each Eid. MUIS posts it about one to two weeks before Raya. Times are 24 hour. The app shows an Eid from 14 days before its date until the day itself. Add lat and lng from the weekly masjid list, or leave them out and the app matches by name.",
+ "about": "Hari Raya prayer sessions at each Singapore masjid, typed in from the Islamic Religious Council of Singapore (MUIS) page each Eid. MUIS posts it about one to two weeks before Raya. Times are 24 hour. The app shows an Eid from 14 days before its date until the day itself. Add lat and lng from the weekly masjid list, or leave them out and the app matches by name. MUIS also lists Hari Raya sessions at places that are not masjids (fields, halls, community venues, a few dozen in 2026). The app matches by spot (within 300 m), so for those venues always add lat and lng, looked up from the venue address.",
  "events": []
 }

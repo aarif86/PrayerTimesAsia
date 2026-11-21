@@ -28,6 +28,11 @@ sealed class OfficialSource {
      * published copy, so the API key stays in the repo's Actions secrets.
      */
     data object London : OfficialSource()
+    /**
+     * Brunei's Ministry of Religious Affairs (KHEU) timetable for one zone, from the
+     * app's own published copy (tools/fetch_brunei.py, via ruqqq/prayertimes-database).
+     */
+    data class Brunei(val zone: String) : OfficialSource()
 
     val label: String
         get() = when (this) {
@@ -35,6 +40,7 @@ sealed class OfficialSource {
             is Jakim -> "JAKIM e-Solat · zone $zone"
             is Kemenag -> "Kemenag · $regency"
             London -> "London Unified Prayer Timetable"
+            is Brunei -> "Ministry of Religious Affairs, Brunei · zone $zone"
         }
 
     /** Authority name for the source badge. */
@@ -44,6 +50,7 @@ sealed class OfficialSource {
             is Jakim -> "JAKIM"
             is Kemenag -> "Kemenag"
             London -> "London Unified"
+            is Brunei -> "KHEU"
         }
 
     /** Subscribable calendar feed built by the iOS repo's feeds workflow from the same official table. */
@@ -52,7 +59,7 @@ sealed class OfficialSource {
             val name = when (this) {
                 Muis -> "sg-muis"
                 is Jakim -> "my-${zone.lowercase()}"
-                is Kemenag, London -> return null
+                is Kemenag, London, is Brunei -> return null
             }
             return "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/$name.ics"
         }
@@ -62,6 +69,7 @@ sealed class OfficialSource {
         is Jakim -> "jakim-$zone-$year"
         is Kemenag -> "kemenag-${Official.kemenagCore(regency).core}-$year"
         London -> "london-$year"
+        is Brunei -> "brunei-$zone-$year"
     }
 }
 
@@ -91,6 +99,7 @@ object Official {
                 val name = place.district ?: place.region ?: (if (place.name == "Current location") null else place.name)
                 name?.let { OfficialSource.Kemenag(it) }
             }
+            "BN" to "sea" -> OfficialSource.Brunei(nearestBruneiZone(place.coordinates))
             "GB" to "moonsighting" ->
                 if (Geo.distanceKm(place.coordinates, LONDON_CENTRE) <= LONDON_RADIUS_KM) OfficialSource.London else null
             else -> null
@@ -101,6 +110,23 @@ object Official {
     val LONDON_CENTRE = Coordinates(51.5074, -0.1278)
     const val LONDON_RADIUS_KM = 35.0
 
+    fun bruneiFeed(zone: String) = "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/bn-${zone.lowercase()}.json"
+    /** KHEU's zones: BRN01 Brunei-Muara and Temburong, BRN02 Tutong (+1 min), BRN03 Belait (+3 min). */
+    val BRUNEI_POINTS: List<Triple<String, Double, Double>> = listOf(
+        Triple("BRN01", 4.9031, 114.9398), Triple("BRN01", 5.0267, 115.0658), Triple("BRN01", 4.7086, 115.0717),
+        Triple("BRN02", 4.8028, 114.6497),
+        Triple("BRN03", 4.5836, 114.2312), Triple("BRN03", 4.6069, 114.3217),
+    )
+
+    fun nearestBruneiZone(c: Coordinates): String {
+        var best = "BRN01" to Double.MAX_VALUE
+        for ((zone, lat, lng) in BRUNEI_POINTS) {
+            val d = Geo.distanceKm(c, Coordinates(lat, lng))
+            if (d < best.second) best = zone to d
+        }
+        return best.first
+    }
+
     /** Plain words for the source line when a table other than the country's own applies. */
     fun summary(source: OfficialSource?, short: Boolean = false): String? {
         if (source != OfficialSource.London) return null
@@ -109,7 +135,7 @@ object Official {
             "When it can't be downloaded, the app uses the Moonsighting Committee method. Your local masjid may differ by a few minutes."
     }
 
-    /** gb-london.json (tools/fetch_london.py): {"times":{"2026-11-11":{"fajr":"05:43","sunrise":"07:13",...}}} */
+    /** gb-london.json (tools/fetch_london.py), also bn-<zone>.json (tools/fetch_brunei.py): {"times":{"2026-11-11":{"fajr":"05:43","sunrise":"07:13",...}}} */
     fun parseLondon(text: String): OfficialTable {
         val days = json.parseToJsonElement(text).jsonObject["times"] as? JsonObject
             ?: throw IllegalArgumentException("Not a London timetable")

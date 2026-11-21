@@ -15,7 +15,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.prayertimesasia.core.MasjidLink
-import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -48,6 +50,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
@@ -279,8 +282,8 @@ internal fun spanFor(mode: TripMode) = if (mode == TripMode.WALK) 3_000.0 else 1
 /**
  * A real street map (OpenStreetMap, as on the website), laid out like the iPhone's Apple Maps one:
  * a pin for each place (moon for a masjid, house for a prayer room, star for your masjid),
- * dashed rings at 1, 2 and 5 km labelled with the walk or drive time, you as a blue dot with
- * soft waves beaming out, a button to come back to you, and a card for the tapped pin with
+ * three dashed rings in 1 2 5 steps that follow the zoom (500 m, 1 and 2 km on foot, 1, 2 and
+ * 5 km by car) labelled with the walk or drive time, you as a blue dot with a glow and a ring beaming out, a button to come back to you, and a card for the tapped pin with
  * its distance, hours, Friday prayers and Directions. Drag to move, pinch or double tap to zoom.
  */
 @Composable
@@ -296,7 +299,14 @@ internal fun StreetMap(
     val reduceMotion = LocalSkyScheme.current.reduceMotion
     val accent = Palette.accent
     val musollah = Prayer.FAJR.tint
-    val you = Color(0xFF0A84FF)
+    // Brighter blue on the dark map, with lighter rings, so both show.
+    val you = if (dark) Color(0xFF3D9BFF) else Color(0xFF0A6BFF)
+    val glow = if (dark) Color(0xFF5AAFFF).copy(alpha = 0.55f) else you.copy(alpha = 0.30f)
+    val beamRing = if (dark) Color(0xFF8CC7FF).copy(alpha = 0.95f) else you.copy(alpha = 0.85f)
+    val ringLine = if (dark) Color(0xFF8CC2FF).copy(alpha = 0.85f) else Color(0xFF0A5EDB).copy(alpha = 0.75f)
+    val ringFill = if (dark) Color(0xFF78BAFF).copy(alpha = 0.10f) else you.copy(alpha = 0.07f)
+    val chip = if (dark) Color(0xFF101C38).copy(alpha = 0.94f) else Color.White.copy(alpha = 0.97f)
+    val chipText = if (dark) Color(0xFFCFE4FF) else Color(0xFF0A55C8)
     val material = Palette.materialStrong
     val primary = Palette.primary
     val moon = rememberVectorPainter(Icons.Filled.Brightness2)
@@ -320,11 +330,13 @@ internal fun StreetMap(
 
     val placed = remember { mutableListOf<Pair<PrayerSpace, Offset>>() }
     val measurer = rememberTextMeasurer()
-    val labelStyle = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = you)
+    val labelStyle = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = chipText)
     val nameStyle = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = if (dark) Color.White else Color(0xFF1C1C1E))
     val attributionStyle = TextStyle(fontSize = 9.sp, color = Color(0xFF333333))
-    val beam by rememberInfiniteTransition(label = "beam").animateFloat(
-        0f, 1f, infiniteRepeatable(tween(2600, easing = LinearOutSlowInEasing)), label = "beam")
+    // One clear ring out every 2.4 seconds, and a glow that breathes in the same rhythm.
+    val beams = rememberInfiniteTransition(label = "beam")
+    val beam by beams.animateFloat(0f, 1f, infiniteRepeatable(tween(2400, easing = CubicBezierEasing(0.2f, 0.6f, 0.3f, 1f))), label = "beam")
+    val breathe by beams.animateFloat(0f, 1f, infiniteRepeatable(tween(1200, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "breathe")
     val tilesVersion by OsmTiles.arrived
     val currentSpaces by rememberUpdatedState(spaces)
 
@@ -392,12 +404,13 @@ internal fun StreetMap(
                 }
             }
 
-            // Rings at 1, 2 and 5 km, the first one softly filled.
+            // Three rings in 1 2 5 steps that suit the zoom, the first one softly filled.
             val me = toScreen(center.latitude, center.longitude)
             val pxPerKm = (1000 / Mercator.metresPerDp(center.latitude, z) * density).toFloat()
-            for (km in RINGS_KM) {
-                if (km == RINGS_KM.first()) drawCircle(you.copy(alpha = 0.07f), (km * pxPerKm).toFloat(), me)
-                drawCircle(you.copy(alpha = 0.55f), (km * pxPerKm).toFloat(), me, style = Stroke(1.5.dp.toPx(),
+            val rings = MasjidExtras.ringsFor(size.width / 2.0 / pxPerKm, size.height / 2.0 / pxPerKm)
+            for (km in rings) {
+                if (km == rings.first()) drawCircle(ringFill, (km * pxPerKm).toFloat(), me)
+                drawCircle(ringLine, (km * pxPerKm).toFloat(), me, style = Stroke(1.5.dp.toPx(),
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 7.dp.toPx()))))
             }
 
@@ -438,28 +451,31 @@ internal fun StreetMap(
             placed.clear()
             placed.addAll(now)
 
-            // Ring labels at the bottom of each ring.
-            for (km in RINGS_KM) {
+            // Ring labels on each ring below its right hand side, lined up like a ruler, drawn over the pins.
+            val angle = Math.toRadians(MasjidExtras.RING_LABEL_ANGLE)
+            for (km in rings) {
                 val trip = MasjidExtras.tripText(km, mode)?.removeSuffix(" walk")?.removeSuffix(" drive")
-                val m = measurer.measure("${km.roundToInt()} km" + (trip?.let { ", $it" } ?: ""), labelStyle)
+                val m = measurer.measure(MasjidExtras.ringDistance(km) + (trip?.let { ", $it" } ?: ""), labelStyle)
                 val w = m.size.width + 14.dp.toPx()
                 val h = m.size.height + 4.dp.toPx()
-                val y = me.y + (km * pxPerKm).toFloat()
-                if (y < 0 || y > size.height) continue
-                drawRoundRect(material, Offset(me.x - w / 2, y - h / 2), Size(w, h), CornerRadius(h / 2))
-                drawRoundRect(you.copy(alpha = 0.35f), Offset(me.x - w / 2, y - h / 2), Size(w, h), CornerRadius(h / 2), style = Stroke(1.dp.toPx()))
-                drawText(m, topLeft = Offset(me.x - m.size.width / 2f, y - m.size.height / 2f))
+                val x = me.x + (km * pxPerKm * cos(angle)).toFloat()
+                val y = me.y + (km * pxPerKm * sin(angle)).toFloat()
+                if (y < 0 || y > size.height || x < 0 || x > size.width) continue
+                drawRoundRect(Color.Black.copy(alpha = 0.18f), Offset(x - w / 2, y - h / 2 + 1.dp.toPx()), Size(w, h), CornerRadius(h / 2))
+                drawRoundRect(chip, Offset(x - w / 2, y - h / 2), Size(w, h), CornerRadius(h / 2))
+                drawRoundRect(ringLine.copy(alpha = 0.5f), Offset(x - w / 2, y - h / 2), Size(w, h), CornerRadius(h / 2), style = Stroke(1.dp.toPx()))
+                drawText(m, topLeft = Offset(x - m.size.width / 2f, y - m.size.height / 2f))
             }
 
-            // You: a blue dot with a white ring and soft waves beaming out.
-            if (reduceMotion) drawCircle(you.copy(alpha = 0.2f), 24.dp.toPx(), me)
-            else for (k in 0..1) {
-                val p = (beam + k * 0.5f) % 1f
-                drawCircle(you.copy(alpha = 0.4f * (1 - p)), 9.dp.toPx() * (1 + p * 8), me)
-            }
-            drawCircle(you.copy(alpha = 0.35f), 13.dp.toPx(), me)
-            drawCircle(Color.White, 10.5.dp.toPx(), me)
-            drawCircle(you, 7.5.dp.toPx(), me)
+            // You: a blue dot with a white rim, a glow that is always there, and one clear ring
+            // travelling out. With Reduce motion nothing moves and a still ring stays instead.
+            val glowR = 23.dp.toPx() * (if (reduceMotion) 1f else 1f + 0.18f * breathe)
+            drawCircle(Brush.radialGradient(0f to glow, 0.6f to glow, 1f to Color.Transparent, center = me, radius = glowR), glowR, me)
+            if (reduceMotion) drawCircle(beamRing.copy(alpha = 0.55f), 19.dp.toPx(), me, style = Stroke(2.dp.toPx()))
+            else drawCircle(beamRing.copy(alpha = beamRing.alpha * (1 - beam)), (11 + 44 * beam).dp.toPx(), me, style = Stroke(2.dp.toPx()))
+            drawCircle(Color.Black.copy(alpha = if (dark) 0.55f else 0.18f), 11.dp.toPx(), me)
+            drawCircle(Color.White, 10.dp.toPx(), me)
+            drawCircle(you, 7.dp.toPx(), me)
 
             // OpenStreetMap credit, which its licence asks for.
             val credit = measurer.measure("© OpenStreetMap contributors", attributionStyle)
@@ -483,4 +499,3 @@ internal fun StreetMap(
     }
 }
 
-internal val RINGS_KM = listOf(1.0, 2.0, 5.0)
