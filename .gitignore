@@ -21,3 +21,4 @@ __pycache__/
 functions/node_modules/
 .firebase/
 firebase-debug.log
+*.tsbuildinfo

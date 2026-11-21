@@ -121,8 +121,10 @@ def main():
     print('Beta App Review contact set.')
 
     # 3. The build into the group.
-    call('POST', f"/v1/betaGroups/{group['id']}/relationships/builds",
-         {'data': [{'type': 'builds', 'id': build['id']}]}, ok=(409,))
+    r = call('POST', f"/v1/betaGroups/{group['id']}/relationships/builds",
+             {'data': [{'type': 'builds', 'id': build['id']}]}, ok=(409, 422))
+    if r.get('_error') == 422:
+        sys.exit('Apple would not add the build to the group: ' + r['_text'])
     print(f"Build {build['attributes']['version']} is in '{GROUP}'.")
 
     # 4. Send it to Beta App Review (409 means it is already there or approved).
