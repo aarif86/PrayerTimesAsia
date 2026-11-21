@@ -89,22 +89,34 @@ class WidgetTest {
         DemoConfig("home", style, appearance, Tab.PRAYER, now)
 
     // Next prayer: small, wide and large (the large one is the whole day in the app's look).
-    @Test fun next_small_night() = shoot("next-small-night", d(TodayStyle.BANDS, night), 110, 110) { NextPrayerContent(it) }
-    @Test fun next_small_day() = shoot("next-small-day", d(TodayStyle.BANDS, morning), 110, 110) { NextPrayerContent(it) }
-    @Test fun next_wide_night() = shoot("next-wide-night", d(TodayStyle.BANDS, night), 250, 110) { NextPrayerContent(it) }
-    @Test fun next_wide_day() = shoot("next-wide-day", d(TodayStyle.BANDS, morning), 250, 110) { NextPrayerContent(it) }
+    @Test fun next_small_night() = shoot("next-small-night", d(TodayStyle.LIST, night), 110, 110) { NextPrayerContent(it) }
+    @Test fun next_small_day() = shoot("next-small-day", d(TodayStyle.LIST, morning), 110, 110) { NextPrayerContent(it) }
+    @Test fun next_wide_night() = shoot("next-wide-night", d(TodayStyle.LIST, night), 250, 110) { NextPrayerContent(it) }
+    @Test fun next_wide_day() = shoot("next-wide-day", d(TodayStyle.LIST, morning), 250, 110) { NextPrayerContent(it) }
     @Test fun next_large_bands_night() = shoot("next-large-bands-night", d(TodayStyle.BANDS, night), 250, 300) { NextPrayerContent(it) }
     @Test fun next_large_bands_day() = shoot("next-large-bands-day", d(TodayStyle.BANDS, morning), 250, 300) { NextPrayerContent(it) }
     @Test fun next_large_dial_night() = shoot("next-large-dial-night", d(TodayStyle.DIAL, night), 250, 300) { NextPrayerContent(it) }
+    @Test fun next_wide_bands_night() = shoot("next-wide-bands-night", d(TodayStyle.BANDS, night), 250, 110) { NextPrayerContent(it) }
+    @Test fun next_small_bands_day() = shoot("next-small-bands-day", d(TodayStyle.BANDS, morning), 110, 110) { NextPrayerContent(it) }
     @Test fun next_large_list_day() = shoot("next-large-list-day", d(TodayStyle.LIST, morning), 250, 300) { NextPrayerContent(it) }
 
-    // Today's timetable in every look, and at the short size a resize can pass through.
-    @Test fun timetable_bands_night() = shoot("timetable-bands-night", d(TodayStyle.BANDS, night), 280, 280) { TimetableContent(it) }
-    @Test fun timetable_bands_day() = shoot("timetable-bands-day", d(TodayStyle.BANDS, morning), 280, 280) { TimetableContent(it) }
-    @Test fun timetable_dial_night() = shoot("timetable-dial-night", d(TodayStyle.DIAL, night), 280, 280) { TimetableContent(it) }
-    @Test fun timetable_list_day() = shoot("timetable-list-day", d(TodayStyle.LIST, morning), 280, 280) { TimetableContent(it) }
-    @Test fun timetable_bands_short() = shoot("timetable-bands-short", d(TodayStyle.BANDS, night), 280, 190) { TimetableContent(it) }
-    @Test fun timetable_dial_short() = shoot("timetable-dial-short", d(TodayStyle.DIAL, night), 280, 190) { TimetableContent(it) }
+    // The pictures the launcher's widget picker shows (copied into res/drawable-nodpi).
+    @Test fun picker_previews() {
+        shoot("preview-next", d(TodayStyle.LIST, night), 160, 160) { NextPrayerContent(it) }
+        shoot("preview-timetable", d(TodayStyle.BANDS, night), 300, 300) { TimetableContent(it) }
+    }
+
+    // Today's timetable in all six looks, night and day, at a normal, a tall and a short size.
+    private fun looks(size: String, w: Int, h: Int) {
+        listOf(TodayStyle.CENTRE to "centre", TodayStyle.LIST to "sidedial", TodayStyle.DIAL to "dial",
+            TodayStyle.SUN_PATH to "sunpath", TodayStyle.BANDS to "bands", TodayStyle.SIMPLE to "simple").forEach { (st, n) ->
+            shoot("timetable-$n-$size-night", d(st, night), w, h) { TimetableContent(it) }
+            shoot("timetable-$n-$size-day", d(st, morning, Appearance.LIGHT), w, h) { TimetableContent(it) }
+        }
+    }
+    @Test fun timetable_normal() = looks("normal", 280, 280)
+    @Test fun timetable_tall() = looks("tall", 280, 360)
+    @Test fun timetable_short() = looks("short", 280, 190)
 
     // The cause of "Open Prayer Times Asia to set your location" on a resize: a freshly started
     // process has no live GPS place, so the widget must fall back to home instead of giving up.
