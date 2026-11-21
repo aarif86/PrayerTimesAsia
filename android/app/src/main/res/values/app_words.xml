@@ -322,7 +322,7 @@
     <string name="wake_rings" formatted="false">Rings every morning and moves with {name} wherever you are. Pick one time.</string>
     <string name="wake_turnOnFor" formatted="false">Turn on to wake up for {name} every morning.</string>
     <string name="wake_sahur" formatted="false">Sahur alarm</string>
-    <string name="wake_sahurSub" formatted="false">An earlier alarm to eat sahur before a fast, or for a longer night prayer.</string>
+    <string name="wake_sahurSub" formatted="false">An alarm before {name} so you can eat before you fast. You choose the time and the days. Rings even on silent.</string>
     <string name="wake_sahurOn" formatted="false">Sahur alarm rings on</string>
     <string name="wake_hijriNote" formatted="false">Ramadan and the white days follow the Hijri date in the app. Please follow your local religious authority for the start of Ramadan.</string>
     <string name="wake_otherPrayers" formatted="false">Other prayers</string>
@@ -347,12 +347,12 @@
     <string name="settings_ramadanPage" formatted="false">Ramadan page</string>
     <string name="settings_ramadanPageSub" formatted="false">Imsak and iftar, your fasts, duas, zakat al-Fitr, the last ten nights</string>
     <string name="settings_tryRamadan" formatted="false">Try Ramadan (for testers)</string>
-    <string name="settings_imsakAlert" formatted="false">Imsak alert</string>
-    <string name="settings_imsakAlertSub" formatted="false">10 minutes before Imsak, in Ramadan</string>
-    <string name="settings_berbukaAlert" formatted="false">Iftar alert</string>
-    <string name="settings_berbukaAlertSub" formatted="false">At Maghrib, in Ramadan</string>
-    <string name="settings_qiyam" formatted="false">Qiyam reminder</string>
-    <string name="settings_qiyamSub" formatted="false">The last third of the last ten nights</string>
+    <string name="settings_imsakAlert" formatted="false">Imsak reminder</string>
+    <string name="settings_imsakAlertSub" formatted="false">A notification 10 minutes before Imsak, so you finish eating in time.</string>
+    <string name="settings_berbukaAlert" formatted="false">Iftar reminder</string>
+    <string name="settings_berbukaAlertSub" formatted="false">A notification at {name} when it is time to break your fast.</string>
+    <string name="settings_qiyam" formatted="false">Qiyam reminder, last ten nights</string>
+    <string name="settings_qiyamSub" formatted="false">On the last ten nights of Ramadan, a notification when the last third of the night begins, the best time for qiyam.</string>
     <string name="settings_wakeUp" formatted="false">Wake up</string>
     <string name="settings_wakeUpFoot" formatted="false">Also on the Prayer screen. Tap the alarm clock at the top.</string>
     <string name="settings_alertsAlarms" formatted="false">Alerts and alarms</string>
@@ -436,7 +436,7 @@
     <string name="settings_testAlert" formatted="false">Send a test alert</string>
     <string name="settings_quiet" formatted="false">Quiet alerts</string>
     <string name="settings_quietFoot" formatted="false">For shift workers sleeping in the day, a baby asleep in the room, or simply a calm night. Alerts still come, but they only buzz. {name} keeps its sound so it can wake you.</string>
-    <string name="settings_buzzOnly" formatted="false">Buzz only, no sound</string>
+    <string name="settings_buzzOnly" formatted="false">Buzz only</string>
     <string name="settings_quietHours" formatted="false">Quiet hours</string>
     <string name="settings_from" formatted="false">From</string>
     <string name="settings_until" formatted="false">Until</string>
@@ -678,7 +678,7 @@
     <string name="alerts_helpOff" formatted="false">Nothing for this prayer</string>
     <string name="alerts_helpNotify" formatted="false">A notification with sound. Quiet when your phone is on silent or in a Focus.</string>
     <string name="alerts_helpAlarm" formatted="false">Rings until you stop it, even on silent. Snooze 5 min.</string>
-    <string name="alerts_helpAlarmFajr" formatted="false">Wakes you every morning and moves with {name} wherever you are. Snooze 5 min.</string>
+    <string name="alerts_helpAlarmFajr" formatted="false">Rings even on silent, every morning. It follows {name} wherever you are. Snooze 5 min.</string>
     <string name="alerts_needsInstall" formatted="false">Add the app to your Home Screen for alerts</string>
     <string name="alerts_webOpen" formatted="false">On the web, alerts ring only while this page is open</string>
     <string name="alerts_tapFix" formatted="false">Tap to see how to fix it.</string>
@@ -687,19 +687,19 @@
     <string name="alerts_eachPrayer" formatted="false">Each prayer</string>
     <string name="alerts_openPage" formatted="false">{name}, {summary}. Opens its page</string>
     <string name="alerts_fridayLeave" formatted="false">{friday}, leave for the masjid</string>
-    <string name="alerts_headsUp" formatted="false">Heads up before</string>
-    <string name="alerts_headsUpSub" formatted="false">A notification before each prayer set to Notify</string>
+    <string name="alerts_headsUp" formatted="false">Early reminder</string>
+    <string name="alerts_headsUpSub" formatted="false">An extra notification this many minutes before each prayer set to Notify</string>
     <string name="alerts_headsUpSame" formatted="false">The same for every prayer set to Notify</string>
-    <string name="alerts_eachFoot" formatted="false">Tap a prayer\'s name for its times. Notify is a notification, quiet when your phone is on silent. Alarm rings until you stop it.</string>
+    <string name="alerts_eachFoot" formatted="false">Pick Off, Notify or Alarm. Tap Change to choose the exact time. Notify is a notification, quiet when your phone is on silent. Alarm rings until you stop it.</string>
     <string name="alerts_nextAlarm" formatted="false">Next alarm {when} {time}</string>
     <string name="alerts_nextAlarmFor" formatted="false">Next alarm {when} {time} for {name}</string>
     <string name="alerts_nextAlarmSahur" formatted="false">Next alarm {when} {time} for sahur</string>
     <string name="alerts_extras" formatted="false">Extras</string>
-    <string name="alerts_nudgeSub" formatted="false">About 30 minutes before a prayer\'s time ends, only if you haven\'t ticked it. Not for {name}.</string>
+    <string name="alerts_nudgeSub" formatted="false">A notification about 30 minutes before a prayer\'s time ends, only if you have not ticked it in your tracker. Not for {name}.</string>
     <string name="alerts_sound" formatted="false">Sound</string>
     <string name="alerts_azanSub" formatted="false">Notifications open with the azan, and the {name} azan at {name}</string>
-    <string name="alerts_buzzSub" formatted="false">Every notification only buzzes. {name} keeps its sound.</string>
-    <string name="alerts_quietSub" formatted="false">Notifications only buzz at these times</string>
+    <string name="alerts_buzzSub" formatted="false">Notifications vibrate without sound, all day. Alarms still ring.</string>
+    <string name="alerts_quietSub" formatted="false">Between the times you pick, notifications only vibrate. {name} and alarms keep their sound.</string>
     <string name="alerts_soundFoot" formatted="false">Buzz only and Quiet hours are for shift workers sleeping in the day, a baby asleep in the room, or a calm night. Alarms keep their sound.</string>
     <string name="alerts_alarmSoundFoot" formatted="false">Tap a sound to hear it. Every alarm plays this sound.</string>
     <string name="alerts_soundClassic" formatted="false">Classic alarm</string>
@@ -901,4 +901,22 @@
     <string name="move_copyThis" formatted="false">Copy this link</string>
     <string name="notify_testTitle" formatted="false">{name} · test alert</string>
     <string name="notify_testBody" formatted="false">This is how prayer alerts will look on this device.</string>
+    <string name="alerts_fasting" formatted="false">Fasting</string>
+    <string name="alerts_ramadanOnly" formatted="false">Ramadan only</string>
+    <string name="alerts_ramadanFoot" formatted="false">These are notifications, so they stay quiet on silent. Ramadan follows the date in the app. Please follow your local religious authority.</string>
+    <string name="alerts_aboutHere" formatted="false">About {time} here.</string>
+    <string name="alerts_whenAlarm" formatted="false">When should the alarm ring?</string>
+    <string name="alerts_movesWith" formatted="false">The time moves a little each day with {name}.</string>
+    <string name="alerts_chipAlarm" formatted="false">Alarm {time}</string>
+    <string name="alerts_chipNotify" formatted="false">Notification {time}</string>
+    <string name="alerts_whenBegins" formatted="false">when it begins</string>
+    <string name="alerts_earlyN" formatted="false">early reminder {n} min before</string>
+    <string name="alerts_notifAtTime" formatted="false">notification at the time</string>
+    <string name="alerts_fridayStarts" formatted="false">{when} it starts</string>
+    <string name="alerts_change" formatted="false">Change</string>
+    <string name="alerts_changeAria" formatted="false">{name}, {summary}. Change the time</string>
+    <string name="alerts_alarmSet" formatted="false">{name} alarm set for {time}</string>
+    <string name="alerts_changeTime" formatted="false">Change time</string>
+    <string name="alerts_bigAlarm" formatted="false">Your {name} alarm rings {when} at this time</string>
+    <string name="alerts_bigNotify" formatted="false">Your {name} notification comes {when} at this time</string>
 </resources>
