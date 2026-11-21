@@ -18,7 +18,7 @@ import { SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { daysToRamadan } from './Ramadan'
 
 import { VERSION } from './version'
-import { APP_LANGUAGE_LABEL, appearanceLabel, appLangFromLocales, styleLabel, tr } from '../core/appWords'
+import { APP_LANGUAGE_LABEL, appearanceLabel, appLangFromLocales, methodNote, styleLabel, tr } from '../core/appWords'
 export { VERSION }
 
 
@@ -97,7 +97,7 @@ export function SettingsScreen() {
         )}
       </Group>
 
-      <Group title={tr('settings.calculation')} foot={<>{s.sourceSummary} {tr('settings.calculationFoot')} {s.method.note}</>}>
+      <Group title={tr('settings.calculation')} foot={<>{s.sourceSummary} {tr('settings.calculationFoot')} {methodNote(s.method)}</>}>
         <SelectItem label={tr('settings.method')} value={p.methodOverrideID ?? 'auto'}
           options={[{ value: 'auto', label: tr('common.automaticWith', { name: profileMethod(s.profile).shortName }) }, ...ALL_METHODS.map((m) => ({ value: m.id, label: m.name }))]}
           onChange={(v) => store.update((x) => { x.methodOverrideID = v === 'auto' ? null : v })} />
