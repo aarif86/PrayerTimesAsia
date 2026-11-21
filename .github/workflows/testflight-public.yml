@@ -1,0 +1,32 @@
+name: TestFlight public link
+
+# Manual: makes a public TestFlight link so anyone can join the iPhone test with
+# one tap, no invite emails. "look" changes nothing; "go" makes the link and sends
+# the latest build to Apple's Beta App Review. Same secrets as release.yml, plus
+# TESTFLIGHT_CONTACT_PHONE (the phone Apple's reviewer may call).
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "look (change nothing) or go (make the link and send to Apple)"
+        type: choice
+        options: [look, go]
+        default: look
+
+jobs:
+  public-link:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install --quiet pyjwt cryptography
+      - name: Public link
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
+          TESTFLIGHT_CONTACT_PHONE: ${{ secrets.TESTFLIGHT_CONTACT_PHONE }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          if [ "$MODE" = "go" ]; then python3 tools/testflight_public.py --go; else python3 tools/testflight_public.py; fi

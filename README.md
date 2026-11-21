@@ -58,6 +58,8 @@ Each app has its own README with how to build and run it.
 
 ## Builds
 
+How often to send updates to the stores, and how to test first: [docs/releasing.md](docs/releasing.md).
+
 | Workflow | Runs when | Does |
 |---|---|---|
 | CI | `ios/` or `testdata/` changes, every pull request | Builds and tests the iPhone app, takes simulator screenshots |
@@ -67,6 +69,13 @@ Each app has its own README with how to build and run it.
 | Android | `android/` or `testdata/` changes (pull requests too) | Tests, builds the APK, takes screenshots |
 | Web | `web/`, `site/` or `testdata/` changes (pull requests too) | Tests, builds, deploys the promo site and web app to GitHub Pages (from `main` only) |
 | Validate, Calendar feeds, Masjid lists, Firebase, TestFlight status, Crash check, Store screenshots, Backup | Their own files change, on a schedule or by hand | Data checks, calendar feeds, weekly masjid lists, backend, crash logs, store pictures, weekly backup |
+
+## Thanks
+
+The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my
+by [Awsam Tech LLP](https://www.awsamtech.com/), the Singapore and Malaysia app many of us
+grew up with. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.
+The prayertimes.sg & my logo is not used.
 
 ## Licence and promises
 

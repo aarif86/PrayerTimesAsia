@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Prayer Times Asia | prayer times and qibla wherever you land</title>
-  <meta name="description" content="Built by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah after a family trip to Vietnam where none of their prayer apps worked. Free prayer times and qibla, built in Asia and made for Muslims everywhere. Your local religious authority first, official timetables where they exist, works offline, no outside ads, no account, no tracking. On the web today, iPhone and Android in testing." />
+  <meta name="description" content="Built by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah after a family trip to Vietnam where none of their prayer apps worked. Free prayer times and qibla, built in Asia and made for Muslims everywhere. Your local religious authority first, official timetables where they exist, works offline, no outside ads, no account, no tracking. On the web and Google Play today, iPhone in testing." />
   <meta name="theme-color" content="#0b0f2a" />
   <meta name="color-scheme" content="dark light" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
@@ -257,10 +257,10 @@
 
     /* Steps */
     .steps { counter-reset: s; display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-top: 36px; }
-    .steps .card { position: relative; padding-top: 58px; }
+    .steps .card { position: relative; padding-top: 58px; display: flex; flex-direction: column; }
     .steps .card::before { counter-increment: s; content: counter(s); position: absolute; top: 20px; left: 24px; width: 28px; height: 28px; border-radius: 50%;
       background: var(--gold); color: #1b1230; font-weight: 800; display: grid; place-items: center; font-size: 0.9rem; }
-    .steps .btns { margin-top: 16px; }
+    .steps .btns { margin-top: auto; padding-top: 16px; }
 
     /* FAQ */
     .promises .grid { grid-template-columns: repeat(4, 1fr); }
@@ -694,6 +694,7 @@
           <p>When we landed in Vietnam as a family, none of our prayer apps worked for us. My wife, our son, my mother-in-law and our helper all turned to me to ask when to pray. Back home, my parents had the same trouble with apps full of ads, and some would play the azan out loud on the MRT.</p>
           <p>To me, prayer times and the qibla are what every Muslim needs, wherever they are. Putting them behind a paywall just isn't right.</p>
           <p>Falak has served us for centuries, and it still does. Today we have better tools to take it further, so why not use them, and keep them free for everyone? A beautiful design is just a bonus.</p>
+          <p>Building it was not easy. An app like this, on iPhone, Android and the web, for 143 countries and in eight languages, would normally take a team of developers well over 3,000 hours. We put in that work so you never have to pay for it.</p>
           <p>I was born in Singapore, so I built it for Asia first, my home. But the same rule applies everywhere, your local religious authority comes first, and it works all over the world.</p>
           <p>None of this would happen without my wife, Ustazah Nasibah Hamzah. Her support and her honest feedback shape every part of this app.</p>
           <p>It's free and it will stay free. If it helps you, make du'a for us, and share it with someone who prays.</p>
@@ -980,10 +981,10 @@
           <p>Works on any phone or computer. Add it to your home screen and it opens like an app. Open it once online, and the prayer times keep working without internet.</p>
         </div>
         <div class="card">
-          <span class="tag beta">Testing now</span>
+          <span class="tag live">On Google Play</span>
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div>
           <h3>iPhone and Android</h3>
-          <p>Prayer times on your home screen and lock screen, with alarms and reminders. Being tested now, and nearly ready for the App Store and Google Play.</p>
+          <p>Prayer times on your home screen and lock screen, with alarms and reminders. Android is on Google Play now, and iPhone is nearly ready for the App Store.</p>
         </div>
         <div class="card">
           <span class="tag plan">Planned</span>
@@ -1080,13 +1081,13 @@
         </div>
         <div class="card">
           <h3>iPhone</h3>
-          <p>The iPhone app is in testing through Apple's TestFlight. Ask for an invite and we'll send you a link.</p>
-          <div class="btns"><a class="btn btn-ghost btn-sm" href="mailto:salam@prayertimes.asia?subject=iPhone%20test%20invite&amp;body=Assalamualaikum%2C%20I%27d%20like%20to%20try%20Prayer%20Times%20Asia%20on%20iPhone.%0A%0AName%3A%0ACountry%3A%0A">Ask for an iPhone invite</a></div>
+          <p>The iPhone app is in testing through Apple's TestFlight. Tap below to join. No invite needed.</p>
+          <div class="btns"><a class="btn btn-primary btn-sm" href="https://testflight.apple.com/join/DjXmrnNF" target="_blank" rel="noopener">Join the iPhone test</a></div>
         </div>
         <div class="card">
           <h3>Android</h3>
-          <p>The Android app is coming to Google Play. Ask for the test version and we'll send it to you.</p>
-          <div class="btns"><a class="btn btn-ghost btn-sm" href="mailto:salam@prayertimes.asia?subject=Android%20test%20version&amp;body=Assalamualaikum%2C%20I%27d%20like%20to%20try%20Prayer%20Times%20Asia%20on%20Android.%0A%0AName%3A%0ACountry%3A%0APhone%20model%3A%0A">Ask for the Android test</a></div>
+          <p>The Android app is on Google Play now. It's free, with nothing to sign up for.</p>
+          <div class="btns"><a class="btn btn-primary btn-sm" href="https://play.google.com/store/apps/details?id=com.prayertimesasia.app" target="_blank" rel="noopener">Get it on Google Play</a></div>
         </div>
       </div>
     </div>
@@ -1198,7 +1199,7 @@
         <div class="review-links">
           <a class="review-link" data-review href="https://g.page/r/CSq5hZxhRs1BEBM/review" target="_blank" rel="noopener"><b>Review Nasar Digital on Google</b><span>The team in Singapore who builds the app</span></a>
           <span class="review-link soon" aria-disabled="true"><b>Review on the App Store</b><span>Coming soon, once the iPhone app is in the store</span></span>
-          <span class="review-link soon" aria-disabled="true"><b>Review on Google Play</b><span>Coming soon, once the Android app is in the store</span></span>
+          <a class="review-link" data-review href="https://play.google.com/store/apps/details?id=com.prayertimesasia.app&amp;showAllReviews=true" target="_blank" rel="noopener"><b>Review on Google Play</b><span>For the Android app</span></a>
         </div>
         <p class="review-copied" role="status" hidden>Copied. Paste your words into the review box.</p>
         <p class="review-private"><a href="mailto:salam@prayertimes.asia?subject=A%20note%20about%20Prayer%20Times%20Asia">Something not right? Send us a private note</a></p>
@@ -1217,10 +1218,11 @@
     <div>
       <a href="app/">Web app</a> ·
       <a href="privacy.html">Privacy</a> ·
+      <a href="join.html">Timekeepers</a> ·
       <a href="press.html">Press</a> ·
       <a href="credits.html">Credits</a> ·
       <a href="ramadan.html">Ramadan</a> ·
-      <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/website/changelog.md">What's new</a> ·
+      <a href="whatsnew.html">What's new</a> ·
       <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md">Design a new look</a> ·
       <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>
     </div>
