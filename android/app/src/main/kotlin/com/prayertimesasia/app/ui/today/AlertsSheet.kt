@@ -196,7 +196,7 @@ private fun alertNext(state: AppState, prayer: Prayer): Instant? {
 }
 
 /** The bar under a prayer that is on: "Alarm 6:20 AM" in bold, then what it is. */
-private fun alertChip(state: AppState, prayer: Prayer): Pair<String, String> {
+private fun alertChip(state: AppState, prayer: Prayer, azanOn: Boolean): Pair<String, String> {
     val p = state.prefs
     val r = state.resolver
     val at = alertNext(state, prayer)?.let { " ${r.formatted(it)}" } ?: ""
@@ -206,7 +206,7 @@ private fun alertChip(state: AppState, prayer: Prayer): Pair<String, String> {
             if (prayer == Prayer.SUNRISE) "Notification$at" to "when ${Prayer.FAJR.name(r.naming)} ends"
             else {
                 val parts = buildList {
-                    if (p.azanSound) add("with the azan")
+                    if (azanOn && p.azanSound) add("with the azan")
                     if (p.reminderMinutesBefore > 0) add("early reminder ${p.reminderMinutesBefore} min before")
                 }
                 "Notification$at" to (if (parts.isEmpty()) "when it begins" else parts.joinToString(", "))
@@ -225,9 +225,10 @@ private fun alertChip(state: AppState, prayer: Prayer): Pair<String, String> {
 private fun EachPrayerSection(state: AppState, go: (String?) -> Unit, alarmSet: (Prayer?) -> Unit) {
     val r = state.resolver
     val p = state.prefs
+    val azanOn = Azan.isAvailable(LocalContext.current)
     Section("Each prayer", "Pick Off, Notify or Alarm. Tap Change to choose the exact time. Notify is a notification, quiet when your phone is on silent or Do Not Disturb. Alarm rings until you stop it, even on silent.") {
         Prayer.all.forEach { prayer ->
-            val (lead, rest) = alertChip(state, prayer)
+            val (lead, rest) = alertChip(state, prayer, azanOn)
             ModeRow(prayer.name(r.naming), lead, rest, AlertMode.modes(prayer), p.alertMode(prayer),
                 open = { go(prayer.raw) }) { new ->
                 val was = state.prefs.alertMode(prayer)
