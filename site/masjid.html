@@ -348,13 +348,13 @@
 </script>
 <script>
   // The masjid form lives in our GoHighLevel account (api.nasardigital.com), like the other forms on this site.
-  // Paste its form id below once it is made. Until then, people see an email link instead.
+  // If the form id is ever empty, people see an email link instead.
   (function () {
-    var FORM_ID = '';
+    var FORM_ID = 'DxhdI4kamVmA2oO4pboy';
     var box = document.getElementById('masjid-form');
     if (FORM_ID) {
       var u = 'https://api.nasardigital.com/widget/form/' + FORM_ID;
-      box.innerHTML = '<iframe src="' + u + '" id="inline-' + FORM_ID + '" title="Prayer Times Asia masjid form" data-layout="{\'id\':\'INLINE\'}" data-trigger-type="alwaysShow" data-activation-type="alwaysActivated" data-deactivation-type="neverDeactivate" data-form-name="Prayer Times Asia | Masjid" data-height="1100" data-layout-iframe-id="inline-' + FORM_ID + '" data-form-id="' + FORM_ID + '"></iframe><p class="fallback">Form not showing? <a href="' + u + '" target="_blank" rel="noopener">Open it in a new tab</a> or write to <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>.</p>';
+      box.innerHTML = '<iframe src="' + u + '" id="inline-' + FORM_ID + '" title="Prayer Times Asia masjid form" data-layout="{\'id\':\'INLINE\'}" data-trigger-type="alwaysShow" data-activation-type="alwaysActivated" data-deactivation-type="neverDeactivate" data-form-name="Prayer Times Asia | Masjid times and partners" data-height="1100" data-layout-iframe-id="inline-' + FORM_ID + '" data-form-id="' + FORM_ID + '"></iframe><p class="fallback">Form not showing? <a href="' + u + '" target="_blank" rel="noopener">Open it in a new tab</a> or write to <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>.</p>';
     } else {
       box.innerHTML = '<p class="fallback" style="padding:24px 10px">Write to us at <a href="mailto:salam@prayertimes.asia?subject=Masjid%20times&amp;body=Assalamualaikum%2C%0A%0AMasjid%20or%20musollah%20name%3A%0ACity%20and%20country%3A%0AMy%20role%3A%0AWhat%20is%20different%3A%0A">salam@prayertimes.asia</a> with your masjid's name, city and what is different.</p>';
     }
