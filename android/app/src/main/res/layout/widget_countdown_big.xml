@@ -6,5 +6,5 @@
     android:countDown="true"
     android:textColor="#FFFFFFFF"
     android:textStyle="bold"
-    android:textSize="30sp"
+    android:textSize="24sp"
     android:fontFeatureSettings="tnum" />

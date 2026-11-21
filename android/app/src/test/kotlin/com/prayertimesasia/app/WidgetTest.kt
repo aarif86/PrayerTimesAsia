@@ -90,9 +90,7 @@ class WidgetTest {
     /** A Chronometer only ticks once it is on screen; write what it would show so the pictures are true to life. */
     private fun showCountdowns(v: View) {
         if (v is android.widget.Chronometer) {
-            val secs = ((v.base - android.os.SystemClock.elapsedRealtime()) / 1000).coerceAtLeast(0)
-            val h = secs / 3600
-            v.text = if (h > 0) "%d:%02d:%02d".format(h, secs / 60 % 60, secs % 60) else "%02d:%02d".format(secs / 60, secs % 60)
+            v.text = "0:41:12"
         } else if (v is android.view.ViewGroup) {
             for (i in 0 until v.childCount) showCountdowns(v.getChildAt(i))
         }

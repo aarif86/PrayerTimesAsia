@@ -121,16 +121,17 @@ internal fun dialBitmap(m: WidgetModel, px: Int, labels: Boolean = false): Bitma
         val text = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             textAlign = Paint.Align.CENTER; typeface = android.graphics.Typeface.DEFAULT_BOLD; color = android.graphics.Color.WHITE
         }
-        Prayer.all.forEach { p ->
-            val at = Math.toRadians((angle(m.day.time(p)) - 90 + 7).toDouble())
-            val rr = r * if (Prayer.all.indexOf(p) % 2 == 0) 0.74f else 0.5f
+        // Five prayers (Sunrise is read off the ring), on two rings so neighbours never touch.
+        Prayer.all.filter { it != Prayer.SUNRISE }.forEachIndexed { i, p ->
+            val at = Math.toRadians((angle(m.day.time(p)) - 90 + 6).toDouble())
+            val rr = r * if (i % 2 == 0) 0.76f else 0.56f
             val cx = px / 2f + (Math.cos(at) * rr).toFloat()
             val cy = px / 2f + (Math.sin(at) * rr).toFloat()
-            text.textSize = px * 0.046f; text.alpha = 200
-            c.drawText(m.names.getValue(p), cx, cy - px * 0.005f, text)
-            text.textSize = px * 0.052f; text.alpha = 255
+            text.textSize = px * 0.042f; text.alpha = 200
+            c.drawText(m.names.getValue(p), cx, cy - px * 0.004f, text)
+            text.textSize = px * 0.048f; text.alpha = 255
             val t = m.times.getValue(p)
-            c.drawText(t.first + (t.second?.let { " $it" } ?: ""), cx, cy + px * 0.058f, text)
+            c.drawText(t.first + (t.second?.let { " $it" } ?: ""), cx, cy + px * 0.05f, text)
         }
     }
     val a = Math.toRadians((angle(m.now) - 90).toDouble())
