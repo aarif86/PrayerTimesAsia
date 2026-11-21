@@ -104,6 +104,8 @@ class AppState(
     var permissions: Permissions? = null
     /** Screenshots: pretend the phone faces the qibla. */
     var demoAligned = false
+    /** Screenshots: a Ramadan preview without the testers' PREVIEW tag (store pictures). */
+    var demoMode = false
     /** Screenshots: show the Google Play review button before the app is live. */
     var demoShowsStores = false
 

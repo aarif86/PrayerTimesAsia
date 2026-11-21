@@ -31,6 +31,7 @@ object Demo {
         DemoConfig.seedOfficial(state)
         state.selectedTab = demo.tab
         state.demoAligned = demo.aligned
+        state.demoMode = true
         state.demoShowsStores = demo.reviewStores
     }
 }
