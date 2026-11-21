@@ -143,7 +143,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       <main class="sp-main">
         <section class="sp-hero">
           <p class="sp-eyebrow">For Masjids</p>
-          <h1>Put prayer times on your masjid TV</h1>
+          <h1>Put prayer times on your Masjid TV</h1>
           <p class="sp-lead">Free, with nothing to install and no sign up. Three easy steps on your phone.</p>
           {live != null && (
             <p class="sp-live" aria-live="polite"><i class="sp-dot" aria-hidden="true" /><b>{live.toLocaleString('en')}</b> masjid {live === 1 ? 'screen is' : 'screens are'} on right now</p>
