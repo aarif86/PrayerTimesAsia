@@ -17,6 +17,7 @@ import com.prayertimesasia.core.SahurTiming
 import com.prayertimesasia.core.WakeUpTiming
 import java.time.Instant
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * The words of Alerts and alarms in the app language, from the shared word list
@@ -114,6 +115,12 @@ internal fun whenWords(state: AppState, at: Instant): String {
     return when (day) {
         today -> tr(R.string.alerts_today)
         today.plusDays(1) -> tr(R.string.alerts_tomorrow)
-        else -> day.format(DateTimeFormatter.ofPattern("EEEE", LocalConfiguration.current.locales[0]))
+        // The weekday in the app's language, so a phone in a language the app
+        // has no words for still reads English throughout.
+        else -> day.format(DateTimeFormatter.ofPattern("EEEE", when (appWordsLang()) {
+            RamadanContent.Lang.MS -> Locale.forLanguageTag("ms")
+            RamadanContent.Lang.ID -> Locale.forLanguageTag("id")
+            else -> Locale.ENGLISH
+        }))
     }
 }
