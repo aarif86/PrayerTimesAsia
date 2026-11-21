@@ -1090,14 +1090,30 @@ final class AppModel {
     /// may be days away). Stops at the first day that has one.
     /// When a choice would next ring: today if it is still ahead, else tomorrow.
     func nextTime(_ date: (PrayerDay) -> Date) -> String? {
+        nextDate(date).map(formatted)
+    }
+
+    /// The same, as a date, for "rings tomorrow at 6:20 AM".
+    func nextDate(_ date: (PrayerDay) -> Date) -> Date? {
         let now = Date.now
         for offset in 0..<2 {
             if let d = self.day(containing: noon(now, plus: offset)) {
                 let t = date(d)
-                if t > now { return formatted(t) }
+                if t > now { return t }
             }
         }
         return nil
+    }
+
+    /// When the last third of the night next begins here, for the Qiyam reminder's line.
+    func nextLastThird() -> Date? {
+        guard let place = activePlace else { return nil }
+        return nextDate { pd in
+            guard let next = day(containing: pd.time(.dhuhr).addingTimeInterval(86_400)),
+                  let last = BlessedTime.compute(day: pd, nextDay: next, coordinates: place.coordinates, isRamadan: false)
+                    .first(where: { $0.0 == .lastThird }) else { return .distantPast }
+            return last.1
+        }
     }
 
     func nextWakeUp(after now: Date) -> WakeUp? {
