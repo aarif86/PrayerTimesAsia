@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { qiblaDays } from '../src/core/falak'
 import { zoned, zonedTime } from '../src/core/tz'
 import { DEFAULT_CONFIG, decodeConfig, encodeConfig, NO_HIDE, sanitize, type ScreenConfig } from '../src/screen/config'
-import { kaabaMomentToday, nextOccasion, occasionName, screenHijri, setScreenAnnouncements, WORDS } from '../src/screen/model'
+import { KAABA_SHOWN_AFTER_MS, kaabaMomentToday, nextOccasion, occasionName, screenHijri, setScreenAnnouncements, WORDS } from '../src/screen/model'
 
 const TZ = 'Asia/Singapore'
 const SG: ScreenConfig = { ...DEFAULT_CONFIG, place: { name: 'Pasir Ris', lat: 1.3721, lng: 103.9474, tz: TZ, cc: 'SG', district: null } }
@@ -21,6 +21,14 @@ describe('occasion countdown', () => {
     expect(o.announced).toBe(true)
     expect(nextOccasion(sg(2027, 2, 8, 23, 59), SG)!.days).toBe(1)
     expect(nextOccasion(sg(2027, 2, 9, 0, 1), SG)!.days).toBe(0)
+  })
+
+  it('follows a date that moves when the authority announces it', () => {
+    const entry = { event: '1_ramadan', hijri_year: 1448, authority: 'MUIS', country: 'SG', status: 'expected', basis: 'rukyah' } as const
+    setScreenAnnouncements([{ ...entry, date: '2027-02-08' }])
+    expect(nextOccasion(sg(2027, 1, 30), SG)!.days).toBe(9)
+    setScreenAnnouncements([{ ...entry, status: 'announced', date: '2027-02-09' }])
+    expect(nextOccasion(sg(2027, 1, 30), SG)!.days).toBe(10)
   })
 
   it('uses the screen\'s own Hijri date when nothing is announced, with the committee\'s adjustment', () => {
@@ -69,6 +77,8 @@ describe('sun over the Kaaba', () => {
       const local = zoned(got!, TZ)
       expect(local.hour).toBe(17)
       expect(kaabaMomentToday(sg(z.year, z.month, z.day, 8) + 86_400_000, SG)).toBeNull()
+      expect(kaabaMomentToday(t + KAABA_SHOWN_AFTER_MS, SG)).toBe(t)
+      expect(kaabaMomentToday(t + KAABA_SHOWN_AFTER_MS + 60_000, SG)).toBeNull()
     }
   })
 

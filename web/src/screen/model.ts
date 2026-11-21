@@ -41,7 +41,7 @@ export interface ScreenDay {
 /** Ramadan and Eid announcements the screen has downloaded (data/calendar.json). */
 let announcements: CalendarAnnouncement[] = []
 let monthStarts: MonthStart[] = []
-export function setScreenAnnouncements(list: CalendarAnnouncement[], starts: MonthStart[] = []): void { announcements = list; monthStarts = starts }
+export function setScreenAnnouncements(list: CalendarAnnouncement[], starts: MonthStart[] = []): void { announcements = list; monthStarts = starts; occasionCache.clear() }
 
 /** The masjid's Hijri date for its civil day, with the committee's preview when on. */
 let clock = () => Date.now()
@@ -250,6 +250,9 @@ export function nextOccasion(now: number, c: ScreenConfig): NextOccasion | null 
   return best
 }
 
+/** How long the line stays after the moment (as nextQiblaDay in core/falak.ts). */
+export const KAABA_SHOWN_AFTER_MS = 10 * 60_000
+
 const kaabaYears = new Map<number, number[]>()
 /** The two noons a year when the sun stands over the Kaaba (core/falak.ts, the app's own astronomy). */
 function kaabaMoments(year: number): number[] {
@@ -271,7 +274,8 @@ export function kaabaMomentToday(now: number, c: ScreenConfig): number | null {
       const d = civilOf(t, tz)
       if (d.year !== today.year || d.month !== today.month || d.day !== today.day) continue
       const sunUp = sunPosition(t, { latitude: c.place.lat, longitude: c.place.lng }).altitude
-      return sunUp >= 5 ? t : null
+      // Gone 10 minutes after the moment, so nobody faces the sun later in the day.
+      return sunUp >= 5 && now <= t + KAABA_SHOWN_AFTER_MS ? t : null
     }
   }
   return null
