@@ -710,6 +710,14 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .feedback .primary-btn { width: 100%; box-sizing: border-box; padding: 13px 16px; font-size: 16px; text-decoration: none; }
 .feedback .plain-btn { width: 100%; box-sizing: border-box; justify-content: center; margin-top: 8px; }
 .feedback .footnote { text-align: center; margin-top: 10px; }
+.room-field { display: block; margin: 0 0 12px; }
+.room-field span, .room-label { display: block; font-size: 14px; font-weight: 600; margin: 0 0 6px; }
+.room-field input { width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 14px; border: 0; background: var(--fill); font: inherit; font-size: 16px; color: inherit; }
+.room-field .feedback-text { min-height: 72px; }
+.suggest-room .room-pin-note { text-align: left; margin: 6px 0 14px; }
+.suggest-room .plain-btn.done { color: var(--accent); }
+.suggest-room .primary-btn[disabled] { opacity: .45; }
+.suggest-room-btn { margin: 10px auto 0; }
 .review-links .item { text-decoration: none; color: inherit; gap: 12px; }
 .review-steps { margin: 10px 0 12px; padding: 12px 14px 12px 34px; border-radius: 14px; background: var(--fill); font-size: 15px; line-height: 1.45; }
 .review-steps li { margin: 3px 0; }
