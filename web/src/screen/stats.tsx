@@ -52,6 +52,9 @@ const sgToday = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 1
 const fmtDate = (d: string, withYear = false) => new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', ...(withYear ? { year: 'numeric' } : {}), timeZone: 'UTC' })
 const fmtSlot = (hhmm: string) => { const h = +hhmm.slice(0, 2), m = hhmm.slice(2); return `${h % 12 || 12}:${m} ${h < 12 ? 'am' : 'pm'}` }
 const fmtHour = (h: number) => `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}`
+/** Phones draw the charts at a narrower size, so the words stay readable. */
+const narrow = () => typeof innerWidth === 'number' && innerWidth < 640
+
 const fmtNum = (n: number) => n.toLocaleString('en', { maximumFractionDigits: 1 })
 
 function App() {
@@ -126,7 +129,7 @@ function App() {
               <h2>Each day</h2>
               <p class="sp-hint">The highest number on each day, and the average across the day.</p>
               <LineChart theme={theme} xs={days.map((d) => fmtDate(d.date, range.days > 366))}
-                series={[{ name: 'Highest', values: days.map((d) => d.peak), color: 0 }, { name: 'Average', values: days.map((d) => d.avg), color: 1 }]} ticks={6} />
+                series={[{ name: 'Highest', values: days.map((d) => d.peak), color: 0 }, { name: 'Average', values: days.map((d) => d.avg), color: 1 }]} ticks={6} fullTicks={range.days > 366} />
             </section>
 
             <section class="st-card">
@@ -221,7 +224,8 @@ const COLORS = { dark: ['#bd8520', '#6b86e0'], light: ['#b07400', '#4361c9'] }
 
 function LineChart({ theme, xs, series, ticks, fullTicks = false }: { theme: 'light' | 'dark'; xs: string[]; series: { name: string; values: number[]; color: number }[]; ticks: number; fullTicks?: boolean }) {
   const [hover, setHover] = useState<number | null>(null)
-  const W = 800, H = 260, L = 40, R = 16, T = 12, B = 28
+  const W = narrow() ? 420 : 800, H = narrow() ? 240 : 260, L = 36, R = 14, T = 12, B = 28
+  ticks = narrow() ? 3 : ticks
   const max = Math.max(1, ...series.flatMap((s) => s.values))
   const nice = niceMax(max)
   const x = (i: number) => L + (xs.length <= 1 ? 0 : (i / (xs.length - 1)) * (W - L - R))
@@ -263,7 +267,8 @@ function LineChart({ theme, xs, series, ticks, fullTicks = false }: { theme: 'li
 
 function HourBars({ theme, hours }: { theme: 'light' | 'dark'; hours: number[] }) {
   const [hover, setHover] = useState<number | null>(null)
-  const W = 800, H = 220, L = 40, R = 8, T = 12, B = 28
+  const W = narrow() ? 420 : 800, H = 220, L = 36, R = 8, T = 12, B = 28
+  const every = narrow() ? 6 : 3
   const nice = niceMax(Math.max(1, ...hours))
   const bw = (W - L - R) / 24
   const y = (v: number) => T + (1 - v / nice) * (H - T - B)
@@ -275,7 +280,7 @@ function HourBars({ theme, hours }: { theme: 'light' | 'dark'; hours: number[] }
           <g key={i} onPointerEnter={() => setHover(i)}>
             <rect x={L + i * bw} y={T} width={bw} height={H - T - B} fill="transparent" />
             <path d={barPath(L + i * bw + 1, y(v), bw - 2, H - B - y(v))} fill={COLORS[theme][0]} opacity={hover == null || hover === i ? 1 : 0.55} />
-            {i % 3 === 0 && <text x={L + i * bw + bw / 2} y={H - 8} class="st-axis" text-anchor="middle">{fmtHour(i)}</text>}
+            {i % every === 0 && <text x={L + i * bw + bw / 2} y={H - 8} class="st-axis" text-anchor="middle">{fmtHour(i)}</text>}
           </g>
         ))}
       </svg>
