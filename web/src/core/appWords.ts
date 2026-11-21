@@ -80,3 +80,13 @@ export function trWith<T>(key: AppWordKey, slots: Record<string, T | string | nu
 export function blessedShort(b: 'imsak' | 'dhuha' | 'midnight' | 'lastThird'): string { return tr(`today.${b}Short`) }
 export function blessedNote(b: 'imsak' | 'dhuha' | 'midnight' | 'lastThird'): string { return tr(`today.${b}Note`) }
 export function gradeTitle(g: 'A' | 'B' | 'C' | 'D' | 'F'): string { return tr(`source.grade${g}`) }
+export function gradeExplanation(g: 'A' | 'B' | 'C' | 'D' | 'F'): string { return tr(`source.explain${g}`) }
+
+/** A calculation method's note in the current app language (its English note when the list has no line for it). */
+export function methodNote(m: { id: string; note: string }): string {
+  const key = `method.note.${m.id}`
+  return key in WORDS.en ? tr(key as AppWordKey) : m.note
+}
+
+/** "MUIS method" in the current app language, for a day worked out with a method. */
+export function methodName(m: { shortName: string }): string { return tr('source.methodName', { method: m.shortName }) }

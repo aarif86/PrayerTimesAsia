@@ -21,8 +21,12 @@ on:
       status:
         description: "draft = you press Release in Play Console yourself (needed until the app's first release is live)"
         type: choice
-        options: [draft, completed]
+        options: [draft, inProgress, completed]
         default: draft
+      rollout:
+        description: "With inProgress: share of users who get it first, 0.1 = 10% (staged rollout)"
+        type: string
+        default: "0.1"
 
 concurrency:
   group: play-release
@@ -106,6 +110,8 @@ jobs:
           releaseFiles: android/app/build/outputs/bundle/release/*.aab
           track: ${{ inputs.track }}
           status: ${{ inputs.status }}
+          userFraction: ${{ inputs.status == 'inProgress' && inputs.rollout || '' }}
+          whatsNewDirectory: android/play-whatsnew
 
       - name: Say what happened
         if: always()

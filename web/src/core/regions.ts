@@ -1,3 +1,5 @@
+import { appLang, appWord, type AppWordArgs, type AppWordKey } from './appWords'
+import type { Lang3 } from './ramadanContent'
 import { METHODS, methodWithId, withHighLatitude, type CalculationMethod } from './methods'
 import type { NamingStyle } from './prayer'
 
@@ -52,18 +54,21 @@ export const FALLBACK_PROFILE: CountryProfile = {
  * Where this place's times come from, in plain words: the authority, or the
  * standard method and why. `pinned` when the person chose a method in Settings.
  */
-export function sourceSummary(p: CountryProfile, method: CalculationMethod, pinned: boolean, short = false): string {
+export function sourceSummary(p: CountryProfile, method: CalculationMethod, pinned: boolean, short = false, lang: Lang3 = appLang()): string {
+  const w = (key: AppWordKey, args: AppWordArgs = {}) => appWord(lang, key, args)
+  const authority = p.authority ?? w('source.summary.localAuthority')
   if (short) {
-    if (pinned) return `You chose ${method.name} in Settings.`
-    if (p.source === 'table') return `Official timetable from ${p.authority}.`
-    if (p.source === 'authority') return `Follows ${p.authority}.`
-    return `No official timetable here, so the app uses ${method.name}. Your local masjid may differ by a few minutes.`
+    if (pinned) return w('source.summary.pinnedShort', { method: method.name })
+    if (p.source === 'table') return w('source.summary.tableShort', { authority })
+    if (p.source === 'authority') return w('source.summary.authorityShort', { authority })
+    return w('source.summary.standardShort', { method: method.name })
   }
-  if (pinned) return `You chose ${method.name} in Settings. Automatic would follow ${p.source === 'standard' ? 'the method most used here' : p.authority ?? 'the local authority'}.`
+  if (pinned) return w('source.summary.pinned', { method: method.name, follow: p.source === 'standard' ? w('source.summary.mostUsed') : authority })
   switch (p.source) {
-    case 'table': return `Official timetable from ${p.authority}. When it can't be downloaded, the app works it out with the same method.`
-    case 'authority': return `Follows ${p.authority}, worked out on your phone with their method so it works offline.${p.note ? ` ${p.note}` : ''}`
-    case 'standard': return `${p.note ?? `No official timetable the app can use here yet, so it uses ${method.name}, a standard method.`} Your local masjid may differ by a few minutes. You can choose another method in Settings, or send us your masjid's timetable.`
+    case 'table': return w('source.summary.table', { authority })
+    // The country notes in data/countries.json stay in English for now.
+    case 'authority': return `${w('source.summary.authority', { authority })}${p.note ? ` ${p.note}` : ''}`
+    case 'standard': return `${p.note ?? w('source.summary.standardNone', { method: method.name })} ${w('source.summary.standardEnd')}`
   }
 }
 
