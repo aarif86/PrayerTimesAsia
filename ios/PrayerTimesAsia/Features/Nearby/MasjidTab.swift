@@ -17,6 +17,8 @@ struct NearbyView: View {
     @State private var allFriday = false
     @State private var showAbout = false
     @State private var suggesting = false
+    /// When Near me last found the person, so Suggest a prayer room only offers a recent spot as the room's pin.
+    @State private var nearMeAt: Date?
     @State private var slow = false
     /// A fresh GPS fix from "Find prayer places near me". It doesn't change the
     /// place your prayer times are for.
@@ -111,7 +113,9 @@ struct NearbyView: View {
                 }
             }
             .sheet(isPresented: $showAbout) { MakersSheet(placement: "masjid") }
-            .sheet(isPresented: $suggesting) { SuggestRoomView(near: here, live: nearMe) }
+            .sheet(isPresented: $suggesting) {
+                SuggestRoomView(near: here, live: (nearMeAt.map { Date.now.timeIntervalSince($0) < 300 } ?? false) ? nearMe : nil)
+            }
             .task(id: here) {
                 guard let c = here else { return }
                 slow = false
@@ -123,7 +127,7 @@ struct NearbyView: View {
             .onChange(of: model.location.location) { _, fix in
                 guard locating, let fix, let asked = askedAt, fix.timestamp >= asked.addingTimeInterval(-60) else { return }
                 locating = false
-                nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude)
+                nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude); nearMeAt = .now
             }
             .onChange(of: selected) { _, space in
                 if let space { focus(space.coordinates) }
@@ -327,7 +331,7 @@ struct NearbyView: View {
     private func findNearMe() {
         if model.location.isDenied { return }
         if let fix = model.location.location, fix.timestamp.timeIntervalSinceNow > -120 {
-            nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude)
+            nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude); nearMeAt = .now
             showYou(animated: true)
             return
         }

@@ -17,7 +17,7 @@ export type RoomHas = 'women' | 'shared' | 'aircon' | 'mats' | 'garments' | 'abl
 
 export const ROOM_HAS: { id: RoomHas; label: AppWordKey; english: string }[] = [
   { id: 'women', label: 'suggestRoom.women', english: "Women's space" },
-  { id: 'shared', label: 'suggestRoom.shared', english: 'One space shared by men and women' },
+  { id: 'shared', label: 'suggestRoom.shared', english: 'One space for men and women' },
   { id: 'aircon', label: 'suggestRoom.aircon', english: 'Air conditioned' },
   { id: 'mats', label: 'suggestRoom.mats', english: 'Prayer mats' },
   { id: 'garments', label: 'suggestRoom.garments', english: 'Telekung and sarong' },

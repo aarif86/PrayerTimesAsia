@@ -919,8 +919,8 @@
     <string name="suggestRoom_pinFailed" formatted="false">Lokasi Anda tidak dapat ditemukan. Alamat saja sudah cukup.</string>
     <string name="suggestRoom_has" formatted="false">Fasilitas yang ada</string>
     <string name="suggestRoom_women" formatted="false">Ruang perempuan</string>
-    <string name="suggestRoom_shared" formatted="false">Satu ruang untuk laki laki dan perempuan</string>
-    <string name="suggestRoom_aircon" formatted="false">Ber AC</string>
+    <string name="suggestRoom_shared" formatted="false">Satu ruang untuk laki-laki dan perempuan</string>
+    <string name="suggestRoom_aircon" formatted="false">Ber-AC</string>
     <string name="suggestRoom_mats" formatted="false">Sajadah</string>
     <string name="suggestRoom_garments" formatted="false">Mukena dan sarung</string>
     <string name="suggestRoom_ablution" formatted="false">Tempat wudu</string>

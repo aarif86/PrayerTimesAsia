@@ -32,6 +32,7 @@ import datetime
 import glob
 import json
 import math
+import re
 import os
 import sys
 import time
@@ -224,8 +225,11 @@ def musolla_db_places(data: dict) -> list:
         level = " ".join(str(v.get("level") or "").split())
         if level.lower() in ("null", "none", "-", "0"):
             level = ""
-        if musollah and level and level.lower() not in address.lower():
-            address = f"{address}, level {level}" if address else f"Level {level}"
+        # Add the floor unless the address already gives one ("Level 3", "#03-01").
+        has_floor = re.search(r"\blevel\b|\blvl\b|#\s*[0-9b]", address, re.I)
+        if musollah and level and not has_floor:
+            floor = level if level.lower().startswith(("level", "lvl", "b", "l")) and not level.isdigit() else f"level {level}"
+            address = f"{address}, {floor}" if address else floor[:1].upper() + floor[1:]
         row = [f"m{str(v.get('uuid') or key)[:13]}", round(lat, 5), round(lon, 5), name, address[:160], 1 if musollah else 0]
         women = (v.get("femaleCapacity") or 0) not in (0, "0", "") or "female" in str(v.get("remarks") or "").lower() and "no female" not in str(v.get("remarks") or "").lower()
         if women:
@@ -234,9 +238,14 @@ def musolla_db_places(data: dict) -> list:
     return out
 
 
+GENERIC_NAMES = {"surau", "musolla", "musollah", "musalla", "prayerroom", "masjid", "mosque", "muslimprayerroom", "praying room".replace(" ", "")}
+
+
 def same_name(a: str, b: str) -> bool:
     a, b = ("".join(ch for ch in x.lower() if ch.isalnum()) for x in (a, b))
-    return len(a) >= 4 and len(b) >= 4 and (a in b or b in a)
+    if a in GENERIC_NAMES or b in GENERIC_NAMES:
+        return False  # "Surau" next to another "Surau" may well be a different room
+    return len(a) >= 5 and len(b) >= 5 and (a in b or b in a)
 
 
 def add_extras(tiles: dict, extras: list) -> int:
@@ -248,12 +257,13 @@ def add_extras(tiles: dict, extras: list) -> int:
             for dlon in (-1, 0, 1):
                 near += tiles.get(f"{math.floor(p[1]) + dlat}_{math.floor(p[2]) + dlon}", {}).values()
         limit = SAME_PRAYER_ROOM_M if p[5] else SAME_MASJID_M
-        if any(q[0][0] != "m" and q[5] == p[5] and metres(p[1], p[2], q[1], q[2]) < limit for q in near):
+        # A room this close to any OpenStreetMap place (masjid or room) is that place.
+        if any(q[0][0] != "m" and metres(p[1], p[2], q[1], q[2]) < (limit if q[5] == p[5] else SAME_PRAYER_ROOM_M) for q in near):
             continue
         if any(same_name(p[3], q[3]) and metres(p[1], p[2], q[1], q[2]) < SAME_NAME_M for q in near):
             continue
         if any(q[0][0] == "m" and metres(p[1], p[2], q[1], q[2]) < 15 for q in near):
-            continue  # the same room entered twice
+            continue  # two rooms on one pin can't be told apart on the map; keep the first
         tiles.setdefault(tile_key(p[1], p[2]), {})[p[0]] = p
         added += 1
     return added
@@ -310,6 +320,10 @@ def main(out_dir: str, only: list[str]) -> int:
         os.makedirs(os.path.dirname(saved), exist_ok=True)
         with open(saved, "w") as f:
             json.dump(extras, f, ensure_ascii=False, separators=(",", ":"))
+        with open(os.path.join(os.path.dirname(saved), "README.txt"), "w") as f:
+            f.write("musolla-database.json is a copy of https://github.com/aarif86/musolla-database\n"
+                    "(fork of https://github.com/ruqqq/musolla-database), shared under the GNU LGPL 3.0.\n"
+                    "Started by the KalamApps and PrayerTime.SG teams, kept by volunteers.\n")
     else:
         extras = load(saved)
     extra_count = add_extras(tiles, musolla_db_places(extras)) if extras else 0

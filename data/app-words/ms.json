@@ -837,7 +837,7 @@
   "masjid.moreOnMap": "{n} lagi dalam lingkungan 15 km ada pada peta. Ketik pin untuk melihat nama dan arahnya.",
   "masjid.moreOnMap_one": "{n} lagi dalam lingkungan 15 km ada pada peta. Ketik pin untuk melihat nama dan arahnya.",
   "masjid.keepHint": "Ketik satu tempat dan pilih Jadikan masjid saya untuk menyimpannya di atas.",
-  "masjid.mapCredit": "Senarai tempat daripada OpenStreetMap dan senarai musolla terbuka, kedua duanya dijaga oleh sukarelawan. Ada yang tiada, atau pin di tempat yang salah? {link}, tanpa perlu mendaftar.",
+  "masjid.mapCredit": "Senarai tempat daripada OpenStreetMap dan senarai musollah terbuka, kedua-duanya dijaga oleh sukarelawan. Ada yang tiada, atau pin di tempat yang salah? {link}, tanpa perlu mendaftar.",
   "masjid.tellMap": "Beritahu peta",
   "masjid.noFacilities": "Peta belum menyenaraikan kemudahan tempat ini.",
   "masjid.iqamahLine": "Iqamah {times}",
@@ -901,7 +901,7 @@
   "notify.testBody": "Beginilah rupa makluman solat pada peranti ini.",
   "suggestRoom.button": "Cadangkan bilik solat",
   "suggestRoom.title": "Cadangkan bilik solat",
-  "suggestRoom.intro": "Tahu musolla atau bilik solat yang tiada dalam peta kami? Beritahu kami. Kami menyemak setiap satu, kemudian menambahnya untuk semua.",
+  "suggestRoom.intro": "Tahu musollah atau bilik solat yang tiada dalam peta kami? Beritahu kami. Kami menyemak setiap satu, kemudian menambahnya untuk semua.",
   "suggestRoom.name": "Nama tempat",
   "suggestRoom.nameHint": "Contohnya Pasir Ris Mall",
   "suggestRoom.level": "Tingkat",
@@ -913,7 +913,7 @@
   "suggestRoom.pinHere": "Saya berada di bilik solat sekarang",
   "suggestRoom.pinFinding": "Mencari lokasi anda",
   "suggestRoom.pinAdded": "Pin ditambah di lokasi anda",
-  "suggestRoom.pinNote": "Hanya jika anda berada di bilik itu. Lokasi anda dimasukkan ke dalam emel ini sekali sahaja dan tidak disimpan di tempat lain.",
+  "suggestRoom.pinNote": "Hanya jika anda berada di bilik itu. Lokasi anda dimasukkan ke dalam e-mel ini sekali sahaja dan tidak disimpan di tempat lain.",
   "suggestRoom.pinFailed": "Lokasi anda tidak dapat dikesan. Alamat pun sudah memadai.",
   "suggestRoom.has": "Kemudahan yang ada",
   "suggestRoom.women": "Ruang wanita",
@@ -926,5 +926,5 @@
   "suggestRoom.remarks": "Maklumat lain",
   "suggestRoom.remarksHint": "Waktu dibuka, atau siapa yang boleh menggunakannya",
   "suggestRoom.needs": "Masukkan nama tempat dan sama ada alamat atau pin.",
-  "suggestRoom.goesTo": "Ia dihantar ke {email} melalui aplikasi emel anda sendiri. JazakAllahu khairan kerana membantu orang lain mencari tempat solat."
+  "suggestRoom.goesTo": "Ia dihantar ke {email} melalui aplikasi e-mel anda sendiri. JazakAllahu khairan kerana membantu orang lain mencari tempat solat."
 }

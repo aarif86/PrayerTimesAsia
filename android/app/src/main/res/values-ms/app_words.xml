@@ -839,7 +839,7 @@
     <string name="masjid_moreOnMap" formatted="false">{n} lagi dalam lingkungan 15 km ada pada peta. Ketik pin untuk melihat nama dan arahnya.</string>
     <string name="masjid_moreOnMap_one" formatted="false">{n} lagi dalam lingkungan 15 km ada pada peta. Ketik pin untuk melihat nama dan arahnya.</string>
     <string name="masjid_keepHint" formatted="false">Ketik satu tempat dan pilih Jadikan masjid saya untuk menyimpannya di atas.</string>
-    <string name="masjid_mapCredit" formatted="false">Senarai tempat daripada OpenStreetMap dan senarai musolla terbuka, kedua duanya dijaga oleh sukarelawan. Ada yang tiada, atau pin di tempat yang salah? {link}, tanpa perlu mendaftar.</string>
+    <string name="masjid_mapCredit" formatted="false">Senarai tempat daripada OpenStreetMap dan senarai musollah terbuka, kedua-duanya dijaga oleh sukarelawan. Ada yang tiada, atau pin di tempat yang salah? {link}, tanpa perlu mendaftar.</string>
     <string name="masjid_tellMap" formatted="false">Beritahu peta</string>
     <string name="masjid_noFacilities" formatted="false">Peta belum menyenaraikan kemudahan tempat ini.</string>
     <string name="masjid_iqamahLine" formatted="false">Iqamah {times}</string>
@@ -903,7 +903,7 @@
     <string name="notify_testBody" formatted="false">Beginilah rupa makluman solat pada peranti ini.</string>
     <string name="suggestRoom_button" formatted="false">Cadangkan bilik solat</string>
     <string name="suggestRoom_title" formatted="false">Cadangkan bilik solat</string>
-    <string name="suggestRoom_intro" formatted="false">Tahu musolla atau bilik solat yang tiada dalam peta kami? Beritahu kami. Kami menyemak setiap satu, kemudian menambahnya untuk semua.</string>
+    <string name="suggestRoom_intro" formatted="false">Tahu musollah atau bilik solat yang tiada dalam peta kami? Beritahu kami. Kami menyemak setiap satu, kemudian menambahnya untuk semua.</string>
     <string name="suggestRoom_name" formatted="false">Nama tempat</string>
     <string name="suggestRoom_nameHint" formatted="false">Contohnya Pasir Ris Mall</string>
     <string name="suggestRoom_level" formatted="false">Tingkat</string>
@@ -915,7 +915,7 @@
     <string name="suggestRoom_pinHere" formatted="false">Saya berada di bilik solat sekarang</string>
     <string name="suggestRoom_pinFinding" formatted="false">Mencari lokasi anda</string>
     <string name="suggestRoom_pinAdded" formatted="false">Pin ditambah di lokasi anda</string>
-    <string name="suggestRoom_pinNote" formatted="false">Hanya jika anda berada di bilik itu. Lokasi anda dimasukkan ke dalam emel ini sekali sahaja dan tidak disimpan di tempat lain.</string>
+    <string name="suggestRoom_pinNote" formatted="false">Hanya jika anda berada di bilik itu. Lokasi anda dimasukkan ke dalam e-mel ini sekali sahaja dan tidak disimpan di tempat lain.</string>
     <string name="suggestRoom_pinFailed" formatted="false">Lokasi anda tidak dapat dikesan. Alamat pun sudah memadai.</string>
     <string name="suggestRoom_has" formatted="false">Kemudahan yang ada</string>
     <string name="suggestRoom_women" formatted="false">Ruang wanita</string>
@@ -928,5 +928,5 @@
     <string name="suggestRoom_remarks" formatted="false">Maklumat lain</string>
     <string name="suggestRoom_remarksHint" formatted="false">Waktu dibuka, atau siapa yang boleh menggunakannya</string>
     <string name="suggestRoom_needs" formatted="false">Masukkan nama tempat dan sama ada alamat atau pin.</string>
-    <string name="suggestRoom_goesTo" formatted="false">Ia dihantar ke {email} melalui aplikasi emel anda sendiri. JazakAllahu khairan kerana membantu orang lain mencari tempat solat.</string>
+    <string name="suggestRoom_goesTo" formatted="false">Ia dihantar ke {email} melalui aplikasi e-mel anda sendiri. JazakAllahu khairan kerana membantu orang lain mencari tempat solat.</string>
 </resources>

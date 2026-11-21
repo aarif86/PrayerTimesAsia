@@ -49,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -187,6 +188,8 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
     var nearMe by remember { mutableStateOf<Coordinates?>(null) }
     var locating by remember { mutableStateOf(false) }
     var suggesting by remember { mutableStateOf(false) }
+    // When Near me last found the person, so Suggest a prayer room only offers a recent spot as the room's pin.
+    var nearMeAt by remember { mutableLongStateOf(0L) }
     val here = nearMe ?: place?.coordinates
     var spaces by remember { mutableStateOf(preset ?: here?.let { NearbyCache.measuredFrom(it) } ?: NearbyCache.spaces) }
     var loading by remember { mutableStateOf(false) }
@@ -277,7 +280,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
             if (granted) {
                 locating = true
                 state.location.refresh { loc ->
-                    nearMe = Coordinates(loc.latitude, loc.longitude)
+                    nearMe = Coordinates(loc.latitude, loc.longitude); nearMeAt = System.currentTimeMillis()
                     locating = false
                 }
                 // The listener keeps the phone's location going for the Prayer tab too; stop waiting after a while.
@@ -404,7 +407,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
         }
       }
     }
-    if (suggesting) AppSheet({ suggesting = false }) { SuggestRoomContent(near = here, live = nearMe) }
+    if (suggesting) AppSheet({ suggesting = false }) { SuggestRoomContent(near = here, live = nearMe.takeIf { System.currentTimeMillis() - nearMeAt < 300_000 }) }
 }
 
 /** A tapped pin on the map: its name, how far, opening hours, Friday prayers, Directions (as on iPhone). */
