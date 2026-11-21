@@ -58,6 +58,8 @@ Each app has its own README with how to build and run it.
 
 ## Builds
 
+How often to send updates to the stores, and how to test first: [docs/releasing.md](docs/releasing.md).
+
 | Workflow | Runs when | Does |
 |---|---|---|
 | CI | `ios/` or `testdata/` changes, every pull request | Builds and tests the iPhone app, takes simulator screenshots |
