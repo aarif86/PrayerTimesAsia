@@ -200,11 +200,17 @@ export function name(p: Prayer, style: NamingStyle, friday: boolean, arabic: boo
   return prayerName(p, style, friday)
 }
 
+/** The Friday line shows from Thursday Maghrib until an hour and a half after Friday Zohor (weekday 4 is Thursday, 5 Friday). */
+export function inFridayWindow(weekday: number, now: number, maghrib: number, dhuhr: number): boolean {
+  return (weekday === 4 && now >= maghrib) || (weekday === 5 && now < dhuhr + 90 * 60_000)
+}
+
 export interface Words {
   next: string; iqamah: string; azan: string; iqamahIn: string; silence: string; inPrayer: string
   khutbah: string; khutbahIn: string; imsak: string; iftar: string; ends: (n: string) => string; fullScreen: string
   edit: string; source: string; getApp: string; noPlace: string
   nowTag: string; inTag: (d: string) => string; scan: string
+  clockOff: (min: number, slow: boolean) => string; friday: string
   tarawih: string; afterIsha: string; qiyam: string; eid: string; ramadanDay: (n: number) => string; raya: string; takbir: string; lastTen: string
 }
 
@@ -215,6 +221,7 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     fullScreen: 'Press OK or click for full screen', edit: 'Edit screen', source: 'Times', getApp: 'Prayer times on your phone',
     noPlace: 'Choose the masjid\'s location to show prayer times.',
     nowTag: 'Now', inTag: (d) => `in ${d}`, scan: 'Scan for iqamah times',
+    clockOff: (m, slow) => `The TV clock is ${m} min ${slow ? 'slow' : 'fast'}. This screen shows the right time while it has internet. Please set the TV time.`, friday: 'Friday',
     tarawih: 'Tarawih', afterIsha: 'after Isha', qiyam: 'Qiyamullail', eid: 'Eid prayer', ramadanDay: (n) => `Ramadan day ${n}`,
     raya: 'Eid Mubarak', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'The last ten nights',
   },
@@ -224,6 +231,7 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     fullScreen: 'Tekan OK atau klik untuk skrin penuh', edit: 'Ubah skrin', source: 'Waktu', getApp: 'Waktu solat di telefon anda',
     noPlace: 'Pilih lokasi masjid untuk memaparkan waktu solat.',
     nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Imbas untuk waktu iqamah',
+    clockOff: (m, slow) => `Jam TV ${slow ? 'lambat' : 'cepat'} ${m} minit. Skrin ini menunjukkan waktu yang betul selagi ada internet. Sila betulkan masa TV.`, friday: 'Jumaat',
     tarawih: 'Tarawih', afterIsha: 'selepas Isyak', qiyam: 'Qiamullail', eid: 'Solat Sunat Aidilfitri', ramadanDay: (n) => `${n} Ramadan`,
     raya: 'Selamat Hari Raya Aidilfitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'Sepuluh malam terakhir',
   },
@@ -233,6 +241,7 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     fullScreen: 'Tekan OK atau klik untuk layar penuh', edit: 'Ubah layar', source: 'Jadwal', getApp: 'Jadwal salat di ponsel Anda',
     noPlace: 'Pilih lokasi masjid untuk menampilkan jadwal salat.',
     nowTag: 'Sekarang', inTag: (d) => `${d} lagi`, scan: 'Pindai untuk jadwal iqamah',
+    clockOff: (m, slow) => `Jam TV ${slow ? 'terlambat' : 'terlalu cepat'} ${m} menit. Layar ini menampilkan waktu yang benar selama ada internet. Silakan atur waktu TV.`, friday: 'Jumat',
     tarawih: 'Tarawih', afterIsha: 'setelah Isya', qiyam: 'Qiyamul lail', eid: 'Salat Idulfitri', ramadanDay: (n) => `${n} Ramadan`,
     raya: 'Selamat Hari Raya Idulfitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'Sepuluh malam terakhir',
   },

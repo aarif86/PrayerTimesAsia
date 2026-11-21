@@ -51,6 +51,8 @@ export interface ScreenConfig {
   showQr: boolean
   /** Khutbah starts, "HH:mm"; Friday's Zohor becomes Jumu'ah. */
   jumuah: string | null
+  /** A line for Friday, like the khatib's name and the khutbah language. Shown from Thursday Maghrib to Friday Zohor. */
+  fridayNote: string
   notices: string[]
   h24: boolean
   hijriAdj: number
@@ -61,7 +63,27 @@ export interface ScreenConfig {
   report: boolean
   /** Ramadan and Raya at this masjid. */
   ramadan: RamadanSettings
+  /** Parts of the screen the committee turned off. The prayertimes.asia line always stays. */
+  hide: ScreenHide
 }
+
+export interface ScreenHide {
+  /** Today's date (Gregorian). */
+  date: boolean
+  /** The Islamic (Hijri) date and month. */
+  hijri: boolean
+  /** The big clock. */
+  clock: boolean
+  /** The row of prayer times (the waktu). */
+  times: boolean
+  /** "in 6h 59m" before the next prayer. The iqamah countdown after the azan is set in the iqamah boxes. */
+  countdown: boolean
+  /** The "Official · MUIS" label in the footer. */
+  source: boolean
+}
+
+export const HIDE_KEYS: readonly (keyof ScreenHide)[] = ['date', 'hijri', 'clock', 'times', 'countdown', 'source']
+export const NO_HIDE: ScreenHide = { date: false, hijri: false, clock: false, times: false, countdown: false, source: false }
 
 export interface RamadanSettings {
   /** Extra minutes before Isyak iqamah in Ramadan (when the iqamah is "minutes after azan"). */
@@ -91,6 +113,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   showIqamah: false,
   showQr: true,
   jumuah: null,
+  fridayNote: '',
   notices: [],
   h24: false,
   hijriAdj: 0,
@@ -98,6 +121,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   jumuahDimMinutes: 40,
   report: true,
   ramadan: { ishaExtra: 0, tarawih: true, tarawihAt: null, qiyamAt: null, eidAt: null, preview: 'off' },
+  hide: { ...NO_HIDE },
 }
 
 /** Shown in the setup preview until the committee chooses the masjid's location. */
@@ -105,6 +129,17 @@ export const EXAMPLE_PLACE: ScreenPlace = { name: 'Pasir Ris', lat: 1.3721, lng:
 
 export const MAX_NOTICES = 8
 export const MAX_NOTICE_LENGTH = 160
+export const MAX_FRIDAY_NOTE = 100
+
+/** Notices a committee often needs, one tap each in the setup page. */
+export const READY_NOTICES: readonly string[] = [
+  'Solat jenazah after Zohor today',
+  'Solat jenazah after Asar today',
+  'Kuliah after Maghrib tonight',
+  'Please keep the corridors clear',
+  'Please park only in the marked lots',
+  'Lost and found at the masjid office',
+]
 
 const HHMM = /^([01]?\d|2[0-3]):([0-5]\d)$/
 
@@ -167,6 +202,7 @@ export function sanitize(raw: unknown): ScreenConfig {
   out.showIqamah = r.showIqamah === true
   out.showQr = r.showQr !== false
   out.jumuah = isHHMM(r.jumuah) ? r.jumuah : null
+  if (typeof r.fridayNote === 'string') out.fridayNote = r.fridayNote.trim().slice(0, MAX_FRIDAY_NOTE)
   if (Array.isArray(r.notices)) {
     out.notices = r.notices.filter((n): n is string => typeof n === 'string')
       .map((n) => n.trim().slice(0, MAX_NOTICE_LENGTH)).filter(Boolean).slice(0, MAX_NOTICES)
@@ -186,6 +222,8 @@ export function sanitize(raw: unknown): ScreenConfig {
     eidAt: isHHMM(rm.eidAt) ? rm.eidAt : null,
     preview: SEASON_PREVIEWS.includes(rm.preview as SeasonPreview) ? rm.preview as SeasonPreview : 'off',
   }
+  const hd = (r.hide && typeof r.hide === 'object' ? r.hide : {}) as Record<string, unknown>
+  for (const k of HIDE_KEYS) out.hide[k] = hd[k] === true
   return out
 }
 
