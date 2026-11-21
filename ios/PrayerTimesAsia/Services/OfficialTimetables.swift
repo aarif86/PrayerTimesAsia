@@ -16,6 +16,9 @@ final class OfficialTimetables {
         /// London Unified Prayer Timetable (East London Mosque), from the app's
         /// own published copy, so the API key stays in the repo's Actions secrets.
         case london
+        /// Brunei's Ministry of Religious Affairs (KHEU) timetable for one zone, from
+        /// the app's own published copy (tools/fetch_brunei.py, via ruqqq/prayertimes-database).
+        case brunei(zone: String)
 
         var label: String {
             switch self {
@@ -23,6 +26,7 @@ final class OfficialTimetables {
             case .jakim(let zone): "JAKIM e-Solat · zone \(zone)"
             case .kemenag(let regency): "Kemenag · \(regency)"
             case .london: "London Unified Prayer Timetable"
+            case .brunei(let zone): "Ministry of Religious Affairs, Brunei · zone \(zone)"
             }
         }
 
@@ -33,6 +37,7 @@ final class OfficialTimetables {
             case .jakim: "JAKIM"
             case .kemenag: "Kemenag"
             case .london: "London Unified"
+            case .brunei: "KHEU"
             }
         }
 
@@ -43,7 +48,7 @@ final class OfficialTimetables {
             switch self {
             case .muis: name = "sg-muis"
             case .jakim(let zone): name = "my-\(zone.lowercased())"
-            case .kemenag, .london: return nil
+            case .kemenag, .london, .brunei: return nil
             }
             return URL(string: "webcal://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/\(name).ics")
         }
@@ -54,6 +59,7 @@ final class OfficialTimetables {
             case .jakim(let zone): "jakim-\(zone)-\(year)"
             case .kemenag(let regency): "kemenag-\(OfficialTimetables.kemenagCore(regency).core)-\(year)"
             case .london: "london-\(year)"
+            case .brunei(let zone): "brunei-\(zone)-\(year)"
             }
         }
     }
@@ -92,6 +98,8 @@ final class OfficialTimetables {
             guard let name = place.district ?? place.region ?? (place.name == "Current location" ? nil : place.name)
             else { return nil }
             return .kemenag(regency: name)
+        case ("BN", "sea"):
+            return .brunei(zone: nearestBruneiZone(to: place.coordinates))
         case ("GB", "moonsighting") where Geo.distanceKm(place.coordinates, londonCentre) <= londonRadiusKm:
             return .london
         default: return nil
@@ -102,6 +110,25 @@ final class OfficialTimetables {
     /// Central London; the timetable is for Greater London.
     static let londonCentre = Coordinates(latitude: 51.5074, longitude: -0.1278)
     static let londonRadiusKm = 35.0
+
+    static func bruneiFeed(zone: String) -> URL {
+        URL(string: "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/bn-\(zone.lowercased()).json")!
+    }
+    /// KHEU's zones: BRN01 Brunei-Muara and Temburong, BRN02 Tutong (+1 min), BRN03 Belait (+3 min).
+    static let bruneiPoints: [(String, Double, Double)] = [
+        ("BRN01", 4.9031, 114.9398), ("BRN01", 5.0267, 115.0658), ("BRN01", 4.7086, 115.0717),
+        ("BRN02", 4.8028, 114.6497),
+        ("BRN03", 4.5836, 114.2312), ("BRN03", 4.6069, 114.3217),
+    ]
+
+    static func nearestBruneiZone(to c: Coordinates) -> String {
+        var best = ("BRN01", Double.greatestFiniteMagnitude)
+        for (zone, lat, lng) in bruneiPoints {
+            let d = Geo.distanceKm(c, Coordinates(latitude: lat, longitude: lng))
+            if d < best.1 { best = (zone, d) }
+        }
+        return best.0
+    }
 
     /// Plain words for the source line when a table other than the country's own applies.
     static func summary(_ source: Source?, short: Bool = false) -> String? {
@@ -158,6 +185,9 @@ final class OfficialTimetables {
                 table = try await fetchKemenag(regency: regency, year: year)
             case .london:
                 table = try Self.parseLondon(try await Self.get(Self.londonFeed)).filter { $0.key.hasPrefix("\(year)-") }
+            case .brunei(let zone):
+                // Same file format as gb-london.json.
+                table = try Self.parseLondon(try await Self.get(Self.bruneiFeed(zone: zone))).filter { $0.key.hasPrefix("\(year)-") }
             }
             // A year is ~365 rows; Kemenag comes month by month, so accept a
             // partial year (missing days fall back to the calculation).

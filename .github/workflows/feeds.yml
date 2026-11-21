@@ -3,7 +3,9 @@ name: Calendar feeds
 # Builds one .ics per official zone (MUIS, every JAKIM zone) from the
 # authority's own table and publishes them on the orphan `feeds` branch:
 #   webcal://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/sg-muis.ics
-# Also gb-london.json, the London Unified Prayer Timetable (tools/fetch_london.py).
+# Also gb-london.json, the London Unified Prayer Timetable (tools/fetch_london.py),
+# and bn-brn01/02/03.json, Brunei's Ministry of Religious Affairs timetable
+# (tools/fetch_brunei.py, via ruqqq/prayertimes-database).
 # Weekly, so a corrected or newly published table reaches calendars quickly.
 
 on:
@@ -11,7 +13,7 @@ on:
     - cron: "17 2 * * 1"
   push:
     branches: [main]
-    paths: ['tools/gen_ics.py', 'tools/fetch_london.py', 'config/official-sources.json', '.github/workflows/feeds.yml']
+    paths: ['tools/gen_ics.py', 'tools/fetch_london.py', 'tools/fetch_brunei.py', 'config/official-sources.json', '.github/workflows/feeds.yml']
   workflow_dispatch:
 
 permissions:
@@ -35,6 +37,10 @@ jobs:
         env:
           LONDON_PRAYER_TIMES_KEY: ${{ secrets.LONDON_PRAYER_TIMES_KEY }}
         run: python3 tools/fetch_london.py feeds
+      - name: Brunei, Ministry of Religious Affairs
+        # Read from ruqqq/prayertimes-database (GPL 3.0), which reads the
+        # ministry's printed Taqwim. A failed read carries the published file over.
+        run: python3 tools/fetch_brunei.py feeds
       - name: Publish feeds branch
         run: |
           set -euo pipefail

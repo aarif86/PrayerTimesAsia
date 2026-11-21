@@ -66,6 +66,18 @@ final class OfficialTimetablesTests: XCTestCase {
         XCTAssertEqual(table.count, 1)
         XCTAssertEqual(table["2026-11-11"]?["maghrib"], "16:17")
     }
+
+    func testBruneiMinistryTimetableByZone() {
+        func bn(_ lat: Double, _ lng: Double) -> Place {
+            Place(name: "x", countryCode: "BN", countryName: "Brunei", timeZoneID: "Asia/Brunei",
+                  coordinates: Coordinates(latitude: lat, longitude: lng))
+        }
+        let sea = CalculationMethod.with(id: "sea")!
+        XCTAssertEqual(OfficialTimetables.source(for: bn(4.9031, 114.9398), method: sea, zoneOverride: nil), .brunei(zone: "BRN01"))
+        XCTAssertEqual(OfficialTimetables.source(for: bn(4.8028, 114.6497), method: sea, zoneOverride: nil), .brunei(zone: "BRN02"))
+        XCTAssertEqual(OfficialTimetables.source(for: bn(4.5836, 114.2312), method: sea, zoneOverride: nil), .brunei(zone: "BRN03"))
+        XCTAssertNil(OfficialTimetables.source(for: bn(4.9031, 114.9398), method: .mwl, zoneOverride: nil))
+    }
 }
 
 @MainActor

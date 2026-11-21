@@ -16,7 +16,7 @@ A nearby masjid's own timetable (data/mosques.json) still comes before all of th
 |---|---|---|---|---|---|
 | Singapore | MUIS, the Islamic Religious Council of Singapore (official timetable, downloaded) | MUIS | Shafi'i | method's own |  |
 | Malaysia | JAKIM e-Solat, for your state zone (official timetable, downloaded) | JAKIM | Shafi'i | method's own |  |
-| Brunei | Standard method | Southeast Asia 20°/18° | Shafi'i | method's own | The Ministry of Religious Affairs publishes a timetable the app cannot read yet, so it uses the 20° and 18° convention of the Malay world. |
+| Brunei | the Ministry of Religious Affairs, Brunei (official timetable, downloaded) | Southeast Asia 20°/18° | Shafi'i | method's own |  |
 | Indonesia | Kemenag, the Ministry of Religious Affairs (official timetable, downloaded) | Kemenag | Shafi'i | method's own |  |
 | Thailand | Standard method | Southeast Asia 20°/18° | Shafi'i | method's own | The app uses the 20° and 18° convention of the Malay world. |
 | Vietnam | Standard method | Southeast Asia 20°/18° | Shafi'i | method's own | The app uses the 20° and 18° convention of the Malay world. |
