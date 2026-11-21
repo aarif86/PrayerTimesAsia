@@ -318,7 +318,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                     parse={(v) => { const z = v.trim().toUpperCase(); return /^[A-Z]{3}\d{2}$/.test(z) ? z : null }} onChange={(v) => set({ zone: v })} />
                 </>
               )}
-              <label class="sp-check"><input type="checkbox" checked={c.report} onChange={(e) => set({ report: (e.target as HTMLInputElement).checked })} /> Count this screen as on. Every 15 minutes it sends a random code made on the TV, and a few times a day the masjid's name, city and look, so we can see how many screens are running and help if something goes wrong</label>
+              <label class="sp-check"><input type="checkbox" checked={c.report} onChange={(e) => set({ report: (e.target as HTMLInputElement).checked })} /> Count this screen as on. Every 15 minutes it sends a random code made on the TV with the country, look and language, and a few times a day the masjid's name, city and look, so we can see how many screens are running and help if something goes wrong</label>
               <p class="sp-hint">Have an idea for a new look? <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md" target="_blank" rel="noopener">Send us your design</a>. No coding needed.</p>
             </div>
           </details>

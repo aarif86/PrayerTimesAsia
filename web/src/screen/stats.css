@@ -12,7 +12,7 @@
 .st-tile-label { display: flex; align-items: center; gap: 8px; color: var(--sp-muted); font-weight: 700; font-size: 0.95rem; }
 .st-tile-value { font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; }
 .st-tile-note { color: var(--sp-muted); font-size: 0.88rem; }
-.st-card { background: var(--sp-card); border: 1px solid var(--sp-line); border-radius: 24px; padding: 20px 22px 22px; box-shadow: var(--sp-shadow); display: grid; gap: 8px; min-width: 0; }
+.st-card { background: var(--sp-card); border: 1px solid var(--sp-line); border-radius: 24px; padding: 20px 22px 22px; box-shadow: var(--sp-shadow); display: grid; gap: 8px; min-width: 0; align-content: start; }
 .st-card h2 { margin: 0; font-size: 1.35rem; }
 .st-chart { position: relative; }
 .st-chart svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
@@ -31,3 +31,15 @@
 .st-table th:first-child, .st-table td:first-child { text-align: left; }
 .st-table th { color: var(--sp-muted); font-weight: 700; font-size: 0.88rem; }
 .st-card .sp-btn { justify-self: start; margin-top: 6px; }
+.st-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+@media (max-width: 760px) { .st-two { grid-template-columns: 1fr; } }
+.st-bars { display: grid; gap: 6px; }
+.st-bar { display: grid; grid-template-columns: minmax(7em, 11em) minmax(0, 1fr) 4.5em 4.5em; align-items: center; gap: 12px; font-variant-numeric: tabular-nums; }
+.st-bar.head b { color: var(--sp-muted); font-size: 0.85rem; text-align: right; }
+.st-bar b, .st-bar-peak { text-align: right; }
+.st-bar-peak { color: var(--sp-muted); }
+.st-bar-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-bar-track { height: 14px; border-radius: 4px; background: color-mix(in srgb, var(--sp-muted) 14%, transparent); overflow: hidden; }
+.st-bar-track i { display: block; height: 100%; border-radius: 0 4px 4px 0; background: #bd8520; }
+.sp[data-theme="light"] .st-bar-track i { background: #b07400; }
+@media (max-width: 480px) { .st-bar { grid-template-columns: minmax(6em, 8em) minmax(0, 1fr) 3.6em 3.6em; gap: 8px; font-size: 0.92rem; } }

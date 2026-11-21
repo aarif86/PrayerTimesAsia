@@ -12,7 +12,9 @@ import './stats.css'
  * `?demo` draws made-up example data, for screenshots before the counter has history.
  */
 
-interface Day { date: string; peak: number; peakAt: string | null; avg: number; seen: number; screenHours: number; hours: number[] }
+type MixPart = Record<string, { avg: number; peak: number }>
+interface Mix { cc: MixPart; look: MixPart; lang: MixPart }
+interface Day { date: string; peak: number; peakAt: string | null; avg: number; seen: number; screenHours: number; hours: number[]; mix?: Mix }
 interface Stats { generatedAt: string; running: number; slotMinutes: number; days: Day[]; recent: [string, string, number][] }
 
 const RANGES: { id: string; label: string; days: number }[] = [
@@ -139,6 +141,23 @@ function App() {
             </section>
 
             <section class="st-card">
+              <h2>By country</h2>
+              <p class="sp-hint">Screens on at any time, on average, and the highest in a day, across the {range.label.toLowerCase()}. Country only, never the city.</p>
+              <BarList rows={mixRows(days, 'cc', countryName, 12)} />
+            </section>
+
+            <div class="st-two">
+              <section class="st-card">
+                <h2>Looks</h2>
+                <BarList rows={mixRows(days, 'look', (v) => LOOK_NAMES[v] ?? 'Not known', 6)} />
+              </section>
+              <section class="st-card">
+                <h2>Screen language</h2>
+                <BarList rows={mixRows(days, 'lang', (v) => LANG_NAMES[v] ?? 'Not known', 6)} />
+              </section>
+            </div>
+
+            <section class="st-card">
               <h2>By month</h2>
               <div class="st-tablewrap">
                 <table class="st-table">
@@ -154,6 +173,47 @@ function App() {
           </>
         )}
       </main>
+    </div>
+  )
+}
+
+const LOOK_NAMES: Record<string, string> = { night: 'Night', day: 'Day', board: 'Board', bands: 'Bands', dial: 'Day Dial', sunpath: 'Sun Path' }
+const LANG_NAMES: Record<string, string> = { en: 'English', ms: 'Bahasa Melayu', id: 'Bahasa Indonesia' }
+const regionNames = typeof Intl !== 'undefined' && 'DisplayNames' in Intl ? new Intl.DisplayNames(['en'], { type: 'region' }) : null
+const countryName = (cc: string) => (cc === '?' ? 'Not known' : regionNames?.of(cc) ?? cc)
+
+interface BarRow { label: string; avg: number; peak: number }
+
+/** Average and highest for each country, look or language across the days; the smallest fold into "Others". */
+function mixRows(days: Day[], key: keyof Mix, name: (v: string) => string, top: number): BarRow[] {
+  const sum = new Map<string, { avg: number; peak: number }>()
+  for (const d of days) for (const [v, x] of Object.entries(d.mix?.[key] ?? {})) {
+    const o = sum.get(v) ?? { avg: 0, peak: 0 }
+    o.avg += x.avg
+    o.peak = Math.max(o.peak, x.peak)
+    sum.set(v, o)
+  }
+  const n = Math.max(1, days.length)
+  const rows = [...sum].map(([v, o]) => ({ label: name(v), avg: Math.round((o.avg / n) * 10) / 10, peak: o.peak })).sort((a, b) => b.avg - a.avg || b.peak - a.peak)
+  if (rows.length <= top) return rows
+  const rest = rows.slice(top - 1)
+  return [...rows.slice(0, top - 1), { label: `${rest.length} others`, avg: Math.round(rest.reduce((s, r) => s + r.avg, 0) * 10) / 10, peak: Math.max(...rest.map((r) => r.peak)) }]
+}
+
+function BarList({ rows }: { rows: BarRow[] }) {
+  if (!rows.length) return <p class="sp-hint">Nothing yet. This fills in once screens have been on for an hour.</p>
+  const max = Math.max(...rows.map((r) => r.avg), 0.1)
+  return (
+    <div class="st-bars" role="table">
+      <div class="st-bar head" role="row"><span role="columnheader" /><span role="columnheader" /><b role="columnheader">Average</b><b role="columnheader">Highest</b></div>
+      {rows.map((r) => (
+        <div class="st-bar" role="row" key={r.label}>
+          <span class="st-bar-name" role="cell">{r.label}</span>
+          <span class="st-bar-track" aria-hidden="true"><i style={{ width: `${(r.avg / max) * 100}%` }} /></span>
+          <b role="cell">{fmtNum(r.avg)}</b>
+          <span role="cell" class="st-bar-peak">{fmtNum(r.peak)}</span>
+        </div>
+      ))}
     </div>
   )
 }
@@ -327,7 +387,14 @@ function demoStats(days: number): Stats {
     let peak = 0, peakAt: string | null = null, sum = 0
     const hours = new Array(24).fill(0)
     for (const k of keys) { const n = slots[k]; sum += n; if (n > peak) { peak = n; peakAt = k } hours[+k.slice(0, 2)] += n / 4 }
-    out.push({ date, peak, peakAt, avg: Math.round((sum / 96) * 10) / 10, seen: Math.round(base * 1.08), screenHours: Math.round(sum / 4), hours: hours.map((h) => Math.round(h * 10) / 10) })
+    const avg = Math.round((sum / 96) * 10) / 10
+    const split = (shares: Record<string, number>): MixPart => Object.fromEntries(Object.entries(shares).map(([k, f]) => [k, { avg: Math.round(avg * f * 10) / 10, peak: Math.round(peak * f) }]))
+    const mix: Mix = {
+      cc: split({ SG: 0.42, MY: 0.3, ID: 0.15, BN: 0.04, GB: 0.03, AU: 0.02, PH: 0.02, TH: 0.01, US: 0.01 }),
+      look: split({ night: 0.45, board: 0.2, bands: 0.15, day: 0.1, dial: 0.06, sunpath: 0.04 }),
+      lang: split({ ms: 0.5, en: 0.3, id: 0.2 }),
+    }
+    out.push({ date, peak, peakAt, avg, seen: Math.round(base * 1.08), screenHours: Math.round(sum / 4), hours: hours.map((h) => Math.round(h * 10) / 10), mix })
     if (i <= 2) for (const k of keys) recent.push([date, k, slots[k]])
   }
   return { generatedAt: new Date().toISOString(), running: out[out.length - 1].peak - 9, slotMinutes: 15, days: out, recent }

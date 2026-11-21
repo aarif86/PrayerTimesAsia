@@ -1,12 +1,13 @@
 'use strict';
 // Masjid screens that are on right now, and their history, with no personal data.
 //
-// POST /screenPing   {"id":"<random 22-40 letters made on the TV>"}   every 15 minutes from each TV
+// POST /screenPing   {"id":"<random 22-40 letters made on the TV>", "cc":"SG", "look":"night", "lang":"en"}   every 15 minutes
 // GET  /screenCount  -> {"running": 24}                              the setup page's "on right now" line
 // GET  /screenStats?days=90 -> daily history for the dashboard
 //
-// Stored: screens/{id} {firstSeen, lastSeen} and screenDays/{YYYY-MM-DD} {slots: {"HHMM": n}, seen}
-// (Singapore time). No IP address, no masjid name, no place. Brand-new IDs are limited per
+// Stored: screens/{id} {firstSeen, lastSeen, cc, look, lang} and screenDays/{YYYY-MM-DD}
+// {slots: {"HHMM": n}, seen, mix: {"HH": {cc: {SG: n}, look: {...}, lang: {...}}}} (Singapore time).
+// Country only (never the city), no IP address, no masjid name. Brand-new IDs are limited per
 // hashed network per day, so one person cannot inflate the count.
 
 const SLOT_MIN = 15;                       // one history point every 15 minutes
@@ -18,6 +19,24 @@ const TZ_OFFSET_MS = 8 * 3_600_000;        // Singapore time, no daylight saving
 const RANGES = [7, 30, 92, 183, 274, 366, 731, 1097];
 
 const ID_RE = /^[A-Za-z0-9_-]{22,40}$/;
+const LOOKS = ['night', 'day', 'board', 'bands', 'dial', 'sunpath'];
+const LANGS = ['en', 'ms', 'id'];
+
+/** The country, look and language a screen sent, each only if it is one we know; anything else is left out. */
+function screenFacts(body) {
+  const out = {};
+  if (body && typeof body.cc === 'string' && /^[A-Z]{2}$/.test(body.cc)) out.cc = body.cc;
+  if (body && LOOKS.includes(body.look)) out.look = body.look;
+  if (body && LANGS.includes(body.lang)) out.lang = body.lang;
+  return out;
+}
+
+/** Live screens -> how many in each country, look and language. */
+function tally(rows) {
+  const mix = { cc: {}, look: {}, lang: {} };
+  for (const r of rows) for (const k of ['cc', 'look', 'lang']) { const v = r[k] || '?'; mix[k][v] = (mix[k][v] || 0) + 1; }
+  return mix;
+}
 const validId = (id) => typeof id === 'string' && ID_RE.test(id);
 
 /** Singapore date "YYYY-MM-DD" and the 15-minute slot "HHMM" for a time. */
@@ -51,7 +70,23 @@ function summarize(date, data) {
     seen: Number(data && data.seen) || 0,
     screenHours: Math.round((sum * SLOT_MIN) / 60),
     hours: hours.map((h) => Math.round((h / (60 / SLOT_MIN)) * 10) / 10),
+    mix: dayMix(data && data.mix),
   };
+}
+
+/** The day's hourly counts by country, look and language -> the average and highest across the day. */
+function dayMix(mix) {
+  const out = { cc: {}, look: {}, lang: {} };
+  const hours = Object.values(mix || {});
+  for (const k of ['cc', 'look', 'lang']) {
+    for (const h of hours) for (const [v, n] of Object.entries((h && h[k]) || {})) {
+      const o = out[k][v] || (out[k][v] = { sum: 0, peak: 0 });
+      o.sum += Number(n) || 0;
+      o.peak = Math.max(o.peak, Number(n) || 0);
+    }
+    for (const v of Object.keys(out[k])) out[k][v] = { avg: Math.round((out[k][v].sum / 24) * 10) / 10, peak: out[k][v].peak };
+  }
+  return out;
 }
 
 function parseDays(q) {
@@ -66,7 +101,7 @@ function callerAddress(req) {
   return fwd.length ? fwd[fwd.length - 1] : String(req.ip || '');
 }
 
-module.exports = { SLOT_MIN, LIVE_WINDOW_MS, NEW_IDS_PER_NETWORK_PER_DAY, NEW_IDS_PER_DAY, RANGES, validId, sgParts, summarize, parseDays, callerAddress };
+module.exports = { SLOT_MIN, LIVE_WINDOW_MS, NEW_IDS_PER_NETWORK_PER_DAY, NEW_IDS_PER_DAY, RANGES, validId, screenFacts, tally, dayMix, sgParts, summarize, parseDays, callerAddress };
 
 /** The HTTPS functions; index.js passes in what it already has. */
 module.exports.handlers = function handlers({ onRequest, db, FieldValue, Timestamp, hash }) {
@@ -93,7 +128,15 @@ module.exports.handlers = function handlers({ onRequest, db, FieldValue, Timesta
       liveCount(now),
       db.collection('screens').where('lastSeen', '>=', Timestamp.fromMillis(dayStart)).count().get().then((s) => s.data().count),
     ]);
-    await db.doc(`screenDays/${date}`).set({ date, slots: { [slot]: live }, seen }, { merge: true });
+    const ref = db.doc(`screenDays/${date}`);
+    await ref.set({ date, slots: { [slot]: live }, seen }, { merge: true });
+    // Once an hour: how many live screens in each country, look and language (replacing that hour whole).
+    if (slot.endsWith('00')) {
+      const rows = await db.collection('screens').where('lastSeen', '>', Timestamp.fromMillis(now - LIVE_WINDOW_MS)).select('cc', 'look', 'lang').get();
+      const list = [];
+      rows.forEach((d) => list.push(d.data()));
+      await ref.update({ [`mix.${slot.slice(0, 2)}`]: tally(list) });
+    }
   }
 
   const screenPing = onRequest(opts, async (req, res) => {
@@ -119,9 +162,9 @@ module.exports.handlers = function handlers({ onRequest, db, FieldValue, Timesta
         return true;
       });
       if (!ok) return res.status(429).json({ error: 'too many new screens today' });
-      await ref.set({ firstSeen: Timestamp.fromMillis(now), lastSeen: Timestamp.fromMillis(now) });
+      await ref.set({ firstSeen: Timestamp.fromMillis(now), lastSeen: Timestamp.fromMillis(now), ...screenFacts(body) });
     } else {
-      await ref.update({ lastSeen: Timestamp.fromMillis(now) });
+      await ref.update({ lastSeen: Timestamp.fromMillis(now), ...screenFacts(body) });
     }
     await recordSlot(now).catch(() => undefined);
     // The server time, so the TV can tell when its own clock is wrong.

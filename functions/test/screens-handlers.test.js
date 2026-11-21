@@ -12,11 +12,19 @@ function fakeDb() {
   const ref = (path) => ({
     get: async () => ({ exists: docs.has(path), data: () => docs.get(path) }),
     set: async (d, o) => { docs.set(path, o && o.merge ? merge(docs.get(path) || {}, d) : merge({}, d)) },
-    update: async (d) => { docs.set(path, merge(docs.get(path), d)) },
+    update: async (d) => {
+      const cur = { ...docs.get(path) }
+      for (const [k, v] of Object.entries(d)) {
+        if (!k.includes('.')) { cur[k] = v && v.__inc ? (cur[k] || 0) + v.__inc : v; continue }
+        const [a, b] = k.split('.'); cur[a] = { ...(cur[a] || {}), [b]: v }
+      }
+      docs.set(path, cur)
+    },
   });
   const query = (col, filters = []) => ({
     where: (f, op, v) => query(col, [...filters, [f, op, v]]),
     orderBy: () => query(col, filters),
+    select: () => query(col, filters),
     _rows: () => [...docs].filter(([p]) => p.startsWith(col + '/') && p.split('/').length === 2)
       .filter(([, d]) => filters.every(([f, op, v]) => { const a = val(d[f]), b = val(v); return op === '>' ? a > b : op === '>=' ? a >= b : a === b }))
       .sort((x, y) => (x[1].date > y[1].date ? 1 : -1)),
@@ -46,7 +54,7 @@ test('pings, live count, history and limits', async () => {
   assert.equal((await call(h.screenPing)).code, 405);
   assert.equal((await call(h.screenPing, { method: 'POST', body: { id: 'nope' } })).code, 400);
   const ids = Array.from({ length: 3 }, (_, i) => `screen-id-0000000000000000${i}`)
-  for (const id of ids) assert.equal((await call(h.screenPing, { method: 'POST', body: JSON.stringify({ id }) })).code, 200);
+  for (const id of ids) assert.equal((await call(h.screenPing, { method: 'POST', body: JSON.stringify({ id, cc: 'SG', look: 'night', lang: 'en', city: 'Pasir Ris' }) })).code, 200);
   // Same screen again: still three.
   assert.equal((await call(h.screenPing, { method: 'POST', body: { id: ids[0] } })).code, 200);
   // The count is kept for a minute per server; a fresh server sees all three.
@@ -61,6 +69,8 @@ test('pings, live count, history and limits', async () => {
   let last
   for (let i = 0; i < 13; i++) last = await call(h.screenPing, { method: 'POST', body: { id: `flood-id-00000000000000000${String(i).padStart(2, '0')}` }, ip: '9.9.9.9' });
   assert.equal(last.code, 429);
+  // The day summary carries the country mix when the first ping fell in an hour's first slot.
+  assert.ok(stats.days[0].mix && typeof stats.days[0].mix.cc === 'object');
   // Nothing personal stored: screens hold only times.
-  for (const [p, d] of db.docs) if (p.startsWith('screens/')) assert.deepEqual(Object.keys(d).sort(), ['firstSeen', 'lastSeen']);
+  for (const [p, d] of db.docs) if (p.startsWith('screens/')) for (const k of Object.keys(d)) assert.ok(['firstSeen', 'lastSeen', 'cc', 'look', 'lang'].includes(k), k);
 });

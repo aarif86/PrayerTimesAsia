@@ -5,7 +5,8 @@ import { readString, writeString } from '../services/storage'
 /**
  * "24 masjid screens are on right now" on the setup page, and the TV's side of it.
  *
- * Each TV sends a random ID made on the TV every 15 minutes (no masjid name, no place),
+ * Each TV sends a random ID made on the TV every 15 minutes, with its country, look and
+ * screen language (no masjid name, never the city),
  * to the small counter in functions/screens.js. The setup page shows the count, and
  * /app/screen/stats/ shows the history. The line stays hidden when the count can't be read
  * or is zero. `?count=24` shows a made-up number, for screenshots of the design only.
@@ -33,11 +34,11 @@ export function screenId(): string {
  * Resolves to how far the TV's clock is off from the server, in ms (positive: the TV is behind),
  * or null when it could not tell.
  */
-export async function pingScreen(): Promise<number | null> {
+export async function pingScreen(facts: { cc: string | null; look: string; lang: string }): Promise<number | null> {
   if (!navigator.onLine) return null
   try {
     const sent = Date.now()
-    const r = await fetch(PING_URL, { method: 'POST', body: JSON.stringify({ id: screenId() }) })
+    const r = await fetch(PING_URL, { method: 'POST', body: JSON.stringify({ id: screenId(), cc: facts.cc ?? undefined, look: facts.look, lang: facts.lang }) })
     const got = Date.now()
     if (!r.ok) return null
     const j = (await r.json()) as { now?: unknown }

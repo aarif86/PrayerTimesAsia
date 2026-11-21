@@ -146,7 +146,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
   useEffect(() => {
     if (fixedNow != null || query.has('demo') || !config.place) return
     if (clockFix) setScreenClock(screenNow)
-    const ping = () => (config.report ? pingScreen() : checkClock()).then((off) => {
+    const ping = () => (config.report ? pingScreen({ cc: config.place?.cc ?? null, look: config.look, lang: config.lang }) : checkClock()).then((off) => {
       if (off == null) return
       clockFix = nextClockFix(clockFix, off)
       saveClockFix(clockFix)

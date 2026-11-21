@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const { validId, sgParts, summarize, parseDays, callerAddress } = require('../screens');
+const { validId, sgParts, summarize, parseDays, callerAddress, screenFacts, tally, dayMix } = require('../screens');
 
 test('screen ids are random letters only', () => {
   assert.ok(validId('aB3_-xYz0123456789abcdef'));
@@ -44,4 +44,18 @@ test('the caller address is the last forwarded entry, which the caller cannot wr
   const req = (xff, ip) => ({ ip, get: (h) => (h === 'x-forwarded-for' ? xff : undefined) });
   assert.equal(callerAddress(req('6.6.6.6, 1.2.3.4', '6.6.6.6')), '1.2.3.4');
   assert.equal(callerAddress(req('', '1.2.3.4')), '1.2.3.4');
+});
+
+test('only country, look and language we know are kept, never a city', () => {
+  assert.deepEqual(screenFacts({ cc: 'SG', look: 'night', lang: 'ms', city: 'Pasir Ris', name: 'Masjid' }), { cc: 'SG', look: 'night', lang: 'ms' });
+  assert.deepEqual(screenFacts({ cc: 'Singapore', look: 'neon', lang: 'fr' }), {});
+});
+
+test('hourly mix and the day summary by country', () => {
+  const t = tally([{ cc: 'SG', look: 'night' }, { cc: 'SG', look: 'day' }, { cc: 'MY' }]);
+  assert.deepEqual(t.cc, { SG: 2, MY: 1 });
+  assert.equal(t.lang['?'], 3);
+  const d = dayMix({ '09': { cc: { SG: 24 } }, '10': { cc: { SG: 12, MY: 6 } } });
+  assert.deepEqual(d.cc.SG, { avg: 1.5, peak: 24 });
+  assert.deepEqual(d.cc.MY, { avg: 0.3, peak: 6 });
 });
