@@ -12,8 +12,10 @@
 const SLOT_MIN = 15;                       // one history point every 15 minutes
 const LIVE_WINDOW_MS = 31 * 60_000;        // "on right now" = checked in within the last 31 minutes (one missed ping allowed)
 const NEW_IDS_PER_NETWORK_PER_DAY = 12;
+const NEW_IDS_PER_DAY = 300;              // all networks together, in case a network address is faked
 const TZ_OFFSET_MS = 8 * 3_600_000;        // Singapore time, no daylight saving
-const MAX_DAYS = 3 * 366 + 1;
+/** The ranges the dashboard offers; anything else is rounded up to one of them, so the cache works. */
+const RANGES = [7, 30, 92, 183, 274, 366, 731, 1097];
 
 const ID_RE = /^[A-Za-z0-9_-]{22,40}$/;
 const validId = (id) => typeof id === 'string' && ID_RE.test(id);
@@ -53,11 +55,18 @@ function summarize(date, data) {
 }
 
 function parseDays(q) {
-  const n = parseInt(String(q || '90'), 10);
-  return Number.isFinite(n) ? Math.min(MAX_DAYS, Math.max(1, n)) : 90;
+  const n = parseInt(String(q || '92'), 10);
+  if (!Number.isFinite(n)) return 92;
+  return RANGES.find((r) => r >= n) || RANGES[RANGES.length - 1];
 }
 
-module.exports = { SLOT_MIN, LIVE_WINDOW_MS, NEW_IDS_PER_NETWORK_PER_DAY, validId, sgParts, summarize, parseDays };
+/** The caller's address as the Google front end saw it (the last forwarded entry), not the first, which a caller can write. */
+function callerAddress(req) {
+  const fwd = String((req.get && req.get('x-forwarded-for')) || '').split(',').map((s) => s.trim()).filter(Boolean);
+  return fwd.length ? fwd[fwd.length - 1] : String(req.ip || '');
+}
+
+module.exports = { SLOT_MIN, LIVE_WINDOW_MS, NEW_IDS_PER_NETWORK_PER_DAY, NEW_IDS_PER_DAY, RANGES, validId, sgParts, summarize, parseDays, callerAddress };
 
 /** The HTTPS functions; index.js passes in what it already has. */
 module.exports.handlers = function handlers({ onRequest, db, FieldValue, Timestamp, hash }) {
@@ -99,11 +108,14 @@ module.exports.handlers = function handlers({ onRequest, db, FieldValue, Timesta
     if (!doc.exists) {
       // A new screen: limit how many new ones one network can add in a day.
       const day = sgParts(now).date;
-      const lim = db.doc(`limits/scr-${hash(`screens|${day}|${req.ip}`)}`);
+      const lim = db.doc(`limits/scr-${hash(`screens|${day}|${callerAddress(req)}`)}`);
+      const all = db.doc(`limits/scr-all-${day}`);
       const ok = await db.runTransaction(async (tx) => {
-        const l = await tx.get(lim);
-        if ((l.data()?.n || 0) >= NEW_IDS_PER_NETWORK_PER_DAY) return false;
-        tx.set(lim, { n: FieldValue.increment(1), expires: new Date(now + 2 * 86400e3) }, { merge: true });
+        const [l, a] = await Promise.all([tx.get(lim), tx.get(all)]);
+        if ((l.data()?.n || 0) >= NEW_IDS_PER_NETWORK_PER_DAY || (a.data()?.n || 0) >= NEW_IDS_PER_DAY) return false;
+        const expires = new Date(now + 2 * 86400e3);
+        tx.set(lim, { n: FieldValue.increment(1), expires }, { merge: true });
+        tx.set(all, { n: FieldValue.increment(1), expires }, { merge: true });
         return true;
       });
       if (!ok) return res.status(429).json({ error: 'too many new screens today' });
@@ -119,8 +131,9 @@ module.exports.handlers = function handlers({ onRequest, db, FieldValue, Timesta
   const screenCount = onRequest(opts, async (req, res) => {
     if (req.method !== 'GET') return res.status(405).json({ error: 'GET only' });
     const running = await liveCount(Date.now());
-    res.set('Cache-Control', 'public, max-age=60');
-    return res.json({ running });
+    res.set('Cache-Control', 'no-store');
+    // The server time too, so a screen that is not counted can still check the TV clock.
+    return res.json({ running, now: Date.now() });
   });
 
   const statsCache = new Map(); // days -> { body, at }

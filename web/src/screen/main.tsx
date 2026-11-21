@@ -15,7 +15,7 @@ import { officialSourceForScreen, setScreenAnnouncements, setScreenClock, WORDS 
 import type { CalendarDataset } from '../core/calendarSanad'
 import { fetchOK } from '../services/storage'
 import { Setup } from './Setup'
-import { CLOCK_WARN_MS, PING_EVERY_MS, pingScreen } from './live'
+import { checkClock, CLOCK_WARN_MS, nextClockFix, PING_EVERY_MS, pingScreen, saveClockFix, savedClockFix } from './live'
 import { withBundled } from '../core/bundledCalendar'
 import './screen.css'
 
@@ -66,7 +66,7 @@ function initialConfig(): ScreenConfig | null {
 }
 
 /** How far the TV's own clock is off, from the last check-in (0 until then). The screen counts from the corrected time. */
-let clockFix = 0
+let clockFix = fixedNow == null && !query.has('demo') ? savedClockFix() : 0
 const screenNow = () => Date.now() + clockFix
 
 function useClock(): number {
@@ -103,7 +103,7 @@ function App() {
 function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; onEdit: () => void }) {
   const [, setTables] = useState(0)
   const [pointer, setPointer] = useState(true)
-  const [clockOff, setClockOff] = useState(0)
+  const [clockOff, setClockOff] = useState(clockFix)
   const w = WORDS[config.lang]
 
   // The official table: this year's, and next year's from December. Retried every 6 hours while missing.
@@ -142,11 +142,14 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
   }, [config])
 
   // "This screen is on": a random ID every 15 minutes for the live count, which also tells us when the TV clock is wrong.
+  // With counting off, only the time is asked for, and nothing about the screen is sent.
   useEffect(() => {
-    if (fixedNow != null || query.has('demo') || !config.report || !config.place) return
-    const ping = () => pingScreen().then((off) => {
+    if (fixedNow != null || query.has('demo') || !config.place) return
+    if (clockFix) setScreenClock(screenNow)
+    const ping = () => (config.report ? pingScreen() : checkClock()).then((off) => {
       if (off == null) return
-      clockFix = Math.abs(off) > 30_000 ? Math.round(off) : 0
+      clockFix = nextClockFix(clockFix, off)
+      saveClockFix(clockFix)
       setScreenClock(screenNow)
       setClockOff(clockFix)
     })

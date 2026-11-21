@@ -8,7 +8,7 @@ import { LivingSky } from '../ui/LivingSky'
 import { skyAt } from '../ui/sky'
 import { masjidAppLink, type ScreenConfig } from './config'
 import { zoned } from '../core/tz'
-import { clockParts, countdown, gregorianDate, name, phaseAt, screenDay, shortLeft, WORDS, type Phase } from './model'
+import { clockParts, countdown, inFridayWindow, gregorianDate, name, phaseAt, screenDay, shortLeft, WORDS, type Phase } from './model'
 
 /**
  * The masjid screen. Sizes are in viewport units so the same layout reads from
@@ -241,10 +241,7 @@ function FridayLine({ now, config: c }: { now: number; config: ScreenConfig }) {
   if (!c.fridayNote || !c.place) return null
   const today = screenDay(now, c, rowFor)
   if (!today) return null
-  const wd = zoned(now, c.place.tz).weekday
-  const thursdayNight = wd === 4 && now >= today.day.times.maghrib
-  const fridayMorning = wd === 5 && now < today.day.times.dhuhr + 90 * 60_000
-  if (!thursdayNight && !fridayMorning) return null
+  if (!inFridayWindow(zoned(now, c.place.tz).weekday, now, today.day.times.maghrib, today.day.times.dhuhr)) return null
   return <p class="scr-ramadan scr-friday"><b>{WORDS[c.lang].friday}</b><i class="scr-dotsep">·</i><span>{c.fridayNote}</span></p>
 }
 

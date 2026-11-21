@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const { validId, sgParts, summarize, parseDays } = require('../screens');
+const { validId, sgParts, summarize, parseDays, callerAddress } = require('../screens');
 
 test('screen ids are random letters only', () => {
   assert.ok(validId('aB3_-xYz0123456789abcdef'));
@@ -32,9 +32,16 @@ test('a day summary', () => {
   assert.equal(s.avg, Math.round((30 / 96) * 10) / 10);
 });
 
-test('days asked for are kept between 1 and about 3 years', () => {
-  assert.equal(parseDays('90'), 90);
-  assert.equal(parseDays('0'), 1);
-  assert.equal(parseDays('99999'), 3 * 366 + 1);
-  assert.equal(parseDays('x'), 90);
+test('days asked for snap to the dashboard ranges', () => {
+  assert.equal(parseDays('92'), 92);
+  assert.equal(parseDays('90'), 92);
+  assert.equal(parseDays('0'), 7);
+  assert.equal(parseDays('99999'), 1097);
+  assert.equal(parseDays('x'), 92);
+});
+
+test('the caller address is the last forwarded entry, which the caller cannot write', () => {
+  const req = (xff, ip) => ({ ip, get: (h) => (h === 'x-forwarded-for' ? xff : undefined) });
+  assert.equal(callerAddress(req('6.6.6.6, 1.2.3.4', '6.6.6.6')), '1.2.3.4');
+  assert.equal(callerAddress(req('', '1.2.3.4')), '1.2.3.4');
 });

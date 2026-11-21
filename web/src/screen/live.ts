@@ -47,6 +47,41 @@ export async function pingScreen(): Promise<number | null> {
   } catch { return null }
 }
 
+/** The TV clock check alone, for screens that are not counted: asks the time and sends nothing about the screen. */
+export async function checkClock(): Promise<number | null> {
+  if (!navigator.onLine) return null
+  try {
+    const sent = Date.now()
+    const r = await fetch(COUNT_URL, { cache: 'no-store' })
+    const got = Date.now()
+    if (!r.ok) return null
+    const j = (await r.json()) as { now?: unknown }
+    if (typeof j.now !== 'number' || got - sent > 10_000) return null
+    return j.now - (sent + got) / 2
+  } catch { return null }
+}
+
+/**
+ * The correction to use from a fresh measurement: from 30 seconds out it applies, and once applied it
+ * only goes back to none under 10 seconds, so a clock near the line does not flip every check.
+ */
+export function nextClockFix(current: number, measured: number): number {
+  const off = Math.abs(measured)
+  if (off >= 30_000 || (current !== 0 && off >= 10_000)) return Math.round(measured)
+  return 0
+}
+
+const FIX_KEY = 'ptasia.screen.clockFix'
+/** Keeps the last correction across the nightly reload. Dropped after a day, or if the TV clock went backwards (a reset). */
+export function saveClockFix(fix: number): void { writeString(FIX_KEY, JSON.stringify({ fix, at: Date.now() })) }
+export function savedClockFix(now = Date.now()): number {
+  try {
+    const v = JSON.parse(readString(FIX_KEY) ?? 'null') as { fix?: unknown; at?: unknown } | null
+    if (!v || typeof v.fix !== 'number' || typeof v.at !== 'number') return 0
+    return now >= v.at && now - v.at < 86_400_000 ? v.fix : 0
+  } catch { return 0 }
+}
+
 /** More than two minutes out is worth telling the committee about. */
 export const CLOCK_WARN_MS = 2 * 60_000
 

@@ -36,7 +36,7 @@ function call(fn, { method = 'GET', body, query = {}, ip = '1.2.3.4' } = {}) {
   return new Promise((resolve) => {
     const res = { code: 200, headers: {}, status(c) { this.code = c; return this }, set(k, v) { this.headers[k] = v; return this },
       json(b) { resolve({ code: this.code, body: b }) }, end() { resolve({ code: this.code }) } };
-    fn({ method, body, query, ip }, res);
+    fn({ method, body, query, ip, get: () => undefined }, res);
   });
 }
 
@@ -51,8 +51,9 @@ test('pings, live count, history and limits', async () => {
   assert.equal((await call(h.screenPing, { method: 'POST', body: { id: ids[0] } })).code, 200);
   // The count is kept for a minute per server; a fresh server sees all three.
   const fresh = handlers({ onRequest, db, FieldValue, Timestamp: TS, hash: (s) => 'h' + s });
-  assert.deepEqual((await call(fresh.screenCount)).body, { running: 3 });
+  assert.equal((await call(fresh.screenCount)).body.running, 3);
   const stats = (await call(fresh.screenStats, { query: { days: '7' } })).body;
+  assert.equal(typeof (await call(fresh.screenCount)).body.now, 'number');
   assert.equal(stats.running, 3);
   assert.equal(stats.days.length, 1);
   assert.ok(stats.days[0].peak >= 1 && stats.days[0].seen >= 1);

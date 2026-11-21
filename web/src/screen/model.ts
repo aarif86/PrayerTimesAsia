@@ -200,6 +200,11 @@ export function name(p: Prayer, style: NamingStyle, friday: boolean, arabic: boo
   return prayerName(p, style, friday)
 }
 
+/** The Friday line shows from Thursday Maghrib until an hour and a half after Friday Zohor (weekday 4 is Thursday, 5 Friday). */
+export function inFridayWindow(weekday: number, now: number, maghrib: number, dhuhr: number): boolean {
+  return (weekday === 4 && now >= maghrib) || (weekday === 5 && now < dhuhr + 90 * 60_000)
+}
+
 export interface Words {
   next: string; iqamah: string; azan: string; iqamahIn: string; silence: string; inPrayer: string
   khutbah: string; khutbahIn: string; imsak: string; iftar: string; ends: (n: string) => string; fullScreen: string
