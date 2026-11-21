@@ -16,7 +16,6 @@ import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.runComposition
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.github.takahirom.roborazzi.captureRoboImage
 import com.prayertimesasia.app.data.Directories
 import com.prayertimesasia.app.data.OfficialRepository
 import com.prayertimesasia.app.widget.NextPrayerContent
@@ -80,7 +79,10 @@ class WidgetTest {
         host.measure(View.MeasureSpec.makeMeasureSpec((w * d).toInt() + 2 * pad, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec((h * d).toInt() + 2 * pad, View.MeasureSpec.EXACTLY))
         host.layout(0, 0, host.measuredWidth, host.measuredHeight)
-        host.captureRoboImage("build/outputs/roborazzi/w-$name.png")
+        val bmp = android.graphics.Bitmap.createBitmap(host.measuredWidth, host.measuredHeight, android.graphics.Bitmap.Config.ARGB_8888)
+        host.draw(android.graphics.Canvas(bmp))
+        val file = java.io.File("build/outputs/roborazzi/w-$name.png").also { it.parentFile?.mkdirs() }
+        file.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
     }
 
     private fun d(style: TodayStyle, now: java.time.Instant, appearance: Appearance = Appearance.DARK) =
