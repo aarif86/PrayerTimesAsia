@@ -2,8 +2,9 @@
  * The iPhone and Android apps, and how the web app offers them.
  *
  * To switch a store on, fill in its line below and merge: the web app starts
- * pointing there on the next deploy. Until then iPhone visitors can ask for a
- * TestFlight invite and Android visitors can ask to hear when it is out.
+ * pointing there on the next deploy. Android is live on Google Play (21 Nov
+ * 2026). Until the App Store listing exists, iPhone visitors ask for a TestFlight
+ * invite, or get the public TestFlight link once testFlightUrl is filled in.
  */
 export const NATIVE_APPS = {
   ios: {
@@ -14,7 +15,7 @@ export const NATIVE_APPS = {
   },
   android: {
     /** Set to true once the app is live on Google Play. */
-    onGooglePlay: false,
+    onGooglePlay: true,
     /** A direct download of a test build, used until Google Play is live. Leave empty to ask instead. */
     apkUrl: '',
   },
