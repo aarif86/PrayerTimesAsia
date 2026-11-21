@@ -839,7 +839,7 @@
     <string name="masjid_moreOnMap" formatted="false">{n} more within 15 km are on the map. Tap a pin to see its name and directions.</string>
     <string name="masjid_moreOnMap_one" formatted="false">{n} more within 15 km is on the map. Tap a pin to see its name and directions.</string>
     <string name="masjid_keepHint" formatted="false">Tap a place and choose Make it my masjid to keep it at the top.</string>
-    <string name="masjid_mapCredit" formatted="false">Places from OpenStreetMap, kept by volunteers. Missing one, or a pin in the wrong spot? {link}, no sign up needed.</string>
+    <string name="masjid_mapCredit" formatted="false">Places from OpenStreetMap and the open musolla list, both kept by volunteers. Missing one, or a pin in the wrong spot? {link}, no sign up needed.</string>
     <string name="masjid_tellMap" formatted="false">Tell the map</string>
     <string name="masjid_noFacilities" formatted="false">The map doesn\'t list this place\'s facilities yet.</string>
     <string name="masjid_iqamahLine" formatted="false">Iqamah {times}</string>
@@ -949,4 +949,32 @@
     <string name="settings_facebook" formatted="false">Follow us on Facebook</string>
     <string name="settings_freeLine" formatted="false">Free for everyone. No paid version.</string>
     <string name="settings_back" formatted="false">Back to Settings</string>
+    <string name="suggestRoom_button" formatted="false">Suggest a prayer room</string>
+    <string name="suggestRoom_title" formatted="false">Suggest a prayer room</string>
+    <string name="suggestRoom_intro" formatted="false">Know a musollah or prayer room that is not on our map? Tell us about it. We check every one and then add it for everyone.</string>
+    <string name="suggestRoom_name" formatted="false">Place name</string>
+    <string name="suggestRoom_nameHint" formatted="false">For example Pasir Ris Mall</string>
+    <string name="suggestRoom_level" formatted="false">Floor or level</string>
+    <string name="suggestRoom_levelHint" formatted="false">For example Level 3 or B1</string>
+    <string name="suggestRoom_address" formatted="false">Address</string>
+    <string name="suggestRoom_directions" formatted="false">How to find it</string>
+    <string name="suggestRoom_directionsHint" formatted="false">For example next to the toilets near the car park lift</string>
+    <string name="suggestRoom_pin" formatted="false">Where it is on the map</string>
+    <string name="suggestRoom_pinHere" formatted="false">I am at the prayer room now</string>
+    <string name="suggestRoom_pinFinding" formatted="false">Finding where you are</string>
+    <string name="suggestRoom_pinAdded" formatted="false">Pin added where you are</string>
+    <string name="suggestRoom_pinNote" formatted="false">Only if you are standing at the room. Your location is added to this email once and is not kept anywhere else.</string>
+    <string name="suggestRoom_pinFailed" formatted="false">Could not find where you are. An address is enough.</string>
+    <string name="suggestRoom_has" formatted="false">What is there</string>
+    <string name="suggestRoom_women" formatted="false">Women\'s space</string>
+    <string name="suggestRoom_shared" formatted="false">One space for men and women</string>
+    <string name="suggestRoom_aircon" formatted="false">Air conditioned</string>
+    <string name="suggestRoom_mats" formatted="false">Prayer mats</string>
+    <string name="suggestRoom_garments" formatted="false">Telekung and sarong</string>
+    <string name="suggestRoom_ablution" formatted="false">Place for wudhu</string>
+    <string name="suggestRoom_slippers" formatted="false">Slippers</string>
+    <string name="suggestRoom_remarks" formatted="false">Anything else</string>
+    <string name="suggestRoom_remarksHint" formatted="false">Opening hours, or who may use it</string>
+    <string name="suggestRoom_needs" formatted="false">Add the place name and either the address or a pin.</string>
+    <string name="suggestRoom_goesTo" formatted="false">It goes to {email} from your own email app. JazakAllahu khairan for helping others find a place to pray.</string>
 </resources>

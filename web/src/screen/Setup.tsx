@@ -34,6 +34,8 @@ const SHOW_CHOICES: { key: keyof ScreenHide; label: string; example: string }[] 
   { key: 'times', label: 'Prayer times', example: 'All five prayers and Syuruk' },
   { key: 'countdown', label: 'Time left', example: 'Like in 6h 59m' },
   { key: 'source', label: 'Where the times come from', example: 'Like Official MUIS' },
+  { key: 'occasion', label: 'Next big date', example: 'Like Eid al-Adha in 12 days, from 100 days before' },
+  { key: 'kaaba', label: 'Sun over the Kaaba', example: 'The time, on the two days a year it happens' },
 ]
 
 /**

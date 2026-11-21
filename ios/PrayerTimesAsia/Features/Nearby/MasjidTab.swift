@@ -11,11 +11,17 @@ struct NearbyView: View {
     @State private var search = NearbySearch()
     @State private var kind: PrayerSpace.Kind = .all
     @State private var camera: MapCameraPosition = .automatic
+    @State private var rings: [Double] = [0.5, 1, 2]
+    @State private var labelCamera = LabelCamera()
+    @Environment(\.colorScheme) private var scheme
     @State private var selected: PrayerSpace?
     @State private var expanded: String?
     @State private var openOnly = false
     @State private var allFriday = false
     @State private var showAbout = false
+    @State private var suggesting = false
+    /// When Near me last found the person, so Suggest a prayer room only offers a recent spot as the room's pin.
+    @State private var nearMeAt: Date?
     @State private var slow = false
     /// A fresh GPS fix from "Find prayer places near me". It doesn't change the
     /// place your prayer times are for.
@@ -110,6 +116,9 @@ struct NearbyView: View {
                 }
             }
             .sheet(isPresented: $showAbout) { MakersSheet(placement: "masjid") }
+            .sheet(isPresented: $suggesting) {
+                SuggestRoomView(near: here, live: (nearMeAt.map { Date.now.timeIntervalSince($0) < 300 } ?? false) ? nearMe : nil)
+            }
             .task(id: here) {
                 guard let c = here else { return }
                 slow = false
@@ -121,7 +130,7 @@ struct NearbyView: View {
             .onChange(of: model.location.location) { _, fix in
                 guard locating, let fix, let asked = askedAt, fix.timestamp >= asked.addingTimeInterval(-60) else { return }
                 locating = false
-                nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude)
+                nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude); nearMeAt = .now
             }
             .onChange(of: selected) { _, space in
                 if let space { focus(space.coordinates) }
@@ -133,6 +142,7 @@ struct NearbyView: View {
 
     @ViewBuilder
     private func map(_ list: [PrayerSpace]) -> some View {
+        MapReader { proxy in
         Map(position: $camera, selection: $selected) {
             ForEach(list) { space in
                 Marker(space.name, systemImage: space.isMusollah ? "house.fill" : "moon.stars.fill",
@@ -144,22 +154,13 @@ struct NearbyView: View {
                 Marker(m.name, systemImage: "star.fill", coordinate: CLLocationCoordinate2D(latitude: m.lat, longitude: m.lng))
                     .tint(Theme.accent)
             }
-            // Rings at 1, 2 and 5 km, labelled at the bottom, so a pin reads as near or far at a glance.
+            // Three rings in 1 2 5 steps that follow the zoom (500 m, 1 and 2 km on foot, 1, 2 and 5 km by car).
+            // Their labels are drawn over the map below, so pins never hide them.
             if let you = youCoordinate {
-                ForEach(Self.ringsKm, id: \.self) { km in
+                ForEach(rings, id: \.self) { km in
                     MapCircle(center: you, radius: km * 1000)
-                        .foregroundStyle(km == Self.ringsKm.first ? Color.blue.opacity(0.07) : .clear)
-                        .stroke(Color.blue.opacity(0.55), style: StrokeStyle(lineWidth: 1.5, dash: [5, 7]))
-                    Annotation("", coordinate: CLLocationCoordinate2D(latitude: you.latitude - km / 111.2, longitude: you.longitude), anchor: .center) {
-                        Text(ringLabel(km))
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(Color.blue)
-                            .padding(.horizontal, 7).padding(.vertical, 2)
-                            .background(.regularMaterial, in: Capsule())
-                            .overlay(Capsule().stroke(Color.blue.opacity(0.35)))
-                            .accessibilityHidden(true)
-                    }
-                    .annotationTitles(.hidden)
+                        .foregroundStyle(km == rings.first ? RingStyle.fill(scheme) : .clear)
+                        .stroke(RingStyle.line(scheme), style: StrokeStyle(lineWidth: 1.5, dash: [5, 7]))
                 }
                 // Drawn after the pins so it sits on top of them.
                 Annotation(nearMe != nil ? "You are here" : "Searching from here", coordinate: you, anchor: .center) {
@@ -167,6 +168,20 @@ struct NearbyView: View {
                 }
                 .annotationTitles(.hidden)
             }
+        }
+        .onMapCameraChange(frequency: .continuous) { ctx in labelCamera.region = ctx.region }
+        .onMapCameraChange(frequency: .onEnd) { ctx in
+            let r = ctx.region
+            let halfH = r.span.latitudeDelta * 111.2 / 2
+            let halfW = r.span.longitudeDelta * 111.2 * cos(r.center.latitude * .pi / 180) / 2
+            let next = MasjidExtras.rings(halfWidthKm: halfW, halfHeightKm: halfH)
+            if next != rings { rings = next }
+        }
+        .overlay {
+            if let you = youCoordinate {
+                RingLabels(proxy: proxy, you: you, rings: rings, mode: mode, camera: labelCamera)
+            }
+        }
         }
         .frame(height: 260)
         .overlay(alignment: .bottom) {
@@ -222,15 +237,6 @@ struct NearbyView: View {
         .padding(10)
     }
 
-    static let ringsKm: [Double] = [1, 2, 5]
-
-    /// "1 km, 13 min" on foot, "5 km, 12 min" by car.
-    private func ringLabel(_ km: Double) -> String {
-        let trip = MasjidExtras.tripText(km, mode: mode)?
-            .replacingOccurrences(of: " walk", with: "").replacingOccurrences(of: " drive", with: "")
-        return "\(Int(km)) km" + (trip.map { ", \($0)" } ?? "")
-    }
-
     private var youCoordinate: CLLocationCoordinate2D? {
         here.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
     }
@@ -239,6 +245,7 @@ struct NearbyView: View {
     private func showYou(animated: Bool) {
         guard let you = youCoordinate else { return }
         let span: Double = mode == .walk ? 3_000 : 11_000
+        rings = mode == .walk ? [0.5, 1, 2] : [1, 2, 5] // until the map reports its real size
         let target = MapCameraPosition.region(MKCoordinateRegion(center: you, latitudinalMeters: span, longitudinalMeters: span))
         if animated { withAnimation { camera = target } } else { camera = target }
     }
@@ -282,11 +289,13 @@ struct NearbyView: View {
 
             if here != nil {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Places from Apple Maps and OpenStreetMap, which volunteers keep up to date. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.")
+                    Text("Places from Apple Maps, OpenStreetMap and the open musolla list, which volunteers keep up to date. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.")
                     if let here, let url = MasjidExtras.reportURL(here) {
                         Button { openURL(url) } label: { Label("Tell the map", systemImage: "flag") }
                             .font(.footnote.weight(.semibold))
                     }
+                    Button { suggesting = true } label: { Label("Suggest a prayer room", systemImage: "plus.circle") }
+                        .font(.footnote.weight(.semibold))
                     if model.prefs.myMasjid == nil {
                         Text("A masjid with a Prayer Times Asia screen? Scan its QR code with the Camera app to see its iqamah times on your Prayer screen.")
                             .padding(.top, 6)
@@ -323,7 +332,7 @@ struct NearbyView: View {
     private func findNearMe() {
         if model.location.isDenied { return }
         if let fix = model.location.location, fix.timestamp.timeIntervalSinceNow > -120 {
-            nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude)
+            nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude); nearMeAt = .now
             showYou(animated: true)
             return
         }
@@ -845,26 +854,96 @@ private struct EidCard: View {
 /// Where you are: a blue dot with soft waves beaming out from it.
 private struct YouBeacon: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var scheme
     @State private var beaming = false
 
     var body: some View {
+        let dark = scheme == .dark
+        // Brighter blue on the dark map, with a thin dark edge so the white rim stands out.
+        let you = dark ? Color(red: 0.24, green: 0.61, blue: 1) : Color(red: 0.04, green: 0.42, blue: 1)
+        let glow = dark ? Color(red: 0.35, green: 0.69, blue: 1).opacity(0.55) : you.opacity(0.30)
+        let ring = dark ? Color(red: 0.55, green: 0.78, blue: 1).opacity(0.95) : you.opacity(0.85)
+        let edge = Color.black.opacity(dark ? 0.55 : 0.18)
         ZStack {
-            ForEach(0..<2) { i in
-                Circle()
-                    .fill(RadialGradient(colors: [.blue.opacity(0.45), .blue.opacity(0.15), .clear],
-                                         center: .center, startRadius: 0, endRadius: 9))
-                    .frame(width: 18, height: 18)
-                    .scaleEffect(reduceMotion ? 2.6 : (beaming ? 9 : 1))
-                    .opacity(reduceMotion ? (i == 0 ? 0.5 : 0) : (beaming ? 0 : 0.9))
-                    .animation(reduceMotion ? nil : .easeOut(duration: 2.6).repeatForever(autoreverses: false).delay(Double(i) * 1.3),
-                               value: beaming)
+            // A glow that is always there and gently breathes.
+            Circle()
+                .fill(RadialGradient(gradient: Gradient(stops: [.init(color: glow, location: 0), .init(color: glow, location: 0.6), .init(color: .clear, location: 1)]),
+                                     center: .center, startRadius: 0, endRadius: 23))
+                .frame(width: 46, height: 46)
+                .scaleEffect(reduceMotion ? 1 : (beaming ? 1.18 : 1))
+                .animation(reduceMotion ? nil : .easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: beaming)
+            if reduceMotion {
+                // Nothing moves: a still ring keeps the dot just as easy to find.
+                Circle().stroke(ring, lineWidth: 2).frame(width: 38, height: 38).opacity(0.55)
+            } else {
+                // One clear ring that travels out and fades, every 2.4 seconds.
+                Circle().stroke(ring, lineWidth: 2)
+                    .frame(width: beaming ? 110 : 22, height: beaming ? 110 : 22)
+                    .opacity(beaming ? 0 : 0.95)
+                    .animation(.timingCurve(0.2, 0.6, 0.3, 1, duration: 2.4).repeatForever(autoreverses: false), value: beaming)
             }
-            Circle().fill(.blue).frame(width: 18, height: 18)
-                .overlay(Circle().stroke(.white, lineWidth: 3))
-                .shadow(color: .blue.opacity(0.4), radius: 4)
+            Circle().fill(edge).frame(width: 22, height: 22)
+            Circle().fill(.white).frame(width: 20, height: 20)
+            Circle().fill(you).frame(width: 14, height: 14)
+                .shadow(color: glow, radius: 7)
         }
-        .frame(width: 170, height: 170)
+        .frame(width: 130, height: 130)
         .allowsHitTesting(false)
         .onAppear { beaming = true }
+    }
+}
+
+/// Colours for the distance rings and their labels, lighter on the dark map so they show.
+private enum RingStyle {
+    static func line(_ s: ColorScheme) -> Color { s == .dark ? Color(red: 0.55, green: 0.76, blue: 1).opacity(0.85) : Color(red: 0.04, green: 0.37, blue: 0.86).opacity(0.75) }
+    static func fill(_ s: ColorScheme) -> Color { s == .dark ? Color(red: 0.47, green: 0.73, blue: 1).opacity(0.10) : Color(red: 0.04, green: 0.42, blue: 1).opacity(0.07) }
+    static func chip(_ s: ColorScheme) -> Color { s == .dark ? Color(red: 0.06, green: 0.11, blue: 0.22).opacity(0.94) : Color.white.opacity(0.97) }
+    static func text(_ s: ColorScheme) -> Color { s == .dark ? Color(red: 0.81, green: 0.89, blue: 1) : Color(red: 0.04, green: 0.33, blue: 0.78) }
+}
+
+/// Where the map camera is right now, kept apart so only the ring labels redraw while the map moves.
+@Observable private final class LabelCamera {
+    var region: MKCoordinateRegion?
+}
+
+/// "1 km, 13 min" on foot, "5 km, 12 min" by car, on each ring below its right hand side so they
+/// line up like a ruler. Drawn over the map, so masjid pins never cover them.
+private struct RingLabels: View {
+    let proxy: MapProxy
+    let you: CLLocationCoordinate2D
+    let rings: [Double]
+    let mode: TripMode
+    let camera: LabelCamera
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        let _ = camera.region // redraw as the map moves
+        let a = MasjidExtras.ringLabelAngle * .pi / 180
+        GeometryReader { geo in
+            ForEach(rings, id: \.self) { km in
+                let lat = you.latitude - km * sin(a) / 111.2
+                let lng = you.longitude + km * cos(a) / (111.2 * cos(you.latitude * .pi / 180))
+                if let p = proxy.convert(CLLocationCoordinate2D(latitude: lat, longitude: lng), to: .local),
+                   geo.frame(in: .local).insetBy(dx: -20, dy: -10).contains(p) {
+                    Text(label(km))
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(RingStyle.text(scheme))
+                        .padding(.horizontal, 7).padding(.vertical, 2)
+                        .background(RingStyle.chip(scheme), in: Capsule())
+                        .overlay(Capsule().stroke(RingStyle.line(scheme).opacity(0.6)))
+                        .shadow(color: .black.opacity(0.25), radius: 3)
+                        .fixedSize()
+                        .position(p)
+                }
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func label(_ km: Double) -> String {
+        let trip = MasjidExtras.tripText(km, mode: mode)?
+            .replacingOccurrences(of: " walk", with: "").replacingOccurrences(of: " drive", with: "")
+        return MasjidExtras.ringDistance(km) + (trip.map { ", \($0)" } ?? "")
     }
 }

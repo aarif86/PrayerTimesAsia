@@ -53,4 +53,14 @@ class MasjidExtrasTest {
         assertEquals("Mo-Su 10:00-22:00", p[0].hours)
         assertEquals("", p[1].facilities)
     }
+
+    @Test fun ringsFollowTheZoom() {
+        // A 390 by 260 map: Walk opens about 3 km tall, Drive about 11 km tall.
+        assertEquals(listOf(0.5, 1.0, 2.0), MasjidExtras.ringsFor(2.25, 1.5))
+        assertEquals(listOf(1.0, 2.0, 5.0), MasjidExtras.ringsFor(8.25, 5.5))
+        assertEquals(listOf(5.0, 10.0, 20.0), MasjidExtras.ringsFor(30.0, 20.0))
+        assertEquals(listOf(0.25, 0.5, 1.0), MasjidExtras.ringsFor(0.3, 0.2))
+        assertEquals("500 m", MasjidExtras.ringDistance(0.5))
+        assertEquals("2 km", MasjidExtras.ringDistance(2.0))
+    }
 }

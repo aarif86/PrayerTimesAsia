@@ -80,10 +80,14 @@ export interface ScreenHide {
   countdown: boolean
   /** The "Official · MUIS" label in the footer. */
   source: boolean
+  /** The line counting down to the next big date (1 Ramadan, both Eids, the Islamic New Year, Mawlid). */
+  occasion: boolean
+  /** On the two days a year the sun passes over the Kaaba, the moment it does, for checking the qibla by the sun. */
+  kaaba: boolean
 }
 
-export const HIDE_KEYS: readonly (keyof ScreenHide)[] = ['date', 'hijri', 'clock', 'times', 'countdown', 'source']
-export const NO_HIDE: ScreenHide = { date: false, hijri: false, clock: false, times: false, countdown: false, source: false }
+export const HIDE_KEYS: readonly (keyof ScreenHide)[] = ['date', 'hijri', 'clock', 'times', 'countdown', 'source', 'occasion', 'kaaba']
+export const NO_HIDE: ScreenHide = { date: false, hijri: false, clock: false, times: false, countdown: false, source: false, occasion: false, kaaba: false }
 
 export interface RamadanSettings {
   /** Extra minutes before Isyak iqamah in Ramadan (when the iqamah is "minutes after azan"). */

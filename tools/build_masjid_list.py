@@ -32,6 +32,7 @@ import datetime
 import glob
 import json
 import math
+import re
 import os
 import sys
 import time
@@ -52,6 +53,23 @@ MIN_SHARE = 0.7
 # How far a box is split in four before giving up on that piece.
 MAX_DEPTH = 4
 PAUSE = 3  # seconds between requests, to be gentle with volunteer servers
+
+# A second, community-kept list of musollahs and masjids (mostly Singapore
+# prayer rooms in malls, schools and sports centres that OpenStreetMap lacks).
+# Only its prayer rooms are used (see musolla_db_places).
+# https://github.com/ruqqq/musolla-database, LGPL 3.0: we credit it in the apps
+# and send any fixes we make back to it. Started by the KalamApps and
+# PrayerTime.SG / Fivecalling teams.
+# Our fork first (checked suggestions and fixes go there), then the original.
+MUSOLLA_DB = [
+    "https://raw.githubusercontent.com/aarif86/musolla-database/master/data.json",
+    "https://raw.githubusercontent.com/ruqqq/musolla-database/master/data.json",
+]
+# A place from that list is skipped when OpenStreetMap already has one this close (metres).
+SAME_PRAYER_ROOM_M = 60
+SAME_MASJID_M = 400
+# ...or this close with the same name (a mall's room pinned at the mall's middle).
+SAME_NAME_M = 300
 
 
 def ask(q: str, timeout: int, servers: int = len(MIRRORS)) -> dict | None:
@@ -163,6 +181,94 @@ def places(elements: list) -> list:
     return out
 
 
+def metres(a_lat: float, a_lon: float, b_lat: float, b_lon: float) -> float:
+    x = math.radians(b_lon - a_lon) * math.cos(math.radians((a_lat + b_lat) / 2))
+    return 6371000 * math.hypot(x, math.radians(b_lat - a_lat))
+
+
+def fetch_musolla_db() -> dict | None:
+    for url in MUSOLLA_DB:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "PrayerTimesAsia weekly masjid list"})
+            with urllib.request.urlopen(req, timeout=120) as r:
+                data = json.load(r)
+            if isinstance(data, dict) and data:
+                print(f"musolla-database: {len(data)} entries from {url}")
+                return data
+        except Exception as e:
+            print(f"  musolla-database {url}: {str(e)[:120]}", file=sys.stderr)
+    print("::warning::musolla-database: no copy could be read, using last week's", file=sys.stderr)
+    return None
+
+
+def musolla_db_places(data: dict) -> list:
+    """The community list in our place format; ids start with "m" so they never meet an OSM id."""
+    out = []
+    for key, v in data.items():
+        if not isinstance(v, dict):
+            continue
+        loc = v.get("location") or {}
+        try:
+            lat, lon = float(loc["latitude"]), float(loc["longitude"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180) or (lat == 0 and lon == 0):
+            continue
+        # Only the prayer rooms for now. Its masjids are either on OpenStreetMap
+        # already (Singapore) or a 2018 bulk import from addresses (Kelantan)
+        # whose pins we haven't checked.
+        if v.get("type") != "Musolla":
+            continue
+        name = " ".join(str(v.get("name") or "").split())[:120]
+        musollah = True
+        address = " ".join(str(v.get("address") or "").split())
+        level = " ".join(str(v.get("level") or "").split())
+        if level.lower() in ("null", "none", "-", "0"):
+            level = ""
+        # Add the floor unless the address already gives one ("Level 3", "#03-01").
+        has_floor = re.search(r"\blevel\b|\blvl\b|#\s*[0-9b]", address, re.I)
+        if musollah and level and not has_floor:
+            floor = level if level.lower().startswith(("level", "lvl", "b", "l")) and not level.isdigit() else f"level {level}"
+            address = f"{address}, {floor}" if address else floor[:1].upper() + floor[1:]
+        row = [f"m{str(v.get('uuid') or key)[:13]}", round(lat, 5), round(lon, 5), name, address[:160], 1 if musollah else 0]
+        women = (v.get("femaleCapacity") or 0) not in (0, "0", "") or "female" in str(v.get("remarks") or "").lower() and "no female" not in str(v.get("remarks") or "").lower()
+        if women:
+            row.append("w")
+        out.append(row)
+    return out
+
+
+GENERIC_NAMES = {"surau", "musolla", "musollah", "musalla", "prayerroom", "masjid", "mosque", "muslimprayerroom", "praying room".replace(" ", "")}
+
+
+def same_name(a: str, b: str) -> bool:
+    a, b = ("".join(ch for ch in x.lower() if ch.isalnum()) for x in (a, b))
+    if a in GENERIC_NAMES or b in GENERIC_NAMES:
+        return False  # "Surau" next to another "Surau" may well be a different room
+    return len(a) >= 5 and len(b) >= 5 and (a in b or b in a)
+
+
+def add_extras(tiles: dict, extras: list) -> int:
+    """Puts community places into the squares, unless OpenStreetMap already has them."""
+    added = 0
+    for p in extras:
+        near = []
+        for dlat in (-1, 0, 1):
+            for dlon in (-1, 0, 1):
+                near += tiles.get(f"{math.floor(p[1]) + dlat}_{math.floor(p[2]) + dlon}", {}).values()
+        limit = SAME_PRAYER_ROOM_M if p[5] else SAME_MASJID_M
+        # A room this close to any OpenStreetMap place (masjid or room) is that place.
+        if any(q[0][0] != "m" and metres(p[1], p[2], q[1], q[2]) < (limit if q[5] == p[5] else SAME_PRAYER_ROOM_M) for q in near):
+            continue
+        if any(same_name(p[3], q[3]) and metres(p[1], p[2], q[1], q[2]) < SAME_NAME_M for q in near):
+            continue
+        if any(q[0][0] == "m" and metres(p[1], p[2], q[1], q[2]) < 15 for q in near):
+            continue  # two rooms on one pin can't be told apart on the map; keep the first
+        tiles.setdefault(tile_key(p[1], p[2]), {})[p[0]] = p
+        added += 1
+    return added
+
+
 def tile_key(lat: float, lon: float) -> str:
     return f"{math.floor(lat)}_{math.floor(lon)}"
 
@@ -207,6 +313,21 @@ def main(out_dir: str, only: list[str]) -> int:
         countries[data["country"]] = {"updated": data["updated"], "places": len(data["places"])}
         for p in data["places"]:
             tiles.setdefault(tile_key(p[1], p[2]), {})[p[0]] = p
+    # Keep last week's copy, so a bad day at GitHub doesn't drop these pins.
+    saved = os.path.join(out_dir, "extra", "musolla-database.json")
+    extras = fetch_musolla_db()
+    if extras:
+        os.makedirs(os.path.dirname(saved), exist_ok=True)
+        with open(saved, "w") as f:
+            json.dump(extras, f, ensure_ascii=False, separators=(",", ":"))
+        with open(os.path.join(os.path.dirname(saved), "README.txt"), "w") as f:
+            f.write("musolla-database.json is a copy of https://github.com/aarif86/musolla-database\n"
+                    "(fork of https://github.com/ruqqq/musolla-database), shared under the GNU LGPL 3.0.\n"
+                    "Started by the KalamApps and PrayerTime.SG teams, kept by volunteers.\n")
+    else:
+        extras = load(saved)
+    extra_count = add_extras(tiles, musolla_db_places(extras)) if extras else 0
+    print(f"musolla-database: {extra_count} places added that OpenStreetMap lacks")
     tile_dir = os.path.join(out_dir, "tiles")
     for old in glob.glob(os.path.join(tile_dir, "*.json")):
         os.remove(old)
@@ -215,7 +336,8 @@ def main(out_dir: str, only: list[str]) -> int:
         rows = sorted(by_id.values(), key=lambda p: (p[1], p[2]))
         with open(os.path.join(tile_dir, f"{key}.json"), "w") as f:
             json.dump({"tile": key, "updated": today, "places": rows}, f, ensure_ascii=False, separators=(",", ":"))
-    index = {"updated": today, "countries": countries, "tiles": sorted(tiles)}
+    index = {"updated": today, "countries": countries, "tiles": sorted(tiles),
+             "extra": {"musolla-database": extra_count}}
     with open(os.path.join(out_dir, "index.json"), "w") as f:
         json.dump(index, f, separators=(",", ":"))
     total = sum(c["places"] for c in countries.values())

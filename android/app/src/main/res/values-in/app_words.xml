@@ -839,7 +839,7 @@
     <string name="masjid_moreOnMap" formatted="false">{n} lagi dalam radius 15 km ada di peta. Ketuk pin untuk melihat nama dan petunjuk arahnya.</string>
     <string name="masjid_moreOnMap_one" formatted="false">{n} lagi dalam radius 15 km ada di peta. Ketuk pin untuk melihat nama dan petunjuk arahnya.</string>
     <string name="masjid_keepHint" formatted="false">Ketuk satu tempat dan pilih Jadikan masjid saya untuk menyimpannya di atas.</string>
-    <string name="masjid_mapCredit" formatted="false">Daftar tempat dari OpenStreetMap, dikelola oleh relawan. Ada yang belum ada, atau pin di tempat yang salah? {link}, tanpa perlu mendaftar.</string>
+    <string name="masjid_mapCredit" formatted="false">Daftar tempat dari OpenStreetMap dan daftar musala terbuka, keduanya dikelola oleh relawan. Ada yang belum ada, atau pin di tempat yang salah? {link}, tanpa perlu mendaftar.</string>
     <string name="masjid_tellMap" formatted="false">Beri tahu peta</string>
     <string name="masjid_noFacilities" formatted="false">Peta belum mencantumkan fasilitas tempat ini.</string>
     <string name="masjid_iqamahLine" formatted="false">Iqamah {times}</string>
@@ -949,4 +949,32 @@
     <string name="settings_facebook" formatted="false">Ikuti kami di Facebook</string>
     <string name="settings_freeLine" formatted="false">Gratis untuk semua. Tanpa versi berbayar.</string>
     <string name="settings_back" formatted="false">Kembali ke Pengaturan</string>
+    <string name="suggestRoom_button" formatted="false">Usulkan musala</string>
+    <string name="suggestRoom_title" formatted="false">Usulkan musala</string>
+    <string name="suggestRoom_intro" formatted="false">Tahu musala atau ruang salat yang belum ada di peta kami? Beri tahu kami. Kami memeriksa setiap usulan, lalu menambahkannya untuk semua.</string>
+    <string name="suggestRoom_name" formatted="false">Nama tempat</string>
+    <string name="suggestRoom_nameHint" formatted="false">Misalnya Mal Kota Kasablanka</string>
+    <string name="suggestRoom_level" formatted="false">Lantai</string>
+    <string name="suggestRoom_levelHint" formatted="false">Misalnya Lantai 3 atau B1</string>
+    <string name="suggestRoom_address" formatted="false">Alamat</string>
+    <string name="suggestRoom_directions" formatted="false">Cara menemukannya</string>
+    <string name="suggestRoom_directionsHint" formatted="false">Misalnya di sebelah toilet dekat lift parkir</string>
+    <string name="suggestRoom_pin" formatted="false">Letaknya di peta</string>
+    <string name="suggestRoom_pinHere" formatted="false">Saya sedang di musala ini</string>
+    <string name="suggestRoom_pinFinding" formatted="false">Mencari lokasi Anda</string>
+    <string name="suggestRoom_pinAdded" formatted="false">Pin ditambahkan di lokasi Anda</string>
+    <string name="suggestRoom_pinNote" formatted="false">Hanya jika Anda sedang berada di ruangan itu. Lokasi Anda dimasukkan ke email ini sekali saja dan tidak disimpan di tempat lain.</string>
+    <string name="suggestRoom_pinFailed" formatted="false">Lokasi Anda tidak dapat ditemukan. Alamat saja sudah cukup.</string>
+    <string name="suggestRoom_has" formatted="false">Fasilitas yang ada</string>
+    <string name="suggestRoom_women" formatted="false">Ruang perempuan</string>
+    <string name="suggestRoom_shared" formatted="false">Satu ruang untuk laki-laki dan perempuan</string>
+    <string name="suggestRoom_aircon" formatted="false">Ber-AC</string>
+    <string name="suggestRoom_mats" formatted="false">Sajadah</string>
+    <string name="suggestRoom_garments" formatted="false">Mukena dan sarung</string>
+    <string name="suggestRoom_ablution" formatted="false">Tempat wudu</string>
+    <string name="suggestRoom_slippers" formatted="false">Sandal</string>
+    <string name="suggestRoom_remarks" formatted="false">Keterangan lain</string>
+    <string name="suggestRoom_remarksHint" formatted="false">Jam buka, atau siapa yang boleh memakainya</string>
+    <string name="suggestRoom_needs" formatted="false">Isi nama tempat dan alamat atau pin.</string>
+    <string name="suggestRoom_goesTo" formatted="false">Dikirim ke {email} lewat aplikasi email Anda sendiri. JazakAllahu khairan sudah membantu orang lain menemukan tempat salat.</string>
 </resources>

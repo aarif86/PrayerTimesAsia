@@ -8,7 +8,7 @@ import { LivingSky } from '../ui/LivingSky'
 import { skyAt } from '../ui/sky'
 import { masjidAppLink, type ScreenConfig } from './config'
 import { zoned } from '../core/tz'
-import { clockParts, countdown, inFridayWindow, gregorianDate, name, phaseAt, screenDay, shortLeft, WORDS, type Phase } from './model'
+import { clockParts, countdown, inFridayWindow, gregorianDate, kaabaMomentToday, name, nextOccasion, occasionName, phaseAt, screenDay, shortLeft, WORDS, type Phase } from './model'
 
 /**
  * The masjid screen. Sizes are in viewport units so the same layout reads from
@@ -232,6 +232,15 @@ function RamadanRibbon({ sd, now, config: c }: { sd: NonNullable<ReturnType<type
     if (sd.qiyam != null && now < sd.qiyam + 3_600_000) parts.push(<span>{w.qiyam} <Time ms={sd.qiyam} tz={tz} h24={c.h24} small /></span>)
     else if (sd.tarawih && sd.hijri.month === 9 && sd.hijri.day >= 20) parts.push(<span>{w.lastTen}</span>)
   }
+  const occasion = c.hide.occasion ? null : nextOccasion(now, c)
+  // 1 Ramadan and Eid morning already have their own words above.
+  if (occasion && !(occasion.days === 0 && (occasion.id === 'ramadan' || occasion.id === 'aidilfitri'))) {
+    const text = w.occasion(occasionName(occasion.id, c), occasion.days)
+    parts.push(occasion.days === 0 ? <b class="scr-occasion">{text}</b> : <span class="scr-occasion">{text}</span>)
+  }
+  // Shown to the nearest minute (17:17:59 reads 5:18, as published).
+  const kaaba = c.hide.kaaba ? null : kaabaMomentToday(now, c)
+  if (kaaba != null) parts.push(<span class="scr-kaaba"><b>{w.kaaba}</b> {w.kaabaAt} <Time ms={Math.round(kaaba / 60_000) * 60_000} tz={tz} h24={c.h24} small />, {w.kaabaHint}</span>)
   if (!parts.length) return null
   return <p class="scr-ramadan">{parts.map((x, i) => <>{i > 0 && <i class="scr-dotsep">·</i>}{x}</>)}</p>
 }

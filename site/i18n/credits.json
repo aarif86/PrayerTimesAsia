@@ -32,6 +32,12 @@
         "https://api.myquran.com"
       ],
       [
+        "Ministry of Religious Affairs, Brunei",
+        "Brunei times come from the official timetable of the Ministry of Religious Affairs, Brunei (Kementerian Hal Ehwal Ugama).",
+        "mora.gov.bn",
+        "https://www.mora.gov.bn"
+      ],
+      [
         "Every other country",
         "Where a country has a religious authority, the app follows it. Where it does not, the app uses what most masjids there use, and tells you which.",
         "See every country and its source",
@@ -51,6 +57,12 @@
         "The map of which district belongs to which JAKIM zone comes from the mptwaktusolat project.",
         "github.com/mptwaktusolat",
         "https://github.com/mptwaktusolat/malaysia.geojson"
+      ],
+      [
+        "Brunei timetable",
+        "Faruq Rasid's open prayertimes database reads the ministry's printed timetable and checks it, shared under the GPL 3.0 licence. We thank him for it.",
+        "github.com/ruqqq/prayertimes-database",
+        "https://github.com/ruqqq/prayertimes-database"
       ],
       [
         "Maps and places",
@@ -124,6 +136,12 @@
         "https://api.myquran.com"
       ],
       [
+        "Kementerian Hal Ehwal Ugama, Brunei",
+        "Waktu Brunei diambil daripada jadual rasmi Kementerian Hal Ehwal Ugama Brunei.",
+        "mora.gov.bn",
+        "https://www.mora.gov.bn"
+      ],
+      [
         "Setiap negara lain",
         "Jika sesebuah negara mempunyai pihak berkuasa agama, aplikasi mengikutnya. Jika tiada, aplikasi menggunakan kaedah yang digunakan oleh kebanyakan masjid di sana, dan memberitahu anda yang mana satu.",
         "Lihat setiap negara dan sumbernya",
@@ -143,6 +161,12 @@
         "Peta daerah yang termasuk dalam zon JAKIM tertentu datang daripada projek mptwaktusolat.",
         "github.com/mptwaktusolat",
         "https://github.com/mptwaktusolat/malaysia.geojson"
+      ],
+      [
+        "Jadual Brunei",
+        "Pangkalan data waktu solat terbuka oleh Faruq Rasid membaca dan menyemak jadual bercetak kementerian itu, dikongsi di bawah lesen GPL 3.0. Kami berterima kasih kepadanya.",
+        "github.com/ruqqq/prayertimes-database",
+        "https://github.com/ruqqq/prayertimes-database"
       ],
       [
         "Peta dan tempat",
@@ -216,6 +240,12 @@
         "https://api.myquran.com"
       ],
       [
+        "Kementerian Hal Ehwal Ugama, Brunei",
+        "Waktu Brunei diambil dari jadwal resmi Kementerian Hal Ehwal Ugama Brunei.",
+        "mora.gov.bn",
+        "https://www.mora.gov.bn"
+      ],
+      [
         "Setiap negara lain",
         "Jika suatu negara punya otoritas agama, aplikasi mengikutinya. Jika tidak ada, aplikasi memakai cara yang dipakai kebanyakan masjid di sana, dan memberi tahu Anda yang mana.",
         "Lihat setiap negara dan sumbernya",
@@ -235,6 +265,12 @@
         "Peta daerah yang termasuk zona JAKIM tertentu berasal dari proyek mptwaktusolat.",
         "github.com/mptwaktusolat",
         "https://github.com/mptwaktusolat/malaysia.geojson"
+      ],
+      [
+        "Jadwal Brunei",
+        "Basis data waktu salat terbuka milik Faruq Rasid membaca dan memeriksa jadwal cetak kementerian tersebut, dibagikan dengan lisensi GPL 3.0. Kami berterima kasih kepadanya.",
+        "github.com/ruqqq/prayertimes-database",
+        "https://github.com/ruqqq/prayertimes-database"
       ],
       [
         "Peta dan tempat",
