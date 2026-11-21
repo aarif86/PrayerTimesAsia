@@ -388,7 +388,7 @@ private fun TimetableBody(context: Context, m: WidgetModel, size: DpSize) {
             if (lead != null && next != null) {
                 Text(if (lead.isNext) "NEXT PRAYER" else "PRAYER NOW", style = style(sz(11), FontWeight.Bold, white(0.8f)))
                 Text(m.names.getValue(lead.prayer), style = style(sz(if (tall) 28 else 22), FontWeight.Bold), maxLines = 1)
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(GlanceModifier.height(if (tall) 34.dp else 20.dp), verticalAlignment = Alignment.CenterVertically) {
                     Countdown(context, next.second, big = tall)
                     Text(if (lead.isNext) "  to go" else "  left", style = style(sz(13), FontWeight.Medium, white(0.85f)))
                 }
