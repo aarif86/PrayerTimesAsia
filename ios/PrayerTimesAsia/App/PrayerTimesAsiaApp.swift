@@ -59,7 +59,7 @@ struct PrayerTimesAsiaApp: App {
 struct RootView: View {
     @Environment(AppModel.self) private var model
     // The moving opening screen (OpeningView.swift) plays over the plain navy launch screen,
-    // then fades. Always on a fresh install, then as Settings > Opening screen says.
+    // then fades. Always on a fresh install, then as Settings, Look and feel says.
     // Skipped for the CI screenshots.
     @State private var opening: Bool?
     @State private var showGuide = false

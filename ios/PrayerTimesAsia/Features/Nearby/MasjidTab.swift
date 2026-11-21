@@ -19,6 +19,9 @@ struct NearbyView: View {
     @State private var openOnly = false
     @State private var allFriday = false
     @State private var showAbout = false
+    @State private var suggesting = false
+    /// When Near me last found the person, so Suggest a prayer room only offers a recent spot as the room's pin.
+    @State private var nearMeAt: Date?
     @State private var slow = false
     /// A fresh GPS fix from "Find prayer places near me". It doesn't change the
     /// place your prayer times are for.
@@ -105,6 +108,9 @@ struct NearbyView: View {
                 }
             }
             .sheet(isPresented: $showAbout) { MakersSheet(placement: "masjid") }
+            .sheet(isPresented: $suggesting) {
+                SuggestRoomView(near: here, live: (nearMeAt.map { Date.now.timeIntervalSince($0) < 300 } ?? false) ? nearMe : nil)
+            }
             .task(id: here) {
                 guard let c = here else { return }
                 slow = false
@@ -116,7 +122,7 @@ struct NearbyView: View {
             .onChange(of: model.location.location) { _, fix in
                 guard locating, let fix, let asked = askedAt, fix.timestamp >= asked.addingTimeInterval(-60) else { return }
                 locating = false
-                nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude)
+                nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude); nearMeAt = .now
             }
             .onChange(of: selected) { _, space in
                 if let space { focus(space.coordinates) }
@@ -300,11 +306,13 @@ struct NearbyView: View {
 
             if here != nil {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Places from Apple Maps and OpenStreetMap, which volunteers keep up to date. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.")
+                    Text("Places from Apple Maps, OpenStreetMap and the open musolla list, which volunteers keep up to date. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.")
                     if let here, let url = MasjidExtras.reportURL(here) {
                         Button { openURL(url) } label: { Label("Tell the map", systemImage: "flag") }
                             .font(.footnote.weight(.semibold))
                     }
+                    Button { suggesting = true } label: { Label("Suggest a prayer room", systemImage: "plus.circle") }
+                        .font(.footnote.weight(.semibold))
                     if model.prefs.myMasjid == nil {
                         Text("A masjid with a Prayer Times Asia screen? Scan its QR code with the Camera app to see its iqamah times on your Prayer screen.")
                             .padding(.top, 6)
@@ -341,7 +349,7 @@ struct NearbyView: View {
     private func findNearMe() {
         if model.location.isDenied { return }
         if let fix = model.location.location, fix.timestamp.timeIntervalSinceNow > -120 {
-            nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude)
+            nearMe = Coordinates(latitude: fix.coordinate.latitude, longitude: fix.coordinate.longitude); nearMeAt = .now
             showYou(animated: true)
             return
         }
