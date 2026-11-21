@@ -136,25 +136,25 @@ fun SettingsScreen(
     // Apple style: a short main page of rows that show the current choice, and every
     // detail one tap deeper. Same groups as iOS SettingsView.swift and web ui/Settings.tsx.
     var page by rememberSaveable { mutableStateOf<String?>(null) }
-    BackHandler(enabled = page != null) { page = null }
+    BackHandler(enabled = page != null) { page = if (page == "accuracy") "times" else null }
     Box(Modifier.fillMaxSize()) {
         LivingSkyBackground(state.skyNow)
         when (page) {
             null -> SettingsMain(state, listState, { page = it }, openCredits, openReview, openNote)
-            "location" -> SettingsPage("Location", { page = null }) { LocationPage(state, openPlaces) }
-            "times" -> SettingsPage("Prayer times", { page = null }) { PrayerTimesPage(state) { page = "accuracy" } }
-            "accuracy" -> SettingsPage("How accurate are the times?", { page = "times" }) { AccuracyPage() }
-            "look" -> SettingsPage("Look and feel", { page = null }) { LookPage(state) }
+            "location" -> SettingsPage(tr(R.string.settings_location), { page = null }) { LocationPage(state, openPlaces) }
+            "times" -> SettingsPage(tr(R.string.settings_prayerTimes), { page = null }) { PrayerTimesPage(state) { page = "accuracy" } }
+            "accuracy" -> SettingsPage(tr(R.string.settings_howAccurate), { page = "times" }) { AccuracyPage() }
+            "look" -> SettingsPage(tr(R.string.settings_lookFeel), { page = null }) { LookPage(state) }
             "language" -> SettingsPage(tr(R.string.settings_language), { page = null }) { LanguagePage(state) }
             "home" -> SettingsPage("Home screen", { page = null }) { HomeScreenPage(openWidgetPreview) }
-            "ramadan" -> SettingsPage("Ramadan", { page = null }) { RamadanPage(state) }
+            "ramadan" -> SettingsPage(tr(R.string.alerts_dayRamadan), { page = null }) { RamadanPage(state) }
             "tracker" -> SettingsPage(tr(R.string.settings_tracker), { page = null }) { TrackerPage(state) }
             "hadith" -> SettingsPage(tr(R.string.settings_hadith), { page = null }) { HadithPage(state) }
-            "move" -> SettingsPage("Move to a new phone", { page = null }) { MovePage(openMoveOut, openMoveIn) }
+            "move" -> SettingsPage(tr(R.string.settings_movePhone), { page = null }) { MovePage(openMoveOut, openMoveIn) }
             "privacy" -> SettingsPage(tr(R.string.settings_privacy), { page = null }) { PrivacyPage(state) }
-            "help" -> SettingsPage("Help", { page = null }) { HelpPage(openGuide) }
+            "help" -> SettingsPage(tr(R.string.settings_help), { page = null }) { HelpPage(openGuide) }
             "picks" -> SettingsPage(PICKS_NAME, { page = null }) { PicksPage(state) }
-            "about" -> SettingsPage("About and credits", { page = null }) { AboutPage(openCredits) }
+            "about" -> SettingsPage(tr(R.string.settings_aboutCredits), { page = null }) { AboutPage(openCredits) }
             else -> SettingsMain(state, listState, { page = it }, openCredits, openReview, openNote)
         }
     }
@@ -184,11 +184,11 @@ private fun SettingsMain(
     val context = LocalContext.current
     val notify = Prayer.all.count { p.alertMode(it) == com.prayertimesasia.core.AlertMode.NOTIFY }
     val alarm = Prayer.all.count { p.alertMode(it) == com.prayertimesasia.core.AlertMode.ALARM }
-    val alerts = if (notify + alarm == 0) "Nothing is on" else listOfNotNull(
+    val alerts = if (notify + alarm == 0) tr(R.string.settings_nothingOn) else listOfNotNull(
         if (notify > 0) "$notify notify" else null,
         if (alarm > 0) "$alarm alarm${if (alarm > 1) "s" else ""}" else null,
     ).joinToString(", ")
-    val language = AppWords.LANGUAGES.firstOrNull { it.first == AppWords.picked(context) }?.second ?: "Automatic"
+    val language = AppWords.LANGUAGES.firstOrNull { it.first == AppWords.picked(context) }?.second ?: tr(R.string.common_automatic)
     LazyColumn(Modifier.fillMaxSize(), state = listState) {
         item {
             Text(tr(R.string.settings_title), style = display(34.sp, FontWeight.Bold), color = Palette.primary,
@@ -200,41 +200,41 @@ private fun SettingsMain(
         }
         item {
             Section(null) {
-                NavRow("Location", Icons.Filled.LocationOn, Color(0xFF0A84FF), r.activePlace?.name ?: "Not set") { go("location") }
-                NavRow("Prayer times", Icons.Filled.Schedule, Color(0xFF2F9E8F), r.method.shortName) { go("times") }
-                NavRow("Alerts and alarms", Icons.Filled.Alarm, Color(0xFFFF453A), alerts) { state.openAlerts() }
+                NavRow(tr(R.string.settings_location), Icons.Filled.LocationOn, Color(0xFF0A84FF), r.activePlace?.name ?: tr(R.string.settings_notSet)) { go("location") }
+                NavRow(tr(R.string.settings_prayerTimes), Icons.Filled.Schedule, Color(0xFF2F9E8F), r.method.shortName) { go("times") }
+                NavRow(tr(R.string.settings_alertsAlarms), Icons.Filled.Alarm, Color(0xFFFF453A), alerts) { state.openAlerts() }
             }
         }
         item {
             Section(null) {
-                NavRow("Look and feel", Icons.Filled.Palette, Color(0xFFBF5AF2), p.todayStyle.label) { go("look") }
+                NavRow(tr(R.string.settings_lookFeel), Icons.Filled.Palette, Color(0xFFBF5AF2), p.todayStyle.label) { go("look") }
                 NavRow(tr(R.string.settings_language), Icons.Filled.Language, Color(0xFF0A84FF), language) { go("language") }
                 NavRow("Home screen", Icons.Filled.PhoneAndroid, Color(0xFF5E5CE6), "Widgets") { go("home") }
             }
         }
         item {
             Section(null) {
-                NavRow("Ramadan", Icons.Filled.NightsStay, Color(0xFF3A3480),
-                    if (p.seasonPreview == com.prayertimesasia.core.SeasonPreview.OFF) "Starts by itself" else "Pretend on") { go("ramadan") }
-                NavRow(tr(R.string.settings_tracker), Icons.Filled.CheckCircle, Color(0xFF30D158), if (p.trackerEnabled) "On" else "Off") { go("tracker") }
+                NavRow(tr(R.string.alerts_dayRamadan), Icons.Filled.NightsStay, Color(0xFF3A3480),
+                    if (p.seasonPreview == com.prayertimesasia.core.SeasonPreview.OFF) tr(R.string.settings_ramadanStarts) else tr(R.string.settings_pretendOn)) { go("ramadan") }
+                NavRow(tr(R.string.settings_tracker), Icons.Filled.CheckCircle, Color(0xFF30D158), if (p.trackerEnabled) tr(R.string.common_on) else tr(R.string.common_off)) { go("tracker") }
                 NavRow(tr(R.string.settings_hadith), Icons.AutoMirrored.Filled.MenuBook, Color(0xFFA2845E),
-                    if (p.showHadith || p.hadithInAlerts) "On" else "Off") { go("hadith") }
+                    if (p.showHadith || p.hadithInAlerts) tr(R.string.common_on) else tr(R.string.common_off)) { go("hadith") }
             }
         }
         item {
             Section(null) {
-                NavRow("Move to a new phone", Icons.Filled.SwapHoriz, Color(0xFF32ADE6)) { go("move") }
+                NavRow(tr(R.string.settings_movePhone), Icons.Filled.SwapHoriz, Color(0xFF32ADE6)) { go("move") }
                 NavRow(tr(R.string.settings_privacy), Icons.Filled.PanTool, Color(0xFF0A84FF)) { go("privacy") }
-                NavRow("Help", Icons.AutoMirrored.Filled.HelpOutline, Color(0xFFFF9F0A)) { go("help") }
+                NavRow(tr(R.string.settings_help), Icons.AutoMirrored.Filled.HelpOutline, Color(0xFFFF9F0A)) { go("help") }
             }
         }
         item {
             Section(null) {
-                NavRow("Share with family and friends", Icons.Filled.Share, Color(0xFF30D158)) { shareApp(context) }
-                NavRow("Rate the app", Icons.Filled.Star, Color(0xFFFFB800), onClick = openReview)
-                NavRow("Send us a note", Icons.Filled.Email, Color(0xFF0A84FF), onClick = openNote)
-                NavRow(PICKS_NAME, Icons.Filled.CardGiftcard, Color(0xFFE0634F), if (p.showOffers) "On" else "Off") { go("picks") }
-                NavRow("About and credits", Icons.Filled.Info, Color(0xFF8E8E93)) { go("about") }
+                NavRow(tr(R.string.settings_share), Icons.Filled.Share, Color(0xFF30D158)) { shareApp(context) }
+                NavRow(tr(R.string.settings_rateApp), Icons.Filled.Star, Color(0xFFFFB800), onClick = openReview)
+                NavRow(tr(R.string.settings_sendUsNote), Icons.Filled.Email, Color(0xFF0A84FF), onClick = openNote)
+                NavRow(PICKS_NAME, Icons.Filled.CardGiftcard, Color(0xFFE0634F), if (p.showOffers) tr(R.string.common_on) else tr(R.string.common_off)) { go("picks") }
+                NavRow(tr(R.string.settings_aboutCredits), Icons.Filled.Info, Color(0xFF8E8E93)) { go("about") }
             }
         }
         item {
@@ -273,12 +273,12 @@ private fun NavRow(label: String, icon: ImageVector, color: Color, value: String
 @Composable
 private fun LocationPage(state: AppState, openPlaces: () -> Unit) {
     val p = state.prefs
-    Section(null, "Your times follow the place you pick here.") {
-        ValueRow(tr(R.string.settings_place), state.resolver.activePlace?.name ?: "Not set", onClick = openPlaces)
+    Section(null, tr(R.string.settings_placeFoot)) {
+        ValueRow(tr(R.string.settings_place), state.resolver.activePlace?.name ?: tr(R.string.settings_notSet), onClick = openPlaces)
     }
-    Section(tr(R.string.settings_travel), "We will ask when you land in another country.") {
-        SwitchRow("Musafir mode", p.musafirEnabled, "Jamak and qasar help when you are away from home") { on -> state.update { it.copy(musafirEnabled = on) } }
-        if (p.musafirEnabled) LinkRow("My journeys", AppIcons.journey) { state.showJourney = true }
+    Section(tr(R.string.settings_travel), tr(R.string.settings_travelAsk)) {
+        SwitchRow(tr(R.string.settings_musafirMode), p.musafirEnabled, tr(R.string.settings_musafirModeSub)) { on -> state.update { it.copy(musafirEnabled = on) } }
+        if (p.musafirEnabled) LinkRow(tr(R.string.settings_myJourneys), AppIcons.journey) { state.showJourney = true }
     }
 }
 
@@ -290,21 +290,21 @@ private fun PrayerTimesPage(state: AppState, openAccuracy: () -> Unit) {
     val source = r.officialSource
     Section(null, "${r.sourceShort} Always follow your local religious authority.") {
         ValueRow(tr(R.string.settings_countryRules), if (r.profile.code.isEmpty()) r.profile.name else "${r.profile.flag} ${r.profile.name}")
-        ValueRow("Times from", r.method.shortName)
+        ValueRow(tr(R.string.settings_timesFrom), r.method.shortName)
         ValueRow(tr(R.string.settings_timetable), when {
             source == null -> "Worked out on your phone"
             state.official.hasTable(source, LocalDate.now(r.zone).year) -> "Saved for offline"
             else -> "Downloads when online"
         })
-        if (source != null) LinkRow("Download the timetable again", Icons.Filled.Download) { state.refreshOfficialTimetable() }
-        LinkRow("How accurate are the times?", null, openAccuracy)
+        if (source != null) LinkRow(tr(R.string.settings_downloadAgain), Icons.Filled.Download) { state.refreshOfficialTimetable() }
+        LinkRow(tr(R.string.settings_howAccurate), null, openAccuracy)
     }
-    Section(tr(R.string.settings_calculation), "Automatic follows the country you are in. Change these only if your masjid follows another way.") {
+    Section(tr(R.string.settings_calculation), tr(R.string.settings_calcFootShort)) {
         PickerRow(tr(R.string.settings_method), if (p.methodOverrideId == null) "Automatic · ${r.profile.method.shortName}" else r.method.name,
             listOf<Pair<String, String?>>("Automatic · ${r.profile.method.shortName}" to null) + CalculationMethod.all.map { it.name to it.id },
             p.methodOverrideId) { id -> state.update { it.copy(methodOverrideId = id) } }
-        PickerRow(tr(R.string.settings_asr), p.asrOverride?.label ?: "Automatic · ${if (r.profile.asr == AsrSchool.HANAFI) "Hanafi" else "Shafi'i"}",
-            listOf<Pair<String, AsrSchool?>>("Automatic · ${if (r.profile.asr == AsrSchool.HANAFI) "Hanafi" else "Shafi'i"}" to null) +
+        PickerRow(tr(R.string.settings_asr), p.asrOverride?.label ?: "Automatic · ${if (r.profile.asr == AsrSchool.HANAFI) tr(R.string.settings_hanafi) else tr(R.string.settings_shafii)}",
+            listOf<Pair<String, AsrSchool?>>("Automatic · ${if (r.profile.asr == AsrSchool.HANAFI) tr(R.string.settings_hanafi) else tr(R.string.settings_shafii)}" to null) +
                 AsrSchool.entries.map { it.label to it },
             p.asrOverride) { a -> state.update { it.copy(asrOverride = a) } }
         val place = r.activePlace
@@ -315,13 +315,13 @@ private fun PrayerTimesPage(state: AppState, openAccuracy: () -> Unit) {
                 p.jakimZoneOverride) { z -> state.update { it.copy(jakimZoneOverride = z) } }
         }
     }
-    Section("Dates", "Move the Hijri date by a day if your local moon sighting is different.") {
-        StepperRow("Hijri date", if (p.hijriAdjustment == 0) "Same day" else String.format(java.util.Locale.ROOT, "%+d day", p.hijriAdjustment),
+    Section(tr(R.string.settings_dates), tr(R.string.settings_hijriFoot)) {
+        StepperRow(tr(R.string.settings_hijriDate), if (p.hijriAdjustment == 0) tr(R.string.settings_sameDay) else String.format(java.util.Locale.ROOT, "%+d day", p.hijriAdjustment),
             canDown = p.hijriAdjustment > -2, canUp = p.hijriAdjustment < 2,
             onDown = { state.update { it.copy(hijriAdjustment = it.hijriAdjustment - 1) } },
             onUp = { state.update { it.copy(hijriAdjustment = it.hijriAdjustment + 1) } })
     }
-    Section("Add to calendar") {
+    Section(tr(R.string.settings_addToCalendar)) {
         source?.calendarFeed?.let { feed ->
             LinkRow("Subscribe in a calendar app", Icons.Filled.Event) { openFeed(context, feed) }
         }
@@ -360,15 +360,15 @@ private fun LookPage(state: AppState) {
             }
         }
     }
-    Section(tr(R.string.settings_appearance), "Automatic follows the sky where you are.") {
+    Section(tr(R.string.settings_appearance), tr(R.string.settings_appearanceFoot)) {
         PickerRow(tr(R.string.settings_appearance), p.appearance.label, Appearance.entries.map { it.label to it }, p.appearance) { a ->
             state.update { it.copy(appearance = a) }
         }
     }
-    Section("Text and time", "Tip. The two round buttons at the top of the Prayer screen change the look too.") {
+    Section(tr(R.string.settings_textTime), tr(R.string.settings_lookTip)) {
         SwitchRow(tr(R.string.settings_biggerText), p.largeText) { on -> state.update { it.copy(largeText = on) } }
         SwitchRow("24 hour time", p.use24Hour) { on -> state.update { it.copy(use24Hour = on) } }
-        SwitchRow("Moving dial when the app opens", p.showOpening, "Turn off to open straight to your times") { on ->
+        SwitchRow(tr(R.string.settings_openingDial), p.showOpening, tr(R.string.settings_openingDialSub)) { on ->
             state.update { it.copy(showOpening = on) }
         }
     }
@@ -408,12 +408,13 @@ private fun HomeScreenPage(openWidgetPreview: () -> Unit) {
 @Composable
 private fun RamadanPage(state: AppState) {
     val p = state.prefs
-    Section(null, "Ramadan mode starts by itself when your local religious authority announces it. Sahur and iftar alerts are in Alerts and alarms.") {
+    Section(null, tr(R.string.settings_ramadanFootShort)) {
         LinkRow("Open the Ramadan page", Icons.Filled.NightsStay) { state.showRamadan = true }
     }
-    // Test builds only, or if it is somehow still on, so it can be turned off.
-    if (BuildConfig.DEBUG || p.seasonPreview != com.prayertimesasia.core.SeasonPreview.OFF) {
-        Section("For testers",
+    // Test builds only, or if it is somehow still on, so it can be turned off. Play testers get
+    // the same release build as everyone, so tapping the version in About 7 times shows it too.
+    if (BuildConfig.DEBUG || TesterUnlock.on || p.seasonPreview != com.prayertimesasia.core.SeasonPreview.OFF) {
+        Section(tr(R.string.settings_forTesters),
             if (p.seasonPreview == com.prayertimesasia.core.SeasonPreview.OFF) "Shows a pretend Ramadan or Eid date so you can try it early."
             else "Pretend mode is on. The app shows a pretend date, not today's. Turn it off before you rely on the times.") {
             PickerRow("Pretend it is", p.seasonPreview.label,
@@ -435,10 +436,10 @@ private fun TrackerPage(state: AppState) {
 private fun HadithPage(state: AppState) {
     val p = state.prefs
     Section(null, "Tap ✕ on any hadith to hide just that one.") {
-        SwitchRow(tr(R.string.settings_showHadith), p.showHadith, "A short hadith or ayah on some screens") { on ->
+        SwitchRow(tr(R.string.settings_showHadith), p.showHadith, tr(R.string.settings_showHadithSub)) { on ->
             state.update { it.copy(showHadith = on, hiddenHadith = if (on) emptyList() else it.hiddenHadith) }
         }
-        SwitchRow("Add a hadith to wake up alerts", p.hadithInAlerts, "One short line under Fajr and tahajjud alerts") { on -> state.update { it.copy(hadithInAlerts = on) } }
+        SwitchRow(tr(R.string.settings_wakeHadith), p.hadithInAlerts, "One short line under Fajr and tahajjud alerts") { on -> state.update { it.copy(hadithInAlerts = on) } }
     }
 }
 
@@ -456,7 +457,7 @@ private fun PrivacyPage(state: AppState) {
     val context = LocalContext.current
     val uri = LocalUriHandler.current
     val notificationsOn = remember { androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled() }
-    Section("Our promise") {
+    Section(tr(R.string.settings_promise)) {
         LabelRow(Icons.Filled.PanTool, "No outside ads and no accounts")
         LabelRow(Icons.Filled.LocationOff, "Your exact location stays on your phone")
         LabelRow(Icons.Filled.Map, "Masjid search sends only your area")
@@ -465,8 +466,8 @@ private fun PrivacyPage(state: AppState) {
         SwitchRow("Share anonymous counts", p.shareUsage) { on -> state.update { it.copy(shareUsage = on) } }
     }
     Section("Phone permissions", "If times or alerts look wrong, check these first.") {
-        ValueRow("Location", if (state.location.hasPermission) "Allowed" else if (p.useGPS) "Not allowed" else "Using a place you picked")
-        ValueRow("Notifications", if (notificationsOn) "Allowed" else "Off")
+        ValueRow(tr(R.string.settings_location), if (state.location.hasPermission) tr(R.string.settings_allowed) else if (p.useGPS) "Not allowed" else tr(R.string.settings_pickedPlace))
+        ValueRow(tr(R.string.settings_notificationsWord), if (notificationsOn) tr(R.string.settings_allowed) else tr(R.string.common_off))
         LinkRow("Open phone settings", null) {
             runCatching {
                 context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))
@@ -475,7 +476,7 @@ private fun PrivacyPage(state: AppState) {
         }
     }
     Section(null) {
-        LinkRow("Privacy policy", null) { runCatching { uri.openUri(SettingsLinks.PRIVACY) } }
+        LinkRow(tr(R.string.settings_privacyPolicy), null) { runCatching { uri.openUri(SettingsLinks.PRIVACY) } }
     }
 }
 
@@ -483,8 +484,8 @@ private fun PrivacyPage(state: AppState) {
 private fun HelpPage(openGuide: () -> Unit) {
     val uri = LocalUriHandler.current
     Section(null, "The quick guide is a short tour that taps the real buttons for you.") {
-        LinkRow("Show the quick guide", Icons.Filled.Lightbulb, openGuide)
-        LinkRow("Questions and answers", null) { runCatching { uri.openUri(SettingsLinks.FAQ) } }
+        LinkRow(tr(R.string.settings_showGuide), Icons.Filled.Lightbulb, openGuide)
+        LinkRow(tr(R.string.settings_faq), null) { runCatching { uri.openUri(SettingsLinks.FAQ) } }
         LinkRow("Help check times where you live", null) { runCatching { uri.openUri(SettingsLinks.VERIFY) } }
     }
 }
@@ -508,18 +509,19 @@ private fun PicksPage(state: AppState) {
 private fun AboutPage(openCredits: () -> Unit) {
     val uri = LocalUriHandler.current
     Section(null, "Built in Asia, made for Muslims everywhere.") {
-        LinkRow("Sources and credits", null, openCredits)
+        LinkRow(tr(R.string.settings_sources), null, openCredits)
         LinkRow(tr(R.string.settings_designLook), null) { runCatching { uri.openUri(SettingsLinks.NEW_LOOK) } }
     }
-    Section("Community") {
-        LinkRow("Join the Timekeepers", null) { runCatching { uri.openUri(SettingsLinks.JOIN) } }
-        LinkRow("Follow us on Instagram", null) { runCatching { uri.openUri(SettingsLinks.INSTAGRAM) } }
-        LinkRow("Follow us on Facebook", null) { runCatching { uri.openUri(SettingsLinks.FACEBOOK) } }
+    Section(tr(R.string.settings_community)) {
+        LinkRow(tr(R.string.settings_joinTimekeepers), null) { runCatching { uri.openUri(SettingsLinks.JOIN) } }
+        LinkRow(tr(R.string.settings_instagram), null) { runCatching { uri.openUri(SettingsLinks.INSTAGRAM) } }
+        LinkRow(tr(R.string.settings_facebook), null) { runCatching { uri.openUri(SettingsLinks.FACEBOOK) } }
     }
-    Section(null, "Free for everyone. No paid version.") {
-        LinkRow("Privacy policy", null) { runCatching { uri.openUri(SettingsLinks.PRIVACY) } }
-        LinkRow("Terms of use", null) { runCatching { uri.openUri(SettingsLinks.TERMS) } }
-        ValueRow(tr(R.string.settings_version), "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
+    Section(null, tr(R.string.settings_freeLine)) {
+        LinkRow(tr(R.string.settings_privacyPolicy), null) { runCatching { uri.openUri(SettingsLinks.PRIVACY) } }
+        LinkRow(tr(R.string.settings_terms), null) { runCatching { uri.openUri(SettingsLinks.TERMS) } }
+        ValueRow(tr(R.string.settings_version), "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+            onClick = { TesterUnlock.taps += 1; if (TesterUnlock.taps >= 7) TesterUnlock.on = true })
     }
 }
 
@@ -654,4 +656,10 @@ fun <T> PickerRow(label: String, value: String, options: List<Pair<String, T>>, 
             confirmButton = { TextButton({ open = false }) { Text(tr(R.string.common_close)) } },
         )
     }
+}
+
+/** Hidden switch for testers on a store build: 7 taps on the version in About, until the app closes. */
+private object TesterUnlock {
+    var taps = 0
+    var on by mutableStateOf(false)
 }
