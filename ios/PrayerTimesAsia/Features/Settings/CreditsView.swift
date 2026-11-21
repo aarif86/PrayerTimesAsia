@@ -36,7 +36,7 @@ struct CreditsView: View {
                detail: "Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.",
                url: "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md"),
         Credit(title: "Design",
-               detail: "The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my by Awsam Tech LLP, the Singapore and Malaysia app. With thanks to Ustaz Shahib Amin Syukran, who designed the original.",
+               detail: "The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my by Awsam Tech LLP, the Singapore and Malaysia app. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.",
                url: "https://www.awsamtech.com/"),
         Credit(title: "This app",
                detail: "Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.",
