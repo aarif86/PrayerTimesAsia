@@ -7,8 +7,7 @@ Writes _site/credits.html (English), _site/ms/credits.html and _site/id/credits.
 the one file site/i18n/credits.json, so the three can never drift apart. Fails if a language
 is missing a line the English has. Public copy rule: no colons or dashes in the text.
 
-DESIGN_SLOT below is where a thank you for the original designer of the Colour Bands look
-goes once he has said yes. It is empty on purpose (see PR #154 for the agreed wording).
+The design thanks (prayertime.sg by AwsamTech) was added on the owner's say so, 21 Nov 2026.
 """
 import html
 import json
@@ -21,7 +20,6 @@ T = json.load(open(src, encoding='utf-8'))
 EN = T['en']
 LANGS = ['en', 'ms', 'id']
 LANG_NAMES = {'en': 'English', 'ms': 'Bahasa Melayu', 'id': 'Bahasa Indonesia'}
-DESIGN_SLOT = ''  # filled in only after the owner says the designer approved
 
 
 def e(s):
@@ -68,7 +66,7 @@ def page(lang):
         else f'<span aria-current="page">{LANG_NAMES[t]}</span>' if t == lang
         else f'<a href="{("" if lang == "en" else "../")}{t}/credits.html" hreflang="{t}" lang="{t}">{LANG_NAMES[t]}</a>'
         for t in LANGS)
-    design = f'\n    {DESIGN_SLOT}\n' if DESIGN_SLOT else ''
+    design = f'\n  <h2>{e(L["design_h"])}</h2>\n    {cards([L["design"]], prefix)}\n'
     return f'''<!doctype html>
 <html lang="{L["html_lang"]}">
 <head>
