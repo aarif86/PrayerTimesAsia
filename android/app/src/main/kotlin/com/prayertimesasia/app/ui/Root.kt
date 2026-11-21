@@ -198,6 +198,8 @@ private fun RootContent(state: AppState) {
             }
             // New users see the quick guide once, right after choosing their place.
             if (state.prefs.guideShown != true && overlay == null && state.pendingMasjid == null) GuideDialog(state) {}
+            // Test builds offer a newer version, but never on top of the guide.
+            if (state.fixedNow == null && state.prefs.guideShown == true) TestUpdatePrompt()
         }
     }
 }
