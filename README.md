@@ -74,7 +74,7 @@ How often to send updates to the stores, and how to test first: [docs/releasing.
 
 The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my
 by [Awsam Tech LLP](https://www.awsamtech.com/), the Singapore and Malaysia app many of us
-grew up with. With thanks to Ustaz Shahib Amin Syukran, who designed the original.
+grew up with. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.
 The prayertimes.sg & my logo is not used.
 
 ## Licence and promises
