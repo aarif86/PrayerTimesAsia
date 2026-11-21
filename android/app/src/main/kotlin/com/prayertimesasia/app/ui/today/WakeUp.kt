@@ -295,11 +295,15 @@ internal fun ChoiceRow(label: String, detail: String?, selected: Boolean, onClic
 }
 
 /** When this choice would next ring (this morning if it is still ahead, else tomorrow). */
-internal fun timeSoon(state: AppState, at: (PrayerDay) -> Instant): String? {
+internal fun timeSoon(state: AppState, at: (PrayerDay) -> Instant): String? =
+    nextSoon(state, at)?.let { state.resolver.formatted(it) }
+
+/** The same, as an instant: today if it is still ahead, else tomorrow. */
+internal fun nextSoon(state: AppState, at: (PrayerDay) -> Instant): Instant? {
     for (offset in 0..1) {
         val day = state.resolver.day(state.now, offset) ?: continue
         val t = at(day)
-        if (t > state.now) return state.resolver.formatted(t)
+        if (t > state.now) return t
     }
     return null
 }
