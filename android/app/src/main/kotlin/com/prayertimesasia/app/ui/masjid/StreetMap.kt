@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -314,7 +315,7 @@ internal fun StreetMap(
     val tilesVersion by OsmTiles.arrived
     val currentSpaces by rememberUpdatedState(spaces)
 
-    Box(modifier.background(if (dark) Color(0xFF1C2230) else Color(0xFFE9E5DC))
+    Box(modifier.clipToBounds().background(if (dark) Color(0xFF1C2230) else Color(0xFFE9E5DC))
         .onSizeChanged {
             camera.widthDp = it.width / density.toDouble(); camera.heightDp = it.height / density.toDouble()
             if (it.width > 0) camera.ready = true
