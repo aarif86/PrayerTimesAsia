@@ -322,7 +322,7 @@
     <string name="wake_rings" formatted="false">Berbunyi setiap pagi dan ikut bergeser dengan {name} di mana pun Anda berada. Pilih satu waktu.</string>
     <string name="wake_turnOnFor" formatted="false">Aktifkan untuk bangun {name} setiap pagi.</string>
     <string name="wake_sahur" formatted="false">Alarm sahur</string>
-    <string name="wake_sahurSub" formatted="false">Alarm lebih awal untuk makan sahur sebelum puasa, atau untuk salat malam yang lebih panjang.</string>
+    <string name="wake_sahurSub" formatted="false">Alarm sebelum {name} agar Anda bisa makan sahur sebelum puasa. Anda pilih waktu dan harinya. Tetap berbunyi dalam mode senyap.</string>
     <string name="wake_sahurOn" formatted="false">Alarm sahur berbunyi pada</string>
     <string name="wake_hijriNote" formatted="false">Ramadan dan hari putih mengikuti tanggal Hijriah di aplikasi. Silakan ikuti otoritas agama setempat untuk awal Ramadan.</string>
     <string name="wake_otherPrayers" formatted="false">Salat lainnya</string>
@@ -347,12 +347,12 @@
     <string name="settings_ramadanPage" formatted="false">Halaman Ramadan</string>
     <string name="settings_ramadanPageSub" formatted="false">Imsak dan berbuka, puasa Anda, doa, zakat fitrah, sepuluh malam terakhir</string>
     <string name="settings_tryRamadan" formatted="false">Coba Ramadan (untuk penguji)</string>
-    <string name="settings_imsakAlert" formatted="false">Pemberitahuan Imsak</string>
-    <string name="settings_imsakAlertSub" formatted="false">10 menit sebelum Imsak, saat Ramadan</string>
+    <string name="settings_imsakAlert" formatted="false">Pengingat Imsak</string>
+    <string name="settings_imsakAlertSub" formatted="false">Pemberitahuan 10 menit sebelum Imsak, agar Anda sempat menyelesaikan sahur.</string>
     <string name="settings_berbukaAlert" formatted="false">Pengingat berbuka</string>
-    <string name="settings_berbukaAlertSub" formatted="false">Saat Maghrib, saat Ramadan</string>
-    <string name="settings_qiyam" formatted="false">Pengingat qiyam</string>
-    <string name="settings_qiyamSub" formatted="false">Sepertiga malam terakhir pada sepuluh malam terakhir</string>
+    <string name="settings_berbukaAlertSub" formatted="false">Pemberitahuan saat {name} ketika tiba waktu berbuka puasa.</string>
+    <string name="settings_qiyam" formatted="false">Pengingat qiyam, sepuluh malam terakhir</string>
+    <string name="settings_qiyamSub" formatted="false">Pada sepuluh malam terakhir Ramadan, pemberitahuan saat sepertiga malam terakhir dimulai, waktu terbaik untuk qiyamul lail.</string>
     <string name="settings_wakeUp" formatted="false">Bangun</string>
     <string name="settings_wakeUpFoot" formatted="false">Juga ada di layar Salat. Ketuk jam alarm di bagian atas.</string>
     <string name="settings_alertsAlarms" formatted="false">Pemberitahuan dan alarm</string>
@@ -436,7 +436,7 @@
     <string name="settings_testAlert" formatted="false">Kirim pemberitahuan uji</string>
     <string name="settings_quiet" formatted="false">Pemberitahuan senyap</string>
     <string name="settings_quietFoot" formatted="false">Untuk pekerja shift yang tidur siang, bayi yang tidur di kamar, atau sekadar malam yang tenang. Pemberitahuan tetap datang, tapi hanya bergetar. {name} tetap bersuara agar dapat membangunkan Anda.</string>
-    <string name="settings_buzzOnly" formatted="false">Getar saja, tanpa suara</string>
+    <string name="settings_buzzOnly" formatted="false">Getar saja</string>
     <string name="settings_quietHours" formatted="false">Jam senyap</string>
     <string name="settings_from" formatted="false">Dari</string>
     <string name="settings_until" formatted="false">Sampai</string>
@@ -678,7 +678,7 @@
     <string name="alerts_helpOff" formatted="false">Tanpa pemberitahuan untuk salat ini</string>
     <string name="alerts_helpNotify" formatted="false">Pemberitahuan dengan suara. Senyap saat ponsel Anda dalam mode senyap atau Fokus.</string>
     <string name="alerts_helpAlarm" formatted="false">Berbunyi sampai Anda mematikannya, meski dalam mode senyap. Tunda 5 menit.</string>
-    <string name="alerts_helpAlarmFajr" formatted="false">Membangunkan Anda setiap pagi dan ikut bergeser dengan {name} di mana pun Anda berada. Tunda 5 menit.</string>
+    <string name="alerts_helpAlarmFajr" formatted="false">Tetap berbunyi dalam mode senyap, setiap pagi. Ikut bergeser dengan {name} di mana pun Anda berada. Tunda 5 menit.</string>
     <string name="alerts_needsInstall" formatted="false">Tambahkan aplikasi ke Layar Utama untuk menerima pemberitahuan</string>
     <string name="alerts_webOpen" formatted="false">Di web, pemberitahuan hanya berbunyi saat halaman ini terbuka</string>
     <string name="alerts_tapFix" formatted="false">Ketuk untuk melihat cara memperbaikinya.</string>
@@ -688,18 +688,18 @@
     <string name="alerts_openPage" formatted="false">{name}, {summary}. Membuka halamannya</string>
     <string name="alerts_fridayLeave" formatted="false">{friday}, berangkat ke masjid</string>
     <string name="alerts_headsUp" formatted="false">Pengingat awal</string>
-    <string name="alerts_headsUpSub" formatted="false">Pemberitahuan sebelum setiap salat yang diatur ke Beri tahu</string>
+    <string name="alerts_headsUpSub" formatted="false">Pemberitahuan tambahan beberapa menit sebelum setiap salat yang diatur ke Beri tahu</string>
     <string name="alerts_headsUpSame" formatted="false">Sama untuk setiap salat yang diatur ke Beri tahu</string>
-    <string name="alerts_eachFoot" formatted="false">Ketuk nama salat untuk melihat waktunya. Beri tahu berarti pemberitahuan, yang senyap saat ponsel dalam mode senyap. Alarm berbunyi sampai Anda mematikannya.</string>
+    <string name="alerts_eachFoot" formatted="false">Pilih Mati, Beri tahu, atau Alarm. Ketuk Ubah untuk memilih waktu yang tepat. Beri tahu berarti pemberitahuan, yang senyap saat ponsel dalam mode senyap. Alarm berbunyi sampai Anda mematikannya.</string>
     <string name="alerts_nextAlarm" formatted="false">Alarm berikutnya {when} {time}</string>
     <string name="alerts_nextAlarmFor" formatted="false">Alarm berikutnya {when} {time} untuk {name}</string>
     <string name="alerts_nextAlarmSahur" formatted="false">Alarm berikutnya {when} {time} untuk sahur</string>
     <string name="alerts_extras" formatted="false">Tambahan</string>
-    <string name="alerts_nudgeSub" formatted="false">Sekitar 30 menit sebelum waktu salat habis, hanya jika belum dicentang. Tidak untuk {name}.</string>
+    <string name="alerts_nudgeSub" formatted="false">Pemberitahuan sekitar 30 menit sebelum waktu salat habis, hanya jika belum dicentang di pelacak. Tidak untuk {name}.</string>
     <string name="alerts_sound" formatted="false">Suara</string>
     <string name="alerts_azanSub" formatted="false">Pemberitahuan dibuka dengan azan, dan azan {name} pada waktu {name}</string>
-    <string name="alerts_buzzSub" formatted="false">Setiap pemberitahuan hanya bergetar. {name} tetap bersuara.</string>
-    <string name="alerts_quietSub" formatted="false">Pemberitahuan hanya bergetar pada jam ini</string>
+    <string name="alerts_buzzSub" formatted="false">Pemberitahuan bergetar tanpa suara sepanjang hari. Alarm tetap berbunyi.</string>
+    <string name="alerts_quietSub" formatted="false">Di antara jam yang Anda pilih, pemberitahuan hanya bergetar. {name} dan alarm tetap bersuara.</string>
     <string name="alerts_soundFoot" formatted="false">Getar saja dan Jam senyap cocok untuk pekerja shift yang tidur siang, bayi yang tidur di kamar, atau malam yang tenang. Alarm tetap bersuara.</string>
     <string name="alerts_alarmSoundFoot" formatted="false">Ketuk suara untuk mendengarnya. Setiap alarm memakai suara ini.</string>
     <string name="alerts_soundClassic" formatted="false">Alarm klasik</string>
@@ -901,6 +901,24 @@
     <string name="move_copyThis" formatted="false">Salin tautan ini</string>
     <string name="notify_testTitle" formatted="false">{name} · pemberitahuan uji</string>
     <string name="notify_testBody" formatted="false">Seperti inilah tampilan pemberitahuan salat di perangkat ini.</string>
+    <string name="alerts_fasting" formatted="false">Puasa</string>
+    <string name="alerts_ramadanOnly" formatted="false">Khusus Ramadan</string>
+    <string name="alerts_ramadanFoot" formatted="false">Ini adalah pemberitahuan, jadi senyap saat ponsel dalam mode senyap. Ramadan mengikuti tanggal di aplikasi. Ikuti otoritas keagamaan setempat Anda.</string>
+    <string name="alerts_aboutHere" formatted="false">Sekitar {time} di sini.</string>
+    <string name="alerts_whenAlarm" formatted="false">Kapan alarm berbunyi?</string>
+    <string name="alerts_movesWith" formatted="false">Waktunya bergeser sedikit setiap hari mengikuti {name}.</string>
+    <string name="alerts_chipAlarm" formatted="false">Alarm {time}</string>
+    <string name="alerts_chipNotify" formatted="false">Pemberitahuan {time}</string>
+    <string name="alerts_whenBegins" formatted="false">saat waktunya masuk</string>
+    <string name="alerts_earlyN" formatted="false">pengingat awal {n} menit sebelum</string>
+    <string name="alerts_notifAtTime" formatted="false">pemberitahuan tepat pada waktunya</string>
+    <string name="alerts_fridayStarts" formatted="false">{when} salat dimulai</string>
+    <string name="alerts_change" formatted="false">Ubah</string>
+    <string name="alerts_changeAria" formatted="false">{name}, {summary}. Ubah waktu</string>
+    <string name="alerts_alarmSet" formatted="false">Alarm {name} diatur pada {time}</string>
+    <string name="alerts_changeTime" formatted="false">Ubah waktu</string>
+    <string name="alerts_bigAlarm" formatted="false">Alarm {name} Anda berbunyi {when} pada waktu ini</string>
+    <string name="alerts_bigNotify" formatted="false">Pemberitahuan {name} Anda datang {when} pada waktu ini</string>
     <string name="settings_prayerTimes" formatted="false">Waktu salat</string>
     <string name="settings_lookFeel" formatted="false">Tampilan</string>
     <string name="settings_textTime" formatted="false">Teks dan waktu</string>
