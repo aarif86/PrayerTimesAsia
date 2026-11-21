@@ -9,7 +9,7 @@ import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.AppWidgetId
-import androidx.glance.appwidget.ExperimentalGlanceApi
+import androidx.glance.ExperimentalGlanceApi
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
