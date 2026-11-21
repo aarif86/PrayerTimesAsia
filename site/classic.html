@@ -214,10 +214,10 @@
 
     /* Steps */
     .steps { counter-reset: s; display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-top: 36px; }
-    .steps .card { position: relative; padding-top: 58px; }
+    .steps .card { position: relative; padding-top: 58px; display: flex; flex-direction: column; }
     .steps .card::before { counter-increment: s; content: counter(s); position: absolute; top: 20px; left: 24px; width: 28px; height: 28px; border-radius: 50%;
       background: var(--gold); color: #1b1230; font-weight: 800; display: grid; place-items: center; font-size: 0.9rem; }
-    .steps .btns { margin-top: 16px; }
+    .steps .btns { margin-top: auto; padding-top: 16px; }
 
     /* FAQ */
     .promises .grid { grid-template-columns: repeat(4, 1fr); }
