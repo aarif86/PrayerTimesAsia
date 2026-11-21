@@ -9,6 +9,7 @@ import {
   encodeConfig, EXAMPLE_PLACE, iqamahText, isHHMM, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah,
   type Obligatory, type ScreenConfig, type ScreenLanguage, type ScreenLook, type ScreenPlace,
 } from './config'
+import { clockStatus, correctionFor, differenceText, onClockChange } from './clockCheck'
 import { Display } from './Display'
 import { Frame } from './Frame'
 import { name, officialSourceForScreen } from './model'
@@ -28,6 +29,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const [gps, setGps] = useState<'idle' | 'busy' | 'failed'>('idle')
   const [copied, setCopied] = useState<'copied' | 'shared' | null>(null)
   const [, setTables] = useState(0)
+  const [, setClockSeen] = useState(0)
+  useEffect(() => onClockChange(() => setClockSeen((n) => n + 1)), [])
 
   const set = (change: Partial<ScreenConfig>) => setC((old) => ({ ...old, ...change }))
   const setRamadan = (change: Partial<ScreenConfig['ramadan']>) => setC((old) => ({ ...old, ramadan: { ...old.ramadan, ...change } }))
@@ -229,11 +232,14 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <select id="s-hijri" value={String(c.hijriAdj)} onChange={(e) => set({ hijriAdj: +(e.target as HTMLSelectElement).value })}>
               {[-2, -1, 0, 1, 2].map((n) => <option key={n} value={String(n)}>{n > 0 ? `+${n}` : n}</option>)}
             </select>
+            <label class="check"><input id="s-occasion" type="checkbox" checked={c.occasion} onChange={(e) => set({ occasion: (e.target as HTMLInputElement).checked })} /> Count down to the next big date (1 Ramadan, Eid al-Fitr, Eid al-Adha, Islamic New Year and Mawlid), from 100 days before. Dates your country's authority has announced come first.</label>
+            <label class="check"><input id="s-kaaba" type="checkbox" checked={c.kaabaDays} onChange={(e) => set({ kaabaDays: (e.target as HTMLInputElement).checked })} /> On the two days a year the sun stands over the Kaaba (about 27 or 28 May and 15 or 16 July), show the exact time, so jemaah can check the qibla by the sun</label>
             <label class="check"><input id="s-report" type="checkbox" checked={c.report} onChange={(e) => set({ report: (e.target as HTMLInputElement).checked })} /> Let Prayer Times Asia know this screen is running (the masjid's name, city and look, a few times a day, so we can help if something goes wrong)</label>
           </fieldset>
         </form>
 
         <aside class="setup-side">
+          <ClockNotice />
           <section class="setup-card">
             <p class="eyebrow">Preview</p>
             <Frame class="setup-preview"><Display config={preview} now={now} /></Frame>
@@ -263,6 +269,24 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         </aside>
       </div>
     </main>
+  )
+}
+
+/** The TV clock check's result, shown only here and never on the screen itself. */
+function ClockNotice() {
+  const s = clockStatus()
+  if (!s) return null
+  const fixing = correctionFor(s, Date.now()) !== 0
+  const when = new Date(s.checkedAt + (fixing ? s.offset : 0))
+  const at = when.toLocaleString(undefined, { hour: 'numeric', minute: '2-digit', day: 'numeric', month: 'short' })
+  return (
+    <section class="setup-card setup-clock" role="status">
+      <p class="eyebrow">This device's clock</p>
+      {fixing
+        ? <p>This device's clock is <b>{differenceText(s.offset)} {s.offset > 0 ? 'slow' : 'fast'}</b> compared with internet time. The screen corrects the times it shows by itself, so nothing needs to be done. Setting the right time on the TV or TV box is still a good idea.</p>
+        : <p>This device's clock matches internet time.</p>}
+      <p class="muted small">Last checked {at}. The screen checks again every six hours when online.</p>
+    </section>
   )
 }
 

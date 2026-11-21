@@ -61,6 +61,10 @@ export interface ScreenConfig {
   report: boolean
   /** Ramadan and Raya at this masjid. */
   ramadan: RamadanSettings
+  /** A line counting down to the next big date (1 Ramadan, both Rayas, Maal Hijrah, Maulidur Rasul). */
+  occasion: boolean
+  /** On the two days a year the sun passes over the Kaaba, show the moment, for checking the qibla by shadows. */
+  kaabaDays: boolean
 }
 
 export interface RamadanSettings {
@@ -98,6 +102,8 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   jumuahDimMinutes: 40,
   report: true,
   ramadan: { ishaExtra: 0, tarawih: true, tarawihAt: null, qiyamAt: null, eidAt: null, preview: 'off' },
+  occasion: true,
+  kaabaDays: true,
 }
 
 /** Shown in the setup preview until the committee chooses the masjid's location. */
@@ -186,6 +192,9 @@ export function sanitize(raw: unknown): ScreenConfig {
     eidAt: isHHMM(rm.eidAt) ? rm.eidAt : null,
     preview: SEASON_PREVIEWS.includes(rm.preview as SeasonPreview) ? rm.preview as SeasonPreview : 'off',
   }
+  // On unless turned off, so links made before these existed show them too.
+  out.occasion = r.occasion !== false
+  out.kaabaDays = r.kaabaDays !== false
   return out
 }
 
