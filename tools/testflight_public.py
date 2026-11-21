@@ -8,7 +8,7 @@ With a public link anyone can join the iPhone test by tapping it, with no email
 and no invite to send by hand (Apple allows up to 10,000 testers). --go does the
 one time setup on App Store Connect.
 
-  1. Makes an outside testers group "Public testers" with a public link (or reuses it).
+  1. Reuses an outside group that already has a public link, else makes "Public testers".
   2. Fills the Beta App Review contact if it is empty (TESTFLIGHT_CONTACT_PHONE).
   3. Adds the latest processed build to the group.
   4. Sends that build to Apple's Beta App Review (about a day the first time).
@@ -73,7 +73,12 @@ def main():
         a = g['attributes']
         print(f"Group '{a['name']}': internal={a.get('isInternalGroup')} "
               f"publicLink={a.get('publicLinkEnabled')} {a.get('publicLink') or ''}")
-    group = next((g for g in groups if g['attributes']['name'] == GROUP), None)
+    # Reuse an outside group that already has a public link (for example "Family and friends").
+    group = (next((g for g in groups if not g['attributes'].get('isInternalGroup')
+                   and g['attributes'].get('publicLinkEnabled')), None)
+             or next((g for g in groups if g['attributes']['name'] == GROUP), None))
+    if group:
+        print(f"Using group '{group['attributes']['name']}'.")
 
     review = call('GET', f'/v1/apps/{app_id}/betaAppReviewDetail')['data']
     ra = review['attributes']
@@ -125,7 +130,7 @@ def main():
              {'data': [{'type': 'builds', 'id': build['id']}]}, ok=(409, 422))
     if r.get('_error') == 422:
         sys.exit('Apple would not add the build to the group: ' + r['_text'])
-    print(f"Build {build['attributes']['version']} is in '{GROUP}'.")
+    print(f"Build {build['attributes']['version']} is in '{group['attributes']['name']}'.")
 
     # 4. Send it to Beta App Review (409 means it is already there or approved).
     r = call('POST', '/v1/betaAppReviewSubmissions', {'data': {

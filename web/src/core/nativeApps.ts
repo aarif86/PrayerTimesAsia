@@ -11,7 +11,7 @@ export const NATIVE_APPS = {
     /** The number in the App Store link (apps.apple.com/app/id1234567890). Also turns on Safari's own App Store banner. */
     appStoreId: '',
     /** A public TestFlight link (testflight.apple.com/join/...), used until the App Store listing exists. */
-    testFlightUrl: '',
+    testFlightUrl: 'https://testflight.apple.com/join/DjXmrnNF',
   },
   android: {
     /** Set to true once the app is live on Google Play. */
