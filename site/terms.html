@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Terms of use · Prayer Times Asia</title>
+  <meta name="description" content="The simple terms for using Prayer Times Asia, free for everyone." />
+  <meta name="theme-color" content="#0b0f2a" />
+  <meta name="color-scheme" content="dark light" />
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+  <style>
+    :root { --night: #0b0f2a; --text: #eef0fa; --muted: #a9b2d6; --gold: #f2c063; --line: rgba(255, 255, 255, 0.10);
+      --font: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--night); color: var(--text); font: 17px/1.6 var(--font); }
+    main { max-width: 720px; margin: 0 auto; padding: 40px 20px 64px; }
+    h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 6px; }
+    h2 { font-size: 1.2rem; margin: 32px 0 6px; color: var(--gold); }
+    p, li { color: var(--muted); }
+    strong { color: var(--text); }
+    a { color: var(--gold); }
+    table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.95rem; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--text); font-weight: 600; }
+    td { color: var(--muted); }
+    .back { display: inline-block; margin-bottom: 24px; }
+    :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
+    :root { color-scheme: dark; --card: rgba(255, 255, 255, 0.05); }
+    :root[data-theme="light"] { --night: #F2EEE9; --card: #ffffff; --line: rgba(21, 26, 69, 0.13); --text: #151A45; --muted: #4c5380; --gold: #8a5a00; color-scheme: light; }
+    .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+    .bar .back { margin-bottom: 0; }
+    /* Light and dark button (sun and moon). */
+    .mode { width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--gold); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; padding: 0; transition: border-color .2s, transform .2s; }
+    .mode[hidden] { display: none; }
+    .mode:hover { border-color: var(--gold); transform: rotate(12deg); }
+    .mode svg { width: 20px; height: 20px; }
+    .mode .sun { display: none; }
+    [data-theme="light"] .mode .sun { display: block; }
+    [data-theme="light"] .mode .moon-icon { display: none; }
+  </style>
+  <script>
+    // Pick light or dark before the page paints: the visitor's saved choice first, then the device setting.
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('pta-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') { t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body>
+<main>
+  <div class="bar"><a class="back" href="./">← Prayer Times Asia</a><button class="mode" type="button" hidden aria-label="Switch between light and dark"><svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a.7.7 0 0 0-.9-.8A9.9 9.9 0 1 0 21.3 15.1a.7.7 0 0 0-.8-.9z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button></div>
+  <h1>Terms of use</h1>
+  <p>Updated 22 November 2026. These terms cover the website, the web app, the masjid screen, and the iPhone and Android apps.</p>
+
+  <h2>The short version</h2>
+  <p>Prayer Times Asia is free for everyone. Use it to help you pray on time, and <strong>always follow your local religious authority</strong> and your masjid when they differ from the app.</p>
+
+  <h2>Who makes it</h2>
+  <p>Prayer Times Asia is built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd).</p>
+
+  <h2>Prayer times are a guide</h2>
+  <p>Where we can, the app uses the official timetable from the local religious authority. Everywhere else it works the times out on your device with the method used in that country. We check the times carefully, but a calculation, a download or your device clock can sometimes be wrong. If something looks off, check with your masjid and tell us.</p>
+
+  <h2>Alerts and alarms</h2>
+  <p>Your phone decides when alerts and alarms can ring. Silent mode, Focus, battery saving and other phone settings can stop them. Please do not rely on the app alone for something you must not miss.</p>
+
+  <h2>Qibla and falak</h2>
+  <p>The Qibla compass depends on your phone's sensors, which can be thrown off by metal and magnets. The falak tools are for learning and checking. Never look straight at the sun.</p>
+
+  <h2>Free, with no paid version</h2>
+  <p>There is nothing to buy in the app. Barakah Picks shows a few halal Muslim businesses and causes that we check by hand, and you can turn it off in Settings.</p>
+
+  <h2>Your privacy</h2>
+  <p>What the app keeps and sends is explained on our <a href="privacy.html">privacy page</a>.</p>
+
+  <h2>Fair use</h2>
+  <p>Please do not misuse the app or the website, try to break them, or copy the app's name and look to pass something off as ours. The code is open, and its own licence is on GitHub.</p>
+
+  <h2>Changes</h2>
+  <p>We may update these terms as the app grows. The date at the top shows the latest version.</p>
+
+  <h2>Questions</h2>
+  <p>Write to us at <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>.</p>
+</main>
+<script>
+  // Light and dark button: remembers the choice on this device for every page of the website.
+  (function () {
+    var root = document.documentElement, btn = document.querySelector('.mode'), meta = document.querySelector('meta[name="theme-color"]');
+    function paint() {
+      var light = root.getAttribute('data-theme') === 'light';
+      if (meta) meta.setAttribute('content', light ? '#F2EEE9' : '#0b0f2a');
+      if (btn) btn.setAttribute('aria-pressed', light ? 'true' : 'false');
+    }
+    if (btn) {
+      btn.hidden = false;
+      btn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('pta-theme', next); } catch (e) {}
+        paint();
+      });
+    }
+    paint();
+  })();
+</script>
+<button class="totop" type="button" aria-label="Back to top" title="Back to top">&#8593;</button>
+<style>
+  .totop { position: fixed; right: 20px; bottom: 20px; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,.18); background: #1a1f45; color: #f2c063; font-size: 1.3rem; cursor: pointer; display: grid; place-items: center; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .3s, transform .3s; box-shadow: 0 6px 20px rgba(0,0,0,.35); z-index: 50; }
+  .totop.show { opacity: 1; transform: none; pointer-events: auto; }
+  .totop:hover { border-color: #f2c063; }
+  .totop:focus-visible { outline: 3px solid #f2c063; outline-offset: 3px; }
+  [data-theme="light"] .totop { background: #ffffff; color: #8a5a00; border-color: rgba(21,26,69,.18); box-shadow: 0 6px 20px rgba(21,26,69,.18); }
+  [data-theme="light"] .totop:hover { border-color: #8a5a00; }
+  @media (prefers-reduced-motion: reduce) { .totop { transition: none; } }
+</style>
+<script>
+  // Back to top button: appears after scrolling down a screen or so.
+  (function () {
+    var tb = document.querySelector('.totop');
+    window.addEventListener('scroll', function () { tb.classList.toggle('show', window.scrollY > 500); }, { passive: true });
+    tb.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
+  })();
+</script>
+</body>
+</html>
