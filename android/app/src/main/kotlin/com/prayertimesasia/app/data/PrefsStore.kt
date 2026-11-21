@@ -6,10 +6,12 @@ import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Preferences
 
 /** Everything the user chooses, as one JSON blob (the iOS app's UserDefaults key). */
-class PrefsStore(context: Context) {
+class PrefsStore(private val context: Context) {
     private val sp = context.getSharedPreferences("prayertimesasia", Context.MODE_PRIVATE)
 
-    fun load(): Preferences = Preferences.decode(sp.getString(KEY, null))
+    /** A new install follows the phone's own clock setting for 24 hour time; after that it is the user's choice. */
+    fun load(): Preferences = sp.getString(KEY, null)?.let { Preferences.decode(it) }
+        ?: Preferences.decode(null).copy(use24Hour = android.text.format.DateFormat.is24HourFormat(context))
 
     fun save(prefs: Preferences) {
         sp.edit().putString(KEY, prefs.encode()).apply()

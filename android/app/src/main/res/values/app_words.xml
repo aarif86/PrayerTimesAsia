@@ -901,6 +901,54 @@
     <string name="move_copyThis" formatted="false">Copy this link</string>
     <string name="notify_testTitle" formatted="false">{name} · test alert</string>
     <string name="notify_testBody" formatted="false">This is how prayer alerts will look on this device.</string>
+    <string name="settings_prayerTimes" formatted="false">Prayer times</string>
+    <string name="settings_lookFeel" formatted="false">Look and feel</string>
+    <string name="settings_textTime" formatted="false">Text and time</string>
+    <string name="settings_lookTip" formatted="false">Tip. The two round buttons at the top of the Prayer screen change the look too.</string>
+    <string name="settings_appearanceFoot" formatted="false">Automatic follows the sky where you are.</string>
+    <string name="settings_openingDial" formatted="false">Moving dial when the app opens</string>
+    <string name="settings_openingDialSub" formatted="false">Turn off to open straight to your times</string>
+    <string name="settings_placeFoot" formatted="false">Your times follow the place you pick here.</string>
+    <string name="settings_musafirMode" formatted="false">Musafir mode</string>
+    <string name="settings_musafirModeSub" formatted="false">Jamak and qasar help when you are away from home</string>
+    <string name="settings_travelAsk" formatted="false">We will ask when you land in another country.</string>
+    <string name="settings_myJourneys" formatted="false">My journeys</string>
+    <string name="settings_timesFrom" formatted="false">Times from</string>
+    <string name="settings_followAuthority" formatted="false">Always follow your local religious authority.</string>
+    <string name="settings_downloadAgain" formatted="false">Download the timetable again</string>
+    <string name="settings_howAccurate" formatted="false">How accurate are the times?</string>
+    <string name="settings_calcFootShort" formatted="false">Automatic follows the country you are in. Change these only if your masjid follows another way.</string>
+    <string name="settings_dates" formatted="false">Dates</string>
+    <string name="settings_hijriDate" formatted="false">Hijri date</string>
+    <string name="settings_sameDay" formatted="false">Same day</string>
+    <string name="settings_hijriFoot" formatted="false">Move the Hijri date by a day if your local moon sighting is different.</string>
+    <string name="settings_addToCalendar" formatted="false">Add to calendar</string>
+    <string name="settings_forTesters" formatted="false">For testers</string>
+    <string name="settings_ramadanStarts" formatted="false">Starts by itself</string>
+    <string name="settings_pretendOn" formatted="false">Pretend on</string>
+    <string name="settings_ramadanFootShort" formatted="false">Ramadan mode starts by itself when your local religious authority announces it. Sahur and iftar alerts are in Alerts and alarms.</string>
+    <string name="settings_movePhone" formatted="false">Move to a new phone</string>
+    <string name="settings_promise" formatted="false">Our promise</string>
+    <string name="settings_browserPermissions" formatted="false">Browser permissions</string>
+    <string name="settings_allowed" formatted="false">Allowed</string>
+    <string name="settings_notAsked" formatted="false">Not asked yet</string>
+    <string name="settings_pickedPlace" formatted="false">Using a place you picked</string>
+    <string name="settings_notificationsWord" formatted="false">Notifications</string>
+    <string name="settings_permissionsFoot" formatted="false">If times or alerts look wrong, check these first. You can change them in your browser\'s site settings.</string>
+    <string name="settings_privacyPolicy" formatted="false">Privacy policy</string>
+    <string name="settings_terms" formatted="false">Terms of use</string>
+    <string name="settings_faq" formatted="false">Questions and answers</string>
+    <string name="settings_share" formatted="false">Share with family and friends</string>
+    <string name="settings_shareText" formatted="false">Prayer Times Asia, free prayer times for iPhone and Android.</string>
+    <string name="settings_rateApp" formatted="false">Rate the app</string>
+    <string name="settings_sendUsNote" formatted="false">Send us a note</string>
+    <string name="settings_aboutCredits" formatted="false">About and credits</string>
+    <string name="settings_community" formatted="false">Community</string>
+    <string name="settings_joinTimekeepers" formatted="false">Join the Timekeepers</string>
+    <string name="settings_instagram" formatted="false">Follow us on Instagram</string>
+    <string name="settings_facebook" formatted="false">Follow us on Facebook</string>
+    <string name="settings_freeLine" formatted="false">Free for everyone. No paid version.</string>
+    <string name="settings_back" formatted="false">Back to Settings</string>
     <string name="suggestRoom_button" formatted="false">Suggest a prayer room</string>
     <string name="suggestRoom_title" formatted="false">Suggest a prayer room</string>
     <string name="suggestRoom_intro" formatted="false">Know a musollah or prayer room that is not on our map? Tell us about it. We check every one and then add it for everyone.</string>

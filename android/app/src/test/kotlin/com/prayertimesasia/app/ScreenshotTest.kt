@@ -182,7 +182,7 @@ class ScreenshotTest {
         s.update { it.copy(wakeUp = WakeUpTiming.AT_FAJR) }
     }
     @Test fun settings_makers() = shootScreen("10b-settings-makers", d(TodayStyle.LIST, tab = Tab.SETTINGS)) { s ->
-        SettingsScreen(s, {}, {}, {}, rememberLazyListState(initialFirstVisibleItemIndex = 12))
+        SettingsScreen(s, {}, {}, {}, rememberLazyListState(initialFirstVisibleItemIndex = 5))
     }
     @Test fun journey() = shootScreen("11-journey", d(TodayStyle.LIST, variant = "travel")) { s ->
         com.prayertimesasia.app.ui.journey.JourneyScreen(s) {}
