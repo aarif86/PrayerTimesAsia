@@ -268,7 +268,7 @@ export function pairCodeFromHash(hash: string): string | null {
   return m ? m[1].toUpperCase() : null
 }
 
-/** "#tv": show the pairing code, whatever the device. (prayertimes.asia/tv is kept as an old alias.) */
+/** "#tv": show the pairing code, whatever the device. (The shared address prayertimes.asia/tv picks by device; /masjid and /app/screen/ still work.) */
 export const isTvHash = (hash: string): boolean => /(?:^#|&)tv(?:&|$)/.test(hash)
 
 /** Smart TVs, TV sticks and boxes say so in their browser name. A TV that does not is one tap away from the pairing code. */

@@ -116,7 +116,7 @@ function App() {
   const [config, setConfig] = useState<ScreenConfig | null>(initialConfig)
   const code = shortCodeFromHash(location.hash)
   const link = useShortLink(code, config != null, setConfig)
-  // One address, prayertimes.asia/masjid, for everyone: a TV (by its browser name) shows the pairing code,
+  // One address, prayertimes.asia/tv, for everyone: a TV (by its browser name) shows the pairing code,
   // a phone or computer shows the setup page. #tv and #setup force one or the other.
   const wantsSetup = location.hash.includes('setup') || query.has('setup') || pairCodeFromHash(location.hash) != null
   const tv = isTvHash(location.hash) || (!wantsSetup && looksLikeTv(navigator.userAgent))
