@@ -33,6 +33,37 @@ and what we took from each.
 - **Portrait or landscape:** the layout follows the screen.
 - **QR code for jemaah:** a small code in the bottom-right corner ("Scan for iqamah times"; on by default, can be turned off in setup). Scanning it opens the web app, which asks before adding the masjid as "your masjid". From then on its iqamah times show as "Jamaah" under each prayer, with a countdown between azan and iqamah, whenever the phone is within 10 km of the masjid. The iPhone and Android apps read the same link (`prayertimesasia://masjid?...`), and the web app offers "Open this in the app". Idea taken from Al-Harameen's QR stickers for mosques.
 
+## After a power cut, and without internet (checked 21 Nov 2026)
+
+Tested with a fresh browser profile: set up the screen online, closed the browser (the "power cut"),
+opened it again with the network off, and went to `/app/screen/` with no link. The masjid's name and the
+MUIS official times came back. What makes that true, and where it stops:
+
+- The settings are inside the link and are also saved in the TV browser's storage, so the plain
+  `/app/screen/` address shows the same masjid.
+- The page itself is kept by the service worker after the first visit with internet.
+- The year's official timetable is downloaded once and kept. Next year's is fetched from December.
+  If the TV has no internet across New Year, the screen falls back to calculated times and the label says so.
+- The TV does not open the browser by itself after a power cut. Someone opens the browser again, or a
+  TV box is set to open the page when it starts (most "kiosk" or "start up app" settings can do this).
+- The clock comes from the TV. Many TV boxes set their clock from the internet, so after a power cut
+  with no internet the clock (and so the countdown) can be wrong until the internet comes back.
+- Ramadan and Raya announcements and app updates need internet; the screen keeps what it last had.
+
+Public wording on the setup page: "The TV keeps your settings. After a power cut, open the browser again
+and your screen comes back. Once it has opened with internet, it keeps showing the times even when the
+internet drops."
+
+## Live screen count (proposal, not switched on)
+
+The setup page has a line "24 masjid screens are on right now", hidden until `COUNT_URL` in
+`web/src/screen/live.ts` is set (`?count=24` shows a made-up number for screenshots).
+The existing TelemetryDeck check-in cannot feed it: it has no App ID yet and offers no public read.
+Simplest option: two small functions in the Firebase project that already runs `submit`.
+Each screen sends a random screen ID (made on the TV, no name, no place) every 15 minutes;
+`count` returns how many IDs were seen in the last 30 minutes, cached for 5 minutes.
+At pilot size this sits inside the free allowance; it needs the owner's OK before it is added.
+
 ## Later (not in this version)
 
 - **Pairing code:** the TV shows a 6-letter code, the committee types it on a phone, and notices update on the TV within a minute without opening a new link. This needs a small backend (the Firebase project already exists).

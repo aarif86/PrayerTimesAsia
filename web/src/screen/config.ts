@@ -61,7 +61,27 @@ export interface ScreenConfig {
   report: boolean
   /** Ramadan and Raya at this masjid. */
   ramadan: RamadanSettings
+  /** Parts of the screen the committee turned off. The prayertimes.asia line always stays. */
+  hide: ScreenHide
 }
+
+export interface ScreenHide {
+  /** Today's date (Gregorian). */
+  date: boolean
+  /** The Islamic (Hijri) date and month. */
+  hijri: boolean
+  /** The big clock. */
+  clock: boolean
+  /** The row of prayer times (the waktu). */
+  times: boolean
+  /** "in 6h 59m" before the next prayer. The iqamah countdown after the azan is set in the iqamah boxes. */
+  countdown: boolean
+  /** The "Official · MUIS" label in the footer. */
+  source: boolean
+}
+
+export const HIDE_KEYS: readonly (keyof ScreenHide)[] = ['date', 'hijri', 'clock', 'times', 'countdown', 'source']
+export const NO_HIDE: ScreenHide = { date: false, hijri: false, clock: false, times: false, countdown: false, source: false }
 
 export interface RamadanSettings {
   /** Extra minutes before Isyak iqamah in Ramadan (when the iqamah is "minutes after azan"). */
@@ -98,6 +118,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   jumuahDimMinutes: 40,
   report: true,
   ramadan: { ishaExtra: 0, tarawih: true, tarawihAt: null, qiyamAt: null, eidAt: null, preview: 'off' },
+  hide: { ...NO_HIDE },
 }
 
 /** Shown in the setup preview until the committee chooses the masjid's location. */
@@ -186,6 +207,8 @@ export function sanitize(raw: unknown): ScreenConfig {
     eidAt: isHHMM(rm.eidAt) ? rm.eidAt : null,
     preview: SEASON_PREVIEWS.includes(rm.preview as SeasonPreview) ? rm.preview as SeasonPreview : 'off',
   }
+  const hd = (r.hide && typeof r.hide === 'object' ? r.hide : {}) as Record<string, unknown>
+  for (const k of HIDE_KEYS) out.hide[k] = hd[k] === true
   return out
 }
 
