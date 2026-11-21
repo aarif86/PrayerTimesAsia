@@ -11,9 +11,9 @@ name: Web
 on:
   push:
     branches: [main]
-    paths: ['web/**', 'site/**', 'testdata/**', 'data/ramadan-words.json', 'data/community-cards.json', 'data/app-words/**', 'config/analytics.json', '.github/workflows/web.yml']
+    paths: ['web/**', 'site/**', 'testdata/**', 'data/ramadan-words.json', 'data/community-cards.json', 'data/app-words/**', 'config/analytics.json', 'docs/website/changelog.json', 'tools/build_whatsnew_page.py', 'tools/build_credits_page.py', '.github/workflows/web.yml']
   pull_request:
-    paths: ['web/**', 'site/**', 'testdata/**', 'data/ramadan-words.json', 'data/community-cards.json', 'data/app-words/**', 'config/analytics.json', '.github/workflows/web.yml']
+    paths: ['web/**', 'site/**', 'testdata/**', 'data/ramadan-words.json', 'data/community-cards.json', 'data/app-words/**', 'config/analytics.json', 'docs/website/changelog.json', 'tools/build_whatsnew_page.py', 'tools/build_credits_page.py', '.github/workflows/web.yml']
   workflow_dispatch:
 
 permissions:
@@ -103,6 +103,8 @@ jobs:
           python3 tools/build_credits_page.py site/i18n/credits.json _site
           # The Malay and Indonesian home pages link to their own Credits page.
           sed -i 's#href="../credits.html"#href="credits.html"#' _site/ms/index.html _site/id/index.html
+          # "What's new", built from the same file as the GitHub changelog.
+          python3 tools/build_whatsnew_page.py docs/website/changelog.json _site/whatsnew.html
           cp -R web/dist _site/app
           sed -i "s#__BASE__#${BASE}#g" _site/404.html
           # Visitor counts on the promo page: the App ID from config/analytics.json (empty = off).
@@ -125,6 +127,7 @@ jobs:
           ! grep -q "__BASE__" _site/404.html
           for lang in ms id ar ur bn tr fr; do test -f "_site/$lang/index.html"; done
           test -f _site/sources.html
+          test -f _site/whatsnew.html
           for f in credits.html ms/credits.html id/credits.html; do test -f "_site/$f"; done
           test -f _site/press.html
           test -f _site/ramadan.html
