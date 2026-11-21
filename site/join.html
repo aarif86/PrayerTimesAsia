@@ -280,14 +280,13 @@
       <div class="center">
         <span class="eyebrow">Join</span>
         <h2>Join the Timekeepers.</h2>
-        <p class="lead">It takes about three minutes.</p>
+        <p class="lead">Four short pages. It takes about five minutes.</p>
       </div>
       <div class="sheet">
-        <iframe src="https://api.nasardigital.com/widget/form/nZQpvhhRsNDmDGK4MdOW" id="inline-nZQpvhhRsNDmDGK4MdOW" title="Prayer Times Asia Timekeepers join form"
-          data-layout="{'id':'INLINE'}" data-trigger-type="alwaysShow" data-activation-type="alwaysActivated" data-deactivation-type="neverDeactivate"
-          data-form-name="Prayer Times Asia Timekeepers | Join" data-height="900" data-layout-iframe-id="inline-nZQpvhhRsNDmDGK4MdOW" data-form-id="nZQpvhhRsNDmDGK4MdOW"></iframe>
-        <p class="fallback">Form not showing? <a href="https://api.nasardigital.com/widget/form/nZQpvhhRsNDmDGK4MdOW" target="_blank" rel="noopener">Open it in a new tab</a>.</p>
+        <iframe src="https://api.nasardigital.com/widget/survey/vzdsXYqnJV0arTryjguZ" id="vzdsXYqnJV0arTryjguZ" title="Prayer Times Asia Timekeepers join form" scrolling="no"></iframe>
+        <p class="fallback">Form not showing? <a href="https://api.nasardigital.com/widget/survey/vzdsXYqnJV0arTryjguZ" target="_blank" rel="noopener">Open it in a new tab</a>.</p>
       </div>
+      <p class="note" style="text-align: center; margin-top: 18px;">You can pause or leave at any time. <a href="leave.html" style="color: var(--gold); font-weight: 700;">See how to pause or leave</a>.</p>
     </div>
   </section>
 
@@ -308,7 +307,7 @@
 <footer class="site">
   <div class="wrap">
     <p>Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd).</p>
-    <p><a href="./">Home</a> · <a href="privacy.html">Privacy</a> · <a href="press.html">Press</a> · <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a></p>
+    <p><a href="./">Home</a> · <a href="join.html">Timekeepers</a> · <a href="privacy.html">Privacy</a> · <a href="press.html">Press</a> · <a href="credits.html">Credits</a> · <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a></p>
   </div>
 </footer>
 
@@ -361,5 +360,23 @@
   })();
 </script>
 <script src="https://api.nasardigital.com/js/form_embed.js" async></script>
+<button class="totop" type="button" aria-label="Back to top" title="Back to top">&#8593;</button>
+<style>
+  .totop { position: fixed; right: 20px; bottom: 20px; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,.18); background: #1a1f45; color: #f2c063; font-size: 1.3rem; cursor: pointer; display: grid; place-items: center; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .3s, transform .3s; box-shadow: 0 6px 20px rgba(0,0,0,.35); z-index: 50; }
+  .totop.show { opacity: 1; transform: none; pointer-events: auto; }
+  .totop:hover { border-color: #f2c063; }
+  .totop:focus-visible { outline: 3px solid #f2c063; outline-offset: 3px; }
+  [data-theme="light"] .totop { background: #ffffff; color: #8a5a00; border-color: rgba(21,26,69,.18); box-shadow: 0 6px 20px rgba(21,26,69,.18); }
+  [data-theme="light"] .totop:hover { border-color: #8a5a00; }
+  @media (prefers-reduced-motion: reduce) { .totop { transition: none; } }
+</style>
+<script>
+  // Back to top button: appears after scrolling down a screen or so.
+  (function () {
+    var tb = document.querySelector('.totop');
+    window.addEventListener('scroll', function () { tb.classList.toggle('show', window.scrollY > 500); }, { passive: true });
+    tb.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
+  })();
+</script>
 </body>
 </html>

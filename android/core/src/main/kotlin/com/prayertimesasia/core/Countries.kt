@@ -5,7 +5,7 @@ object Countries {
     val profiles: List<CountryProfile> = listOf(
         CountryProfile("SG", "Singapore", "muis", AsrSchool.STANDARD, NamingStyle.MALAY, TimesSource.TABLE, "MUIS, the Islamic Religious Council of Singapore", null, null),
         CountryProfile("MY", "Malaysia", "jakim", AsrSchool.STANDARD, NamingStyle.MALAY, TimesSource.TABLE, "JAKIM e-Solat, for your state zone", null, null),
-        CountryProfile("BN", "Brunei", "sea", AsrSchool.STANDARD, NamingStyle.MALAY, TimesSource.STANDARD, null, "The Ministry of Religious Affairs publishes a timetable the app cannot read yet, so it uses the 20° and 18° convention of the Malay world.", null),
+        CountryProfile("BN", "Brunei", "sea", AsrSchool.STANDARD, NamingStyle.MALAY, TimesSource.TABLE, "the Ministry of Religious Affairs, Brunei", null, null),
         CountryProfile("ID", "Indonesia", "kemenag", AsrSchool.STANDARD, NamingStyle.INDONESIAN, TimesSource.TABLE, "Kemenag, the Ministry of Religious Affairs", null, null),
         CountryProfile("TH", "Thailand", "sea", AsrSchool.STANDARD, NamingStyle.INTERNATIONAL, TimesSource.STANDARD, null, "The app uses the 20° and 18° convention of the Malay world.", null),
         CountryProfile("VN", "Vietnam", "sea", AsrSchool.STANDARD, NamingStyle.INTERNATIONAL, TimesSource.STANDARD, null, "The app uses the 20° and 18° convention of the Malay world.", null),

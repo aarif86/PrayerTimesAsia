@@ -100,6 +100,8 @@ adb shell am start -n com.prayertimesasia.app/.MainActivity \
 
 ## Google Play releases
 
+When to release and how to roll out safely (internal testing first, then a staged rollout): [docs/releasing.md](../docs/releasing.md).
+
 Same idea as the iPhone's "Release to TestFlight": Actions → **Release to Google Play** → Run workflow. It runs the core tests, builds the signed App Bundle (`.aab`) with `versionCode` = the run number, offers it for download on the run page, and, once the Play upload secret exists, sends it to the chosen track (internal testing by default, as a draft you release in Play Console).
 
 One-time setup (owner):

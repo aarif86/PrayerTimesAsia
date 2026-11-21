@@ -15,6 +15,7 @@ import { officialSourceForScreen, setScreenAnnouncements, setScreenClock, WORDS 
 import type { CalendarDataset } from '../core/calendarSanad'
 import { fetchOK } from '../services/storage'
 import { Setup } from './Setup'
+import { checkClock, CLOCK_WARN_MS, nextClockFix, PING_EVERY_MS, pingScreen, saveClockFix, savedClockFix } from './live'
 import { withBundled } from '../core/bundledCalendar'
 import './screen.css'
 
@@ -64,13 +65,17 @@ function initialConfig(): ScreenConfig | null {
   return saved ? sanitize(saved) : null
 }
 
+/** How far the TV's own clock is off, from the last check-in (0 until then). The screen counts from the corrected time. */
+let clockFix = fixedNow == null && !query.has('demo') ? savedClockFix() : 0
+const screenNow = () => Date.now() + clockFix
+
 function useClock(): number {
-  const [now, setNow] = useState(fixedNow ?? Date.now())
+  const [now, setNow] = useState(fixedNow ?? screenNow())
   useEffect(() => {
     if (fixedNow != null) return
     // Tick on the second boundary so the countdown never skips a number.
     let id: ReturnType<typeof setTimeout>
-    const tick = () => { setNow(Date.now()); id = setTimeout(tick, 1000 - (Date.now() % 1000) + 5) }
+    const tick = () => { setNow(screenNow()); id = setTimeout(tick, 1000 - (screenNow() % 1000) + 5) }
     tick()
     return () => clearTimeout(id)
   }, [])
@@ -98,6 +103,7 @@ function App() {
 function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; onEdit: () => void }) {
   const [, setTables] = useState(0)
   const [pointer, setPointer] = useState(true)
+  const [clockOff, setClockOff] = useState(clockFix)
   const w = WORDS[config.lang]
 
   // The official table: this year's, and next year's from December. Retried every 6 hours while missing.
@@ -132,6 +138,23 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
     })
     const first = setTimeout(checkIn, 20_000)
     const id = setInterval(checkIn, SCREEN_EVERY_MS)
+    return () => { clearTimeout(first); clearInterval(id) }
+  }, [config])
+
+  // "This screen is on": a random ID every 15 minutes for the live count, which also tells us when the TV clock is wrong.
+  // With counting off, only the time is asked for, and nothing about the screen is sent.
+  useEffect(() => {
+    if (fixedNow != null || query.has('demo') || !config.place) return
+    if (clockFix) setScreenClock(screenNow)
+    const ping = () => (config.report ? pingScreen({ cc: config.place?.cc ?? null, look: config.look, lang: config.lang }) : checkClock()).then((off) => {
+      if (off == null) return
+      clockFix = nextClockFix(clockFix, off)
+      saveClockFix(clockFix)
+      setScreenClock(screenNow)
+      setClockOff(clockFix)
+    })
+    const first = setTimeout(ping, 5_000)
+    const id = setInterval(ping, PING_EVERY_MS)
     return () => { clearTimeout(first); clearInterval(id) }
   }, [config])
 
@@ -183,6 +206,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
           <Display config={config} now={now} arabicTurn={arabicTurn} />
         </div>
       </Frame>
+      {Math.abs(clockOff) >= CLOCK_WARN_MS && <p class="screen-clockwarn" role="status">{w.clockOff(Math.round(Math.abs(clockOff) / 60_000), clockOff > 0)}</p>}
       {pointer && fixedNow == null && (
         <div class="screen-tools">
           <span>{w.fullScreen}</span>

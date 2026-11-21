@@ -219,65 +219,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .portrait .scr-look-board .scr-grid { grid-template-columns: 1fr; row-gap: calc(var(--u) * 0.5); }
 .portrait .scr-brand, .landscape .scr-look-bands .scr-brand { flex-wrap: wrap; white-space: normal; row-gap: calc(var(--u) * 0.6); }
 
-/* MARK: Setup page */
-
-.setup {
-  max-width: 1200px; margin: 0 auto; padding-block: 32px 64px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-  display: grid; gap: 28px; font-size: 16px; line-height: 1.5;
-}
-.setup-head { display: grid; gap: 8px; max-width: 70ch; }
-.setup-head h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.7rem, 4vw, 2.4rem); line-height: 1.15; }
-.setup-head p { margin: 0; }
-.eyebrow { margin: 0; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); font-weight: 700; }
-.muted { color: var(--fg2); }
-.small { font-size: 0.88rem; }
-.setup-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 32px; align-items: start; }
-/* Phones and narrow windows: one column, preview and "Put it on the TV" after the four steps, nothing pinned. */
-@media (max-width: 900px) { .setup-body { grid-template-columns: 1fr; } }
-.setup-form { display: grid; gap: 20px; min-width: 0; }
-fieldset { border: 1px solid var(--stroke); border-radius: 22px; padding: 16px 18px 20px; margin: 0; display: grid; gap: 8px; background: var(--glass); min-width: 0; }
-legend, .setup-card h2 { padding: 0 6px; font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 8px; }
-.setup-card h2 { margin: 0; padding: 0; }
-.step { display: inline-grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: 50%; background: var(--accent); color: rgba(0, 0, 0, 0.82); font-size: 0.85rem; font-weight: 800; flex: none; }
-.setup-card { border: 1px solid var(--stroke); border-radius: 22px; padding: 16px 18px 20px; background: var(--glass); display: grid; gap: 10px; min-width: 0; }
-.setup-card .eyebrow { margin: 0; }
-.setup-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
-.setup-steps li::marker { color: var(--accent); font-weight: 800; }
-details summary { cursor: pointer; }
-details textarea { margin-top: 8px; }
-fieldset p { margin: 0; }
-label { font-size: 0.92rem; color: var(--fg2); margin-top: 6px; }
-label.check { display: flex; gap: 10px; align-items: center; color: var(--fg); }
-input:not([type="checkbox"]), select, textarea {
-  width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.06);
-}
-input.invalid { border-color: var(--danger); }
-input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-textarea { resize: vertical; }
-.setup-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.setup button { border: 1px solid var(--line); background: var(--fill); border-radius: 999px; padding: 10px 14px; cursor: pointer; font-weight: 600; }
-.setup button:disabled { opacity: 0.45; cursor: default; }
-.setup button.primary { background: var(--accent); color: rgba(0, 0, 0, 0.82); border-color: transparent; font-weight: 700; }
-.setup-chosen { margin: 0; }
-.setup-error { color: var(--danger); }
-.setup .muted a { color: var(--accent); }
-.setup-results { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.setup-results button { width: 100%; text-align: left; border: 0; border-radius: 0; display: flex; justify-content: space-between; gap: 12px; background: transparent; }
-.setup-results li + li button { border-top: 1px solid var(--line); }
-.setup-results .muted { font-weight: 400; }
-.setup-iq { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-@media (max-width: 420px) { .setup-iq { gap: 6px; } .setup-iq label { font-size: 0.8rem; } .setup-iq input { padding: 10px 6px; text-align: center; } }
-.setup-iq.two { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
-.setup-iq > div { display: grid; gap: 4px; }
-.setup-side { display: grid; gap: 16px; min-width: 0; }
-/* Keeps the preview in view while filling in the form, only where all of it fits on screen. */
-@media (min-width: 901px) and (min-height: 880px) { .setup-side { position: sticky; top: 16px; } }
-.setup-preview { aspect-ratio: 16 / 9; height: auto; border-radius: 14px; border: 1px solid var(--line); max-width: 100%; }
-.setup-link { display: grid; gap: 8px; }
-.setup-link textarea { font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; word-break: break-all; }
-.setup-link p { margin: 0; }
-
 /* MARK: Looks from the app's Prayer screen styles */
 
 /* Bands: each prayer a full-width band in its own colour on the app's charcoal (Bands style). */
@@ -388,9 +329,6 @@ textarea { resize: vertical; }
 .scr-look-sunpath .scr-big { font-size: calc(var(--u) * 15); }
 .portrait .scr-head { flex-direction: column; }
 .portrait .scr-date { text-align: left; }
-/* Setup: dropdown lists in the page's colours (Windows draws them white otherwise). */
-select { color-scheme: dark; }
-select option { background-color: #161a36; color: #fff; }
 .scr-look-board .scr-cell .scr-iq .scr-t { font-size: calc(var(--u) * 3.4); }
 
 /* Bigger prayer times: without the iqamah line the times take the space (the times are what people read). */
@@ -433,6 +371,10 @@ select option { background-color: #161a36; color: #fff; }
 .scr-ramadan .scr-dotsep { font-style: normal; opacity: 0.5; }
 .scr-ramadan .scr-t-small { font-size: 1em; }
 .scr-look-dial .scr-ramadan { position: relative; z-index: 2; }
+/* The gold words need a deeper gold on the light Day look to be readable. */
+.scr-look-day .scr-ramadan b { color: #8a5a00; }
+/* The Kaaba line keeps its name and time together when the line wraps. */
+.scr-kaaba b { white-space: nowrap; }
 
 /* Day Dial: the iqamah line stays small (the bigger dial time above would otherwise apply to it too and push labels into each other). */
 .scr-dm .scr-dm-iq { font-size: 16px; line-height: 1.1; }
@@ -442,3 +384,31 @@ select option { background-color: #161a36; color: #fff; }
 .scr-look-night .scr-name em, .scr-look-day .scr-name em, .scr-look-sunpath .scr-name em, .scr-look-board .scr-name em { display: block; font-size: 0.62em; line-height: 1.1; }
 .scr-look-night .scr-name em .scr-dotsep, .scr-look-day .scr-name em .scr-dotsep, .scr-look-sunpath .scr-name em .scr-dotsep, .scr-look-board .scr-name em .scr-dotsep { display: none; }
 .scr-name em .scr-dotsep { font-style: normal; }
+
+/* MARK: Parts the committee turned off (setup "Show on the TV") */
+
+/* No prayer times: the looks that put the times beside the hero go back to one column. */
+.landscape .scr-look-board.scr-no-times, .landscape .scr-look-bands.scr-no-times, .landscape .scr-look-dial.scr-no-times { grid-template-columns: minmax(0, 1fr); }
+.landscape .scr-no-times .scr-head, .landscape .scr-no-times .scr-hero, .landscape .scr-no-times .scr-foot { grid-column: 1 / -1; grid-row: auto; }
+.scr-no-times { grid-template-rows: auto 1fr auto; }
+/* No clock: the next prayer becomes the big line. */
+.scr-no-clock .scr-next { font-size: calc(var(--u) * 6.4); padding: calc(var(--u) * 1.8) calc(var(--u) * 4.4); }
+.landscape .scr-no-clock.scr-look-bands .scr-next, .landscape .scr-no-clock.scr-look-board .scr-next, .landscape .scr-no-clock.scr-look-dial .scr-next { font-size: calc(var(--u) * 5); }
+.scr-date.only-hijri { color: var(--fg); font-weight: 600; }
+
+/* Everything off but the name: one calm block in the middle, prayertimes.asia tucked in just under it. */
+.scr.scr-tucked { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: calc(var(--u) * 3.2); }
+.scr-tucked .scr-head { justify-content: center; }
+.scr-tucked .scr-title h1 { font-size: calc(var(--u) * 8); white-space: normal; }
+.scr-tucked .scr-title p { font-size: calc(var(--u) * 3.6); }
+.scr-tucked .scr-hero { flex: none; }
+.scr-tucked .scr-foot { justify-items: center; width: min(100%, calc(var(--u) * 150)); }
+.scr-tucked .scr-foot.with-qr { grid-template-columns: auto; }
+.scr-tucked .scr-foot.with-qr > .scr-qr { grid-column: 1; grid-row: auto; }
+.scr-tucked .scr-notice { justify-content: center; text-align: center; }
+.scr-tucked .scr-notice:empty { display: none; }
+.scr-tucked .scr-brand { justify-content: center; font-size: calc(var(--u) * 2.6); opacity: 0.85; padding-top: calc(var(--u) * 1.4); border-top: 1px solid var(--stroke); }
+
+/* The TV's clock was found to be wrong: a small note for the committee, bottom left. */
+.screen-clockwarn { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: 16px; margin: 0; max-width: min(46ch, 60vw); z-index: 20;
+  font-size: 14px; line-height: 1.35; color: #1b1630; background: rgb(255, 214, 128); padding: 8px 14px; border-radius: 12px; opacity: 0.92; }

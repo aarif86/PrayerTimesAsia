@@ -1,7 +1,7 @@
 import type { ComponentChildren, JSX } from 'preact'
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { Info, X } from 'lucide-preact'
-import type { PrayerDay } from '../core/engine'
+import type { Coordinates, PrayerDay } from '../core/engine'
 import type { Prayer } from '../core/prayer'
 import { sourceAuthority } from '../core/official'
 import type { SourceGrade } from '../core/sources'
@@ -49,7 +49,7 @@ export type SheetKind =
   | { kind: 'places'; forHome?: boolean } | { kind: 'sanad'; day: PrayerDay } | { kind: 'calendar' } | { kind: 'makers'; placement: string }
   | { kind: 'journey' } | { kind: 'level' } | { kind: 'ar' } | { kind: 'alerts-help' } | { kind: 'credits' } | { kind: 'install' }
   | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup'; prayer?: Prayer | 'friday'; view?: 'check' }
-  | { kind: 'guide' } | { kind: 'feedback' } | { kind: 'review' }
+  | { kind: 'guide' } | { kind: 'feedback' } | { kind: 'review' } | { kind: 'suggest-room'; near?: Coordinates }
 
 let current: SheetKind | null = null
 const listeners = new Set<() => void>()

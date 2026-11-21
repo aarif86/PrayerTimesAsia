@@ -3,7 +3,7 @@ import { compute } from '../src/core/engine'
 import { METHODS, methodWithId } from '../src/core/methods'
 import { countryForTimeZone, methodHere, PROFILES, profileFor, profileMethod, sourceSummary, timeZoneForPlace } from '../src/core/regions'
 import { searchCities } from '../src/services/cities'
-import { officialSourceFor, officialSummary, parseLondon } from '../src/core/official'
+import { bruneiFeed, officialSourceFor, officialSummary, parseLondon } from '../src/core/official'
 
 /** The worldwide country table (data/countries.json): authority first, standard method only as a fallback. */
 describe('Countries worldwide', () => {
@@ -77,5 +77,18 @@ describe('Countries worldwide', () => {
     expect(Object.keys(table)).toEqual(['2026-06-21', '2026-11-11'])
     expect(table['2026-11-11'].sunrise).toBe('07:13')
     for (const short of [false, true]) expect(officialSummary({ kind: 'london' }, short)).not.toMatch(/:|\s-\s|–|—/)
+  })
+
+  it("uses Brunei's Ministry of Religious Affairs timetable, by KHEU zone", () => {
+    const bn = profileMethod(profileFor('BN')!)
+    expect(profileFor('BN')!.source).toBe('table')
+    const place = (latitude: number, longitude: number) => ({ id: 'x', name: 'x', countryCode: 'BN', timeZoneID: 'Asia/Brunei', coordinates: { latitude, longitude } })
+    expect(officialSourceFor(place(4.9031, 114.9398), bn, null)).toEqual({ kind: 'brunei', zone: 'BRN01' }) // Bandar Seri Begawan
+    expect(officialSourceFor(place(4.7086, 115.0717), bn, null)).toEqual({ kind: 'brunei', zone: 'BRN01' }) // Bangar, Temburong
+    expect(officialSourceFor(place(4.8028, 114.6497), bn, null)).toEqual({ kind: 'brunei', zone: 'BRN02' }) // Tutong
+    expect(officialSourceFor(place(4.5836, 114.2312), bn, null)).toEqual({ kind: 'brunei', zone: 'BRN03' }) // Kuala Belait
+    expect(officialSourceFor(place(4.9031, 114.9398), METHODS.mwl, null)).toBeNull()                       // a method chosen in Settings
+    expect(bruneiFeed('BRN03')).toMatch(/\/feeds\/bn-brn03\.json$/)
+    expect(sourceSummary(profileFor('BN')!, bn, false, true)).toBe('Official timetable from the Ministry of Religious Affairs, Brunei.')
   })
 })

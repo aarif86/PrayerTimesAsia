@@ -23,7 +23,7 @@ export function createMap(el: HTMLElement, center: Coordinates, dark: boolean, z
 }
 
 export function youMarker(c: Coordinates, beam = false): L.Marker {
-  const html = beam ? '<i class="you-beam"></i><i class="you-beam late"></i><span></span>' : '<span></span>'
+  const html = beam ? '<i class="you-glow"></i><i class="you-beam"></i><i class="you-still"></i><span></span>' : '<span></span>'
   return L.marker([c.latitude, c.longitude], {
     icon: L.divIcon({ className: `you-pin${beam ? ' beaming' : ''}`, html, iconSize: [18, 18], iconAnchor: [9, 9] }),
     keyboard: false, interactive: false, zIndexOffset: 1000,
@@ -31,20 +31,23 @@ export function youMarker(c: Coordinates, beam = false): L.Marker {
 }
 
 /**
- * Rings around you at these distances, each labelled at its bottom, so a pin
- * inside the 1 km ring reads as near and one past 5 km as far.
+ * Rings around you at these distances, each labelled on the ring below its right
+ * hand side (lined up like a ruler) and drawn over the pins, so a pin inside the
+ * first ring reads as near and one past the last as far.
  */
-export function distanceRings(c: Coordinates, rings: { km: number; label: string }[]): L.LayerGroup {
+export function distanceRings(c: Coordinates, rings: { km: number; label: string }[], labelAngle = 35): L.LayerGroup {
   const group = L.layerGroup()
+  const a = labelAngle * Math.PI / 180
   rings.forEach(({ km, label }, i) => {
     L.circle([c.latitude, c.longitude], {
-      radius: km * 1000, interactive: false, className: 'dist-ring',
-      color: '#2f7cf6', weight: 1.5, opacity: 0.55, dashArray: '5 7',
-      fill: i === 0, fillColor: '#2f7cf6', fillOpacity: 0.07,
+      radius: km * 1000, interactive: false, className: `dist-ring${i === 0 ? ' first' : ''}`,
+      weight: 1.5, dashArray: '5 7', fill: i === 0,
     }).addTo(group)
-    L.marker([c.latitude - km / 111.2, c.longitude], {
+    const lat = c.latitude - km * Math.sin(a) / 111.2
+    const lng = c.longitude + km * Math.cos(a) / (111.2 * Math.max(0.2, Math.cos(c.latitude * Math.PI / 180)))
+    L.marker([lat, lng], {
       icon: L.divIcon({ className: 'ring-label', html: `<span>${label}</span>`, iconSize: [0, 0], iconAnchor: [0, 0] }),
-      interactive: false, keyboard: false,
+      interactive: false, keyboard: false, zIndexOffset: 900,
     }).addTo(group)
   })
   return group
