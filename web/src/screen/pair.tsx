@@ -16,7 +16,7 @@ export const PAIR_SYNC_MS = 10 * 60_000
 const pairLink = (code: string) => `${location.origin}${location.pathname}#pair=${code}`
 
 /**
- * The TV's first screen at prayertimes.asia/tv: a big code and a QR code. The committee scans it (or types the code)
+ * The TV's first screen at prayertimes.asia/masjid on a TV: a big code and a QR code. The committee scans it (or types the code)
  * on their phone, chooses what shows, and taps one button. This screen then turns into the masjid screen.
  * The code is kept across a reload, and a new one is asked for when it runs out.
  */
@@ -64,7 +64,7 @@ export function PairScreen({ onPaired }: { onPaired: (c: ScreenConfig, pair: TvP
   return (
     <main class="pair">
       <h1>Set up this screen</h1>
-      <p class="pair-lead">On your phone, scan the QR code. Or open <b>prayertimes.asia/app/screen</b> on your phone and type the code.</p>
+      <p class="pair-lead">On your phone, scan the QR code. Or open <b>prayertimes.asia/masjid</b> on your phone and type the code.</p>
       <div class="pair-row">
         {svg ? <div class="pair-qr" dangerouslySetInnerHTML={{ __html: svg }} /> : <div class="pair-qr empty" />}
         <div class="pair-code" aria-live="polite">
@@ -73,7 +73,7 @@ export function PairScreen({ onPaired }: { onPaired: (c: ScreenConfig, pair: TvP
         </div>
       </div>
       <p class="pair-hint">{offline ? 'This TV cannot reach the internet yet. Trying again.' : 'Pick what shows on your phone, tap Show on my TV, and this screen turns into your masjid screen.'}</p>
-      <p class="pair-foot">prayertimes.asia</p>
+      <p class="pair-foot">prayertimes.asia · <a href="#setup" onClick={() => setTimeout(() => location.reload())}>Not a TV? Set up from this device</a></p>
     </main>
   )
 }

@@ -187,6 +187,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
           {live != null && (
             <p class="sp-live" aria-live="polite"><i class="sp-dot" aria-hidden="true" /><b>{live.toLocaleString('en')}</b> masjid {live === 1 ? 'screen is' : 'screens are'} on right now</p>
           )}
+          <p class="sp-hint"><a href="#tv" onClick={() => setTimeout(() => location.reload())}>On the TV itself? Show the pairing code</a></p>
           <ol class="sp-map" aria-hidden="true">
             <li><b>1</b>Add your masjid</li>
             <li><b>2</b>Choose what shows</li>
@@ -403,7 +404,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
           <div class="sp-pairbox">
             <h3>Easiest: pair with the code on the TV</h3>
             <ol class="sp-steps">
-              <li>On the TV, open the web browser and go to <b>prayertimes.asia/tv</b></li>
+              <li>On the TV, open the web browser and go to <b>prayertimes.asia/masjid</b></li>
               <li>The TV shows a code. Scan its QR code with this phone, or type the code here.</li>
             </ol>
             {editor && (
@@ -443,7 +444,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <ol>
               <li>Buy an Android TV box, or a Google TV streamer, and plug it into the TV with the HDMI cable. Prices vary by country, often under 100 US dollars. We do not suggest the Amazon Fire TV stick for this, because it is less reliable at starting an app on its own.</li>
               <li>On the box, open the app store and install <b>Fully Kiosk Browser</b>. It is free to try, and a small watermark shows until you pay for it. The full version costs about 11 US dollars once for each TV.</li>
-              <li>Open Fully Kiosk Browser and type <b>prayertimes.asia/tv</b> as the Start URL. The first time, the TV shows a code. Pair it with your phone as in step 3. After that, this address opens your masjid screen by itself.</li>
+              <li>Open Fully Kiosk Browser and type <b>prayertimes.asia/masjid</b> as the Start URL. The first time, tap the small link that says On the TV itself, and the TV shows a code. Pair it with your phone as in step 3. After that, this address opens your masjid screen by itself.</li>
               <li>In its settings, turn on "Autostart on boot". Now after a power cut the screen comes back by itself.</li>
               <li>In the box's own settings, turn on automatic date and time, so the clock stays right.</li>
             </ol>

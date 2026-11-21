@@ -8,7 +8,7 @@ import { ensureTable } from '../services/officialTables'
 import { readJSON, readString, writeJSON, writeString } from '../services/storage'
 import { countScreenRunning, SCREEN_EVERY_MS } from '../services/usage'
 import { registerServiceWorker } from '../ui/pwa'
-import { configFromHash, decodeConfig, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, isTvHash, sanitize, shortCodeFromHash, type ScreenConfig } from './config'
+import { configFromHash, decodeConfig, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, isTvHash, looksLikeTv, pairCodeFromHash, sanitize, shortCodeFromHash, type ScreenConfig } from './config'
 import { Display } from './Display'
 import { withPlace } from './place'
 import { Frame } from './Frame'
@@ -116,8 +116,11 @@ function App() {
   const [config, setConfig] = useState<ScreenConfig | null>(initialConfig)
   const code = shortCodeFromHash(location.hash)
   const link = useShortLink(code, config != null, setConfig)
-  const tv = isTvHash(location.hash)
-  const [editing, setEditing] = useState(() => (!config && !code && !tv) || location.hash.includes('setup') || query.has('setup'))
+  // One address, prayertimes.asia/masjid, for everyone: a TV (by its browser name) shows the pairing code,
+  // a phone or computer shows the setup page. #tv and #setup force one or the other.
+  const wantsSetup = location.hash.includes('setup') || query.has('setup') || pairCodeFromHash(location.hash) != null
+  const tv = isTvHash(location.hash) || (!wantsSetup && looksLikeTv(navigator.userAgent))
+  const [editing, setEditing] = useState(() => wantsSetup || (!config && !code && !tv))
   const now = useClock()
   // No place chosen: the TV works out a place from its own time zone.
   // A paired TV looks for changes from the phone, now and every 10 minutes.

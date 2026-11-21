@@ -268,8 +268,12 @@ export function pairCodeFromHash(hash: string): string | null {
   return m ? m[1].toUpperCase() : null
 }
 
-/** "#tv": the short address prayertimes.asia/tv sends a TV to. */
+/** "#tv": show the pairing code, whatever the device. (prayertimes.asia/tv is kept as an old alias.) */
 export const isTvHash = (hash: string): boolean => /(?:^#|&)tv(?:&|$)/.test(hash)
+
+/** Smart TVs, TV sticks and boxes say so in their browser name. A TV that does not is one tap away from the pairing code. */
+export const looksLikeTv = (ua: string): boolean =>
+  /smart-?tv|hbbtv|tizen|web0s|webos|netcast|bravia|crkey|googletv|android tv|appletv|roku|viera|vidaa|philipstv|opera tv|playstation|xbox/i.test(ua) || /\bAFT[A-Z0-9]+\b/.test(ua)
 
 /** The `c=` value from a location hash like "#c=eyJ2Ijox...". */
 export function configFromHash(hash: string): ScreenConfig | null {

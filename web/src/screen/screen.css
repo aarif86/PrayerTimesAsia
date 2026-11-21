@@ -437,3 +437,5 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pair-code b { font-family: var(--font-display); font-size: clamp(2.6rem, 9vw, 7rem); letter-spacing: 0.08em; white-space: nowrap; color: var(--gold); }
 .pair-hint { margin: 0; font-size: clamp(1rem, 2vw, 1.5rem); color: var(--fg2); max-width: 34em; }
 .pair-foot { margin: 0; font-size: 1rem; color: var(--fg3); }
+
+.pair-foot a { color: var(--fg3); }

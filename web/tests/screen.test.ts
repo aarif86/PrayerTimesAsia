@@ -216,3 +216,15 @@ describe('Masjid screen links', () => {
     expect(isTvHash('#c=abc')).toBe(false)
   })
 })
+
+describe('One address for TVs and phones', () => {
+  it('tells smart TVs and TV boxes from phones and computers', async () => {
+    const { looksLikeTv } = await import('../src/screen/config')
+    expect(looksLikeTv('Mozilla/5.0 (SMART-TV; Linux; Tizen 6.0) AppleWebKit/537.36')).toBe(true)
+    expect(looksLikeTv('Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36')).toBe(true)
+    expect(looksLikeTv('Mozilla/5.0 (Linux; Android 9; AFTMM Build/PS7233) AppleWebKit/537.36 Silk')).toBe(true)
+    expect(looksLikeTv('Mozilla/5.0 (Linux; Android 11; SHIELD Android TV) AppleWebKit/537.36')).toBe(true)
+    expect(looksLikeTv('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15')).toBe(false)
+    expect(looksLikeTv('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120 Safari/537.36')).toBe(false)
+  })
+})
