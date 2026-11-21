@@ -256,6 +256,12 @@ export function decodeConfig(text: string): ScreenConfig | null {
   }
 }
 
+/** The short code from a hash like "#k=k3x9Qm2aB" (9 letters and numbers), or null. */
+export function shortCodeFromHash(hash: string): string | null {
+  const m = /(?:^#|&)k=([A-Za-z0-9]{9})(?:&|$)/.exec(hash)
+  return m ? m[1] : null
+}
+
 /** The `c=` value from a location hash like "#c=eyJ2Ijox...". */
 export function configFromHash(hash: string): ScreenConfig | null {
   const m = /(?:^#|&)c=([A-Za-z0-9_-]+)/.exec(hash)

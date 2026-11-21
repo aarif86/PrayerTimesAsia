@@ -14,7 +14,7 @@ import { fallbackPlace } from './place'
 import { Frame } from './Frame'
 import { name, officialSourceForScreen } from './model'
 import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
-import { useLiveScreenCount } from './live'
+import { saveShortLink, useLiveScreenCount } from './live'
 import { ModeButton, Sky, useSiteTheme } from './sky'
 import './setup.css'
 
@@ -61,7 +61,20 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const setRamadan = (change: Partial<ScreenConfig['ramadan']>) => setC((old) => ({ ...old, ramadan: { ...old.ramadan, ...change } }))
   const results = useMemo(() => searchCities(query, 6), [query])
   const official = officialSourceForScreen(c)
-  const link = `${location.origin}${location.pathname}#c=${encodeConfig(c)}`
+  const encoded = encodeConfig(c)
+  const longLink = `${location.origin}${location.pathname}#c=${encoded}`
+  // The short link (#k=...) is made when the committee asks for the link, not on every change. If it can't be made, the long link still works.
+  const [short, setShort] = useState<{ encoded: string; link: string } | null>(null)
+  const shortOk = short?.encoded === encoded ? short.link : null
+  const link = shortOk ?? longLink
+  const getLink = async (): Promise<string> => {
+    if (shortOk) return shortOk
+    const code = await saveShortLink(encoded)
+    if (!code) return longLink
+    const made = `${location.origin}${location.pathname}#k=${code}`
+    setShort({ encoded, link: made })
+    return made
+  }
 
   useEffect(() => {
     if (!official || !c.place) return
@@ -101,16 +114,17 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
 
   const flash = (what: 'copied' | 'shared') => { setCopied(what); setTimeout(() => setCopied(null), 2500) }
   const copy = async () => {
-    try { await navigator.clipboard.writeText(link); flash('copied') } catch {
+    try { await navigator.clipboard.writeText(await getLink()); flash('copied') } catch {
       const box = document.getElementById('screen-link-box') as HTMLDetailsElement | null
       if (box) box.open = true
+      await getLink()
       ;(document.getElementById('screen-link') as HTMLTextAreaElement | null)?.select()
     }
   }
   // Phones: the share sheet, so the link goes straight into WhatsApp or email.
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
   const share = async () => {
-    try { await navigator.share({ title: `${c.name || 'Masjid'} prayer screen`, text: 'Open this link on the masjid TV', url: link }); flash('shared') } catch { /* closed */ }
+    try { await navigator.share({ title: `${c.name || 'Masjid'} prayer screen`, text: 'Open this link on the masjid TV', url: await getLink() }); flash('shared') } catch { /* closed */ }
   }
   // No place chosen: the TV (and this preview) use a place from the device's own time zone, so nothing is blank.
   const guess = useMemo(() => fallbackPlace(), [])
@@ -360,19 +374,22 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <p>Once it has opened with internet, it keeps showing the times even when the internet drops.</p>
           </div>
           <details class="sp-guide">
-            <summary>No browser on your TV, or want it to come back on by itself?</summary>
+            <summary>Want the screen to come back on by itself after a power cut?</summary>
+            <p class="sp-hint">A TV browser needs someone to open it again. A small Android TV box can do it for you. It plugs into the TV, and you set it up once.</p>
             <ol>
-              <li>Get a small Android TV box or a Fire TV stick. They cost about 40 to 60 dollars and plug into the TV.</li>
-              <li>Install a free browser app on it that can open one page when it starts. Search the app store on the box for "kiosk browser" or "start up app".</li>
-              <li>Set it to open your masjid link when it starts. Now after a power cut the screen comes back by itself.</li>
-              <li>Turn on "automatic date and time" on the box, so the clock stays right.</li>
+              <li>Buy an Android TV box, or a Google TV streamer, and plug it into the TV with the HDMI cable. Prices vary by country, often under 100 US dollars. We do not suggest the Amazon Fire TV stick for this, because it is less reliable at starting an app on its own.</li>
+              <li>On the box, open the app store and install <b>Fully Kiosk Browser</b>. It is free to try, and a small watermark shows until you pay for it. The full version costs about 11 US dollars once for each TV.</li>
+              <li>Open Fully Kiosk Browser and paste your masjid link as the Start URL. Use Send the link above to get the link onto the box, or type it in.</li>
+              <li>In its settings, turn on "Autostart on boot". Now after a power cut the screen comes back by itself.</li>
+              <li>In the box's own settings, turn on automatic date and time, so the clock stays right.</li>
             </ol>
+            <p class="sp-hint">Test it once. Switch the box off and on, and check the screen returns. On some boxes you must also allow the app to start by itself in the box's app settings.</p>
           </details>
           <div class="sp-actions">
             <button type="button" class="sp-btn" onClick={() => onOpen(c)}>Try it full screen here</button>
             <a class="sp-btn" href={`../print/#c=${encodeConfig({ ...effective, showIqamah: true })}&sheet=month`} target="_blank" rel="noopener">Print a timetable</a>
           </div>
-          <details id="screen-link-box" class="sp-showlink">
+          <details id="screen-link-box" class="sp-showlink" onToggle={(e) => { if ((e.target as HTMLDetailsElement).open) void getLink() }}>
             <summary>Show the link</summary>
             <textarea id="screen-link" class="sp-input" readOnly rows={3} value={link} onFocus={(e) => (e.target as HTMLTextAreaElement).select()} />
           </details>

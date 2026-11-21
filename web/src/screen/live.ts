@@ -101,3 +101,28 @@ export function useLiveScreenCount(): number | null {
   }, [])
   return n
 }
+
+
+/** The short links (functions/screens.js): the settings are kept under a 9 letter code, so the link on the TV stays short. */
+const LINK_SAVE_URL = `${FUNCTIONS}/screenLinkSave`
+const LINK_URL = `${FUNCTIONS}/screenLink`
+
+/** Saves the settings (the same text that follows `#c=`) and returns their short code, or null when it can't. */
+export async function saveShortLink(encoded: string): Promise<string | null> {
+  try {
+    const r = await fetch(LINK_SAVE_URL, { method: 'POST', body: JSON.stringify({ c: encoded }) })
+    if (!r.ok) return null
+    const j = (await r.json()) as { code?: unknown }
+    return typeof j.code === 'string' && /^[A-Za-z0-9]{9}$/.test(j.code) ? j.code : null
+  } catch { return null }
+}
+
+/** The settings text for a short code, or null when it can't be read. */
+export async function loadShortLink(code: string): Promise<string | null> {
+  try {
+    const r = await fetch(`${LINK_URL}?code=${encodeURIComponent(code)}`)
+    if (!r.ok) return null
+    const j = (await r.json()) as { c?: unknown }
+    return typeof j.c === 'string' ? j.c : null
+  } catch { return null }
+}

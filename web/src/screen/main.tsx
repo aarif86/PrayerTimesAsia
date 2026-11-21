@@ -5,10 +5,10 @@ import { render } from 'preact'
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { zoned } from '../core/tz'
 import { ensureTable } from '../services/officialTables'
-import { readJSON, writeJSON } from '../services/storage'
+import { readJSON, readString, writeJSON, writeString } from '../services/storage'
 import { countScreenRunning, SCREEN_EVERY_MS } from '../services/usage'
 import { registerServiceWorker } from '../ui/pwa'
-import { configFromHash, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, type ScreenConfig } from './config'
+import { configFromHash, decodeConfig, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, shortCodeFromHash, type ScreenConfig } from './config'
 import { Display } from './Display'
 import { withPlace } from './place'
 import { Frame } from './Frame'
@@ -16,11 +16,13 @@ import { officialSourceForScreen, setScreenAnnouncements, setScreenClock, WORDS 
 import type { CalendarDataset } from '../core/calendarSanad'
 import { fetchOK } from '../services/storage'
 import { Setup } from './Setup'
-import { checkClock, CLOCK_WARN_MS, nextClockFix, PING_EVERY_MS, pingScreen, saveClockFix, savedClockFix } from './live'
+import { loadShortLink, checkClock, CLOCK_WARN_MS, nextClockFix, PING_EVERY_MS, pingScreen, saveClockFix, savedClockFix } from './live'
 import { withBundled } from '../core/bundledCalendar'
 import './screen.css'
 
 const STORAGE = 'ptasia.screen'
+/** The short code the saved settings came from, so a new code on the link means fetching again. */
+const CODE_KEY = 'ptasia.screen.code'
 const SCREEN_VERSION = '1.0.0'
 
 /** Screenshot mode: ?demo (an example masjid) and ?now=2026-10-26T16:30:00%2B08:00 (a fixed clock). */
@@ -61,7 +63,10 @@ function initialConfig(): ScreenConfig | null {
       ramadan: { ishaExtra: 5, tarawih: true, tarawihAt: null, qiyamAt: '03:30', eidAt: '08:00', preview: query.get('season') ?? 'off' } })
   }
   const fromLink = configFromHash(location.hash)
-  if (fromLink) { writeJSON(STORAGE, fromLink); return fromLink }
+  if (fromLink) { writeJSON(STORAGE, fromLink); writeString(CODE_KEY, ''); return fromLink }
+  // A short link (#k=...): the saved copy is used only when it came from this same code. Otherwise App fetches it.
+  const code = shortCodeFromHash(location.hash)
+  if (code && readString(CODE_KEY) !== code) return null
   const saved = readJSON<unknown>(STORAGE)
   return saved ? sanitize(saved) : null
 }
@@ -86,18 +91,44 @@ function useClock(): number {
   return now
 }
 
+/** Opening a short link on a new TV: fetch the settings, keep them on the TV, and retry while there is no internet. */
+function useShortLink(code: string | null, have: boolean, onLoaded: (c: ScreenConfig) => void): 'idle' | 'loading' | 'failed' {
+  const [state, setState] = useState<'idle' | 'loading' | 'failed'>(code && !have ? 'loading' : 'idle')
+  useEffect(() => {
+    if (!code || have) return
+    let stop = false, id: ReturnType<typeof setTimeout>
+    const attempt = async () => {
+      const text = await loadShortLink(code)
+      const c = text ? decodeConfig(text) : null
+      if (stop) return
+      if (c) { writeJSON(STORAGE, c); writeString(CODE_KEY, code); onLoaded(c); setState('idle'); return }
+      setState('failed')
+      id = setTimeout(attempt, 15_000)
+    }
+    void attempt()
+    return () => { stop = true; clearTimeout(id) }
+  }, [code, have])
+  return state
+}
+
 function App() {
   const [config, setConfig] = useState<ScreenConfig | null>(initialConfig)
-  const [editing, setEditing] = useState(() => !config || location.hash.includes('setup') || query.has('setup'))
+  const code = shortCodeFromHash(location.hash)
+  const link = useShortLink(code, config != null, setConfig)
+  const [editing, setEditing] = useState(() => (!config && !code) || location.hash.includes('setup') || query.has('setup'))
   const now = useClock()
   // No place chosen: the TV works out a place from its own time zone.
   const placed = useMemo(() => (config ? withPlace(config) : null), [config])
   // The setup page is in English; the screen speaks its chosen language (screen readers, TV translation prompts).
   useEffect(() => { document.documentElement.lang = editing || !config ? 'en' : config.lang }, [editing, config])
 
+  if (!config && code && !editing) {
+    return <div class="scr scr-empty"><p>{link === 'failed' ? 'Could not open this link yet. Check that the TV is online. Trying again.' : 'Opening your masjid screen'}</p></div>
+  }
   if (editing || !config) {
     return <Setup initial={config ?? DEFAULT_CONFIG} now={now} onOpen={(c) => {
       writeJSON(STORAGE, c)
+      writeString(CODE_KEY, '')
       history.replaceState(null, '', `${location.pathname}${location.search}#c=${encodeConfig(c)}`)
       setConfig(c)
       setEditing(false)

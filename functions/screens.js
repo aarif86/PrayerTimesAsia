@@ -101,7 +101,33 @@ function callerAddress(req) {
   return fwd.length ? fwd[fwd.length - 1] : String(req.ip || '');
 }
 
-module.exports = { SLOT_MIN, LIVE_WINDOW_MS, NEW_IDS_PER_NETWORK_PER_DAY, NEW_IDS_PER_DAY, RANGES, validId, screenFacts, tally, dayMix, sgParts, summarize, parseDays, callerAddress };
+// Short screen links: POST /screenLinkSave {"c":"<the settings, base64url>"} -> {"code":"k3x9Qm2aB"},
+// GET /screenLink?code=k3x9Qm2aB -> {"c":"..."}. The settings are stored under the short code, so the link
+// on the TV is prayertimes.asia/app/screen/#k=k3x9Qm2aB. The same settings always give the same code.
+const LINK_CODE_RE = /^[A-Za-z0-9]{9}$/;
+const LINK_MAX_CHARS = 6000;
+const LINKS_PER_NETWORK_PER_DAY = 40;
+const LINKS_PER_DAY = 3000;
+const B62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+/** Is this a masjid screen settings string (base64url JSON of an object with v: 1)? Anything else is refused, so the store only holds settings. */
+function validLinkConfig(c) {
+  if (typeof c !== 'string' || c.length < 8 || c.length > LINK_MAX_CHARS || !/^[A-Za-z0-9_-]+$/.test(c)) return false;
+  try {
+    const j = JSON.parse(Buffer.from(c, 'base64url').toString('utf8'));
+    return !!j && typeof j === 'object' && !Array.isArray(j) && j.v === 1;
+  } catch { return false; }
+}
+
+/** A 9 letter and number code from the settings; `salt` makes another one in the rare case two settings share a code. */
+function linkCode(c, salt, createHash) {
+  const bytes = createHash('sha256').update(`${salt}|${c}`).digest();
+  let out = '';
+  for (let i = 0; i < 9; i++) out += B62[bytes[i] % 62];
+  return out;
+}
+
+module.exports = { LINK_CODE_RE, validLinkConfig, linkCode, SLOT_MIN, LIVE_WINDOW_MS, NEW_IDS_PER_NETWORK_PER_DAY, NEW_IDS_PER_DAY, RANGES, validId, screenFacts, tally, dayMix, sgParts, summarize, parseDays, callerAddress };
 
 /** The HTTPS functions; index.js passes in what it already has. */
 module.exports.handlers = function handlers({ onRequest, db, FieldValue, Timestamp, hash }) {
@@ -202,5 +228,50 @@ module.exports.handlers = function handlers({ onRequest, db, FieldValue, Timesta
     return res.json(body);
   });
 
-  return { screenPing, screenCount, screenStats };
+  const crypto = require('node:crypto');
+  const screenLinkSave = onRequest(opts, async (req, res) => {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+    let body = req.body;
+    if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = null; } }
+    const c = body && body.c;
+    if (!validLinkConfig(c)) return res.status(400).json({ error: 'bad settings' });
+    const now = Date.now();
+    // Settings already saved give the same code back and cost nothing.
+    for (let salt = 0; salt < 5; salt++) {
+      const code = linkCode(c, salt, crypto.createHash);
+      const ref = db.doc(`screenLinks/${code}`);
+      const doc = await ref.get();
+      if (doc.exists) {
+        if (doc.data().c === c) return res.status(200).json({ code });
+        continue;
+      }
+      const day = sgParts(now).date;
+      const lim = db.doc(`limits/lnk-${hash(`links|${day}|${callerAddress(req)}`)}`);
+      const all = db.doc(`limits/lnk-all-${day}`);
+      const ok = await db.runTransaction(async (tx) => {
+        const [l, a] = await Promise.all([tx.get(lim), tx.get(all)]);
+        if ((l.data()?.n || 0) >= LINKS_PER_NETWORK_PER_DAY || (a.data()?.n || 0) >= LINKS_PER_DAY) return false;
+        const expires = new Date(now + 2 * 86400e3);
+        tx.set(lim, { n: FieldValue.increment(1), expires }, { merge: true });
+        tx.set(all, { n: FieldValue.increment(1), expires }, { merge: true });
+        return true;
+      });
+      if (!ok) return res.status(429).json({ error: 'too many new links today' });
+      await ref.set({ c, created: Timestamp.fromMillis(now) });
+      return res.status(200).json({ code });
+    }
+    return res.status(500).json({ error: 'try again' });
+  });
+
+  const screenLink = onRequest(opts, async (req, res) => {
+    if (req.method !== 'GET') return res.status(405).json({ error: 'GET only' });
+    const code = req.query.code;
+    if (typeof code !== 'string' || !LINK_CODE_RE.test(code)) return res.status(400).json({ error: 'bad code' });
+    const doc = await db.doc(`screenLinks/${code}`).get();
+    if (!doc.exists) return res.status(404).json({ error: 'no such link' });
+    res.set('Cache-Control', 'public, max-age=300');
+    return res.json({ c: doc.data().c });
+  });
+
+  return { screenPing, screenCount, screenStats, screenLinkSave, screenLink };
 };

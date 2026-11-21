@@ -41,7 +41,7 @@ Tested with a fresh browser profile: set up the screen online, closed the browse
 opened it again with the network off, and went to `/app/screen/` with no link. The masjid's name and the
 MUIS official times came back. What makes that true, and where it stops:
 
-- The settings are inside the link and are also saved in the TV browser's storage, so the plain
+- The settings are inside a long `#c=` link, or kept on our server under a 9 character code for a short `#k=` link (functions/screens.js, `screenLinkSave` and `screenLink`; the same settings always give the same code). Old long links keep working. The settings are also saved in the TV browser's storage, so the plain
   `/app/screen/` address shows the same masjid.
 - The page itself is kept by the service worker after the first visit with internet.
 - The year's official timetable is downloaded once and kept. Next year's is fetched from December.

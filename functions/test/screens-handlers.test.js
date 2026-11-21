@@ -74,3 +74,22 @@ test('pings, live count, history and limits', async () => {
   // Nothing personal stored: screens hold only times.
   for (const [p, d] of db.docs) if (p.startsWith('screens/')) for (const k of Object.keys(d)) assert.ok(['firstSeen', 'lastSeen', 'cc', 'look', 'lang'].includes(k), k);
 });
+
+test('short screen links: save, same settings same code, fetch, refuse junk', async () => {
+  const db = fakeDb();
+  const h = handlers({ onRequest, db, FieldValue, Timestamp: TS, hash: (s) => 'h' + s });
+  const c = Buffer.from(JSON.stringify({ v: 1, name: 'Masjid Test', look: 'bands' })).toString('base64url');
+  const a = await call(h.screenLinkSave, { method: 'POST', body: JSON.stringify({ c }) });
+  assert.equal(a.code, 200);
+  assert.match(a.body.code, /^[A-Za-z0-9]{9}$/);
+  const b = await call(h.screenLinkSave, { method: 'POST', body: { c } });
+  assert.equal(b.body.code, a.body.code);
+  const got = await call(h.screenLink, { query: { code: a.body.code } });
+  assert.equal(got.body.c, c);
+  assert.equal((await call(h.screenLink, { query: { code: 'abcdefghi' } })).code, 404);
+  assert.equal((await call(h.screenLink, { query: { code: 'x' } })).code, 400);
+  assert.equal((await call(h.screenLinkSave, { method: 'POST', body: { c: 'not-settings' } })).code, 400);
+  const notV1 = Buffer.from(JSON.stringify({ hello: 1 })).toString('base64url');
+  assert.equal((await call(h.screenLinkSave, { method: 'POST', body: { c: notV1 } })).code, 400);
+  assert.equal((await call(h.screenLinkSave, { method: 'GET' })).code, 405);
+});
