@@ -262,6 +262,8 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
         .filter { kind == Kind.ALL || (kind == Kind.MUSOLLAH) == it.isMusollah }
         .filter { !openOnly || hoursOf(it)?.open == true }
     val anyHours = spaces.any { hoursOf(it) != null }
+    // A tapped pin's card closes when a filter hides that place.
+    if (pinned != null && pinned !in visible) pinned = null
     val top = visible.take(MasjidExtras.SHOW)
     val more = visible.size - top.size
     val mine = state.prefs.myMasjid
@@ -289,7 +291,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
         // As on iPhone: refresh on the left, the title, About on the right.
         Box(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
             Box(Modifier.align(Alignment.CenterStart).size(48.dp).clip(CircleShape)
-                .clickable(enabled = here != null, onClickLabel = "Refresh the masjid list") { attempt += 1 },
+                .clickable(enabled = here != null, onClickLabel = "Refresh the masjid list") { attempt += 1; OsmTiles.retryFailed() },
                 contentAlignment = Alignment.Center) {
                 Icon(Icons.Filled.Refresh, "Refresh the masjid list", Modifier.size(24.dp), tint = Palette.primary)
             }
@@ -388,7 +390,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
             }
             item {
                 Column(Modifier.padding(Dims.gutter), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Places from OpenStreetMap, which volunteers keep up to date. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.",
+                    Text("Places and map from OpenStreetMap (© OpenStreetMap contributors), which volunteers keep up to date. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.",
                         style = Txt.footnote, color = Palette.secondary)
                     if (here != null) CapsuleButton("Tell the map", style = Txt.footnoteSemibold) { open(context, MasjidExtras.reportUrl(here)) }
                     if (mine == null) Text("A masjid with a Prayer Times Asia screen? Scan its QR code with the Camera app to see its iqamah times on your Prayer screen.",

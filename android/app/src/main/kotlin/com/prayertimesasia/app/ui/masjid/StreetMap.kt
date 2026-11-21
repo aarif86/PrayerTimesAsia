@@ -1,5 +1,6 @@
 package com.prayertimesasia.app.ui.masjid
 
+import com.prayertimesasia.app.BuildConfig
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.util.LruCache
@@ -124,7 +125,8 @@ object OsmTiles {
     private const val MAX_AGE_MS = 7L * 24 * 60 * 60 * 1000
     private val memory = LruCache<String, ImageBitmap>(80)
     private val loading = HashSet<String>()
-    private val failed = HashSet<String>()
+    private val failed = HashMap<String, Long>()
+    private const val RETRY_MS = 30_000L
     @OptIn(ExperimentalCoroutinesApi::class)
     private val io = Dispatchers.IO.limitedParallelism(2)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -136,6 +138,13 @@ object OsmTiles {
     /** Screenshot tests set this so tiles load before the picture is taken. */
     @Volatile var blocking = false
 
+    /**
+     * The tile zoom the map is drawing now. Tiles queued for another zoom are
+     * dropped before they download, so a quick pinch doesn't leave the map
+     * waiting behind tiles nobody can see.
+     */
+    @Volatile private var wantedZ = -1
+
     /** Where tiles come from; tests can point this somewhere else. */
     var fetch: (z: Int, x: Int, y: Int) -> ByteArray? = { z, x, y -> download(z, x, y) }
 
@@ -146,16 +155,20 @@ object OsmTiles {
     fun get(z: Int, x: Int, y: Int): ImageBitmap? {
         val key = "$z/$x/$y"
         memory.get(key)?.let { return it }
+        wantedZ = z
         if (blocking) return load(key, z, x, y)?.also { memory.put(key, it) }
         synchronized(loading) {
-            if (key in loading || key in failed) return null
+            if (key in loading) return null
+            val lastFail = failed[key]
+            if (lastFail != null && System.currentTimeMillis() - lastFail < RETRY_MS) return null
             loading += key
         }
         scope.launch {
-            val bmp = withContext(io) { load(key, z, x, y) }
+            val bmp = withContext(io) { if (z == wantedZ) load(key, z, x, y) else null }
             synchronized(loading) {
                 loading -= key
-                if (bmp == null) failed += key
+                // A tile skipped for another zoom isn't a failure; it is asked for again if needed.
+                if (bmp == null && z == wantedZ) failed[key] = System.currentTimeMillis()
             }
             if (bmp != null) {
                 memory.put(key, bmp)
@@ -191,7 +204,7 @@ object OsmTiles {
         return try {
             conn.connectTimeout = 10_000
             conn.readTimeout = 15_000
-            conn.setRequestProperty("User-Agent", "PrayerTimesAsia/1.0 (Android; https://prayertimes.asia)")
+            conn.setRequestProperty("User-Agent", "PrayerTimesAsia/${BuildConfig.VERSION_NAME} (Android; https://prayertimes.asia)")
             if (conn.responseCode == 200) conn.inputStream.use { it.readBytes() } else null
         } finally {
             conn.disconnect()
@@ -443,7 +456,7 @@ internal fun StreetMap(
             drawCircle(you, 7.5.dp.toPx(), me)
 
             // OpenStreetMap credit, which its licence asks for.
-            val credit = measurer.measure("© OpenStreetMap", attributionStyle)
+            val credit = measurer.measure("© OpenStreetMap contributors", attributionStyle)
             val cw = credit.size.width + 8.dp.toPx()
             val ch = credit.size.height + 2.dp.toPx()
             drawRect(Color.White.copy(alpha = 0.75f), Offset(0f, size.height - ch), Size(cw, ch))
