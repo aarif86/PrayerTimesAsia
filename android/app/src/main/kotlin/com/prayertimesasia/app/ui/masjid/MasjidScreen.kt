@@ -72,6 +72,8 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -188,6 +190,8 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
     var failed by remember { mutableStateOf(false) }
     var kind by remember { mutableStateOf(Kind.ALL) }
     var selected by remember { mutableStateOf<String?>(null) }
+    var pinned by remember { mutableStateOf<PrayerSpace?>(null) }
+    val camera = remember { MapCamera() }
     var openOnly by remember { mutableStateOf(false) }
     var mode by remember { mutableStateOf(if (state.sideEffects) loadMode(context) else TripMode.WALK) }
     var attempt by remember { mutableIntStateOf(0) }
@@ -279,26 +283,37 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
     }
 
     Box(Modifier.fillMaxSize()) {
-        LivingSkyBackground(state.skyNow)
-        LazyColumn(Modifier.fillMaxSize()) {
-            item {
-                Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-                    Text("Masjids and prayer rooms", style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
-                    Box(Modifier.align(Alignment.CenterEnd).size(40.dp).clip(CircleShape).clickable(onClickLabel = "About this app", onClick = openAbout),
-                        contentAlignment = Alignment.Center) {
-                        Icon(Icons.Outlined.Info, "About this app", Modifier.size(26.dp), tint = Palette.primary)
-                    }
-                }
+      LivingSkyBackground(state.skyNow)
+      Column(Modifier.fillMaxSize()) {
+        // As on iPhone: refresh on the left, the title, About on the right.
+        Box(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
+            Box(Modifier.align(Alignment.CenterStart).size(48.dp).clip(CircleShape)
+                .clickable(enabled = here != null, onClickLabel = "Refresh the masjid list") { attempt += 1 },
+                contentAlignment = Alignment.Center) {
+                Icon(Icons.Filled.Refresh, "Refresh the masjid list", Modifier.size(24.dp), tint = Palette.primary)
             }
-            if (here != null) item {
-                StreetMap(here, visible, selected, mode, Modifier.fillMaxWidth().height(260.dp).padding(horizontal = Dims.gutter)) { selected = it }
+            Text("Masjids and prayer rooms", style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
+            Box(Modifier.align(Alignment.CenterEnd).size(48.dp).clip(CircleShape).clickable(onClickLabel = "About this app", onClick = openAbout),
+                contentAlignment = Alignment.Center) {
+                Icon(Icons.Outlined.Info, "About this app", Modifier.size(26.dp), tint = Palette.primary)
             }
+        }
+        // The map stays put at the top and the list scrolls under it, as on iPhone.
+        if (here != null) {
+            StreetMap(here, visible, mine, ::isMine, pinned, mode, camera,
+                if (nearMe != null || place?.name == null) "you" else place.name, Modifier.fillMaxWidth().height(260.dp),
+                onSelect = { pinned = it }) { s ->
+                PinCard(s, mode, h24, hoursOf(s), singapore, { pinned = null }) { directions(context, s.coordinates, s.name, mode) }
+            }
+        }
+        LazyColumn(Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp))
+            .background(Palette.material), contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 14.dp)) {
             item {
                 Column(Modifier.padding(horizontal = Dims.gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (mine != null && here != null) YourMasjid(state, mine, here, mode, h24, singapore, eid)
                     NearMeButton(locating, nearMe != null, findNearMe)
                     if (eid != null && here != null) EidCard(eid, here, spaces, h24)
-                    if (friday && here != null) FridayCard(here, true, mode, h24)
+                    if (friday && here != null) FridayCard(here, true, mode, h24) { camera.show(it, 1_000.0, animate = true) }
                 }
             }
             item {
@@ -351,31 +366,60 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                             if (singapore) MasjidExtras.fridayAt(space.coordinates) else null,
                             eid?.let { MasjidExtras.eidAt(it, space.name, space.coordinates) }, eid, isMine(space.coordinates)) {
                             selected = if (selected == space.id) null else space.id
+                            camera.show(space.coordinates, 1_000.0, animate = true)
                         }
                         HorizontalDivider(Modifier.padding(start = 56.dp), color = Palette.primary.copy(alpha = 0.1f))
                     }
                     item {
                         Column(Modifier.padding(horizontal = Dims.gutter, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            if (more > 0) Text("$more more within 15 km are on the map above. Tap a dot to see its name.", style = Txt.footnote, color = Palette.secondary)
+                            if (more > 0) Text("$more more within 15 km are on the map. Tap a pin to see its name and directions.", style = Txt.footnote, color = Palette.secondary,
+                                modifier = Modifier.clickable(onClickLabel = "Show them all on the map") {
+                                    pinned = null
+                                    camera.fit(visible.map { it.coordinates } + listOfNotNull(here))
+                                })
                             if (mine == null) Text("Tap a place and choose Make it my masjid to keep it at the top.", style = Txt.footnote, color = Palette.secondary)
                         }
                     }
                 }
             }
             if (singapore && !friday && here != null) item {
-                Box(Modifier.padding(horizontal = Dims.gutter, vertical = 8.dp)) { FridayCard(here, false, mode, h24) }
+                Box(Modifier.padding(horizontal = Dims.gutter, vertical = 8.dp)) { FridayCard(here, false, mode, h24) { camera.show(it, 1_000.0, animate = true) } }
             }
             item {
                 Column(Modifier.padding(Dims.gutter), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Places from OpenStreetMap (© OpenStreetMap contributors), kept by volunteers and kept on your phone, updated weekly. Only the area is sent.",
-                        style = Txt.caption, color = Palette.secondary)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (here != null) CapsuleButton("Missing a place? Tell the map", style = Txt.footnoteSemibold) { open(context, MasjidExtras.reportUrl(here)) }
-                        CapsuleButton("Refresh list", style = Txt.footnoteSemibold) { attempt += 1 }
-                    }
+                    Text("Places from OpenStreetMap, which volunteers keep up to date. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.",
+                        style = Txt.footnote, color = Palette.secondary)
+                    if (here != null) CapsuleButton("Tell the map", style = Txt.footnoteSemibold) { open(context, MasjidExtras.reportUrl(here)) }
+                    if (mine == null) Text("A masjid with a Prayer Times Asia screen? Scan its QR code with the Camera app to see its iqamah times on your Prayer screen.",
+                        style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(top = 6.dp))
                     Spacer(Modifier.height(24.dp))
                 }
             }
+        }
+      }
+    }
+}
+
+/** A tapped pin on the map: its name, how far, opening hours, Friday prayers, Directions (as on iPhone). */
+@Composable
+private fun PinCard(s: PrayerSpace, mode: TripMode, h24: Boolean, hours: OpeningHours.Now?, singapore: Boolean, onClose: () -> Unit, onDirections: () -> Unit) {
+    val fri = if (singapore) MasjidExtras.fridayAt(s.coordinates) else null
+    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Palette.materialStrong).padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(s.name, style = Txt.subheadlineSemibold, color = Palette.primary, maxLines = 2)
+            Text("${MasjidExtras.distanceText(s.distanceKm)} away${MasjidExtras.tripText(s.distanceKm, mode)?.let { ", $it" } ?: ""}",
+                style = Txt.caption, color = Palette.secondary)
+            hours?.let { Text(OpeningHours.text(it, h24), style = Txt.caption, color = if (it.open) Palette.success else Palette.secondary) }
+            if (fri != null) Text("Two Friday prayers, 2nd from ${MasjidExtras.clock(MasjidExtras.FRIDAY_SECOND_FROM, h24)}", style = Txt.caption, color = Palette.accentText)
+        }
+        Row(Modifier.clip(CircleShape).background(Palette.accent).clickable(onClickLabel = "Directions to ${s.name}", onClick = onDirections)
+            .padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Icon(if (mode == TripMode.WALK) Icons.AutoMirrored.Filled.DirectionsWalk else Icons.Filled.DirectionsCar, null, Modifier.size(16.dp), tint = Color.Black.copy(alpha = 0.82f))
+            Text("Directions", style = Txt.footnoteSemibold, color = Color.Black.copy(alpha = 0.82f))
+        }
+        Box(Modifier.size(48.dp).clip(CircleShape).clickable(onClickLabel = "Close", onClick = onClose), contentAlignment = Alignment.Center) {
+            Icon(Icons.Filled.Close, "Close", Modifier.size(18.dp), tint = Palette.secondary)
         }
     }
 }
@@ -530,7 +574,7 @@ private fun YourMasjid(state: AppState, m: MasjidLink, from: Coordinates, mode: 
 
 /** Singapore only: masjids with a second Friday prayer, nearest first (MUIS). */
 @Composable
-private fun FridayCard(from: Coordinates, today: Boolean, mode: TripMode, h24: Boolean) {
+private fun FridayCard(from: Coordinates, today: Boolean, mode: TripMode, h24: Boolean, onFocus: (Coordinates) -> Unit) {
     val context = LocalContext.current
     var all by remember { mutableStateOf(false) }
     val list = MasjidExtras.fridayNearest(from)
@@ -545,16 +589,26 @@ private fun FridayCard(from: Coordinates, today: Boolean, mode: TripMode, h24: B
             }
         }
         (if (all) list else list.take(3)).forEach { (m, km) ->
-            Row(Modifier.fillMaxWidth().clickable { directions(context, m.coordinates, m.name, mode) }.padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Icon(Icons.Filled.Brightness2, null, Modifier.size(20.dp), tint = Palette.accent)
-                Column(Modifier.weight(1f)) {
-                    Text(m.name, style = Txt.bodySemibold, color = Palette.primary)
-                    Text(m.district + if (m.womenSession2) ". Space for women in the 2nd prayer" else "", style = Txt.caption, color = Palette.secondary)
+            // Tap the row to see it on the map, the round button for directions (as on iPhone).
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.weight(1f).clickable(onClickLabel = "Show ${m.name} on the map") { onFocus(m.coordinates) },
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Icon(Icons.Filled.Brightness2, null, Modifier.size(20.dp), tint = Palette.accent)
+                    Column(Modifier.weight(1f)) {
+                        Text(m.name, style = Txt.bodySemibold, color = Palette.primary)
+                        Text(m.district + if (m.womenSession2) ". Space for women in the 2nd prayer" else "", style = Txt.caption, color = Palette.secondary)
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(MasjidExtras.distanceText(km), style = Txt.subheadline.copy(fontFeatureSettings = "tnum"), color = Palette.secondary)
+                        MasjidExtras.tripText(km, mode)?.let { Text(it, style = Txt.caption, color = Palette.secondary) }
+                    }
                 }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(MasjidExtras.distanceText(km), style = Txt.subheadline.copy(fontFeatureSettings = "tnum"), color = Palette.secondary)
-                    MasjidExtras.tripText(km, mode)?.let { Text(it, style = Txt.caption, color = Palette.secondary) }
+                Box(Modifier.size(48.dp).clip(CircleShape).clickable(onClickLabel = "Directions to ${m.name}") { directions(context, m.coordinates, m.name, mode) },
+                    contentAlignment = Alignment.Center) {
+                    Box(Modifier.size(36.dp).clip(CircleShape).background(Palette.accent.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
+                        Icon(if (mode == TripMode.WALK) Icons.AutoMirrored.Filled.DirectionsWalk else Icons.Filled.DirectionsCar,
+                            "Directions to ${m.name}", Modifier.size(18.dp), tint = Palette.accentText)
+                    }
                 }
             }
         }
