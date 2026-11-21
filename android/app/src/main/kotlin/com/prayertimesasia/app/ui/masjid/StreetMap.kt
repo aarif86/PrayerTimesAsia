@@ -336,14 +336,20 @@ internal fun StreetMap(
         .semantics { contentDescription = "Map of masjids and prayer rooms near $youLabel. ${spaces.size} places." }) {
         Canvas(Modifier.fillMaxSize()
             .pointerInput(Unit) {
-                detectTransformGestures { _, pan, gestureZoom, _ ->
+                detectTransformGestures { centroid, pan, gestureZoom, _ ->
                     camera.target = null
                     val z = camera.zoom
-                    val cx = Mercator.x(camera.lng, z) - pan.x / density
-                    val cy = Mercator.y(camera.lat, z) - pan.y / density
-                    camera.lng = Mercator.lng(cx, z)
-                    camera.lat = Mercator.lat(cy, z)
-                    camera.zoom = (z + log2(gestureZoom.toDouble())).coerceIn(3.0, 18.5)
+                    val z2 = (z + log2(gestureZoom.toDouble())).coerceIn(3.0, 18.5)
+                    // Zoom around the fingers, as Apple Maps does: the spot between
+                    // them stays under them while the map grows or shrinks.
+                    val dx = centroid.x / density - camera.widthDp / 2
+                    val dy = centroid.y / density - camera.heightDp / 2
+                    val scale = 2.0.pow(z2 - z)
+                    val cx = (Mercator.x(camera.lng, z) - pan.x / density + dx) * scale - dx
+                    val cy = (Mercator.y(camera.lat, z) - pan.y / density + dy) * scale - dy
+                    camera.zoom = z2
+                    camera.lng = Mercator.lng(cx, z2)
+                    camera.lat = Mercator.lat(cy, z2)
                 }
             }
             .pointerInput(Unit) {
