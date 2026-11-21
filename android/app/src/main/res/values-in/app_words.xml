@@ -901,4 +901,52 @@
     <string name="move_copyThis" formatted="false">Salin tautan ini</string>
     <string name="notify_testTitle" formatted="false">{name} · pemberitahuan uji</string>
     <string name="notify_testBody" formatted="false">Seperti inilah tampilan pemberitahuan salat di perangkat ini.</string>
+    <string name="settings_prayerTimes" formatted="false">Waktu salat</string>
+    <string name="settings_lookFeel" formatted="false">Tampilan</string>
+    <string name="settings_textTime" formatted="false">Teks dan waktu</string>
+    <string name="settings_lookTip" formatted="false">Tips. Dua tombol bulat di bagian atas layar Salat juga bisa mengubah tampilan.</string>
+    <string name="settings_appearanceFoot" formatted="false">Otomatis mengikuti langit di tempat Anda.</string>
+    <string name="settings_openingDial" formatted="false">Dial bergerak saat aplikasi dibuka</string>
+    <string name="settings_openingDialSub" formatted="false">Matikan untuk langsung ke waktu salat Anda</string>
+    <string name="settings_placeFoot" formatted="false">Waktu salat Anda mengikuti tempat yang Anda pilih di sini.</string>
+    <string name="settings_musafirMode" formatted="false">Mode musafir</string>
+    <string name="settings_musafirModeSub" formatted="false">Panduan jamak dan qasar saat Anda jauh dari rumah</string>
+    <string name="settings_travelAsk" formatted="false">Kami akan bertanya saat Anda tiba di negara lain.</string>
+    <string name="settings_myJourneys" formatted="false">Perjalanan saya</string>
+    <string name="settings_timesFrom" formatted="false">Waktu dari</string>
+    <string name="settings_followAuthority" formatted="false">Selalu ikuti otoritas agama setempat Anda.</string>
+    <string name="settings_downloadAgain" formatted="false">Unduh jadwal sekali lagi</string>
+    <string name="settings_howAccurate" formatted="false">Seberapa akurat waktunya?</string>
+    <string name="settings_calcFootShort" formatted="false">Otomatis mengikuti negara tempat Anda berada. Ubah hanya jika masjid Anda mengikuti cara lain.</string>
+    <string name="settings_dates" formatted="false">Tanggal</string>
+    <string name="settings_hijriDate" formatted="false">Tanggal Hijriah</string>
+    <string name="settings_sameDay" formatted="false">Hari yang sama</string>
+    <string name="settings_hijriFoot" formatted="false">Geser tanggal Hijriah satu hari jika rukyat di tempat Anda berbeda.</string>
+    <string name="settings_addToCalendar" formatted="false">Tambahkan ke kalender</string>
+    <string name="settings_forTesters" formatted="false">Untuk penguji</string>
+    <string name="settings_ramadanStarts" formatted="false">Mulai dengan sendirinya</string>
+    <string name="settings_pretendOn" formatted="false">Mode coba aktif</string>
+    <string name="settings_ramadanFootShort" formatted="false">Mode Ramadan mulai dengan sendirinya saat otoritas agama setempat Anda mengumumkannya. Pemberitahuan sahur dan berbuka ada di Pemberitahuan dan alarm.</string>
+    <string name="settings_movePhone" formatted="false">Pindah ke ponsel baru</string>
+    <string name="settings_promise" formatted="false">Janji kami</string>
+    <string name="settings_browserPermissions" formatted="false">Izin peramban</string>
+    <string name="settings_allowed" formatted="false">Diizinkan</string>
+    <string name="settings_notAsked" formatted="false">Belum diminta</string>
+    <string name="settings_pickedPlace" formatted="false">Memakai tempat yang Anda pilih</string>
+    <string name="settings_notificationsWord" formatted="false">Notifikasi</string>
+    <string name="settings_permissionsFoot" formatted="false">Jika waktu atau pemberitahuan tampak salah, periksa ini dulu. Anda bisa mengubahnya di pengaturan situs peramban Anda.</string>
+    <string name="settings_privacyPolicy" formatted="false">Kebijakan privasi</string>
+    <string name="settings_terms" formatted="false">Ketentuan penggunaan</string>
+    <string name="settings_faq" formatted="false">Tanya jawab</string>
+    <string name="settings_share" formatted="false">Bagikan ke keluarga dan teman</string>
+    <string name="settings_shareText" formatted="false">Prayer Times Asia, waktu salat gratis untuk iPhone dan Android.</string>
+    <string name="settings_rateApp" formatted="false">Beri nilai aplikasi</string>
+    <string name="settings_sendUsNote" formatted="false">Kirim catatan kepada kami</string>
+    <string name="settings_aboutCredits" formatted="false">Tentang dan kredit</string>
+    <string name="settings_community" formatted="false">Komunitas</string>
+    <string name="settings_joinTimekeepers" formatted="false">Gabung dengan Timekeepers</string>
+    <string name="settings_instagram" formatted="false">Ikuti kami di Instagram</string>
+    <string name="settings_facebook" formatted="false">Ikuti kami di Facebook</string>
+    <string name="settings_freeLine" formatted="false">Gratis untuk semua. Tanpa versi berbayar.</string>
+    <string name="settings_back" formatted="false">Kembali ke Pengaturan</string>
 </resources>
