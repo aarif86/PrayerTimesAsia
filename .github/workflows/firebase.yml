@@ -54,6 +54,12 @@ jobs:
                 -d '{"type":"method","place":"smoke test"}' "$U")
           echo "GET -> $get (want 405); invalid POST -> $bad (want 400): $(cat /tmp/bad.json)"
           [ "$get" = 405 ] && [ "$bad" = 400 ]
+          # Masjid screens counter: the count answers, and a bad ping is refused (nothing written).
+          F=https://asia-southeast1-prayertimes-asia.cloudfunctions.net
+          cnt=$(curl -s -o /tmp/count.json -w '%{http_code}' "$F/screenCount")
+          ping=$(curl -s -o /dev/null -w '%{http_code}' -X POST -d '{"id":"x"}' "$F/screenPing")
+          echo "screenCount -> $cnt $(cat /tmp/count.json); bad screenPing -> $ping (want 400)"
+          [ "$cnt" = 200 ] && [ "$ping" = 400 ]
 
       - name: Remove credentials
         if: always()

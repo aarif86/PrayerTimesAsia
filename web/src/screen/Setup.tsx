@@ -6,7 +6,7 @@ import { deviceTimeZone, zoned } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable } from '../services/officialTables'
 import {
-  encodeConfig, EXAMPLE_PLACE, iqamahText, isHHMM, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah,
+  encodeConfig, EXAMPLE_PLACE, iqamahText, isHHMM, MAX_FRIDAY_NOTE, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah, READY_NOTICES,
   type Obligatory, type ScreenConfig, type ScreenHide, type ScreenLanguage, type ScreenLook, type ScreenPlace,
 } from './config'
 import { Display } from './Display'
@@ -14,18 +14,8 @@ import { Frame } from './Frame'
 import { name, officialSourceForScreen } from './model'
 import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { useLiveScreenCount } from './live'
+import { ModeButton, Sky, useSiteTheme } from './sky'
 import './setup.css'
-
-/** The same light or dark choice as the main site (same key, same origin), else the device's setting. */
-const THEME_KEY = 'pta-theme'
-type Theme = 'light' | 'dark'
-function startTheme(): Theme {
-  try {
-    const t = localStorage.getItem(THEME_KEY)
-    if (t === 'light' || t === 'dark') return t
-  } catch { /* private mode */ }
-  return typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
-}
 
 const LOOK_CHOICES: { id: ScreenLook; label: string; hint: string }[] = [
   { id: 'night', label: 'Night', hint: 'Dark and calm, good for a dim prayer hall' },
@@ -60,7 +50,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const [gps, setGps] = useState<'idle' | 'busy' | 'failed'>('idle')
   const [copied, setCopied] = useState<'copied' | 'shared' | null>(null)
   const [, setTables] = useState(0)
-  const [theme, setTheme] = useState<Theme>(startTheme)
+  const [theme, flipTheme] = useSiteTheme()
   const live = useLiveScreenCount()
 
   const set = (change: Partial<ScreenConfig>) => setC((old) => ({ ...old, ...change }))
@@ -69,18 +59,6 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const results = useMemo(() => searchCities(query, 6), [query])
   const official = officialSourceForScreen(c)
   const link = `${location.origin}${location.pathname}#c=${encodeConfig(c)}`
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    document.documentElement.classList.add('is-setup')
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#F2EEE9' : '#0b0f2a')
-    return () => { document.documentElement.classList.remove('is-setup') }
-  }, [theme])
-  const flipTheme = () => {
-    const next: Theme = theme === 'light' ? 'dark' : 'light'
-    try { localStorage.setItem(THEME_KEY, next) } catch { /* private mode */ }
-    setTheme(next)
-  }
 
   useEffect(() => {
     if (!official || !c.place) return
@@ -140,11 +118,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       <Sky />
       <header class="sp-top">
         <a class="sp-brand" href="../../"><img src="../icons/icon-192.png" alt="" width="34" height="34" />Prayer Times Asia</a>
-        <button type="button" class="sp-mode" onClick={flipTheme} aria-label="Switch between light and dark">
-          {theme === 'light'
-            ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" /></svg>
-            : <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a.7.7 0 0 0-.9-.8A9.9 9.9 0 1 0 21.3 15.1a.7.7 0 0 0-.8-.9z" /></svg>}
-        </button>
+        <ModeButton theme={theme} onClick={flipTheme} />
       </header>
 
       <main class="sp-main">
@@ -267,10 +241,22 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                 </div>
               </div>
 
+              <h3>Friday</h3>
+              <label class="sp-small-label" for="s-friday">A line for Friday, like who gives the khutbah. Shows from Thursday night to Friday afternoon.</label>
+              <input id="s-friday" class="sp-input" value={c.fridayNote} maxLength={MAX_FRIDAY_NOTE} placeholder="Khutbah by Ustaz Ahmad, in Malay"
+                onInput={(e) => set({ fridayNote: (e.target as HTMLInputElement).value })} />
+
               <h3>Notices</h3>
               <label class="sp-small-label" for="s-notices">One notice per line, up to {MAX_NOTICES}. They take turns every 12 seconds.</label>
               <textarea id="s-notices" class="sp-input" rows={4} value={notices} placeholder={'Kuliah Maghrib every Tuesday with Ustaz Ahmad\nPlease keep the corridors clear'}
                 onInput={(e) => setNoticeText((e.target as HTMLTextAreaElement).value)} />
+              <p class="sp-small-label">Add one with a tap</p>
+              <div class="sp-ready">
+                {READY_NOTICES.map((n) => (
+                  <button key={n} type="button" class="sp-chip small" disabled={c.notices.includes(n) || c.notices.length >= MAX_NOTICES}
+                    onClick={() => setNoticeText([...c.notices, n].join('\n'))}>+ {n}</button>
+                ))}
+              </div>
 
               <h3>Ramadan and Eid</h3>
               <p class="sp-hint">In Ramadan the screen adds Imsak and the Ramadan day by itself, on the days your country announces.</p>
@@ -332,7 +318,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                     parse={(v) => { const z = v.trim().toUpperCase(); return /^[A-Z]{3}\d{2}$/.test(z) ? z : null }} onChange={(v) => set({ zone: v })} />
                 </>
               )}
-              <label class="sp-check"><input type="checkbox" checked={c.report} onChange={(e) => set({ report: (e.target as HTMLInputElement).checked })} /> Let Prayer Times Asia know this screen is on, so we can help if something goes wrong</label>
+              <label class="sp-check"><input type="checkbox" checked={c.report} onChange={(e) => set({ report: (e.target as HTMLInputElement).checked })} /> Count this screen as on. It sends a random code made on the TV, with no masjid name and no place, so we can see how many screens are running and help if something goes wrong</label>
               <p class="sp-hint">Have an idea for a new look? <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md" target="_blank" rel="noopener">Send us your design</a>. No coding needed.</p>
             </div>
           </details>
@@ -354,8 +340,16 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
           <div class="sp-note">
             <p>The TV keeps your settings. After a power cut, open the browser again and your screen comes back.</p>
             <p>Once it has opened with internet, it keeps showing the times even when the internet drops.</p>
-            <p>No browser on your TV? A small Android TV box or Fire TV stick works.</p>
           </div>
+          <details class="sp-guide">
+            <summary>No browser on your TV, or want it to come back on by itself?</summary>
+            <ol>
+              <li>Get a small Android TV box or a Fire TV stick. They cost about 40 to 60 dollars and plug into the TV.</li>
+              <li>Install a free browser app on it that can open one page when it starts. Search the app store on the box for "kiosk browser" or "start up app".</li>
+              <li>Set it to open your masjid link when it starts. Now after a power cut the screen comes back by itself.</li>
+              <li>Turn on "automatic date and time" on the box, so the clock stays right.</li>
+            </ol>
+          </details>
           <div class="sp-actions">
             <button type="button" class="sp-btn" onClick={() => onOpen(c)} disabled={!c.place}>Try it full screen here</button>
             <a class="sp-btn" href={`../print/#c=${encodeConfig({ ...c, showIqamah: true })}&sheet=month`} target="_blank" rel="noopener">Print a timetable</a>
@@ -373,21 +367,6 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         <p>Always follow your local religious authority.</p>
         <p><a href="../../">prayertimes.asia</a></p>
       </footer>
-    </div>
-  )
-}
-
-/** The main site's night sky: soft glows, twinkling stars and the odd shooting star. Light mode keeps only warm glows. */
-function Sky() {
-  const stars = useMemo(() => Array.from({ length: 70 }, () => ({
-    left: `${(Math.random() * 100).toFixed(2)}%`, top: `${(Math.random() * 100).toFixed(2)}%`,
-    d: `${(3 + Math.random() * 5).toFixed(1)}s`, delay: `${(-Math.random() * 8).toFixed(1)}s`, big: Math.random() < 0.2,
-  })), [])
-  return (
-    <div class="sp-sky" aria-hidden="true">
-      <div class="glow g1" /><div class="glow g2" /><div class="glow g3" />
-      {stars.map((s, i) => <i key={i} class={`star${s.big ? ' big' : ''}`} style={{ left: s.left, top: s.top, '--d': s.d, '--delay': s.delay }} />)}
-      <div class="shoot s1" /><div class="shoot s2" />
     </div>
   )
 }

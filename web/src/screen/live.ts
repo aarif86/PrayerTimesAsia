@@ -1,13 +1,54 @@
 import { useEffect, useState } from 'preact/hooks'
 
+import { readString, writeString } from '../services/storage'
+
 /**
- * "24 masjid screens are on right now" on the setup page.
+ * "24 masjid screens are on right now" on the setup page, and the TV's side of it.
  *
- * Not switched on yet: it needs a small counter on the server (see docs/masjid-screen.md,
- * "Live screen count"). Until COUNT_URL is set the line stays hidden. `?count=24` shows
- * a made-up number, for screenshots of the design only.
+ * Each TV sends a random ID made on the TV every 15 minutes (no masjid name, no place),
+ * to the small counter in functions/screens.js. The setup page shows the count, and
+ * /app/screen/stats/ shows the history. The line stays hidden when the count can't be read
+ * or is zero. `?count=24` shows a made-up number, for screenshots of the design only.
  */
-export const COUNT_URL = ''
+const FUNCTIONS = 'https://asia-southeast1-prayertimes-asia.cloudfunctions.net'
+export const COUNT_URL = `${FUNCTIONS}/screenCount`
+export const STATS_URL = `${FUNCTIONS}/screenStats`
+const PING_URL = `${FUNCTIONS}/screenPing`
+export const PING_EVERY_MS = 15 * 60_000
+const ID_KEY = 'ptasia.screen.id'
+
+/** This TV's random ID, made once and kept in its browser. */
+export function screenId(): string {
+  let id = readString(ID_KEY)
+  if (!id || !/^[A-Za-z0-9_-]{22,40}$/.test(id)) {
+    const bytes = crypto.getRandomValues(new Uint8Array(18))
+    id = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    writeString(ID_KEY, id)
+  }
+  return id
+}
+
+/**
+ * "This screen is on." Plain text body, so the browser sends it without an extra check first.
+ * Resolves to how far the TV's clock is off from the server, in ms (positive: the TV is behind),
+ * or null when it could not tell.
+ */
+export async function pingScreen(): Promise<number | null> {
+  if (!navigator.onLine) return null
+  try {
+    const sent = Date.now()
+    const r = await fetch(PING_URL, { method: 'POST', body: JSON.stringify({ id: screenId() }) })
+    const got = Date.now()
+    if (!r.ok) return null
+    const j = (await r.json()) as { now?: unknown }
+    // A slow answer can't tell a clock that is a minute out.
+    if (typeof j.now !== 'number' || got - sent > 10_000) return null
+    return j.now - (sent + got) / 2
+  } catch { return null }
+}
+
+/** More than two minutes out is worth telling the committee about. */
+export const CLOCK_WARN_MS = 2 * 60_000
 
 export function useLiveScreenCount(): number | null {
   const demo = new URLSearchParams(location.search).get('count')

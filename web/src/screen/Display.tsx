@@ -7,6 +7,7 @@ import { HeroDial, SunPath, type DialMark } from '../ui/Dials'
 import { LivingSky } from '../ui/LivingSky'
 import { skyAt } from '../ui/sky'
 import { masjidAppLink, type ScreenConfig } from './config'
+import { zoned } from '../core/tz'
 import { clockParts, countdown, gregorianDate, name, phaseAt, screenDay, shortLeft, WORDS, type Phase } from './model'
 
 /**
@@ -83,6 +84,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
       </ol>}
 
       <RamadanRibbon sd={today} now={now} config={c} />
+      <FridayLine now={now} config={c} />
 
       <footer class={`scr-foot${c.showQr ? ' with-qr' : ''}`}>
         {c.showQr && <QrCard config={c} caption={w.scan} />}
@@ -232,6 +234,18 @@ function RamadanRibbon({ sd, now, config: c }: { sd: NonNullable<ReturnType<type
   }
   if (!parts.length) return null
   return <p class="scr-ramadan">{parts.map((x, i) => <>{i > 0 && <i class="scr-dotsep">·</i>}{x}</>)}</p>
+}
+
+/** The committee's Friday line, from Thursday Maghrib until an hour and a half after Friday Zohor. */
+function FridayLine({ now, config: c }: { now: number; config: ScreenConfig }) {
+  if (!c.fridayNote || !c.place) return null
+  const today = screenDay(now, c, rowFor)
+  if (!today) return null
+  const wd = zoned(now, c.place.tz).weekday
+  const thursdayNight = wd === 4 && now >= today.day.times.maghrib
+  const fridayMorning = wd === 5 && now < today.day.times.dhuhr + 90 * 60_000
+  if (!thursdayNight && !fridayMorning) return null
+  return <p class="scr-ramadan scr-friday"><b>{WORDS[c.lang].friday}</b><i class="scr-dotsep">·</i><span>{c.fridayNote}</span></p>
 }
 
 function Time({ ms, tz, h24, small = false }: { ms: number; tz: string; h24: boolean; small?: boolean }) {

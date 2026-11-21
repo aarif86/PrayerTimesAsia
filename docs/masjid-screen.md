@@ -54,15 +54,21 @@ Public wording on the setup page: "The TV keeps your settings. After a power cut
 and your screen comes back. Once it has opened with internet, it keeps showing the times even when the
 internet drops."
 
-## Live screen count (proposal, not switched on)
+## Live screen count and dashboard
 
-The setup page has a line "24 masjid screens are on right now", hidden until `COUNT_URL` in
-`web/src/screen/live.ts` is set (`?count=24` shows a made-up number for screenshots).
-The existing TelemetryDeck check-in cannot feed it: it has no App ID yet and offers no public read.
-Simplest option: two small functions in the Firebase project that already runs `submit`.
-Each screen sends a random screen ID (made on the TV, no name, no place) every 15 minutes;
-`count` returns how many IDs were seen in the last 30 minutes, cached for 5 minutes.
-At pilot size this sits inside the free allowance; it needs the owner's OK before it is added.
+- Each TV (when "Count this screen as on" is ticked) sends a random code made on the TV to
+  `screenPing` every 15 minutes. No masjid name, no place, no IP address kept.
+- `screenCount` answers how many codes were heard in the last 31 minutes. The setup page shows
+  "24 masjid screens are on right now" (hidden when zero or unreachable).
+- Every 15 minutes the first ping writes that count into `screenDays/{date}` (Singapore time), with how
+  many screens were seen that day. `screenStats?days=` returns the daily summaries for the dashboard.
+- Dashboard: `/app/screen/stats/` (not linked, not indexed). Ranges 7 and 30 days, 3, 6, 9 months, 1, 2, 3 years.
+  `?demo` draws example data for screenshots.
+- The ping also returns the server time; a TV clock more than 30 seconds out is corrected on screen while
+  online, and more than 2 minutes out shows a small note for the committee.
+- Limits: a network can add 12 new screens a day. `limits/` docs carry `expires`; turning on a Firestore TTL
+  policy on `expires` (collection group `limits`) clears them automatically.
+- Cost: about 96 writes a day per screen, inside the free allowance up to roughly 200 screens, cents beyond.
 
 ## Later (not in this version)
 

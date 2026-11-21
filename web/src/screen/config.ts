@@ -51,6 +51,8 @@ export interface ScreenConfig {
   showQr: boolean
   /** Khutbah starts, "HH:mm"; Friday's Zohor becomes Jumu'ah. */
   jumuah: string | null
+  /** A line for Friday, like the khatib's name and the khutbah language. Shown from Thursday Maghrib to Friday Zohor. */
+  fridayNote: string
   notices: string[]
   h24: boolean
   hijriAdj: number
@@ -111,6 +113,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   showIqamah: false,
   showQr: true,
   jumuah: null,
+  fridayNote: '',
   notices: [],
   h24: false,
   hijriAdj: 0,
@@ -126,6 +129,17 @@ export const EXAMPLE_PLACE: ScreenPlace = { name: 'Pasir Ris', lat: 1.3721, lng:
 
 export const MAX_NOTICES = 8
 export const MAX_NOTICE_LENGTH = 160
+export const MAX_FRIDAY_NOTE = 100
+
+/** Notices a committee often needs, one tap each in the setup page. */
+export const READY_NOTICES: readonly string[] = [
+  'Solat jenazah after Zohor today',
+  'Solat jenazah after Asar today',
+  'Kuliah after Maghrib tonight',
+  'Please keep the corridors clear',
+  'Please park only in the marked lots',
+  'Lost and found at the masjid office',
+]
 
 const HHMM = /^([01]?\d|2[0-3]):([0-5]\d)$/
 
@@ -188,6 +202,7 @@ export function sanitize(raw: unknown): ScreenConfig {
   out.showIqamah = r.showIqamah === true
   out.showQr = r.showQr !== false
   out.jumuah = isHHMM(r.jumuah) ? r.jumuah : null
+  if (typeof r.fridayNote === 'string') out.fridayNote = r.fridayNote.trim().slice(0, MAX_FRIDAY_NOTE)
   if (Array.isArray(r.notices)) {
     out.notices = r.notices.filter((n): n is string => typeof n === 'string')
       .map((n) => n.trim().slice(0, MAX_NOTICE_LENGTH)).filter(Boolean).slice(0, MAX_NOTICES)

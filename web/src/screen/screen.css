@@ -404,3 +404,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-tucked .scr-notice { justify-content: center; text-align: center; }
 .scr-tucked .scr-notice:empty { display: none; }
 .scr-tucked .scr-brand { justify-content: center; font-size: calc(var(--u) * 2.6); opacity: 0.85; padding-top: calc(var(--u) * 1.4); border-top: 1px solid var(--stroke); }
+
+/* The TV's clock was found to be wrong: a small note for the committee, bottom left. */
+.screen-clockwarn { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: 16px; margin: 0; max-width: min(46ch, 60vw); z-index: 20;
+  font-size: 14px; line-height: 1.35; color: #1b1630; background: rgb(255, 214, 128); padding: 8px 14px; border-radius: 12px; opacity: 0.92; }

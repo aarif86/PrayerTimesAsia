@@ -174,3 +174,10 @@ select.sp-input option { background: #161a36; color: #fff; }
   .sp-howto li { font-size: 1.08rem; }
 }
 .sp-foot .sp-ask { font-size: 1.05rem; color: var(--sp-text); margin-bottom: 10px; }
+.sp-ready { display: flex; flex-wrap: wrap; gap: 8px; }
+.sp-chip.small { font-size: 0.95rem; padding: 8px 14px; min-height: 40px; font-weight: 700; }
+.sp-chip:disabled { opacity: 0.45; cursor: default; }
+.sp-guide { border: 1.5px dashed var(--sp-field-line); border-radius: 18px; padding: 14px 18px; }
+.sp-guide summary { cursor: pointer; font-weight: 800; font-size: 1.08rem; }
+.sp-guide ol { margin: 12px 0 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 1.02rem; }
+.sp-guide li::marker { color: var(--sp-gold); font-weight: 800; }

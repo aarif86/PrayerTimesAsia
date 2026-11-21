@@ -73,3 +73,7 @@ exports.submit = onRequest(
     return res.status(201).json({ id: ref.id });
   },
 );
+
+// Masjid screens on right now, and their history (screens.js).
+const { Timestamp } = require('firebase-admin/firestore');
+Object.assign(exports, require('./screens').handlers({ onRequest, db, FieldValue, Timestamp, hash }));
