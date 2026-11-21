@@ -70,6 +70,13 @@ How often to send updates to the stores, and how to test first: [docs/releasing.
 | Web | `web/`, `site/` or `testdata/` changes (pull requests too) | Tests, builds, deploys the promo site and web app to GitHub Pages (from `main` only) |
 | Validate, Calendar feeds, Masjid lists, Firebase, TestFlight status, Crash check, Store screenshots, Backup | Their own files change, on a schedule or by hand | Data checks, calendar feeds, weekly masjid lists, backend, crash logs, store pictures, weekly backup |
 
+## Thanks
+
+The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my
+by [Awsam Tech LLP](https://www.awsamtech.com/), the Singapore and Malaysia app many of us
+grew up with. With thanks to Ustaz Shahib Amin Syukran, who designed the original.
+The prayertimes.sg & my logo is not used.
+
 ## Licence and promises
 
 Free forever, no outside ads, no selling data, always open source: [docs/stewardship.md](docs/stewardship.md).
