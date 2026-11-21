@@ -21,6 +21,7 @@ import com.prayertimesasia.app.ui.PrayerTimesRoot
 import com.prayertimesasia.app.ui.SkyTheme
 import com.prayertimesasia.app.ui.TabBar
 import com.prayertimesasia.app.ui.masjid.NearbyCache
+import com.prayertimesasia.app.ui.masjid.OsmTiles
 import com.prayertimesasia.app.ui.settings.SettingsScreen
 import com.prayertimesasia.app.ui.theme.LivingSkyBackground
 import com.prayertimesasia.app.widget.TimetableCardPreview
@@ -118,6 +119,7 @@ class ScreenshotTest {
     @Test fun falak() = shoot("08-falak", d(TodayStyle.LIST, tab = Tab.FALAK))
     @Test fun falak_day() = shoot("08b-falak-light-day", d(TodayStyle.LIST, Appearance.LIGHT, morning, tab = Tab.FALAK))
     @Test fun masjid() {
+        OsmTiles.blocking = true
         val home = Coordinates(1.3721, 103.9474)
         fun at(name: String, lat: Double, lng: Double, musollah: Boolean, address: String) =
             Coordinates(lat, lng).let { PrayerSpace(name, name, address, it, Geo.distanceKm(home, it), musollah) }
@@ -132,7 +134,13 @@ class ScreenshotTest {
         ).sortedBy { it.distanceKm }
         shoot("09-masjid", d(TodayStyle.LIST, tab = Tab.MASJID))
     }
+    @Test fun masjid_day() {
+        OsmTiles.blocking = true
+        masjid_places()
+        shoot("09c-masjid-light-day", d(TodayStyle.LIST, Appearance.LIGHT, morning, tab = Tab.MASJID))
+    }
     @Test fun masjid_yours() {
+        OsmTiles.blocking = true
         masjid_places()
         shoot("09b-masjid-yours", d(TodayStyle.LIST, tab = Tab.MASJID)) { it.pendingMasjid = masjidLink; it.followPendingMasjid() }
     }

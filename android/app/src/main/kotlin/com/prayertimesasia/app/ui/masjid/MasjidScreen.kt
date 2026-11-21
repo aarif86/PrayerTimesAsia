@@ -171,7 +171,7 @@ private fun saveMode(context: Context, mode: TripMode) =
 
 /**
  * Masjids and musollahs (surau, prayer rooms) near you from OpenStreetMap.
- * Only the nearest five are listed; the rest are on the radar. Singapore adds
+ * Only the nearest five are listed; the rest are on the street map. Singapore adds
  * the MUIS second Friday prayer list and, before Raya, the Hari Raya sessions.
  * Kept in step with the web app's Masjid tab.
  */
@@ -291,7 +291,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                 }
             }
             if (here != null) item {
-                Radar(here, visible, selected, mode, Modifier.fillMaxWidth().height(260.dp).padding(horizontal = Dims.gutter)) { selected = it }
+                StreetMap(here, visible, selected, mode, Modifier.fillMaxWidth().height(300.dp).padding(horizontal = Dims.gutter)) { selected = it }
             }
             item {
                 Column(Modifier.padding(horizontal = Dims.gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -356,7 +356,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                     }
                     item {
                         Column(Modifier.padding(horizontal = Dims.gutter, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            if (more > 0) Text("$more more within 15 km are on the radar above. Tap a dot to see its name.", style = Txt.footnote, color = Palette.secondary)
+                            if (more > 0) Text("$more more within 15 km are on the map above. Tap a dot to see its name.", style = Txt.footnote, color = Palette.secondary)
                             if (mine == null) Text("Tap a place and choose Make it my masjid to keep it at the top.", style = Txt.footnote, color = Palette.secondary)
                         }
                     }
@@ -636,83 +636,3 @@ private fun Empty(title: String, body: String, onRetry: (() -> Unit)? = null) {
     }
 }
 
-/**
- * You in the middle with soft waves beaming out, each place at its bearing and
- * distance, and rings at 1, 2 and 5 km (labelled with the walk or drive time)
- * so a place reads as near or far at a glance.
- */
-@Composable
-private fun Radar(center: Coordinates, spaces: List<PrayerSpace>, selected: String?, mode: TripMode, modifier: Modifier, onSelect: (String) -> Unit) {
-    val primary = Palette.primary
-    val accent = Palette.accent
-    val musollah = Prayer.FAJR.tint
-    val north = Palette.north
-    val you = Color(0xFF0A84FF)
-    val material = Palette.materialStrong
-    val far = spaces.take(12).maxOfOrNull { it.distanceKm } ?: 2.0
-    val maxKm = max(5.5, far * 1.1)
-    val rings = listOf(1.0, 2.0, 5.0) + if (maxKm > 11) listOf(10.0) else emptyList()
-    val layout = remember { mutableListOf<Pair<String, Offset>>() }
-    val measurer = rememberTextMeasurer()
-    val labelStyle = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = you)
-    val beam by rememberInfiniteTransition(label = "beam").animateFloat(
-        0f, 1f, infiniteRepeatable(tween(2600, easing = LinearOutSlowInEasing)), label = "beam")
-    Box(modifier.clip(RoundedCornerShape(Dims.corner)).background(Palette.material)) {
-        Canvas(Modifier.fillMaxSize().pointerInput(spaces) {
-            detectTapGestures { tap ->
-                layout.minByOrNull { hypot((it.second.x - tap.x).toDouble(), (it.second.y - tap.y).toDouble()) }
-                    ?.takeIf { hypot((it.second.x - tap.x).toDouble(), (it.second.y - tap.y).toDouble()) < 40.dp.toPx() }
-                    ?.let { onSelect(it.first) }
-            }
-        }) {
-            val c = this.center
-            val radius = size.minDimension / 2 - 18.dp.toPx()
-            // Square-root scale keeps the nearest places from piling onto you; rings use the same scale.
-            fun at(km: Double) = (sqrt(km / maxKm).coerceAtMost(1.0) * radius).toFloat()
-            rings.forEachIndexed { i, km ->
-                if (i == 0) drawCircle(you.copy(alpha = 0.07f), at(km), c)
-                drawCircle(you.copy(alpha = 0.5f), at(km), c, style = Stroke(1.5.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 7.dp.toPx()))))
-            }
-            // Waves beaming out from you.
-            for (k in 0..1) {
-                val p = (beam + k * 0.5f) % 1f
-                drawCircle(you.copy(alpha = 0.4f * (1 - p)), 9.dp.toPx() + p * at(1.0) * 1.2f, c)
-            }
-            drawLine(north.copy(alpha = 0.7f), Offset(c.x, c.y - radius - 6.dp.toPx()), Offset(c.x, c.y - radius + 6.dp.toPx()), 2.dp.toPx())
-            val placed = mutableListOf<Pair<String, Offset>>()
-            for (s in spaces) {
-                val b = Math.toRadians(Geo.bearing(center, s.coordinates))
-                val d = at(s.distanceKm)
-                val p = Offset((c.x + sin(b) * d).toFloat(), (c.y - cos(b) * d).toFloat())
-                placed += s.id to p
-                val color = if (s.isMusollah) musollah else accent
-                val r = (if (s.id == selected) 9 else 6).dp.toPx()
-                drawCircle(Color.White, r + 2.dp.toPx(), p)
-                drawCircle(color, r, p)
-            }
-            layout.clear()
-            layout.addAll(placed)
-            // Ring labels at the bottom of each ring.
-            for (km in rings) {
-                val trip = MasjidExtras.tripText(km, mode)?.removeSuffix(" walk")?.removeSuffix(" drive")
-                val text = "${km.roundToInt()} km" + (trip?.let { ", $it" } ?: "")
-                val m = measurer.measure(text, labelStyle)
-                val w = m.size.width + 12.dp.toPx()
-                val h = m.size.height + 2.dp.toPx()
-                val y = c.y + at(km)
-                if (y + h / 2 > size.height) continue
-                drawRoundRect(material, Offset(c.x - w / 2, y - h / 2), Size(w, h), CornerRadius(h / 2))
-                drawText(m, topLeft = Offset(c.x - m.size.width / 2f, y - m.size.height / 2f))
-            }
-            drawCircle(Color.White, 10.dp.toPx(), c)
-            drawCircle(you, 7.dp.toPx(), c)
-        }
-        Text("N", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = north, modifier = Modifier.align(Alignment.TopCenter).padding(top = 2.dp))
-        Text("You, rings at 1, 2 and 5 km", style = Txt.caption, color = Palette.secondary, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
-        spaces.firstOrNull { it.id == selected }?.let {
-            Text(it.name, style = Txt.captionSemibold, color = primary, maxLines = 1,
-                modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp).clip(CircleShape).background(Palette.materialStrong).padding(horizontal = 10.dp, vertical = 4.dp))
-        }
-    }
-}
