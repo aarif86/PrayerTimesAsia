@@ -70,10 +70,10 @@ Each app has its own README with how to build and run it.
 
 ## Thanks
 
-The Colour Bands look and the prayer colours are inspired by
-[prayertime.sg](https://prayertime.sg) by AwsamTech, the Singapore app many of us
+The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my
+by [Awsam Tech LLP](https://www.awsamtech.com/), the Singapore and Malaysia app many of us
 grew up with. With thanks to Ustaz Shahib Amin Syukran, who designed the original.
-The prayertime.sg logo is not used.
+The prayertimes.sg & my logo is not used.
 
 ## Licence and promises
 
