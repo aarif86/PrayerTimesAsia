@@ -1,7 +1,7 @@
 import { SiteHomeButton } from './SiteHome'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { ComponentChildren } from 'preact'
-import { Accessibility, Car, CalendarDays, ChevronDown, Clock, Droplets, Flag, Footprints, House, Info, LocateFixed, Loader2, MoonStar, ParkingCircle, Star, Users } from 'lucide-preact'
+import { Accessibility, Car, CalendarDays, ChevronDown, Clock, Droplets, Flag, Footprints, House, Info, LocateFixed, Loader2, MoonStar, ParkingCircle, Plus, Star, Users } from 'lucide-preact'
 import type { Coordinates } from '../core/engine'
 import { distanceKm } from '../core/geo'
 import { isGraveOrShrine, looksLikePrayerSpace } from '../core/official'
@@ -396,6 +396,9 @@ export default function MasjidScreen() {
           <p class="footnote secondary" style={{ marginTop: '14px' }}>
             {trWith('masjid.mapCredit', { link: <a href={reportURL(here.coordinates)} target="_blank" rel="noopener noreferrer">{tr('masjid.tellMap')}</a> })}
           </p>
+        )}
+        {here && (
+          <button class="plain-btn suggest-room-btn" onClick={() => openSheet({ kind: 'suggest-room', near: here.coordinates })}><Plus size={16} /> {tr('suggestRoom.button')}</button>
         )}
       </div>
     </div>

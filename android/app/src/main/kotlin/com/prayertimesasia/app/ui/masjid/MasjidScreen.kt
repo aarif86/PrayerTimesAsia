@@ -79,6 +79,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.prayertimesasia.app.ui.components.CapsuleButton
+import com.prayertimesasia.app.ui.today.AppSheet
 import com.prayertimesasia.app.ui.components.GlassCard
 import com.prayertimesasia.core.EidEvent
 import com.prayertimesasia.core.EidMosque
@@ -185,6 +186,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
     val context = LocalContext.current
     var nearMe by remember { mutableStateOf<Coordinates?>(null) }
     var locating by remember { mutableStateOf(false) }
+    var suggesting by remember { mutableStateOf(false) }
     val here = nearMe ?: place?.coordinates
     var spaces by remember { mutableStateOf(preset ?: here?.let { NearbyCache.measuredFrom(it) } ?: NearbyCache.spaces) }
     var loading by remember { mutableStateOf(false) }
@@ -390,9 +392,10 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
             }
             item {
                 Column(Modifier.padding(Dims.gutter), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Places and map from OpenStreetMap (© OpenStreetMap contributors), which volunteers keep up to date. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.",
+                    Text("Places from OpenStreetMap (© OpenStreetMap contributors) and the open musolla list, both kept by volunteers. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.",
                         style = Txt.footnote, color = Palette.secondary)
                     if (here != null) CapsuleButton("Tell the map", style = Txt.footnoteSemibold) { open(context, MasjidExtras.reportUrl(here)) }
+                    if (here != null) CapsuleButton("Suggest a prayer room", style = Txt.footnoteSemibold) { suggesting = true }
                     if (mine == null) Text("A masjid with a Prayer Times Asia screen? Scan its QR code with the Camera app to see its iqamah times on your Prayer screen.",
                         style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(top = 6.dp))
                     Spacer(Modifier.height(24.dp))
@@ -401,6 +404,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
         }
       }
     }
+    if (suggesting) AppSheet({ suggesting = false }) { SuggestRoomContent(near = here, live = nearMe) }
 }
 
 /** A tapped pin on the map: its name, how far, opening hours, Friday prayers, Directions (as on iPhone). */
