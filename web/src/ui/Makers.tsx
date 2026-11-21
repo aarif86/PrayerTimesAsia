@@ -7,7 +7,7 @@ import { Kaaba } from './icons'
 import { tr } from '../core/appWords'
 
 /**
- * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
+ * The app is free and built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd).
  * The cards are our own services and, from time to time, a hand picked halal
  * sponsor for the user's country (data/community-cards.json). No outside ads,
  * nothing tracked: each card just opens the website (Makers.swift).

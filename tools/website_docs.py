@@ -35,7 +35,7 @@ def roadmap() -> str:
     for status in ("now", "next", "later"):
         items = [i for i in data["roadmap"] if i["status"] == status]
         if items:
-            out += [f"## {STATUS[status]}", ""] + [f"- **{i['title']}** - {i['text']}" for i in items] + [""]
+            out += [f"## {STATUS[status]}", ""] + [f"- **{i['title']}**. {i['text']}" for i in items] + [""]
     out += ["## Feature requests", "", "| Request | Status |", "|---|---|"]
     for r in data["requests"]:
         status = f"Done in build {r['build']}" if r["status"] == "done" else STATUS[r["status"]]

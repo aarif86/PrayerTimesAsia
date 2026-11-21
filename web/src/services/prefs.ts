@@ -132,7 +132,7 @@ export interface Preferences {
   /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
   showOpening: boolean
   /** The quick guide (seven swipe cards) was seen or skipped. Settings opens it again. */
-  guideSeen: boolean
+  guideShown: boolean
   /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
   jumuahReminderMinutes: number
   /** Singapore only: leave for the first Jumaat (at Zohor) or the second one some masjids hold from 2 PM. */
@@ -224,7 +224,7 @@ export const DEFAULT_PREFS: Preferences = {
   largeText: false,
   menuSide: 'auto',
   showOpening: true,
-  guideSeen: false,
+  guideShown: false,
   jumuahReminderMinutes: 0,
   jumuahSession: 'first',
   jumuahLeaveAlarm: false,
@@ -307,8 +307,6 @@ export function decodePreferences(raw: unknown): Preferences {
   if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
   // One Off, Notify or Alarm per prayer in Alerts and alarms (core/alertMode.ts).
   unifyAlerts(out)
-  // People already using the app before the quick guide came don't get it pushed at them; it waits in Settings.
-  if (!('guideSeen' in r) && out.hasOnboarded) out.guideSeen = true
   return out
 }
 

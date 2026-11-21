@@ -11,6 +11,7 @@ language file doesn't have yet, so they never drift apart silently. Keys that
 start with "_" are settings, not page text ("_share" is the WhatsApp link,
 "_label" the short name on the language button, "_appnote" a line saying the app
 itself is still in English, "_head" extra tags for the <head>, such as a font).
+Pictures of the app in site/img/<lang>/ (same file name) replace the English ones.
 Arabic and Urdu pages are built right to left. Anything between <!--notr--> and
 <!--/notr--> is left as it is (the language menu, where each name is in its own
 language).
@@ -58,7 +59,8 @@ work = re.sub(r'<!--notr-->[\s\S]*?<!--/notr-->|<(script|style|svg)\b[\s\S]*?</\
 title_re = re.compile(r'(<title>)([^<]*)(</title>)')
 work = title_re.sub(lambda m: m.group(1) + tr(m.group(2)) + m.group(3), work)
 body_at = work.index('<body')
-body = re.sub(r'>([^<\x00]+)<', lambda m: '>' + tr(m.group(1)) + '<', work[body_at:])
+# Also text right after a kept drawing, such as an icon at the start of a line.
+body = re.sub(r'(>|\x00\d+\x00)([^<\x00]+)<', lambda m: m.group(1) + tr(m.group(2)) + '<', work[body_at:])
 work = work[:body_at] + body
 
 
@@ -67,7 +69,7 @@ def attr(m):
     return f'{m.group(1)}="{html.escape(html.unescape(tr(m.group(2))), quote=True)}"'
 
 
-work = re.sub(r'\b(alt|aria-label)="([^"]*)"', attr, work)
+work = re.sub(r'\b(alt|aria-label|placeholder)="([^"]*)"', attr, work)
 work = re.sub(r'(<meta (?:name="description"|property="og:(?:title|description)") content)="([^"]*)"',
               attr, work)
 
@@ -76,6 +78,19 @@ if missing:
     sys.exit(1)
 
 work = re.sub(r'\x00(\d+)\x00', lambda m: kept[int(m.group(1))], work)
+
+# Pictures of the app in this language: site/img/<lang>/<name> replaces img/<name> when it exists.
+import os
+img_dir = os.path.join(os.path.dirname(os.path.abspath(src)), 'img', lang)
+def own_picture(path):
+    name = path[len('img/'):] if path.startswith('img/') else None
+    if name and '/' not in name and os.path.isfile(os.path.join(img_dir, name)):
+        return f'img/{lang}/{name}'
+    return path
+work = re.sub(r'\bsrc="(img/[^"]+)"', lambda m: f'src="{own_picture(m.group(1))}"', work)
+work = re.sub(r'\bsrcset="([^"]*)"', lambda m: 'srcset="' + ', '.join(
+    ' '.join([own_picture(c.split(' ')[0])] + c.split(' ')[1:])
+    for c in (part.strip() for part in m.group(1).split(','))) + '"', work)
 
 # The page lives one folder down: fix relative links (not #anchors, mailto or full URLs).
 work = re.sub(r'\b(href|src)="(?!https?:|mailto:|#|/|data:)([^"]*)"',

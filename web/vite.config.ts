@@ -113,7 +113,7 @@ export default defineConfig({
   build: {
     target: 'es2022', sourcemap: false, chunkSizeWarningLimit: 300,
     // Three pages: the app, the masjid screen for TVs (screen/) and printable calendars (print/).
-    rollupOptions: { input: { main: resolve(root, 'index.html'), screen: resolve(root, 'screen/index.html'), print: resolve(root, 'print/index.html') } },
+    rollupOptions: { input: { main: resolve(root, 'index.html'), screen: resolve(root, 'screen/index.html'), print: resolve(root, 'print/index.html'), stats: resolve(root, 'screen/stats/index.html') } },
   },
   test: { environment: 'node', include: ['tests/**/*.test.ts'] },
 } as Parameters<typeof defineConfig>[0])

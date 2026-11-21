@@ -7,7 +7,8 @@ import { HeroDial, SunPath, type DialMark } from '../ui/Dials'
 import { LivingSky } from '../ui/LivingSky'
 import { skyAt } from '../ui/sky'
 import { masjidAppLink, type ScreenConfig } from './config'
-import { clockParts, countdown, gregorianDate, kaabaMomentToday, name, nextOccasion, occasionName, phaseAt, screenDay, shortLeft, WORDS, type Phase } from './model'
+import { zoned } from '../core/tz'
+import { clockParts, countdown, inFridayWindow, gregorianDate, kaabaMomentToday, name, nextOccasion, occasionName, phaseAt, screenDay, shortLeft, WORDS, type Phase } from './model'
 
 /**
  * The masjid screen. Sizes are in viewport units so the same layout reads from
@@ -30,9 +31,13 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
   const isToday = sd === today || sd.day.day === today.day.day
   // One prayer is highlighted: the one people are waiting for (or the one being called now).
   const focus: Prayer = phase.kind === 'waiting' ? phase.next : phase.prayer
+  const hide = c.hide
+  // Everything but the name and the prayertimes.asia line turned off: the footer tucks in under the name.
+  const tucked = hide.date && hide.hijri && hide.clock && hide.times && hide.countdown
+  const extra = `${hide.times ? ' scr-no-times' : ''}${hide.clock ? ' scr-no-clock' : ''}${tucked ? ' scr-tucked' : ''}`
 
   return (
-    <div class={`scr scr-${phase.kind} scr-look-${c.look}`} style={{ '--tint': `var(--t-${tint})` }}>
+    <div class={`scr scr-${phase.kind} scr-look-${c.look}${extra}`} style={{ '--tint': `var(--t-${tint})` }}>
       {c.look !== 'bands' && <LivingSky colors={skyAt(now, today.day)} scheme={c.look === 'day' ? 'light' : 'dark'} soft={false} />}
       {c.look !== 'day' && c.look !== 'bands' && <div class="scr-shade" aria-hidden="true" />}
       <header class="scr-head">
@@ -40,18 +45,22 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
           <h1 class={lengthClass(c.name || c.place.name, 28, 48)}>{c.name || c.place.name}</h1>
           {c.name && <p>{c.place.name}</p>}
         </div>
-        <p class="scr-date">{gregorianDate(now, tz, c.lang)}<br />{formatHijriDate(today.hijri, hijriStyle)}</p>
+        {!(hide.date && hide.hijri) && (
+          <p class={`scr-date${hide.date ? ' only-hijri' : ''}`}>
+            {!hide.date && gregorianDate(now, tz, c.lang)}{!hide.date && !hide.hijri && <br />}{!hide.hijri && formatHijriDate(today.hijri, hijriStyle)}
+          </p>
+        )}
       </header>
 
-      {c.look === 'dial' && <Dial sd={sd} now={now} config={c} label={label} focus={focus} isToday={isToday} />}
+      {c.look === 'dial' && !hide.times && <Dial sd={sd} now={now} config={c} label={label} focus={focus} isToday={isToday} />}
 
       <Hero phase={phase} now={now} config={c} label={label} />
 
-      {c.look === 'sunpath' && (
+      {c.look === 'sunpath' && !hide.times && (
         <section class="scr-sun" aria-hidden="true"><SunPath width={1600} height={240} now={now} day={sd.day} tz={tz} /></section>
       )}
 
-      <ol class={`scr-grid${c.showIqamah ? '' : ' no-iq'}`}>
+      {!hide.times && <ol class={`scr-grid${c.showIqamah ? '' : ' no-iq'}`}>
         {sd.imsak != null && (
           <li class={`scr-cell scr-imsak${isToday && sd.imsak <= now ? ' passed' : ''}`}>
             <span class="scr-name">{w.imsak}</span>
@@ -72,15 +81,16 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
             </li>
           )
         })}
-      </ol>
+      </ol>}
 
       <RamadanRibbon sd={today} now={now} config={c} />
+      <FridayLine now={now} config={c} />
 
       <footer class={`scr-foot${c.showQr ? ' with-qr' : ''}`}>
         {c.showQr && <QrCard config={c} caption={w.scan} />}
         <Notice notices={today.raya && (today.eid == null || now < today.eid) ? [w.takbir, ...c.notices] : c.notices} now={now} />
         <p class="scr-brand">
-          <span class="scr-pill"><b class={`scr-grade g-${sd.day.grade}`}>{sd.day.grade}</b>{sd.source}</span>
+          {!hide.source && <span class="scr-pill"><b class={`scr-grade g-${sd.day.grade}`}>{sd.day.grade}</b>{sd.source}</span>}
           <span><b>prayertimes.asia</b></span>
         </p>
       </footer>
@@ -89,7 +99,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
         <div class="scr-dim" role="status">
           <p>{label(phase.prayer)}</p>
           <h2>{w.inPrayer}</h2>
-          <p class="scr-dim-clock">{clockParts(now, tz, c.h24).time}</p>
+          {!hide.clock && <p class="scr-dim-clock">{clockParts(now, tz, c.h24).time}</p>}
         </div>
       )}
     </div>
@@ -177,7 +187,7 @@ function Hero({ phase, now, config: c, label }: { phase: Phase; now: number; con
       <section class={`scr-hero${phase.iqamah != null && left <= 60_000 ? ' scr-final' : ''}`}>
         <p class="scr-kicker">{w.azan} {label(phase.prayer)}{phase.iqamah != null && <> · {jumuah ? w.khutbahIn : w.iqamahIn}</>}</p>
         <p class="scr-big">{phase.iqamah != null ? countdown(left) : label(phase.prayer)}</p>
-        <p class="scr-line"><span class="scr-now">{clock.time}{clock.suffix && <small>{clock.suffix}</small>}</span> · {w.silence}</p>
+        <p class="scr-line">{!c.hide.clock && <><span class="scr-now">{clock.time}{clock.suffix && <small>{clock.suffix}</small>}</span> · </>}{w.silence}</p>
       </section>
     )
   }
@@ -187,10 +197,10 @@ function Hero({ phase, now, config: c, label }: { phase: Phase; now: number; con
     const sec = String(Math.floor(now / 1000) % 60).padStart(2, '0')
     return (
       <section class="scr-hero">
-        <p class="scr-big scr-clockbig">{clock.time}<span class="scr-sec">{sec}</span>{clock.suffix && <small>{clock.suffix}</small>}</p>
+        {!c.hide.clock && <p class="scr-big scr-clockbig">{clock.time}<span class="scr-sec">{sec}</span>{clock.suffix && <small>{clock.suffix}</small>}</p>}
         <p class="scr-next" style={{ '--tint': 'var(--t-sunrise)' }}>
           <span class="scr-next-name">{w.eid}</span>
-          <span class="scr-in">{w.inTag(shortLeft(eid - now))}</span>
+          {!c.hide.countdown && <span class="scr-in">{w.inTag(shortLeft(eid - now))}</span>}
         </p>
       </section>
     )
@@ -199,19 +209,16 @@ function Hero({ phase, now, config: c, label }: { phase: Phase; now: number; con
   const sec = String(Math.floor(now / 1000) % 60).padStart(2, '0')
   return (
     <section class="scr-hero">
-      <p class="scr-big scr-clockbig">{clock.time}<span class="scr-sec">{sec}</span>{clock.suffix && <small>{clock.suffix}</small>}</p>
+      {!c.hide.clock && <p class="scr-big scr-clockbig">{clock.time}<span class="scr-sec">{sec}</span>{clock.suffix && <small>{clock.suffix}</small>}</p>}
       <p class="scr-next" style={{ '--tint': `var(--t-${next})` }}>
         <span class="scr-next-name">{next === 'sunrise' ? w.ends(label('fajr')) : label(next)}</span>
-        <span class="scr-in">{w.inTag(shortLeft(phase.at - now))}</span>
+        {!c.hide.countdown && <span class="scr-in">{w.inTag(shortLeft(phase.at - now))}</span>}
       </p>
     </section>
   )
 }
 
-/**
- * One line under the times: Ramadan nights and Raya morning, the countdown to the next big date,
- * and on the two Kaaba days the moment the sun stands over it.
- */
+/** Ramadan nights and Raya morning, in one line under the times. */
 function RamadanRibbon({ sd, now, config: c }: { sd: NonNullable<ReturnType<typeof screenDay>>; now: number; config: ScreenConfig }) {
   const w = WORDS[c.lang]
   const tz = c.place!.tz
@@ -225,17 +232,26 @@ function RamadanRibbon({ sd, now, config: c }: { sd: NonNullable<ReturnType<type
     if (sd.qiyam != null && now < sd.qiyam + 3_600_000) parts.push(<span>{w.qiyam} <Time ms={sd.qiyam} tz={tz} h24={c.h24} small /></span>)
     else if (sd.tarawih && sd.hijri.month === 9 && sd.hijri.day >= 20) parts.push(<span>{w.lastTen}</span>)
   }
-  const occasion = c.occasion ? nextOccasion(now, c) : null
-  // 1 Ramadan and Raya morning already have their own words above.
+  const occasion = c.hide.occasion ? null : nextOccasion(now, c)
+  // 1 Ramadan and Eid morning already have their own words above.
   if (occasion && !(occasion.days === 0 && (occasion.id === 'ramadan' || occasion.id === 'aidilfitri'))) {
     const text = w.occasion(occasionName(occasion.id, c), occasion.days)
     parts.push(occasion.days === 0 ? <b class="scr-occasion">{text}</b> : <span class="scr-occasion">{text}</span>)
   }
   // Shown to the nearest minute (17:17:59 reads 5:18, as published).
-  const kaaba = c.kaabaDays ? kaabaMomentToday(now, c) : null
+  const kaaba = c.hide.kaaba ? null : kaabaMomentToday(now, c)
   if (kaaba != null) parts.push(<span class="scr-kaaba"><b>{w.kaaba}</b> {w.kaabaAt} <Time ms={Math.round(kaaba / 60_000) * 60_000} tz={tz} h24={c.h24} small />, {w.kaabaHint}</span>)
   if (!parts.length) return null
   return <p class="scr-ramadan">{parts.map((x, i) => <>{i > 0 && <i class="scr-dotsep">·</i>}{x}</>)}</p>
+}
+
+/** The committee's Friday line, from Thursday Maghrib until an hour and a half after Friday Zohor. */
+function FridayLine({ now, config: c }: { now: number; config: ScreenConfig }) {
+  if (!c.fridayNote || !c.place) return null
+  const today = screenDay(now, c, rowFor)
+  if (!today) return null
+  if (!inFridayWindow(zoned(now, c.place.tz).weekday, now, today.day.times.maghrib, today.day.times.dhuhr)) return null
+  return <p class="scr-ramadan scr-friday"><b>{WORDS[c.lang].friday}</b><i class="scr-dotsep">·</i><span>{c.fridayNote}</span></p>
 }
 
 function Time({ ms, tz, h24, small = false }: { ms: number; tz: string; h24: boolean; small?: boolean }) {

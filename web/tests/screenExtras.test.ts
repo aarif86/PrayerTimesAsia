@@ -1,8 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { qiblaDays } from '../src/core/falak'
 import { zoned, zonedTime } from '../src/core/tz'
-import { bestOffset, CLOCK_LIMIT_MS, correctionFor, differenceText, offsetFromSample, SAVED_FOR_MS } from '../src/screen/clockCheck'
-import { DEFAULT_CONFIG, decodeConfig, encodeConfig, sanitize, type ScreenConfig } from '../src/screen/config'
+import { DEFAULT_CONFIG, decodeConfig, encodeConfig, NO_HIDE, sanitize, type ScreenConfig } from '../src/screen/config'
 import { kaabaMomentToday, nextOccasion, occasionName, screenHijri, setScreenAnnouncements, WORDS } from '../src/screen/model'
 
 const TZ = 'Asia/Singapore'
@@ -11,47 +10,6 @@ const LA: ScreenConfig = { ...DEFAULT_CONFIG, place: { name: 'Los Angeles', lat:
 const sg = (y: number, mo: number, d: number, h = 9, mi = 0) => zonedTime(y, mo, d, h, mi, 0, TZ)
 
 afterEach(() => setScreenAnnouncements([]))
-
-describe('TV clock check', () => {
-  const server = Date.parse('2026-11-18T01:00:00Z')
-  const header = new Date(server).toUTCString()
-
-  it('works out how far off the TV is from one request', () => {
-    // The TV reads 2 minutes behind the server; the request took 200 ms.
-    const sentAt = server - 120_000 - 100
-    const o = offsetFromSample({ sentAt, receivedAt: sentAt + 200, serverDate: header })!
-    expect(Math.abs(o - 120_000)).toBeLessThanOrEqual(1000)
-  })
-
-  it('ignores slow, missing or broken answers', () => {
-    expect(offsetFromSample({ sentAt: 0, receivedAt: 6000, serverDate: header })).toBeNull()
-    expect(offsetFromSample({ sentAt: 0, receivedAt: 10, serverDate: null })).toBeNull()
-    expect(offsetFromSample({ sentAt: 0, receivedAt: 10, serverDate: 'not a date' })).toBeNull()
-    expect(bestOffset([])).toBeNull()
-  })
-
-  it('keeps the quickest of several answers', () => {
-    const quick = { sentAt: server - 60_000, receivedAt: server - 60_000 + 100, serverDate: header }
-    const slow = { sentAt: server - 63_000, receivedAt: server - 63_000 + 4000, serverDate: header }
-    expect(bestOffset([slow, quick])).toBe(offsetFromSample(quick))
-  })
-
-  it('corrects only beyond 30 seconds, and forgets a check older than a week', () => {
-    const now = Date.now()
-    expect(correctionFor(null, now)).toBe(0)
-    expect(correctionFor({ offset: CLOCK_LIMIT_MS - 1000, checkedAt: now }, now)).toBe(0)
-    expect(correctionFor({ offset: -(CLOCK_LIMIT_MS - 1000), checkedAt: now }, now)).toBe(0)
-    expect(correctionFor({ offset: 95_000, checkedAt: now }, now)).toBe(95_000)
-    expect(correctionFor({ offset: -95_000, checkedAt: now }, now)).toBe(-95_000)
-    expect(correctionFor({ offset: 95_000, checkedAt: now - SAVED_FOR_MS - 1 }, now)).toBe(0)
-  })
-
-  it('says the difference in plain words', () => {
-    expect(differenceText(130_000)).toBe('2 minutes 10 seconds')
-    expect(differenceText(-31_000)).toBe('31 seconds')
-    expect(differenceText(3_600_000 + 60_000)).toBe('1 hour 1 minute')
-  })
-})
 
 describe('occasion countdown', () => {
   it('counts down to 1 Ramadan on the date the authority announced', () => {
@@ -122,11 +80,12 @@ describe('sun over the Kaaba', () => {
 })
 
 describe('screen settings for the new lines', () => {
-  it('are on by default, also for links made before they existed, and travel in the link', () => {
-    expect(DEFAULT_CONFIG.occasion).toBe(true)
-    expect(DEFAULT_CONFIG.kaabaDays).toBe(true)
-    expect(sanitize({}).occasion).toBe(true)
-    const off = { ...SG, occasion: false, kaabaDays: false }
-    expect(decodeConfig(encodeConfig(off))).toMatchObject({ occasion: false, kaabaDays: false })
+  it('are shown by default, also for links made before they existed, and can be hidden in the link', () => {
+    expect(DEFAULT_CONFIG.hide.occasion).toBe(false)
+    expect(DEFAULT_CONFIG.hide.kaaba).toBe(false)
+    expect(sanitize({}).hide.occasion).toBe(false)
+    expect(sanitize({}).hide.kaaba).toBe(false)
+    const off = { ...SG, hide: { ...NO_HIDE, occasion: true, kaaba: true } }
+    expect(decodeConfig(encodeConfig(off))!.hide).toMatchObject({ occasion: true, kaaba: true })
   })
 })

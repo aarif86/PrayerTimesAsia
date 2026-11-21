@@ -8,7 +8,6 @@ import { ensureTable } from '../services/officialTables'
 import { readJSON, writeJSON } from '../services/storage'
 import { countScreenRunning, SCREEN_EVERY_MS } from '../services/usage'
 import { registerServiceWorker } from '../ui/pwa'
-import { CHECK_EVERY_MS, checkClock, onClockChange, screenNow } from './clockCheck'
 import { configFromHash, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, type ScreenConfig } from './config'
 import { Display } from './Display'
 import { Frame } from './Frame'
@@ -16,6 +15,7 @@ import { officialSourceForScreen, setScreenAnnouncements, setScreenClock, WORDS 
 import type { CalendarDataset } from '../core/calendarSanad'
 import { fetchOK } from '../services/storage'
 import { Setup } from './Setup'
+import { checkClock, CLOCK_WARN_MS, nextClockFix, PING_EVERY_MS, pingScreen, saveClockFix, savedClockFix } from './live'
 import { withBundled } from '../core/bundledCalendar'
 import './screen.css'
 
@@ -25,7 +25,7 @@ const SCREEN_VERSION = '1.0.0'
 /** Screenshot mode: ?demo (an example masjid) and ?now=2026-10-26T16:30:00%2B08:00 (a fixed clock). */
 const query = new URLSearchParams(location.search)
 const fixedNow = (() => { const t = Date.parse(query.get('now') ?? ''); return Number.isNaN(t) ? null : t })()
-setScreenClock(fixedNow != null ? () => fixedNow : screenNow)
+if (fixedNow != null) setScreenClock(() => fixedNow)
 
 /** Ramadan and Raya announcements: the saved copy at once, then the latest every 15 minutes (moon sighting nights). */
 const CALENDAR_URL = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/main/data/calendar.json'
@@ -65,7 +65,9 @@ function initialConfig(): ScreenConfig | null {
   return saved ? sanitize(saved) : null
 }
 
-const onOnline = () => { void checkClock() }
+/** How far the TV's own clock is off, from the last check-in (0 until then). The screen counts from the corrected time. */
+let clockFix = fixedNow == null && !query.has('demo') ? savedClockFix() : 0
+const screenNow = () => Date.now() + clockFix
 
 function useClock(): number {
   const [now, setNow] = useState(fixedNow ?? screenNow())
@@ -75,13 +77,7 @@ function useClock(): number {
     let id: ReturnType<typeof setTimeout>
     const tick = () => { setNow(screenNow()); id = setTimeout(tick, 1000 - (screenNow() % 1000) + 5) }
     tick()
-    // A new clock check moves the time at once, not on the next tick.
-    const off = onClockChange(() => { clearTimeout(id); tick() })
-    // TV clock check: on start (after the page settles) and every six hours, when online.
-    const first = setTimeout(() => { void checkClock() }, 5_000)
-    const again = setInterval(() => { void checkClock() }, CHECK_EVERY_MS)
-    window.addEventListener('online', onOnline)
-    return () => { clearTimeout(id); off(); clearTimeout(first); clearInterval(again); window.removeEventListener('online', onOnline) }
+    return () => clearTimeout(id)
   }, [])
   return now
 }
@@ -107,6 +103,7 @@ function App() {
 function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; onEdit: () => void }) {
   const [, setTables] = useState(0)
   const [pointer, setPointer] = useState(true)
+  const [clockOff, setClockOff] = useState(clockFix)
   const w = WORDS[config.lang]
 
   // The official table: this year's, and next year's from December. Retried every 6 hours while missing.
@@ -115,7 +112,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
     if (!source || !config.place) return
     const tz = config.place.tz
     const fetchTables = () => {
-      const z = zoned(screenNow(), tz)
+      const z = zoned(Date.now(), tz)
       for (const y of z.month === 12 ? [z.year, z.year + 1] : [z.year]) {
         ensureTable(source, y, tz).then((changed) => { if (changed) setTables((n) => n + 1) })
       }
@@ -144,6 +141,23 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
     return () => { clearTimeout(first); clearInterval(id) }
   }, [config])
 
+  // "This screen is on": a random ID every 15 minutes for the live count, which also tells us when the TV clock is wrong.
+  // With counting off, only the time is asked for, and nothing about the screen is sent.
+  useEffect(() => {
+    if (fixedNow != null || query.has('demo') || !config.place) return
+    if (clockFix) setScreenClock(screenNow)
+    const ping = () => (config.report ? pingScreen({ cc: config.place?.cc ?? null, look: config.look, lang: config.lang }) : checkClock()).then((off) => {
+      if (off == null) return
+      clockFix = nextClockFix(clockFix, off)
+      saveClockFix(clockFix)
+      setScreenClock(screenNow)
+      setClockOff(clockFix)
+    })
+    const first = setTimeout(ping, 5_000)
+    const id = setInterval(ping, PING_EVERY_MS)
+    return () => { clearTimeout(first); clearInterval(id) }
+  }, [config])
+
   // Keep the TV awake where the browser allows it; ask again when the page comes back.
   useEffect(() => {
     type Lock = { release: () => Promise<void> }
@@ -161,7 +175,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
   useEffect(() => {
     if (fixedNow != null || !config.place) return
     const id = setInterval(() => {
-      const z = zoned(screenNow(), config.place!.tz)
+      const z = zoned(Date.now(), config.place!.tz)
       if (z.hour === 3 && z.minute === 0 && navigator.onLine) location.reload()
     }, 30_000)
     return () => clearInterval(id)
@@ -192,6 +206,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
           <Display config={config} now={now} arabicTurn={arabicTurn} />
         </div>
       </Frame>
+      {Math.abs(clockOff) >= CLOCK_WARN_MS && <p class="screen-clockwarn" role="status">{w.clockOff(Math.round(Math.abs(clockOff) / 60_000), clockOff > 0)}</p>}
       {pointer && fixedNow == null && (
         <div class="screen-tools">
           <span>{w.fullScreen}</span>

@@ -266,7 +266,7 @@ function MainPage({ open }: { open: (v: View) => void }) {
       </section>
 
       <section>
-        <h2 class="group-title">{tr('alerts.extras')}</h2>
+        <h2 class="group-title" id="demo-extras">{tr('alerts.extras')}</h2>
         <div class="group">
           <ToggleItem label={tr('wake.sahur')} sub={tr('wake.sahurSub')} on={!!p.sahurAlarm} onChange={(v) => setSahur(v ? SAHUR_TIMINGS[0] : null)} />
           {p.sahurAlarm && SAHUR_TIMINGS.map((t) => (
@@ -308,7 +308,7 @@ function MainPage({ open }: { open: (v: View) => void }) {
       </section>
 
       <section>
-        <h2 class="group-title">{tr('alerts.sound')}</h2>
+        <h2 class="group-title" id="demo-sound">{tr('alerts.sound')}</h2>
         <div class="group">
           {azanAvailable() && <ToggleItem label={tr('settings.azan')} sub={tr('alerts.azanSub', { name: s.name('fajr') })} on={p.azanSound} onChange={(v) => store.update((x) => { x.azanSound = v })} />}
           <ToggleItem label={tr('settings.buzzOnly')} sub={tr('alerts.buzzSub', { name: s.name('fajr') })} on={p.buzzOnly} onChange={(v) => store.update((x) => { x.buzzOnly = v })} />

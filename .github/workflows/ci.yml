@@ -36,6 +36,10 @@ jobs:
         working-directory: .
         run: python3 tools/reference_engine.py
 
+      - name: Check the TestFlight words (length, no colons or dashes)
+        working-directory: .
+        run: python3 tools/testflight_words.py --check
+
       - name: Install XcodeGen
         run: brew install xcodegen
 

@@ -81,6 +81,10 @@ Locally on a Mac: `brew install xcodegen && xcodegen generate && open PrayerTime
 
 ## TestFlight releases
 
+Before each release, update [`TestFlight/WhatToTest.en-US.txt`](TestFlight/WhatToTest.en-US.txt).
+The release sends it to TestFlight as "What to Test", with the beta description
+([details](TestFlight/README.md)).
+
 One-time setup in the Apple Developer portal (same pattern as Nasar Flow's
 keyboard and widgets):
 
