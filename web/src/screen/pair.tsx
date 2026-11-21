@@ -64,7 +64,7 @@ export function PairScreen({ onPaired }: { onPaired: (c: ScreenConfig, pair: TvP
   return (
     <main class="pair">
       <h1>Set up this screen</h1>
-      <p class="pair-lead">On your phone, scan this code, or go to <b>prayertimes.asia/app/screen</b> and type the code below.</p>
+      <p class="pair-lead">On your phone, scan the QR code. Or open <b>prayertimes.asia/app/screen</b> on your phone and type the code.</p>
       <div class="pair-row">
         {svg ? <div class="pair-qr" dangerouslySetInnerHTML={{ __html: svg }} /> : <div class="pair-qr empty" />}
         <div class="pair-code" aria-live="polite">
