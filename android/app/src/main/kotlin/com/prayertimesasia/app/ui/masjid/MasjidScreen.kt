@@ -291,7 +291,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                 }
             }
             if (here != null) item {
-                StreetMap(here, visible, selected, mode, Modifier.fillMaxWidth().height(300.dp).padding(horizontal = Dims.gutter)) { selected = it }
+                StreetMap(here, visible, selected, mode, Modifier.fillMaxWidth().height(260.dp).padding(horizontal = Dims.gutter)) { selected = it }
             }
             item {
                 Column(Modifier.padding(horizontal = Dims.gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
