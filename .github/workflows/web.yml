@@ -99,6 +99,10 @@ jobs:
           done
           # "Where our times come from", built from the same country table as the apps.
           python3 tools/build_sources_page.py data/countries.json _site/sources.html
+          # The Credits page in English, Malay and Indonesian, from site/i18n/credits.json.
+          python3 tools/build_credits_page.py site/i18n/credits.json _site
+          # The Malay and Indonesian home pages link to their own Credits page.
+          sed -i 's#href="../credits.html"#href="credits.html"#' _site/ms/index.html _site/id/index.html
           cp -R web/dist _site/app
           sed -i "s#__BASE__#${BASE}#g" _site/404.html
           # Visitor counts on the promo page: the App ID from config/analytics.json (empty = off).
@@ -121,6 +125,7 @@ jobs:
           ! grep -q "__BASE__" _site/404.html
           for lang in ms id ar ur bn tr fr; do test -f "_site/$lang/index.html"; done
           test -f _site/sources.html
+          for f in credits.html ms/credits.html id/credits.html; do test -f "_site/$f"; done
           test -f _site/press.html
           test -f _site/ramadan.html
           ! grep -q "__TELEMETRYDECK_APP_ID__" _site/index.html _site/ms/index.html _site/id/index.html _site/ar/index.html _site/ur/index.html _site/bn/index.html _site/tr/index.html _site/fr/index.html

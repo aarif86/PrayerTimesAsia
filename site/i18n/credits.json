@@ -1,0 +1,107 @@
+{
+  "en": {
+    "html_lang": "en",
+    "title": "Credits | Prayer Times Asia",
+    "description": "The people and sources behind Prayer Times Asia, with thanks.",
+    "home": "Prayer Times Asia",
+    "back": "Back to home",
+    "back_short": "Home",
+    "mode": "Switch between light and dark",
+    "h1": "Thank you",
+    "lead": "Prayer Times Asia stands on the work of many people and many open projects. This page says who we thank. If we have missed someone, please write to us and we will add you.",
+    "makers_h": "Who made it",
+    "makers": "Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with [Nasar Digital](https://nasardigital.com/) (Nasar Pte Ltd). Ustazah Nasibah's support and steady feedback have shaped the app.",
+    "times_h": "The times you pray by",
+    "times": [
+      ["Islamic Religious Council of Singapore (MUIS)", "Singapore times come from the official MUIS timetable. This contains information from the Muslim Prayer Timetable accessed from data.gov.sg, which is made available under the terms of the Singapore Open Data Licence version 1.0.", "Read the licence", "https://data.gov.sg/open-data-licence"],
+      ["JAKIM e-Solat, Malaysia", "Malaysian times come from the official zone times of Jabatan Kemajuan Islam Malaysia.", "e-solat.gov.my", "https://www.e-solat.gov.my"],
+      ["Kemenag, Indonesia", "Indonesian times follow the schedules of Kementerian Agama (Bimas Islam), shared through the myquran.com community service.", "api.myquran.com", "https://api.myquran.com"],
+      ["Every other country", "Where a country has a religious authority, the app follows it. Where it does not, the app uses what most masjids there use, and tells you which.", "See every country and its source", "sources.html"]
+    ],
+    "built_h": "What we build on",
+    "built": [
+      ["How the times are worked out", "The sun calculation is based on the work at praytimes.org. The method settings follow those published by MUIS, JAKIM, Kemenag, the Muslim World League, Karachi, Umm al Qura, Diyanet and others.", "praytimes.org", "https://praytimes.org/wiki/Calculation_Methods"],
+      ["Malaysian zones", "The map of which district belongs to which JAKIM zone comes from the mptwaktusolat project.", "github.com/mptwaktusolat", "https://github.com/mptwaktusolat/malaysia.geojson"],
+      ["Maps and places", "Map data by OpenStreetMap contributors (ODbL), map tiles by CARTO. Masjid lists are built every week from OpenStreetMap with the Overpass API, and place search uses Nominatim.", "openstreetmap.org/copyright", "https://www.openstreetmap.org/copyright"],
+      ["Icons and fonts", "Lucide icons (ISC licence). Inter and Nunito fonts (SIL Open Font Licence). Country flags on this website use the Twemoji Country Flags font, with art from Twemoji (CC BY 4.0).", "lucide.dev", "https://lucide.dev"]
+    ],
+    "community_h": "Shared with you",
+    "community": [
+      ["Our community", "Masjid timetables and method confirmations from people who care are shared under CC BY 4.0. Thank you to everyone who sent one, and to our Timekeepers.", "How to help", "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md"],
+      ["Open source", "The app is open source under the GNU AGPL 3.0 licence, so anyone can read it, check it and learn from it.", "See the code", "https://github.com/aarif86/PrayerTimesAsia"]
+    ],
+    "note": "Prayer Times Asia helps you pray on time. Please always follow your local religious authority.",
+    "contact": "Missed someone, or spotted a mistake? Email",
+    "other_lang": "Other languages"
+  },
+  "ms": {
+    "html_lang": "ms",
+    "title": "Penghargaan | Prayer Times Asia",
+    "description": "Mereka yang berada di sebalik Prayer Times Asia, dengan ucapan terima kasih.",
+    "home": "Prayer Times Asia",
+    "back": "Kembali ke laman utama",
+    "back_short": "Utama",
+    "mode": "Tukar antara cerah dan gelap",
+    "h1": "Terima kasih",
+    "lead": "Prayer Times Asia berdiri di atas usaha ramai orang dan banyak projek terbuka. Halaman ini menyatakan kepada siapa kami berterima kasih. Jika ada yang terlepas, sila hubungi kami dan kami akan menambah nama anda.",
+    "makers_h": "Siapa yang membinanya",
+    "makers": "Dibina fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama [Nasar Digital](https://nasardigital.com/) (Nasar Pte Ltd). Sokongan dan maklum balas Ustazah Nasibah yang berterusan telah membentuk aplikasi ini.",
+    "times_h": "Waktu yang anda gunakan untuk solat",
+    "times": [
+      ["Majlis Ugama Islam Singapura (MUIS)", "Waktu Singapura datang daripada jadual rasmi MUIS. Ini mengandungi maklumat daripada Jadual Waktu Solat Muslim yang diakses dari data.gov.sg dan disediakan di bawah Lesen Data Terbuka Singapura versi 1.0.", "Baca lesen", "https://data.gov.sg/open-data-licence"],
+      ["JAKIM e-Solat, Malaysia", "Waktu Malaysia datang daripada waktu zon rasmi Jabatan Kemajuan Islam Malaysia.", "e-solat.gov.my", "https://www.e-solat.gov.my"],
+      ["Kemenag, Indonesia", "Waktu Indonesia mengikut jadual Kementerian Agama (Bimas Islam), yang dikongsi melalui perkhidmatan komuniti myquran.com.", "api.myquran.com", "https://api.myquran.com"],
+      ["Setiap negara lain", "Jika sesebuah negara mempunyai pihak berkuasa agama, aplikasi mengikutnya. Jika tiada, aplikasi menggunakan kaedah yang digunakan oleh kebanyakan masjid di sana, dan memberitahu anda yang mana satu.", "Lihat setiap negara dan sumbernya", "sources.html"]
+    ],
+    "built_h": "Asas yang kami gunakan",
+    "built": [
+      ["Cara waktu dikira", "Pengiraan matahari berdasarkan kerja di praytimes.org. Tetapan kaedah mengikut yang diterbitkan oleh MUIS, JAKIM, Kemenag, Liga Dunia Muslim, Karachi, Umm al Qura, Diyanet dan lain-lain.", "praytimes.org", "https://praytimes.org/wiki/Calculation_Methods"],
+      ["Zon Malaysia", "Peta daerah yang termasuk dalam zon JAKIM tertentu datang daripada projek mptwaktusolat.", "github.com/mptwaktusolat", "https://github.com/mptwaktusolat/malaysia.geojson"],
+      ["Peta dan tempat", "Data peta oleh penyumbang OpenStreetMap (ODbL), jubin peta oleh CARTO. Senarai masjid dibina setiap minggu daripada OpenStreetMap dengan Overpass API, dan carian tempat menggunakan Nominatim.", "openstreetmap.org/copyright", "https://www.openstreetmap.org/copyright"],
+      ["Ikon dan fon", "Ikon Lucide (lesen ISC). Fon Inter dan Nunito (SIL Open Font Licence). Bendera negara di laman web ini menggunakan fon Twemoji Country Flags, dengan seni daripada Twemoji (CC BY 4.0).", "lucide.dev", "https://lucide.dev"]
+    ],
+    "community_h": "Dikongsi bersama anda",
+    "community": [
+      ["Komuniti kami", "Jadual waktu masjid dan pengesahan kaedah daripada mereka yang prihatin dikongsi di bawah CC BY 4.0. Terima kasih kepada semua yang menghantarnya, dan kepada para Timekeepers kami.", "Cara membantu", "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md"],
+      ["Sumber terbuka", "Aplikasi ini bersumber terbuka di bawah lesen GNU AGPL 3.0, supaya sesiapa sahaja boleh membaca, menyemak dan belajar daripadanya.", "Lihat kod", "https://github.com/aarif86/PrayerTimesAsia"]
+    ],
+    "note": "Prayer Times Asia membantu anda bersolat tepat pada waktunya. Sila sentiasa ikut pihak berkuasa agama tempatan anda.",
+    "contact": "Ada yang terlepas, atau ternampak kesilapan? Emel",
+    "other_lang": "Bahasa lain"
+  },
+  "id": {
+    "html_lang": "id",
+    "title": "Ucapan terima kasih | Prayer Times Asia",
+    "description": "Orang dan sumber di balik Prayer Times Asia, dengan ucapan terima kasih.",
+    "home": "Prayer Times Asia",
+    "back": "Kembali ke beranda",
+    "back_short": "Beranda",
+    "mode": "Ganti antara terang dan gelap",
+    "h1": "Terima kasih",
+    "lead": "Prayer Times Asia berdiri di atas kerja banyak orang dan banyak proyek terbuka. Halaman ini menyebut siapa saja yang kami ucapkan terima kasih. Jika ada yang terlewat, silakan hubungi kami dan kami akan menambahkan nama Anda.",
+    "makers_h": "Siapa yang membuatnya",
+    "makers": "Dibuat fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama [Nasar Digital](https://nasardigital.com/) (Nasar Pte Ltd). Dukungan dan masukan Ustazah Nasibah yang terus mengalir ikut membentuk aplikasi ini.",
+    "times_h": "Waktu yang Anda pakai untuk salat",
+    "times": [
+      ["Majlis Ugama Islam Singapura (MUIS)", "Waktu Singapura berasal dari jadwal resmi MUIS. Ini memuat informasi dari Jadwal Waktu Salat Muslim yang diakses dari data.gov.sg dan tersedia berdasarkan Lisensi Data Terbuka Singapura versi 1.0.", "Baca lisensi", "https://data.gov.sg/open-data-licence"],
+      ["JAKIM e-Solat, Malaysia", "Waktu Malaysia berasal dari waktu zona resmi Jabatan Kemajuan Islam Malaysia.", "e-solat.gov.my", "https://www.e-solat.gov.my"],
+      ["Kemenag, Indonesia", "Waktu Indonesia mengikuti jadwal Kementerian Agama (Bimas Islam), yang dibagikan lewat layanan komunitas myquran.com.", "api.myquran.com", "https://api.myquran.com"],
+      ["Setiap negara lain", "Jika suatu negara punya otoritas agama, aplikasi mengikutinya. Jika tidak ada, aplikasi memakai cara yang dipakai kebanyakan masjid di sana, dan memberi tahu Anda yang mana.", "Lihat setiap negara dan sumbernya", "sources.html"]
+    ],
+    "built_h": "Dasar yang kami pakai",
+    "built": [
+      ["Cara waktu dihitung", "Perhitungan matahari didasarkan pada karya di praytimes.org. Pengaturan metode mengikuti yang diterbitkan oleh MUIS, JAKIM, Kemenag, Liga Dunia Muslim, Karachi, Umm al Qura, Diyanet dan lainnya.", "praytimes.org", "https://praytimes.org/wiki/Calculation_Methods"],
+      ["Zona Malaysia", "Peta daerah yang termasuk zona JAKIM tertentu berasal dari proyek mptwaktusolat.", "github.com/mptwaktusolat", "https://github.com/mptwaktusolat/malaysia.geojson"],
+      ["Peta dan tempat", "Data peta oleh para kontributor OpenStreetMap (ODbL), ubin peta oleh CARTO. Daftar masjid dibuat setiap minggu dari OpenStreetMap dengan Overpass API, dan pencarian tempat memakai Nominatim.", "openstreetmap.org/copyright", "https://www.openstreetmap.org/copyright"],
+      ["Ikon dan font", "Ikon Lucide (lisensi ISC). Font Inter dan Nunito (SIL Open Font Licence). Bendera negara di situs ini memakai font Twemoji Country Flags, dengan gambar dari Twemoji (CC BY 4.0).", "lucide.dev", "https://lucide.dev"]
+    ],
+    "community_h": "Dibagikan bersama Anda",
+    "community": [
+      ["Komunitas kami", "Jadwal waktu masjid dan konfirmasi metode dari orang yang peduli dibagikan di bawah CC BY 4.0. Terima kasih kepada semua yang mengirimkannya, dan kepada para Timekeepers kami.", "Cara membantu", "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md"],
+      ["Sumber terbuka", "Aplikasi ini bersumber terbuka di bawah lisensi GNU AGPL 3.0, sehingga siapa saja bisa membaca, memeriksa dan belajar darinya.", "Lihat kode", "https://github.com/aarif86/PrayerTimesAsia"]
+    ],
+    "note": "Prayer Times Asia membantu Anda salat tepat waktu. Mohon selalu ikuti otoritas agama setempat Anda.",
+    "contact": "Ada yang terlewat, atau melihat kesalahan? Kirim email ke",
+    "other_lang": "Bahasa lain"
+  }
+}
