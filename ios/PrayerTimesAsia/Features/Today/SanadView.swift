@@ -177,7 +177,7 @@ struct SanadSheet: View {
     private var detail: String {
         switch day.grade {
         case .official where day.officialSource != nil:
-            return "Downloaded once a year from the authority and kept on your phone, so it works offline."
+            return "Downloaded once a year from the authority and kept on your \(Device.noun), so it works offline."
         case .official:
             return "\(model.method.parameterSummary). \(model.sourceSummary)"
         case .masjid, .community:

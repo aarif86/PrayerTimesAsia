@@ -1,6 +1,6 @@
 import Foundation
 import SwiftUI
-#if canImport(AlarmKit)
+#if canImport(AlarmKit) && !targetEnvironment(macCatalyst)
 import ActivityKit
 import AlarmKit
 #endif
@@ -35,7 +35,7 @@ enum WakeUpAlarm {
     /// again until the next one that is set. Waiting alarms stay.
     @MainActor
     static func stopRinging() async {
-        #if canImport(AlarmKit)
+        #if canImport(AlarmKit) && !targetEnvironment(macCatalyst)
         if #available(iOS 26.0, *) {
             let manager = AlarmManager.shared
             for alarm in (try? manager.alarms) ?? [] where alarm.state != .scheduled {
@@ -50,7 +50,7 @@ enum WakeUpAlarm {
     /// Is a prayer alarm ringing or snoozed right now?
     @MainActor
     static var isRingingOrSnoozed: Bool {
-        #if canImport(AlarmKit)
+        #if canImport(AlarmKit) && !targetEnvironment(macCatalyst)
         if #available(iOS 26.0, *) {
             return ((try? AlarmManager.shared.alarms) ?? []).contains { $0.state != .scheduled }
         }
@@ -60,7 +60,7 @@ enum WakeUpAlarm {
 
     @MainActor
     private static func replace(with alarms: [(Date, String)], sound: AlarmSound) async -> Bool {
-        #if canImport(AlarmKit)
+        #if canImport(AlarmKit) && !targetEnvironment(macCatalyst)
         if #available(iOS 26.0, *) {
             let manager = AlarmManager.shared
             // Phones updating from the saved list: clear those too.
@@ -106,7 +106,7 @@ enum WakeUpAlarm {
         return false
     }
 
-    #if canImport(AlarmKit)
+    #if canImport(AlarmKit) && !targetEnvironment(macCatalyst)
     /// Lock Screen and Dynamic Island cards left over from alarms that have
     /// already ended (they showed as a pile of "Snoozed" cards).
     @available(iOS 26.0, *)

@@ -58,7 +58,7 @@ struct TodayView: View {
                 }
                 .scrollIndicators(.hidden)
             } else if model.prefs.todayStyle == .sunPath {
-                AnyView(sunPathPage(now: now, day: day, shown: shown, current: current, next: next))
+                macWidth(sunPathPage(now: now, day: day, shown: shown, current: current, next: next), 820)
             } else if model.prefs.todayStyle == .bands {
                 ViewThatFits(in: .vertical) {
                     AnyView(bandsPage(now: now, shown: shown, current: current, next: next, fill: true))
@@ -72,19 +72,19 @@ struct TodayView: View {
             } else {
             ViewThatFits(in: .vertical) {
                 if model.prefs.todayStyle == .centre {
-                    AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
+                    centreOrMacPage(now: now, day: day, shown: shown, current: current, next: next)
                 } else if model.prefs.todayStyle == .dial {
-                    AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
+                    macWidth(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true), 560)
                 } else {
-                    AnyView(page(now: now, day: day, shown: shown, current: current, next: next, fill: true))
+                    macWidth(page(now: now, day: day, shown: shown, current: current, next: next, fill: true), 820)
                 }
                 ScrollView {
                     if model.prefs.todayStyle == .centre {
                         AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
                     } else if model.prefs.todayStyle == .dial {
-                        AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
+                        macWidth(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false), 560)
                     } else {
-                        AnyView(page(now: now, day: day, shown: shown, current: current, next: next, fill: false))
+                        macWidth(page(now: now, day: day, shown: shown, current: current, next: next, fill: false), 820)
                     }
                 }
                 .scrollIndicators(.hidden)
@@ -641,6 +641,107 @@ struct TodayView: View {
         .padding(.bottom, fill ? 8 : 24)
     }
 
+    // MARK: Mac, two parts side by side
+
+    /// On a Mac a look made for a phone keeps a comfortable width in the middle of
+    /// the window instead of stretching across it. On a phone nothing changes.
+    private func macWidth<V: View>(_ view: V, _ width: CGFloat) -> AnyView {
+        guard Device.isMac else { return AnyView(view) }
+        return AnyView(view.frame(maxWidth: width).frame(maxWidth: .infinity))
+    }
+
+    /// Phones get the Centre page as before. A Mac window is wide, so there the
+    /// dial sits on the left with the day's times beside it. Kept behind AnyView
+    /// so the Prayer screen's SwiftUI type is no deeper on iPhone than it was
+    /// (a deeper type once crashed the app at launch, build 30).
+    private func centreOrMacPage(now: Date, day: PrayerDay, shown: PrayerDay,
+                                 current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> AnyView {
+        guard Device.isMac else {
+            return AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
+        }
+        return AnyView(GeometryReader { geo in
+            if geo.size.width >= 600 {
+                AnyView(macCentrePage(now: now, day: day, shown: shown, current: current, next: next))
+            } else {
+                AnyView(ScrollView {
+                    centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+                }
+                .scrollIndicators(.hidden))
+            }
+        })
+    }
+
+    /// The Centre style on a wide Mac window: the dial, the place and the notes
+    /// in a column on the left, the day's times filling the right.
+    private func macCentrePage(now: Date, day: PrayerDay, shown: PrayerDay,
+                               current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?) -> some View {
+        HStack(alignment: .top, spacing: 20) {
+            ScrollView {
+                VStack(spacing: 12) {
+                    if let lead = PrayerLead(current: current, next: next), let next, let tomorrow = model.day(containing: model.noon(now, plus: 1)) {
+                        DayDial(now: now, day: day, nextFajr: tomorrow.time(.fajr), timeZone: model.timeZone,
+                                currentName: lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time)),
+                                currentPrayer: lead.prayer,
+                                countdown: PrayerCountdown(now: now, next: next, model: model).count,
+                                label: PrayerCountdown(now: now, next: next, model: model).label,
+                                isNext: lead.isNext)
+                            .frame(width: 200, height: 200)
+                            .padding(.vertical, 10)
+                    }
+                    HStack(spacing: 8) {
+                        sunJourneyButton
+                        styleButton
+                        appearanceButton
+                        wakeChip(now)
+                        if model.prefs.trackerEnabled { streakChip(now) }
+                    }
+                    sunPlaceChip()
+                    if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+                    prayerHadith(next)
+                    if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+                    if dayOffset == 0 { TodayNotes(now: now) }
+                    if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
+                    // A Mac window has the room: the month, with the Hijri day under
+                    // each date. Click a day to see its times on the right.
+                    HijriMonthCard(onShowDay: { days in withAnimation(.snappy) { dayOffset = days } })
+                        .padding(14)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+                        .padding(.top, 6)
+                }
+                .padding(.bottom, 16)
+            }
+            .scrollIndicators(.hidden)
+            .frame(width: 350)
+
+            VStack(alignment: .leading, spacing: 8) {
+                sunDayNavigator(shown)
+                ScrollView {
+                    PrayerList(day: shown, now: now,
+                               current: dayOffset == 0 ? PrayerLead.open(current)?.prayer : nil,
+                               next: dayOffset == 0 ? next : nil,
+                               showMore: showMore, fill: false)
+                    if dayOffset == 0 { ReviewLine(now: now) }
+                    if model.prefs.showOffers && showMore {
+                        CommunityCardSlot(now: now, next: next)
+                    }
+                }
+                .scrollIndicators(.hidden)
+                HStack {
+                    SourceBadge(day: shown, compact: true)
+                    Spacer(minLength: 8)
+                    showMoreButton.fixedSize()
+                }
+            }
+            .frame(maxWidth: 640)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, Theme.gutter)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
+    }
+
     // MARK: Sun Path style
 
     /// The sun's arc across the sky up top, where we are in the day small at
@@ -1130,7 +1231,7 @@ private struct PrayerList: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(prayer.name(model.naming)) \(mode.word)")
-                .accessibilityHint("Tap to change. Hold for more.")
+                .accessibilityHint(Device.words("Tap to change. Hold for more."))
                 .contextMenu { AlertMenuItems(prayer: prayer) }
             }
         }
@@ -1149,6 +1250,20 @@ private struct PrayerList: View {
         .accessibilityAction(named: prayed ? "Mark as not prayed" : "Mark as prayed") {
             if trackable { model.togglePrayed(prayer, on: time) }
         }
+        #if targetEnvironment(macCatalyst)
+        // Mouse manners: the row lights up under the pointer, and a right click
+        // offers what a click or the bell would do.
+        .modifier(MacHover(corner: 16))
+        .contextMenu {
+            if trackable {
+                Button(prayed ? "Mark as not prayed" : "Mark as prayed", systemImage: prayed ? "circle" : "checkmark.circle") {
+                    withAnimation(.snappy) { model.togglePrayed(prayer, on: time) }
+                }
+                Divider()
+            }
+            AlertMenuItems(prayer: prayer)
+        }
+        #endif
         .background {
             if isCurrent {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)

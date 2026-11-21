@@ -37,6 +37,22 @@ struct PrayerTimesAsiaApp: App {
                 }
                 .onOpenURL { model.open(url: $0) }
         }
+        #if targetEnvironment(macCatalyst)
+        // The Go menu at the top of the screen, with the usual Mac shortcuts.
+        .commands {
+            CommandMenu("Go") {
+                Button("Prayer") { model.selectedTab = .today }.keyboardShortcut("1")
+                Button("Falak") { model.selectedTab = .falak }.keyboardShortcut("2")
+                Button("Masjid") { model.selectedTab = .nearby }.keyboardShortcut("3")
+                Divider()
+                Button("Alerts and alarms") { model.selectedTab = .today; model.showWakeUp = true }
+                    .keyboardShortcut("a", modifiers: [.command, .shift])
+            }
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") { model.selectedTab = .settings }.keyboardShortcut(",")
+            }
+        }
+        #endif
     }
 }
 
@@ -76,9 +92,12 @@ struct RootView: View {
                 TodayView()
                     .tabItem { Label { Text("Prayer") } icon: { Image("Tab-prayer") } }
                     .tag(AppModel.Tab.today)
+                // A Mac has no compass, so the Qibla tab is left out there.
+                #if !targetEnvironment(macCatalyst)
                 QiblaView()
                     .tabItem { Label { Text("Qibla") } icon: { Image("Tab-qibla") } }
                     .tag(AppModel.Tab.qibla)
+                #endif
                 FalakView(isTab: true)
                     .tabItem { Label { Text("Falak") } icon: { Image("Tab-falak") } }
                     .tag(AppModel.Tab.falak)
@@ -89,8 +108,14 @@ struct RootView: View {
                     .tabItem { Label("Settings", systemImage: "gearshape") }
                     .tag(AppModel.Tab.settings)
             }
-            .tint(.primary)
+            .modifier(MacSidebar())
+            // On a Mac the tint also fills the chosen row in the side bar, where white on white cannot be read.
+            .tint(Device.isMac ? Theme.accentText : .primary)
             .onAppear { model.applyDemoTab() }
+            #if targetEnvironment(macCatalyst)
+            .onAppear { MacWindow.fit(); MacMenuBar.refresh(model) }
+            .onChange(of: model.activePlace?.name) { MacMenuBar.refresh(model) }
+            #endif
             .sheet(isPresented: $model.showJourney) { JourneyView() }
             .sheet(isPresented: $model.showWakeUp) { WakeUpView() }
             .sheet(item: $model.pendingMasjid) { MasjidLinkSheet(link: $0) }
@@ -107,7 +132,7 @@ struct RootView: View {
             .alert("Welcome back", isPresented: $model.showWelcomeBack) {
                 Button("OK") {}
             } message: {
-                Text("Your settings are back, just as you left them. Your phone keeps a private copy, so deleting the app never loses them.")
+                Text("Your settings are back, just as you left them. Your \(Device.noun) keeps a private copy, so deleting the app never loses them.")
             }
             .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-widget-preview"))) {
                 NavigationStack { WidgetPreviewView() }
@@ -126,5 +151,17 @@ private struct LargeTextModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         if on { content.dynamicTypeSize(max(phone, .xxxLarge)) } else { content }
+    }
+}
+
+/// On a Mac the tabs sit in a side bar on the left, the way Mail and Notes
+/// do, instead of the pill at the top. Phones and iPads are unchanged.
+private struct MacSidebar: ViewModifier {
+    func body(content: Content) -> some View {
+        if Device.isMac, #available(iOS 18.0, *) {
+            content.tabViewStyle(.sidebarAdaptable)
+        } else {
+            content
+        }
     }
 }

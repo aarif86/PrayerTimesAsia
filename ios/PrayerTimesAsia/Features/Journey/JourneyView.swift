@@ -258,7 +258,7 @@ struct HomeQuestionCard: View {
                         Text("Is \(home.name) your home?").font(.title3.weight(.bold))
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    Text("We guessed it from where your phone was when you first opened the app. Home is used to work out when you count as a traveller, so please check it.")
+                    Text("We guessed it from where your \(Device.noun) was when you first opened the app. Home is used to work out when you count as a traveller, so please check it.")
                         .font(.subheadline).opacity(0.85)
                         .fixedSize(horizontal: false, vertical: true)
                     HStack(spacing: 10) {

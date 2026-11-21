@@ -88,7 +88,7 @@ struct PlacesView: View {
                         }
                     }
                     Section {
-                        Text("Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated on your phone, so they keep working offline.")
+                        Text("Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated on your \(Device.noun), so they keep working offline.")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                 } else {

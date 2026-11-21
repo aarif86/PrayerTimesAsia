@@ -85,15 +85,7 @@ struct NearbyView: View {
             TimelineView(.periodic(from: .now, by: 300)) { context in
                 let now = context.date
                 let list = visible(at: now)
-                VStack(spacing: 0) {
-                    map(list)
-                    ScrollView {
-                        content(list: list, now: now)
-                            .padding(.vertical, 14)
-                    }
-                    .background(.regularMaterial,
-                                in: UnevenRoundedRectangle(topLeadingRadius: 22, topTrailingRadius: 22, style: .continuous))
-                }
+                layout(list: list, now: now)
             }
             .background(SkyNow())
             .navigationTitle("Masjids and prayer rooms")
@@ -132,6 +124,31 @@ struct NearbyView: View {
     // MARK: Map
 
     @ViewBuilder
+    /// Phone: the map on top and the list under it. Mac: the list down the left and
+    /// the map filling the rest of the window, the way Maps does it.
+    private func layout(list: [PrayerSpace], now: Date) -> AnyView {
+        if Device.isMac {
+            return AnyView(HStack(spacing: 0) {
+                ScrollView {
+                    content(list: list, now: now)
+                        .padding(.vertical, 14)
+                }
+                .frame(width: 400)
+                .background(.regularMaterial)
+                map(list)
+            })
+        }
+        return AnyView(VStack(spacing: 0) {
+            map(list)
+            ScrollView {
+                content(list: list, now: now)
+                    .padding(.vertical, 14)
+            }
+            .background(.regularMaterial,
+                        in: UnevenRoundedRectangle(topLeadingRadius: 22, topTrailingRadius: 22, style: .continuous))
+        })
+    }
+
     private func map(_ list: [PrayerSpace]) -> some View {
         Map(position: $camera, selection: $selected) {
             ForEach(list) { space in
@@ -168,7 +185,7 @@ struct NearbyView: View {
                 .annotationTitles(.hidden)
             }
         }
-        .frame(height: 260)
+        .frame(height: Device.isMac ? nil : 260)
         .overlay(alignment: .bottom) {
             if let s = selected { pinCard(s) }
         }
@@ -374,7 +391,7 @@ struct NearbyView: View {
     private func places(list: [PrayerSpace], now: Date, eid: EidEvent?) -> some View {
         if here == nil {
             ContentUnavailableView("Choose a place", systemImage: "location.slash",
-                                   description: Text("Tap the button above, or pick a city on the Prayer tab."))
+                                   description: Text(Device.words("Tap the button above, or pick a city on the Prayer tab.")))
         } else if (search.isLoading || search.isAddingMore) && search.spaces.isEmpty && !slow {
             ProgressView("Searching nearby…").frame(maxWidth: .infinity).padding(.vertical, 30)
                 .task {
@@ -428,14 +445,14 @@ struct NearbyView: View {
                     selected = nil
                     withAnimation { camera = .automatic }
                 } label: {
-                    Text("\(more) more within 15 km are on the map. Tap a pin to see its name and directions.")
+                    Text(Device.words("\(more) more within 15 km are on the map. Tap a pin to see its name and directions."))
                         .multilineTextAlignment(.leading)
                 }
                 .font(.footnote).foregroundStyle(.secondary)
                 .padding(.horizontal)
             }
             if model.prefs.myMasjid == nil {
-                Text("Tap a place and choose Make it my masjid to keep it at the top.")
+                Text(Device.words("Tap a place and choose Make it my masjid to keep it at the top."))
                     .font(.footnote).foregroundStyle(.secondary)
                     .padding(.horizontal)
             }
@@ -515,6 +532,9 @@ private struct SpaceRow: View {
             }
             .buttonStyle(.plain)
             .accessibilityHint(isOpen ? "Hides the details" : "Shows facilities, directions and more")
+            #if targetEnvironment(macCatalyst)
+            .modifier(MacHover(corner: 10))
+            #endif
 
             if isOpen {
                 VStack(alignment: .leading, spacing: 8) {

@@ -1,4 +1,6 @@
+#if !targetEnvironment(macCatalyst)
 import ActivityKit
+#endif
 import Foundation
 import WidgetKit
 
@@ -9,6 +11,9 @@ enum WidgetBridge {
     static func publish(_ model: AppModel) {
         guard let snapshot = snapshot(model) else { return }
         snapshot.save()
+        #if targetEnvironment(macCatalyst)
+        MacMenuBar.update(snapshot)
+        #endif
         WidgetCenter.shared.reloadAllTimelines()
         LiveCountdown.refresh(model)
     }
@@ -45,6 +50,7 @@ enum WidgetBridge {
     }
 }
 
+#if !targetEnvironment(macCatalyst)
 /// The Live Activity has no push server behind it, so the app moves it on to
 /// the next prayer whenever it runs; between runs the countdown keeps ticking
 /// on its own and goes stale (dimmed) once its prayer time passes.
@@ -92,3 +98,11 @@ enum LiveCountdown {
         }
     }
 }
+#else
+/// A Mac has no Live Activity, so there is nothing to start or refresh.
+@MainActor
+enum LiveCountdown {
+    static var isAvailable: Bool { false }
+    static func refresh(_ model: AppModel) {}
+}
+#endif

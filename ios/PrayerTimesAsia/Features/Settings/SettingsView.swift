@@ -69,7 +69,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Alerts and alarms")
                 } footer: {
-                    Text("Each prayer Off, Notify or Alarm, \(Prayer.dhuhr.name(model.naming, isFriday: true)), sahur, Ramadan and how it all sounds, in one place. Also on the Prayer screen. Tap the alarm clock at the top, or hold a bell.")
+                    Text(Device.words("Each prayer Off, Notify or Alarm, \(Prayer.dhuhr.name(model.naming, isFriday: true)), sahur, Ramadan and how it all sounds, in one place. Also on the Prayer screen. Tap the alarm clock at the top, or hold a bell."))
                 }
 
                 Section {
@@ -152,7 +152,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Prayer names")
                 } footer: {
-                    Text("Automatic shows English names like Fajr and Isha, or your phone's language if we have it. Pick Malay for Subuh and Isyak. Your names stay the same wherever you go. When you travel somewhere that uses other words, the local name shows small underneath, like Subuh in Kuala Lumpur, so the masjid's signs make sense. Spellings follow each authority's own timetable.")
+                    Text("Automatic shows English names like Fajr and Isha, or your \(Device.noun)'s language if we have it. Pick Malay for Subuh and Isyak. Your names stay the same wherever you go. When you travel somewhere that uses other words, the local name shows small underneath, like Subuh in Kuala Lumpur, so the masjid's signs make sense. Spellings follow each authority's own timetable.")
                 }
 
                 Section {
@@ -172,7 +172,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Hadith")
                 } footer: {
-                    Text("Tap ✕ on any hadith to hide just that one. Turn both off for a clean app with times only.")
+                    Text(Device.words("Tap ✕ on any hadith to hide just that one. Turn both off for a clean app with times only."))
                 }
 
                 Section {
@@ -180,7 +180,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Tracker")
                 } footer: {
-                    Text("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this phone." + (model.prefs.trackerEnabled ? " The nudge before time runs out is in Alerts and alarms." : ""))
+                    Text(Device.words("Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only on this \(Device.noun).") + (model.prefs.trackerEnabled ? " The nudge before time runs out is in Alerts and alarms." : ""))
                 }
 
                 Section {
@@ -189,7 +189,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Lock Screen")
                 } footer: {
-                    Text("Shows a countdown to the next prayer on the Lock Screen and in the Dynamic Island. Add widgets from your Home Screen: touch and hold, then tap Edit.")
+                    Text(Device.words("Shows a countdown to the next prayer on the Lock Screen and in the Dynamic Island. Add widgets from your Home Screen: touch and hold, then tap Edit."))
                 }
 
                 Section("Display") {
@@ -233,17 +233,17 @@ struct SettingsView: View {
                 } header: {
                     Text("Help")
                 } footer: {
-                    Text("A short tour that taps the real buttons, so you know where everything is.")
+                    Text(Device.words("A short tour that taps the real buttons, so you know where everything is."))
                 }
 
                 Section("Accuracy") {
-                    Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your phone with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.")
+                    Text("Every day shows its source grade: A official, B masjid-confirmed, C community-verified, D calculated. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year (only the year, zone code or regency name is sent) and keeps it for offline use. Everywhere else, and before that download, times are calculated on your \(Device.noun) with the country's own method. That calculation is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables: for Singapore it is never earlier than the official time (at most 2 minutes later); for Malaysia and Indonesia it is within about 2 minutes.")
                         .font(.footnote)
                 }
 
                 Section {
                     Label("No outside ads, no accounts, no tracking across other apps.", systemImage: "hand.raised.fill")
-                    Label("Your exact location never leaves your phone.", systemImage: "location.slash.fill")
+                    Label("Your exact location never leaves your \(Device.noun).", systemImage: "location.slash.fill")
                     Label("Nearby masjid search goes through Apple Maps and OpenStreetMap (only the area is sent).", systemImage: "map.fill")
                     Toggle("Share anonymous usage counts", isOn: $model.prefs.shareUsage)
                 } header: {
@@ -284,8 +284,15 @@ struct SettingsView: View {
             }
             }
             .scrollContentBackground(.hidden)
+            // On a wide Mac window the list keeps a comfortable reading width.
+            .frame(maxWidth: Device.isMac ? 760 : .infinity)
+            .frame(maxWidth: .infinity)
             .background(SkyNow())
             .navigationTitle("Settings")
+            #if targetEnvironment(macCatalyst)
+            // The side bar already says Settings; a small title sits better over the centred list.
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .sheet(isPresented: $showPlaces) { PlacesView() }
             .sheet(isPresented: $showRamadan) { RamadanView() }
             .fullScreenCover(isPresented: $showGuide) { GuideView() }
