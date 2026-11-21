@@ -1,5 +1,5 @@
 import {
-  cacheKey, FEEDS_BASE, feedName, LONDON_FEED, parseLondon, matchKemenagCity, parseFeedICS, parseJAKIM, parseKemenag, parseMUIS,
+  bruneiFeed, cacheKey, FEEDS_BASE, feedName, LONDON_FEED, parseLondon, matchKemenagCity, parseFeedICS, parseJAKIM, parseKemenag, parseMUIS,
   type OfficialSource, type Table,
 } from '../core/official'
 import type { Prayer } from '../core/prayer'
@@ -137,8 +137,8 @@ export async function ensureTable(source: OfficialSource, year: number, tz: stri
       }
       if (got) return true
     }
-    if (source.kind === 'london') {
-      const r = await fetchOK(LONDON_FEED, 20000)
+    if (source.kind === 'london' || source.kind === 'brunei') {
+      const r = await fetchOK(source.kind === 'london' ? LONDON_FEED : bruneiFeed(source.zone), 20000)
       let got = false
       if (r) {
         try {

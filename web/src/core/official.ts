@@ -18,6 +18,7 @@ export type OfficialSource =
   | { kind: 'jakim'; zone: string }
   | { kind: 'kemenag'; regency: string }
   | { kind: 'london' }
+  | { kind: 'brunei'; zone: string }
 
 /** "yyyy-MM-dd" → prayer → "HH:mm" */
 export type Table = Record<string, Partial<Record<Prayer, string>>>
@@ -28,11 +29,12 @@ export function sourceLabel(s: OfficialSource): string {
     case 'jakim': return `JAKIM e-Solat · zone ${s.zone}`
     case 'kemenag': return `Kemenag · ${s.regency}`
     case 'london': return 'London Unified Prayer Timetable'
+    case 'brunei': return `Ministry of Religious Affairs, Brunei · zone ${s.zone}`
   }
 }
 
 export function sourceAuthority(s: OfficialSource): string {
-  return s.kind === 'muis' ? 'MUIS' : s.kind === 'jakim' ? 'JAKIM' : s.kind === 'london' ? 'London Unified' : 'Kemenag'
+  return s.kind === 'muis' ? 'MUIS' : s.kind === 'jakim' ? 'JAKIM' : s.kind === 'london' ? 'London Unified' : s.kind === 'brunei' ? 'KHEU' : 'Kemenag'
 }
 
 export const FEEDS_BASE = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/feeds/'
@@ -44,6 +46,7 @@ export function feedName(s: OfficialSource): string | null {
     case 'jakim': return `my-${s.zone.toLowerCase()}`
     case 'kemenag': return null
     case 'london': return null
+    case 'brunei': return null
   }
 }
 
@@ -56,6 +59,28 @@ export const LONDON_FEED = `${FEEDS_BASE}gb-london.json`
 export const LONDON_CENTRE: Coordinates = { latitude: 51.5074, longitude: -0.1278 }
 export const LONDON_RADIUS_KM = 35
 
+/**
+ * Brunei's Ministry of Religious Affairs (KHEU) timetable, published by the
+ * feeds workflow (tools/fetch_brunei.py) from ruqqq/prayertimes-database, in the
+ * same format as gb-london.json. One file per zone.
+ */
+export const bruneiFeed = (zone: string): string => `${FEEDS_BASE}bn-${zone.toLowerCase()}.json`
+/** KHEU's zones: BRN01 Brunei-Muara and Temburong, BRN02 Tutong (+1 min), BRN03 Belait (+3 min). */
+export const BRUNEI_POINTS: [string, number, number][] = [
+  ['BRN01', 4.9031, 114.9398], ['BRN01', 5.0267, 115.0658], ['BRN01', 4.7086, 115.0717],
+  ['BRN02', 4.8028, 114.6497],
+  ['BRN03', 4.5836, 114.2312], ['BRN03', 4.6069, 114.3217],
+]
+
+export function nearestBruneiZone(c: Coordinates): string {
+  let best = 'BRN01', bestKm = Number.MAX_VALUE
+  for (const [zone, lat, lng] of BRUNEI_POINTS) {
+    const d = distanceKm(c, { latitude: lat, longitude: lng })
+    if (d < bestKm) { best = zone; bestKm = d }
+  }
+  return best
+}
+
 /** Plain words for the source line when a table other than the country's own applies. */
 export function officialSummary(s: OfficialSource | null, short = false): string | null {
   if (s?.kind !== 'london') return null
@@ -64,7 +89,7 @@ export function officialSummary(s: OfficialSource | null, short = false): string
     : 'London Unified Prayer Timetable from East London Mosque, followed by many London masjids. When it can\'t be downloaded, the app uses the Moonsighting Committee method. Your local masjid may differ by a few minutes.'
 }
 
-/** gb-london.json: {"times": {"2026-11-11": {"fajr": "05:43", "sunrise": "07:13", ...}}} */
+/** gb-london.json and bn-<zone>.json: {"times": {"2026-11-11": {"fajr": "05:43", "sunrise": "07:13", ...}}} */
 export function parseLondon(json: unknown): Table {
   const days = (json as { times?: Record<string, Record<string, unknown>> })?.times
   if (!days || typeof days !== 'object') throw new Error('Unexpected London timetable')
@@ -84,6 +109,7 @@ export function cacheKey(s: OfficialSource, year: number): string {
     case 'jakim': return `jakim-${s.zone}-${year}`
     case 'kemenag': return `kemenag-${kemenagCore(s.regency).core}-${year}`
     case 'london': return `london-${year}`
+    case 'brunei': return `brunei-${s.zone}-${year}`
   }
 }
 
@@ -100,6 +126,7 @@ export function officialSourceFor(place: Place, method: CalculationMethod, zoneO
     const name = place.district ?? place.region ?? (place.name === 'Current location' ? null : place.name)
     return name ? { kind: 'kemenag', regency: name } : null
   }
+  if (code === 'BN' && method.id === 'sea') return { kind: 'brunei', zone: nearestBruneiZone(place.coordinates) }
   if (code === 'GB' && method.id === 'moonsighting' && distanceKm(place.coordinates, LONDON_CENTRE) <= LONDON_RADIUS_KM) return { kind: 'london' }
   return null
 }

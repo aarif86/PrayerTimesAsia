@@ -77,6 +77,10 @@ by [Awsam Tech LLP](https://www.awsamtech.com/), the Singapore and Malaysia app 
 grew up with. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.
 The prayertimes.sg & my logo is not used.
 
+Brunei's times are the official timetable of the Ministry of Religious Affairs, Brunei
+(Kementerian Hal Ehwal Ugama), read from its printed Taqwim by Faruq Rasid's
+[prayertimes-database](https://github.com/ruqqq/prayertimes-database) (GPL 3.0), with thanks.
+
 ## Licence and promises
 
 Free forever, no outside ads, no selling data, always open source: [docs/stewardship.md](docs/stewardship.md).

@@ -34,8 +34,8 @@
    "method": "sea",
    "asr": "standard",
    "naming": "malay",
-   "source": "standard",
-   "note": "The Ministry of Religious Affairs publishes a timetable the app cannot read yet, so it uses the 20° and 18° convention of the Malay world.",
+   "source": "table",
+   "authority": "the Ministry of Religious Affairs, Brunei",
    "zones": [
     "Asia/Brunei"
    ],
