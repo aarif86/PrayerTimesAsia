@@ -47,7 +47,7 @@ export function FeedbackSheet() {
   const [copied, setCopied] = useState(false)
   const place = s.activePlace
   const details = addDetails
-    ? `Version ${VERSION}, ${platform()}${place ? `, ${place.name}${place.countryCode ? ` (${place.countryCode})` : ''}` : ''}, ${s.sourceShort}`
+    ? `Version ${VERSION}, ${platform()}${place ? `, ${place.name}${place.countryCode ? ` (${place.countryCode})` : ''}` : ''}, ${s.sourceShortIn('en')}`
     : null
   const mail = noteEmail(kind, text, details, mayShare)
   const href = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(mail.subject)}&body=${encodeURIComponent(mail.body)}`

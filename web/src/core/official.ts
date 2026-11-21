@@ -1,3 +1,5 @@
+import { appLang, appWord } from './appWords'
+import type { Lang3 } from './ramadanContent'
 import type { Coordinates } from './engine'
 import { distanceKm } from './geo'
 import { JAKIM_POINTS } from './jakimZones'
@@ -82,11 +84,9 @@ export function nearestBruneiZone(c: Coordinates): string {
 }
 
 /** Plain words for the source line when a table other than the country's own applies. */
-export function officialSummary(s: OfficialSource | null, short = false): string | null {
+export function officialSummary(s: OfficialSource | null, short = false, lang: Lang3 = appLang()): string | null {
   if (s?.kind !== 'london') return null
-  return short
-    ? 'London Unified Prayer Timetable from East London Mosque, followed by many London masjids.'
-    : 'London Unified Prayer Timetable from East London Mosque, followed by many London masjids. When it can\'t be downloaded, the app uses the Moonsighting Committee method. Your local masjid may differ by a few minutes.'
+  return appWord(lang, short ? 'source.summary.londonShort' : 'source.summary.london')
 }
 
 /** gb-london.json and bn-<zone>.json: {"times": {"2026-11-11": {"fajr": "05:43", "sunrise": "07:13", ...}}} */
