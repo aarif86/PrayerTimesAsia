@@ -1,5 +1,6 @@
 import { FRIDAY_SG } from './friday'
 import type { Lang3 } from './ramadanContent'
+import { appLang, tr } from './appWords'
 
 /**
  * "Leave for Jumaat": a Friday reminder to get ready and leave for the masjid.
@@ -34,7 +35,7 @@ export function leaveSpan(minutes: number, lang: Lang3): string {
 
 /** The picker label: "Off", "15 min before", "1 hour before", "2 hours before". */
 export function leaveChoiceLabel(minutes: number): string {
-  return minutes === 0 ? 'Off' : `${leaveSpan(minutes, 'en')} before`
+  return minutes === 0 ? tr('common.off') : tr('jumuah.before', { span: leaveSpan(minutes, appLang()) })
 }
 
 /**

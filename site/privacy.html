@@ -6,7 +6,7 @@
   <title>Privacy · Prayer Times Asia</title>
   <meta name="description" content="What Prayer Times Asia keeps on your phone, and the anonymous counts it sends." />
   <meta name="theme-color" content="#0b0f2a" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="color-scheme" content="dark light" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
   <style>
     :root { --night: #0b0f2a; --text: #eef0fa; --muted: #a9b2d6; --gold: #f2c063; --line: rgba(255, 255, 255, 0.10);
@@ -25,13 +25,35 @@
     td { color: var(--muted); }
     .back { display: inline-block; margin-bottom: 24px; }
     :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
+    :root { color-scheme: dark; --card: rgba(255, 255, 255, 0.05); }
+    :root[data-theme="light"] { --night: #F2EEE9; --card: #ffffff; --line: rgba(21, 26, 69, 0.13); --text: #151A45; --muted: #4c5380; --gold: #8a5a00; color-scheme: light; }
+    .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+    .bar .back { margin-bottom: 0; }
+    /* Light and dark button (sun and moon). */
+    .mode { width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--gold); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; padding: 0; transition: border-color .2s, transform .2s; }
+    .mode[hidden] { display: none; }
+    .mode:hover { border-color: var(--gold); transform: rotate(12deg); }
+    .mode svg { width: 20px; height: 20px; }
+    .mode .sun { display: none; }
+    [data-theme="light"] .mode .sun { display: block; }
+    [data-theme="light"] .mode .moon-icon { display: none; }
   </style>
+  <script>
+    // Pick light or dark before the page paints: the visitor's saved choice first, then the device setting.
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('pta-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') { t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 </head>
 <body>
 <main>
-  <a class="back" href="./">← Prayer Times Asia</a>
+  <div class="bar"><a class="back" href="./">← Prayer Times Asia</a><button class="mode" type="button" hidden aria-label="Switch between light and dark"><svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a.7.7 0 0 0-.9-.8A9.9 9.9 0 1 0 21.3 15.1a.7.7 0 0 0-.8-.9z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button></div>
   <h1>Privacy</h1>
-  <p>Updated 17 November 2026. This covers the website, the web app, the masjid screen, and the iPhone and Android apps.</p>
+  <p>Updated 21 November 2026. This covers the website, the web app, the masjid screen, and the iPhone and Android apps.</p>
 
   <h2>The short version</h2>
   <p>No outside ads, no accounts, and no tracking across other apps or sites. Your exact location stays on your device. To understand how many people use Prayer Times Asia and where, the apps send a few <strong>anonymous counts</strong>, and you can turn them off.</p>
@@ -55,18 +77,60 @@
   </table>
   <p>TelemetryDeck does not keep IP addresses and sets no cookies. On this website it counts page visits the same way (a visitor's number changes every day).</p>
 
+  <h2>Masjid screens on right now</h2>
+  <p>A masjid screen also sends a short note to our own server every 15 minutes, so we can show how many masjid screens are on right now and how that changes over time. The note holds a random code made on that TV, the country, the screen's look and its language. It has no masjid name, no city and nothing about anyone watching. Our server keeps that code with the time it was last heard from, and the number of screens on every 15 minutes. It does not store the IP address. When a new screen is added, it keeps a scrambled code made from the network address and the day, only to stop anyone adding fake screens. The server answers with the correct time, so the screen can tell the committee when the TV clock is wrong.</p>
+
   <h2>Turning the counts off</h2>
   <ul>
     <li><strong>iPhone, Android and web app:</strong> Settings → Privacy → Share anonymous usage counts.</li>
-    <li><strong>Masjid screen:</strong> on the setup page, untick "Let Prayer Times Asia know this screen is running", then send the new link to the TV.</li>
+    <li><strong>Masjid screen:</strong> on the setup page, open More settings, untick "Count this screen as on", then open the new link on the TV. This stops both notes. The screen still asks our server for the time, so it can show the right time, and sends nothing about itself.</li>
     <li><strong>Browsers with Global Privacy Control</strong> are never counted.</li>
   </ul>
 
   <h2>Things you choose to send</h2>
-  <p>If you use "Help verify times", the masjid timetable photo and what you type are sent so we can check them. If you email us, we see your email. Nearby masjid search on iPhone goes through Apple Maps; on Android and the web it sends only the map area to OpenStreetMap services.</p>
+  <p>If you use "Help verify times", the masjid timetable photo and what you type are sent so we can check them. If you email us, we see your email. If you join the Timekeepers, the details you type in the form are kept in our contact system so we can write to you about Timekeepers work. Email us at any time to have them removed. Nearby masjid search on iPhone goes through Apple Maps; on Android and the web it sends only the map area to OpenStreetMap services.</p>
 
   <h2>Questions</h2>
-  <p>Prayer Times Asia is built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd). Email <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>.</p>
+  <p>Prayer Times Asia is built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd). Email <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>.</p>
 </main>
+<script>
+  // Light and dark button: remembers the choice on this device for every page of the website.
+  (function () {
+    var root = document.documentElement, btn = document.querySelector('.mode'), meta = document.querySelector('meta[name="theme-color"]');
+    function paint() {
+      var light = root.getAttribute('data-theme') === 'light';
+      if (meta) meta.setAttribute('content', light ? '#F2EEE9' : '#0b0f2a');
+      if (btn) btn.setAttribute('aria-pressed', light ? 'true' : 'false');
+    }
+    if (btn) {
+      btn.hidden = false;
+      btn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('pta-theme', next); } catch (e) {}
+        paint();
+      });
+    }
+    paint();
+  })();
+</script>
+<button class="totop" type="button" aria-label="Back to top" title="Back to top">&#8593;</button>
+<style>
+  .totop { position: fixed; right: 20px; bottom: 20px; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,.18); background: #1a1f45; color: #f2c063; font-size: 1.3rem; cursor: pointer; display: grid; place-items: center; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .3s, transform .3s; box-shadow: 0 6px 20px rgba(0,0,0,.35); z-index: 50; }
+  .totop.show { opacity: 1; transform: none; pointer-events: auto; }
+  .totop:hover { border-color: #f2c063; }
+  .totop:focus-visible { outline: 3px solid #f2c063; outline-offset: 3px; }
+  [data-theme="light"] .totop { background: #ffffff; color: #8a5a00; border-color: rgba(21,26,69,.18); box-shadow: 0 6px 20px rgba(21,26,69,.18); }
+  [data-theme="light"] .totop:hover { border-color: #8a5a00; }
+  @media (prefers-reduced-motion: reduce) { .totop { transition: none; } }
+</style>
+<script>
+  // Back to top button: appears after scrolling down a screen or so.
+  (function () {
+    var tb = document.querySelector('.totop');
+    window.addEventListener('scroll', function () { tb.classList.toggle('show', window.scrollY > 500); }, { passive: true });
+    tb.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
+  })();
+</script>
 </body>
 </html>

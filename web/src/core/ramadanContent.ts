@@ -32,7 +32,7 @@ export const DOA: Doa[] = [
       id: 'Aku berniat puasa esok hari untuk menunaikan kewajiban bulan Ramadan tahun ini karena Allah Taala.',
     },
     note: {
-      en: 'Made in the heart each night before Subuh. Saying it helps.',
+      en: 'Made in the heart each night before Fajr. Saying it helps.',
       ms: 'Niat di dalam hati setiap malam sebelum Subuh. Melafazkannya membantu.',
       id: 'Diniatkan dalam hati setiap malam sebelum Subuh. Melafalkannya membantu.',
     },
@@ -75,7 +75,7 @@ export const DOA: Doa[] = [
   },
   {
     id: 'takbir',
-    title: { en: 'Takbir Raya', ms: 'Takbir Raya', id: 'Takbir Idul Fitri' },
+    title: { en: 'Eid takbir', ms: 'Takbir Raya', id: 'Takbir Idulfitri' },
     arabic: 'اللهُ أَكْبَرُ اللهُ أَكْبَرُ اللهُ أَكْبَرُ، لَا إِلٰهَ إِلَّا اللهُ وَاللهُ أَكْبَرُ، اللهُ أَكْبَرُ وَلِلّٰهِ الْحَمْدُ',
     rumi: 'Allāhu akbar, Allāhu akbar, Allāhu akbar. Lā ilāha illallāhu wallāhu akbar. Allāhu akbar wa lillāhil hamd.',
     meaning: {
@@ -84,23 +84,23 @@ export const DOA: Doa[] = [
       id: 'Allah Maha Besar (tiga kali). Tiada Tuhan selain Allah, dan Allah Maha Besar. Allah Maha Besar, dan bagi Allah segala puji.',
     },
     note: {
-      en: 'From Maghrib on Raya eve until the Raya prayer begins.',
+      en: 'From Maghrib on the eve of Eid until the Eid prayer begins.',
       ms: 'Dari Maghrib malam Raya hingga solat sunat Aidilfitri bermula.',
-      id: 'Dari Maghrib malam Idul Fitri hingga sholat Id dimulai.',
+      id: 'Dari Maghrib malam Idulfitri hingga salat Id dimulai.',
     },
   },
   {
     id: 'niatSyawal',
-    title: { en: 'Intention for the six days of Syawal', ms: 'Niat puasa enam Syawal', id: 'Niat puasa Syawal' },
+    title: { en: 'Intention for the six days of Shawwal', ms: 'Niat puasa enam Syawal', id: 'Niat puasa Syawal' },
     arabic: 'نَوَيْتُ صَوْمَ غَدٍ عَنْ سُنَّةِ السِّتَّةِ مِنْ شَوَّالٍ لِلّٰهِ تَعَالَى',
     rumi: "Nawaitu sauma ghadin 'an sunnatis sittati min Syawwālin lillāhi ta'ālā",
     meaning: {
-      en: 'I intend to fast tomorrow, one of the six sunnah days of Syawal, for Allah Most High.',
+      en: 'I intend to fast tomorrow, one of the six sunnah days of Shawwal, for Allah Most High.',
       ms: 'Sahaja aku berpuasa esok hari sunat enam hari bulan Syawal kerana Allah Taala.',
       id: 'Aku berniat puasa esok hari, sunnah enam hari bulan Syawal, karena Allah Taala.',
     },
     note: {
-      en: 'Fasting Ramadan then six days of Syawal is like fasting the whole year. Reported by Muslim',
+      en: 'Fasting Ramadan then six days of Shawwal is like fasting the whole year. Reported by Muslim',
       ms: 'Puasa Ramadan diikuti enam hari Syawal seperti berpuasa setahun. Riwayat Muslim',
       id: 'Puasa Ramadan lalu enam hari Syawal seperti puasa setahun. Riwayat Muslim',
     },
@@ -144,9 +144,9 @@ export const ZAKAT: Record<string, ZakatBody[]> = {
 }
 
 export const ZAKAT_NOTE: Record<Lang3, string> = {
-  en: 'Zakat fitrah is due from every Muslim who has enough for Raya, for themselves and those they support. Pay before the Raya prayer. Your authority sets this year\'s amount.',
+  en: 'Zakat al-Fitr is due from every Muslim who has enough for Eid, for themselves and those they support. Pay before the Eid prayer. Your authority sets this year\'s amount.',
   ms: 'Zakat fitrah wajib atas setiap Muslim yang cukup keperluan Raya, untuk diri dan tanggungannya. Bayar sebelum solat sunat Aidilfitri. Kadar tahun ini ditetapkan oleh pihak berkuasa agama anda.',
-  id: 'Zakat fitrah wajib bagi setiap Muslim yang memiliki kelebihan untuk hari raya, bagi dirinya dan tanggungannya. Bayar sebelum sholat Id. Besarnya ditetapkan oleh otoritas setempat.',
+  id: 'Zakat fitrah wajib bagi setiap Muslim yang memiliki kelebihan untuk hari raya, bagi dirinya dan tanggungannya. Bayar sebelum salat Id. Besarnya ditetapkan oleh otoritas setempat.',
 }
 
 /** quran.com opens at the right juz in the browser or the Quran app the phone prefers. */

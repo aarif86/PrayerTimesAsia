@@ -17,19 +17,19 @@ const WORDS = {
     week: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     title: 'Islamic Calendar', thisMonth: 'This month', none: 'A quiet month. The white days fall on the 13th, 14th and 15th.',
     ramadan: 'Ramadan', white: 'White days', note: 'Hijri dates can differ by a day from place to place. Follow your local religious authority.',
-    credit: 'Built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd)', scan: 'Prayer times for every day',
+    credit: 'Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd)', scan: 'Prayer times for every day',
   },
   ms: {
     week: ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'],
     title: 'Kalendar Islam', thisMonth: 'Bulan ini', none: 'Bulan yang tenang. Hari putih jatuh pada 13, 14 dan 15 haribulan.',
     ramadan: 'Ramadan', white: 'Hari putih', note: 'Tarikh Hijrah mungkin berbeza sehari mengikut tempat. Ikutlah pihak berkuasa agama tempatan anda.',
-    credit: 'Dibina fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Nasar Digital (Nasar Pte Ltd)', scan: 'Waktu solat setiap hari',
+    credit: 'Dibina fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama Nasar Digital (Nasar Pte Ltd)', scan: 'Waktu solat setiap hari',
   },
   id: {
     week: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
     title: 'Kalender Islam', thisMonth: 'Bulan ini', none: 'Bulan yang tenang. Ayyamul bidh jatuh pada tanggal 13, 14 dan 15.',
     ramadan: 'Ramadan', white: 'Ayyamul bidh', note: 'Tanggal Hijriah bisa berbeda sehari antar daerah. Ikuti otoritas keagamaan setempat.',
-    credit: 'Dibangun fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Nasar Digital (Nasar Pte Ltd)', scan: 'Jadwal salat setiap hari',
+    credit: 'Dibangun fisabilillah di Singapura oleh Ustaz Aarif Raziff dan Ustazah Nasibah Hamzah, bersama Nasar Digital (Nasar Pte Ltd)', scan: 'Jadwal salat setiap hari',
   },
 }
 

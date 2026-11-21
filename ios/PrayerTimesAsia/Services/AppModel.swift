@@ -138,7 +138,7 @@ final class AppModel {
         var p = Preferences()
         p.hasOnboarded = true
         // Screenshots skip the quick guide unless they ask for it.
-        p.guideSeen = !args.contains("-guide")
+        p.guideShown = !args.contains("-guide")
         p.useGPS = false
         p.home = home
         p.homeConfirmed = true
@@ -917,11 +917,11 @@ final class AppModel {
         if s.phase == .ramadan {
             if prefs.imsakAlert {
                 out.append(.init(id: id + "-imsak", title: "Imsak in 10 minutes · \(formatted(imsak(pd)))",
-                                 body: "Finish your sahur. Subuh at \(formatted(pd.time(.fajr))) · \(here)",
+                                 body: "Finish your sahur. \(Prayer.fajr.name(naming)) at \(formatted(pd.time(.fajr))) · \(here)",
                                  fireDate: imsak(pd).addingTimeInterval(-600), silent: isSilent(imsak(pd), prayer: .fajr)))
             }
             if prefs.berbukaAlert && !maghribAlertOn {
-                out.append(.init(id: id + "-berbuka", title: "Time to berbuka · \(formatted(pd.time(.maghrib)))",
+                out.append(.init(id: id + "-berbuka", title: "Time for iftar · \(formatted(pd.time(.maghrib)))",
                                  body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu. Ramadan day \(s.ramadanDay ?? 0) · \(here)",
                                  fireDate: pd.time(.maghrib), silent: isSilent(pd.time(.maghrib), prayer: .maghrib)))
             }
@@ -1041,7 +1041,7 @@ final class AppModel {
                     continue
                 }
                 if prayer == .maghrib && isRamadanDay(time) {
-                    alerts.append(.init(id: id, title: "Time to berbuka · \(name) \(formatted(time))",
+                    alerts.append(.init(id: id, title: "Time for iftar · \(name) \(formatted(time))",
                                         body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu", fireDate: time,
                                         sound: prefs.azanSound ? .azan : .standard, silent: silent))
                     continue

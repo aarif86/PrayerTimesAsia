@@ -83,7 +83,9 @@ struct NextPrayerWidget: Widget {
         }
         .configurationDisplayName("Next prayer")
         .description("Countdown to the next prayer, under your Living Sky.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        // Large too, so "Large" shows when someone touches and holds this widget to
+        // resize it (it opens the full timetable, in the Prayer screen's look).
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         .contentMarginsDisabled()
     }
 }
@@ -93,6 +95,19 @@ struct NextPrayerView: View {
     let entry: PrayerEntry
 
     var body: some View {
+        if family == .systemLarge {
+            // The big size is the whole day, the same card as "Today's timetable" in the app's own look.
+            let style = WidgetStyleChoice.app.resolved(entry.snapshot)
+            AnyView(TimetableCard(snapshot: entry.snapshot, date: entry.date, style: style))
+                .containerBackground(for: .widget) {
+                    TimetableCard.background(entry.snapshot, at: entry.date, style: style)
+                }
+        } else {
+            smallOrMedium
+        }
+    }
+
+    private var smallOrMedium: some View {
         Group {
             if let s = entry.snapshot, let next = s.next(after: entry.date) {
                 let sky = (s.day(containing: entry.date).map { SkyColors.at(entry.date, day: $0) } ?? .night).readable

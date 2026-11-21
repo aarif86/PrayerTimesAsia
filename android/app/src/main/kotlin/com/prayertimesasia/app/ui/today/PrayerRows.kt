@@ -78,6 +78,8 @@ import com.prayertimesasia.core.SourceGrade
 import com.prayertimesasia.core.TimeFormat
 import com.prayertimesasia.core.secondsSince
 import java.time.Instant
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /** "Jamaah 1:20 PM", with a countdown between the azan and the iqamah. */
 internal fun jamaahLine(r: com.prayertimesasia.core.Resolver, day: PrayerDay, prayer: Prayer, jamaah: Instant, now: Instant): String {
@@ -199,7 +201,7 @@ private fun PrayerRow(
                     if (prayed) Icon(Icons.Filled.CheckCircle, "Prayed", Modifier.size(16.dp), tint = Palette.success)
                 }
                 if (isCurrent) {
-                    Text("NOW", style = Txt.caption2Heavy, color = prayer.textTint)
+                    Text(tr(R.string.today_now), style = Txt.caption2Heavy, color = prayer.textTint)
                 } else if (isNext && next != null) {
                     Text("in ${TimeFormat.short(next.second.secondsSince(now))}", style = Txt.captionSemibold.copy(fontFeatureSettings = "tnum"),
                         color = prayer.textTint)
@@ -283,7 +285,7 @@ fun ColumnScope.PrayerBand(
                     Text(r.prayerName(prayer, time), fontFamily = Rounded, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1)
                     r.localName(prayer, time)?.let { Text(it, style = Txt.captionSemibold, color = Color.White.copy(alpha = 0.8f)) }
                     if (isCurrent) {
-                        Text("NOW", fontFamily = Rounded, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = Color.White,
+                        Text(tr(R.string.today_now), fontFamily = Rounded, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = Color.White,
                             modifier = Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.25f)).padding(horizontal = 7.dp, vertical = 2.dp))
                     }
                     if (prayed) Icon(Icons.Filled.CheckCircle, "Prayed", Modifier.size(16.dp), tint = Color.White)

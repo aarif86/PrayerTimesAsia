@@ -31,6 +31,10 @@ Shared data in [`data/`](data/) (masjid profiles, calendar announcements) is
 licensed under **CC-BY 4.0** (see [data/README.md](data/README.md)). Official
 timetables belong to their authorities and are credited in each app's Credits screen.
 
+Brunei's timetable (Ministry of Religious Affairs, Brunei) is read by the weekly feeds
+workflow from [ruqqq/prayertimes-database](https://github.com/ruqqq/prayertimes-database),
+which is under the GNU GPL 3.0, and published on the `feeds` branch with that source named.
+
 ## The name and logo
 
 The licence covers the code only. It gives no right to use the name

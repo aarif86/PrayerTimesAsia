@@ -31,9 +31,10 @@ class GuideWordsTest {
         assertEquals(RamadanContent.Lang.EN, GuideWords.startLanguage(NamingStyle.INTERNATIONAL, "fr"))
     }
 
-    @Test fun peopleAlreadyUsingTheAppAreNotShownTheGuide() {
-        assertTrue(Preferences.decode("""{"hasOnboarded":true}""").guideSeen == true)
-        assertTrue(Preferences.decode(null).guideSeen != true)
-        assertTrue(Preferences.decode("""{"hasOnboarded":true,"guideSeen":false}""").guideSeen == false)
+    @Test fun everyoneSeesTheGuideOnceEvenIfSetUpBeforeItCame() {
+        assertTrue(Preferences.decode("""{"hasOnboarded":true}""").guideShown != true)
+        assertTrue(Preferences.decode("""{"hasOnboarded":true,"guideSeen":true}""").guideShown != true)
+        assertTrue(Preferences.decode(null).guideShown != true)
+        assertTrue(Preferences.decode("""{"hasOnboarded":true,"guideShown":true}""").guideShown == true)
     }
 }

@@ -52,8 +52,8 @@ object Notifications {
                 description = "The azan at the time each prayer begins."
                 setSound(uri, Azan.attributes)
             })
-            nm.createNotificationChannel(NotificationChannel(AZAN_SUBUH, "Subuh with azan", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "The Subuh azan at the time Subuh begins."
+            nm.createNotificationChannel(NotificationChannel(AZAN_SUBUH, "Fajr with azan", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "The Fajr azan at the time Fajr begins."
                 setSound(Azan.uri(context, subuh = true) ?: uri, Azan.attributes)
             })
         }

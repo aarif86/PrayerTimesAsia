@@ -5,7 +5,7 @@ enum Countries {
     static let profiles: [CountryProfile] = [
         CountryProfile(code: "SG", name: "Singapore", methodID: "muis", asr: .standard, naming: .malay, source: .table, authority: "MUIS, the Islamic Religious Council of Singapore", note: nil, highLatitude: nil),
         CountryProfile(code: "MY", name: "Malaysia", methodID: "jakim", asr: .standard, naming: .malay, source: .table, authority: "JAKIM e-Solat, for your state zone", note: nil, highLatitude: nil),
-        CountryProfile(code: "BN", name: "Brunei", methodID: "sea", asr: .standard, naming: .malay, source: .standard, authority: nil, note: "The Ministry of Religious Affairs publishes a timetable the app cannot read yet, so it uses the 20° and 18° convention of the Malay world.", highLatitude: nil),
+        CountryProfile(code: "BN", name: "Brunei", methodID: "sea", asr: .standard, naming: .malay, source: .table, authority: "the Ministry of Religious Affairs, Brunei", note: nil, highLatitude: nil),
         CountryProfile(code: "ID", name: "Indonesia", methodID: "kemenag", asr: .standard, naming: .indonesian, source: .table, authority: "Kemenag, the Ministry of Religious Affairs", note: nil, highLatitude: nil),
         CountryProfile(code: "TH", name: "Thailand", methodID: "sea", asr: .standard, naming: .international, source: .standard, authority: nil, note: "The app uses the 20° and 18° convention of the Malay world.", highLatitude: nil),
         CountryProfile(code: "VN", name: "Vietnam", methodID: "sea", asr: .standard, naming: .international, source: .standard, authority: nil, note: "The app uses the 20° and 18° convention of the Malay world.", highLatitude: nil),

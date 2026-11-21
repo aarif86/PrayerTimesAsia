@@ -60,6 +60,8 @@ import com.prayertimesasia.core.Falak
 import com.prayertimesasia.core.Geo
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.R
 
 /**
  * Falak through the camera: hold the phone up and the view is marked with the
@@ -87,7 +89,7 @@ fun FalakCameraScreen(state: AppState, onClose: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Icon(Icons.Filled.CameraAlt, null, Modifier.size(44.dp), tint = Color.White)
                 Text(if (place == null) "Choose a place first" else "Needs the camera", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Text("This view uses the camera to mark the qibla and the shadow direction around you. Nothing is recorded.",
+                Text(tr(R.string.phone_arAndroid),
                     fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f), textAlign = TextAlign.Center)
             }
         }
@@ -158,7 +160,7 @@ private fun CompassOverlay(heading: Double?, qibla: Double, sunAzimuth: Double, 
     val fov = 60.0 // A typical phone camera's horizontal field of view, in degrees.
     Box(Modifier.fillMaxSize()) {
         if (heading == null) {
-            Text("Hold the phone upright and turn slowly.", color = Color.White, fontSize = 15.sp,
+            Text(tr(R.string.phone_holdUpright), color = Color.White, fontSize = 15.sp,
                 modifier = Modifier.align(Alignment.Center))
             return@Box
         }
@@ -210,7 +212,7 @@ private fun Legend(modifier: Modifier) {
             .background(Color.Black.copy(alpha = 0.55f)).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text("Hold the phone upright and turn slowly.", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+        Text(tr(R.string.phone_holdUpright), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(14.dp, 4.dp).background(gold)); Text("Gold line: the qibla", color = gold, fontSize = 13.sp)
         }

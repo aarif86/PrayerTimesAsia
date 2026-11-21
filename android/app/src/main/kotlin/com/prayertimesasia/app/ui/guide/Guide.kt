@@ -112,7 +112,7 @@ private fun featureIcon(id: String): ImageVector = when (id) {
 @Composable
 fun GuideDialog(state: AppState, onClose: () -> Unit) {
     val finish = {
-        state.update { it.copy(guideSeen = true) }
+        state.update { it.copy(guideShown = true) }
         onClose()
     }
     Dialog(onDismissRequest = finish, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {

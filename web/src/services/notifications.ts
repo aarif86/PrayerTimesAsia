@@ -10,9 +10,10 @@ import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
 import { playAzan } from './azan'
 import { playAlarm } from './alarmSound'
 import { hadithAlertLine, type HadithId } from '../core/hadith'
-import { lang3 } from '../core/ramadanContent'
 import { alertLine } from '../core/alertLines'
 import { store } from './store'
+import { tr } from '../core/appWords'
+import { ramadanWord } from '../core/ramadanWords'
 
 /**
  * Prayer alerts on the web. A web page cannot schedule an alarm for later the
@@ -27,6 +28,8 @@ export type AlertSupport = 'supported' | 'needs-install' | 'unsupported'
 
 export function alertSupport(): AlertSupport {
   if (typeof window === 'undefined') return 'unsupported'
+  // The demo (the website's phone frame) acts as if alerts were allowed, so visitors can tap around.
+  if (store.demo) return 'supported'
   if ('Notification' in window) return 'supported'
   // iPhone and iPad Safari only offer notifications to apps added to the Home Screen.
   const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
@@ -34,10 +37,12 @@ export function alertSupport(): AlertSupport {
 }
 
 export function permission(): NotificationPermission | 'unsupported' {
+  if (store.demo) return 'granted'
   return 'Notification' in window ? Notification.permission : 'unsupported'
 }
 
 export async function requestPermission(): Promise<boolean> {
+  if (store.demo) return true
   if (!('Notification' in window)) return false
   if (Notification.permission === 'granted') return true
   if (Notification.permission === 'denied') return false
@@ -128,8 +133,8 @@ export function upcomingAlerts(now: number): Alert[] {
         const left = Math.round((w.end - at) / 60_000)
         out.push({
           id: `${day.year}-${day.month}-${day.day}-${w.prayer}-nudge`,
-          title: `${name} time ends in ${left} min`,
-          body: `${name} is open until ${store.formatted(w.end)}. Tick it in the app once you have prayed.`,
+          title: tr('notify.nudgeTitle', { name, n: left }),
+          body: tr('notify.nudgeBody', { name, time: store.formatted(w.end) }),
           at, silent: isSilent(at, w.prayer, tz), unlessPrayed: { prayer: w.prayer, at: w.start },
         })
       }
@@ -142,7 +147,7 @@ export function upcomingAlerts(now: number): Alert[] {
       const at = j.at - jumuah * 60_000
       const name = store.name('dhuhr', day.times.dhuhr)
       out.push({
-        id: `${day.year}-${day.month}-${day.day}-jumuah`, ...leaveWords(lang3(store.naming), jumuah, name, j.second, store.formatted(j.at), j.where),
+        id: `${day.year}-${day.month}-${day.day}-jumuah`, ...leaveWords(store.appLang, jumuah, name, j.second, store.formatted(j.at), j.where),
         at, silent: isSilent(at, 'dhuhr', tz),
       })
     }
@@ -157,22 +162,22 @@ export function upcomingAlerts(now: number): Alert[] {
         // The heads-up before the prayer, on its own switch: for when a meeting
         // or work would otherwise run past the time.
         out.push({
-          id: `${id}-early`, title: prayer === 'sunrise' ? `${store.name('fajr')} ends in ${early} min` : `${name} in ${early} min`,
-          body: `${name} at ${store.formatted(time)}`, at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
+          id: `${id}-early`, title: prayer === 'sunrise' ? tr('notify.endsIn', { name: store.name('fajr'), n: early }) : tr('notify.nameIn', { name, n: early }),
+          body: tr('notify.nameAt', { name, time: store.formatted(time) }), at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
         })
       }
       if (!onTime) continue
       // An alarm at the same minute rings instead, so it doesn't sound twice.
       if (alarmAtStart(prayer)) continue
       if (prayer === 'sunrise') {
-        out.push({ id, title: `${name} · ${store.formatted(time)}`, body: `${store.name('fajr')} has ended.`, at: time, silent })
+        out.push({ id, title: `${name} · ${store.formatted(time)}`, body: tr('notify.ended', { name: store.name('fajr') }), at: time, silent })
         continue
       }
       if (prayer === 'maghrib' && store.isRamadanDay(time)) {
-        out.push({ id, title: `Time to berbuka · ${name} ${store.formatted(time)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu`, at: time, prayer, silent })
+        out.push({ id, title: tr('notify.iftarName', { name, time: store.formatted(time) }), body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu`, at: time, prayer, silent })
         continue
       }
-      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: alertLine(lang3(store.naming), prayer, store.isFriday(time), day.year, day.month, day.day, name), at: time, prayer, silent })
+      out.push({ id, title: `${name} · ${store.formatted(time)}`, body: alertLine(store.appLang, prayer, store.isFriday(time), day.year, day.month, day.day, name), at: time, prayer, silent })
     }
   }
   return [...out, ...wake].filter((a) => a.at > now).sort((a, b) => a.at - b.at)
@@ -181,7 +186,7 @@ export function upcomingAlerts(now: number): Alert[] {
 
 /** "\n“...” al Bukhari" under a wake-up alert, or nothing when Settings, Hadith, alerts is off. */
 function alertHadith(id: HadithId): string {
-  return store.prefs.hadithInAlerts ? `\n${hadithAlertLine(id, lang3(store.naming))}` : ''
+  return store.prefs.hadithInAlerts ? `\n${hadithAlertLine(id, store.appLang)}` : ''
 }
 
 export interface WakeUp { id: string; title: string; body: string; at: number; sahur: boolean; prayer?: AlarmPrayer }
@@ -209,13 +214,13 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
     if (!day) continue
     const key = `${day.year}-${day.month}-${day.day}`
     if (p.sahurAlarm && sahurRings(day, p.sahurDays, place.timeZoneID, p.hijriAdjustment)) {
-      out.push({ id: `${key}-sahur`, title: 'Wake up for sahur', body: `${fajr} at ${store.formatted(day.times.fajr)} · ${place.name}`, at: sahurTime(p.sahurAlarm, day), sahur: true })
+      out.push({ id: `${key}-sahur`, title: tr('notify.wakeSahur'), body: tr('notify.atPlace', { name: fajr, time: store.formatted(day.times.fajr), place: place.name }), at: sahurTime(p.sahurAlarm, day), sahur: true })
     }
     if (p.wakeUp) {
       const tahajjud = p.wakeUp === 'fajrMinus30'
       out.push({
-        id: `${key}-wake`, title: tahajjud ? 'Wake up for tahajjud' : `Wake up for ${fajr}`,
-        body: tahajjud ? `${fajr} at ${store.formatted(day.times.fajr)} · ${place.name}${alertHadith('nightPrayer')}` : `${fajr} ends at ${store.formatted(day.times.sunrise)} · ${place.name}${alertHadith('fajrRakaat')}`,
+        id: `${key}-wake`, title: tahajjud ? tr('notify.wakeTahajjud') : tr('notify.wakeFor', { name: fajr }),
+        body: tahajjud ? `${tr('notify.atPlace', { name: fajr, time: store.formatted(day.times.fajr), place: place.name })}${alertHadith('nightPrayer')}` : `${tr('notify.endsAtPlace', { name: fajr, time: store.formatted(day.times.sunrise), place: place.name })}${alertHadith('fajrRakaat')}`,
         at: wakeUpTime(p.wakeUp, day), sahur: false,
       })
     }
@@ -228,15 +233,15 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
       const end = ends[prayer]
       out.push({
         id: `${key}-${prayer}-alarm`,
-        title: t === 'endMinus30' ? `${name} ends in 30 min` : `Time for ${name}`,
-        body: prayer === 'isha' ? `${name} began at ${store.formatted(begins)} · ${place.name}` : `${name} is open until ${store.formatted(end)} · ${place.name}`,
+        title: t === 'endMinus30' ? tr('notify.endsIn', { name, n: 30 }) : tr('notify.timeFor', { name }),
+        body: prayer === 'isha' ? tr('notify.beganAt', { name, time: store.formatted(begins), place: place.name }) : tr('notify.openUntil', { name, time: store.formatted(end), place: place.name }),
         at: prayerAlarmTime(t, begins, end), sahur: false, prayer,
       })
     }
     // Leave for Jumaat, when it rings as an alarm.
     if (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0 && store.isFriday(day.times.dhuhr)) {
       const j = jumuahStart(day)
-      const w = leaveWords(lang3(store.naming), p.jumuahReminderMinutes, store.name('dhuhr', day.times.dhuhr), j.second, store.formatted(j.at), j.where)
+      const w = leaveWords(store.appLang, p.jumuahReminderMinutes, store.name('dhuhr', day.times.dhuhr), j.second, store.formatted(j.at), j.where)
       out.push({ id: `${key}-jumuah-alarm`, ...w, at: j.at - p.jumuahReminderMinutes * 60_000, sahur: false })
     }
   }
@@ -255,7 +260,7 @@ export function nextWakeUp(now: number): WakeUp | null {
 
 /**
  * Ramadan's own alerts, on their own switches: Imsak (10 minutes before, to
- * finish sahur), Berbuka at Maghrib, and qiyam at the last third of the last ten nights.
+ * finish sahur), iftar at Maghrib, and qiyam at the last third of the last ten nights.
  */
 export function ramadanAlerts(day: PrayerDay, here: string): Alert[] {
   const prefs = store.prefs
@@ -265,18 +270,18 @@ export function ramadanAlerts(day: PrayerDay, here: string): Alert[] {
   if (season.phase === 'ramadan') {
     const imsak = store.imsak(day)
     if (prefs.imsakAlert) {
-      out.push({ id: `${id}-imsak`, title: `Imsak in 10 minutes · ${store.formatted(imsak)}`, body: `Finish your sahur. Subuh at ${store.formatted(day.times.fajr)} · ${here}`, at: imsak - 10 * 60_000, silent: isSilent(imsak - 10 * 60_000, 'fajr', store.activePlace?.timeZoneID ?? 'UTC') })
+      out.push({ id: `${id}-imsak`, title: tr('notify.imsakIn', { time: store.formatted(imsak) }), body: tr('notify.finishSahur', { name: store.name('fajr'), time: store.formatted(day.times.fajr), place: here }), at: imsak - 10 * 60_000, silent: isSilent(imsak - 10 * 60_000, 'fajr', store.activePlace?.timeZoneID ?? 'UTC') })
     }
     // When the Maghrib alert is on it says this itself, so one alert, not two.
     const maghribAlert = prefs.notificationsEnabled && prefs.notifyPrayers.includes('maghrib')
     if (prefs.berbukaAlert && !maghribAlert) {
-      out.push({ id: `${id}-berbuka`, title: `Time to berbuka · ${store.formatted(day.times.maghrib)}`, body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu. Ramadan day ${season.ramadanDay} · ${here}`, at: day.times.maghrib, silent: isSilent(day.times.maghrib, 'maghrib', store.activePlace?.timeZoneID ?? 'UTC') })
+      out.push({ id: `${id}-berbuka`, title: tr('notify.iftar', { time: store.formatted(day.times.maghrib) }), body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu. ${ramadanWord(store.appLang, 'ramadanDay', { n: season.ramadanDay ?? '' })} · ${here}`, at: day.times.maghrib, silent: isSilent(day.times.maghrib, 'maghrib', store.activePlace?.timeZoneID ?? 'UTC') })
     }
   }
   if (prefs.qiyamAlert && season.lastTen && season.nightTonight) {
     const last = store.blessed(day).find(([b]) => b === 'lastThird')
     if (last) {
-      out.push({ id: `${id}-qiyam`, title: `Night ${season.nightTonight} · the last third has begun`, body: season.oddNight ? 'An odd night of the last ten. Seek Lailatul Qadr.' : 'One of the last ten nights of Ramadan.', at: last[1], silent: isSilent(last[1], 'isha', store.activePlace?.timeZoneID ?? 'UTC') })
+      out.push({ id: `${id}-qiyam`, title: tr('notify.qiyamTitle', { night: season.nightTonight }), body: tr(season.oddNight ? 'notify.qiyamOdd' : 'notify.qiyamEven'), at: last[1], silent: isSilent(last[1], 'isha', store.activePlace?.timeZoneID ?? 'UTC') })
     }
   }
   return out
@@ -324,7 +329,7 @@ export function testAlert(): void {
   const now = store.now()
   const cur = store.current(now)
   const name = cur ? store.name(cur.prayer, cur.time) : 'Prayer'
-  void show(`${name} · test alert`, 'This is how prayer alerts will look on this device.', 'test')
+  void show(tr('notify.testTitle', { name }), tr('notify.testBody'), 'test')
 }
 
 /** Local times "HH:mm" for a calendar description. */

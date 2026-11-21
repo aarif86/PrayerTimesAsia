@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0b0f2a" />
+<meta name="color-scheme" content="dark light" />
 <title>For press | Prayer Times Asia</title>
 <meta name="description" content="Facts, story, photo and logo for journalists writing about Prayer Times Asia, the free prayer app built by Ustaz Aarif Raziff." />
 <link rel="icon" href="img/favicon-32.png" sizes="32x32" />
@@ -40,31 +42,59 @@
   .totop { position: fixed; right: 20px; bottom: 20px; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: #1a1f45; color: var(--gold); font-size: 1.3rem; cursor: pointer; display: grid; place-items: center; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .3s, transform .3s; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
   .totop.show { opacity: 1; transform: none; pointer-events: auto; }
   .totop:hover { border-color: var(--gold); }
+  :root { color-scheme: dark; }
+  :root[data-theme="light"] { --night: #F2EEE9; --card: #ffffff; --line: rgba(21,26,69,0.13); --text: #151A45; --muted: #4c5380; --gold: #8a5a00; color-scheme: light; }
+  [data-theme="light"] .totop { background: #ffffff; box-shadow: 0 6px 20px rgba(21,26,69,.18); }
+  [data-theme="light"] .contact { background: linear-gradient(135deg, rgba(226,182,90,.3), rgba(255,255,255,.6)); }
+  [data-theme="light"] th { background: rgba(21,26,69,0.04); }
+  [data-theme="light"] .tag.table { background: rgba(28,138,85,0.14); color: #14693f; }
+  [data-theme="light"] .tag.standard { background: rgba(21,26,69,0.07); }
+  header .right { display: flex; align-items: center; gap: 10px; }
+  header a.back .short { display: none; }
+  @media (max-width: 520px) { header a.back .long { display: none; } header a.back .short { display: inline; } }
+  /* Light and dark button (sun and moon). */
+  .mode { width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--gold); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; padding: 0; transition: border-color .2s, transform .2s; }
+  .mode[hidden] { display: none; }
+  .mode:hover { border-color: var(--gold); transform: rotate(12deg); }
+  .mode svg { width: 20px; height: 20px; }
+  .mode .sun { display: none; }
+  [data-theme="light"] .mode .sun { display: block; }
+  [data-theme="light"] .mode .moon-icon { display: none; }
 </style>
+<script>
+    // Pick light or dark before the page paints: the visitor's saved choice first, then the device setting.
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('pta-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') { t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+</script>
 </head>
 <body>
-<header><div class="wrap"><a href="./"><img src="img/icon-192.png" alt="" />Prayer Times Asia</a><a class="back" href="./">&#8592; Back to home</a></div></header>
+<header><div class="wrap"><a href="./"><img src="img/icon-192.png" alt="" />Prayer Times Asia</a><div class="right"><button class="mode" type="button" hidden aria-label="Switch between light and dark"><svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a.7.7 0 0 0-.9-.8A9.9 9.9 0 1 0 21.3 15.1a.7.7 0 0 0-.8-.9z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button><a class="back" href="./">&#8592; <span class="long">Back to home</span><span class="short">Home</span></a></div></div></header>
 <main class="wrap">
   <h1>For press</h1>
   <p class="lead">Everything you need to write about Prayer Times Asia in one place. Use the text and images freely in coverage of the app.</p>
 
   <h2>In one line</h2>
-  <p class="lead">Prayer Times Asia is a free prayer app built fisabilillah by Ustaz Aarif Raziff in Singapore, with no outside ads and no subscriptions, that follows your local religious authority first.</p>
+  <p class="lead">Prayer Times Asia is a free prayer app built fisabilillah by Ustaz Aarif Raziff and his wife Ustazah Nasibah Hamzah in Singapore, with no outside ads and no subscriptions, that follows your local religious authority first.</p>
 
   <div class="facts">
     <div class="fact"><b>Founder</b><span>Ustaz Aarif Raziff, Al&#8209;Azhar graduate, recognised by the Islamic Religious Council of Singapore (MUIS) under its Asatizah Recognition Scheme</span></div>
-    <div class="fact"><b>Made in</b><span>Built fisabilillah in Singapore by Ustaz Aarif Raziff and <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd)</span></div>
+    <div class="fact"><b>Made in</b><span>Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd)</span></div>
     <div class="fact"><b>Price</b><span>Free. No outside ads, no subscriptions, no in&#8209;app purchases</span></div>
     <div class="fact"><b>Countries</b><span>143, with the local religious authority first. <a href="sources.html">See every source</a></span></div>
     <div class="fact"><b>Official timetables</b><span>MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia</span></div>
-    <div class="fact"><b>Available</b><span>Web app today. iPhone and Android in testing, coming to the App Store and Google Play</span></div>
+    <div class="fact"><b>Available</b><span>Web app and Android on Google Play today. iPhone in testing, nearly ready for the App Store. Apple Watch, Wear OS, Mac, Windows and TV next, built from the same app</span></div>
   </div>
 
   <h2>The story</h2>
   <div class="story">
-    <p>When Ustaz Aarif Raziff landed in Vietnam, he couldn't find a proper prayer app. The big ones showed ads around salah or asked for a subscription, and even the best one he found wasn't made for Asia.</p>
-    <p>Back home in Singapore, he decided to build one. Prayer Times Asia is fully focused on salah. It follows the local religious authority in each country, uses official timetables where they exist, works offline and keeps your exact location on your phone.</p>
-    <p>It is built fisabilillah, in the hope that it becomes sadaqah jariah. His company, <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd), pays the running costs, and the app will stay free, with no outside ads and its code open for anyone to check.</p>
+    <p>Ustaz Aarif Raziff went to Vietnam with his wife Ustazah Nasibah Hamzah, their son, his mother-in-law and their helper. None of their prayer apps worked for them there, and the whole family turned to him to find out when to pray. Back in Singapore, his parents had the same trouble with apps that are hard to use, full of ads, and play the azan out loud on a crowded MRT train.</p>
+    <p>So he and his wife decided to build one. Prayer Times Asia is fully focused on salah. It follows the local religious authority in each country, uses official timetables where they exist, works offline and keeps your exact location on your phone.</p>
+    <p>It is built fisabilillah, in the hope that it becomes sadaqah jariah. Their company, <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd), pays the running costs, and the app will stay free, with no outside ads and its code open for anyone to check.</p>
   </div>
 
   <h2>Photos and logo</h2>
@@ -82,6 +112,27 @@
 <button class="totop" type="button" aria-label="Back to top" title="Back to top">&#8593;</button>
 <script>
   var tb = document.querySelector('.totop'); window.addEventListener('scroll', function () { tb.classList.toggle('show', window.scrollY > 500); }, { passive: true }); tb.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+</script>
+<script>
+  // Light and dark button: remembers the choice on this device for every page of the website.
+  (function () {
+    var root = document.documentElement, btn = document.querySelector('.mode'), meta = document.querySelector('meta[name="theme-color"]');
+    function paint() {
+      var light = root.getAttribute('data-theme') === 'light';
+      if (meta) meta.setAttribute('content', light ? '#F2EEE9' : '#0b0f2a');
+      if (btn) btn.setAttribute('aria-pressed', light ? 'true' : 'false');
+    }
+    if (btn) {
+      btn.hidden = false;
+      btn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('pta-theme', next); } catch (e) {}
+        paint();
+      });
+    }
+    paint();
+  })();
 </script>
 </body>
 </html>

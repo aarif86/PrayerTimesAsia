@@ -4,6 +4,7 @@ import type { ComponentChildren } from 'preact'
 import { Accessibility, Car, CalendarDays, ChevronDown, Clock, Droplets, Flag, Footprints, House, Info, LocateFixed, Loader2, MoonStar, ParkingCircle, Star, Users } from 'lucide-preact'
 import type { Coordinates } from '../core/engine'
 import { distanceKm } from '../core/geo'
+import { RING_LABEL_ANGLE, ringDistance, ringsFor } from '../core/mapRings'
 import { isGraveOrShrine, looksLikePrayerSpace } from '../core/official'
 import { fetchOK } from '../services/storage'
 import { listNearby } from '../services/masjidList'
@@ -12,10 +13,11 @@ import { openSheet, Segmented } from './common'
 import { FRIDAY_SG, fridayMosqueAt, fridayNearest, inSingapore, type FridayMosque } from '../core/friday'
 import { currentEid, eidAt, type EidEvent, type EidMosque } from '../core/eid'
 import { hoursAt, localWeekMinute, type HoursNow } from '../core/openingHours'
-import { OBLIGATORY } from '../core/prayer'
+import { OBLIGATORY, prayerName } from '../core/prayer'
 import type { MasjidLink } from '../core/masjidLink'
 import { store } from '../services/store'
 import { tint } from './Dials'
+import { appLocale, tr, trWith } from '../core/appWords'
 
 /**
  * Masjids and musollahs (surau, prayer rooms) near the active place, from
@@ -57,7 +59,7 @@ export function parseOverpass(json: { elements?: OsmElement[] }, center: Coordin
     const c = { latitude: lat, longitude: lon }
     const km = distanceKm(center, c)
     if (km > 15) continue
-    const display = name || (isMusollah ? 'Musollah' : 'Masjid')
+    const display = name || (isMusollah ? tr('masjid.musollah') : tr('masjid.masjid'))
     const key = `${display.toLowerCase()}|${Math.round(lat * 2000)}|${Math.round(lon * 2000)}`
     if (out.has(key)) continue
     const address = [t['addr:street'] && `${t['addr:housenumber'] ? t['addr:housenumber'] + ' ' : ''}${t['addr:street']}`, t['addr:suburb'] || t['addr:city']]
@@ -105,6 +107,12 @@ async function searchNearby(center: Coordinates, country?: string | null): Promi
 type Mode = 'walk' | 'drive'
 const MODE_KEY = 'ptasia.masjid.mode'
 
+/** "Second Friday prayer from 1:30 PM", with or without the women's line. */
+function secondFridayLine(women: boolean | undefined, use24: boolean): string {
+  const time = clock(FRIDAY_SG.secondSessionFrom, use24)
+  return women ? tr('masjid.secondFridayWomen', { time }) : tr('masjid.secondFriday', { time })
+}
+
 function directionsURL(c: Coordinates, mode: Mode): string {
   const { latitude: la, longitude: lo } = c
   const apple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)
@@ -122,7 +130,6 @@ function reportURL(c: Coordinates): string {
 const SHOW = 5
 
 /** Distance rings around you on the map. */
-const RINGS_KM = [1, 2, 5]
 
 function distanceText(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
@@ -133,8 +140,8 @@ function distanceText(km: number): string {
  * (about 30 km an hour plus a little for parking); the maps app shows the jams.
  */
 function tripText(km: number, mode: Mode): string | null {
-  if (mode === 'walk') return km > 2 ? null : `${Math.max(1, Math.round(km / 0.08))} min walk`
-  return `${Math.max(2, Math.round(km * 2 + 2))} min drive`
+  if (mode === 'walk') return km > 2 ? null : tr('masjid.walkMin', { n: Math.max(1, Math.round(km / 0.08)) })
+  return tr('masjid.driveMin', { n: Math.max(2, Math.round(km * 2 + 2)) })
 }
 
 const escapeHTML = (t: string) => t.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
@@ -146,11 +153,14 @@ function clock(hhmm: string, use24: boolean): string {
 }
 
 function hoursText(h: HoursNow, use24: boolean): string {
-  if (h.open) return h.until ? `Open now, until ${clock(h.until, use24)}` : 'Open now, all day'
-  return h.opensAt ? `Closed now, opens ${clock(h.opensAt, use24)}` : 'Closed today'
+  if (h.open) return h.until ? tr('masjid.openUntil', { time: clock(h.until, use24) }) : tr('masjid.openAllDay')
+  return h.opensAt ? tr('masjid.closedOpens', { time: clock(h.opensAt, use24) }) : tr('masjid.closedToday')
 }
 
-const FACILITIES: [string, string, typeof Users][] = [['w', "Women's space", Users], ['a', 'Wheelchair access', Accessibility], ['p', 'Parking', ParkingCircle], ['t', 'Toilets', Droplets]]
+const FACILITIES: [string, 'masjid.women' | 'masjid.wheelchair' | 'masjid.parking' | 'masjid.toilets', typeof Users][] = [['w', 'masjid.women', Users], ['a', 'masjid.wheelchair', Accessibility], ['p', 'masjid.parking', ParkingCircle], ['t', 'masjid.toilets', Droplets]]
+
+/** "Eid al-Fitr prayer" or "Eid al-Adha prayer" from the MUIS event name, in the app's language. */
+const eidPrayerName = (e: EidEvent): string => tr(/adha/i.test(e.name) ? 'masjid.eidAdha' : 'masjid.eidFitr')
 
 type Here = { coordinates: Coordinates; label: string; fromGps: boolean }
 
@@ -174,7 +184,8 @@ export default function MasjidScreen() {
   const setMode = (m: Mode) => { setModeState(m); try { localStorage.setItem(MODE_KEY, m) } catch { /* ignore */ } }
   const [allFriday, setAllFriday] = useState(false)
   const mapEl = useRef<HTMLDivElement>(null)
-  const map = useRef<{ api: typeof import('./leafletMap'); map: import('leaflet').Map; layer: import('leaflet').LayerGroup; you: import('leaflet').Marker } | null>(null)
+  const map = useRef<{ api: typeof import('./leafletMap'); map: import('leaflet').Map; layer: import('leaflet').LayerGroup; ringLayer: import('leaflet').LayerGroup; rings: string; you: import('leaflet').Marker } | null>(null)
+  const drawRingsRef = useRef<() => void>(() => undefined)
   const dark = document.documentElement.dataset.theme !== 'light'
   const use24 = s.prefs.use24Hour
   const tz = place?.timeZoneID || Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -237,7 +248,9 @@ export default function MasjidScreen() {
       const m = api.createMap(mapEl.current, here.coordinates, dark, 13)
       const you = api.youMarker(here.coordinates, true).addTo(m)
       const layer = api.L.layerGroup().addTo(m)
-      map.current = { api, map: m, layer, you }
+      const ringLayer = api.L.layerGroup().addTo(m)
+      map.current = { api, map: m, layer, ringLayer, rings: '', you }
+      m.on('zoomend', () => drawRingsRef.current())
       draw()
     }).catch(() => undefined)
     return () => { cancelled = true; map.current?.map.remove(); map.current = null }
@@ -248,19 +261,15 @@ export default function MasjidScreen() {
     if (!m || !here) return
     m.you.setLatLng([here.coordinates.latitude, here.coordinates.longitude])
     m.layer.clearLayers()
-    m.api.distanceRings(here.coordinates, RINGS_KM.map((km) => {
-      const trip = tripText(km, mode)
-      return { km, label: trip ? `${km} km, ${trip.replace(/ (walk|drive)$/, '')}` : `${km} km` }
-    })).addTo(m.layer)
     for (const sp of visibleRef.current) {
       const fri = singapore ? fridayMosqueAt(sp.coordinates) : null
       const h = hoursOf(sp)
       const trip = tripText(sp.distanceKm, mode)
       const pin = m.api.spaceMarker(sp.coordinates, sp.isMusollah, sp.name)
-      pin.bindPopup(`<div class="pin-pop"><b>${escapeHTML(sp.name)}</b><span>${distanceText(sp.distanceKm)} away${trip ? ', ' + trip : ''}</span>` +
+      pin.bindPopup(`<div class="pin-pop"><b>${escapeHTML(sp.name)}</b><span>${escapeHTML(tr('masjid.away', { distance: distanceText(sp.distanceKm) }))}${trip ? ', ' + escapeHTML(trip) : ''}</span>` +
         (h ? `<span class="${h.open ? 'pin-open' : ''}">${hoursText(h, use24)}</span>` : '') +
-        (fri ? `<span class="pin-fri">Two Friday prayers, 2nd from ${clock(FRIDAY_SG.secondSessionFrom, use24)}</span>` : '') +
-        `<a href="${directionsURL(sp.coordinates, mode)}" target="_blank" rel="noopener noreferrer">Directions</a></div>`, { closeButton: false, autoPanPaddingTopLeft: [16, 80] })
+        (fri ? `<span class="pin-fri">${escapeHTML(tr('masjid.twoFriday', { time: clock(FRIDAY_SG.secondSessionFrom, use24) }))}</span>` : '') +
+        `<a href="${directionsURL(sp.coordinates, mode)}" target="_blank" rel="noopener noreferrer">${escapeHTML(tr('masjid.directions'))}</a></div>`, { closeButton: false, autoPanPaddingTopLeft: [16, 80] })
       pin.addTo(m.layer)
     }
     const near = visibleRef.current.slice(0, SHOW).map((sp) => [sp.coordinates.latitude, sp.coordinates.longitude] as [number, number])
@@ -268,7 +277,30 @@ export default function MasjidScreen() {
     const { latitude: la, longitude: lo } = here.coordinates
     const d = 1 / 111.2, dl = d / Math.max(0.2, Math.cos(la * Math.PI / 180))
     m.map.fitBounds(m.api.L.latLngBounds([[la - d, lo - dl], [la + d, lo + dl], ...near]), { padding: [36, 36], maxZoom: 16, animate: false })
+    m.rings = ''
+    drawRings()
   }
+
+  // Three rings in 1 2 5 steps that suit the zoom: 500 m, 1 and 2 km close up, 1, 2 and 5 km
+  // further out, up to 5, 10 and 20 km, as on iPhone and Android.
+  const drawRings = () => {
+    const m = map.current
+    if (!m || !here) return
+    const b = m.map.getBounds()
+    const la = here.coordinates.latitude
+    const halfH = (b.getNorth() - b.getSouth()) * 111.2 / 2
+    const halfW = (b.getEast() - b.getWest()) * 111.2 * Math.cos(la * Math.PI / 180) / 2
+    const set = ringsFor(halfW, halfH)
+    const key = `${set.join(',')} ${mode} ${la} ${here.coordinates.longitude}`
+    if (key === m.rings) return
+    m.rings = key
+    m.ringLayer.clearLayers()
+    m.api.distanceRings(here.coordinates, set.map((km) => {
+      const trip = tripText(km, mode)
+      return { km, label: trip ? `${ringDistance(km)}, ${trip.replace(/ (walk|drive)$/, '')}` : ringDistance(km) }
+    }), RING_LABEL_ANGLE).addTo(m.ringLayer)
+  }
+  drawRingsRef.current = drawRings
   useEffect(draw, [visible, lat, lng, mode])
 
   const focus = (c: Coordinates) => {
@@ -291,45 +323,45 @@ export default function MasjidScreen() {
         <div class="masjid-title">
           <SiteHomeButton class="masjid-home" />
           <span class="spacer" />
-          <h1>Masjid &amp; Musollah</h1>
+          <h1>{tr('masjid.title')}</h1>
           <span class="spacer" />
-          <button class="round-btn info" aria-label="About this app" onClick={() => openSheet({ kind: 'makers', placement: 'masjid' })}><Info size={20} /></button>
+          <button class="round-btn info" aria-label={tr('masjid.about')} onClick={() => openSheet({ kind: 'makers', placement: 'masjid' })}><Info size={20} /></button>
         </div>
       </div>
       <div class="page masjid-page">
         {mine && here && <YourMasjid m={mine} from={here.coordinates} mode={mode} use24={use24} singapore={singapore} eid={eid} onFocus={focus} />}
         <button class="near-me-btn" onClick={findNearMe} disabled={locating === 'busy'}>
           {locating === 'busy' ? <Loader2 class="spin" size={20} /> : <LocateFixed size={20} />}
-          <span>{locating === 'busy' ? 'Finding where you are…' : nearMe ? 'Search again from here' : 'Find prayer places near me'}</span>
+          <span>{locating === 'busy' ? tr('today.finding') : nearMe ? tr('masjid.searchAgain') : tr('masjid.findNear')}</span>
         </button>
-        {locating === 'denied' && <p class="near-me-note secondary">Location is turned off for this site. Showing places near {place?.name ?? 'your saved place'}.</p>}
-        {locating === 'failed' && <p class="near-me-note secondary">Couldn't find where you are. Showing places near {place?.name ?? 'your saved place'}.</p>}
+        {locating === 'denied' && <p class="near-me-note secondary">{tr('masjid.locationOff', { place: place?.name ?? tr('masjid.savedPlace') })}</p>}
+        {locating === 'failed' && <p class="near-me-note secondary">{tr('masjid.locationFailed', { place: place?.name ?? tr('masjid.savedPlace') })}</p>}
         {eid && here && <EidCard e={eid} from={here.coordinates} spaces={spaces} use24={use24} />}
         {friday && fridayCard}
         <div class="near-head">
           <div class="near-title">
-            <h2>Nearest to {here?.fromGps ? 'you' : here?.label ?? 'you'}</h2>
-            <div class="mode-switch" role="group" aria-label="How you're going">
-              <button aria-pressed={mode === 'walk'} onClick={() => setMode('walk')}><Footprints size={15} /> Walk</button>
-              <button aria-pressed={mode === 'drive'} onClick={() => setMode('drive')}><Car size={15} /> Drive</button>
+            <h2>{here && !here.fromGps && here.label ? tr('masjid.nearestTo', { place: here.label }) : tr('masjid.nearestYou')}</h2>
+            <div class="mode-switch" role="group" aria-label={tr('masjid.howGoing')}>
+              <button aria-pressed={mode === 'walk'} onClick={() => setMode('walk')}><Footprints size={15} /> {tr('masjid.walk')}</button>
+              <button aria-pressed={mode === 'drive'} onClick={() => setMode('drive')}><Car size={15} /> {tr('masjid.drive')}</button>
             </div>
           </div>
-          <Segmented value={kind} onChange={setKind} options={[{ value: 'all', label: 'All' }, { value: 'masjid', label: 'Masjid' }, { value: 'musollah', label: 'Musollah' }]} />
+          <Segmented value={kind} onChange={setKind} options={[{ value: 'all', label: tr('masjid.all') }, { value: 'masjid', label: tr('masjid.masjid') }, { value: 'musollah', label: tr('masjid.musollah') }]} />
           {anyHours && (
             <button class={`open-chip${openOnly ? ' on' : ''}`} aria-pressed={openOnly} onClick={() => setOpenOnly((v) => !v)}>
-              <Clock size={14} /> Open now only
+              <Clock size={14} /> {tr('masjid.openOnly')}
             </button>
           )}
         </div>
-        {mode === 'drive' && <p class="near-me-note secondary">Drive times are a rough guide. Your maps app shows the traffic, so a masjid a little further away may be quicker.</p>}
-        {!here && <Empty title="Choose a place" body="Tap the button above, or pick a city on the Prayer tab." />}
-        {here && loading && spaces.length === 0 && <div class="masjid-loading"><Loader2 class="spin" size={22} /> {slow ? 'The free map server is busy. Still looking…' : 'Searching nearby…'}</div>}
+        {mode === 'drive' && <p class="near-me-note secondary">{tr('masjid.driveNote')}</p>}
+        {!here && <Empty title={tr('masjid.choosePlace')} body={tr('masjid.choosePlaceBody')} />}
+        {here && loading && spaces.length === 0 && <div class="masjid-loading"><Loader2 class="spin" size={22} /> {slow ? tr('masjid.busy') : tr('masjid.searching')}</div>}
         {here && !loading && visible.length === 0 && (
-          <Empty title={failed ? "Couldn't search" : openOnly ? 'Nothing open right now' : 'Nothing listed nearby'}
-            body={failed ? "The free map servers didn't answer. Check your connection, or try again in a minute."
-              : openOnly ? 'Only places with opening hours on the map count here. Turn off Open now only to see the rest.'
-              : `OpenStreetMap has no ${kind === 'musollah' ? 'musollah' : 'masjid'} listed within 15 km. Use the Qibla tab to pray where you are.`}
-            action={failed ? <button class="primary-btn" style={{ marginTop: 14 }} onClick={() => setAttempt((n) => n + 1)}>Try again</button> : undefined} />
+          <Empty title={failed ? tr('masjid.failed') : openOnly ? tr('masjid.nothingOpen') : tr('masjid.nothing')}
+            body={failed ? tr('masjid.failedHelp')
+              : openOnly ? tr('masjid.nothingOpenBody')
+              : tr('masjid.nothingHelp', { kind: kind === 'musollah' ? tr('masjid.prayerRooms') : tr('masjid.masjidWord') })}
+            action={failed ? <button class="primary-btn" style={{ marginTop: 14 }} onClick={() => setAttempt((n) => n + 1)}>{tr('common.tryAgain')}</button> : undefined} />
         )}
         <ul class="space-list">
           {top.map((sp) => {
@@ -348,8 +380,8 @@ export default function MasjidScreen() {
                       {sp.address && <span class="space-addr">{sp.address}</span>}
                       {(fri || h) && (
                         <span class="space-chips">
-                          {fri && <span class="space-chip">2 Friday prayers</span>}
-                          {h && <span class={`space-chip ${h.open ? 'ok' : 'closed'}`}>{h.open ? 'Open now' : 'Closed now'}</span>}
+                          {fri && <span class="space-chip">{tr('masjid.twoFridayChip')}</span>}
+                          {h && <span class={`space-chip ${h.open ? 'ok' : 'closed'}`}>{h.open ? tr('masjid.openNow') : tr('masjid.closedNow')}</span>}
                         </span>
                       )}
                     </span>
@@ -358,20 +390,20 @@ export default function MasjidScreen() {
                       {trip && <span class="space-walk">{trip}</span>}
                     </span>
                   </button>
-                  <a class="walk" href={directionsURL(sp.coordinates, mode)} target="_blank" rel="noopener noreferrer" aria-label={`${mode === 'walk' ? 'Walking' : 'Driving'} directions to ${sp.name}`}>{mode === 'walk' ? <Footprints size={17} /> : <Car size={17} />}</a>
+                  <a class="walk" href={directionsURL(sp.coordinates, mode)} target="_blank" rel="noopener noreferrer" aria-label={mode === 'walk' ? tr('masjid.walking', { name: sp.name }) : tr('masjid.drivingTo', { name: sp.name })}>{mode === 'walk' ? <Footprints size={17} /> : <Car size={17} />}</a>
                 </div>
                 {open && (
                   <div class="space-more">
                     <Facilities f={sp.facilities} />
                     {h && <p><Clock size={14} /> {hoursText(h, use24)}</p>}
-                    {fri && <p class="accent-text">Second Friday prayer from {clock(FRIDAY_SG.secondSessionFrom, use24)}{fri.womenSession2 ? ", with space for women" : ''}.</p>}
-                    {raya && <p class="accent-text">{eid!.name.replace(/ \d+H$/, '')} prayer at {raya.sessions.map((x) => clock(x.time, use24)).join(', ')}.</p>}
+                    {fri && <p class="accent-text">{secondFridayLine(fri.womenSession2, use24)}</p>}
+                    {raya && <p class="accent-text">{tr('masjid.eidAt', { name: eidPrayerName(eid!), times: raya.sessions.map((x) => clock(x.time, use24)).join(', ') })}</p>}
                     <div class="space-actions">
-                      <a class="plain-btn" href={directionsURL(sp.coordinates, mode)} target="_blank" rel="noopener noreferrer">{mode === 'walk' ? <Footprints size={15} /> : <Car size={15} />} Directions</a>
+                      <a class="plain-btn" href={directionsURL(sp.coordinates, mode)} target="_blank" rel="noopener noreferrer">{mode === 'walk' ? <Footprints size={15} /> : <Car size={15} />} {tr('masjid.directions')}</a>
                       {isMine(sp.coordinates)
-                        ? <span class="plain-btn done"><Star size={15} fill="currentColor" /> {sp.isMusollah ? 'Kept at the top' : 'Your masjid'}</span>
-                        : <button class="plain-btn" onClick={() => s.chooseMasjid(sp.name, sp.coordinates)}><Star size={15} /> {sp.isMusollah ? 'Keep it at the top' : 'Make it my masjid'}</button>}
-                      <a class="plain-btn quiet" href={reportURL(sp.coordinates)} target="_blank" rel="noopener noreferrer"><Flag size={15} /> Report a problem</a>
+                        ? <span class="plain-btn done"><Star size={15} fill="currentColor" /> {sp.isMusollah ? tr('masjid.keptTop') : tr('myMasjid.title')}</span>
+                        : <button class="plain-btn" onClick={() => s.chooseMasjid(sp.name, sp.coordinates)}><Star size={15} /> {sp.isMusollah ? tr('masjid.keepTop') : tr('masjid.makeMine')}</button>}
+                      <a class="plain-btn quiet" href={reportURL(sp.coordinates)} target="_blank" rel="noopener noreferrer"><Flag size={15} /> {tr('masjid.report')}</a>
                     </div>
                   </div>
                 )}
@@ -379,12 +411,12 @@ export default function MasjidScreen() {
             )
           })}
         </ul>
-        {more > 0 && <p class="more-on-map secondary">{more} more within 15 km are on the map. Tap a pin to see its name and directions.</p>}
-        {!mine && spaces.length > 0 && <p class="more-on-map secondary">Tap a place and choose Make it my masjid to keep it at the top.</p>}
+        {more > 0 && <p class="more-on-map secondary">{tr('masjid.moreOnMap', { n: more })}</p>}
+        {!mine && spaces.length > 0 && <p class="more-on-map secondary">{tr('masjid.keepHint')}</p>}
         {!friday && fridayCard}
         {here && (
           <p class="footnote secondary" style={{ marginTop: '14px' }}>
-            Places from OpenStreetMap, kept by volunteers. Missing one, or a pin in the wrong spot? <a href={reportURL(here.coordinates)} target="_blank" rel="noopener noreferrer">Tell the map</a>, no sign up needed.
+            {trWith('masjid.mapCredit', { link: <a href={reportURL(here.coordinates)} target="_blank" rel="noopener noreferrer">{tr('masjid.tellMap')}</a> })}
           </p>
         )}
       </div>
@@ -394,8 +426,8 @@ export default function MasjidScreen() {
 
 function Facilities({ f }: { f?: string }) {
   const have = FACILITIES.filter(([k]) => f?.includes(k))
-  if (!have.length) return <p class="secondary">The map doesn't list this place's facilities yet.</p>
-  return <div class="space-chips">{have.map(([, label, Icon]) => <span class="space-chip plain"><Icon size={13} /> {label}</span>)}</div>
+  if (!have.length) return <p class="secondary">{tr('masjid.noFacilities')}</p>
+  return <div class="space-chips">{have.map(([, label, Icon]) => <span class="space-chip plain"><Icon size={13} /> {tr(label)}</span>)}</div>
 }
 
 /** "Subuh +15, Zohor 1:15 PM", one line. */
@@ -404,7 +436,7 @@ function iqamahLine(m: MasjidLink, use24: boolean): string | null {
     const r = m.jamaah[p]!
     return `${store.name(p)} ${r.fixed ? clock(r.fixed, use24) : `+${r.after} min`}`
   })
-  if (m.jumuah) parts.push(`Jumaat ${clock(m.jumuah, use24)}`)
+  if (m.jumuah) parts.push(`${prayerName('dhuhr', store.naming, true)} ${clock(m.jumuah, use24)}`)
   return parts.length ? parts.join(', ') : null
 }
 
@@ -424,18 +456,18 @@ function YourMasjid({ m, from, mode, use24, singapore, eid, onFocus }: {
       <button class="your-masjid-main" onClick={() => onFocus(c)}>
         <Star size={20} class="accent" fill="currentColor" />
         <span class="space-text">
-          <span class="caps secondary">Your masjid</span>
+          <span class="caps secondary">{tr('myMasjid.title')}</span>
           <span class="space-name">{m.name}</span>
-          <span class="space-addr">{distanceText(km)} away{trip ? `, ${trip}` : ''}</span>
+          <span class="space-addr">{tr('masjid.away', { distance: distanceText(km) })}{trip ? `, ${trip}` : ''}</span>
         </span>
       </button>
-      <p class="your-masjid-line">{iq ? `Iqamah ${iq}` : 'Iqamah times show here when your masjid puts up a Prayer Times Asia screen. Scan its QR code once.'}</p>
-      {fri && <p class="your-masjid-line accent-text">Second Friday prayer from {clock(FRIDAY_SG.secondSessionFrom, use24)}{fri.womenSession2 ? ", with space for women" : ''}.</p>}
-      {raya && <p class="your-masjid-line accent-text">{eid!.name.replace(/ \d+H$/, '')} prayer at {raya.sessions.map((x) => clock(x.time, use24)).join(', ')}.</p>}
-      {!raya && m.eid && <p class="your-masjid-line accent-text">Hari Raya prayer at {clock(m.eid, use24)}.</p>}
+      <p class="your-masjid-line">{iq ? tr('masjid.iqamahLine', { times: iq }) : tr('masjid.iqamahHow')}</p>
+      {fri && <p class="your-masjid-line accent-text">{secondFridayLine(fri.womenSession2, use24)}</p>}
+      {raya && <p class="your-masjid-line accent-text">{tr('masjid.eidAt', { name: eidPrayerName(eid!), times: raya.sessions.map((x) => clock(x.time, use24)).join(', ') })}</p>}
+      {!raya && m.eid && <p class="your-masjid-line accent-text">{tr('masjid.eidAtTime', { time: clock(m.eid, use24) })}</p>}
       <div class="space-actions">
-        <a class="plain-btn" href={directionsURL(c, mode)} target="_blank" rel="noopener noreferrer">{mode === 'walk' ? <Footprints size={15} /> : <Car size={15} />} Directions</a>
-        <button class="plain-btn quiet" onClick={() => s.forgetMasjid()}>Remove</button>
+        <a class="plain-btn" href={directionsURL(c, mode)} target="_blank" rel="noopener noreferrer">{mode === 'walk' ? <Footprints size={15} /> : <Car size={15} />} {tr('masjid.directions')}</a>
+        <button class="plain-btn quiet" onClick={() => s.forgetMasjid()}>{tr('common.remove')}</button>
       </div>
     </section>
   )
@@ -451,15 +483,15 @@ function EidCard({ e, from, spaces, use24 }: { e: EidEvent; from: Coordinates; s
     return { m, km: c ? distanceKm(from, c) : null }
   }).sort((a, b) => (a.km ?? 1e9) - (b.km ?? 1e9))
   const shown = all ? rows : rows.slice(0, 3)
-  const date = new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+  const date = new Date(e.date + 'T00:00:00').toLocaleDateString(appLocale(), { weekday: 'long', day: 'numeric', month: 'long' })
   const sessionText = (m: EidMosque) => m.sessions.map((x) => `${clock(x.time, use24)}${x.khutbah ? ` (${x.khutbah})` : ''}`).join(', ')
   return (
     <section class="friday-card today eid-card">
       <div class="friday-head">
         <MoonStar size={20} class="accent" />
         <div>
-          <h2>{e.name.replace(/ \d+H$/, '')} prayer</h2>
-          <p class="secondary">{date}. Prayer times at the masjids nearest you.</p>
+          <h2>{eidPrayerName(e)}</h2>
+          <p class="secondary">{tr('masjid.eidNearest', { date })}</p>
         </div>
       </div>
       <ul class="space-list">
@@ -472,7 +504,7 @@ function EidCard({ e, from, spaces, use24 }: { e: EidEvent; from: Coordinates; s
                   <span class="space-name">{m.name}</span>
                   <span class="space-addr">{sessionText(m)}</span>
                   {(m.sessions.some((x) => x.women) || m.note) && (
-                    <span class="space-addr">{[m.sessions.some((x) => x.women) ? 'Space for women' : '', m.note ?? ''].filter(Boolean).join('. ')}</span>
+                    <span class="space-addr">{[m.sessions.some((x) => x.women) ? tr('masjid.spaceWomen') : '', m.note ?? ''].filter(Boolean).join('. ')}</span>
                   )}
                 </span>
                 {km != null && <span class="space-dist"><span class="mono">{distanceText(km)}</span></span>}
@@ -483,11 +515,11 @@ function EidCard({ e, from, spaces, use24 }: { e: EidEvent; from: Coordinates; s
       </ul>
       {rows.length > 3 && (
         <button class="plain-btn friday-all" onClick={() => setAll((v) => !v)} aria-expanded={all}>
-          {all ? 'Show the nearest 3' : `See all ${rows.length}`} <ChevronDown size={16} style={{ transform: all ? 'rotate(180deg)' : undefined }} />
+          {all ? tr('masjid.showNearest3') : tr('masjid.seeAll', { n: rows.length })} <ChevronDown size={16} style={{ transform: all ? 'rotate(180deg)' : undefined }} />
         </button>
       )}
       <p class="footnote secondary">
-        From the Islamic Religious Council of Singapore (MUIS). <a href={e.sourceUrl} target="_blank" rel="noopener noreferrer">See the MUIS list</a>
+        {trWith('masjid.fromMuis', { link: <a href={e.sourceUrl} target="_blank" rel="noopener noreferrer">{tr('masjid.seeMuis')}</a> })}
       </p>
     </section>
   )
@@ -500,7 +532,7 @@ function FridayCard({ from, all, onAll, today, use24, mode, onFocus }: {
   const list = fridayNearest(from)
   const shown = all ? list : list.slice(0, 3)
   const t = clock(FRIDAY_SG.secondSessionFrom, use24)
-  const updated = new Date(FRIDAY_SG.sourceUpdated + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  const updated = new Date(FRIDAY_SG.sourceUpdated + 'T00:00:00').toLocaleDateString(appLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
   const row = (m: FridayMosque & { km: number }) => {
     const trip = tripText(m.km, mode)
     return (
@@ -510,11 +542,11 @@ function FridayCard({ from, all, onAll, today, use24, mode, onFocus }: {
             <MoonStar size={20} class="accent" />
             <span class="space-text">
               <span class="space-name">{m.name}</span>
-              <span class="space-addr">{m.district}{m.womenSession2 ? '. Space for women in the 2nd prayer' : ''}</span>
+              <span class="space-addr">{m.district}{m.womenSession2 ? `. ${tr('masjid.women2')}` : ''}</span>
             </span>
             <span class="space-dist"><span class="mono">{distanceText(m.km)}</span>{trip && <span class="space-walk">{trip}</span>}</span>
           </button>
-          <a class="walk" href={directionsURL({ latitude: m.lat, longitude: m.lng }, mode)} target="_blank" rel="noopener noreferrer" aria-label={`Directions to ${m.name}`}>{mode === 'walk' ? <Footprints size={17} /> : <Car size={17} />}</a>
+          <a class="walk" href={directionsURL({ latitude: m.lat, longitude: m.lng }, mode)} target="_blank" rel="noopener noreferrer" aria-label={tr('masjid.directionsTo', { name: m.name })}>{mode === 'walk' ? <Footprints size={17} /> : <Car size={17} />}</a>
         </div>
       </li>
     )
@@ -524,16 +556,16 @@ function FridayCard({ from, all, onAll, today, use24, mode, onFocus }: {
       <div class="friday-head">
         <CalendarDays size={20} class="accent" />
         <div>
-          <h2>{today ? 'Friday prayer today' : 'Friday prayer in Singapore'}</h2>
-          <p class="secondary">{FRIDAY_SG.mosques.length} masjids hold a second Friday prayer from {t}, for those who can't make the first one at Zohor.</p>
+          <h2>{today ? tr('masjid.fridayToday') : tr('masjid.fridaySg')}</h2>
+          <p class="secondary">{tr('masjid.fridayHold', { n: FRIDAY_SG.mosques.length, time: t, name: store.name('dhuhr') })}</p>
         </div>
       </div>
       <ul class="space-list">{shown.map(row)}</ul>
       <button class="plain-btn friday-all" onClick={onAll} aria-expanded={all}>
-        {all ? 'Show the nearest 3' : `See all ${list.length}`} <ChevronDown size={16} style={{ transform: all ? 'rotate(180deg)' : undefined }} />
+        {all ? tr('masjid.showNearest3') : tr('masjid.seeAll', { n: list.length })} <ChevronDown size={16} style={{ transform: all ? 'rotate(180deg)' : undefined }} />
       </button>
       <p class="footnote secondary">
-        From the Islamic Religious Council of Singapore (MUIS), updated {updated}. No booking needed, except on public holidays. <a href={FRIDAY_SG.sourceUrl} target="_blank" rel="noopener noreferrer">See the MUIS list</a>
+        {trWith('masjid.fromMuisUpdated', { date: updated, link: <a href={FRIDAY_SG.sourceUrl} target="_blank" rel="noopener noreferrer">{tr('masjid.seeMuis')}</a> })}
       </p>
     </section>
   )

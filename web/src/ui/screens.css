@@ -348,19 +348,25 @@
 :root[data-theme="light"] .leaflet-container.masjid-map, :root[data-theme="light"] .leaflet-container.map-box { background: #e8eaf2; }
 .leaflet-layer.night-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.85) saturate(0.5); }
 .you-pin span { display: block; width: 18px; height: 18px; border-radius: 50%; background: #2f7cf6; border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4); }
-/* Where you are: soft waves beaming out from the dot. */
-.you-pin.beaming { position: relative; }
-.you-pin.beaming span { position: relative; z-index: 1; box-shadow: 0 0 0 4px rgba(47, 124, 246, 0.25), 0 1px 6px rgba(0, 0, 0, 0.4); }
-.you-beam { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(47, 124, 246, 0.45) 0%, rgba(47, 124, 246, 0.18) 60%, rgba(47, 124, 246, 0) 72%);
-  animation: you-beam 2.6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite; pointer-events: none; }
-.you-beam.late { animation-delay: 1.3s; }
-@keyframes you-beam { from { transform: scale(1); opacity: 0.9; } to { transform: scale(9); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .you-beam { animation: none; transform: scale(2.6); opacity: 0.5; } .you-beam.late { display: none; } }
-.dist-ring { pointer-events: none; }
-.ring-label span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font-size: 10.5px; font-weight: 700; color: #1d5fd0;
-  background: rgba(255, 255, 255, 0.88); border: 1px solid rgba(47, 124, 246, 0.35); border-radius: 999px; padding: 1px 7px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); }
-:root:not([data-theme="light"]) .ring-label span { color: #9cc2ff; background: rgba(20, 28, 48, 0.88); }
+/* Where you are: a brighter dot with a glow that gently breathes and one clear ring travelling out
+   every 2.4 s, as on iPhone and Android. With reduce motion nothing moves and a still ring stays. */
+.you-pin.beaming { position: relative; --you: #0a6bff; --you-glow: rgba(10, 107, 255, 0.30); --you-ring: rgba(10, 107, 255, 0.85); --you-edge: rgba(0, 0, 0, 0.18); }
+:root:not([data-theme="light"]) .you-pin.beaming { --you: #3d9bff; --you-glow: rgba(90, 175, 255, 0.55); --you-ring: rgba(140, 199, 255, 0.95); --you-edge: rgba(0, 0, 0, 0.55); }
+.you-pin.beaming span { position: relative; z-index: 1; width: 20px; height: 20px; margin: -1px; background: var(--you); box-shadow: 0 0 0 1px var(--you-edge), 0 0 14px 3px var(--you-glow); }
+.you-pin.beaming i { position: absolute; left: 50%; top: 50%; border-radius: 50%; pointer-events: none; }
+.you-glow { width: 46px; height: 46px; margin: -23px 0 0 -23px; background: radial-gradient(circle, var(--you-glow) 0, var(--you-glow) 45%, transparent 72%);
+  animation: you-breathe 2.4s ease-in-out infinite; }
+.you-beam { width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 2px solid var(--you-ring); opacity: 0;
+  animation: you-beam 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite; }
+.you-still { width: 38px; height: 38px; margin: -19px 0 0 -19px; border: 2px solid var(--you-ring); opacity: 0.55; display: none; }
+@keyframes you-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+@keyframes you-beam { from { transform: scale(1); opacity: 0.95; } to { transform: scale(5); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .you-glow, .you-beam { animation: none; } .you-beam { display: none; } .you-still { display: block; } }
+.dist-ring { pointer-events: none; stroke: rgba(10, 94, 219, 0.75); fill: rgba(10, 107, 255, 0.07); }
+:root:not([data-theme="light"]) .dist-ring { stroke: rgba(140, 194, 255, 0.85); fill: rgba(120, 186, 255, 0.10); }
+.ring-label span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font-size: 10.5px; font-weight: 700; color: #0a55c8;
+  background: rgba(255, 255, 255, 0.97); border: 1px solid rgba(10, 94, 219, 0.45); border-radius: 999px; padding: 1px 7px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); }
+:root:not([data-theme="light"]) .ring-label span { color: #cfe4ff; background: rgba(16, 28, 56, 0.94); border-color: rgba(140, 194, 255, 0.5); }
 .space-pin span { display: flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; color: #fff;
   border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
 .space-pin.masjid span { background: rgb(232, 140, 87); }
@@ -708,3 +714,4 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .review-steps { margin: 10px 0 12px; padding: 12px 14px 12px 34px; border-radius: 14px; background: var(--fill); font-size: 15px; line-height: 1.45; }
 .review-steps li { margin: 3px 0; }
 .review-steps li::marker { color: var(--accent); font-weight: 800; }
+.demo .preview-tag, .demo .preview-banner { display: none; }

@@ -3,6 +3,7 @@ import { useMemo } from 'preact/hooks'
 import type { PrayerDay } from '../core/engine'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { startOfDay } from '../core/tz'
+import { tr } from '../core/appWords'
 
 /** Prayer tints: the sky at that time of day (PrayerPalette.swift). */
 export const TINT: Record<Prayer, [number, number, number]> = {
@@ -131,7 +132,7 @@ export function DayDial(props: {
   const [dx, dy] = pt(c, c, angle(now), r)
   return (
     <div class="daydial" style={{ width: `${size}px`, height: `${size}px` }} role="img"
-      aria-label={props.isNext ? `Next ${props.currentName}, ${props.countdown}.` : `Now ${props.currentName}. ${props.countdown} ${props.label}.`}>
+      aria-label={props.isNext ? tr('today.nextAria', { name: props.currentName, time: props.countdown }) : `${tr('common.now')} ${props.currentName}. ${props.countdown} ${props.label}.`}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
         <circle cx={c} cy={c} r={r} fill="none" stroke="var(--fg)" stroke-opacity="0.1" stroke-width={ring} />
         {segments.map((s) => (

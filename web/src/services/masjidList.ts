@@ -43,7 +43,7 @@ export function parseTile(json: unknown): ListPlace[] | null {
     const lat = Number(row[1]), lon = Number(row[2])
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue
     const musollah = Number(row[5]) === 1
-    const name = typeof row[3] === 'string' && row[3] ? row[3] : (musollah ? 'Musollah' : 'Masjid')
+    const name = typeof row[3] === 'string' && row[3] ? row[3] : (musollah ? 'Prayer room' : 'Masjid')
     if (isGraveOrShrine(name)) continue
     const place: ListPlace = { id: row[0], name, address: typeof row[4] === 'string' ? row[4] : '', coordinates: { latitude: lat, longitude: lon }, isMusollah: musollah }
     if (typeof row[6] === 'string' && row[6]) place.facilities = row[6]
