@@ -108,9 +108,24 @@ class AppState(
     var demoShowsStores = false
 
     /** The rules and times for right now. Cheap to build; read it fresh each time. */
-    val resolver: Resolver
-        get() = Resolver(prefs, gpsPlace, { s, y, m, d -> official.times(s, y, m, d) }, directories.mosques, locale,
+    val resolver: Resolver get() = resolverFor(prefs, gpsPlace)
+
+    private fun resolverFor(prefs: Preferences, gps: Place?) =
+        Resolver(prefs, gps, { s, y, m, d -> official.times(s, y, m, d) }, directories.mosques, locale,
             announcements = directories.calendar.announcements, monthStarts = directories.calendar.monthStarts)
+
+    /**
+     * For the home screen widgets. The launcher can ask a widget to redraw (on a resize, say) when the
+     * app's process has just been started, before GPS has answered, so the live place is empty even
+     * though the phone knows where you are. Fall back to the last GPS place, then home, then any
+     * saved place, so a widget only ever asks for a location when there truly is none.
+     */
+    fun widgetResolver(): Resolver {
+        val live = resolver
+        if (live.activePlace != null) return live
+        val fallback = store?.lastGpsPlace() ?: prefs.home ?: prefs.savedPlaces.firstOrNull() ?: return live
+        return resolverFor(prefs.copy(useGPS = false, manualPlace = fallback), null)
+    }
 
     fun tick() {
         if (fixedNow == null) now = Instant.now()
