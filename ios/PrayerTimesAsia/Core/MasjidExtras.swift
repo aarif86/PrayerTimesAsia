@@ -111,6 +111,24 @@ enum MasjidExtras {
         }
     }
 
+    /// Ring sets for the map, each a 1 2 5 step like a map's distance scale, from very close to far out.
+    static let ringSets: [[Double]] = [[0.25, 0.5, 1], [0.5, 1, 2], [1, 2, 5], [2, 5, 10], [5, 10, 20]]
+
+    /// Labels sit on each ring this far below the right hand side, in degrees, so they line up like a ruler.
+    static let ringLabelAngle = 35.0
+
+    /// The three rings that suit what the map shows: the widest set whose outer label still lands
+    /// on screen. Half the map's width and height in km. Walk opens on 500 m, 1 and 2 km, Drive on 1, 2 and 5 km.
+    static func rings(halfWidthKm: Double, halfHeightKm: Double) -> [Double] {
+        let a = ringLabelAngle * .pi / 180
+        return ringSets.last { $0[2] * cos(a) <= halfWidthKm * 0.9 && $0[2] * sin(a) <= halfHeightKm * 0.9 } ?? ringSets[0]
+    }
+
+    /// "500 m" or "2 km".
+    static func ringDistance(_ km: Double) -> String {
+        km < 1 ? "\(Int((km * 1000).rounded())) m" : "\(Int(km.rounded())) km"
+    }
+
     /// A note on OpenStreetMap at this spot, for a volunteer to fix or add the place. No sign up needed.
     static func reportURL(_ c: Coordinates) -> URL? {
         URL(string: String(format: "https://www.openstreetmap.org/note/new#map=19/%.5f/%.5f", c.latitude, c.longitude))
