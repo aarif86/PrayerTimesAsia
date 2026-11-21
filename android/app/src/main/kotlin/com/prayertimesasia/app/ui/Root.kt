@@ -292,11 +292,15 @@ private fun CreditsContent() {
         Triple("MUIS - Singapore", "Contains information from the Muslim Prayer Timetable accessed from data.gov.sg, which is made available under the terms of the Singapore Open Data Licence version 1.0.", "https://data.gov.sg/open-data-licence"),
         Triple("JAKIM e-Solat - Malaysia", "Official prayer times by zone from Jabatan Kemajuan Islam Malaysia (e-solat.gov.my).", "https://www.e-solat.gov.my"),
         Triple("Kemenag - Indonesia", "Kementerian Agama (Bimas Islam) schedules via the myquran.com community API.", "https://api.myquran.com"),
+        Triple("KHEU - Brunei", "Official prayer times by zone from the Ministry of Religious Affairs, Brunei (Kementerian Hal Ehwal Ugama), from its printed Taqwim.", "https://www.mora.gov.bn"),
+        Triple("Brunei timetable", "The ministry's Taqwim, read and checked by Faruq Rasid's open prayertimes-database (GPL 3.0), with thanks.", "https://github.com/ruqqq/prayertimes-database"),
         Triple("JAKIM zone boundaries", "District-to-zone mapping from mptwaktusolat/malaysia.geojson; one reference point per district is used.", "https://github.com/mptwaktusolat/malaysia.geojson"),
         Triple("Calculation", "On-device solar calculation after praytimes.org; method presets as published by MUIS, JAKIM, Kemenag, the Muslim World League, Karachi, Umm al-Qura, Diyanet and others.", "https://praytimes.org/wiki/Calculation_Methods"),
         Triple("Maps and places", "Nearby masjids from OpenStreetMap (© OpenStreetMap contributors, ODbL) via the Overpass API. Directions open in your own maps app.", "https://www.openstreetmap.org/copyright"),
+        Triple("Prayer rooms", "The musolla database on GitHub (LGPL 3.0), started by the KalamApps and PrayerTime.SG teams and kept by volunteers, for prayer rooms in malls, schools and sports centres. Our copy and fixes are shared back in the open.", "https://github.com/aarif86/musolla-database"),
         Triple("Font", "Nunito by the Nunito Project Authors, under the SIL Open Font License 1.1.", "https://github.com/googlefonts/nunito"),
         Triple("Community data", "Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.", "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md"),
+        Triple("Design", "The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my by Awsam Tech LLP, the Singapore and Malaysia app. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.", "https://www.awsamtech.com/"),
         Triple("This app", "Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.", "https://github.com/aarif86/PrayerTimesAsia"),
     )
     LazyColumn(Modifier.fillMaxWidth().padding(horizontal = Dims.gutter)) {

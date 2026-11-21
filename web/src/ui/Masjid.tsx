@@ -1,9 +1,10 @@
 import { SiteHomeButton } from './SiteHome'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { ComponentChildren } from 'preact'
-import { Accessibility, Car, CalendarDays, ChevronDown, Clock, Droplets, Flag, Footprints, House, Info, LocateFixed, Loader2, MoonStar, ParkingCircle, Star, Users } from 'lucide-preact'
+import { Accessibility, Car, CalendarDays, ChevronDown, Clock, Droplets, Flag, Footprints, House, Info, LocateFixed, Loader2, MoonStar, ParkingCircle, Plus, Star, Users } from 'lucide-preact'
 import type { Coordinates } from '../core/engine'
 import { distanceKm } from '../core/geo'
+import { RING_LABEL_ANGLE, ringDistance, ringsFor } from '../core/mapRings'
 import { isGraveOrShrine, looksLikePrayerSpace } from '../core/official'
 import { fetchOK } from '../services/storage'
 import { listNearby } from '../services/masjidList'
@@ -129,7 +130,6 @@ function reportURL(c: Coordinates): string {
 const SHOW = 5
 
 /** Distance rings around you on the map. */
-const RINGS_KM = [1, 2, 5]
 
 function distanceText(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
@@ -184,7 +184,8 @@ export default function MasjidScreen() {
   const setMode = (m: Mode) => { setModeState(m); try { localStorage.setItem(MODE_KEY, m) } catch { /* ignore */ } }
   const [allFriday, setAllFriday] = useState(false)
   const mapEl = useRef<HTMLDivElement>(null)
-  const map = useRef<{ api: typeof import('./leafletMap'); map: import('leaflet').Map; layer: import('leaflet').LayerGroup; you: import('leaflet').Marker } | null>(null)
+  const map = useRef<{ api: typeof import('./leafletMap'); map: import('leaflet').Map; layer: import('leaflet').LayerGroup; ringLayer: import('leaflet').LayerGroup; rings: string; you: import('leaflet').Marker } | null>(null)
+  const drawRingsRef = useRef<() => void>(() => undefined)
   const dark = document.documentElement.dataset.theme !== 'light'
   const use24 = s.prefs.use24Hour
   const tz = place?.timeZoneID || Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -247,7 +248,9 @@ export default function MasjidScreen() {
       const m = api.createMap(mapEl.current, here.coordinates, dark, 13)
       const you = api.youMarker(here.coordinates, true).addTo(m)
       const layer = api.L.layerGroup().addTo(m)
-      map.current = { api, map: m, layer, you }
+      const ringLayer = api.L.layerGroup().addTo(m)
+      map.current = { api, map: m, layer, ringLayer, rings: '', you }
+      m.on('zoomend', () => drawRingsRef.current())
       draw()
     }).catch(() => undefined)
     return () => { cancelled = true; map.current?.map.remove(); map.current = null }
@@ -258,10 +261,6 @@ export default function MasjidScreen() {
     if (!m || !here) return
     m.you.setLatLng([here.coordinates.latitude, here.coordinates.longitude])
     m.layer.clearLayers()
-    m.api.distanceRings(here.coordinates, RINGS_KM.map((km) => {
-      const trip = tripText(km, mode)
-      return { km, label: trip ? `${km} km, ${trip.replace(/ (walk|drive)$/, '')}` : `${km} km` }
-    })).addTo(m.layer)
     for (const sp of visibleRef.current) {
       const fri = singapore ? fridayMosqueAt(sp.coordinates) : null
       const h = hoursOf(sp)
@@ -278,7 +277,30 @@ export default function MasjidScreen() {
     const { latitude: la, longitude: lo } = here.coordinates
     const d = 1 / 111.2, dl = d / Math.max(0.2, Math.cos(la * Math.PI / 180))
     m.map.fitBounds(m.api.L.latLngBounds([[la - d, lo - dl], [la + d, lo + dl], ...near]), { padding: [36, 36], maxZoom: 16, animate: false })
+    m.rings = ''
+    drawRings()
   }
+
+  // Three rings in 1 2 5 steps that suit the zoom: 500 m, 1 and 2 km close up, 1, 2 and 5 km
+  // further out, up to 5, 10 and 20 km, as on iPhone and Android.
+  const drawRings = () => {
+    const m = map.current
+    if (!m || !here) return
+    const b = m.map.getBounds()
+    const la = here.coordinates.latitude
+    const halfH = (b.getNorth() - b.getSouth()) * 111.2 / 2
+    const halfW = (b.getEast() - b.getWest()) * 111.2 * Math.cos(la * Math.PI / 180) / 2
+    const set = ringsFor(halfW, halfH)
+    const key = `${set.join(',')} ${mode} ${la} ${here.coordinates.longitude}`
+    if (key === m.rings) return
+    m.rings = key
+    m.ringLayer.clearLayers()
+    m.api.distanceRings(here.coordinates, set.map((km) => {
+      const trip = tripText(km, mode)
+      return { km, label: trip ? `${ringDistance(km)}, ${trip.replace(/ (walk|drive)$/, '')}` : ringDistance(km) }
+    }), RING_LABEL_ANGLE).addTo(m.ringLayer)
+  }
+  drawRingsRef.current = drawRings
   useEffect(draw, [visible, lat, lng, mode])
 
   const focus = (c: Coordinates) => {
@@ -396,6 +418,9 @@ export default function MasjidScreen() {
           <p class="footnote secondary" style={{ marginTop: '14px' }}>
             {trWith('masjid.mapCredit', { link: <a href={reportURL(here.coordinates)} target="_blank" rel="noopener noreferrer">{tr('masjid.tellMap')}</a> })}
           </p>
+        )}
+        {here && (
+          <button class="plain-btn suggest-room-btn" onClick={() => openSheet({ kind: 'suggest-room', near: here.coordinates })}><Plus size={16} /> {tr('suggestRoom.button')}</button>
         )}
       </div>
     </div>

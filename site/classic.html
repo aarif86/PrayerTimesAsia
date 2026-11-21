@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Prayer Times Asia (previous home page)</title>
-  <meta name="description" content="Free prayer times and qibla for Muslims living and travelling across Asia. Official MUIS and JAKIM timetables, works offline, no ads, no account, no tracking. On the web today, iPhone and Android in testing." />
+  <meta name="description" content="Free prayer times and qibla for Muslims living and travelling across Asia. Official MUIS and JAKIM timetables, works offline, no ads, no account, no tracking. On the web and Google Play today, iPhone in testing." />
   <meta name="theme-color" content="#0b0f2a" />
   <meta name="color-scheme" content="dark" />
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
@@ -214,10 +214,10 @@
 
     /* Steps */
     .steps { counter-reset: s; display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-top: 36px; }
-    .steps .card { position: relative; padding-top: 58px; }
+    .steps .card { position: relative; padding-top: 58px; display: flex; flex-direction: column; }
     .steps .card::before { counter-increment: s; content: counter(s); position: absolute; top: 20px; left: 24px; width: 28px; height: 28px; border-radius: 50%;
       background: var(--gold); color: #1b1230; font-weight: 800; display: grid; place-items: center; font-size: 0.9rem; }
-    .steps .btns { margin-top: 16px; }
+    .steps .btns { margin-top: auto; padding-top: 16px; }
 
     /* FAQ */
     .promises .grid { grid-template-columns: repeat(4, 1fr); }
@@ -406,10 +406,10 @@
           <p>Works in any browser on any phone or computer. Add it to your Home Screen and it opens like an app, even offline.</p>
         </div>
         <div class="card">
-          <span class="tag beta">Testing now</span>
+          <span class="tag live">On Google Play</span>
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div>
           <h3>iPhone and Android</h3>
-          <p>Widgets, a Lock Screen countdown and prayer alerts. In testing now, coming to the App Store and Google Play.</p>
+          <p>Widgets, a Lock Screen countdown and prayer alerts. Android is on Google Play now, and iPhone is nearly ready for the App Store.</p>
         </div>
         <div class="card">
           <span class="tag plan">Planned</span>
@@ -488,13 +488,13 @@
         </div>
         <div class="card">
           <h3>iPhone</h3>
-          <p>The iPhone app is in testing through Apple's TestFlight. Ask for an invite and we'll send you a link.</p>
-          <div class="btns"><a class="btn btn-ghost btn-sm" href="mailto:salam@prayertimes.asia?subject=iPhone%20test%20invite&amp;body=Assalamualaikum%2C%20I%27d%20like%20to%20try%20Prayer%20Times%20Asia%20on%20iPhone.%0A%0AName%3A%0ACountry%3A%0A">Ask for an iPhone invite</a></div>
+          <p>The iPhone app is in testing through Apple's TestFlight. Tap below to join. No invite needed.</p>
+          <div class="btns"><a class="btn btn-primary btn-sm" href="https://testflight.apple.com/join/DjXmrnNF" target="_blank" rel="noopener">Join the iPhone test</a></div>
         </div>
         <div class="card">
           <h3>Android</h3>
-          <p>The Android app is coming to Google Play. Ask for the test version and we'll send it to you.</p>
-          <div class="btns"><a class="btn btn-ghost btn-sm" href="mailto:salam@prayertimes.asia?subject=Android%20test%20version&amp;body=Assalamualaikum%2C%20I%27d%20like%20to%20try%20Prayer%20Times%20Asia%20on%20Android.%0A%0AName%3A%0ACountry%3A%0APhone%20model%3A%0A">Ask for the Android test</a></div>
+          <p>The Android app is on Google Play now. It's free, with nothing to sign up for.</p>
+          <div class="btns"><a class="btn btn-primary btn-sm" href="https://play.google.com/store/apps/details?id=com.prayertimesasia.app" target="_blank" rel="noopener">Get it on Google Play</a></div>
         </div>
       </div>
     </div>
@@ -583,7 +583,7 @@
       <a href="app/">Web app</a> ·
       <a href="privacy.html">Privacy</a> ·
       <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/website/changelog.md">What's new</a> ·
-      <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md">Design a new look</a> ·
+      <a href="new-look.html">Design a new look</a> ·
       <a href="mailto:salam@prayertimes.asia">salam@prayertimes.asia</a>
     </div>
   </div>

@@ -49,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -72,10 +73,14 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.prayertimesasia.app.ui.components.CapsuleButton
+import com.prayertimesasia.app.ui.today.AppSheet
 import com.prayertimesasia.app.ui.components.GlassCard
 import com.prayertimesasia.core.EidEvent
 import com.prayertimesasia.core.EidMosque
@@ -171,7 +176,7 @@ private fun saveMode(context: Context, mode: TripMode) =
 
 /**
  * Masjids and musollahs (surau, prayer rooms) near you from OpenStreetMap.
- * Only the nearest five are listed; the rest are on the radar. Singapore adds
+ * Only the nearest five are listed; the rest are on the street map. Singapore adds
  * the MUIS second Friday prayer list and, before Raya, the Hari Raya sessions.
  * Kept in step with the web app's Masjid tab.
  */
@@ -182,12 +187,17 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
     val context = LocalContext.current
     var nearMe by remember { mutableStateOf<Coordinates?>(null) }
     var locating by remember { mutableStateOf(false) }
+    var suggesting by remember { mutableStateOf(false) }
+    // When Near me last found the person, so Suggest a prayer room only offers a recent spot as the room's pin.
+    var nearMeAt by remember { mutableLongStateOf(0L) }
     val here = nearMe ?: place?.coordinates
     var spaces by remember { mutableStateOf(preset ?: here?.let { NearbyCache.measuredFrom(it) } ?: NearbyCache.spaces) }
     var loading by remember { mutableStateOf(false) }
     var failed by remember { mutableStateOf(false) }
     var kind by remember { mutableStateOf(Kind.ALL) }
     var selected by remember { mutableStateOf<String?>(null) }
+    var pinned by remember { mutableStateOf<PrayerSpace?>(null) }
+    val camera = remember { MapCamera() }
     var openOnly by remember { mutableStateOf(false) }
     var mode by remember { mutableStateOf(if (state.sideEffects) loadMode(context) else TripMode.WALK) }
     var attempt by remember { mutableIntStateOf(0) }
@@ -257,6 +267,8 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
         .filter { kind == Kind.ALL || (kind == Kind.MUSOLLAH) == it.isMusollah }
         .filter { !openOnly || hoursOf(it)?.open == true }
     val anyHours = spaces.any { hoursOf(it) != null }
+    // A tapped pin's card closes when a filter hides that place.
+    if (pinned != null && pinned !in visible) pinned = null
     val top = visible.take(MasjidExtras.SHOW)
     val more = visible.size - top.size
     val mine = state.prefs.myMasjid
@@ -268,7 +280,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
             if (granted) {
                 locating = true
                 state.location.refresh { loc ->
-                    nearMe = Coordinates(loc.latitude, loc.longitude)
+                    nearMe = Coordinates(loc.latitude, loc.longitude); nearMeAt = System.currentTimeMillis()
                     locating = false
                 }
                 // The listener keeps the phone's location going for the Prayer tab too; stop waiting after a while.
@@ -279,26 +291,37 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
     }
 
     Box(Modifier.fillMaxSize()) {
-        LivingSkyBackground(state.skyNow)
-        LazyColumn(Modifier.fillMaxSize()) {
-            item {
-                Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-                    Text("Masjids and prayer rooms", style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
-                    Box(Modifier.align(Alignment.CenterEnd).size(40.dp).clip(CircleShape).clickable(onClickLabel = "About this app", onClick = openAbout),
-                        contentAlignment = Alignment.Center) {
-                        Icon(Icons.Outlined.Info, "About this app", Modifier.size(26.dp), tint = Palette.primary)
-                    }
-                }
+      LivingSkyBackground(state.skyNow)
+      Column(Modifier.fillMaxSize()) {
+        // As on iPhone: refresh on the left, the title, About on the right.
+        Box(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
+            Box(Modifier.align(Alignment.CenterStart).size(48.dp).clip(CircleShape)
+                .clickable(enabled = here != null, onClickLabel = "Refresh the masjid list") { attempt += 1; OsmTiles.retryFailed() },
+                contentAlignment = Alignment.Center) {
+                Icon(Icons.Filled.Refresh, "Refresh the masjid list", Modifier.size(24.dp), tint = Palette.primary)
             }
-            if (here != null) item {
-                Radar(here, visible, selected, mode, Modifier.fillMaxWidth().height(260.dp).padding(horizontal = Dims.gutter)) { selected = it }
+            Text("Masjids and prayer rooms", style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
+            Box(Modifier.align(Alignment.CenterEnd).size(48.dp).clip(CircleShape).clickable(onClickLabel = "About this app", onClick = openAbout),
+                contentAlignment = Alignment.Center) {
+                Icon(Icons.Outlined.Info, "About this app", Modifier.size(26.dp), tint = Palette.primary)
             }
+        }
+        // The map stays put at the top and the list scrolls under it, as on iPhone.
+        if (here != null) {
+            StreetMap(here, visible, mine, ::isMine, pinned, mode, camera,
+                if (nearMe != null || place?.name == null) "you" else place.name, Modifier.fillMaxWidth().height(260.dp),
+                onSelect = { pinned = it }) { s ->
+                PinCard(s, mode, h24, hoursOf(s), singapore, { pinned = null }) { directions(context, s.coordinates, s.name, mode) }
+            }
+        }
+        LazyColumn(Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp))
+            .background(Palette.material), contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 14.dp)) {
             item {
                 Column(Modifier.padding(horizontal = Dims.gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (mine != null && here != null) YourMasjid(state, mine, here, mode, h24, singapore, eid)
                     NearMeButton(locating, nearMe != null, findNearMe)
                     if (eid != null && here != null) EidCard(eid, here, spaces, h24)
-                    if (friday && here != null) FridayCard(here, true, mode, h24)
+                    if (friday && here != null) FridayCard(here, true, mode, h24) { camera.show(it, 1_000.0, animate = true) }
                 }
             }
             item {
@@ -351,31 +374,63 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                             if (singapore) MasjidExtras.fridayAt(space.coordinates) else null,
                             eid?.let { MasjidExtras.eidAt(it, space.name, space.coordinates) }, eid, isMine(space.coordinates)) {
                             selected = if (selected == space.id) null else space.id
+                            camera.show(space.coordinates, 1_000.0, animate = true)
                         }
                         HorizontalDivider(Modifier.padding(start = 56.dp), color = Palette.primary.copy(alpha = 0.1f))
                     }
                     item {
                         Column(Modifier.padding(horizontal = Dims.gutter, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            if (more > 0) Text("$more more within 15 km are on the radar above. Tap a dot to see its name.", style = Txt.footnote, color = Palette.secondary)
+                            if (more > 0) Text("$more more within 15 km are on the map. Tap a pin to see its name and directions.", style = Txt.footnote, color = Palette.secondary,
+                                modifier = Modifier.clickable(onClickLabel = "Show them all on the map") {
+                                    pinned = null
+                                    camera.fit(visible.map { it.coordinates } + listOfNotNull(here))
+                                })
                             if (mine == null) Text("Tap a place and choose Make it my masjid to keep it at the top.", style = Txt.footnote, color = Palette.secondary)
                         }
                     }
                 }
             }
             if (singapore && !friday && here != null) item {
-                Box(Modifier.padding(horizontal = Dims.gutter, vertical = 8.dp)) { FridayCard(here, false, mode, h24) }
+                Box(Modifier.padding(horizontal = Dims.gutter, vertical = 8.dp)) { FridayCard(here, false, mode, h24) { camera.show(it, 1_000.0, animate = true) } }
             }
             item {
                 Column(Modifier.padding(Dims.gutter), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Places from OpenStreetMap (© OpenStreetMap contributors), kept by volunteers and kept on your phone, updated weekly. Only the area is sent.",
-                        style = Txt.caption, color = Palette.secondary)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (here != null) CapsuleButton("Missing a place? Tell the map", style = Txt.footnoteSemibold) { open(context, MasjidExtras.reportUrl(here)) }
-                        CapsuleButton("Refresh list", style = Txt.footnoteSemibold) { attempt += 1 }
-                    }
+                    Text("Places from OpenStreetMap (© OpenStreetMap contributors) and the open musolla list, both kept by volunteers. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.",
+                        style = Txt.footnote, color = Palette.secondary)
+                    if (here != null) CapsuleButton("Tell the map", style = Txt.footnoteSemibold) { open(context, MasjidExtras.reportUrl(here)) }
+                    if (here != null) CapsuleButton("Suggest a prayer room", style = Txt.footnoteSemibold) { suggesting = true }
+                    if (mine == null) Text("A masjid with a Prayer Times Asia screen? Scan its QR code with the Camera app to see its iqamah times on your Prayer screen.",
+                        style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(top = 6.dp))
                     Spacer(Modifier.height(24.dp))
                 }
             }
+        }
+      }
+    }
+    if (suggesting) AppSheet({ suggesting = false }) { SuggestRoomContent(near = here, live = nearMe.takeIf { System.currentTimeMillis() - nearMeAt < 300_000 }) }
+}
+
+/** A tapped pin on the map: its name, how far, opening hours, Friday prayers, Directions (as on iPhone). */
+@Composable
+private fun PinCard(s: PrayerSpace, mode: TripMode, h24: Boolean, hours: OpeningHours.Now?, singapore: Boolean, onClose: () -> Unit, onDirections: () -> Unit) {
+    val fri = if (singapore) MasjidExtras.fridayAt(s.coordinates) else null
+    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Palette.materialStrong).padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(s.name, style = Txt.subheadlineSemibold, color = Palette.primary, maxLines = 2)
+            Text("${MasjidExtras.distanceText(s.distanceKm)} away${MasjidExtras.tripText(s.distanceKm, mode)?.let { ", $it" } ?: ""}",
+                style = Txt.caption, color = Palette.secondary)
+            hours?.let { Text(OpeningHours.text(it, h24), style = Txt.caption, color = if (it.open) Palette.success else Palette.secondary) }
+            if (fri != null) Text("Two Friday prayers, 2nd from ${MasjidExtras.clock(MasjidExtras.FRIDAY_SECOND_FROM, h24)}", style = Txt.caption, color = Palette.accentText)
+        }
+        Row(Modifier.clip(CircleShape).background(Palette.accent).clickable(onClickLabel = "Directions to ${s.name}", onClick = onDirections)
+            .padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Icon(if (mode == TripMode.WALK) Icons.AutoMirrored.Filled.DirectionsWalk else Icons.Filled.DirectionsCar, null, Modifier.size(16.dp), tint = Color.Black.copy(alpha = 0.82f))
+            Text("Directions", style = Txt.footnoteSemibold, color = Color.Black.copy(alpha = 0.82f))
+        }
+        Box(Modifier.size(48.dp).clip(CircleShape).clickable(onClickLabel = "Close", onClick = onClose).semantics { contentDescription = "Close" },
+            contentAlignment = Alignment.Center) {
+            Icon(Icons.Filled.Close, "Close", Modifier.size(18.dp), tint = Palette.secondary)
         }
     }
 }
@@ -530,7 +585,7 @@ private fun YourMasjid(state: AppState, m: MasjidLink, from: Coordinates, mode: 
 
 /** Singapore only: masjids with a second Friday prayer, nearest first (MUIS). */
 @Composable
-private fun FridayCard(from: Coordinates, today: Boolean, mode: TripMode, h24: Boolean) {
+private fun FridayCard(from: Coordinates, today: Boolean, mode: TripMode, h24: Boolean, onFocus: (Coordinates) -> Unit) {
     val context = LocalContext.current
     var all by remember { mutableStateOf(false) }
     val list = MasjidExtras.fridayNearest(from)
@@ -545,16 +600,28 @@ private fun FridayCard(from: Coordinates, today: Boolean, mode: TripMode, h24: B
             }
         }
         (if (all) list else list.take(3)).forEach { (m, km) ->
-            Row(Modifier.fillMaxWidth().clickable { directions(context, m.coordinates, m.name, mode) }.padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Icon(Icons.Filled.Brightness2, null, Modifier.size(20.dp), tint = Palette.accent)
-                Column(Modifier.weight(1f)) {
-                    Text(m.name, style = Txt.bodySemibold, color = Palette.primary)
-                    Text(m.district + if (m.womenSession2) ". Space for women in the 2nd prayer" else "", style = Txt.caption, color = Palette.secondary)
+            // Tap the row to see it on the map, the round button for directions (as on iPhone).
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.weight(1f).clickable(onClickLabel = "Show ${m.name} on the map") { onFocus(m.coordinates) },
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Icon(Icons.Filled.Brightness2, null, Modifier.size(20.dp), tint = Palette.accent)
+                    Column(Modifier.weight(1f)) {
+                        Text(m.name, style = Txt.bodySemibold, color = Palette.primary)
+                        Text(m.district + if (m.womenSession2) ". Space for women in the 2nd prayer" else "", style = Txt.caption, color = Palette.secondary)
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(MasjidExtras.distanceText(km), style = Txt.subheadline.copy(fontFeatureSettings = "tnum"), color = Palette.secondary)
+                        MasjidExtras.tripText(km, mode)?.let { Text(it, style = Txt.caption, color = Palette.secondary) }
+                    }
                 }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(MasjidExtras.distanceText(km), style = Txt.subheadline.copy(fontFeatureSettings = "tnum"), color = Palette.secondary)
-                    MasjidExtras.tripText(km, mode)?.let { Text(it, style = Txt.caption, color = Palette.secondary) }
+                // The words sit on the button itself, so a screen reader has them even when the round icon is half scrolled away.
+                Box(Modifier.size(48.dp).clip(CircleShape).clickable(onClickLabel = "Directions to ${m.name}") { directions(context, m.coordinates, m.name, mode) }
+                    .semantics { contentDescription = "Directions to ${m.name}" },
+                    contentAlignment = Alignment.Center) {
+                    Box(Modifier.size(36.dp).clip(CircleShape).background(Palette.accent.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
+                        Icon(if (mode == TripMode.WALK) Icons.AutoMirrored.Filled.DirectionsWalk else Icons.Filled.DirectionsCar,
+                            "Directions to ${m.name}", Modifier.size(18.dp), tint = Palette.accentText)
+                    }
                 }
             }
         }
@@ -636,83 +703,3 @@ private fun Empty(title: String, body: String, onRetry: (() -> Unit)? = null) {
     }
 }
 
-/**
- * You in the middle with soft waves beaming out, each place at its bearing and
- * distance, and rings at 1, 2 and 5 km (labelled with the walk or drive time)
- * so a place reads as near or far at a glance.
- */
-@Composable
-private fun Radar(center: Coordinates, spaces: List<PrayerSpace>, selected: String?, mode: TripMode, modifier: Modifier, onSelect: (String) -> Unit) {
-    val primary = Palette.primary
-    val accent = Palette.accent
-    val musollah = Prayer.FAJR.tint
-    val north = Palette.north
-    val you = Color(0xFF0A84FF)
-    val material = Palette.materialStrong
-    val far = spaces.take(12).maxOfOrNull { it.distanceKm } ?: 2.0
-    val maxKm = max(5.5, far * 1.1)
-    val rings = listOf(1.0, 2.0, 5.0) + if (maxKm > 11) listOf(10.0) else emptyList()
-    val layout = remember { mutableListOf<Pair<String, Offset>>() }
-    val measurer = rememberTextMeasurer()
-    val labelStyle = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold, color = you)
-    val beam by rememberInfiniteTransition(label = "beam").animateFloat(
-        0f, 1f, infiniteRepeatable(tween(2600, easing = LinearOutSlowInEasing)), label = "beam")
-    Box(modifier.clip(RoundedCornerShape(Dims.corner)).background(Palette.material)) {
-        Canvas(Modifier.fillMaxSize().pointerInput(spaces) {
-            detectTapGestures { tap ->
-                layout.minByOrNull { hypot((it.second.x - tap.x).toDouble(), (it.second.y - tap.y).toDouble()) }
-                    ?.takeIf { hypot((it.second.x - tap.x).toDouble(), (it.second.y - tap.y).toDouble()) < 40.dp.toPx() }
-                    ?.let { onSelect(it.first) }
-            }
-        }) {
-            val c = this.center
-            val radius = size.minDimension / 2 - 18.dp.toPx()
-            // Square-root scale keeps the nearest places from piling onto you; rings use the same scale.
-            fun at(km: Double) = (sqrt(km / maxKm).coerceAtMost(1.0) * radius).toFloat()
-            rings.forEachIndexed { i, km ->
-                if (i == 0) drawCircle(you.copy(alpha = 0.07f), at(km), c)
-                drawCircle(you.copy(alpha = 0.5f), at(km), c, style = Stroke(1.5.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 7.dp.toPx()))))
-            }
-            // Waves beaming out from you.
-            for (k in 0..1) {
-                val p = (beam + k * 0.5f) % 1f
-                drawCircle(you.copy(alpha = 0.4f * (1 - p)), 9.dp.toPx() + p * at(1.0) * 1.2f, c)
-            }
-            drawLine(north.copy(alpha = 0.7f), Offset(c.x, c.y - radius - 6.dp.toPx()), Offset(c.x, c.y - radius + 6.dp.toPx()), 2.dp.toPx())
-            val placed = mutableListOf<Pair<String, Offset>>()
-            for (s in spaces) {
-                val b = Math.toRadians(Geo.bearing(center, s.coordinates))
-                val d = at(s.distanceKm)
-                val p = Offset((c.x + sin(b) * d).toFloat(), (c.y - cos(b) * d).toFloat())
-                placed += s.id to p
-                val color = if (s.isMusollah) musollah else accent
-                val r = (if (s.id == selected) 9 else 6).dp.toPx()
-                drawCircle(Color.White, r + 2.dp.toPx(), p)
-                drawCircle(color, r, p)
-            }
-            layout.clear()
-            layout.addAll(placed)
-            // Ring labels at the bottom of each ring.
-            for (km in rings) {
-                val trip = MasjidExtras.tripText(km, mode)?.removeSuffix(" walk")?.removeSuffix(" drive")
-                val text = "${km.roundToInt()} km" + (trip?.let { ", $it" } ?: "")
-                val m = measurer.measure(text, labelStyle)
-                val w = m.size.width + 12.dp.toPx()
-                val h = m.size.height + 2.dp.toPx()
-                val y = c.y + at(km)
-                if (y + h / 2 > size.height) continue
-                drawRoundRect(material, Offset(c.x - w / 2, y - h / 2), Size(w, h), CornerRadius(h / 2))
-                drawText(m, topLeft = Offset(c.x - m.size.width / 2f, y - m.size.height / 2f))
-            }
-            drawCircle(Color.White, 10.dp.toPx(), c)
-            drawCircle(you, 7.dp.toPx(), c)
-        }
-        Text("N", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = north, modifier = Modifier.align(Alignment.TopCenter).padding(top = 2.dp))
-        Text("You, rings at 1, 2 and 5 km", style = Txt.caption, color = Palette.secondary, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
-        spaces.firstOrNull { it.id == selected }?.let {
-            Text(it.name, style = Txt.captionSemibold, color = primary, maxLines = 1,
-                modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp).clip(CircleShape).background(Palette.materialStrong).padding(horizontal = 10.dp, vertical = 4.dp))
-        }
-    }
-}
