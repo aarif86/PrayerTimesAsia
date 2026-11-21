@@ -78,6 +78,9 @@ struct CompassBezel: View {
 
 /// The card at the top of Settings: the app icon on navy with kawung and stitching.
 struct AppCard: View {
+    /// Off where the card is not a button (the About page itself).
+    var showsChevron = true
+
     var body: some View {
         HStack(spacing: 14) {
             Image("AppIconImage")
@@ -91,7 +94,9 @@ struct AppCard: View {
                 Text("Version \(Bundle.main.appVersion)").font(.footnote).foregroundStyle(Brand.moonText.opacity(0.75))
             }
             Spacer(minLength: 0)
-            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Brand.moonText.opacity(0.75))
+            if showsChevron {
+                Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Brand.moonText.opacity(0.75))
+            }
         }
         .padding(18)
         .background {

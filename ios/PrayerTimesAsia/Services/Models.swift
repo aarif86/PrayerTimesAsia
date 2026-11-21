@@ -254,7 +254,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var methodOverrideID: String?
     var asrOverride: AsrSchool?
     var namingOverride: NamingStyle?
-    var use24Hour = false
+    /// A new install follows the phone's own clock setting; after that it is the user's choice.
+    var use24Hour = Preferences.phoneUses24Hour
     var hijriAdjustment = 0
 
     var notificationsEnabled = false
@@ -429,6 +430,11 @@ struct Preferences: Codable, Equatable, Sendable {
     private static let key = "preferences.v1"
 
     init() {}
+
+    /// True when this phone shows times as 13:00 rather than 1:00 PM.
+    static var phoneUses24Hour: Bool {
+        (DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? "").contains("H")
+    }
 
     /// Field-by-field with defaults, so adding a preference in an update never
     /// throws away the ones a user already set.
