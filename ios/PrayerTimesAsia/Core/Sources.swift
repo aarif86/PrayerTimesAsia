@@ -25,7 +25,7 @@ enum SourceGrade: String, Codable, Sendable {
         case .official: "Published by the national or state religious authority, or its exact published method."
         case .masjid: "From a named mosque's own timetable, checked against our calculation."
         case .community: "Method confirmed by two or more independent local contributors."
-        case .calculated: "Astronomical calculation on your phone. The method is shown; local mosques may differ by a few minutes."
+        case .calculated: "Astronomical calculation on your phone. The method is shown. Local mosques may differ by a few minutes."
         case .falak: "Worked out from your own observation of the sun's shadow or the sky, with honest ± minutes. Used to learn and to check, never in place of the grades above."
         }
     }
