@@ -1,15 +1,26 @@
 import SwiftUI
 
-/// Falak Mode F1 (brief v03 §8): Qibla Day, daily rashdul qiblat, the
-/// tongkat istiwa' for Zuhur and Asr, and guided sky signs. Everything here is
-/// Grade F - for learning and checking, never in place of the authority's times.
+/// Falak for everyone (Nov 2026). A calm home that tells the story in four
+/// parts: the Sky (slide the sun), Then (how Muslims read the sky), Now (try it
+/// yourself) and Why it helps. The detailed tools from Falak Mode F1 stay, one
+/// tap away under Expert tools. Everything here is Grade F, for learning, and
+/// never in place of the authority's times.
 struct FalakView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     /// A main tab (no Done button) or a sheet.
     var isTab = false
+    @State private var tab: Part = .sky
     @State private var showAR = false
     @State private var showLevel = false
+    @State private var showExpert = false
+    @State private var showSteps = false
+    @State private var showCamera = false
+
+    enum Part: String, CaseIterable, Identifiable {
+        case sky = "Sky", then = "Then", now = "Now", why = "Why"
+        var id: String { rawValue }
+    }
 
     var body: some View {
         NavigationStack {
@@ -20,7 +31,149 @@ struct FalakView: View {
                         ScrollView {
                             VStack(spacing: 16) {
                                 header
-                                tools
+                                Picker("Part", selection: $tab) {
+                                    ForEach(Part.allCases) { Text($0.rawValue).tag($0) }
+                                }
+                                .pickerStyle(.segmented)
+                                switch tab {
+                                case .sky:
+                                    SkySliderCard(place: place, now: context.date)
+                                    toolRows(place: place, now: context.date, full: false)
+                                case .then: ThenStory()
+                                case .now:
+                                    toolRows(place: place, now: context.date, full: true)
+                                    SunSafetyCard()
+                                case .why: WhyItHelps()
+                                }
+                                Text("For learning. Always follow your local religious authority.")
+                                    .font(.footnote).opacity(0.75)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(.horizontal, Theme.gutter)
+                            .padding(.bottom, 32)
+                            .animation(.smooth, value: tab)
+                        }
+                    }
+                } else {
+                    Text("Choose a place first.").font(.headline)
+                }
+            }
+            .foregroundStyle(.primary)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            }
+            .toolbar(isTab ? .hidden : .automatic, for: .navigationBar)
+            .fullScreenCover(isPresented: $showAR) { FalakARScreen() }
+            .fullScreenCover(isPresented: $showCamera) { ShadowCameraView() }
+            .sheet(isPresented: $showLevel) { LevelView() }
+            .sheet(isPresented: $showSteps) { ShadowStepsView() }
+            .sheet(isPresented: $showExpert) { FalakExpertView() }
+        }
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Falak").font(Theme.screenTitle).accessibilityAddTraits(.isHeader)
+            Text("The sun and the sky set the prayer times. Slide to see how.")
+                .font(.subheadline).opacity(0.85)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 4)
+    }
+
+    @ViewBuilder
+    private func toolRows(place: Place, now: Date, full: Bool) -> some View {
+        let ymd = model.ymd(now)
+        let plan = Falak.shadowDay(year: ymd.0, month: ymd.1, day: ymd.2, coordinates: place.coordinates)
+        let asr = Prayer.asr.name(model.naming)
+        let today = Falak.rashdulQiblat(year: ymd.0, month: ymd.1, day: ymd.2, timeZone: model.timeZone, coordinates: place.coordinates)
+        let qiblaLine = today.first(where: { $0.time >= now }).map { "Today at \(model.formatted($0.time))" }
+            ?? "At this minute every shadow lines up with the qibla"
+        VStack(spacing: 0) {
+            ToolRow(symbol: "figure.walk", tint: Theme.gold, title: "Shadow steps",
+                    subtitle: "Find \(asr) with your own shadow",
+                    trailing: Falak.stepsText(Falak.asrSteps(plan, school: model.asrSchool))) { showSteps = true }
+            Divider().padding(.leading, 60)
+            ToolRow(symbol: "camera.viewfinder", tint: .green, title: "Shadow camera",
+                    subtitle: "Point, tap, done") { showCamera = true }
+            Divider().padding(.leading, 60)
+            ToolRow(symbol: "location.north.line.fill", tint: Theme.accentText, title: "Qibla from the sun",
+                    subtitle: qiblaLine) { showExpert = true }
+            if full {
+                Divider().padding(.leading, 60)
+                ToolRow(symbol: "sun.max.circle.fill", tint: Theme.warning, title: "Sun over the Kaaba",
+                        subtitle: model.longDate(Falak.nextQiblaDay(after: now))) { showExpert = true }
+                Divider().padding(.leading, 60)
+                ToolRow(symbol: "arkit", tint: .purple, title: "Camera",
+                        subtitle: "Qibla and shadow on the camera") { showAR = true }
+                Divider().padding(.leading, 60)
+                ToolRow(symbol: "level", tint: .teal, title: "Level",
+                        subtitle: "Ground and stick") { showLevel = true }
+                Divider().padding(.leading, 60)
+                ToolRow(symbol: "slider.horizontal.3", tint: .gray, title: "Expert tools",
+                        subtitle: "Shadow stick, Qibla Day and sky signs in detail") { showExpert = true }
+            }
+        }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+    }
+}
+
+/// One row in the tools list, like a row in Settings.
+private struct ToolRow: View {
+    let symbol: String
+    let tint: Color
+    let title: String
+    let subtitle: String
+    var trailing: String? = nil
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: symbol)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 34, height: 34)
+                    .background(tint.gradient, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title).font(.body.weight(.semibold))
+                    Text(subtitle).font(.footnote).opacity(0.7).lineLimit(2)
+                }
+                Spacer(minLength: 8)
+                if let trailing {
+                    Text(trailing).font(Theme.display(22, .bold)).monospacedDigit().foregroundStyle(Theme.gold)
+                }
+                Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).opacity(0.4)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// The detailed F1 tools, unchanged, for people who want the numbers.
+struct FalakExpertView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                SkyNow()
+                if let place = model.activePlace {
+                    TimelineView(.periodic(from: .now, by: 30)) { context in
+                        ScrollView {
+                            VStack(spacing: 16) {
+                                HStack(spacing: 8) {
+                                    Chip(text: "Grade F · Falak", systemImage: SourceGrade.falak.symbol)
+                                    Chip(text: "Pending shariah review", systemImage: "hourglass")
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 SunSafetyCard()
                                 ShadowCompassCard(place: place, now: context.date)
                                 QiblaDayCard(place: place, now: context.date)
@@ -35,61 +188,12 @@ struct FalakView: View {
                             .padding(.bottom, 32)
                         }
                     }
-                } else {
-                    Text("Choose a place first.").font(.headline)
                 }
             }
-            .foregroundStyle(.primary)
+            .navigationTitle("Expert tools")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-            }
-            .toolbar(isTab ? .hidden : .automatic, for: .navigationBar)
-            .fullScreenCover(isPresented: $showAR) { FalakARScreen() }
-            .sheet(isPresented: $showLevel) { LevelView() }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
         }
-    }
-
-    private var tools: some View {
-        HStack(spacing: 12) {
-            tile("Camera", "AR qibla & shadow", "camera.viewfinder") { showAR = true }
-            tile("Level", "Ground & stick", "level") { showLevel = true }
-        }
-    }
-
-    private func tile(_ title: String, _ subtitle: String, _ symbol: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
-                Image(systemName: symbol).font(.title2.weight(.semibold))
-                    .foregroundStyle(Theme.accentText)
-                    .frame(height: 32)
-                Text(title).font(.headline)
-                Text(subtitle).font(.caption).opacity(0.75)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 12) {
-                Image("Tab-falak").resizable().frame(width: 38, height: 38)
-                    .foregroundStyle(Theme.accentText)
-                    .accessibilityHidden(true)
-                Text("Falak").font(Theme.screenTitle).accessibilityAddTraits(.isHeader)
-            }
-            Text("Read the time and the qibla from the sun and its shadow, the way the muwaqqit did - no signal needed.")
-                .font(.subheadline).opacity(0.9)
-            HStack(spacing: 8) {
-                Chip(text: "Grade F · Falak", systemImage: SourceGrade.falak.symbol)
-                Chip(text: "Pending shariah review", systemImage: "hourglass")
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.top, 4)
     }
 }
 
@@ -103,7 +207,7 @@ private struct CardTitle: View {
     }
 }
 
-private extension AppModel {
+extension AppModel {
     var placeCalendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = timeZone
