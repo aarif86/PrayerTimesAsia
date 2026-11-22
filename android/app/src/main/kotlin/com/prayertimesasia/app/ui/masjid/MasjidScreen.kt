@@ -412,6 +412,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
 }
 
 /** The prayer room details from the community list, only the parts we have. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RoomInfo(d: RoomDetails) {
     var more by remember { mutableStateOf(false) }
