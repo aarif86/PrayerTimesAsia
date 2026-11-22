@@ -66,7 +66,7 @@ struct CountryProfile: Sendable, Hashable {
             return "Follows \(authority ?? name), worked out on your phone with their method so it works offline." + (note.map { " \($0)" } ?? "")
         case .standard:
             let lead = note ?? "No official timetable the app can use here yet, so it uses \(method.name), a standard method."
-            return lead + " Your local masjid may differ by a few minutes. You can choose another method in Settings, or send us your masjid's timetable."
+            return lead + " Your local masjid may differ by a few minutes. Always follow your local religious authority. You can choose another method in Settings, or send us your masjid's timetable."
         }
     }
 }

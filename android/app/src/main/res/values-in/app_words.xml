@@ -1049,7 +1049,7 @@
     <string name="source_summary_table" formatted="false">Jadwal resmi dari {authority}. Jika jadwal tidak dapat diunduh, aplikasi menghitungnya dengan metode yang sama.</string>
     <string name="source_summary_authority" formatted="false">Mengikuti {authority}, dihitung di ponsel Anda dengan metode mereka sehingga tetap jalan tanpa internet.</string>
     <string name="source_summary_standardNone" formatted="false">Belum ada jadwal resmi yang dapat dipakai aplikasi di sini, jadi aplikasi memakai {method}, yaitu metode standar.</string>
-    <string name="source_summary_standardEnd" formatted="false">Masjid setempat Anda mungkin berbeda beberapa menit. Anda dapat memilih metode lain di Pengaturan, atau mengirimkan jadwal masjid Anda kepada kami.</string>
+    <string name="source_summary_standardEnd" formatted="false">Masjid setempat Anda mungkin berbeda beberapa menit. Selalu ikuti otoritas agama setempat Anda. Anda dapat memilih metode lain di Pengaturan, atau mengirimkan jadwal masjid Anda kepada kami.</string>
     <string name="source_summary_londonShort" formatted="false">London Unified Prayer Timetable dari East London Mosque, diikuti banyak masjid di London.</string>
     <string name="source_summary_london" formatted="false">London Unified Prayer Timetable dari East London Mosque, diikuti banyak masjid di London. Jika jadwal tidak dapat diunduh, aplikasi memakai metode Moonsighting Committee. Masjid setempat Anda mungkin berbeda beberapa menit.</string>
     <string name="source_methodName" formatted="false">Metode {method}</string>
@@ -1062,7 +1062,7 @@
     <string name="method_note_jakim" formatted="false">Kriteria Subuh 18° Malaysia (sejak 2019). Saat daring, aplikasi menampilkan jadwal resmi e-Solat JAKIM untuk zona Anda. Tanpa internet, aplikasi menghitung dengan selisih sekitar 2 menit.</string>
     <string name="method_note_kemenag" formatted="false">Kementerian Agama. Saat daring, aplikasi menampilkan jadwal resmi Kemenag untuk kota atau kabupaten Anda. Tanpa internet, aplikasi menghitung dengan koreksi yang disesuaikan pada jadwal lengkap 2026 untuk Jakarta, Surabaya dan Makassar.</string>
     <string name="method_note_sea" formatted="false">Kebiasaan 20°/18° yang dipakai di seluruh Dunia Melayu. Pilihan awal yang wajar jika tidak ada jadwal nasional.</string>
-    <string name="method_note_mwl" formatted="false">Liga Muslim Dunia. Metode internasional yang paling banyak dipakai.</string>
+    <string name="method_note_mwl" formatted="false">Liga Muslim Dunia. Metode internasional yang banyak dipakai, bukan jadwal resmi otoritas setempat mana pun.</string>
     <string name="method_note_karachi" formatted="false">Metode baku di Pakistan, India, Bangladesh dan Afganistan.</string>
     <string name="method_note_ummalqura" formatted="false">Kalender resmi Arab Saudi, diikuti oleh Haramain di Makkah dan Madinah. Isya 90 menit setelah Magrib, 120 menit pada bulan Ramadan.</string>
     <string name="method_note_dubai" formatted="false">Kebiasaan Uni Emirat Arab.</string>
