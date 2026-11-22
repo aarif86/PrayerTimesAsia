@@ -17,7 +17,7 @@ const WORDS = {
     week: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     title: 'Islamic Calendar', thisMonth: 'This month', none: 'A quiet month. The white days fall on the 13th, 14th and 15th.',
     ramadan: 'Ramadan', white: 'White days', note: 'Hijri dates can differ by a day from place to place. Follow your local religious authority.',
-    credit: 'Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd)', scan: 'Prayer times for every day',
+    credit: 'Built fisabilillah in Singapore', scan: 'Prayer times for every day',
   },
   ms: {
     week: ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'],
