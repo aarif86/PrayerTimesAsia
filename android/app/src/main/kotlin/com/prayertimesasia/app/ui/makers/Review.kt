@@ -180,10 +180,10 @@ fun NoteContent(state: AppState) {
         SwitchLine("Add my city and app version", "Helps us check your times. Never your exact location.", addDetails) { addDetails = it }
         if (kind == Reviews.NoteKind.KIND) SwitchLine("You may share my words", "On our website, without your name.", mayShare) { mayShare = it }
         Box(Modifier.fillMaxWidth().clip(CircleShape).background(Palette.sunArc).clickable {
-            val uri = "mailto:${Reviews.FEEDBACK_EMAIL}?subject=${Uri.encode(mail.first)}&body=${Uri.encode(mail.second)}"
-            runCatching { context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse(uri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            val uri = Reviews.noteUrl(Reviews.about(kind), mail.second)
+            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
         }.padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
-            Text("Send by email", style = Txt.bodySemibold, color = Color.Black.copy(alpha = 0.85f))
+            Text("Send your note", style = Txt.bodySemibold, color = Color.Black.copy(alpha = 0.85f))
         }
         Box(Modifier.fillMaxWidth().clip(CircleShape).background(Palette.primary.copy(alpha = 0.08f)).clickable {
             context.copy("To ${Reviews.FEEDBACK_EMAIL}\n${mail.first}\n\n${mail.second}"); copied = true

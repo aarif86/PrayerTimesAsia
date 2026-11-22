@@ -318,6 +318,14 @@
     onScroll();
   })();
 </script>
+<script>
+  // The apps open this page with the note already written (for example ?note_is_about=An%20idea).
+  // Hand those words to the form so the person only has to add their email and press Submit.
+  (function () {
+    var f = document.getElementById('inline-gPw1g5Wdk4n4zQwTsEpx');
+    if (f && location.search) f.src = f.src.split('?')[0] + location.search;
+  })();
+</script>
 <script src="https://api.nasardigital.com/js/form_embed.js" async></script>
 <button class="totop" type="button" aria-label="Back to top" title="Back to top">&#8593;</button>
 <style>

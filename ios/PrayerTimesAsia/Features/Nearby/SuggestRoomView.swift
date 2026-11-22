@@ -2,7 +2,7 @@ import SwiftUI
 import UIKit
 
 /// "Suggest a prayer room": a musollah or prayer room missing from the Masjid tab.
-/// No sign in and no server: it opens the person's own email app to
+/// No sign in and no server: it opens the site note page, filled in, to
 /// salam@prayertimes.asia. Same lines as the web and Android apps.
 enum RoomSuggestion {
     enum Has: String, CaseIterable, Identifiable {
@@ -105,13 +105,13 @@ struct SuggestRoomView: View {
                     TextField("Opening hours, or who may use it", text: $remarks, axis: .vertical).lineLimit(2...5)
                 }
                 Section {
-                    Button { send() } label: { Label("Send by email", systemImage: "envelope.fill").bold() }
+                    Button { send() } label: { Label("Send your suggestion", systemImage: "paperplane.fill").bold() }
                         .disabled(!ready)
                     if ready {
                         Button { copyNote() } label: { Label(copied ? "Copied" : "No email app? Copy the note", systemImage: "doc.on.doc") }
                     }
                 } footer: {
-                    Text(ready ? "It goes to \(Reviews.feedbackEmail) from your own email app. JazakAllahu khairan for helping others find a place to pray."
+                    Text(ready ? "It opens our note page with your words filled in. Add your email there so we can thank you. JazakAllahu khairan for helping others find a place to pray."
                                : "Add the place name and either the address or a pin.")
                 }
             }
@@ -123,11 +123,7 @@ struct SuggestRoomView: View {
     }
 
     private func send() {
-        var c = URLComponents()
-        c.scheme = "mailto"
-        c.path = Reviews.feedbackEmail
-        c.queryItems = [URLQueryItem(name: "subject", value: mail.subject), URLQueryItem(name: "body", value: mail.body)]
-        if let url = c.url { openURL(url) }
+        if let url = Reviews.noteURL(about: "Suggest a prayer room", note: mail.body, place: name) { openURL(url) }
     }
 
     private func copyNote() {

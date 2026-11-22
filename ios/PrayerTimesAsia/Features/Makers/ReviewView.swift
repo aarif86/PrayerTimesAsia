@@ -4,7 +4,7 @@ import UIKit
 
 /// Public reviews and private notes for the makers (Ustaz Aarif Raziff and Nasar Digital).
 /// No sign in and no server: review buttons open the store or Google, private notes open
-/// the person's own email app to salam@prayertimes.asia. Same as the web and Android apps.
+/// the site's note page with the words filled in. Same as the web and Android apps.
 enum Reviews {
     /// The number in the App Store link (apps.apple.com/app/id1234567890). Empty until the
     /// app is live on the App Store; the App Store button stays hidden until then.
@@ -12,6 +12,18 @@ enum Reviews {
     /// Nasar Digital's Google review page (Google Business Profile).
     static let googleReview = URL(string: "https://g.page/r/CSq5hZxhRs1BEBM/review")!
     static let feedbackEmail = "salam@prayertimes.asia"
+    static let notePage = "https://prayertimes.asia/note.html"
+
+    /// The site's note page with the form already filled in. Sending it there thanks the person and emails a confirmation.
+    static func noteURL(about: String, note: String, place: String = "") -> URL? {
+        var c = URLComponents(string: notePage)
+        var items = [URLQueryItem(name: "note_is_about", value: about),
+                     URLQueryItem(name: "note_to_the_makers", value: note.trimmingCharacters(in: .whitespacesAndNewlines))]
+        let p = place.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !p.isEmpty { items.append(URLQueryItem(name: "note_masjid_or_place", value: p)) }
+        c?.queryItems = items
+        return c?.url
+    }
 
     struct Link: Identifiable {
         let id: String
@@ -114,7 +126,7 @@ struct ReviewView: View {
     }
 }
 
-/// "A note to the makers": a private note that opens the person's own email app.
+/// "A note to the makers": a private note that opens the site note page, filled in.
 struct NoteView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -203,10 +215,10 @@ struct NoteView: View {
                     }
                 }
                 Section {
-                    Button { send() } label: { Label("Send by email", systemImage: "envelope.fill").bold() }
+                    Button { send() } label: { Label("Send your note", systemImage: "paperplane.fill").bold() }
                     Button { copyNote() } label: { Label(copied ? "Copied" : "No email app? Copy the note", systemImage: "doc.on.doc") }
                 } footer: {
-                    Text("It goes to \(Reviews.feedbackEmail). We reply within a few days, insyaAllah.")
+                    Text("It opens our note page with your words filled in. Add your email there so we can thank you.")
                 }
             }
             .navigationTitle("A note to the makers")
@@ -217,11 +229,7 @@ struct NoteView: View {
 
     private func send() {
         let mail = Self.email(kind: kind, text: text, details: details, mayShare: mayShare)
-        var c = URLComponents()
-        c.scheme = "mailto"
-        c.path = Reviews.feedbackEmail
-        c.queryItems = [URLQueryItem(name: "subject", value: mail.subject), URLQueryItem(name: "body", value: mail.body)]
-        if let url = c.url { openURL(url) }
+        if let url = Reviews.noteURL(about: kind == .time ? "A prayer time looks wrong" : kind.label, note: mail.body) { openURL(url) }
     }
 
     private func copyNote() {

@@ -6,7 +6,7 @@ import java.time.Instant
 /**
  * Public reviews and private notes for the makers (Ustaz Aarif Raziff and Nasar Digital).
  * No sign in and no server: review buttons open Google Play or Google, private notes open
- * the person's own email app. Same words and rules as the web and iPhone apps.
+ * the site's note page with the words filled in. Same words and rules as the web and iPhone apps.
  */
 object Reviews {
     /** Set to true once the app is live on Google Play; the Play button stays hidden until then. */
@@ -15,6 +15,7 @@ object Reviews {
     /** Nasar Digital's Google review page (Google Business Profile). */
     const val GOOGLE_REVIEW = "https://g.page/r/CSq5hZxhRs1BEBM/review"
     const val FEEDBACK_EMAIL = "salam@prayertimes.asia"
+    const val NOTE_PAGE = "https://prayertimes.asia/note.html"
 
     data class Link(val id: String, val title: String, val subtitle: String, val url: String)
 
@@ -36,6 +37,15 @@ object Reviews {
         if (kind == NoteKind.KIND) lines += if (mayShare) "You may share these words on the website, without my name." else "Please keep these words private."
         if (details != null) lines += listOf("", details)
         return "${kind.label} | Prayer Times Asia" to lines.joinToString("\n").trim() + "\n"
+    }
+
+    /** The form's "What is this about" choice for a kind of note. */
+    fun about(kind: NoteKind): String = if (kind == NoteKind.TIME) "A prayer time looks wrong" else kind.label
+
+    /** The site's note page with the form already filled in. Sending it there thanks the person and emails a confirmation. */
+    fun noteUrl(about: String, note: String, place: String = ""): String {
+        fun enc(v: String) = java.net.URLEncoder.encode(v, "UTF-8")
+        return "$NOTE_PAGE?note_is_about=${enc(about)}&note_to_the_makers=${enc(note.trim())}" + if (place.isNotBlank()) "&note_masjid_or_place=${enc(place.trim())}" else ""
     }
 
     /**
