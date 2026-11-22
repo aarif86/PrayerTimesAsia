@@ -843,6 +843,17 @@
     <string name="masjid_mapCredit" formatted="false">Senarai tempat daripada OpenStreetMap dan senarai musollah terbuka, kedua-duanya dijaga oleh sukarelawan. Ada yang tiada, atau pin di tempat yang salah? {link}, tanpa perlu mendaftar.</string>
     <string name="masjid_tellMap" formatted="false">Beritahu peta</string>
     <string name="masjid_noFacilities" formatted="false">Peta belum menyenaraikan kemudahan tempat ini.</string>
+    <string name="masjid_findIt" formatted="false">Cara untuk mencarinya</string>
+    <string name="masjid_levelChip" formatted="false">Tingkat {level}</string>
+    <string name="masjid_nearMrt" formatted="false">Dekat MRT {name}</string>
+    <string name="masjid_roomFor" formatted="false">Ruang untuk kira-kira {n} {who}</string>
+    <string name="masjid_whoWomen" formatted="false">wanita</string>
+    <string name="masjid_whoMen" formatted="false">lelaki</string>
+    <string name="masjid_whoPeople" formatted="false">orang</string>
+    <string name="masjid_moreDetails" formatted="false">Tunjuk butiran lanjut</string>
+    <string name="masjid_lessDetails" formatted="false">Sembunyikan butiran</string>
+    <string name="masjid_toiletOn" formatted="false">Tandas dan tempat wuduk di tingkat {level}</string>
+    <string name="masjid_communityNote" formatted="false">Butiran ini datang daripada komuniti dan mungkin telah berubah. Beritahu kami jika ada yang tidak betul.</string>
     <string name="masjid_iqamahLine" formatted="false">Iqamah {times}</string>
     <string name="masjid_iqamahHow" formatted="false">Waktu iqamah dipaparkan di sini apabila masjid anda memasang skrin Prayer Times Asia. Imbas kod QRnya sekali.</string>
     <string name="masjid_eidAtTime" formatted="false">Solat sunat Hari Raya pada {time}.</string>

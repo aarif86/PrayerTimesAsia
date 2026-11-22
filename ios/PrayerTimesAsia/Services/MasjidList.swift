@@ -11,6 +11,59 @@ import MapKit
 final class MasjidList {
     static let shared = MasjidList()
 
+    /// Extra facts about a prayer room from the community list. Only what is known.
+    struct RoomDetails: Hashable {
+        var howToFind = ""
+        var level = ""
+        var mrt = ""
+        var provided = ""
+        var toiletLevel = ""
+        /// "women 3, men 5, shared 4"
+        var capacity = ""
+        var notes = ""
+
+        var isEmpty: Bool { [howToFind, level, mrt, provided, toiletLevel, capacity, notes].allSatisfy { $0.isEmpty } }
+
+        init() {}
+        init(_ d: [String: Any]) {
+            func text(_ k: String) -> String { (d[k] as? String) ?? "" }
+            howToFind = text("f"); level = text("l"); mrt = text("m"); provided = text("p")
+            toiletLevel = text("t"); capacity = text("c"); notes = text("n")
+        }
+
+        /// "3" and "B1" read as "Level 3"; "Basement" stays as it is.
+        var levelText: String {
+            level.range(of: #"^(b|l)?\d{1,2}$"#, options: [.regularExpression, .caseInsensitive]) != nil
+                ? "Level " + (level.lowercased().hasPrefix("l") ? String(level.dropFirst()) : level).uppercased()
+                : level
+        }
+
+        /// Level, what is provided, who it fits and the nearest MRT, as short chips.
+        var chips: [String] {
+            var out: [String] = []
+            if !level.isEmpty { out.append(levelText) }
+            for item in provided.split(separator: ",") {
+                let t = item.trimmingCharacters(in: .whitespaces)
+                if !t.isEmpty { out.append(t) }
+            }
+            out += roomFor
+            if !mrt.isEmpty { out.append("Near \(mrt) MRT") }
+            return out
+        }
+
+        /// ["Room for about 3 women", ...]
+        var roomFor: [String] {
+            var out: [String] = []
+            for part in capacity.split(separator: ",") {
+                let bits = part.split(separator: " ")
+                guard bits.count == 2, let n = Int(bits[1]) else { continue }
+                let who = bits[0] == "women" ? "women" : bits[0] == "men" ? "men" : "people"
+                out.append("Room for about \(n) \(who)")
+            }
+            return out
+        }
+    }
+
     struct Place {
         let id: String
         let latitude: Double
@@ -22,6 +75,7 @@ final class MasjidList {
         var facilities: String = ""
         /// OpenStreetMap opening_hours, mostly for musollahs in malls.
         var hours: String? = nil
+        var details: RoomDetails? = nil
     }
 
     struct Index {
@@ -161,8 +215,8 @@ final class MasjidList {
         return Index(tiles: Set(tiles), countries: Set(countries.keys))
     }
 
-    /// `{"places": [[id, lat, lon, name, address, musollah 0/1, facilities?, opening_hours?], ...]}`
-    /// The last two columns are optional; graves and shrines are left out.
+    /// `{"places": [[id, lat, lon, name, address, musollah 0/1, facilities?, opening_hours?, details?], ...]}`
+    /// The last three columns are optional; graves and shrines are left out.
     nonisolated static func parse(_ data: Data) -> [Place]? {
         guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let rows = root["places"] as? [[Any]] else { return nil }
@@ -173,10 +227,15 @@ final class MasjidList {
             let name = (row[3] as? String) ?? ""
             if !name.isEmpty, NearbySearch.isGraveOrShrine(name) { return nil }
             let hours = row.count > 7 ? (row[7] as? String).flatMap { $0.isEmpty ? nil : $0 } : nil
+            var details: RoomDetails? = nil
+            if row.count > 8, let d = row[8] as? [String: Any] {
+                let r = RoomDetails(d)
+                if !r.isEmpty { details = r }
+            }
             return Place(id: id, latitude: lat, longitude: lon,
                          name: name.isEmpty ? (musollah ? "Prayer room" : "Masjid") : name,
                          address: (row[4] as? String) ?? "", isMusollah: musollah,
-                         facilities: row.count > 6 ? (row[6] as? String) ?? "" : "", hours: hours)
+                         facilities: row.count > 6 ? (row[6] as? String) ?? "" : "", hours: hours, details: details)
         }
     }
 }

@@ -22,6 +22,8 @@ struct PrayerSpace: Identifiable, Hashable {
     var facilities: String = ""
     /// OpenStreetMap opening_hours ("Mo-Su 10:00-22:00"), mostly musollahs in malls.
     var hours: String? = nil
+    /// From the community prayer room list: how to find it, level, MRT, mats, notes.
+    var details: MasjidList.RoomDetails? = nil
 
     var coordinates: Coordinates { Coordinates(latitude: coordinate.latitude, longitude: coordinate.longitude) }
 
@@ -196,7 +198,7 @@ final class NearbySearch {
         item.name = p.name
         return PrayerSpace(id: "osm/\(p.id)", name: p.name, address: p.address, coordinate: coordinate,
                            distanceKm: 0, isMusollah: p.isMusollah, item: item,
-                           facilities: p.facilities, hours: p.hours)
+                           facilities: p.facilities, hours: p.hours, details: p.details)
     }
 
     /// Refresh: fetch this area's ready-made list again (last week's copy stays

@@ -304,6 +304,10 @@
 .space-chip.plain { display: inline-flex; align-items: center; gap: 4px; background: var(--fill); color: inherit; font-weight: 500; padding: 4px 10px; }
 .space-list li.open { background: color-mix(in srgb, var(--fg) 4%, transparent); border-radius: 16px; padding: 0 10px; margin: 0 -10px; }
 .space-more { padding: 0 0 14px 36px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; animation: space-more-in .25s ease; }
+.room-find { background: color-mix(in srgb, var(--accent, #e08a50) 14%, transparent); border-radius: 12px; padding: 8px 12px; line-height: 1.4; }
+.room-find b { display: block; font-size: 11px; letter-spacing: .4px; text-transform: uppercase; opacity: .75; margin-bottom: 2px; }
+.room-more { align-self: flex-start; background: none; border: 0; padding: 2px 0; font: inherit; font-weight: 600; color: var(--accent, inherit); cursor: pointer; }
+.room-extra { display: flex; flex-direction: column; gap: 6px; }
 .space-more p { margin: 0; display: flex; align-items: center; gap: 6px; }
 @keyframes space-more-in { from { opacity: 0; transform: translateY(-4px); } }
 .space-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
