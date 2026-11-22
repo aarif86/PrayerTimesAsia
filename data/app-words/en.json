@@ -1046,7 +1046,7 @@
   "source.summary.localAuthority": "the local authority",
   "source.summary.table": "Official timetable from {authority}. When it can't be downloaded, the app works it out with the same method.",
   "source.summary.authority": "Follows {authority}, worked out on your phone with their method so it works offline.",
-  "source.summary.standardNone": "No official timetable here yet, so the app uses {method}.",
+  "source.summary.standardNone": "No official timetable here yet, so the app uses {method}, a widely used international method.",
   "source.summary.standardEnd": "Your local masjid may differ by a few minutes. Always follow your local religious authority.",
   "source.summary.londonShort": "London Unified Prayer Timetable from East London Mosque, followed by many London masjids.",
   "source.summary.london": "London Unified Prayer Timetable from East London Mosque, followed by many London masjids. When it can't be downloaded, the app uses the Moonsighting Committee method. Your local masjid may differ by a few minutes.",

@@ -1046,7 +1046,7 @@
   "source.summary.localAuthority": "otoritas agama setempat",
   "source.summary.table": "Jadwal resmi dari {authority}. Jika jadwal tidak dapat diunduh, aplikasi menghitungnya dengan metode yang sama.",
   "source.summary.authority": "Mengikuti {authority}, dihitung di ponsel Anda dengan metode mereka sehingga tetap jalan tanpa internet.",
-  "source.summary.standardNone": "Belum ada jadwal resmi di sini, jadi aplikasi memakai {method}.",
+  "source.summary.standardNone": "Belum ada jadwal resmi di sini, jadi aplikasi memakai {method}, yaitu metode internasional yang banyak dipakai.",
   "source.summary.standardEnd": "Masjid setempat Anda mungkin berbeda beberapa menit. Selalu ikuti otoritas agama setempat Anda.",
   "source.summary.londonShort": "London Unified Prayer Timetable dari East London Mosque, diikuti banyak masjid di London.",
   "source.summary.london": "London Unified Prayer Timetable dari East London Mosque, diikuti banyak masjid di London. Jika jadwal tidak dapat diunduh, aplikasi memakai metode Moonsighting Committee. Masjid setempat Anda mungkin berbeda beberapa menit.",

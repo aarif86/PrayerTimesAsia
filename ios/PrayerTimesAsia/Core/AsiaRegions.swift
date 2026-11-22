@@ -65,7 +65,7 @@ struct CountryProfile: Sendable, Hashable {
         case .authority:
             return "Follows \(authority ?? name), worked out on your phone with their method so it works offline." + (note.map { " \($0)" } ?? "")
         case .standard:
-            let lead = note ?? "No official timetable here yet, so the app uses \(method.name)."
+            let lead = note ?? "No official timetable here yet, so the app uses \(method.name), a widely used international method."
             return lead + " Your local masjid may differ by a few minutes. Always follow your local religious authority."
         }
     }
