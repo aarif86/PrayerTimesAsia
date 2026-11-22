@@ -174,7 +174,7 @@ export function upcomingAlerts(now: number): Alert[] {
         continue
       }
       if (prayer === 'maghrib' && store.isRamadanDay(time)) {
-        out.push({ id, title: tr('notify.iftarName', { name, time: store.formatted(time) }), body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu`, at: time, prayer, silent })
+        out.push({ id, title: tr('notify.iftarName', { name, time: store.formatted(time) }), body: tr('notify.breakFast'), at: time, prayer, silent })
         continue
       }
       out.push({ id, title: `${name} · ${store.formatted(time)}`, body: alertLine(store.appLang, prayer, store.isFriday(time), day.year, day.month, day.day, name), at: time, prayer, silent })
@@ -275,7 +275,7 @@ export function ramadanAlerts(day: PrayerDay, here: string): Alert[] {
     // When the Maghrib alert is on it says this itself, so one alert, not two.
     const maghribAlert = prefs.notificationsEnabled && prefs.notifyPrayers.includes('maghrib')
     if (prefs.berbukaAlert && !maghribAlert) {
-      out.push({ id: `${id}-berbuka`, title: tr('notify.iftar', { time: store.formatted(day.times.maghrib) }), body: `Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu. ${ramadanWord(store.appLang, 'ramadanDay', { n: season.ramadanDay ?? '' })} · ${here}`, at: day.times.maghrib, silent: isSilent(day.times.maghrib, 'maghrib', store.activePlace?.timeZoneID ?? 'UTC') })
+      out.push({ id: `${id}-berbuka`, title: tr('notify.iftar', { time: store.formatted(day.times.maghrib) }), body: `${tr('notify.breakFast')}. ${ramadanWord(store.appLang, 'ramadanDay', { n: season.ramadanDay ?? '' })} · ${here}`, at: day.times.maghrib, silent: isSilent(day.times.maghrib, 'maghrib', store.activePlace?.timeZoneID ?? 'UTC') })
     }
   }
   if (prefs.qiyamAlert && season.lastTen && season.nightTonight) {

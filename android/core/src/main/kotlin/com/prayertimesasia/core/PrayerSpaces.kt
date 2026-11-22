@@ -20,7 +20,46 @@ data class PrayerSpace(
     val facilities: String = "",
     /** OpenStreetMap opening_hours, mostly on prayer rooms in malls. */
     val hours: String? = null,
+    /** From the community prayer room list: how to find it, level, MRT, mats, notes. */
+    val details: RoomDetails? = null,
 )
+
+/** Extra facts about a prayer room from the community list. Only what is known; empty means unknown. */
+data class RoomDetails(
+    val howToFind: String = "",
+    val level: String = "",
+    val mrt: String = "",
+    val provided: String = "",
+    val toiletLevel: String = "",
+    /** "women 3, men 5, shared 4" */
+    val capacity: String = "",
+    val notes: String = "",
+) {
+    val isEmpty get() = listOf(howToFind, level, mrt, provided, toiletLevel, capacity, notes).all { it.isEmpty() }
+
+    /** "3" and "B1" read as "Level 3"; "Basement" stays as it is. */
+    val levelText: String get() =
+        if (Regex("^(b|l)?\\d{1,2}$", RegexOption.IGNORE_CASE).matches(level)) "Level " + level.removePrefix("l").removePrefix("L").uppercase() else level
+
+    /** "Room for about 3 women", ... */
+    val roomFor: List<String> get() = capacity.split(",").mapNotNull { part ->
+        val bits = part.trim().split(" ")
+        val n = bits.getOrNull(1)?.toIntOrNull() ?: return@mapNotNull null
+        if (bits.size != 2) return@mapNotNull null
+        "Room for about $n ${when (bits[0]) { "women" -> "women"; "men" -> "men"; else -> "people" }}"
+    }
+
+    /** Level, what is provided, who it fits and the nearest MRT, as short chips. */
+    val chips: List<String> get() = buildList {
+        if (level.isNotEmpty()) add(levelText)
+        provided.split(",").map { it.trim() }.filter { it.isNotEmpty() }.forEach { add(it) }
+        addAll(roomFor)
+        if (mrt.isNotEmpty()) add("Near $mrt MRT")
+    }
+
+    /** "Also basement" and "Level 3" both end up as the bare level. */
+    val toiletLevelText: String get() = toiletLevel.replace(Regex("^(also )?(level )?", RegexOption.IGNORE_CASE), "")
+}
 
 /**
  * Masjids and musollahs near a point, found with OpenStreetMap's Overpass API

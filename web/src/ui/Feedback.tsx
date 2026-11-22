@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks'
-import { Copy, Heart, Lightbulb, Clock, Wrench, Mail, Star, ChevronRight, MapPin } from 'lucide-preact'
+import { Heart, Lightbulb, Clock, Wrench, Mail, Star, ChevronRight, MapPin } from 'lucide-preact'
 import { NATIVE_APPS, phonePlatform } from '../core/nativeApps'
 import { store, useStore } from '../services/store'
 import { closeSheet, openSheet, Sheet, ToggleItem } from './common'
@@ -8,8 +8,8 @@ import { tr, trWith, type AppWordKey } from '../core/appWords'
 
 /**
  * "A note to the makers": a short note to Ustaz Aarif and the Nasar Digital team.
- * No sign in and no server. The note is written here, then sent from the person's
- * own email app to salam@prayertimes.asia, where the feedback helper reads it.
+ * No sign in and no server. The note is written here, then opens on the site's note page with the words
+ * already filled in. Sending it there thanks the person and emails a confirmation.
  */
 export const FEEDBACK_EMAIL = 'salam@prayertimes.asia'
 
@@ -18,7 +18,7 @@ export type NoteKind = 'kind' | 'idea' | 'time' | 'broke'
 const KINDS: { id: NoteKind; label: AppWordKey; subject: string; icon: typeof Heart; hint: AppWordKey }[] = [
   { id: 'kind', label: 'feedback.kind', subject: 'A kind word', icon: Heart, hint: 'feedback.kindHint' },
   { id: 'idea', label: 'feedback.idea', subject: 'An idea', icon: Lightbulb, hint: 'feedback.ideaHint' },
-  { id: 'time', label: 'feedback.time', subject: 'A time looks wrong', icon: Clock, hint: 'feedback.timeHint' },
+  { id: 'time', label: 'feedback.time', subject: 'A prayer time looks wrong', icon: Clock, hint: 'feedback.timeHint' },
   { id: 'broke', label: 'feedback.broke', subject: 'Something is not working', icon: Wrench, hint: 'feedback.brokeHint' },
 ]
 
@@ -29,13 +29,23 @@ function platform(): string {
   return 'Web on computer'
 }
 
-/** The email the note becomes. Exported for tests. */
-export function noteEmail(kind: NoteKind, text: string, details: string | null, mayShare: boolean): { subject: string; body: string } {
+/** The note page on the site. It holds the form that thanks the sender and emails a confirmation. */
+export const NOTE_PAGE = 'https://prayertimes.asia/note.html'
+
+/** The note page with the form already filled in. Exported for tests. */
+export function noteUrl(about: string, note: string, place = ''): string {
+  const q = new URLSearchParams({ note_is_about: about, note_to_the_makers: note })
+  if (place) q.set('note_masjid_or_place', place)
+  return `${NOTE_PAGE}?${q.toString()}`
+}
+
+/** The note kinds become the form's "What is this about" choices. Exported for tests. */
+export function noteLink(kind: NoteKind, text: string, details: string | null, mayShare: boolean): string {
   const k = KINDS.find((x) => x.id === kind) ?? KINDS[0]
-  const lines = [text.trim() || '(no words)', '']
+  const lines = [text.trim() || '(no words)']
   if (kind === 'kind') lines.push(mayShare ? 'You may share these words on the website, without my name.' : 'Please keep these words private.')
   if (details) lines.push('', details)
-  return { subject: `${k.subject} | Prayer Times Asia`, body: lines.join('\n').trim() + '\n' }
+  return noteUrl(k.subject, lines.join('\n').trim())
 }
 
 export function FeedbackSheet() {
@@ -44,18 +54,13 @@ export function FeedbackSheet() {
   const [text, setText] = useState('')
   const [addDetails, setAddDetails] = useState(true)
   const [mayShare, setMayShare] = useState(false)
-  const [copied, setCopied] = useState(false)
   const place = s.activePlace
   const details = addDetails
-    ? `Version ${VERSION}, ${platform()}${place ? `, ${place.name}${place.countryCode ? ` (${place.countryCode})` : ''}` : ''}, ${s.sourceShort}`
+    ? `Version ${VERSION}, ${platform()}${place ? `, ${place.name}${place.countryCode ? ` (${place.countryCode})` : ''}` : ''}, ${s.sourceShortIn('en')}`
     : null
-  const mail = noteEmail(kind, text, details, mayShare)
-  const href = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(mail.subject)}&body=${encodeURIComponent(mail.body)}`
+  const href = noteLink(kind, text, details, mayShare)
   const hint = tr(KINDS.find((x) => x.id === kind)!.hint)
 
-  const copy = async () => {
-    try { await navigator.clipboard.writeText(`To ${FEEDBACK_EMAIL}\n${mail.subject}\n\n${mail.body}`); setCopied(true) } catch { /* the address is shown below anyway */ }
-  }
 
   return (
     <Sheet title={tr('feedback.title')}>
@@ -69,13 +74,12 @@ export function FeedbackSheet() {
           ))}
         </div>
         <textarea class="feedback-text" rows={5} placeholder={hint} value={text} aria-label={tr('feedback.yourNote')}
-          onInput={(e) => { setText((e.target as HTMLTextAreaElement).value); setCopied(false) }} />
+          onInput={(e) => { setText((e.target as HTMLTextAreaElement).value) }} />
         <div class="group">
           <ToggleItem label={tr('feedback.addDetails')} sub={tr('feedback.addDetailsSub')} on={addDetails} onChange={setAddDetails} />
           {kind === 'kind' && <ToggleItem label={tr('feedback.mayShare')} sub={tr('feedback.mayShareSub')} on={mayShare} onChange={setMayShare} />}
         </div>
-        <a class="primary-btn" href={href} onClick={() => { store.update((x) => { x.feedbackSentAt = Date.now() }); setTimeout(closeSheet, 400) }}><Mail size={16} /> {tr('feedback.send')}</a>
-        <button class="plain-btn" onClick={() => void copy()}><Copy size={16} />{copied ? tr('common.copied') : tr('feedback.copy')}</button>
+        <a class="primary-btn" href={href} target="_blank" rel="noopener" onClick={() => { store.update((x) => { x.feedbackSentAt = Date.now() }); setTimeout(closeSheet, 400) }}><Mail size={16} /> {tr('feedback.send')}</a>
         <p class="footnote secondary">{tr('feedback.goesTo', { email: FEEDBACK_EMAIL })}</p>
       </div>
     </Sheet>

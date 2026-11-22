@@ -22,6 +22,8 @@ struct PrayerSpace: Identifiable, Hashable {
     var facilities: String = ""
     /// OpenStreetMap opening_hours ("Mo-Su 10:00-22:00"), mostly musollahs in malls.
     var hours: String? = nil
+    /// From the community prayer room list: how to find it, level, MRT, mats, notes.
+    var details: MasjidList.RoomDetails? = nil
 
     var coordinates: Coordinates { Coordinates(latitude: coordinate.latitude, longitude: coordinate.longitude) }
 
@@ -181,7 +183,10 @@ final class NearbySearch {
             // needs the list rebuilt now.
             let wasRefresh = self.refreshing
             self.refreshing = false
-            guard firstTime || wasRefresh else { return }
+            // A quiet daily refresh also swaps in when it worked, so new places
+            // (such as added prayer rooms) show without waiting for a move.
+            let fresh = ok && self.here.map { MasjidList.shared.isFresh(near: $0) } == true
+            guard firstTime || wasRefresh || fresh else { return }
             if !ok { self.listFailed = true }
             if let now = self.here { self.search(around: now) }
         }
@@ -193,7 +198,7 @@ final class NearbySearch {
         item.name = p.name
         return PrayerSpace(id: "osm/\(p.id)", name: p.name, address: p.address, coordinate: coordinate,
                            distanceKm: 0, isMusollah: p.isMusollah, item: item,
-                           facilities: p.facilities, hours: p.hours)
+                           facilities: p.facilities, hours: p.hours, details: p.details)
     }
 
     /// Refresh: fetch this area's ready-made list again (last week's copy stays

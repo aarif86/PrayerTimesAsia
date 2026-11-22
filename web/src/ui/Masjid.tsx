@@ -7,7 +7,7 @@ import { distanceKm } from '../core/geo'
 import { RING_LABEL_ANGLE, ringDistance, ringsFor } from '../core/mapRings'
 import { isGraveOrShrine, looksLikePrayerSpace } from '../core/official'
 import { fetchOK } from '../services/storage'
-import { listNearby } from '../services/masjidList'
+import { listNearby, type RoomDetails } from '../services/masjidList'
 import { useStore } from '../services/store'
 import { openSheet, Segmented } from './common'
 import { FRIDAY_SG, fridayMosqueAt, fridayNearest, inSingapore, type FridayMosque } from '../core/friday'
@@ -35,6 +35,8 @@ export interface PrayerSpace {
   facilities?: string
   /** OpenStreetMap opening_hours, mostly on prayer rooms in malls. */
   hours?: string
+  /** From the community prayer room list: how to find it, level, MRT, mats, notes. */
+  details?: RoomDetails
 }
 
 type Kind = 'all' | 'masjid' | 'musollah'
@@ -394,7 +396,7 @@ export default function MasjidScreen() {
                 </div>
                 {open && (
                   <div class="space-more">
-                    <Facilities f={sp.facilities} />
+                    <RoomInfo d={sp.details} f={sp.facilities} />
                     {h && <p><Clock size={14} /> {hoursText(h, use24)}</p>}
                     {fri && <p class="accent-text">{secondFridayLine(fri.womenSession2, use24)}</p>}
                     {raya && <p class="accent-text">{tr('masjid.eidAt', { name: eidPrayerName(eid!), times: raya.sessions.map((x) => clock(x.time, use24)).join(', ') })}</p>}
@@ -427,9 +429,42 @@ export default function MasjidScreen() {
   )
 }
 
-function Facilities({ f }: { f?: string }) {
+const hasInfo = (d?: RoomDetails) => !!d && Object.values(d).some(Boolean)
+
+/** Level text: "3" and "B1" become "Level 3", "Basement" stays as it is. */
+const levelText = (l: string) => /^(b|l)?\d{1,2}$/i.test(l) ? tr('masjid.levelChip', { level: l.replace(/^l/i, '').toUpperCase() }) : l
+
+/** The prayer room details, only the parts we have. Falls back to the plain facilities. */
+function RoomInfo({ d, f }: { d?: RoomDetails; f?: string }) {
+  const [more, setMore] = useState(false)
+  if (!hasInfo(d)) return <Facilities f={f} />
+  const room: [string, string][] = []
+  for (const m of (d!.c ?? '').matchAll(/(women|men|shared) (\d+)/g)) {
+    room.push([m[2], tr(m[1] === 'women' ? 'masjid.whoWomen' : m[1] === 'men' ? 'masjid.whoMen' : 'masjid.whoPeople')])
+  }
+  const chips = [d!.l && levelText(d!.l), ...(d!.p ?? '').split(',').map((x) => x.trim()).filter(Boolean),
+    ...room.map(([n, who]) => tr('masjid.roomFor', { n, who })), d!.m && tr('masjid.nearMrt', { name: d!.m })].filter(Boolean) as string[]
+  const extra = !!(d!.n || d!.t)
+  return (
+    <>
+      {d!.f && <div class="room-find"><b>{tr('masjid.findIt')}</b>{d!.f}</div>}
+      {chips.length > 0 && <div class="space-chips">{chips.map((c) => <span class="space-chip plain">{c}</span>)}</div>}
+      <Facilities f={f} quiet />
+      {extra && <button class="room-more" aria-expanded={more} onClick={() => setMore(!more)}>{more ? tr('masjid.lessDetails') : tr('masjid.moreDetails')}</button>}
+      {more && (
+        <div class="room-extra">
+          {d!.t && <p>{tr('masjid.toiletOn', { level: d!.t.replace(/^(also )?(level )?/i, '') })}</p>}
+          {d!.n && <p>{d!.n}</p>}
+          <p class="footnote secondary">{tr('masjid.communityNote')}</p>
+        </div>
+      )}
+    </>
+  )
+}
+
+function Facilities({ f, quiet }: { f?: string; quiet?: boolean }) {
   const have = FACILITIES.filter(([k]) => f?.includes(k))
-  if (!have.length) return <p class="secondary">{tr('masjid.noFacilities')}</p>
+  if (!have.length) return quiet ? null : <p class="secondary">{tr('masjid.noFacilities')}</p>
   return <div class="space-chips">{have.map(([, label, Icon]) => <span class="space-chip plain"><Icon size={13} /> {tr(label)}</span>)}</div>
 }
 

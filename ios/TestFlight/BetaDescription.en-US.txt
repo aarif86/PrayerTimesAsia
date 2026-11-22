@@ -1,4 +1,4 @@
-Prayer Times Asia is a free prayer app, built fisabilillah in Singapore by Ustaz Aarif Raziff and Nasar Digital (Nasar Pte Ltd).
+Prayer Times Asia is a free prayer app, built fisabilillah in Singapore.
 
 It shows the times of your local religious authority first, in 143 countries. MUIS in Singapore, JAKIM in Malaysia and Kemenag in Indonesia are shown exactly as they are. You also get alarms for every prayer, reminders, the qibla, masjids near you, Ramadan and Syawal, and a Hijri calendar. It works offline.
 

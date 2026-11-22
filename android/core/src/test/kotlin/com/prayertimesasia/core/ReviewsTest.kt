@@ -20,6 +20,13 @@ class ReviewsTest {
         assertEquals("(no words)\n", Reviews.noteEmail(Reviews.NoteKind.IDEA, "", null, true).second)
     }
 
+    @Test fun noteUrlFillsTheForm() {
+        assertEquals("A prayer time looks wrong", Reviews.about(Reviews.NoteKind.TIME))
+        assertEquals("An idea", Reviews.about(Reviews.NoteKind.IDEA))
+        assertEquals("https://prayertimes.asia/note.html?note_is_about=An+idea&note_to_the_makers=Hi+there", Reviews.noteUrl("An idea", " Hi there "))
+        assertEquals("https://prayertimes.asia/note.html?note_is_about=Suggest+a+prayer+room&note_to_the_makers=Place%3A+X&note_masjid_or_place=X", Reviews.noteUrl("Suggest a prayer room", "Place: X", "X"))
+    }
+
     @Test fun calmMoments() {
         val now = Instant.parse("2026-11-19T04:00:00Z")
         assertFalse(Reviews.isCalm(9, 10, now, null, null))

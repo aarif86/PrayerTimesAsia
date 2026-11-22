@@ -101,3 +101,83 @@ export function useLiveScreenCount(): number | null {
   }, [])
   return n
 }
+
+
+/** The short links (functions/screens.js): the settings are kept under a 9 letter code, so the link on the TV stays short. */
+const LINK_SAVE_URL = `${FUNCTIONS}/screenLinkSave`
+const LINK_URL = `${FUNCTIONS}/screenLink`
+
+/** Saves the settings (the same text that follows `#c=`) and returns their short code, or null when it can't. */
+export async function saveShortLink(encoded: string): Promise<string | null> {
+  try {
+    const r = await fetch(LINK_SAVE_URL, { method: 'POST', body: JSON.stringify({ c: encoded }) })
+    if (!r.ok) return null
+    const j = (await r.json()) as { code?: unknown }
+    return typeof j.code === 'string' && /^[A-Za-z0-9]{9}$/.test(j.code) ? j.code : null
+  } catch { return null }
+}
+
+/** The settings text for a short code, or null when it can't be read. */
+export async function loadShortLink(code: string): Promise<string | null> {
+  try {
+    const r = await fetch(`${LINK_URL}?code=${encodeURIComponent(code)}`)
+    if (!r.ok) return null
+    const j = (await r.json()) as { c?: unknown }
+    return typeof j.c === 'string' ? j.c : null
+  } catch { return null }
+}
+
+
+/**
+ * Pairing a TV with a phone, like signing in to a TV app (functions/screens.js). The TV shows a 6 letter code,
+ * the phone sends the settings for that code, and the TV picks them up. Later changes from the phone reach the TV
+ * without a new link. The TV holds `tvKey`, the phone holds `editKey`.
+ */
+const PAIR = `${FUNCTIONS}/screenPair`
+export const PAIR_CODE_RE = /^[A-Z2-9]{6}$/
+/** What a person typed, tidied the same way the server does: capitals, no spaces or dashes. */
+export const tidyPairCode = (v: string): string => v.toUpperCase().replace(/[\s-]/g, '')
+
+const post = async (path: string, body: unknown): Promise<{ ok: boolean; status: number; json: Record<string, unknown> }> => {
+  try {
+    const r = await fetch(`${PAIR}${path}`, { method: 'POST', body: JSON.stringify(body) })
+    return { ok: r.ok, status: r.status, json: (await r.json().catch(() => ({}))) as Record<string, unknown> }
+  } catch { return { ok: false, status: 0, json: {} } }
+}
+
+export interface PairWait { code: string; tvKey: string; rev: number; startedAt: number }
+
+/** The TV asks for a code to show. */
+export async function pairStart(): Promise<PairWait | null> {
+  const r = await post('Start', {})
+  const j = r.json
+  if (!r.ok || typeof j.code !== 'string' || typeof j.tvKey !== 'string' || !PAIR_CODE_RE.test(j.code)) return null
+  return { code: j.code, tvKey: j.tvKey, rev: 0, startedAt: Date.now() }
+}
+
+/** The TV asks whether settings have arrived. `gone` means the code ran out or is not known. */
+export async function pairSync(code: string, tvKey: string, rev: number): Promise<{ rev: number; c: string | null } | 'gone' | null> {
+  try {
+    const r = await fetch(`${PAIR}Sync?code=${encodeURIComponent(code)}&key=${encodeURIComponent(tvKey)}&rev=${rev}`, { cache: 'no-store' })
+    if (r.status === 404 || r.status === 410) return 'gone'
+    if (!r.ok) return null
+    const j = (await r.json()) as { rev?: unknown; c?: unknown }
+    return { rev: typeof j.rev === 'number' ? j.rev : rev, c: typeof j.c === 'string' ? j.c : null }
+  } catch { return null }
+}
+
+/** The phone sends the settings to the TV that shows `code`. Returns the key to change them later, or why not. */
+export async function pairClaim(code: string, encoded: string): Promise<{ editKey: string } | 'bad' | 'busy' | 'offline'> {
+  const r = await post('Claim', { code, c: encoded })
+  if (r.ok && typeof r.json.editKey === 'string') return { editKey: r.json.editKey }
+  if (r.status === 0) return 'offline'
+  return r.status === 429 ? 'busy' : 'bad'
+}
+
+/** The phone changes the settings of a TV it paired with before. */
+export async function pairUpdate(code: string, editKey: string, encoded: string): Promise<'ok' | 'forgotten' | 'busy' | 'offline'> {
+  const r = await post('Update', { code, editKey, c: encoded })
+  if (r.ok) return 'ok'
+  if (r.status === 0) return 'offline'
+  return r.status === 429 ? 'busy' : 'forgotten'
+}

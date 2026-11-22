@@ -547,7 +547,8 @@ private struct SpaceRow: View {
 
             if isOpen {
                 VStack(alignment: .leading, spacing: 8) {
-                    facilities
+                    if let d = space.details { roomInfo(d) }
+                    facilities(quiet: space.details != nil)
                     if let hours {
                         Label(OpeningHours.text(hours, use24: use24), systemImage: "clock").font(.footnote)
                     }
@@ -588,11 +589,52 @@ private struct SpaceRow: View {
         .padding(.vertical, 10)
     }
 
+    /// The prayer room details from the community list, only the parts we have.
     @ViewBuilder
-    private var facilities: some View {
+    private func roomInfo(_ d: MasjidList.RoomDetails) -> some View {
+        if !d.howToFind.isEmpty {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("HOW TO FIND IT").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                Text(d.howToFind).font(.footnote)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12).padding(.vertical, 8)
+            .background(Theme.accent.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+        }
+        let chips = d.chips
+        if !chips.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(chips, id: \.self) { c in
+                        Text(c).font(.caption.weight(.medium))
+                            .padding(.horizontal, 9).padding(.vertical, 5)
+                            .background(Color.primary.opacity(0.07), in: Capsule())
+                    }
+                }
+            }
+        }
+        if !d.notes.isEmpty || !d.toiletLevel.isEmpty {
+            DisclosureGroup("Show more details") {
+                VStack(alignment: .leading, spacing: 6) {
+                    if !d.toiletLevel.isEmpty {
+                        let level = d.toiletLevel.replacingOccurrences(of: #"^(also )?(level )?"#, with: "", options: [.regularExpression, .caseInsensitive])
+                        Text("Toilet and wudhu on level \(level)").font(.footnote)
+                    }
+                    if !d.notes.isEmpty { Text(d.notes).font(.footnote) }
+                    Text("These details come from the community and may have changed. Tell us if something is wrong.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                .padding(.top, 4)
+            }
+            .font(.footnote.weight(.semibold)).tint(Theme.accentText)
+        }
+    }
+
+    @ViewBuilder
+    private func facilities(quiet: Bool = false) -> some View {
         let have = MasjidExtras.facilityLabels.filter { space.facilities.contains($0.0) }
         if have.isEmpty {
-            Text("The map doesn't list this place's facilities yet.").font(.footnote).foregroundStyle(.secondary)
+            if !quiet { Text("The map doesn't list this place's facilities yet.").font(.footnote).foregroundStyle(.secondary) }
         } else {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {

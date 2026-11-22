@@ -6,7 +6,7 @@ import type { Prayer } from '../core/prayer'
 import { sourceAuthority } from '../core/official'
 import type { SourceGrade } from '../core/sources'
 import { store } from '../services/store'
-import { appLocale, gradeTitle, tr } from '../core/appWords'
+import { appLocale, gradeTitle, methodName, tr } from '../core/appWords'
 
 /** A time with its AM/PM set smaller on the same baseline. Never wraps. */
 export function TimeText({ ms, size = 28, weight = 600, class: cls, style }: { ms: number; size?: number; weight?: number; class?: string; style?: JSX.CSSProperties }) {
@@ -150,7 +150,7 @@ export function SourceBadge({ day, compact }: { day: PrayerDay; compact?: boolea
   const shortSource = grade === 'A'
     ? `${gradeTitle(grade)} · ${store.officialSource && day.officialSource ? sourceAuthority(store.officialSource) : store.method.shortName}`
     : grade === 'B' || grade === 'C' ? day.mosqueName ?? gradeTitle(grade) : `${gradeTitle(grade)} · ${store.method.shortName}`
-  const sourceName = day.officialSource ?? `${store.method.shortName} method`
+  const sourceName = day.officialSource ?? methodName(store.method)
   return (
     <button class={`source-badge ${compact ? 'compact' : 'full'}`} onClick={() => openSheet({ kind: 'sanad', day })}
       aria-label={tr('common.sourceBadge', { grade, name: gradeTitle(grade), detail: sourceName })}>

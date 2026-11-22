@@ -2,6 +2,7 @@ package com.prayertimesasia.core
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
@@ -22,7 +23,8 @@ import kotlin.math.max
  */
 object MasjidLists {
     const val BASE_URL = "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/masjids/"
-    const val MAX_AGE_MS = 7L * 24 * 3600 * 1000
+    /** Lists are rebuilt weekly; a day keeps a phone from showing last week's list for long. */
+    const val MAX_AGE_MS = 24L * 3600 * 1000
 
     data class Index(val tiles: Set<String>, val countries: Set<String>)
 
@@ -54,7 +56,7 @@ object MasjidLists {
         )
     }.getOrNull()
 
-    /** `{"places": [[id, lat, lon, name, address, musollah 0/1, facilities?, opening_hours?], ...]}`; null when unreadable. */
+    /** `{"places": [[id, lat, lon, name, address, musollah 0/1, facilities?, opening_hours?, details?], ...]}`; null when unreadable. */
     fun parse(text: String): List<PrayerSpace>? = runCatching {
         Json.parseToJsonElement(text).jsonObject["places"]!!.jsonArray.mapNotNull { row ->
             val r = row as? JsonArray ?: return@mapNotNull null
@@ -73,6 +75,10 @@ object MasjidLists {
                 isMusollah = musollah,
                 facilities = (r.getOrNull(6) as? JsonPrimitive)?.contentOrNull.orEmpty(),
                 hours = (r.getOrNull(7) as? JsonPrimitive)?.contentOrNull?.takeIf { it.isNotBlank() },
+                details = (r.getOrNull(8) as? JsonObject)?.let { d ->
+                    fun t(k: String) = (d[k] as? JsonPrimitive)?.contentOrNull.orEmpty()
+                    RoomDetails(t("f"), t("l"), t("m"), t("p"), t("t"), t("c"), t("n")).takeIf { !it.isEmpty }
+                },
             )
         }
     }.getOrNull()

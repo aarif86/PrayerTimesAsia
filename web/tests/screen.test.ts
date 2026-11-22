@@ -42,6 +42,10 @@ describe('screen config', () => {
   it('defaults to English and the Night look, and keeps a chosen look', () => {
     expect(DEFAULT_CONFIG.lang).toBe('en')
     expect(DEFAULT_CONFIG.look).toBe('night')
+    expect(DEFAULT_CONFIG.mode).toBe('dark')
+    expect(sanitize({ look: 'day' })).toMatchObject({ look: 'night', mode: 'light' })
+    expect(sanitize({ look: 'bands', mode: 'light' })).toMatchObject({ look: 'bands', mode: 'light' })
+    expect(sanitize({ look: 'simple' }).look).toBe('simple')
     expect(DEFAULT_CONFIG.showIqamah).toBe(false)
     expect(sanitize({ showIqamah: true }).showIqamah).toBe(true)
     expect(sanitize({ look: 'board' }).look).toBe('board')
@@ -198,5 +202,29 @@ describe('screen on clock-change nights', () => {
     const p = phaseAt(now, LDN, noTable)!
     if (p.kind !== 'waiting') throw new Error(p.kind)
     expect(dayOf(p.at)).toBe('2026-10-25')
+  })
+})
+
+describe('Masjid screen links', () => {
+  it('reads the short code, the pairing code and the TV address from the hash', async () => {
+    const { shortCodeFromHash, pairCodeFromHash, isTvHash } = await import('../src/screen/config')
+    expect(shortCodeFromHash('#k=k3x9Qm2aB')).toBe('k3x9Qm2aB')
+    expect(shortCodeFromHash('#k=short')).toBeNull()
+    expect(pairCodeFromHash('#pair=k7m3qx')).toBe('K7M3QX')
+    expect(pairCodeFromHash('#pair=K7M3Q')).toBeNull()
+    expect(isTvHash('#tv')).toBe(true)
+    expect(isTvHash('#c=abc')).toBe(false)
+  })
+})
+
+describe('One address for TVs and phones', () => {
+  it('tells smart TVs and TV boxes from phones and computers', async () => {
+    const { looksLikeTv } = await import('../src/screen/config')
+    expect(looksLikeTv('Mozilla/5.0 (SMART-TV; Linux; Tizen 6.0) AppleWebKit/537.36')).toBe(true)
+    expect(looksLikeTv('Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36')).toBe(true)
+    expect(looksLikeTv('Mozilla/5.0 (Linux; Android 9; AFTMM Build/PS7233) AppleWebKit/537.36 Silk')).toBe(true)
+    expect(looksLikeTv('Mozilla/5.0 (Linux; Android 11; SHIELD Android TV) AppleWebKit/537.36')).toBe(true)
+    expect(looksLikeTv('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15')).toBe(false)
+    expect(looksLikeTv('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120 Safari/537.36')).toBe(false)
   })
 })

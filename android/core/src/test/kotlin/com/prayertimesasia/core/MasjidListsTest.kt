@@ -5,6 +5,10 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class MasjidListsTest {
+    @Test fun savedListsAreNeverMoreThanADayOld() {
+        org.junit.Assert.assertTrue(MasjidLists.MAX_AGE_MS <= 24L * 3600 * 1000)
+    }
+
     @Test fun picksTheSquaresAnAreaNeeds() {
         assertEquals(listOf("3_101"), MasjidLists.tiles(Coordinates(3.1390, 101.6869)))
         assertEquals(setOf("0_103", "0_104", "1_103", "1_104"), MasjidLists.tiles(Coordinates(1.05, 103.95)).toSet())
@@ -26,5 +30,15 @@ class MasjidListsTest {
         assertEquals(listOf("Masjid Negara", "Prayer room"), near.map { it.name })
         assertEquals(listOf(false, true), near.map { it.isMusollah })
         assertNull(MasjidLists.parse("oops"))
+    }
+
+    @Test fun readsPrayerRoomDetails() {
+        val json = """{"places":[["m1",1.374,103.9518,"Pasir Ris Swimming Complex","120 Pasir Ris Central",1,"","",{"f":"Turn right at the toilet","l":"B1","m":"Pasir Ris","p":"Prayer Mat, Telekung","c":"women 3, shared 4","t":"Also basement"}],["m2",1.3,103.8,"Surau","",1]]}"""
+        val all = MasjidLists.parse(json)!!
+        val d = all[0].details!!
+        assertEquals("Turn right at the toilet", d.howToFind)
+        assertEquals(listOf("Level B1", "Prayer Mat", "Telekung", "Room for about 3 women", "Room for about 4 people", "Near Pasir Ris MRT"), d.chips)
+        assertEquals("basement", d.toiletLevelText)
+        assertNull(all[1].details)
     }
 }

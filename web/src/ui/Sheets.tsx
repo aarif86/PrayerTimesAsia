@@ -6,12 +6,11 @@ import {
   announcementDate, AUTHORITIES, authorityName, basisLabel, eventTitle, expectedDate, upcomingEvents,
 } from '../core/calendarSanad'
 import type { PrayerDay } from '../core/engine'
-import { parameterSummary } from '../core/methods'
 import { musafirDistanceCheck, musafirGuidance, musafirPlan } from '../core/musafir'
 import { isInAsia, isNear, placeProfile, placeSubtitle, type Place } from '../core/place'
 import { OBLIGATORY } from '../core/prayer'
 import { flag, profileFor, timeZoneForPlace } from '../core/regions'
-import { GRADE_EXPLANATION, mosqueMethod, type SourceGrade } from '../core/sources'
+import { mosqueMethod, type SourceGrade } from '../core/sources'
 import { isValidTimeZone, noonDaysAfter } from '../core/tz'
 import { searchCities } from '../services/cities'
 import { alertSupport } from '../services/notifications'
@@ -22,7 +21,7 @@ import { TabJourney } from './icons'
 import { HijriMonthCard } from './HijriCalendar'
 import { MakersAbout } from './Makers'
 import { canInstall, install, isIOS } from './pwa'
-import { appLocale, gradeTitle, tr, trWith } from '../core/appWords'
+import { appLocale, gradeExplanation, gradeTitle, tr, trWith } from '../core/appWords'
 
 // ---------- Places ----------
 
@@ -160,12 +159,12 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
       : tr('source.downloadedDetail')
     if (day.sunriseCalculated) detail += ` ${tr('source.sunriseCalculated', { name: s.name('sunrise') })}`
   } else if (day.grade === 'A') {
-    detail = `${parameterSummary(s.method)}. ${s.sourceSummary}`
+    detail = s.sourceSummary
   } else if (day.grade === 'B' || day.grade === 'C') {
     const m = s.nearbyMosque
-    detail = (m && mosqueMethod(m)?.note) ?? GRADE_EXPLANATION[day.grade]
+    detail = (m && mosqueMethod(m)?.note) ?? gradeExplanation(day.grade)
   } else {
-    detail = `${parameterSummary(s.method)} · ${s.asrSchool === 'hanafi' ? tr('settings.hanafi') : tr('settings.shafii')} Asr. ${s.sourceSummary} ${s.method.note}`
+    detail = s.sourceSummary
   }
   const alternates = OBLIGATORY.filter((p) => day.alternate[p] != null)
   const jamaah = OBLIGATORY.filter((p) => day.jamaah[p] != null)
@@ -201,7 +200,7 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
         {(['A', 'B', 'C', 'D', 'F'] as SourceGrade[]).map((g) => (
           <div class="item" style={{ alignItems: 'flex-start' }}>
             <span class="grade-dot" style={{ background: GRADE_TINT[g] }}>{g}</span>
-            <div><div class="subhead" style={{ fontWeight: 600 }}>{gradeTitle(g)}</div><div class="footnote secondary">{GRADE_EXPLANATION[g]}</div></div>
+            <div><div class="subhead" style={{ fontWeight: 600 }}>{gradeTitle(g)}</div><div class="footnote secondary">{gradeExplanation(g)}</div></div>
           </div>
         ))}
       </div>

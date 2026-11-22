@@ -11,10 +11,14 @@ import { fetchOK } from './storage'
  * Only which square is asked for leaves the browser.
  */
 export const LIST_BASE = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/masjids/'
-const WEEK = 7 * 86_400_000
+/** The lists are rebuilt weekly; a day is short enough that a rebuild reaches phones soon after. */
+const WEEK = 86_400_000
 
 /** facilities: letters from the weekly list, w women's space, a wheelchair, p parking, t toilets. */
-export interface ListPlace { id: string; name: string; address: string; coordinates: Coordinates; isMusollah: boolean; facilities?: string; hours?: string }
+export interface ListPlace { id: string; name: string; address: string; coordinates: Coordinates; isMusollah: boolean; facilities?: string; hours?: string; details?: RoomDetails }
+
+/** Extra facts about a prayer room from the community list. Only what is known; f how to find it, l level, m nearest MRT, p what is provided, t toilet level, c who it fits, n notes. */
+export interface RoomDetails { f?: string; l?: string; m?: string; p?: string; t?: string; c?: string; n?: string }
 
 /** The squares a circle of [km] around here touches (one to four), as "lat_lon". */
 export function tilesAround(c: Coordinates, km = 15): string[] {
@@ -33,7 +37,7 @@ export function tilesAround(c: Coordinates, km = 15): string[] {
   return keys
 }
 
-/** `{"places": [[id, lat, lon, name, address, musollah 0/1, facilities?, opening_hours?], ...]}` */
+/** `{"places": [[id, lat, lon, name, address, musollah 0/1, facilities?, opening_hours?, details?], ...]}` */
 export function parseTile(json: unknown): ListPlace[] | null {
   const rows = (json as { places?: unknown })?.places
   if (!Array.isArray(rows)) return null
@@ -48,12 +52,18 @@ export function parseTile(json: unknown): ListPlace[] | null {
     const place: ListPlace = { id: row[0], name, address: typeof row[4] === 'string' ? row[4] : '', coordinates: { latitude: lat, longitude: lon }, isMusollah: musollah }
     if (typeof row[6] === 'string' && row[6]) place.facilities = row[6]
     if (typeof row[7] === 'string' && row[7]) place.hours = row[7]
+    const d = row[8]
+    if (d && typeof d === 'object' && !Array.isArray(d)) {
+      const clean: RoomDetails = {}
+      for (const [k, v] of Object.entries(d)) if (typeof v === 'string' && v) (clean as Record<string, string>)[k] = v
+      if (Object.keys(clean).length) place.details = clean
+    }
     out.push(place)
   }
   return out
 }
 
-type Row = [string, number, number, string, string, number, string?, string?]
+type Row = [string, number, number, string, string, number, string?, string?, RoomDetails?]
 interface Index { tiles: string[]; countries: string[] }
 interface Saved<T> { at: number; data: T }
 
@@ -97,7 +107,7 @@ function save<T>(key: string, data: T) {
   } catch { /* ignore */ }
 }
 
-/** Fresh copy if it is under a week old, else download; an old copy is used if the download fails. */
+/** Fresh copy if it is under a day old, else download; an old copy is used if the download fails. */
 async function cached<T>(key: string, url: string, check: (j: unknown) => T | null, timeoutMs: number): Promise<T | null> {
   const old = readSaved<T>(key)
   if (old && Date.now() - old.at < WEEK) return old.data

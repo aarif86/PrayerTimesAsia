@@ -174,15 +174,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* MARK: Looks */
 
-/* Day: the app's light appearance, the bright sky with sun and clouds. */
-.scr-look-day {
+/* Light: the app's light appearance (the bright sky with sun and clouds), for any design. */
+.scr-light {
   --fg: #111114; --fg2: rgba(60, 60, 67, 0.66); --fg3: rgba(60, 60, 67, 0.36);
   --fill: rgba(0, 0, 0, 0.07); --stroke: rgba(0, 0, 0, 0.08); --line: rgba(0, 0, 0, 0.08);
   --glass: rgba(255, 255, 255, 0.46); --glass-strong: rgba(255, 255, 255, 0.78);
   --accent: rgb(232, 140, 87); --gold: rgb(184, 128, 10); --bg: #dfe9f3;
   color-scheme: light;
 }
-.scr-look-day .scr-cell.on { background: rgba(255, 255, 255, 0.7); background: color-mix(in srgb, var(--tint) 16%, rgba(255, 255, 255, 0.6)); }
+.scr-light .scr-cell.on { background: rgba(255, 255, 255, 0.7); background: color-mix(in srgb, var(--tint) 16%, rgba(255, 255, 255, 0.6)); }
 
 /* Board: countdown on the left, the day's times as the app's prayer list on the right. */
 .landscape .scr-look-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 4); }
@@ -225,7 +225,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-look-bands { --bg: rgb(43, 43, 43); --glass: rgb(61, 61, 61); --fill: rgba(255, 255, 255, 0.12); --fg3: rgba(255, 255, 255, 0.6); }
 .scr-look-bands .scr-next-name { color: #fff; }
 .scr-look-bands .scr-grid { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: 1fr; grid-auto-rows: 1fr; gap: 0; }
-.landscape .scr-look-bands { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 4.4); }
+.landscape .scr-look-bands { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-rows: auto 1fr auto auto auto; column-gap: calc(var(--u) * 4.4); }
+.landscape .scr-look-bands .scr-ramadan { grid-column: 1; grid-row: 4; }
+.landscape .scr-look-bands .scr-friday { grid-column: 1; grid-row: 5; }
 .landscape .scr-look-bands .scr-head { grid-column: 1; grid-row: 1; }
 .landscape .scr-look-bands .scr-hero { grid-column: 1; grid-row: 2; }
 .landscape .scr-look-bands .scr-foot { grid-column: 1; grid-row: 3; }
@@ -254,6 +256,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-look-bands .scr-iq { grid-area: iq; justify-self: end; color: rgba(255, 255, 255, 0.85); font-size: calc(var(--u) * 2.6); }
 .scr-look-bands .scr-iq .scr-t { color: #fff; font-weight: 700; }
 .scr-look-bands .scr-syuruk .scr-t, .scr-look-bands .scr-imsak .scr-t { font-size: calc(var(--u) * 6); }
+
+/* Bands in Light: a warm paper background, the coloured bands stay. */
+.scr-look-bands.scr-light { --bg: #efeae3; --glass: #ffffff; --fill: rgba(0, 0, 0, 0.07); --fg3: rgba(60, 60, 67, 0.6); }
+.scr-look-bands.scr-light .scr-next-name { color: var(--fg); }
+
+/* Simple: no sky, no glass. A plain background, the countdown, and the times in flat rows. */
+.scr-look-simple { --bg: #0b0f2a; --glass: transparent; }
+.scr-look-simple.scr-light { --bg: #f6f3ee; }
+.scr-look-simple .scr-cell { background: var(--fill); border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.scr-look-simple .scr-cell.on { background: color-mix(in srgb, var(--tint) 20%, transparent); box-shadow: inset 0 0 0 2px var(--tint); }
+.scr-look-simple .scr-next { background: var(--fill); -webkit-backdrop-filter: none; backdrop-filter: none; }
 
 /* Day Dial: the app's dial on the left, the countdown on the right. */
 .scr-look-dial .scr-grid { display: none; }
@@ -372,7 +385,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-ramadan .scr-t-small { font-size: 1em; }
 .scr-look-dial .scr-ramadan { position: relative; z-index: 2; }
 /* The gold words need a deeper gold on the light Day look to be readable. */
-.scr-look-day .scr-ramadan b { color: #8a5a00; }
+.scr-light .scr-ramadan b { color: #8a5a00; }
 /* The Kaaba line keeps its name and time together when the line wraps. */
 .scr-kaaba b { white-space: nowrap; }
 
@@ -381,8 +394,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-dm .scr-dm-iq .scr-t { font-size: 1.3em; }
 
 /* Ramadan: "Berbuka" under Maghrib in the column cards, where beside it there is no room. */
-.scr-look-night .scr-name em, .scr-look-day .scr-name em, .scr-look-sunpath .scr-name em, .scr-look-board .scr-name em { display: block; font-size: 0.62em; line-height: 1.1; }
-.scr-look-night .scr-name em .scr-dotsep, .scr-look-day .scr-name em .scr-dotsep, .scr-look-sunpath .scr-name em .scr-dotsep, .scr-look-board .scr-name em .scr-dotsep { display: none; }
+.scr-look-night .scr-name em, .scr-look-sunpath .scr-name em, .scr-look-board .scr-name em { display: block; font-size: 0.62em; line-height: 1.1; }
+.scr-look-night .scr-name em .scr-dotsep, .scr-look-sunpath .scr-name em .scr-dotsep, .scr-look-board .scr-name em .scr-dotsep { display: none; }
 .scr-name em .scr-dotsep { font-style: normal; }
 
 /* MARK: Parts the committee turned off (setup "Show on the TV") */
@@ -412,3 +425,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* The TV's clock was found to be wrong: a small note for the committee, bottom left. */
 .screen-clockwarn { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: 16px; margin: 0; max-width: min(46ch, 60vw); z-index: 20;
   font-size: 14px; line-height: 1.35; color: #1b1630; background: rgb(255, 214, 128); padding: 8px 14px; border-radius: 12px; opacity: 0.92; }
+
+/* The TV's pairing screen (prayertimes.asia/tv): big, plain, readable from across the room. */
+.pair { min-height: 100%; display: grid; align-content: center; justify-items: center; gap: 3vh; padding: 4vh 5vw; text-align: center; background: var(--bg); color: var(--fg); }
+.pair h1 { margin: 0; font-family: var(--font-display); font-size: clamp(2rem, 6vw, 4.5rem); font-weight: 800; }
+.pair-lead { margin: 0; font-size: clamp(1.1rem, 2.6vw, 2rem); color: var(--fg2); max-width: 30em; }
+.pair-lead b { color: var(--fg); }
+.pair-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 5vw; }
+.pair-qr { width: min(34vh, 60vw); aspect-ratio: 1; background: #fff; border-radius: 16px; padding: 8px; }
+.pair-qr.empty { opacity: 0.3; }
+.pair-code { display: grid; gap: 1vh; }
+.pair-code span { font-size: clamp(1rem, 2.4vw, 1.8rem); color: var(--fg2); }
+.pair-code b { font-family: var(--font-display); font-size: clamp(2.6rem, 9vw, 7rem); letter-spacing: 0.08em; white-space: nowrap; color: var(--gold); }
+.pair-hint { margin: 0; font-size: clamp(1rem, 2vw, 1.5rem); color: var(--fg2); max-width: 34em; }
+.pair-foot { margin: 0; font-size: 1rem; color: var(--fg3); }
+
+.pair-foot a { color: var(--fg3); }

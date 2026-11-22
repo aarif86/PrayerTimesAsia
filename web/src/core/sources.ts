@@ -15,7 +15,7 @@ export const GRADE_EXPLANATION: Record<SourceGrade, string> = {
   A: 'Published by the national or state religious authority, or its exact published method.',
   B: "From a named mosque's own timetable, checked against our calculation.",
   C: 'Method confirmed by two or more independent local contributors.',
-  D: 'Astronomical calculation on your device. The method is shown; local mosques may differ by a few minutes.',
+  D: 'Astronomical calculation on your device. The method is shown. Local mosques may differ by a few minutes.',
   F: "Worked out from your own observation of the sun's shadow or the sky, with honest ± minutes. Used to learn and to check, never in place of the grades above.",
 }
 

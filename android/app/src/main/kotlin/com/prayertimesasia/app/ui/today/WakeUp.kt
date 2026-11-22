@@ -64,8 +64,6 @@ import com.prayertimesasia.core.SahurDay
 import com.prayertimesasia.core.SahurTiming
 import com.prayertimesasia.core.WakeUpTiming
 import java.time.Instant
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import com.prayertimesasia.app.ui.components.tr
 import com.prayertimesasia.app.R
 
@@ -73,11 +71,12 @@ import com.prayertimesasia.app.R
 @Composable
 fun WakeChip(state: AppState, background: Color = Palette.primary.copy(alpha = 0.1f)) {
     val next = AlarmScheduler.nextWakeUp(state.resolver, state.now)
+    val chipLabel = next?.let { tr(R.string.alerts_chipNext, "time" to state.resolver.formatted(it.at)) } ?: tr(R.string.alerts_title)
     // A 48 dp touch area around the smaller chip.
     Box(
         Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).clip(CircleShape)
             .clickable { state.openAlerts() }
-            .semantics(mergeDescendants = true) { contentDescription = next?.let { "Alerts and alarms, next alarm at ${state.resolver.formatted(it.at)}" } ?: "Alerts and alarms" },
+            .semantics(mergeDescendants = true) { contentDescription = chipLabel },
         contentAlignment = Alignment.Center,
     ) {
         Row(
@@ -112,26 +111,31 @@ internal fun JumuahLeaveSection(state: AppState) {
         .let { if (it.size == 2) r.clock(it[0] * 60 + it[1]) else JumuahLeave.SECOND_SESSION_FROM }
     val from = when {
         sg && p.jumuahSession == JumuahSession.SECOND -> twoPM
-        r.myMasjidHere?.jumuah != null -> "your masjid's own $friday time"
-        else -> "the start of $zohor"
+        r.myMasjidHere?.jumuah != null -> tr(R.string.jumuah_ownTime, "friday" to friday)
+        else -> tr(R.string.jumuah_startOf, "dhuhr" to zohor)
     }
-    val foot = "A reminder on Fridays to get ready and leave in time. It counts back from $from." +
-        (if (sg) " Only some masjids in Singapore hold a second session. The Masjid tab shows which ones." else "") +
-        " $friday is not required of women, travellers or the sick, who pray $zohor instead."
+    val foot = tr(R.string.jumuah_foot, "from" to from) +
+        (if (sg) " " + tr(R.string.jumuah_footSg) else "") +
+        " " + tr(R.string.jumuah_footWho, "friday" to friday, "dhuhr" to zohor)
+    val nextToday = tr(R.string.jumuah_nextToday)
+    val nextFriday = tr(R.string.jumuah_nextFriday)
     val next = r.nextJumuahLeave(state.now)?.let { (leave, j) ->
-        val day = if (r.dayKey(leave) == r.dayKey(state.now)) "Today" else "Friday"
-        "$day ${r.formatted(leave)}, for $friday at ${r.formatted(j.at)}"
+        val line = if (r.dayKey(leave) == r.dayKey(state.now)) nextToday else nextFriday
+        com.prayertimesasia.app.ui.components.AppWords.fill(line, arrayOf("leave" to r.formatted(leave), "friday" to friday, "start" to r.formatted(j.at)))
     }
     if (p.jumuahReminderMinutes <= 0) {
         Text(foot, style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 32.dp, vertical = 12.dp))
         return
     }
-    Section("When", foot) {
-        MenuRow("Remind me", next, JumuahLeave.label(p.jumuahReminderMinutes), true,
-            JumuahLeave.CHOICES.filter { it > 0 }.map { JumuahLeave.label(it) to it }) { m -> state.update { it.copy(jumuahReminderMinutes = m) } }
+    val choices = JumuahLeave.CHOICES.filter { it > 0 }.map { jumuahLeaveLabel(it) to it }
+    Section(tr(R.string.alerts_when), foot) {
+        MenuRow(tr(R.string.settings_remindMe), next, jumuahLeaveLabel(p.jumuahReminderMinutes), true,
+            choices) { m -> state.update { it.copy(jumuahReminderMinutes = m) } }
         if (sg) {
-            val label = { s: JumuahSession -> if (s == JumuahSession.FIRST) "First" else "Second" }
-            MenuRow("Which session", "First at $zohor, second from $twoPM", label(p.jumuahSession), true,
+            val first = tr(R.string.jumuah_first)
+            val second = tr(R.string.jumuah_second)
+            val label = { s: JumuahSession -> if (s == JumuahSession.FIRST) first else second }
+            MenuRow(tr(R.string.jumuah_session), tr(R.string.jumuah_sessionSub, "dhuhr" to zohor, "time" to twoPM), label(p.jumuahSession), true,
                 JumuahSession.entries.map { label(it) to it }) { v -> state.update { it.copy(jumuahSession = v) } }
         }
     }
@@ -168,10 +172,12 @@ internal fun PrayerAlarmRow(state: AppState, prayer: Prayer) {
     val name = prayer.name(r.naming)
     val current = state.prefs.alarm(prayer)
     var open by remember { mutableStateOf(false) }
+    val value = current?.labelTr() ?: tr(R.string.common_off)
+    val described = "${tr(R.string.wake_alarmFor, "name" to name)}, $value"
     Box {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable { open = true }.padding(horizontal = 16.dp, vertical = 10.dp)
-                .semantics { contentDescription = "$name alarm, ${current?.label ?: "Off"}" },
+                .semantics { contentDescription = described },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -183,13 +189,13 @@ internal fun PrayerAlarmRow(state: AppState, prayer: Prayer) {
                     }
                 }
             }
-            Text(current?.label ?: "Off", style = Txt.body, color = if (current != null) Palette.sunArc else Palette.secondary)
+            Text(value, style = Txt.body, color = if (current != null) Palette.sunArc else Palette.secondary)
             Icon(Icons.Filled.ArrowDropDown, null, Modifier.size(20.dp), tint = Palette.secondary)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             DropdownMenuItem(text = { Text(tr(R.string.common_off)) }, onClick = { open = false; state.setPrayerAlarm(prayer, null) })
             PrayerAlarmTiming.choices(prayer).forEach { t ->
-                DropdownMenuItem(text = { Text(t.label) }, onClick = { open = false; state.setPrayerAlarm(prayer, t) })
+                DropdownMenuItem(text = { Text(t.labelTr()) }, onClick = { open = false; state.setPrayerAlarm(prayer, t) })
             }
         }
     }
@@ -212,17 +218,18 @@ internal fun AlarmSoundSection(state: AppState) {
     }
     Section(tr(R.string.wake_sound), tr(R.string.wake_soundHelp)) {
         listOf(AlarmSound.CLASSIC, AlarmSound.CHIME, AlarmSound.BELLS, AlarmSound.BEEPS).forEach { sound ->
-            SoundRow(sound.label, null, p.alarmSound == sound) {
+            SoundRow(sound.labelTr(), null, p.alarmSound == sound) {
                 state.update { it.copy(alarmSound = sound) }
                 preview.play(context, Notifications.alarmUri(context, sound, null))
             }
         }
-        SoundRow(AlarmSound.PHONE.label, ringtoneName ?: "Pick a ringtone", p.alarmSound == AlarmSound.PHONE) {
+        val pickerTitle = tr(R.string.wake_sound)
+        SoundRow(AlarmSound.PHONE.labelTr(), ringtoneName ?: tr(R.string.phone_alerts_pickRingtone), p.alarmSound == AlarmSound.PHONE) {
             val intent = android.content.Intent(android.media.RingtoneManager.ACTION_RINGTONE_PICKER)
                 .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TYPE, android.media.RingtoneManager.TYPE_ALARM or android.media.RingtoneManager.TYPE_RINGTONE)
                 .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
                 .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
-                .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TITLE, "Alarm sound")
+                .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TITLE, pickerTitle)
             p.alarmRingtone?.let { intent.putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, android.net.Uri.parse(it)) }
             preview.stop()
             runCatching { picker.launch(intent) }
@@ -232,9 +239,10 @@ internal fun AlarmSoundSection(state: AppState) {
 
 @Composable
 internal fun SoundRow(label: String, detail: String?, selected: Boolean, onClick: () -> Unit) {
+    val described = if (selected) tr(R.string.phone_alerts_selectedTap, "label" to label) else tr(R.string.wake_soundTap, "name" to label)
     Row(
         Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 10.dp)
-            .semantics { contentDescription = "$label${if (selected) ", selected" else ""}, tap to hear it" },
+            .semantics { contentDescription = described },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -273,9 +281,10 @@ internal class AlarmPreview {
 
 @Composable
 internal fun ChoiceRow(label: String, detail: String?, selected: Boolean, onClick: () -> Unit) {
+    val described = tr(R.string.phone_alerts_selected, "label" to label)
     Row(
         Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 10.dp)
-            .semantics { if (selected) contentDescription = "$label, selected" },
+            .semantics { if (selected) contentDescription = described },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -297,15 +306,4 @@ internal fun nextSoon(state: AppState, at: (PrayerDay) -> Instant): Instant? {
         if (t > state.now) return t
     }
     return null
-}
-
-internal fun whenText(state: AppState, at: Instant): String {
-    val zone = state.resolver.zone
-    val day = at.atZone(zone).toLocalDate()
-    val today = state.now.atZone(zone).toLocalDate()
-    return when (day) {
-        today -> "today"
-        today.plusDays(1) -> "tomorrow"
-        else -> day.format(DateTimeFormatter.ofPattern("EEEE", Locale.ENGLISH))
-    }
 }

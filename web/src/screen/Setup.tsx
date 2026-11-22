@@ -6,24 +6,28 @@ import { deviceTimeZone, zoned } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable } from '../services/officialTables'
 import {
-  encodeConfig, EXAMPLE_PLACE, iqamahText, isHHMM, MAX_FRIDAY_NOTE, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah, READY_NOTICES,
+  encodeConfig, iqamahText, pairCodeFromHash, isHHMM, MAX_FRIDAY_NOTE, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah, READY_NOTICES,
   type Obligatory, type ScreenConfig, type ScreenHide, type ScreenLanguage, type ScreenLook, type ScreenPlace,
 } from './config'
 import { Display } from './Display'
+import { fallbackPlace } from './place'
+import { readJSON, writeJSON } from '../services/storage'
 import { Frame } from './Frame'
 import { name, officialSourceForScreen } from './model'
 import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
-import { useLiveScreenCount } from './live'
+import { PAIR_CODE_RE, pairClaim, pairUpdate, saveShortLink, tidyPairCode, useLiveScreenCount } from './live'
 import { ModeButton, Sky, useSiteTheme } from './sky'
 import './setup.css'
 
+const EDITOR_KEY = 'ptasia.screen.editor'
+
 const LOOK_CHOICES: { id: ScreenLook; label: string; hint: string }[] = [
-  { id: 'night', label: 'Night', hint: 'Dark and calm, good for a dim prayer hall' },
-  { id: 'day', label: 'Day', hint: 'Light, good for a bright hall or the foyer' },
+  { id: 'night', label: 'Sky', hint: 'The sky outside, changing with the hour, like the app' },
   { id: 'board', label: 'Board', hint: 'The times as a list, easy to read from far' },
   { id: 'bands', label: 'Bands', hint: 'Each prayer in its own colour, like the app' },
   { id: 'dial', label: 'Day Dial', hint: 'The whole day as a ring, like the app' },
   { id: 'sunpath', label: 'Sun Path', hint: 'The sun moving across the day, like the app' },
+  { id: 'simple', label: 'Simple', hint: 'Plain and calm, with no moving sky' },
 ]
 
 /** What the committee can switch off. Shown as "Show" switches, so on means it is on the TV. */
@@ -54,13 +58,32 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const [, setTables] = useState(0)
   const [theme, flipTheme] = useSiteTheme()
   const live = useLiveScreenCount()
+  // Pairing: the TV's code (typed, or from the QR code the TV shows), and the TV this phone paired with before.
+  const [pairInput, setPairInput] = useState(() => pairCodeFromHash(location.hash) ?? '')
+  const [editor, setEditor] = useState(() => readJSON<{ code: string; editKey: string }>(EDITOR_KEY))
+  const [pairMsg, setPairMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [pairBusy, setPairBusy] = useState(false)
+  const fromQr = pairCodeFromHash(location.hash)
 
   const set = (change: Partial<ScreenConfig>) => setC((old) => ({ ...old, ...change }))
   const setHide = (key: keyof ScreenHide, hidden: boolean) => setC((old) => ({ ...old, hide: { ...old.hide, [key]: hidden } }))
   const setRamadan = (change: Partial<ScreenConfig['ramadan']>) => setC((old) => ({ ...old, ramadan: { ...old.ramadan, ...change } }))
   const results = useMemo(() => searchCities(query, 6), [query])
   const official = officialSourceForScreen(c)
-  const link = `${location.origin}${location.pathname}#c=${encodeConfig(c)}`
+  const encoded = encodeConfig(c)
+  const longLink = `${location.origin}${location.pathname}#c=${encoded}`
+  // The short link (#k=...) is made when the committee asks for the link, not on every change. If it can't be made, the long link still works.
+  const [short, setShort] = useState<{ encoded: string; link: string } | null>(null)
+  const shortOk = short?.encoded === encoded ? short.link : null
+  const link = shortOk ?? longLink
+  const getLink = async (): Promise<string> => {
+    if (shortOk) return shortOk
+    const code = await saveShortLink(encoded)
+    if (!code) return longLink
+    const made = `${location.origin}${location.pathname}#k=${code}`
+    setShort({ encoded, link: made })
+    return made
+  }
 
   useEffect(() => {
     if (!official || !c.place) return
@@ -100,19 +123,45 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
 
   const flash = (what: 'copied' | 'shared') => { setCopied(what); setTimeout(() => setCopied(null), 2500) }
   const copy = async () => {
-    try { await navigator.clipboard.writeText(link); flash('copied') } catch {
+    try { await navigator.clipboard.writeText(await getLink()); flash('copied') } catch {
       const box = document.getElementById('screen-link-box') as HTMLDetailsElement | null
       if (box) box.open = true
+      await getLink()
       ;(document.getElementById('screen-link') as HTMLTextAreaElement | null)?.select()
     }
   }
   // Phones: the share sheet, so the link goes straight into WhatsApp or email.
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
   const share = async () => {
-    try { await navigator.share({ title: `${c.name || 'Masjid'} prayer screen`, text: 'Open this link on the masjid TV', url: link }); flash('shared') } catch { /* closed */ }
+    try { await navigator.share({ title: `${c.name || 'Masjid'} prayer screen`, text: 'Open this link on the masjid TV', url: await getLink() }); flash('shared') } catch { /* closed */ }
   }
-  // Until a location is chosen the preview shows an example, so it is never blank.
-  const preview = c.place ? c : { ...c, place: EXAMPLE_PLACE, name: c.name || 'Your masjid' }
+  const pairNow = async () => {
+    const code = tidyPairCode(pairInput)
+    if (!PAIR_CODE_RE.test(code)) { setPairMsg({ ok: false, text: 'The code has 6 letters or numbers. Look at the TV and type it again.' }); return }
+    setPairBusy(true); setPairMsg(null)
+    const r = await pairClaim(code, encodeConfig(c))
+    setPairBusy(false)
+    if (typeof r === 'object') {
+      const e = { code, editKey: r.editKey }
+      writeJSON(EDITOR_KEY, e); setEditor(e); setPairInput('')
+      setPairMsg({ ok: true, text: 'Done. Your TV is showing your masjid screen now. To change something later, come back here and tap Update my TV.' })
+    } else setPairMsg({ ok: false, text: r === 'offline' ? 'No internet on this phone. Try again.' : r === 'busy' ? 'Too many tries today. Try again tomorrow, or send the link below.' : 'That code did not work. It runs out after 15 minutes, so check the TV for the newest code.' })
+  }
+  const updateNow = async () => {
+    if (!editor) return
+    setPairBusy(true); setPairMsg(null)
+    const r = await pairUpdate(editor.code, editor.editKey, encodeConfig(c))
+    setPairBusy(false)
+    if (r === 'ok') setPairMsg({ ok: true, text: 'Updated. The TV changes within about 10 minutes, or at once if you reopen its page.' })
+    else if (r === 'forgotten') { writeJSON(EDITOR_KEY, null); setEditor(null); setPairMsg({ ok: false, text: 'This phone can no longer change that TV. Pair again with the code the TV shows.' }) }
+    else setPairMsg({ ok: false, text: r === 'busy' ? 'Too many tries today. Try again tomorrow.' : 'No internet on this phone. Try again.' })
+  }
+  const forgetTv = () => { writeJSON(EDITOR_KEY, null); setEditor(null); setPairMsg(null) }
+
+  // No place chosen: the TV (and this preview) use a place from the device's own time zone, so nothing is blank.
+  const guess = useMemo(() => fallbackPlace(), [])
+  const effective = c.place ? c : { ...c, place: guess }
+  const preview = { ...effective, name: c.name || 'Your masjid' }
   const countryName = c.place?.cc ? profileFor(c.place.cc)?.name ?? c.place.cc : null
 
   return (
@@ -124,15 +173,23 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       </header>
 
       <main class="sp-main">
+        {fromQr && !pairMsg?.ok && (
+          <div class="sp-pairbar" role="region" aria-label="Pairing with the TV">
+            <div><b>Setting up the TV with code {fromQr}</b><span>Choose what shows below, then tap the button.</span></div>
+            <button type="button" class="sp-btn sp-btn-primary" onClick={pairNow} disabled={pairBusy}>{pairBusy ? 'Sending' : 'Show on my TV'}</button>
+          </div>
+        )}
+        {fromQr && pairMsg && <p class={`sp-pairbar-msg ${pairMsg.ok ? 'sp-ok' : 'sp-error'}`} role="status">{pairMsg.text}</p>}
         <section class="sp-hero">
           <p class="sp-eyebrow">For Masjids</p>
-          <h1>Put prayer times on your masjid TV</h1>
+          <h1>Put prayer times on your Masjid TV</h1>
           <p class="sp-lead">Free, with nothing to install and no sign up. Three easy steps on your phone.</p>
           {live != null && (
             <p class="sp-live" aria-live="polite"><i class="sp-dot" aria-hidden="true" /><b>{live.toLocaleString('en')}</b> masjid {live === 1 ? 'screen is' : 'screens are'} on right now</p>
           )}
+          <p class="sp-hint"><a href="#tv" onClick={() => setTimeout(() => location.reload())}>On the TV itself? Show the pairing code</a></p>
           <ol class="sp-map" aria-hidden="true">
-            <li><b>1</b>Pick your masjid</li>
+            <li><b>1</b>Add your masjid</li>
             <li><b>2</b>Choose what shows</li>
             <li><b>3</b>Open it on the TV</li>
           </ol>
@@ -140,9 +197,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
 
         {/* Step 1 */}
         <section class="sp-step" aria-labelledby="sp-s1">
-          <h2 id="sp-s1"><span class="sp-num">1</span>Pick your masjid</h2>
-          <label class="sp-label" for="s-name">Masjid name</label>
-          <input id="s-name" class="sp-input" value={c.name} maxLength={80} placeholder="Masjid Al Falah" onInput={(e) => set({ name: (e.target as HTMLInputElement).value })} />
+          <h2 id="sp-s1"><span class="sp-num">1</span>Add your masjid <span class="sp-opt">Optional</span></h2>
+          <p class="sp-hint">You can skip this step. The screen then works out the times from the TV's own time zone.</p>
 
           <p class="sp-label">Where is it?</p>
           {c.place ? (
@@ -175,41 +231,55 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               )}
             </>
           )}
+          <label class="sp-label" for="s-name">Masjid name (optional)</label>
+          <input id="s-name" class="sp-input" value={c.name} maxLength={80} placeholder="Masjid Al Falah" onInput={(e) => set({ name: (e.target as HTMLInputElement).value })} />
         </section>
 
         {/* Step 2 */}
-        <section class="sp-step" aria-labelledby="sp-s2">
+        <section class="sp-step sp-step2" aria-labelledby="sp-s2">
           <h2 id="sp-s2"><span class="sp-num">2</span>Choose what shows</h2>
-          <div class="sp-tv">
-            <Frame class="sp-preview"><Display config={preview} now={now} /></Frame>
-          </div>
-          {!c.place && <p class="sp-hint center">This is an example. Your own times show once you pick your masjid.</p>}
+          <div class="sp-studio">
+            <div class="sp-left">
+              <div class="sp-tv">
+                <Frame class="sp-preview"><Display config={preview} now={now} /></Frame>
+              </div>
+              {!c.place && <p class="sp-hint center">Times shown are a guide until you add your masjid in step 1.</p>}
 
-          <p class="sp-label">Look</p>
-          <div class="sp-looks" role="radiogroup" aria-label="Look">
-            {LOOK_CHOICES.map((l) => (
-              <button key={l.id} type="button" role="radio" aria-checked={c.look === l.id} class={`sp-chip${c.look === l.id ? ' on' : ''}`} onClick={() => set({ look: l.id })}>{l.label}</button>
-            ))}
-          </div>
-          <p class="sp-hint">{LOOK_CHOICES.find((l) => l.id === c.look)?.hint}</p>
+              <p class="sp-label">Look</p>
+              <div class="sp-looks" role="radiogroup" aria-label="Look">
+                {LOOK_CHOICES.map((l) => (
+                  <button key={l.id} type="button" role="radio" aria-checked={c.look === l.id} class={`sp-chip${c.look === l.id ? ' on' : ''}`} onClick={() => set({ look: l.id })}>{l.label}</button>
+                ))}
+              </div>
+              <p class="sp-hint">{LOOK_CHOICES.find((l) => l.id === c.look)?.hint}</p>
+              <div class="sp-modes" role="radiogroup" aria-label="Light or dark">
+                {(['dark', 'light'] as const).map((m) => (
+                  <button key={m} type="button" role="radio" aria-checked={c.mode === m} class={`sp-chip${c.mode === m ? ' on' : ''}`} onClick={() => set({ mode: m })}>{m === 'dark' ? 'Dark' : 'Light'}</button>
+                ))}
+              </div>
+              <p class="sp-hint">Dark suits a dim prayer hall. Light suits a bright hall or the foyer.</p>
+            </div>
 
-          <p class="sp-label">Show on the TV</p>
-          <div class="sp-toggles">
-            {SHOW_CHOICES.map((s) => (
-              <label key={s.key} class={`sp-toggle${c.hide[s.key] ? '' : ' on'}`}>
-                <input type="checkbox" checked={!c.hide[s.key]} onChange={(e) => setHide(s.key, !(e.target as HTMLInputElement).checked)} />
-                <span class="sp-switch" aria-hidden="true" />
-                <span class="sp-tl"><b>{s.label}</b><small>{s.example}</small></span>
-              </label>
-            ))}
-            <label class={`sp-toggle${c.showQr ? ' on' : ''}`}>
-              <input type="checkbox" checked={c.showQr} onChange={(e) => set({ showQr: (e.target as HTMLInputElement).checked })} />
-              <span class="sp-switch" aria-hidden="true" />
-              <span class="sp-tl"><b>QR code</b><small>People scan it to see the iqamah times</small></span>
-            </label>
-            <div class="sp-toggle locked on">
-              <svg class="sp-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-              <span class="sp-tl"><b>prayertimes.asia</b><small>Always shown, so others can find it too</small></span>
+            <div class="sp-right">
+              <p class="sp-label">Show on the TV</p>
+              <div class="sp-toggles">
+                {SHOW_CHOICES.map((s) => (
+                  <label key={s.key} class={`sp-toggle${c.hide[s.key] ? '' : ' on'}`}>
+                    <input type="checkbox" checked={!c.hide[s.key]} onChange={(e) => setHide(s.key, !(e.target as HTMLInputElement).checked)} />
+                    <span class="sp-switch" aria-hidden="true" />
+                    <span class="sp-tl"><b>{s.label}</b><small>{s.example}</small></span>
+                  </label>
+                ))}
+                <label class={`sp-toggle${c.showQr ? ' on' : ''}`}>
+                  <input type="checkbox" checked={c.showQr} onChange={(e) => set({ showQr: (e.target as HTMLInputElement).checked })} />
+                  <span class="sp-switch" aria-hidden="true" />
+                  <span class="sp-tl"><b>QR code</b><small>People scan it to see the iqamah times</small></span>
+                </label>
+                <div class="sp-toggle locked on">
+                  <svg class="sp-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+                  <span class="sp-tl"><b>prayertimes.asia</b><small>Always shown, so others can find it too</small></span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -321,7 +391,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                 </>
               )}
               <label class="sp-check"><input type="checkbox" checked={c.report} onChange={(e) => set({ report: (e.target as HTMLInputElement).checked })} /> Count this screen as on. Every 15 minutes it sends a random code made on the TV with the country, look and language, and a few times a day the masjid's name, city and look, so we can see how many screens are running and help if something goes wrong</label>
-              <p class="sp-hint">Have an idea for a new look? <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md" target="_blank" rel="noopener">Send us your design</a>. No coding needed.</p>
+              <p class="sp-hint">Have an idea for a new look? <a href="https://prayertimes.asia/new-look.html" target="_blank" rel="noopener">Send us your design</a>. No coding needed.</p>
             </div>
           </details>
         </section>
@@ -329,10 +399,35 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         {/* Step 3 */}
         <section class="sp-step" aria-labelledby="sp-s3">
           <h2 id="sp-s3"><span class="sp-num">3</span>Open it on the TV</h2>
-          {!c.place && <p class="sp-error">Pick your masjid in step 1 first.</p>}
+          {!c.place && <p class="sp-hint">No masjid added, so the TV uses the times for its own time zone. Add your masjid in step 1 for exact times.</p>}
+
+          <div class="sp-pairbox">
+            <h3>Easiest: pair with the code on the TV</h3>
+            <ol class="sp-steps">
+              <li>On the TV, open the web browser and go to <b>prayertimes.asia/tv</b></li>
+              <li>The TV shows a code. Scan its QR code with this phone, or type the code here.</li>
+            </ol>
+            {editor && (
+              <div class="sp-chosen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                <div><b>This phone controls your TV ({editor.code})</b><span>Changes you make above go to it.</span></div>
+                <button type="button" class="sp-link-btn" onClick={forgetTv}>Forget</button>
+              </div>
+            )}
+            {editor && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={updateNow} disabled={pairBusy}>{pairBusy ? 'Sending' : 'Update my TV'}</button>}
+            <div class="sp-pairrow">
+              <input id="s-pair" class="sp-input sp-codein" value={pairInput} maxLength={9} placeholder="Code, like K7M3QX" aria-label="The code shown on the TV"
+                autoCapitalize="characters" autoComplete="off" onInput={(e) => setPairInput((e.target as HTMLInputElement).value.toUpperCase())} />
+              <button type="button" class={`sp-btn${editor ? '' : ' sp-btn-primary'}`} onClick={pairNow} disabled={pairBusy || !pairInput.trim()}>{pairBusy ? 'Sending' : editor ? 'Pair a new TV' : 'Show on my TV'}</button>
+            </div>
+            {pairMsg && <p class={pairMsg.ok ? 'sp-ok' : 'sp-error'} role="status">{pairMsg.text}</p>}
+          </div>
+
+          <h3 class="sp-or">Or send the link</h3>
+          <p class="sp-hint">For a TV where you would rather type nothing, or to try it on your own computer. Open the link on the TV or computer.</p>
           <div class="sp-actions">
-            {canShare && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={share} disabled={!c.place}>{copied === 'shared' ? 'Sent' : 'Send the link'}</button>}
-            <button type="button" class={`sp-btn sp-btn-big${canShare ? '' : ' sp-btn-primary'}`} onClick={copy} disabled={!c.place}>{copied === 'copied' ? 'Copied' : 'Copy the link'}</button>
+            {canShare && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={share}>{copied === 'shared' ? 'Sent' : 'Send the link'}</button>}
+            <button type="button" class={`sp-btn sp-btn-big${canShare ? '' : ' sp-btn-primary'}`} onClick={copy}>{copied === 'copied' ? 'Copied' : 'Copy the link'}</button>
           </div>
           <ol class="sp-howto">
             <li><span class="sp-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z" /></svg></span>Send the link to yourself, on WhatsApp or email.</li>
@@ -344,19 +439,22 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <p>Once it has opened with internet, it keeps showing the times even when the internet drops.</p>
           </div>
           <details class="sp-guide">
-            <summary>No browser on your TV, or want it to come back on by itself?</summary>
+            <summary>Want the screen to come back on by itself after a power cut?</summary>
+            <p class="sp-hint">A TV browser needs someone to open it again. A small Android TV box can do it for you. It plugs into the TV, and you set it up once.</p>
             <ol>
-              <li>Get a small Android TV box or a Fire TV stick. They cost about 40 to 60 dollars and plug into the TV.</li>
-              <li>Install a free browser app on it that can open one page when it starts. Search the app store on the box for "kiosk browser" or "start up app".</li>
-              <li>Set it to open your masjid link when it starts. Now after a power cut the screen comes back by itself.</li>
-              <li>Turn on "automatic date and time" on the box, so the clock stays right.</li>
+              <li>Buy an Android TV box, or a Google TV streamer, and plug it into the TV with the HDMI cable. Prices vary by country, often under 100 US dollars. We do not suggest the Amazon Fire TV stick for this, because it is less reliable at starting an app on its own.</li>
+              <li>On the box, open the app store and install <b>Fully Kiosk Browser</b>. It is free to try, and a small watermark shows until you pay for it. The full version costs about 11 US dollars once for each TV.</li>
+              <li>Open Fully Kiosk Browser and type <b>prayertimes.asia/tv</b> as the Start URL. The first time, tap the small link that says On the TV itself, and the TV shows a code. Pair it with your phone as in step 3. After that, this address opens your masjid screen by itself.</li>
+              <li>In its settings, turn on "Autostart on boot". Now after a power cut the screen comes back by itself.</li>
+              <li>In the box's own settings, turn on automatic date and time, so the clock stays right.</li>
             </ol>
+            <p class="sp-hint">Test it once. Switch the box off and on, and check the screen returns. On some boxes you must also allow the app to start by itself in the box's app settings.</p>
           </details>
           <div class="sp-actions">
-            <button type="button" class="sp-btn" onClick={() => onOpen(c)} disabled={!c.place}>Try it full screen here</button>
-            <a class="sp-btn" href={`../print/#c=${encodeConfig({ ...c, showIqamah: true })}&sheet=month`} target="_blank" rel="noopener">Print a timetable</a>
+            <button type="button" class="sp-btn" onClick={() => onOpen(c)}>Try it full screen here</button>
+            <a class="sp-btn" href={`../print/#c=${encodeConfig({ ...effective, showIqamah: true })}&sheet=month`} target="_blank" rel="noopener">Print a timetable</a>
           </div>
-          <details id="screen-link-box" class="sp-showlink">
+          <details id="screen-link-box" class="sp-showlink" onToggle={(e) => { if ((e.target as HTMLDetailsElement).open) void getLink() }}>
             <summary>Show the link</summary>
             <textarea id="screen-link" class="sp-input" readOnly rows={3} value={link} onFocus={(e) => (e.target as HTMLTextAreaElement).select()} />
           </details>
@@ -365,7 +463,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       </main>
 
       <footer class="sp-foot">
-        <p class="sp-ask">Questions or ideas for your masjid screen? <a href="mailto:salam@prayertimes.asia?subject=Masjid%20screen">Email salam@prayertimes.asia</a></p>
+        <p class="sp-ask">Questions or ideas for your masjid screen? <a href="https://prayertimes.asia/note.html" target="_blank" rel="noopener">Send us a note</a></p>
         <p>Always follow your local religious authority.</p>
         <p><a href="../../">prayertimes.asia</a></p>
       </footer>
