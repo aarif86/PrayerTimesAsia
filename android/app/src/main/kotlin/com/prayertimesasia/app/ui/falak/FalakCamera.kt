@@ -102,7 +102,7 @@ fun FalakCameraScreen(state: AppState, onClose: () -> Unit) {
 }
 
 @Composable
-private fun CameraPreview() {
+internal fun CameraPreview() {
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     val view = remember { PreviewView(context) }
