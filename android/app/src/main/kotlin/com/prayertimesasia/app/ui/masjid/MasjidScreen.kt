@@ -109,6 +109,7 @@ import com.prayertimesasia.core.MasjidLists
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerSpace
 import com.prayertimesasia.core.PrayerSpaces
+import com.prayertimesasia.core.RoomDetails
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -410,6 +411,34 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
     if (suggesting) AppSheet({ suggesting = false }) { SuggestRoomContent(near = here, live = nearMe.takeIf { System.currentTimeMillis() - nearMeAt < 300_000 }) }
 }
 
+/** The prayer room details from the community list, only the parts we have. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RoomInfo(d: RoomDetails) {
+    var more by remember { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (d.howToFind.isNotEmpty()) {
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Palette.accent.copy(alpha = 0.14f)).padding(horizontal = 12.dp, vertical = 8.dp)) {
+                Text("HOW TO FIND IT", style = Txt.caption, color = Palette.secondary)
+                Text(d.howToFind, style = Txt.footnote, color = Palette.primary)
+            }
+        }
+        val chips = d.chips
+        if (chips.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            chips.forEach { Chip(it, Palette.primary.copy(alpha = 0.1f), Palette.primary) }
+        }
+        if (d.notes.isNotEmpty() || d.toiletLevel.isNotEmpty()) {
+            Text(if (more) "Hide details" else "Show more details", style = Txt.footnoteSemibold, color = Palette.accentText,
+                modifier = Modifier.clickable { more = !more })
+            if (more) {
+                if (d.toiletLevel.isNotEmpty()) Text("Toilet and wudhu on level ${d.toiletLevelText}", style = Txt.footnote, color = Palette.primary)
+                if (d.notes.isNotEmpty()) Text(d.notes, style = Txt.footnote, color = Palette.primary)
+                Text("These details come from the community and may have changed. Tell us if something is wrong.", style = Txt.caption, color = Palette.secondary)
+            }
+        }
+    }
+}
+
 /** A tapped pin on the map: its name, how far, opening hours, Friday prayers, Directions (as on iPhone). */
 @Composable
 private fun PinCard(s: PrayerSpace, mode: TripMode, h24: Boolean, hours: OpeningHours.Now?, singapore: Boolean, onClose: () -> Unit, onDirections: () -> Unit) {
@@ -517,8 +546,9 @@ private fun SpaceRow(
         }
         if (open) {
             Column(Modifier.padding(start = 56.dp, end = Dims.gutter, bottom = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                space.details?.let { RoomInfo(it) }
                 val have = MasjidExtras.facilityLabels.filter { space.facilities.contains(it.first) }
-                if (have.isEmpty()) Text("The map doesn't list this place's facilities yet.", style = Txt.footnote, color = Palette.secondary)
+                if (have.isEmpty()) { if (space.details == null) Text("The map doesn't list this place's facilities yet.", style = Txt.footnote, color = Palette.secondary) }
                 else FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     have.forEach { Chip(it.second, Palette.primary.copy(alpha = 0.1f), Palette.primary) }
                 }

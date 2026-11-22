@@ -19,7 +19,7 @@ places than last week's file, keeps last week's file, so one bad night on the
 servers never empties a list.
 
 Place format, kept small (arrays; five decimals is about 1 m):
-    [id, lat, lon, name, address, musollah 0/1, facilities, opening_hours]
+    [id, lat, lon, name, address, musollah 0/1, facilities, opening_hours, details]
 An empty name means OpenStreetMap has none; the apps call it Masjid or Musollah.
 The last two are left off when OpenStreetMap has neither. facilities is a short
 string of letters, one for each thing the map says the place has:
@@ -201,6 +201,44 @@ def fetch_musolla_db() -> dict | None:
     return None
 
 
+def clean(x, n=300) -> str:
+    t = " ".join(str(x or "").replace("\xa0", " ").split())
+    return "" if t.lower() in ("null", "none", "-", "n/a") else t[:n]
+
+
+def room_details(v: dict, address: str) -> dict:
+    """The extra facts the community list holds for a prayer room, short keys, empty ones left out.
+    f how to find it, l level, m nearest MRT, p what is provided, t level of the toilet,
+    c who it fits, n notes, g shared or separate. Never filled in from guesses."""
+    d = {}
+    how = clean(v.get("directions"))
+    if how and len(how) > 3:
+        d["f"] = how
+    level = clean(v.get("level"), 20)
+    if level and level not in ("0",):
+        d["l"] = level
+    mrt = clean(v.get("mrt") or v.get("nearestMrt"), 40)
+    if mrt:
+        d["m"] = mrt
+    prov = clean(v.get("provision") or v.get("provisions"), 120)
+    if prov:
+        d["p"] = prov
+    toilet = clean(v.get("toiletLevel") or v.get("nearestToilet"), 40)
+    if toilet:
+        d["t"] = toilet
+    cap = []
+    for key, label in (("femaleCapacity", "women"), ("maleCapacity", "men"), ("unisexCapacity", "shared"), ("sharedCapacity", "shared")):
+        n = v.get(key)
+        if isinstance(n, (int, float)) and n > 0 and not any(c.startswith(label + " ") for c in cap):
+            cap.append(f"{label} {int(n)}")
+    if cap:
+        d["c"] = ", ".join(cap)
+    notes = clean(v.get("remarks") or v.get("additionalInfo"), 300)
+    if notes:
+        d["n"] = notes
+    return d
+
+
 def musolla_db_places(data: dict) -> list:
     """The community list in our place format; ids start with "m" so they never meet an OSM id."""
     out = []
@@ -222,18 +260,21 @@ def musolla_db_places(data: dict) -> list:
         name = " ".join(str(v.get("name") or "").split())[:120]
         musollah = True
         address = " ".join(str(v.get("address") or "").split())
-        level = " ".join(str(v.get("level") or "").split())
-        if level.lower() in ("null", "none", "-", "0"):
-            level = ""
-        # Add the floor unless the address already gives one ("Level 3", "#03-01").
+        details = room_details(v, address)
+        # Apps from before the details column only show the address, so the floor goes there too.
+        level = details.get("l", "")
         has_floor = re.search(r"\blevel\b|\blvl\b|#\s*[0-9b]", address, re.I)
-        if musollah and level and not has_floor:
+        if level and not has_floor:
             floor = level if level.lower().startswith(("level", "lvl", "b", "l")) and not level.isdigit() else f"level {level}"
             address = f"{address}, {floor}" if address else floor[:1].upper() + floor[1:]
+            details.pop("l")  # new apps show it from the address, so no second copy
         row = [f"m{str(v.get('uuid') or key)[:13]}", round(lat, 5), round(lon, 5), name, address[:160], 1 if musollah else 0]
         women = (v.get("femaleCapacity") or 0) not in (0, "0", "") or "female" in str(v.get("remarks") or "").lower() and "no female" not in str(v.get("remarks") or "").lower()
-        if women:
-            row.append("w")
+        row.append("w" if women else "")
+        if details:
+            row += ["", details]  # no opening hours in this list; the 9th slot is the details
+        elif not women:
+            row.pop()
         out.append(row)
     return out
 

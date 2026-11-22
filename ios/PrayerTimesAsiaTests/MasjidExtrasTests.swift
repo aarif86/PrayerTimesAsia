@@ -15,6 +15,16 @@ final class MasjidExtrasTests: XCTestCase {
         XCTAssertLessThanOrEqual(MasjidList.maxAge, 24 * 3600)
     }
 
+    func testPrayerRoomDetailsReadFromTheList() {
+        let json = #"{"places":[["m1",1.374,103.9518,"Pasir Ris Swimming Complex","120 Pasir Ris Central",1,"","",{"f":"Turn right at the toilet","l":"B1","m":"Pasir Ris","p":"Prayer Mat, Telekung","c":"women 3, shared 4"}],["m2",1.3,103.8,"Surau",""  ,1]]}"#
+        let places = MasjidList.parse(Data(json.utf8))
+        XCTAssertEqual(places?.count, 2)
+        let d = places?[0].details
+        XCTAssertEqual(d?.howToFind, "Turn right at the toilet")
+        XCTAssertEqual(d?.chips, ["Level B1", "Prayer Mat", "Telekung", "Room for about 3 women", "Room for about 4 people", "Near Pasir Ris MRT"])
+        XCTAssertNil(places?[1].details)
+    }
+
     func testEidShowsTwoWeeksBefore() {
         let e = EidEvent(name: "Hari Raya Aidilfitri 1448H", date: "2027-03-10", sourceURL: "x",
                          mosques: [EidMosque(name: "Al-Ansar", lat: nil, lng: nil, sessions: [EidSession(time: "07:20", khutbah: "Malay", women: true)], note: nil)])

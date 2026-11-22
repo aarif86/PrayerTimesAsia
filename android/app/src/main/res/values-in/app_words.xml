@@ -843,6 +843,17 @@
     <string name="masjid_mapCredit" formatted="false">Daftar tempat dari OpenStreetMap dan daftar musala terbuka, keduanya dikelola oleh relawan. Ada yang belum ada, atau pin di tempat yang salah? {link}, tanpa perlu mendaftar.</string>
     <string name="masjid_tellMap" formatted="false">Beri tahu peta</string>
     <string name="masjid_noFacilities" formatted="false">Peta belum mencantumkan fasilitas tempat ini.</string>
+    <string name="masjid_findIt" formatted="false">Cara menemukannya</string>
+    <string name="masjid_levelChip" formatted="false">Lantai {level}</string>
+    <string name="masjid_nearMrt" formatted="false">Dekat MRT {name}</string>
+    <string name="masjid_roomFor" formatted="false">Muat sekitar {n} {who}</string>
+    <string name="masjid_whoWomen" formatted="false">wanita</string>
+    <string name="masjid_whoMen" formatted="false">pria</string>
+    <string name="masjid_whoPeople" formatted="false">orang</string>
+    <string name="masjid_moreDetails" formatted="false">Tampilkan detail lainnya</string>
+    <string name="masjid_lessDetails" formatted="false">Sembunyikan detail</string>
+    <string name="masjid_toiletOn" formatted="false">Toilet dan tempat wudhu di lantai {level}</string>
+    <string name="masjid_communityNote" formatted="false">Detail ini berasal dari komunitas dan mungkin sudah berubah. Beri tahu kami jika ada yang salah.</string>
     <string name="masjid_iqamahLine" formatted="false">Iqamah {times}</string>
     <string name="masjid_iqamahHow" formatted="false">Waktu iqamah tampil di sini saat masjid Anda memasang layar Prayer Times Asia. Pindai kode QR-nya sekali.</string>
     <string name="masjid_eidAtTime" formatted="false">Salat Id pukul {time}.</string>

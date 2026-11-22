@@ -843,6 +843,17 @@
     <string name="masjid_mapCredit" formatted="false">Places from OpenStreetMap and the open musolla list, both kept by volunteers. Missing one, or a pin in the wrong spot? {link}, no sign up needed.</string>
     <string name="masjid_tellMap" formatted="false">Tell the map</string>
     <string name="masjid_noFacilities" formatted="false">The map doesn\'t list this place\'s facilities yet.</string>
+    <string name="masjid_findIt" formatted="false">How to find it</string>
+    <string name="masjid_levelChip" formatted="false">Level {level}</string>
+    <string name="masjid_nearMrt" formatted="false">Near {name} MRT</string>
+    <string name="masjid_roomFor" formatted="false">Room for about {n} {who}</string>
+    <string name="masjid_whoWomen" formatted="false">women</string>
+    <string name="masjid_whoMen" formatted="false">men</string>
+    <string name="masjid_whoPeople" formatted="false">people</string>
+    <string name="masjid_moreDetails" formatted="false">Show more details</string>
+    <string name="masjid_lessDetails" formatted="false">Hide details</string>
+    <string name="masjid_toiletOn" formatted="false">Toilet and wudhu on level {level}</string>
+    <string name="masjid_communityNote" formatted="false">These details come from the community and may have changed. Tell us if something is wrong.</string>
     <string name="masjid_iqamahLine" formatted="false">Iqamah {times}</string>
     <string name="masjid_iqamahHow" formatted="false">Iqamah times show here when your masjid puts up a Prayer Times Asia screen. Scan its QR code once.</string>
     <string name="masjid_eidAtTime" formatted="false">Eid prayer at {time}.</string>
