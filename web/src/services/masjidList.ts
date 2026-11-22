@@ -11,7 +11,8 @@ import { fetchOK } from './storage'
  * Only which square is asked for leaves the browser.
  */
 export const LIST_BASE = 'https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/masjids/'
-const WEEK = 7 * 86_400_000
+/** The lists are rebuilt weekly; a day is short enough that a rebuild reaches phones soon after. */
+const WEEK = 86_400_000
 
 /** facilities: letters from the weekly list, w women's space, a wheelchair, p parking, t toilets. */
 export interface ListPlace { id: string; name: string; address: string; coordinates: Coordinates; isMusollah: boolean; facilities?: string; hours?: string }
@@ -97,7 +98,7 @@ function save<T>(key: string, data: T) {
   } catch { /* ignore */ }
 }
 
-/** Fresh copy if it is under a week old, else download; an old copy is used if the download fails. */
+/** Fresh copy if it is under a day old, else download; an old copy is used if the download fails. */
 async function cached<T>(key: string, url: string, check: (j: unknown) => T | null, timeoutMs: number): Promise<T | null> {
   const old = readSaved<T>(key)
   if (old && Date.now() - old.at < WEEK) return old.data

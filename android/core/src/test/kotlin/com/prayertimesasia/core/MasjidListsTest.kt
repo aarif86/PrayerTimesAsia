@@ -5,6 +5,10 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class MasjidListsTest {
+    @Test fun savedListsAreNeverMoreThanADayOld() {
+        org.junit.Assert.assertTrue(MasjidLists.MAX_AGE_MS <= 24L * 3600 * 1000)
+    }
+
     @Test fun picksTheSquaresAnAreaNeeds() {
         assertEquals(listOf("3_101"), MasjidLists.tiles(Coordinates(3.1390, 101.6869)))
         assertEquals(setOf("0_103", "0_104", "1_103", "1_104"), MasjidLists.tiles(Coordinates(1.05, 103.95)).toSet())

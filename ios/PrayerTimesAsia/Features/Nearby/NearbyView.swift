@@ -181,7 +181,10 @@ final class NearbySearch {
             // needs the list rebuilt now.
             let wasRefresh = self.refreshing
             self.refreshing = false
-            guard firstTime || wasRefresh else { return }
+            // A quiet daily refresh also swaps in when it worked, so new places
+            // (such as added prayer rooms) show without waiting for a move.
+            let fresh = ok && self.here.map { MasjidList.shared.isFresh(near: $0) } == true
+            guard firstTime || wasRefresh || fresh else { return }
             if !ok { self.listFailed = true }
             if let now = self.here { self.search(around: now) }
         }
