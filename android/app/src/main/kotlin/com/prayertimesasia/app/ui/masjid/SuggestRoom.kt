@@ -90,10 +90,10 @@ fun SuggestRoomContent(near: Coordinates?, live: Coordinates?) {
         Field("Anything else", remarks, "Opening hours, or who may use it", lines = 3) { remarks = it; copied = false }
 
         Box(Modifier.fillMaxWidth().clip(CircleShape).background(if (ready) Palette.sunArc else Palette.sunArc.copy(alpha = 0.4f)).clickable(enabled = ready) {
-            val uri = "mailto:${Reviews.FEEDBACK_EMAIL}?subject=${Uri.encode(mail.first)}&body=${Uri.encode(mail.second)}"
-            runCatching { context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse(uri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            val uri = Reviews.noteUrl("Suggest a prayer room", mail.second, name)
+            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
         }.padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
-            Text("Send by email", style = Txt.bodySemibold, color = Color.Black.copy(alpha = 0.85f))
+            Text("Send your suggestion", style = Txt.bodySemibold, color = Color.Black.copy(alpha = 0.85f))
         }
         if (!ready) Text("Add the place name and either the address or a pin.", style = Txt.footnote, color = Palette.secondary)
         else Box(Modifier.fillMaxWidth().clip(CircleShape).background(Palette.primary.copy(alpha = 0.08f)).clickable {
@@ -101,7 +101,7 @@ fun SuggestRoomContent(near: Coordinates?, live: Coordinates?) {
         }.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
             Text(if (copied) "Copied" else "No email app? Copy the note", style = Txt.subheadlineSemibold, color = Palette.primary)
         }
-        Text("It goes to ${Reviews.FEEDBACK_EMAIL} from your own email app. JazakAllahu khairan for helping others find a place to pray.",
+        Text("It opens our note page with your words filled in. Add your email there so we can thank you. JazakAllahu khairan for helping others find a place to pray.",
             style = Txt.footnote, color = Palette.secondary)
         Spacer(Modifier.height(8.dp))
     }
