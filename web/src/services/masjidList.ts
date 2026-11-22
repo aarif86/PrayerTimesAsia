@@ -53,7 +53,11 @@ export function parseTile(json: unknown): ListPlace[] | null {
     if (typeof row[6] === 'string' && row[6]) place.facilities = row[6]
     if (typeof row[7] === 'string' && row[7]) place.hours = row[7]
     const d = row[8]
-    if (d && typeof d === 'object' && !Array.isArray(d)) place.details = d as RoomDetails
+    if (d && typeof d === 'object' && !Array.isArray(d)) {
+      const clean: RoomDetails = {}
+      for (const [k, v] of Object.entries(d)) if (typeof v === 'string' && v) (clean as Record<string, string>)[k] = v
+      if (Object.keys(clean).length) place.details = clean
+    }
     out.push(place)
   }
   return out

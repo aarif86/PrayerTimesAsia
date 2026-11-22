@@ -229,7 +229,7 @@ def room_details(v: dict, address: str) -> dict:
     cap = []
     for key, label in (("femaleCapacity", "women"), ("maleCapacity", "men"), ("unisexCapacity", "shared"), ("sharedCapacity", "shared")):
         n = v.get(key)
-        if isinstance(n, (int, float)) and n > 0:
+        if isinstance(n, (int, float)) and n > 0 and not any(c.startswith(label + " ") for c in cap):
             cap.append(f"{label} {int(n)}")
     if cap:
         d["c"] = ", ".join(cap)
@@ -261,6 +261,13 @@ def musolla_db_places(data: dict) -> list:
         musollah = True
         address = " ".join(str(v.get("address") or "").split())
         details = room_details(v, address)
+        # Apps from before the details column only show the address, so the floor goes there too.
+        level = details.get("l", "")
+        has_floor = re.search(r"\blevel\b|\blvl\b|#\s*[0-9b]", address, re.I)
+        if level and not has_floor:
+            floor = level if level.lower().startswith(("level", "lvl", "b", "l")) and not level.isdigit() else f"level {level}"
+            address = f"{address}, {floor}" if address else floor[:1].upper() + floor[1:]
+            details.pop("l")  # new apps show it from the address, so no second copy
         row = [f"m{str(v.get('uuid') or key)[:13]}", round(lat, 5), round(lon, 5), name, address[:160], 1 if musollah else 0]
         women = (v.get("femaleCapacity") or 0) not in (0, "0", "") or "female" in str(v.get("remarks") or "").lower() and "no female" not in str(v.get("remarks") or "").lower()
         row.append("w" if women else "")
