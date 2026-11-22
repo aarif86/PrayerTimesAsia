@@ -122,11 +122,16 @@ export function ShadowCamera() {
 
   useEffect(() => {
     let stream: MediaStream | null = null
+    let cancelled = false
     if (!navigator.mediaDevices?.getUserMedia) { setCamera('off'); return }
     navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false })
-      .then((s) => { stream = s; if (video.current) { video.current.srcObject = s; void video.current.play() } setCamera('on') })
-      .catch(() => setCamera('off'))
-    return () => stream?.getTracks().forEach((t) => t.stop())
+      .then((s) => {
+        // Closed before the camera arrived: turn it straight off again.
+        if (cancelled) { s.getTracks().forEach((t) => t.stop()); return }
+        stream = s; if (video.current) { video.current.srcObject = s; void video.current.play() } setCamera('on')
+      })
+      .catch(() => { if (!cancelled) setCamera('off') })
+    return () => { cancelled = true; stream?.getTracks().forEach((t) => t.stop()) }
   }, [])
 
   useEffect(() => {

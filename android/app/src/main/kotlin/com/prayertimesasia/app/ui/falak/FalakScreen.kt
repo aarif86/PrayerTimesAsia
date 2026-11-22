@@ -173,8 +173,13 @@ private fun ToolRows(state: AppState, place: Place, now: Instant, full: Boolean,
     val plan = remember(d, place.coordinates) { Falak.shadowDay(d.year, d.monthValue, d.dayOfMonth, place.coordinates) }
     val today = remember(d, place.coordinates) { Falak.rashdulQiblat(d.year, d.monthValue, d.dayOfMonth, r.zone, place.coordinates) }
     val asr = Prayer.ASR.name(r.naming)
-    val next = today.firstOrNull { it.time >= now }
-    val qiblaLine = if (next != null) tr(R.string.falak_qiblaSunToday, "time" to r.formatted(next.time)) else tr(R.string.falak_qiblaSunHow)
+    val next = today.firstOrNull { it.time > now }
+    val later = if (next == null) remember(d, place.coordinates) { nextAlignment(state, place, d) } else null
+    val qiblaLine = when {
+        next != null -> tr(R.string.falak_qiblaSunToday, "time" to r.formatted(next.time))
+        later != null -> tr(R.string.falak_qiblaSunNext, "date" to DateTimeFormatter.ofPattern("d MMMM", Locale.ENGLISH).format(later.time.atZone(r.zone)))
+        else -> tr(R.string.falak_qiblaSunNone)
+    }
     val divider = @Composable { HorizontalDivider(Modifier.padding(start = 62.dp), color = Palette.primary.copy(alpha = 0.12f)) }
     GlassCard(padding = 0.dp) {
         ToolRow(Icons.AutoMirrored.Filled.DirectionsWalk, Color(0xFFD4A017), tr(R.string.falak_stepsTitle), tr(R.string.falak_stepsSub, "name" to asr),

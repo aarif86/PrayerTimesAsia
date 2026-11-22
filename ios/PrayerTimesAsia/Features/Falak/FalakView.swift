@@ -89,8 +89,7 @@ struct FalakView: View {
         let plan = Falak.shadowDay(year: ymd.0, month: ymd.1, day: ymd.2, coordinates: place.coordinates)
         let asr = Prayer.asr.name(model.naming)
         let today = Falak.rashdulQiblat(year: ymd.0, month: ymd.1, day: ymd.2, timeZone: model.timeZone, coordinates: place.coordinates)
-        let qiblaLine = today.first(where: { $0.time >= now }).map { "Today at \(model.formatted($0.time))" }
-            ?? "At this minute every shadow lines up with the qibla"
+        let qiblaLine = qiblaSub(place: place, now: now, today: today)
         VStack(spacing: 0) {
             ToolRow(symbol: "figure.walk", tint: Theme.gold, title: "Shadow steps",
                     subtitle: "Find \(asr) with your own shadow",
@@ -117,6 +116,23 @@ struct FalakView: View {
             }
         }
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+    }
+}
+
+extension FalakView {
+    /// When the sun next lines up with the qibla: later today, or the next day it does.
+    func qiblaSub(place: Place, now: Date, today: [Falak.Alignment]) -> String {
+        if let next = today.first(where: { $0.time > now }) { return "Today at \(model.formatted(next.time))" }
+        for offset in 1...60 {
+            let ymd = model.ymd(model.noon(now, plus: offset))
+            if let first = Falak.rashdulQiblat(year: ymd.0, month: ymd.1, day: ymd.2, timeZone: model.timeZone,
+                                               coordinates: place.coordinates).first {
+                var style = Date.FormatStyle().day().month(.wide)
+                style.timeZone = model.timeZone
+                return "Next on \(first.time.formatted(style))"
+            }
+        }
+        return "Not in the coming weeks here"
     }
 }
 

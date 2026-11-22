@@ -150,6 +150,9 @@ struct ShadowCameraView: View {
             .contentShape(Rectangle())
             .onTapGesture { location in
                 guard motion.available, model.activePlace != nil else { return }
+                // A tap on the info card, or at or above the horizon, isn't the shadow's head.
+                guard location.y < h * 0.72,
+                      depression(y: location.y / max(h, 1), pitch: motion.pitch, h: h, focal: focal) > 1 else { return }
                 tap = (location.y / max(h, 1), motion.pitch)
                 announce(focal: focal, h: h)
             }
@@ -342,8 +345,13 @@ final class CameraFeed {
     private(set) var authorized = false
     @ObservationIgnored let session = AVCaptureSession()
     @ObservationIgnored private var configured = false
+    /// False once the screen has closed, so a late permission answer can't turn the camera on.
+    @ObservationIgnored private var wanted = false
+    /// One queue, so starting and stopping always happen in order.
+    @ObservationIgnored private let queue = DispatchQueue(label: "falak.camera")
 
     func start() {
+        wanted = true
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized: run()
         case .notDetermined:
@@ -355,6 +363,7 @@ final class CameraFeed {
     }
 
     private func run() {
+        guard wanted else { return }
         authorized = true
         if !configured {
             session.beginConfiguration()
@@ -366,12 +375,13 @@ final class CameraFeed {
             configured = true
         }
         let s = session
-        DispatchQueue.global(qos: .userInitiated).async { s.startRunning() }
+        queue.async { s.startRunning() }
     }
 
     func stop() {
+        wanted = false
         let s = session
-        DispatchQueue.global(qos: .userInitiated).async { s.stopRunning() }
+        queue.async { s.stopRunning() }
     }
 }
 

@@ -41,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -194,7 +195,10 @@ fun ShadowCameraScreen(state: AppState, onClose: () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) {
         val hPx = with(LocalDensity.current) { maxHeight.toPx() }
         val focal = (hPx / 2) / tan(30.0 * PI / 180)
-        fun dep(y: Float, p: Double) = p + atan((y * hPx - hPx / 2) / focal) * 180 / PI
+        val dep: (Float, Double) -> Double = { y, p -> p + atan((y * hPx - hPx / 2) / focal) * 180 / PI }
+        // The tap handler lives on across frames, so it reads the newest values.
+        val latestPitch = rememberUpdatedState(pitch)
+        val latestDep = rememberUpdatedState(dep)
         if (granted) CameraPreview()
         if (place != null) {
             val now = state.now
@@ -210,12 +214,14 @@ fun ShadowCameraScreen(state: AppState, onClose: () -> Unit) {
             val lineY = if (p != null) (hPx / 2 + focal * tan((asrDep - p) * PI / 180)).toFloat() else -1f
             val lineColor = if (begun) green else Color.White
 
-            Canvas(Modifier.fillMaxSize().pointerInput(p) {
+            Canvas(Modifier.fillMaxSize().pointerInput(Unit) {
                 detectTapGestures { o ->
-                    val pp = pitch ?: return@detectTapGestures
+                    val pp = latestPitch.value ?: return@detectTapGestures
                     val y = o.y / size.height
+                    // A tap on the info card, or at or above the horizon, isn't the shadow's head.
+                    if (y > 0.72f || latestDep.value(y, pp) <= 1) return@detectTapGestures
                     tap = y to pp
-                    val rd = Falak.cameraReading(dep(y, pp), state.now, place.coordinates, r.zone, school)
+                    val rd = Falak.cameraReading(latestDep.value(y, pp), state.now, place.coordinates, r.zone, school)
                     if (rd.asrBegun == true) {
                         view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                         view.postDelayed({ view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) }, 300)
