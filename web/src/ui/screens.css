@@ -736,3 +736,53 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .settings-back { display: inline-flex; align-items: center; gap: 2px; margin: 20px 0 0 -6px; padding: 6px 8px; border: 0; background: none; color: var(--accent); font: inherit; font-size: 17px; cursor: pointer; border-radius: 10px; }
 .settings-back:focus-visible { outline: 2px solid var(--accent); }
 .settings-sub-title { margin: 4px 0 4px; }
+
+/* Falak for everyone (Nov 2026): sky slider, tool list, story, shadow steps and the shadow camera. */
+.falak2 { gap: 14px; }
+.falak2 .falak-head p { margin: 4px 0 0; }
+.falak-foot { font-size: 13px; color: var(--fg2); text-align: center; margin: 8px 12px 0; }
+.sky-card { border-radius: 22px; overflow: hidden; background: var(--glass); border: 1px solid var(--stroke); -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); }
+.sky-card svg { display: block; width: 100%; height: auto; }
+.sky-info { padding: 14px 16px 18px; }
+.sky-time { font-size: 13px; font-weight: 600; letter-spacing: 0.3px; color: var(--fg2); text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.sky-name { font-size: 28px; font-weight: 700; margin-top: 2px; }
+.sky-info p { margin: 4px 0 14px; font-size: 15px; min-height: 40px; }
+.sky-info input[type=range] { width: 100%; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: var(--fill2); outline-offset: 6px; }
+.sky-info input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); border: 0; }
+.sky-info input[type=range]::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); border: 0; }
+.falak-ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+.falak-tools .value { font-weight: 600; }
+.why-row { align-items: flex-start; }
+.why-row .sub { font-size: 15px; }
+.story { display: flex; flex-direction: column; gap: 4px; }
+.story .story-pic { width: 100%; height: auto; border-radius: 14px; margin-bottom: 8px; display: block; }
+.falak .story p { margin: 0; font-size: 15px; }
+.story .story-word { font-size: 13px; color: var(--accent); margin-top: 4px; }
+.story .hadith-line { margin-top: 8px; }
+.authority-card { border-radius: 22px; padding: 18px; text-align: center; background: var(--gold); color: #1a1407; }
+.authority-card p { margin: 4px 0 0; font-size: 14px; opacity: 0.85; }
+.steps-hero { text-align: center; padding: 4px 0 22px; }
+.steps-n { font-size: 76px; font-weight: 200; letter-spacing: -2px; line-height: 1; margin: 8px 0 4px; }
+.steps-n span { font-size: 26px; font-weight: 500; letter-spacing: 0; color: var(--fg2); margin-left: 6px; }
+.steps-list .item { align-items: flex-start; }
+.step-num { width: 26px; height: 26px; border-radius: 50%; background: var(--fill2); display: grid; place-items: center; font-size: 14px; font-weight: 600; flex: none; margin-top: 1px; }
+.steps-pic { display: block; width: 100%; height: auto; margin-top: 16px; border-radius: 16px; background: var(--fill); color: var(--fg); }
+.shadow-cam { position: fixed; inset: 0; z-index: 60; background: #000; color: #fff; --fg: #fff; --fg2: rgba(235, 235, 245, 0.62); overflow: hidden; }
+.shadow-cam-dim { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0.12) 45%, rgba(0, 0, 0, 0.6) 100%); pointer-events: none; }
+.shadow-cam-marks { position: absolute; inset: 0; pointer-events: none; }
+.glass-dark { background: rgba(30, 30, 32, 0.62); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); border: 0.5px solid rgba(255, 255, 255, 0.14); color: #fff; }
+.sc-close { position: absolute; top: calc(var(--safe-top) + 14px); left: 16px; width: 38px; height: 38px; z-index: 2; }
+.sc-pill { position: absolute; top: calc(var(--safe-top) + 14px); left: 50%; transform: translateX(-50%); border-radius: 999px; padding: 9px 18px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 17px; white-space: nowrap; z-index: 2; }
+.sc-pill.begun { background: #30D158; color: #000; }
+.sc-pill .dot { width: 11px; height: 11px; border-radius: 50%; }
+.sc-sheet { position: absolute; left: 10px; right: 10px; bottom: calc(var(--safe-bottom) + 10px); border-radius: 30px; padding: 18px 20px 16px; z-index: 2; }
+.sc-k { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--fg2); }
+.sc-big { font-size: 40px; font-weight: 700; letter-spacing: -0.5px; margin: 2px 0 12px; }
+.sc-big span { font-size: 20px; font-weight: 500; color: var(--fg2); letter-spacing: 0; }
+.sc-bar { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
+.sc-bar i { display: block; height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.sc-scale { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--fg2); margin-top: 8px; }
+.sc-hint { display: flex; align-items: center; gap: 8px; color: var(--fg2); font-size: 13px; margin-top: 10px; }
+.sc-how { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-size: 17px; font-weight: 600; }
+.sc-foot { font-size: 12px; color: var(--fg2); margin-top: 12px; }
+.sc-sheet .primary-btn { margin-top: 12px; }

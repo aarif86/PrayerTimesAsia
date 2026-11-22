@@ -52,6 +52,12 @@ const shots = [
   ['15-qibla-day', { tab: 'qibla', appearance: 'system', now: DAY }],
   ['16-falak-night', { tab: 'falak', appearance: 'dark', now: NIGHT }],
   ['17-falak-day', { tab: 'falak', appearance: 'system', now: DAY }],
+  // Falak for everyone: the sky slider and its Then, Now and Why parts, and shadow steps.
+  ['17b-falak-asr', { tab: 'falak', appearance: 'dark', now: '2026-10-25T16:30:00+08:00' }],
+  ['17c-falak-then', { tab: 'falak', appearance: 'dark', now: DAY }, (p) => p.click('.falak2 .segmented button:nth-child(2)')],
+  ['17d-falak-now', { tab: 'falak', appearance: 'dark', now: DAY }, (p) => p.click('.falak2 .segmented button:nth-child(3)')],
+  ['17e-falak-why', { tab: 'falak', appearance: 'system', now: DAY }, (p) => p.click('.falak2 .segmented button:nth-child(4)')],
+  ['17f-shadow-steps', { tab: 'falak', appearance: 'dark', now: DAY }, (p) => p.click('.falak-tools .item:first-child')],
   ['18-masjid', { tab: 'masjid', appearance: 'dark', now: NIGHT }],
   ['19-settings', { tab: 'settings', appearance: 'dark', now: NIGHT }],
   ['20-settings-makers', { tab: 'settings', appearance: 'dark', now: NIGHT, settings: 'makers' }],

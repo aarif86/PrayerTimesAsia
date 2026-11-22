@@ -47,7 +47,7 @@ export const GRADE_TINT: Record<SourceGrade, string> = {
 
 export type SheetKind =
   | { kind: 'places'; forHome?: boolean } | { kind: 'sanad'; day: PrayerDay } | { kind: 'calendar' } | { kind: 'makers'; placement: string }
-  | { kind: 'journey' } | { kind: 'level' } | { kind: 'ar' } | { kind: 'alerts-help' } | { kind: 'credits' } | { kind: 'install' }
+  | { kind: 'journey' } | { kind: 'level' } | { kind: 'ar' } | { kind: 'falak-expert' } | { kind: 'shadow-steps' } | { kind: 'shadow-camera' } | { kind: 'alerts-help' } | { kind: 'credits' } | { kind: 'install' }
   | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup'; prayer?: Prayer | 'friday'; view?: 'check' }
   | { kind: 'guide' } | { kind: 'feedback' } | { kind: 'review' } | { kind: 'suggest-room'; near?: Coordinates }
 

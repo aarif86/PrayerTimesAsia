@@ -82,3 +82,44 @@ describe('Falak', () => {
     expect(ramadan[0]).toEqual(['imsak', today.times.fajr - 600_000])
   })
 })
+
+describe('Falak for everyone', () => {
+  it('counts Asr in your own steps (Singapore, 22 Oct 2026)', () => {
+    const d = Falak.shadowDay(2026, 10, 22, singapore)
+    // Noon shadow 0.22 of the body, so Asr at 7 × 1.22 ≈ 8.5 steps.
+    expect(Falak.halfSteps(Falak.asrSteps(d, 'standard'))).toBe(8.5)
+    expect(Falak.halfSteps(Falak.asrSteps(d, 'hanafi'))).toBe(15.5)
+    const atAsr = Falak.sunPosition(d.asrShafii!, singapore).altitude
+    expect(Falak.shadowSteps(atAsr)).toBeCloseTo(Falak.asrSteps(d, 'standard'), 1)
+  })
+
+  it('turns a camera angle into ground distance and back', () => {
+    expect(Falak.groundDistance(1, 45)).toBeCloseTo(1, 6)
+    expect(Falak.depressionTo(1.2, Falak.groundDistance(1.2, 30))).toBeCloseTo(30, 6)
+    expect(Falak.groundDistance(1, 0)).toBe(Infinity)
+  })
+
+  it('reads Asr from the shadow camera', () => {
+    const d = Falak.shadowDay(2026, 10, 22, singapore)
+    const target = Falak.asrSteps(d, 'standard')
+    const at = (steps: number) => Falak.depressionTo(Falak.CHEST_HEIGHT, steps / Falak.FEET_PER_BODY)
+    const before = Falak.cameraReading(at(target - 1), sg(15, 30), singapore, SGT, 'standard')
+    expect(before.asrBegun).toBe(false)
+    const after = Falak.cameraReading(at(target + 1), sg(16, 30), singapore, SGT, 'standard')
+    expect(after.asrBegun).toBe(true)
+    expect(after.steps).toBeCloseTo(target + 1, 6)
+    expect(Falak.cameraReading(at(20), sg(9, 0), singapore, SGT, 'standard').asrBegun).toBeNull()
+  })
+
+  it('names the sky for the slider', () => {
+    const times = { fajr: sg(5, 35), sunrise: sg(6, 55), dhuhr: sg(12, 52), asr: sg(16, 8), maghrib: sg(18, 55), isha: sg(20, 6) }
+    expect(Falak.skyStage(sg(4, 0), times)).toBe('night')
+    expect(Falak.skyStage(sg(6, 0), times)).toBe('fajr')
+    expect(Falak.skyStage(sg(7, 0), times)).toBe('sunrise')
+    expect(Falak.skyStage(sg(10, 0), times)).toBe('morning')
+    expect(Falak.skyStage(sg(13, 0), times)).toBe('dhuhr')
+    expect(Falak.skyStage(sg(17, 0), times)).toBe('asr')
+    expect(Falak.skyStage(sg(19, 30), times)).toBe('maghrib')
+    expect(Falak.skyStage(sg(21, 0), times)).toBe('isha')
+  })
+})

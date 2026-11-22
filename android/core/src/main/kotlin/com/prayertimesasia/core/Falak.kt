@@ -206,4 +206,75 @@ object Falak {
             asrReached = if (afternoon) shadow >= day.asrShadow(height, school) else null,
         )
     }
+
+    // Falak for everyone (Nov 2026): your own body as the shadow stick, the
+    // shadow camera and the sky slider. Same maths as web core/falak.ts.
+
+    /**
+     * A person is about seven of their own feet tall (the classical rule behind
+     * Ibn Mas'ud's "three to five feet", Sunan Abi Dawud 400), so a shadow
+     * counted heel to toe works the same for anyone, tall or short.
+     */
+    const val FEET_PER_BODY = 7.0
+    /** A phone held at the chest is about this share of the person's height off the ground. */
+    const val CHEST_HEIGHT = 0.72
+
+    /** Your shadow, in your own steps, with the sun at [altitude]. */
+    fun shadowSteps(altitude: Double): Double = FEET_PER_BODY * shadowLength(1.0, altitude)
+
+    /** Asr begins when your shadow reaches this many of your own steps. */
+    fun asrSteps(day: ShadowDay, school: AsrSchool): Double = FEET_PER_BODY * day.asrShadow(1.0, school)
+
+    /** Rounds to the nearest half step (8.46 to 8.5). */
+    fun halfSteps(x: Double): Double = Math.round(x * 2) / 2.0
+
+    /** 8.5 as "8½", the way people say it. */
+    fun stepsText(x: Double): String {
+        val h = halfSteps(x)
+        val whole = kotlin.math.floor(h).toInt()
+        val half = h - whole > 0.25
+        if (whole == 0) return if (half) "½" else "0"
+        return "$whole" + if (half) "½" else ""
+    }
+
+    /** A ground point seen [depression] degrees below the horizon from a phone [phoneHeight] up lies this far away. */
+    fun groundDistance(phoneHeight: Double, depression: Double): Double =
+        if (depression <= 0.5) Double.POSITIVE_INFINITY else phoneHeight / Astro.dtan(depression)
+
+    /** How far below the horizon a ground point [distance] away appears. */
+    fun depressionTo(phoneHeight: Double, distance: Double): Double = Astro.darctan2(phoneHeight, max(distance, 0.001))
+
+    /** [asrBegun] is null before noon, when Asr can't have begun. */
+    data class CameraReading(val steps: Double, val target: Double, val asrBegun: Boolean?)
+
+    /** The tip of your head's shadow, seen [depression] degrees below the horizon from a phone at your chest. */
+    fun cameraReading(depression: Double, clock: Instant, coordinates: Coordinates, zone: ZoneId, school: AsrSchool): CameraReading {
+        val c = clock.atZone(zone).toLocalDate()
+        val day = shadowDay(c.year, c.monthValue, c.dayOfMonth, coordinates)
+        val steps = FEET_PER_BODY * groundDistance(CHEST_HEIGHT, depression)
+        val target = asrSteps(day, school)
+        return CameraReading(steps, target, if (clock < day.noon) null else steps >= target)
+    }
+
+    enum class SkyStage { NIGHT, FAJR, SUNRISE, MORNING, DHUHR, ASR, MAGHRIB, ISHA }
+
+    /** What the sky shows at [t], judged against the day's timetable. */
+    fun skyStage(t: Instant, times: Map<Prayer, Instant>): SkyStage {
+        val fajr = times[Prayer.FAJR] ?: return SkyStage.NIGHT
+        val sunrise = times[Prayer.SUNRISE] ?: return SkyStage.NIGHT
+        val dhuhr = times[Prayer.DHUHR] ?: return SkyStage.NIGHT
+        val asr = times[Prayer.ASR] ?: return SkyStage.NIGHT
+        val maghrib = times[Prayer.MAGHRIB] ?: return SkyStage.NIGHT
+        val isha = times[Prayer.ISHA] ?: return SkyStage.NIGHT
+        return when {
+            t < fajr -> SkyStage.NIGHT
+            t < sunrise -> SkyStage.FAJR
+            t < sunrise.plusSeconds(20 * 60) -> SkyStage.SUNRISE
+            t < dhuhr -> SkyStage.MORNING
+            t < asr -> SkyStage.DHUHR
+            t < maghrib -> SkyStage.ASR
+            t < isha -> SkyStage.MAGHRIB
+            else -> SkyStage.ISHA
+        }
+    }
 }

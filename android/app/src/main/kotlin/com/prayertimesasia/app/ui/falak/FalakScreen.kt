@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -21,12 +24,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Brightness2
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.Visibility
@@ -90,14 +96,22 @@ import kotlin.math.sin
 import com.prayertimesasia.app.ui.components.tr
 import com.prayertimesasia.app.R
 
+/** The four parts of the Falak home. */
+private enum class FalakPart { SKY, THEN, NOW, WHY }
+
+/** What the Falak home can open. */
+enum class FalakTool { STEPS, SHADOW_CAMERA, EXPERT, CAMERA, LEVEL }
+
 /**
- * Falak Mode: Qibla Day, daily rashdul qiblat, the tongkat istiwa' for Zuhur
- * and Asr, and guided sky signs. Everything here is Grade F - for learning and
- * checking, never in place of the authority's times.
+ * Falak for everyone (Nov 2026). A calm home that tells the story in four
+ * parts: the Sky (slide the sun), Then (how Muslims read the sky), Now (try it
+ * yourself) and Why it helps. The detailed tools stay under Expert tools.
+ * Everything here is Grade F, for learning, never in place of the authority's times.
  */
 @Composable
-fun FalakScreen(state: AppState, openCamera: () -> Unit, openLevel: () -> Unit) {
+fun FalakScreen(state: AppState, open: (FalakTool) -> Unit) {
     val place = state.resolver.activePlace
+    var part by remember { mutableStateOf(FalakPart.SKY) }
     Box(Modifier.fillMaxSize()) {
         LivingSkyBackground(state.skyNow)
         if (place == null) {
@@ -109,48 +123,121 @@ fun FalakScreen(state: AppState, openCamera: () -> Unit, openLevel: () -> Unit) 
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Dims.gutter).padding(bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Header()
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Tile("Camera", "AR qibla & shadow", Icons.Filled.CameraAlt, Modifier.weight(1f), openCamera)
-                Tile("Level", "Ground & stick", Icons.Filled.Straighten, Modifier.weight(1f), openLevel)
+            Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(tr(R.string.tab_falak), style = display(34.sp, FontWeight.Bold), color = Palette.primary)
+                Text(tr(R.string.falak_lede), style = Txt.subheadline, color = Palette.secondary)
             }
-            SunSafetyCard()
-            ShadowCompassCard(place, now)
-            QiblaDayCard(state, place, now)
-            RashdulCard(state, place, now)
-            ShadowStickCard(state, place)
-            SkySignsCard(state, now)
-            Text(Falak.REVIEW_NOTE, style = Txt.footnote, color = Palette.primary.copy(alpha = 0.75f))
+            PartPicker(part) { part = it }
+            when (part) {
+                FalakPart.SKY -> {
+                    SkySliderCard(state, place, now)
+                    ToolRows(state, place, now, full = false, open = open)
+                }
+                FalakPart.THEN -> ThenStory(state)
+                FalakPart.NOW -> {
+                    ToolRows(state, place, now, full = true, open = open)
+                    SunSafetyCard()
+                }
+                FalakPart.WHY -> WhyItHelps()
+            }
+            Text(tr(R.string.falak_footer), style = Txt.footnote, color = Palette.secondary, textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth())
+        }
+    }
+}
+
+/** An iPhone style segmented control. */
+@Composable
+private fun PartPicker(selected: FalakPart, onPick: (FalakPart) -> Unit) {
+    val labels = listOf(FalakPart.SKY to tr(R.string.falak_tabSky), FalakPart.THEN to tr(R.string.falak_tabThen),
+        FalakPart.NOW to tr(R.string.falak_tabNow), FalakPart.WHY to tr(R.string.falak_tabWhy))
+    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Palette.material).padding(2.dp)) {
+        labels.forEach { (p, label) ->
+            val on = p == selected
+            Box(
+                Modifier.weight(1f).heightIn(min = 48.dp).clip(RoundedCornerShape(8.dp))
+                    .background(if (on) Palette.primary.copy(alpha = 0.16f) else Color.Transparent)
+                    .selectable(selected = on, role = Role.Tab) { onPick(p) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(label, style = if (on) Txt.footnoteSemibold else Txt.footnote, color = Palette.primary)
+            }
         }
     }
 }
 
 @Composable
-private fun Header() {
-    Column(Modifier.padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Icon(AppIcons.falak, null, Modifier.size(38.dp), tint = Palette.accent)
-            Text(tr(R.string.tab_falak), style = display(34.sp, FontWeight.Bold), color = Palette.primary)
-        }
-        Text("Read the time and the qibla from the sun and its shadow, the way the muwaqqit did - no signal needed.",
-            style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.9f))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Chip("Grade F · Falak", Icons.Filled.WbSunny)
-            Chip("Pending shariah review", Icons.Filled.HourglassEmpty)
+private fun ToolRows(state: AppState, place: Place, now: Instant, full: Boolean, open: (FalakTool) -> Unit) {
+    val r = state.resolver
+    val d = now.atZone(r.zone).toLocalDate()
+    val plan = remember(d, place.coordinates) { Falak.shadowDay(d.year, d.monthValue, d.dayOfMonth, place.coordinates) }
+    val today = remember(d, place.coordinates) { Falak.rashdulQiblat(d.year, d.monthValue, d.dayOfMonth, r.zone, place.coordinates) }
+    val asr = Prayer.ASR.name(r.naming)
+    val next = today.firstOrNull { it.time > now }
+    val later = if (next == null) remember(d, place.coordinates) { nextAlignment(state, place, d) } else null
+    val qiblaLine = when {
+        next != null -> tr(R.string.falak_qiblaSunToday, "time" to r.formatted(next.time))
+        later != null -> tr(R.string.falak_qiblaSunNext, "date" to DateTimeFormatter.ofPattern("d MMMM", Locale.ENGLISH).format(later.time.atZone(r.zone)))
+        else -> tr(R.string.falak_qiblaSunNone)
+    }
+    val divider = @Composable { HorizontalDivider(Modifier.padding(start = 62.dp), color = Palette.primary.copy(alpha = 0.12f)) }
+    GlassCard(padding = 0.dp) {
+        ToolRow(Icons.AutoMirrored.Filled.DirectionsWalk, Color(0xFFD4A017), tr(R.string.falak_stepsTitle), tr(R.string.falak_stepsSub, "name" to asr),
+            Falak.stepsText(Falak.asrSteps(plan, r.asrSchool))) { open(FalakTool.STEPS) }
+        divider()
+        ToolRow(Icons.Filled.CameraAlt, Color(0xFF2EAD5B), tr(R.string.falak_cameraTitle), tr(R.string.falak_cameraTitleSub)) { open(FalakTool.SHADOW_CAMERA) }
+        divider()
+        ToolRow(Icons.Filled.Navigation, Color(0xFF2F7DE1), tr(R.string.falak_qiblaSunTitle), qiblaLine) { open(FalakTool.EXPERT) }
+        if (full) {
+            divider()
+            ToolRow(Icons.Filled.WbSunny, Color(0xFFF08A24), tr(R.string.falak_sunOverKaaba), longDate(state, Falak.nextQiblaDay(now))) { open(FalakTool.EXPERT) }
+            divider()
+            ToolRow(Icons.Filled.Visibility, Color(0xFF8E5BD6), tr(R.string.falak_camera), tr(R.string.falak_cameraSub)) { open(FalakTool.CAMERA) }
+            divider()
+            ToolRow(Icons.Filled.Straighten, Color(0xFF1FA39A), tr(R.string.falak_level), tr(R.string.falak_levelSub)) { open(FalakTool.LEVEL) }
+            divider()
+            ToolRow(Icons.Filled.Tune, Color(0xFF8A8A8E), tr(R.string.falak_expert), tr(R.string.falak_expertSub)) { open(FalakTool.EXPERT) }
         }
     }
 }
 
 @Composable
-private fun Tile(title: String, subtitle: String, icon: ImageVector, modifier: Modifier, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(Dims.corner)
-    Column(
-        modifier.clip(shape).background(Palette.material).clickable(onClick = onClick).padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+private fun ToolRow(icon: ImageVector, tint: Color, title: String, subtitle: String, trailing: String? = null, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Icon(icon, null, Modifier.size(28.dp), tint = Palette.accent)
-        Text(title, style = Txt.headline, color = Palette.primary)
-        Text(subtitle, style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
+        IconTile(icon, tint)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = Txt.bodySemibold, color = Palette.primary)
+            Text(subtitle, style = Txt.footnote, color = Palette.secondary, maxLines = 2)
+        }
+        if (trailing != null) Text(trailing, style = StepsNumber, color = Palette.gold)
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.size(20.dp), tint = Palette.primary.copy(alpha = 0.4f))
+    }
+}
+
+/** The detailed F1 tools, unchanged, for people who want the numbers. */
+@Composable
+fun FalakExpertContent(state: AppState) {
+    val place = state.resolver.activePlace ?: return
+    val now = state.now
+    Column(
+        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Dims.gutter).padding(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(tr(R.string.falak_expert), style = Txt.headline, color = Palette.primary)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Chip(tr(R.string.falak_grade), Icons.Filled.WbSunny)
+            Chip(tr(R.string.falak_pendingReview), Icons.Filled.HourglassEmpty)
+        }
+        SunSafetyCard()
+        ShadowCompassCard(place, now)
+        QiblaDayCard(state, place, now)
+        RashdulCard(state, place, now)
+        ShadowStickCard(state, place)
+        SkySignsCard(state, now)
+        Text(Falak.REVIEW_NOTE, style = Txt.footnote, color = Palette.primary.copy(alpha = 0.75f))
     }
 }
 

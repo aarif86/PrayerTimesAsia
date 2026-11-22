@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks'
 import {
-  CheckCircle2, Hourglass, Moon, MoonStar, Ruler, ScanEye, Sparkles, Sun, SunDim, Sunrise, Sunset, TriangleAlert,
+  CalendarDays, Camera, CheckCircle2, ChevronRight, Compass, Eye, Footprints, Hourglass, Landmark, Moon, MoonStar, Ruler, ScanEye, Sparkles, Sun, SunDim, Sunrise, Sunset, TriangleAlert,
 } from 'lucide-preact'
 import { fix } from '../core/astro'
 import * as Falak from '../core/falak'
@@ -10,64 +10,292 @@ import type { Prayer } from '../core/prayer'
 import { daysBetween, noonDaysAfter, zoned, zonedTime } from '../core/tz'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
-import { fmtDate, openSheet } from './common'
-import { TabFalak } from './icons'
+import { fmtDate, openSheet, Segmented, Sheet } from './common'
+import { Hadith } from './Hadith'
+import { stepsText } from './FalakShadow'
 import { appLocale, tr } from '../core/appWords'
 
 const ymd = (ms: number) => { const z = zoned(ms, store.timeZone); return [z.year, z.month, z.day] as const }
 const longDate = (ms: number) => fmtDate(ms, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 const minutesText = (m: number) => tr('falak.minutes', { n: Math.abs(Math.round(m)) })
 
+type FalakTab = 'sky' | 'then' | 'now' | 'why'
+
 /**
- * Falak Mode F1: Qibla Day, daily rashdul qiblat, the tongkat istiwa' for Zuhur
- * and Asr, and guided sky signs. Everything here is Grade F - for learning and
- * checking, never in place of the authority's times.
+ * Falak for everyone (Nov 2026): a sky you can slide, then three short parts.
+ * Then (how Muslims read the sky), Now (try it yourself) and Why it helps. The
+ * detailed F1 tools live on in Expert tools. Everything here is for learning;
+ * it never replaces the authority's times.
  */
 export function FalakScreen() {
   const s = useStore()
   const now = useNow(30_000)
+  const [tab, setTab] = useState<FalakTab>('sky')
   const place = s.activePlace
   if (!place) return <div class="page"><p class="headline" style={{ textAlign: 'center', marginTop: '40vh' }}>{tr('falak.choosePlace')}</p></div>
   return (
-    <div class="page falak">
+    <div class="page falak falak2">
       <div class="falak-head">
-        <div class="row" style={{ gap: '12px' }}>
-          <TabFalak size={38} class="accent" />
-          <h1 class="h-title">{tr('falak.title')}</h1>
-        </div>
-        <p class="subhead" style={{ margin: '8px 0', opacity: 0.9 }}>{tr('falak.intro')}</p>
+        <h1 class="h-title">{tr('falak.title')}</h1>
+        <p class="subhead secondary">{tr('falak.lede')}</p>
+      </div>
+      <Segmented value={tab} onChange={setTab} options={[
+        { value: 'sky', label: tr('falak.tabSky') }, { value: 'then', label: tr('falak.tabThen') },
+        { value: 'now', label: tr('falak.tabNow') }, { value: 'why', label: tr('falak.tabWhy') },
+      ]} />
+      {tab === 'sky' && <><SkySlider place={place} now={now} /><ToolRows place={place} now={now} short /></>}
+      {tab === 'then' && <ThenStory />}
+      {tab === 'now' && <ToolRows place={place} now={now} />}
+      {tab === 'why' && <WhyItHelps />}
+      <p class="falak-foot">{tr('falak.footer')}</p>
+    </div>
+  )
+}
+
+/** The detailed F1 cards: shadow now, Qibla Day, rashdul qiblat, the shadow stick and sky signs. */
+export function FalakExpertSheet() {
+  const s = useStore()
+  const now = useNow(30_000)
+  const place = s.activePlace
+  return (
+    <Sheet title={tr('falak.expert')} full>
+      {place && <div class="falak">
         <div class="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
           <span class="chip"><SunDim size={15} />{tr('falak.grade')}</span>
           <span class="chip"><Hourglass size={14} />{tr('falak.pendingReview')}</span>
         </div>
+        <SunSafety />
+        <ShadowCompassCard place={place} now={now} />
+        <QiblaDayCard place={place} now={now} />
+        <RashdulCard place={place} now={now} />
+        <ShadowStickCard place={place} now={now} />
+        <SkySignsCard now={now} />
+        <p class="footnote" style={{ opacity: 0.75 }}>{Falak.REVIEW_NOTE}</p>
+      </div>}
+    </Sheet>
+  )
+}
+
+// ---- The sky slider -------------------------------------------------------
+
+const W = 343, H = 170, GY = 132, STICK_X = 172, STICK = 44
+
+function mix(a: number[], b: number[], k: number) { return a.map((v, i) => Math.round(v + (b[i] - v) * Math.min(1, Math.max(0, k)))) }
+const rgb = (c: number[]) => `rgb(${c.join(',')})`
+
+/** Sky colours for a sun `alt` degrees up, at a given stage. */
+function skyColours(alt: number, stage: Falak.SkyStage, k: number): [string, string] {
+  const night = [10, 18, 42], dusk = [30, 40, 90]
+  if (stage === 'fajr') return [rgb(mix(night, [40, 80, 150], k)), rgb(mix([110, 130, 175], [235, 240, 248], k))]
+  if (alt > 0) { const d = Math.min(1, alt / 25); return [rgb(mix([62, 100, 170], [31, 95, 191], d)), rgb(mix([240, 170, 110], [143, 195, 240], d))] }
+  if (stage === 'maghrib') return [rgb(mix(dusk, night, k)), rgb(mix([226, 104, 60], [30, 45, 85], k))]
+  return [rgb(night), rgb([24, 36, 74])]
+}
+
+function SkySlider({ place, now }: { place: Place; now: number }) {
+  const day = store.day(now)
+  const t0 = day ? day.times.fajr - 45 * 60_000 : now - 12 * 3_600_000
+  const t1 = day ? day.times.isha + 45 * 60_000 : now + 12 * 3_600_000
+  const [picked, setPicked] = useState<number | null>(null)
+  const t = picked ?? Math.min(t1, Math.max(t0, now))
+  if (!day) return null
+  const times = day.times
+  const stage = Falak.skyStage(t, times)
+  const sun = Falak.sunPosition(t, place.coordinates)
+  const [y, m, d] = ymd(t)
+  const plan = Falak.shadowDay(y, m, d, place.coordinates)
+  const factor = store.asrSchool === 'hanafi' ? 2 : 1
+  const k = stage === 'fajr' ? (t - times.fajr) / (times.sunrise - times.fajr)
+    : stage === 'maghrib' ? (t - times.maghrib) / (times.isha - times.maghrib) : 0
+  const [top, bottom] = skyColours(sun.altitude, stage, k)
+  // East on the left, west on the right: the sun moves the same way as your finger.
+  const p = (t - times.sunrise) / (times.maghrib - times.sunrise)
+  const sx = 16 + (W - 32) * p
+  const sy = GY - (GY - 22) * Math.max(0, Math.sin(Math.min(90, sun.altitude) * Math.PI / 180))
+  const morning = t < plan.noon
+  const shadow = sun.altitude > 2 ? Math.min(150, STICK * Falak.shadowLength(1, sun.altitude)) : 0
+  const asrX = STICK_X - STICK * (Falak.noonShadow(plan, 1) + factor)
+  const names = { fajr: store.name('fajr'), dhuhr: store.name('dhuhr'), asr: store.name('asr'), maghrib: store.name('maghrib'), isha: store.name('isha') }
+  const title = { night: tr('falak.stageNight'), fajr: names.fajr, sunrise: tr('falak.stageSunrise'), morning: tr('falak.stageMorning'), dhuhr: names.dhuhr, asr: names.asr, maghrib: names.maghrib, isha: names.isha }[stage]
+  const say = {
+    night: tr('falak.stageNightSay', { name: names.fajr }), fajr: tr('falak.stageFajrSay', { name: names.fajr }),
+    sunrise: tr('falak.stageSunriseSay', { name: names.fajr }), morning: tr('falak.stageMorningSay'),
+    dhuhr: tr('falak.stageDhuhrSay'), asr: tr('falak.stageAsrSay'), maghrib: tr('falak.stageMaghribSay'), isha: tr('falak.stageIshaSay'),
+  }[stage]
+  const dark = sun.altitude <= 0 && stage !== 'fajr'
+  const stars = dark ? Array.from({ length: 14 }, (_, i) => <circle cx={(i * 73) % W} cy={(i * 37) % 100 + 8} r="1.2" fill="#fff" opacity=".7" />) : null
+  const minutes = Math.round((t1 - t0) / 60_000)
+  return (
+    <div class="sky-card">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${title}. ${say}`}>
+        <defs>
+          <linearGradient id="falak-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color={top} /><stop offset="1" stop-color={bottom} /></linearGradient>
+          <radialGradient id="falak-sun"><stop offset="0" stop-color="#fff7d6" /><stop offset=".45" stop-color="#ffd66b" /><stop offset="1" stop-color="#ffd66b" stop-opacity="0" /></radialGradient>
+        </defs>
+        <rect width={W} height={H} fill="url(#falak-sky)" />
+        {stars}
+        {stage === 'fajr' && <ellipse cx="50" cy={GY} rx={110 + 60 * k} ry={8 + 8 * k} fill="#fff" opacity={0.5 + 0.35 * k} />}
+        {stage === 'maghrib' && <ellipse cx={W - 50} cy={GY} rx="150" ry={22 * (1 - k)} fill="#ff5a2a" opacity={0.75 * (1 - k)} />}
+        <path d={`M16 ${GY} Q${W / 2} -20 ${W - 16} ${GY}`} fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="1.2" stroke-dasharray="2 5" />
+        {sun.altitude > -1 && <><circle cx={sx} cy={sy} r="26" fill="url(#falak-sun)" /><circle cx={sx} cy={sy} r="10" fill="#fff4c4" /></>}
+        <rect y={GY} width={W} height={H - GY} fill={dark ? '#2b281f' : '#e8d6ae'} />
+        {shadow > 0 && <path d={`M${STICK_X} ${GY} L${STICK_X + (morning ? 1 : -1) * shadow} ${GY + 3} L${STICK_X + (morning ? 1 : -1) * shadow} ${GY + 5} L${STICK_X} ${GY + 3}Z`} fill="#000" opacity=".38" />}
+        {!morning && sun.altitude > 0 && <>
+          <line x1={asrX} y1={GY - 4} x2={asrX} y2={GY + 12} stroke="#fff" stroke-width="2" />
+          <text x={asrX} y={GY + 26} fill="#3a3a3c" font-size="10" font-weight="600" text-anchor="middle">{names.asr}</text>
+        </>}
+        <rect x={STICK_X - 1.5} y={GY - STICK} width="3" height={STICK} rx="1.5" fill={dark ? '#bbb' : '#3a3a3c'} />
+        <text x="12" y={GY - 7} fill="#fff" font-size="10" font-weight="600" opacity=".8">{tr('falak.east').toUpperCase()}</text>
+        <text x={W - 12} y={GY - 7} fill="#fff" font-size="10" font-weight="600" opacity=".8" text-anchor="end">{tr('falak.west').toUpperCase()}</text>
+      </svg>
+      <div class="sky-info">
+        <div class="sky-time">{store.formatted(t)}</div>
+        <div class="sky-name">{title}</div>
+        <p class="secondary">{say}</p>
+        <input type="range" min="0" max={minutes} step="1" value={Math.round((t - t0) / 60_000)} aria-label={tr('falak.slideSun')}
+          onInput={(e) => setPicked(t0 + Number((e.target as HTMLInputElement).value) * 60_000)} />
       </div>
-      <div class="tools">
-        <button class="tool glass" onClick={() => openSheet({ kind: 'ar' })}>
-          <ScanEye size={28} class="accent" strokeWidth={2} />
-          <span class="headline">{tr('falak.camera')}</span>
-          <span class="caption" style={{ opacity: 0.75 }}>{tr('falak.cameraSub')}</span>
-        </button>
-        <button class="tool glass" onClick={() => openSheet({ kind: 'level' })}>
-          <LevelGlyph />
-          <span class="headline">{tr('falak.level')}</span>
-          <span class="caption" style={{ opacity: 0.75 }}>{tr('falak.levelSub')}</span>
-        </button>
-      </div>
-      <SunSafety />
-      <ShadowCompassCard place={place} now={now} />
-      <QiblaDayCard place={place} now={now} />
-      <RashdulCard place={place} now={now} />
-      <ShadowStickCard place={place} now={now} />
-      <SkySignsCard now={now} />
-      <p class="footnote" style={{ opacity: 0.75, marginTop: '16px' }}>{Falak.REVIEW_NOTE}</p>
     </div>
+  )
+}
+
+// ---- Tools -----------------------------------------------------------------
+
+function Ico({ bg, children }: { bg: string; children: preact.ComponentChildren }) {
+  return <span class="falak-ico" style={{ background: bg }}>{children}</span>
+}
+
+function ToolRows({ place, now, short }: { place: Place; now: number; short?: boolean }) {
+  const [y, m, d] = ymd(now)
+  const plan = Falak.shadowDay(y, m, d, place.coordinates)
+  const target = Falak.halfSteps(Falak.asrSteps(plan, store.asrSchool))
+  const today = Falak.rashdulQiblat(y, m, d, store.timeZone, place.coordinates).filter((a) => a.time > now)[0]
+  let next: Falak.Alignment | null = null
+  if (!today) {
+    for (let off = 1; off <= 60 && !next; off++) {
+      const [yy, mm, dd] = ymd(noonDaysAfter(now, off, store.timeZone))
+      next = Falak.rashdulQiblat(yy, mm, dd, store.timeZone, place.coordinates)[0] ?? null
+    }
+  }
+  const qiblaSub = today ? tr('falak.qiblaSunToday', { time: store.formatted(today.time) })
+    : next ? tr('falak.qiblaSunNext', { date: fmtDate(next.time, { day: 'numeric', month: 'long' }) }) : tr('falak.qiblaSunNone')
+  const official = store.day(now)
+  const asrName = store.name('asr')
+  const steps = stepsText(target)
+  return (
+    <div class="group falak-tools">
+      <button class="item" onClick={() => openSheet({ kind: 'shadow-steps' })}>
+        <Ico bg="#FF9F0A"><Footprints size={17} color="#fff" strokeWidth={2.4} /></Ico>
+        <span class="label">{tr('falak.stepsTitle')}<span class="sub">{tr('falak.stepsSub', { name: asrName })}</span></span>
+        <span class="value mono">{steps}</span><ChevronRight size={16} class="secondary" />
+      </button>
+      <button class="item" onClick={() => openSheet({ kind: 'shadow-camera' })}>
+        <Ico bg="#0A84FF"><Camera size={17} color="#fff" strokeWidth={2.4} /></Ico>
+        <span class="label">{tr('falak.cameraTitle')}<span class="sub">{tr('falak.cameraTitleSub')}</span></span>
+        <ChevronRight size={16} class="secondary" />
+      </button>
+      <button class="item" onClick={() => openSheet({ kind: 'falak-expert' })}>
+        <Ico bg="#30D158"><Compass size={17} color="#fff" strokeWidth={2.4} /></Ico>
+        <span class="label">{tr('falak.qiblaSunTitle')}<span class="sub">{qiblaSub}</span></span>
+        <ChevronRight size={16} class="secondary" />
+      </button>
+      {!short && <>
+        <div class="item">
+          <Ico bg="#5E5CE6"><Sun size={17} color="#fff" strokeWidth={2.4} /></Ico>
+          <span class="label">{tr('falak.sunOverKaaba')}<span class="sub">{fmtDate(Falak.nextQiblaDay(now), { day: 'numeric', month: 'long' })} · {store.formatted(Falak.nextQiblaDay(now))}</span></span>
+        </div>
+        {official && <button class="item" onClick={() => openSheet({ kind: 'falak-expert' })}>
+          <Ico bg="#3A3A8C"><MoonStar size={17} color="#fff" strokeWidth={2.4} /></Ico>
+          <span class="label">{tr('falak.skyTonight')}<span class="sub">{tr('falak.skyTonightSub', { name: store.name('maghrib'), time: store.formatted(official.times.maghrib) })}</span></span>
+          <ChevronRight size={16} class="secondary" />
+        </button>}
+        <button class="item" onClick={() => openSheet({ kind: 'ar' })}>
+          <Ico bg="#FF375F"><ScanEye size={17} color="#fff" strokeWidth={2.4} /></Ico>
+          <span class="label">{tr('falak.camera')}<span class="sub">{tr('falak.cameraSub')}</span></span>
+          <ChevronRight size={16} class="secondary" />
+        </button>
+        <button class="item" onClick={() => openSheet({ kind: 'level' })}>
+          <Ico bg="#8E8E93"><LevelGlyph /></Ico>
+          <span class="label">{tr('falak.level')}<span class="sub">{tr('falak.levelSub')}</span></span>
+          <ChevronRight size={16} class="secondary" />
+        </button>
+        <button class="item" onClick={() => openSheet({ kind: 'falak-expert' })}>
+          <Ico bg="#636366"><Ruler size={17} color="#fff" strokeWidth={2.4} /></Ico>
+          <span class="label">{tr('falak.expert')}<span class="sub">{tr('falak.expertSub')}</span></span>
+          <ChevronRight size={16} class="secondary" />
+        </button>
+      </>}
+    </div>
+  )
+}
+
+// ---- Then and Why ------------------------------------------------------------
+
+function StoryPic({ kind }: { kind: 1 | 2 | 3 | 4 | 5 }) {
+  const box = (children: preact.ComponentChildren, bg = '#2b4a7e') => <svg class="story-pic" viewBox="0 0 300 96" aria-hidden="true"><rect width="300" height="96" fill={bg} />{children}</svg>
+  if (kind === 1) return box(<><circle cx="244" cy="26" r="13" fill="#ffd66b" /><rect y="72" width="300" height="24" fill="#d8c39a" /><rect x="121" y="36" width="58" height="38" fill="#111" /><rect x="121" y="44" width="58" height="4" fill="#E8B64A" />
+    {[72, 94, 214].map((x) => <g fill="#f4f1ea" opacity=".9"><circle cx={x} cy="56" r="5.5" /><rect x={x - 4.5} y="62" width="9" height="11" rx="3" /></g>)}</>, '#1d3a6e')
+  if (kind === 2) return box(<><circle cx="252" cy="22" r="12" fill="#ffe08a" /><rect y="70" width="300" height="26" fill="#d8c39a" /><rect x="148" y="26" width="4" height="46" rx="2" fill="#3a3a3c" />
+    <path d="M150 71 L72 77 L72 80 L150 73Z" fill="#000" opacity=".4" />{[78, 98, 118].map((x) => <ellipse cx={x} cy="88" rx="8" ry="3.5" fill="#5a3b1c" />)}</>, '#3f7ac0')
+  if (kind === 3) return <svg class="story-pic" viewBox="0 0 300 96" aria-hidden="true"><defs>
+    <linearGradient id="st-dusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1530" /><stop offset=".7" stop-color="#5a2a50" /><stop offset="1" stop-color="#e2683c" /></linearGradient>
+    <linearGradient id="st-dawn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1530" /><stop offset=".75" stop-color="#3b5a8a" /><stop offset="1" stop-color="#e9eef7" /></linearGradient></defs>
+    <rect width="150" height="96" fill="url(#st-dusk)" /><rect x="150" width="150" height="96" fill="url(#st-dawn)" /><rect y="82" width="300" height="14" fill="#0a0f1e" /></svg>
+  if (kind === 4) return box(<><circle cx="150" cy="48" r="30" fill="none" stroke="#E8B64A" stroke-width="3" /><circle cx="150" cy="48" r="20" fill="none" stroke="#E8B64A" stroke-width="1" />
+    <line x1="150" y1="18" x2="150" y2="78" stroke="#E8B64A" /><line x1="120" y1="48" x2="180" y2="48" stroke="#E8B64A" /><line x1="150" y1="48" x2="171" y2="28" stroke="#fff" stroke-width="2" /></>)
+  return box(<><circle cx="150" cy="16" r="10" fill="#ffd66b" /><rect y="70" width="300" height="26" fill="#d8c39a" /><rect x="132" y="42" width="36" height="30" fill="#111" /><rect x="132" y="48" width="36" height="3" fill="#E8B64A" />
+    <rect x="60" y="48" width="3" height="24" fill="#3a3a3c" /><path d="M61 71 L20 74 L20 76 L61 73Z" fill="#000" opacity=".4" /><rect x="238" y="48" width="3" height="24" fill="#3a3a3c" /><path d="M240 71 L282 74 L282 76 L240 73Z" fill="#000" opacity=".4" /></>, '#3f7ac0')
+}
+
+function Story({ pic, title, text, word, children }: { pic: 1 | 2 | 3 | 4 | 5; title: string; text: string; word?: string; children?: preact.ComponentChildren }) {
+  return (
+    <div class="glass card story">
+      <StoryPic kind={pic} />
+      <div class="headline">{title}</div>
+      <p class="secondary">{text}</p>
+      {word && <p class="story-word">{word}</p>}
+      {children}
+    </div>
+  )
+}
+
+function ThenStory() {
+  const n = (p: Prayer) => store.name(p)
+  return (
+    <>
+      <Story pic={1} title={tr('falak.then1Title')} text={tr('falak.then1')}><Hadith id="falakJibril" variant="line" /></Story>
+      <Story pic={2} title={tr('falak.then2Title')} text={tr('falak.then2', { dhuhr: n('dhuhr'), asr: n('asr') })} word={tr('falak.then2Word')}><Hadith id="falakFeet" variant="line" /></Story>
+      <Story pic={3} title={tr('falak.then3Title')} text={tr('falak.then3', { isha: n('isha'), fajr: n('fajr') })} word={tr('falak.then3Word')}><Hadith id="falakDawn" variant="line" /></Story>
+      <Story pic={4} title={tr('falak.then4Title')} text={tr('falak.then4')} word={tr('falak.then4Word')} />
+      <Story pic={5} title={tr('falak.then5Title')} text={tr('falak.then5')} />
+    </>
+  )
+}
+
+function WhyItHelps() {
+  const row = (bg: string, icon: preact.ComponentChildren, title: string, text: string) => (
+    <div class="item why-row"><Ico bg={bg}>{icon}</Ico><span class="label">{title}<span class="sub">{text}</span></span></div>
+  )
+  return (
+    <>
+      <div class="group">
+        {row('#0A84FF', <Eye size={17} color="#fff" strokeWidth={2.4} />, tr('falak.why1Title'), tr('falak.why1'))}
+        {row('#30D158', <Compass size={17} color="#fff" strokeWidth={2.4} />, tr('falak.why2Title'), tr('falak.why2'))}
+        {row('#FF9F0A', <CalendarDays size={17} color="#fff" strokeWidth={2.4} />, tr('falak.why3Title'), tr('falak.why3'))}
+        {row('#5E5CE6', <Landmark size={17} color="#fff" strokeWidth={2.4} />, tr('falak.why4Title'), tr('falak.why4'))}
+      </div>
+      <div class="authority-card">
+        <div class="headline">{tr('falak.authority')}</div>
+        <p>{tr('falak.authoritySub')}</p>
+      </div>
+    </>
   )
 }
 
 function LevelGlyph() {
   return (
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="accent" aria-hidden="true">
-      <rect x="2" y="7.5" width="20" height="9" rx="2.5" /><rect x="9" y="10" width="6" height="4" rx="2" fill="currentColor" stroke="none" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" aria-hidden="true">
+      <rect x="2" y="7.5" width="20" height="9" rx="2.5" /><rect x="9" y="10" width="6" height="4" rx="2" fill="#fff" stroke="none" />
     </svg>
   )
 }

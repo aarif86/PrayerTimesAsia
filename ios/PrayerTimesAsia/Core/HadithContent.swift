@@ -4,7 +4,7 @@ import Foundation
 /// Every hadith was checked on sunnah.com (see ref). Generated from
 /// web/src/core/hadith.ts, keep the three in step (android core HadithContent.kt).
 struct Hadith: Identifiable, Sendable {
-    enum ID: String, CaseIterable, Sendable { case fixedTimes, coolPrayers, syuruk, river, illness, fajrRakaat, nightPrayer, whiteDays, monThu, azan, iftar }
+    enum ID: String, CaseIterable, Sendable { case fixedTimes, coolPrayers, syuruk, river, illness, fajrRakaat, nightPrayer, whiteDays, monThu, azan, iftar, falakJibril, falakDawn, falakFeet }
     let id: ID
     let arabic: String
     let meaning: Doa.Words
@@ -88,5 +88,23 @@ struct Hadith: Identifiable, Sendable {
             meaning: .init(en: "Whoever gives iftar to a fasting person gets the same reward as him.", ms: "Sesiapa memberi makan orang berbuka, dia mendapat pahala seperti orang itu.", id: "Siapa yang memberi makan orang berbuka, ia mendapat pahala seperti orang itu."),
             source: .init(en: "The Prophet ﷺ, narrated by at Tirmidhi", ms: "Sabda Nabi ﷺ, riwayat at Tirmizi", id: "Sabda Nabi ﷺ, riwayat at Tirmidzi"),
             ref: "Jami at Tirmidhi 807 (Sahih)"),
+        Hadith(
+            id: .falakJibril,
+            arabic: "الْوَقْتُ فِيمَا بَيْنَ هَذَيْنِ الْوَقْتَيْنِ",
+            meaning: .init(en: "Jibril led me in prayer at the Kaaba on two days. The time is between these two times.", ms: "Jibril mengimamiku di Kaabah selama dua hari. Waktunya ialah antara dua waktu ini.", id: "Jibril mengimamiku di Kakbah selama dua hari. Waktunya adalah di antara dua waktu ini."),
+            source: .init(en: "The Prophet ﷺ, narrated by Abu Dawud", ms: "Sabda Nabi ﷺ, riwayat Abu Daud", id: "Sabda Nabi ﷺ, riwayat Abu Dawud"),
+            ref: "Sunan Abi Dawud 393 (Hasan Sahih, al Albani). Also Jami at Tirmidhi 149"),
+        Hadith(
+            id: .falakDawn,
+            arabic: "لَا يَغُرَّنَّكُمْ أَذَانُ بِلَالٍ وَلَا هَذَا الْبَيَاضُ حَتَّى يَسْتَطِيرَ هَكَذَا",
+            meaning: .init(en: "Do not let the azan of Bilal or this upright whiteness fool you, until the light spreads out like this.", ms: "Jangan kamu tertipu oleh azan Bilal dan cahaya putih yang tegak ini, sehingga cahaya itu melebar begini.", id: "Jangan kalian tertipu oleh azan Bilal dan cahaya putih yang tegak ini, sampai cahaya itu melebar seperti ini."),
+            source: .init(en: "The Prophet ﷺ, narrated by Muslim", ms: "Sabda Nabi ﷺ, riwayat Muslim", id: "Sabda Nabi ﷺ, riwayat Muslim"),
+            ref: "Sahih Muslim 1094b"),
+        Hadith(
+            id: .falakFeet,
+            arabic: "كَانَ قَدْرُ صَلَاةِ رَسُولِ اللَّهِ ﷺ الظُّهْرَ فِي الصَّيْفِ ثَلَاثَةَ أَقْدَامٍ إِلَى خَمْسَةِ أَقْدَامٍ",
+            meaning: .init(en: "The shadow when the Prophet ﷺ prayed Dhuhr in summer was three to five feet, and in winter five to seven feet.", ms: "Ukuran bayang ketika Rasulullah ﷺ solat Zohor pada musim panas ialah tiga hingga lima tapak kaki, dan pada musim sejuk lima hingga tujuh tapak kaki.", id: "Ukuran bayangan ketika Rasulullah ﷺ salat Zuhur pada musim panas adalah tiga sampai lima telapak kaki, dan pada musim dingin lima sampai tujuh telapak kaki."),
+            source: .init(en: "Ibn Masud, narrated by Abu Dawud", ms: "Ibn Masud, riwayat Abu Daud", id: "Ibnu Masud, riwayat Abu Dawud"),
+            ref: "Sunan Abi Dawud 400 (Sahih, al Albani)"),
     ]
 }
