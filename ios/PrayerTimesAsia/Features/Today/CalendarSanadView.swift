@@ -53,7 +53,7 @@ struct CalendarSanadView: View {
                 }
 
                 Section {
-                    Link("Send an announcement", destination: URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/data/README.md#calendar")!)
+                    Link("Send an announcement", destination: URL(string: "https://prayertimes.asia/announcement.html")!)
                 } footer: {
                     Text("Every date shows who set it and how: moon sighting, calculation, or following another authority. Dates are shared openly under CC-BY 4.0.")
                 }

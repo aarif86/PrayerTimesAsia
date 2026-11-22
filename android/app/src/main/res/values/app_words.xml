@@ -227,6 +227,99 @@
     <string name="falak_signMaghrib" formatted="false">The whole disc of the sun has gone below the horizon and its upper edge has disappeared. Best seen over the sea or open land. Behind hills or buildings it vanishes early, so don\'t pray by that.</string>
     <string name="falak_signIsha" formatted="false">The red glow (shafaq ahmar) has gone from the western sky. This is the view of the Shafi\'i, Maliki and Hanbali schools. Imam Abu Hanifah held it is the white glow that follows it. Timetables use the sun\'s depth below the horizon (about 17° to 18°) instead.</string>
     <string name="falak_signFajr" formatted="false">True dawn (fajr sadiq) is a thin whiteness spreading sideways along the eastern horizon, growing steadily. It is not the false dawn (fajr kazib) before it, a faint upright column of light that fades again. Researchers still debate the exact depth of the sun at true dawn, so this stays for information only.</string>
+    <string name="falak_lede" formatted="false">The sun and the sky set the prayer times. Slide to see how.</string>
+    <string name="falak_tabSky" formatted="false">Sky</string>
+    <string name="falak_tabThen" formatted="false">Then</string>
+    <string name="falak_tabNow" formatted="false">Now</string>
+    <string name="falak_tabWhy" formatted="false">Why</string>
+    <string name="falak_slideSun" formatted="false">Slide the sun</string>
+    <string name="falak_east" formatted="false">East</string>
+    <string name="falak_west" formatted="false">West</string>
+    <string name="falak_stageNight" formatted="false">Night</string>
+    <string name="falak_stageNightSay" formatted="false">The sky is dark. {name} has not come yet.</string>
+    <string name="falak_stageFajrSay" formatted="false">A white line spreads along the eastern sky. {name} has begun.</string>
+    <string name="falak_stageSunrise" formatted="false">Sunrise</string>
+    <string name="falak_stageSunriseSay" formatted="false">The sun is up. {name} time has ended.</string>
+    <string name="falak_stageMorning" formatted="false">Morning</string>
+    <string name="falak_stageMorningSay" formatted="false">The shadow gets shorter as the sun climbs.</string>
+    <string name="falak_stageDhuhrSay" formatted="false">The sun has passed the middle. The shadow stopped shrinking and starts to grow.</string>
+    <string name="falak_stageAsrSay" formatted="false">The shadow has grown one length longer than at noon.</string>
+    <string name="falak_stageMaghribSay" formatted="false">The sun has fully set. A red glow stays in the west.</string>
+    <string name="falak_stageIshaSay" formatted="false">The red glow is gone. The sky is dark.</string>
+    <string name="falak_stepsTitle" formatted="false">Shadow steps</string>
+    <string name="falak_stepsSub" formatted="false">Find {name} with your own shadow</string>
+    <string name="falak_cameraTitle" formatted="false">Shadow camera</string>
+    <string name="falak_cameraTitleSub" formatted="false">Point, tap, done</string>
+    <string name="falak_qiblaSunTitle" formatted="false">Qibla from the sun</string>
+    <string name="falak_qiblaSunToday" formatted="false">Today at {time}</string>
+    <string name="falak_qiblaSunNext" formatted="false">Next on {date}</string>
+    <string name="falak_qiblaSunNone" formatted="false">Not in the coming weeks here</string>
+    <string name="falak_qiblaSunHow" formatted="false">At this minute every shadow lines up with the qibla. Face along the shadow.</string>
+    <string name="falak_sunOverKaaba" formatted="false">Sun over the Kaaba</string>
+    <string name="falak_skyTonight" formatted="false">Sky tonight</string>
+    <string name="falak_skyTonightSub" formatted="false">{name} at {time}</string>
+    <string name="falak_expert" formatted="false">Expert tools</string>
+    <string name="falak_expertSub" formatted="false">Shadow stick, Qibla Day and sky signs in detail</string>
+    <string name="falak_footer" formatted="false">For learning. Always follow your local religious authority.</string>
+    <string name="falak_then1Title" formatted="false">An angel taught the times</string>
+    <string name="falak_then1" formatted="false">Jibril led the Prophet ﷺ in prayer on two days. Once at the start of each time, and once at its end.</string>
+    <string name="falak_then2Title" formatted="false">A shadow told the time</string>
+    <string name="falak_then2" formatted="false">The Companions measured their shadow with their own feet. A short shadow meant {dhuhr}. A long one meant {asr}.</string>
+    <string name="falak_then2Word" formatted="false">Learn the word. Tongkat istiwa\' means a shadow stick.</string>
+    <string name="falak_then3Title" formatted="false">The sky told the rest</string>
+    <string name="falak_then3" formatted="false">When the red glow goes, it is {isha}. When a white line spreads along the sky, it is {fajr}.</string>
+    <string name="falak_then3Word" formatted="false">Learn the word. Shafaq is the glow after sunset.</string>
+    <string name="falak_then4Title" formatted="false">Timekeepers at the masjid</string>
+    <string name="falak_then4" formatted="false">Big masjids had a timekeeper. He used a sundial and an astrolabe to call the azan on time.</string>
+    <string name="falak_then4Word" formatted="false">Learn the word. A muwaqqit is a masjid timekeeper.</string>
+    <string name="falak_then5Title" formatted="false">The sun shows the qibla</string>
+    <string name="falak_then5" formatted="false">Twice a year the sun stands right above the Kaaba. At that minute every shadow points away from it.</string>
+    <string name="falak_why1Title" formatted="false">See it with your own eyes</string>
+    <string name="falak_why1" formatted="false">The times on your phone come from the sun. Now you can check them.</string>
+    <string name="falak_why2Title" formatted="false">Qibla with no signal</string>
+    <string name="falak_why2" formatted="false">Your location comes from GPS satellites, not the internet. The sun can still show the way.</string>
+    <string name="falak_why3Title" formatted="false">Know why times move</string>
+    <string name="falak_why3" formatted="false">The sun is a little higher or lower each day. So the times change a little too.</string>
+    <string name="falak_why4Title" formatted="false">Your masjid uses it too</string>
+    <string name="falak_why4" formatted="false">Official times are worked out from the sun by scholars of falak. They add a few minutes of care so nobody prays too early.</string>
+    <string name="falak_authority" formatted="false">Always follow your local religious authority</string>
+    <string name="falak_authoritySub" formatted="false">City lights and haze can hide the signs. One timetable keeps us praying together.</string>
+    <string name="falak_stepsLead" formatted="false">{name} begins when your shadow reaches</string>
+    <string name="falak_stepsUnit" formatted="false">steps</string>
+    <string name="falak_stepsToday" formatted="false">Today in {place}</string>
+    <string name="falak_step1" formatted="false">Stand with the sun behind you</string>
+    <string name="falak_step1Sub" formatted="false">Your shadow falls ahead of you.</string>
+    <string name="falak_step2" formatted="false">Mark where your head\'s shadow ends</string>
+    <string name="falak_step2Sub" formatted="false">A slipper or a stone is enough.</string>
+    <string name="falak_step3" formatted="false">Walk to it, heel to toe</string>
+    <string name="falak_step3Sub" formatted="false">Count each foot as you go.</string>
+    <string name="falak_step4" formatted="false">Compare with {n}</string>
+    <string name="falak_step4Sub" formatted="false">More steps means {name} has begun.</string>
+    <string name="falak_stepsWhy" formatted="false">A person is about 7 of their own feet tall, so this works for anyone, tall or short.</string>
+    <string name="falak_lookGround" formatted="false">Look at the ground, never at the sun.</string>
+    <string name="falak_camNotYet" formatted="false">Not yet</string>
+    <string name="falak_camBegun" formatted="false">{name} has begun</string>
+    <string name="falak_camMorning" formatted="false">Before noon</string>
+    <string name="falak_camMorningSub" formatted="false">The shadow is still shrinking. Come back after {time}.</string>
+    <string name="falak_camYourShadow" formatted="false">Your shadow</string>
+    <string name="falak_camOf" formatted="false">of {n} steps</string>
+    <string name="falak_camNoon" formatted="false">Noon</string>
+    <string name="falak_camInAbout" formatted="false">{name} in about {n} min</string>
+    <string name="falak_camTimetable" formatted="false">Your timetable says {time}</string>
+    <string name="falak_camWaitHint" formatted="false">A gentle tap now. Two taps when {name} begins.</string>
+    <string name="falak_camDoneHint" formatted="false">Two taps and a soft voice. No need to look.</string>
+    <string name="falak_camHow1" formatted="false">Sun behind you, hold the phone at your chest</string>
+    <string name="falak_camHow2" formatted="false">Point it down at your shadow</string>
+    <string name="falak_camHow3" formatted="false">Tap the head of your shadow</string>
+    <string name="falak_camRetap" formatted="false">Tap again to move the mark</string>
+    <string name="falak_camNeedMotion" formatted="false">Allow motion so the phone knows how it is tilted.</string>
+    <string name="falak_camAllow" formatted="false">Allow</string>
+    <string name="falak_camNoMotion" formatted="false">This device can\'t tell its tilt, so the camera can\'t measure. Use shadow steps instead.</string>
+    <string name="falak_camTooFlat" formatted="false">Tilt the phone up a little so the shadow\'s head is on screen.</string>
+    <string name="falak_camSayBegun" formatted="false">{name} has begun.</string>
+    <string name="falak_camSayNotYet" formatted="false">Not yet.</string>
+    <string name="falak_camEstimate" formatted="false">An estimate from the phone\'s tilt, for learning.</string>
+    <string name="falak_camAfterSunrise" formatted="false">Shadow readings start after sunrise. Come back in daylight.</string>
     <string name="falakTools_starting" formatted="false">Starting the camera…</string>
     <string name="falakTools_noCamera" formatted="false">Camera not available</string>
     <string name="falakTools_cameraHelp" formatted="false">This view draws the qibla and the stick\'s shadow over the camera. Allow the camera, or use the compass and the cards on the Falak tab.</string>

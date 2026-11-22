@@ -57,6 +57,10 @@ import com.prayertimesasia.app.Tab
 import com.prayertimesasia.app.ui.components.Dims
 import com.prayertimesasia.app.ui.falak.FalakCameraScreen
 import com.prayertimesasia.app.ui.falak.FalakScreen
+import com.prayertimesasia.app.ui.falak.FalakExpertContent
+import com.prayertimesasia.app.ui.falak.FalakTool
+import com.prayertimesasia.app.ui.falak.ShadowCameraScreen
+import com.prayertimesasia.app.ui.falak.ShadowStepsContent
 import com.prayertimesasia.app.ui.guide.GuideDialog
 import com.prayertimesasia.app.ui.falak.LevelScreen
 import com.prayertimesasia.app.ui.journey.JourneyScreen
@@ -102,6 +106,9 @@ sealed class Overlay {
     data object Credits : Overlay()
     data object Level : Overlay()
     data object Camera : Overlay()
+    data object ShadowCamera : Overlay()
+    data object ShadowSteps : Overlay()
+    data object FalakExpert : Overlay()
     data object MoveOut : Overlay()
     data object MoveIn : Overlay()
     data object Guide : Overlay()
@@ -208,7 +215,15 @@ fun TabContent(state: AppState, open: (Overlay) -> Unit) {
         Tab.PRAYER -> TodayScreen(state, openPlaces = { open(Overlay.Places) }, openCalendar = { open(Overlay.Calendar) },
             openSanad = { open(Overlay.Sanad(it)) })
         Tab.QIBLA -> QiblaScreen(state)
-        Tab.FALAK -> FalakScreen(state, openCamera = { open(Overlay.Camera) }, openLevel = { open(Overlay.Level) })
+        Tab.FALAK -> FalakScreen(state) { tool ->
+            open(when (tool) {
+                FalakTool.STEPS -> Overlay.ShadowSteps
+                FalakTool.SHADOW_CAMERA -> Overlay.ShadowCamera
+                FalakTool.EXPERT -> Overlay.FalakExpert
+                FalakTool.CAMERA -> Overlay.Camera
+                FalakTool.LEVEL -> Overlay.Level
+            })
+        }
         Tab.MASJID -> MasjidScreen(state, openAbout = { open(Overlay.About) })
         Tab.SETTINGS -> SettingsScreen(state, openPlaces = { open(Overlay.Places) }, openWidgetPreview = { open(Overlay.WidgetPreview) },
             openCredits = { open(Overlay.Credits) }, openMoveOut = { open(Overlay.MoveOut) }, openMoveIn = { open(Overlay.MoveIn) },
@@ -236,6 +251,11 @@ private fun Overlays(state: AppState, overlay: Overlay?, set: (Overlay?) -> Unit
         Overlay.Camera -> Dialog(onDismissRequest = close, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             FalakCameraScreen(state, close)
         }
+        Overlay.ShadowCamera -> Dialog(onDismissRequest = close, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            ShadowCameraScreen(state, close)
+        }
+        Overlay.ShadowSteps -> AppSheet(close) { ShadowStepsContent(state) }
+        Overlay.FalakExpert -> AppSheet(close) { FalakExpertContent(state) }
         Overlay.Guide -> GuideDialog(state, close)
     }
 }
@@ -299,7 +319,7 @@ private fun CreditsContent() {
         Triple("Maps and places", "Nearby masjids from OpenStreetMap (© OpenStreetMap contributors, ODbL) via the Overpass API. Directions open in your own maps app.", "https://www.openstreetmap.org/copyright"),
         Triple("Prayer rooms", "The musolla database on GitHub (LGPL 3.0), started by the KalamApps and PrayerTime.SG teams and kept by volunteers, for prayer rooms in malls, schools and sports centres. Our copy and fixes are shared back in the open.", "https://github.com/aarif86/musolla-database"),
         Triple("Font", "Nunito by the Nunito Project Authors, under the SIL Open Font License 1.1.", "https://github.com/googlefonts/nunito"),
-        Triple("Community data", "Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.", "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md"),
+        Triple("Community data", "Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.", "https://prayertimes.asia/verify.html"),
         Triple("Design", "The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my by Awsam Tech LLP, the Singapore and Malaysia app. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.", "https://www.awsamtech.com/"),
         Triple("This app", "Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.", "https://github.com/aarif86/PrayerTimesAsia"),
     )

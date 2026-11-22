@@ -35,3 +35,12 @@ Every form lives in GHL. No mailto links for anything people send us.
 7. **Record it.** Add the form id, tag and workflow to the project notes.
 
 Emails that are not form replies (welcome, done, reminders) follow the same template with a different heading and body.
+
+## Forms added for help and verify asks (22 Nov)
+
+| Page | Form | Form id | Tag | Workflow |
+| --- | --- | --- | --- | --- |
+| `/verify.html` | Prayer Times Asia, Help verify times | `0RZ4zMIPMefuDf8fC66h` | `verify-received` | Help verify times, Received |
+| `/announcement.html` | Prayer Times Asia, Ramadan and Eid announcement | `xh3RhineWThZyPHm9dmr` | `announcement-received` | Ramadan and Eid announcement, Received |
+
+Watch out for one trap. GHL custom fields are shared between forms, and editing a field's dropdown options changes every form that uses it. The verify form uses its own `verify_*` fields. The announcement form reuses the same fields and has the type dropdown removed, so check the live Notes form after touching any shared field.

@@ -39,9 +39,9 @@ const LINKS = {
   join: 'https://prayertimes.asia/join',
   instagram: 'https://www.instagram.com/prayertimesasia',
   facebook: 'https://www.facebook.com/prayertimesasia',
-  verify: 'https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md',
+  verify: 'https://prayertimes.asia/verify.html',
   newLook: 'https://prayertimes.asia/new-look.html',
-  picksRules: 'https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md',
+  picksRules: 'https://prayertimes.asia/barakah-picks.html',
 }
 
 type Page = 'location' | 'times' | 'accuracy' | 'look' | 'language' | 'ramadan' | 'tracker' | 'hadith' | 'move' | 'privacy' | 'help' | 'picks' | 'about'

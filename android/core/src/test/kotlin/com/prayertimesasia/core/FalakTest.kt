@@ -95,4 +95,46 @@ class FalakTest {
         val ramadan = BlessedTime.compute(today, tomorrow, singapore, isRamadan = true)
         assertEquals(today.time(Prayer.FAJR).minusSeconds(600), ramadan.first().second)
     }
+
+    // Falak for everyone (same cases as web tests/falak.test.ts)
+
+    @Test fun asrInYourOwnSteps() {
+        val d = Falak.shadowDay(2026, 10, 22, singapore)
+        assertEquals(8.5, Falak.halfSteps(Falak.asrSteps(d, AsrSchool.STANDARD)), 0.0)
+        assertEquals(15.5, Falak.halfSteps(Falak.asrSteps(d, AsrSchool.HANAFI)), 0.0)
+        assertEquals("8½", Falak.stepsText(8.46))
+        assertEquals("15", Falak.stepsText(15.0))
+        val atAsr = Falak.sunPosition(d.asrShafii!!, singapore).altitude
+        assertEquals(Falak.asrSteps(d, AsrSchool.STANDARD), Falak.shadowSteps(atAsr), 0.05)
+    }
+
+    @Test fun cameraAngleToGround() {
+        assertEquals(1.0, Falak.groundDistance(1.0, 45.0), 1e-6)
+        assertEquals(30.0, Falak.depressionTo(1.2, Falak.groundDistance(1.2, 30.0)), 1e-6)
+        assertEquals(Double.POSITIVE_INFINITY, Falak.groundDistance(1.0, 0.0), 0.0)
+    }
+
+    @Test fun shadowCameraReadsAsr() {
+        val d = Falak.shadowDay(2026, 10, 22, singapore)
+        val target = Falak.asrSteps(d, AsrSchool.STANDARD)
+        fun at(steps: Double) = Falak.depressionTo(Falak.CHEST_HEIGHT, steps / Falak.FEET_PER_BODY)
+        assertEquals(false, Falak.cameraReading(at(target - 1), sg(15, 30), singapore, sgt, AsrSchool.STANDARD).asrBegun)
+        val after = Falak.cameraReading(at(target + 1), sg(16, 30), singapore, sgt, AsrSchool.STANDARD)
+        assertEquals(true, after.asrBegun)
+        assertEquals(target + 1, after.steps, 1e-6)
+        assertEquals(null, Falak.cameraReading(at(20.0), sg(9, 0), singapore, sgt, AsrSchool.STANDARD).asrBegun)
+    }
+
+    @Test fun skyStageForSlider() {
+        val times = mapOf(Prayer.FAJR to sg(5, 35), Prayer.SUNRISE to sg(6, 55), Prayer.DHUHR to sg(12, 52),
+            Prayer.ASR to sg(16, 8), Prayer.MAGHRIB to sg(18, 55), Prayer.ISHA to sg(20, 6))
+        assertEquals(Falak.SkyStage.NIGHT, Falak.skyStage(sg(4, 0), times))
+        assertEquals(Falak.SkyStage.FAJR, Falak.skyStage(sg(6, 0), times))
+        assertEquals(Falak.SkyStage.SUNRISE, Falak.skyStage(sg(7, 0), times))
+        assertEquals(Falak.SkyStage.MORNING, Falak.skyStage(sg(10, 0), times))
+        assertEquals(Falak.SkyStage.DHUHR, Falak.skyStage(sg(13, 0), times))
+        assertEquals(Falak.SkyStage.ASR, Falak.skyStage(sg(17, 0), times))
+        assertEquals(Falak.SkyStage.MAGHRIB, Falak.skyStage(sg(19, 30), times))
+        assertEquals(Falak.SkyStage.ISHA, Falak.skyStage(sg(21, 0), times))
+    }
 }

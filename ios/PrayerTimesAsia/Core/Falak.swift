@@ -217,3 +217,78 @@ enum Falak {
             asrReached: afternoon ? shadow >= day.asrShadow(height: height, school: school) : nil)
     }
 }
+
+// MARK: - Falak for everyone (Nov 2026): your own body as the shadow stick,
+// the shadow camera and the sky slider. Same maths as web core/falak.ts.
+
+extension Falak {
+    /// A person is about seven of their own feet tall (the classical rule behind
+    /// Ibn Mas'ud's "three to five feet", Sunan Abi Dawud 400), so a shadow
+    /// counted heel to toe works the same for anyone, tall or short.
+    static let feetPerBody: Double = 7
+    /// A phone held at the chest is about this share of the person's height off the ground.
+    static let chestHeight: Double = 0.72
+
+    /// Your shadow, in your own steps, with the sun at `altitude`.
+    static func shadowSteps(altitude: Double) -> Double { feetPerBody * shadowLength(height: 1, altitude: altitude) }
+
+    /// Asr begins when your shadow reaches this many of your own steps.
+    static func asrSteps(_ day: ShadowDay, school: AsrSchool) -> Double { feetPerBody * day.asrShadow(height: 1, school: school) }
+
+    /// Rounds to the nearest half step (8.46 → 8.5).
+    static func halfSteps(_ x: Double) -> Double { (x * 2).rounded() / 2 }
+
+    /// 8.5 → "8½", the way people say it.
+    static func stepsText(_ x: Double) -> String {
+        let h = halfSteps(x), whole = Int(h.rounded(.down))
+        let half = h - Double(whole) > 0.25
+        if whole == 0 { return half ? "½" : "0" }
+        return "\(whole)" + (half ? "½" : "")
+    }
+
+    /// With the phone `phoneHeight` above level ground, a point seen `depression`
+    /// degrees below the horizon lies this far along the ground from your feet.
+    static func groundDistance(phoneHeight: Double, depression: Double) -> Double {
+        depression <= 0.5 ? .infinity : phoneHeight / Astro.dtan(depression)
+    }
+
+    /// How far below the horizon a ground point `distance` away appears.
+    static func depression(phoneHeight: Double, distance: Double) -> Double {
+        Astro.darctan2(phoneHeight, max(distance, 0.001))
+    }
+
+    struct CameraReading: Equatable {
+        var steps: Double
+        var target: Double
+        /// Before noon, Asr can't have begun (nil); afterwards, whether it has.
+        var asrBegun: Bool?
+    }
+
+    /// The tip of your head's shadow, seen `depression` degrees below the horizon from a phone at your chest.
+    static func cameraReading(depression: Double, at clock: Date, coordinates: Coordinates,
+                              timeZone: TimeZone, school: AsrSchool) -> CameraReading {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        let c = cal.dateComponents([.year, .month, .day], from: clock)
+        let day = shadowDay(year: c.year!, month: c.month!, day: c.day!, coordinates: coordinates)
+        let steps = feetPerBody * groundDistance(phoneHeight: chestHeight, depression: depression)
+        let target = asrSteps(day, school: school)
+        return CameraReading(steps: steps, target: target, asrBegun: clock < day.noon ? nil : steps >= target)
+    }
+
+    enum SkyStage: String { case night, fajr, sunrise, morning, dhuhr, asr, maghrib, isha }
+
+    /// What the sky shows at `t`, judged against the day's timetable.
+    static func skyStage(_ t: Date, times: [Prayer: Date]) -> SkyStage {
+        guard let fajr = times[.fajr], let sunrise = times[.sunrise], let dhuhr = times[.dhuhr],
+              let asr = times[.asr], let maghrib = times[.maghrib], let isha = times[.isha] else { return .night }
+        if t < fajr { return .night }
+        if t < sunrise { return .fajr }
+        if t < sunrise.addingTimeInterval(20 * 60) { return .sunrise }
+        if t < dhuhr { return .morning }
+        if t < asr { return .dhuhr }
+        if t < maghrib { return .asr }
+        if t < isha { return .maghrib }
+        return .isha
+    }
+}

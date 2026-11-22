@@ -98,4 +98,45 @@ final class FalakTests: XCTestCase {
         let ramadan = BlessedTime.compute(day: today, nextDay: tomorrow, coordinates: singapore, isRamadan: true)
         XCTAssertEqual(ramadan.first?.1, today.time(.fajr).addingTimeInterval(-600))
     }
+
+    // MARK: Falak for everyone (same cases as web tests/falak.test.ts)
+
+    func testAsrInYourOwnSteps() throws {
+        let d = Falak.shadowDay(year: 2026, month: 10, day: 22, coordinates: singapore)
+        XCTAssertEqual(Falak.halfSteps(Falak.asrSteps(d, school: .standard)), 8.5)
+        XCTAssertEqual(Falak.halfSteps(Falak.asrSteps(d, school: .hanafi)), 15.5)
+        XCTAssertEqual(Falak.stepsText(8.46), "8½")
+        XCTAssertEqual(Falak.stepsText(15.0), "15")
+        let atAsr = Falak.sunPosition(at: try XCTUnwrap(d.asrShafii), coordinates: singapore).altitude
+        XCTAssertEqual(Falak.shadowSteps(altitude: atAsr), Falak.asrSteps(d, school: .standard), accuracy: 0.05)
+    }
+
+    func testCameraAngleToGround() {
+        XCTAssertEqual(Falak.groundDistance(phoneHeight: 1, depression: 45), 1, accuracy: 1e-6)
+        XCTAssertEqual(Falak.depression(phoneHeight: 1.2, distance: Falak.groundDistance(phoneHeight: 1.2, depression: 30)), 30, accuracy: 1e-6)
+        XCTAssertEqual(Falak.groundDistance(phoneHeight: 1, depression: 0), .infinity)
+    }
+
+    func testShadowCameraReadsAsr() {
+        let d = Falak.shadowDay(year: 2026, month: 10, day: 22, coordinates: singapore)
+        let target = Falak.asrSteps(d, school: .standard)
+        func at(_ steps: Double) -> Double { Falak.depression(phoneHeight: Falak.chestHeight, distance: steps / Falak.feetPerBody) }
+        XCTAssertEqual(Falak.cameraReading(depression: at(target - 1), at: sg(15, 30), coordinates: singapore, timeZone: sgt, school: .standard).asrBegun, false)
+        let after = Falak.cameraReading(depression: at(target + 1), at: sg(16, 30), coordinates: singapore, timeZone: sgt, school: .standard)
+        XCTAssertEqual(after.asrBegun, true)
+        XCTAssertEqual(after.steps, target + 1, accuracy: 1e-6)
+        XCTAssertNil(Falak.cameraReading(depression: at(20), at: sg(9, 0), coordinates: singapore, timeZone: sgt, school: .standard).asrBegun)
+    }
+
+    func testSkyStageForSlider() {
+        let times: [Prayer: Date] = [.fajr: sg(5, 35), .sunrise: sg(6, 55), .dhuhr: sg(12, 52), .asr: sg(16, 8), .maghrib: sg(18, 55), .isha: sg(20, 6)]
+        XCTAssertEqual(Falak.skyStage(sg(4, 0), times: times), .night)
+        XCTAssertEqual(Falak.skyStage(sg(6, 0), times: times), .fajr)
+        XCTAssertEqual(Falak.skyStage(sg(7, 0), times: times), .sunrise)
+        XCTAssertEqual(Falak.skyStage(sg(10, 0), times: times), .morning)
+        XCTAssertEqual(Falak.skyStage(sg(13, 0), times: times), .dhuhr)
+        XCTAssertEqual(Falak.skyStage(sg(17, 0), times: times), .asr)
+        XCTAssertEqual(Falak.skyStage(sg(19, 30), times: times), .maghrib)
+        XCTAssertEqual(Falak.skyStage(sg(21, 0), times: times), .isha)
+    }
 }

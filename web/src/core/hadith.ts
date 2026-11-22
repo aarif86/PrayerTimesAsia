@@ -10,6 +10,7 @@
 export type HadithId =
   | 'fixedTimes' | 'coolPrayers' | 'syuruk' | 'river' | 'illness'
   | 'fajrRakaat' | 'nightPrayer' | 'whiteDays' | 'monThu' | 'azan' | 'iftar'
+  | 'falakJibril' | 'falakDawn' | 'falakFeet'
 
 type Words = { en: string; ms: string; id: string }
 
@@ -31,6 +32,7 @@ const prophet = (book: Words): Words => ({
 const BUKHARI: Words = { en: 'al Bukhari', ms: 'al Bukhari', id: 'al Bukhari' }
 const MUSLIM: Words = { en: 'Muslim', ms: 'Muslim', id: 'Muslim' }
 const TIRMIDHI: Words = { en: 'at Tirmidhi', ms: 'at Tirmizi', id: 'at Tirmidzi' }
+const ABU_DAWUD: Words = { en: 'Abu Dawud', ms: 'Abu Daud', id: 'Abu Dawud' }
 
 export const HADITH: Record<HadithId, Hadith> = {
   fixedTimes: {
@@ -153,6 +155,39 @@ export const HADITH: Record<HadithId, Hadith> = {
     },
     source: prophet(TIRMIDHI),
     ref: 'Jami at Tirmidhi 807 (Sahih)',
+  },
+  falakJibril: {
+    id: 'falakJibril',
+    arabic: 'الْوَقْتُ فِيمَا بَيْنَ هَذَيْنِ الْوَقْتَيْنِ',
+    meaning: {
+      en: 'Jibril led me in prayer at the Kaaba on two days. The time is between these two times.',
+      ms: 'Jibril mengimamiku di Kaabah selama dua hari. Waktunya ialah antara dua waktu ini.',
+      id: 'Jibril mengimamiku di Kakbah selama dua hari. Waktunya adalah di antara dua waktu ini.',
+    },
+    source: prophet(ABU_DAWUD),
+    ref: 'Sunan Abi Dawud 393 (Hasan Sahih, al Albani). Also Jami at Tirmidhi 149',
+  },
+  falakDawn: {
+    id: 'falakDawn',
+    arabic: 'لَا يَغُرَّنَّكُمْ أَذَانُ بِلَالٍ وَلَا هَذَا الْبَيَاضُ حَتَّى يَسْتَطِيرَ هَكَذَا',
+    meaning: {
+      en: 'Do not let the azan of Bilal or this upright whiteness fool you, until the light spreads out like this.',
+      ms: 'Jangan kamu tertipu oleh azan Bilal dan cahaya putih yang tegak ini, sehingga cahaya itu melebar begini.',
+      id: 'Jangan kalian tertipu oleh azan Bilal dan cahaya putih yang tegak ini, sampai cahaya itu melebar seperti ini.',
+    },
+    source: prophet(MUSLIM),
+    ref: 'Sahih Muslim 1094b',
+  },
+  falakFeet: {
+    id: 'falakFeet',
+    arabic: 'كَانَ قَدْرُ صَلَاةِ رَسُولِ اللَّهِ ﷺ الظُّهْرَ فِي الصَّيْفِ ثَلَاثَةَ أَقْدَامٍ إِلَى خَمْسَةِ أَقْدَامٍ',
+    meaning: {
+      en: 'The shadow when the Prophet ﷺ prayed Dhuhr in summer was three to five feet, and in winter five to seven feet.',
+      ms: 'Ukuran bayang ketika Rasulullah ﷺ solat Zohor pada musim panas ialah tiga hingga lima tapak kaki, dan pada musim sejuk lima hingga tujuh tapak kaki.',
+      id: 'Ukuran bayangan ketika Rasulullah ﷺ salat Zuhur pada musim panas adalah tiga sampai lima telapak kaki, dan pada musim dingin lima sampai tujuh telapak kaki.',
+    },
+    source: { en: 'Ibn Masud, narrated by Abu Dawud', ms: 'Ibn Masud, riwayat Abu Daud', id: 'Ibnu Masud, riwayat Abu Dawud' },
+    ref: 'Sunan Abi Dawud 400 (Sahih, al Albani)',
   },
 }
 

@@ -227,6 +227,99 @@
     <string name="falak_signMaghrib" formatted="false">Seluruh bulatan matahari telah tenggelam di bawah ufuk dan tepi atasnya telah hilang. Paling jelas dilihat di laut atau kawasan lapang. Di sebalik bukit atau bangunan ia hilang lebih awal, jadi jangan solat berdasarkan itu.</string>
     <string name="falak_signIsha" formatted="false">Cahaya merah (syafak ahmar) telah hilang dari langit barat. Inilah pandangan mazhab Syafie, Maliki dan Hanbali. Imam Abu Hanifah berpendapat ia ialah cahaya putih yang datang selepasnya. Jadual waktu pula menggunakan kedalaman matahari di bawah ufuk (lebih kurang 17° hingga 18°).</string>
     <string name="falak_signFajr" formatted="false">Fajar sadiq ialah cahaya putih nipis yang melebar ke tepi di sepanjang ufuk timur dan semakin terang. Ia bukan fajar kazib sebelumnya, iaitu tiang cahaya tegak yang samar lalu hilang semula. Pengkaji masih berbeza pendapat tentang kedalaman tepat matahari ketika fajar sadiq, jadi ini sebagai maklumat sahaja.</string>
+    <string name="falak_lede" formatted="false">Matahari dan langit menentukan waktu solat. Luncurkan untuk melihat caranya.</string>
+    <string name="falak_tabSky" formatted="false">Langit</string>
+    <string name="falak_tabThen" formatted="false">Dahulu</string>
+    <string name="falak_tabNow" formatted="false">Kini</string>
+    <string name="falak_tabWhy" formatted="false">Mengapa</string>
+    <string name="falak_slideSun" formatted="false">Luncurkan matahari</string>
+    <string name="falak_east" formatted="false">Timur</string>
+    <string name="falak_west" formatted="false">Barat</string>
+    <string name="falak_stageNight" formatted="false">Malam</string>
+    <string name="falak_stageNightSay" formatted="false">Langit masih gelap. Waktu {name} belum masuk.</string>
+    <string name="falak_stageFajrSay" formatted="false">Cahaya putih melebar di ufuk timur. Waktu {name} sudah masuk.</string>
+    <string name="falak_stageSunrise" formatted="false">Syuruk</string>
+    <string name="falak_stageSunriseSay" formatted="false">Matahari sudah terbit. Waktu {name} sudah tamat.</string>
+    <string name="falak_stageMorning" formatted="false">Pagi</string>
+    <string name="falak_stageMorningSay" formatted="false">Bayang makin pendek ketika matahari naik.</string>
+    <string name="falak_stageDhuhrSay" formatted="false">Matahari sudah melepasi tengah langit. Bayang berhenti memendek dan mula memanjang.</string>
+    <string name="falak_stageAsrSay" formatted="false">Bayang sudah bertambah sepanjang tubuh berbanding tengah hari.</string>
+    <string name="falak_stageMaghribSay" formatted="false">Matahari sudah terbenam sepenuhnya. Cahaya merah masih ada di barat.</string>
+    <string name="falak_stageIshaSay" formatted="false">Cahaya merah sudah hilang. Langit sudah gelap.</string>
+    <string name="falak_stepsTitle" formatted="false">Langkah bayang</string>
+    <string name="falak_stepsSub" formatted="false">Cari waktu {name} dengan bayang sendiri</string>
+    <string name="falak_cameraTitle" formatted="false">Kamera bayang</string>
+    <string name="falak_cameraTitleSub" formatted="false">Hala, ketik, siap</string>
+    <string name="falak_qiblaSunTitle" formatted="false">Kiblat dari matahari</string>
+    <string name="falak_qiblaSunToday" formatted="false">Hari ini pukul {time}</string>
+    <string name="falak_qiblaSunNext" formatted="false">Berikutnya pada {date}</string>
+    <string name="falak_qiblaSunNone" formatted="false">Tiada dalam beberapa minggu akan datang</string>
+    <string name="falak_qiblaSunHow" formatted="false">Pada minit ini setiap bayang selari dengan kiblat. Hadaplah mengikut arah bayang.</string>
+    <string name="falak_sunOverKaaba" formatted="false">Matahari di atas Kaabah</string>
+    <string name="falak_skyTonight" formatted="false">Langit malam ini</string>
+    <string name="falak_skyTonightSub" formatted="false">{name} pukul {time}</string>
+    <string name="falak_expert" formatted="false">Alat pakar</string>
+    <string name="falak_expertSub" formatted="false">Tongkat istiwa\', Hari Kiblat dan tanda langit secara terperinci</string>
+    <string name="falak_footer" formatted="false">Untuk pembelajaran. Sentiasa ikut pihak berkuasa agama tempatan anda.</string>
+    <string name="falak_then1Title" formatted="false">Malaikat mengajar waktu solat</string>
+    <string name="falak_then1" formatted="false">Jibril mengimami Nabi ﷺ selama dua hari. Sekali pada awal setiap waktu, dan sekali pada akhirnya.</string>
+    <string name="falak_then2Title" formatted="false">Bayang menunjukkan waktu</string>
+    <string name="falak_then2" formatted="false">Para sahabat mengukur bayang dengan tapak kaki sendiri. Bayang pendek bermakna {dhuhr}. Bayang panjang bermakna {asr}.</string>
+    <string name="falak_then2Word" formatted="false">Kenali istilah. Tongkat istiwa\' ialah kayu pengukur bayang.</string>
+    <string name="falak_then3Title" formatted="false">Langit menunjukkan selebihnya</string>
+    <string name="falak_then3" formatted="false">Apabila cahaya merah hilang, masuklah {isha}. Apabila cahaya putih melebar di ufuk, masuklah {fajr}.</string>
+    <string name="falak_then3Word" formatted="false">Kenali istilah. Syafak ialah cahaya selepas matahari terbenam.</string>
+    <string name="falak_then4Title" formatted="false">Penjaga waktu di masjid</string>
+    <string name="falak_then4" formatted="false">Masjid besar mempunyai penjaga waktu. Beliau menggunakan jam matahari dan astrolab supaya azan dilaungkan tepat pada waktunya.</string>
+    <string name="falak_then4Word" formatted="false">Kenali istilah. Muwaqqit ialah penjaga waktu masjid.</string>
+    <string name="falak_then5Title" formatted="false">Matahari menunjukkan kiblat</string>
+    <string name="falak_then5" formatted="false">Dua kali setahun matahari berada tepat di atas Kaabah. Pada minit itu setiap bayang membelakangi Kaabah.</string>
+    <string name="falak_why1Title" formatted="false">Lihat dengan mata sendiri</string>
+    <string name="falak_why1" formatted="false">Waktu dalam telefon anda datang daripada matahari. Kini anda boleh menyemaknya.</string>
+    <string name="falak_why2Title" formatted="false">Kiblat tanpa isyarat</string>
+    <string name="falak_why2" formatted="false">Lokasi anda datang daripada satelit GPS, bukan internet. Matahari tetap boleh menunjukkan arah.</string>
+    <string name="falak_why3Title" formatted="false">Fahami mengapa waktu berubah</string>
+    <string name="falak_why3" formatted="false">Matahari sedikit lebih tinggi atau rendah setiap hari. Jadi waktu solat turut berubah sedikit.</string>
+    <string name="falak_why4Title" formatted="false">Masjid anda juga menggunakannya</string>
+    <string name="falak_why4" formatted="false">Waktu rasmi dikira daripada matahari oleh ahli falak. Mereka menambah beberapa minit sebagai langkah berhati-hati supaya tiada sesiapa solat terlalu awal.</string>
+    <string name="falak_authority" formatted="false">Sentiasa ikut pihak berkuasa agama tempatan anda</string>
+    <string name="falak_authoritySub" formatted="false">Cahaya bandar dan jerebu boleh melindungi tanda-tanda ini. Satu jadual memastikan kita solat bersama.</string>
+    <string name="falak_stepsLead" formatted="false">Waktu {name} masuk apabila bayang anda mencapai</string>
+    <string name="falak_stepsUnit" formatted="false">langkah</string>
+    <string name="falak_stepsToday" formatted="false">Hari ini di {place}</string>
+    <string name="falak_step1" formatted="false">Berdiri membelakangi matahari</string>
+    <string name="falak_step1Sub" formatted="false">Bayang anda jatuh di hadapan.</string>
+    <string name="falak_step2" formatted="false">Tandakan hujung bayang kepala anda</string>
+    <string name="falak_step2Sub" formatted="false">Selipar atau batu pun sudah memadai.</string>
+    <string name="falak_step3" formatted="false">Jalan ke tanda itu, tumit ke hujung jari</string>
+    <string name="falak_step3Sub" formatted="false">Kira setiap tapak kaki.</string>
+    <string name="falak_step4" formatted="false">Bandingkan dengan {n}</string>
+    <string name="falak_step4Sub" formatted="false">Lebih banyak langkah bermakna waktu {name} sudah masuk.</string>
+    <string name="falak_stepsWhy" formatted="false">Tinggi seseorang kira-kira 7 tapak kakinya sendiri, jadi cara ini sesuai untuk semua orang.</string>
+    <string name="falak_lookGround" formatted="false">Lihat ke tanah, jangan sekali-kali ke matahari.</string>
+    <string name="falak_camNotYet" formatted="false">Belum masuk</string>
+    <string name="falak_camBegun" formatted="false">Waktu {name} sudah masuk</string>
+    <string name="falak_camMorning" formatted="false">Sebelum tengah hari</string>
+    <string name="falak_camMorningSub" formatted="false">Bayang masih memendek. Cuba lagi selepas pukul {time}.</string>
+    <string name="falak_camYourShadow" formatted="false">Bayang anda</string>
+    <string name="falak_camOf" formatted="false">daripada {n} langkah</string>
+    <string name="falak_camNoon" formatted="false">Tengah hari</string>
+    <string name="falak_camInAbout" formatted="false">{name} kira-kira {n} minit lagi</string>
+    <string name="falak_camTimetable" formatted="false">Jadual anda menyatakan {time}</string>
+    <string name="falak_camWaitHint" formatted="false">Satu getaran lembut sekarang. Dua getaran apabila waktu {name} masuk.</string>
+    <string name="falak_camDoneHint" formatted="false">Dua getaran dan suara lembut. Tidak perlu melihat skrin.</string>
+    <string name="falak_camHow1" formatted="false">Membelakangi matahari, pegang telefon di paras dada</string>
+    <string name="falak_camHow2" formatted="false">Halakan ke bawah, ke arah bayang anda</string>
+    <string name="falak_camHow3" formatted="false">Ketik kepala bayang anda</string>
+    <string name="falak_camRetap" formatted="false">Ketik lagi untuk mengalih tanda</string>
+    <string name="falak_camNeedMotion" formatted="false">Benarkan sensor gerakan supaya telefon tahu kecondongannya.</string>
+    <string name="falak_camAllow" formatted="false">Benarkan</string>
+    <string name="falak_camNoMotion" formatted="false">Peranti ini tidak dapat mengesan kecondongan, jadi kamera tidak dapat mengukur. Gunakan langkah bayang.</string>
+    <string name="falak_camTooFlat" formatted="false">Condongkan telefon sedikit ke atas supaya kepala bayang kelihatan.</string>
+    <string name="falak_camSayBegun" formatted="false">Waktu {name} sudah masuk.</string>
+    <string name="falak_camSayNotYet" formatted="false">Belum masuk.</string>
+    <string name="falak_camEstimate" formatted="false">Anggaran daripada kecondongan telefon, untuk pembelajaran.</string>
+    <string name="falak_camAfterSunrise" formatted="false">Bacaan bayang bermula selepas matahari terbit. Cuba lagi pada waktu siang.</string>
     <string name="falakTools_starting" formatted="false">Menghidupkan kamera…</string>
     <string name="falakTools_noCamera" formatted="false">Kamera tidak tersedia</string>
     <string name="falakTools_cameraHelp" formatted="false">Paparan ini melukis kiblat dan bayang tongkat di atas gambar kamera. Benarkan kamera, atau gunakan kompas dan kad dalam tab Falak.</string>

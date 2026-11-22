@@ -26,6 +26,9 @@ const FalakScreen = later(() => import('./Falak').then((m) => m.FalakScreen), <d
 const SettingsScreen = later(() => import('./Settings').then((m) => m.SettingsScreen), <div class="page" />)
 const LevelSheet = later(() => import('./FalakTools').then((m) => m.LevelSheet))
 const ARScreen = later(() => import('./FalakTools').then((m) => m.ARScreen))
+const FalakExpertSheet = later(() => import('./Falak').then((m) => m.FalakExpertSheet))
+const ShadowStepsSheet = later(() => import('./FalakShadow').then((m) => m.ShadowStepsSheet))
+const ShadowCamera = later(() => import('./FalakShadow').then((m) => m.ShadowCamera))
 const TrackerSheet = later(() => import('./Tracker').then((m) => m.TrackerSheet))
 const MasjidLinkSheet = later(() => import('./MyMasjid').then((m) => m.MasjidLinkSheet))
 const MoveInSheet = later(() => import('./Move').then((m) => m.MoveInSheet))
@@ -213,6 +216,9 @@ export function App() {
       {sheet?.kind === 'wakeup' && <WakeUpSheet start={sheet.prayer} view={sheet.view} />}
       {sheet?.kind === 'level' && <LevelSheet />}
       {sheet?.kind === 'ar' && <ARScreen />}
+      {sheet?.kind === 'falak-expert' && <FalakExpertSheet />}
+      {sheet?.kind === 'shadow-steps' && <ShadowStepsSheet />}
+      {sheet?.kind === 'shadow-camera' && <ShadowCamera />}
       {sheet?.kind === 'alerts-help' && <AlertsHelpSheet />}
       {sheet?.kind === 'install' && <InstallSheet />}
       {sheet?.kind === 'credits' && <CreditsSheet />}

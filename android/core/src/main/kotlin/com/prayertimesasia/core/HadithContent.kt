@@ -6,7 +6,7 @@ package com.prayertimesasia.core
  * web/src/core/hadith.ts, keep the three in step (ios Core/HadithContent.swift).
  */
 /** [key] is the id the web and iPhone use, kept in the closed list. */
-enum class HadithId(val key: String) { FIXED_TIMES("fixedTimes"), COOL_PRAYERS("coolPrayers"), SYURUK("syuruk"), RIVER("river"), ILLNESS("illness"), FAJR_RAKAAT("fajrRakaat"), NIGHT_PRAYER("nightPrayer"), WHITE_DAYS("whiteDays"), MON_THU("monThu"), AZAN("azan"), IFTAR("iftar") }
+enum class HadithId(val key: String) { FIXED_TIMES("fixedTimes"), COOL_PRAYERS("coolPrayers"), SYURUK("syuruk"), RIVER("river"), ILLNESS("illness"), FAJR_RAKAAT("fajrRakaat"), NIGHT_PRAYER("nightPrayer"), WHITE_DAYS("whiteDays"), MON_THU("monThu"), AZAN("azan"), IFTAR("iftar"), FALAK_JIBRIL("falakJibril"), FALAK_DAWN("falakDawn"), FALAK_FEET("falakFeet") }
 
 data class Hadith(
     val id: HadithId,
@@ -103,6 +103,27 @@ data class Hadith(
                 Doa.Words("Whoever gives iftar to a fasting person gets the same reward as him.", "Sesiapa memberi makan orang berbuka, dia mendapat pahala seperti orang itu.", "Siapa yang memberi makan orang berbuka, ia mendapat pahala seperti orang itu."),
                 Doa.Words("The Prophet ﷺ, narrated by at Tirmidhi", "Sabda Nabi ﷺ, riwayat at Tirmizi", "Sabda Nabi ﷺ, riwayat at Tirmidzi"),
                 "Jami at Tirmidhi 807 (Sahih)",
+            ),
+            Hadith(
+                HadithId.FALAK_JIBRIL,
+                "الْوَقْتُ فِيمَا بَيْنَ هَذَيْنِ الْوَقْتَيْنِ",
+                Doa.Words("Jibril led me in prayer at the Kaaba on two days. The time is between these two times.", "Jibril mengimamiku di Kaabah selama dua hari. Waktunya ialah antara dua waktu ini.", "Jibril mengimamiku di Kakbah selama dua hari. Waktunya adalah di antara dua waktu ini."),
+                Doa.Words("The Prophet ﷺ, narrated by Abu Dawud", "Sabda Nabi ﷺ, riwayat Abu Daud", "Sabda Nabi ﷺ, riwayat Abu Dawud"),
+                "Sunan Abi Dawud 393 (Hasan Sahih, al Albani). Also Jami at Tirmidhi 149",
+            ),
+            Hadith(
+                HadithId.FALAK_DAWN,
+                "لَا يَغُرَّنَّكُمْ أَذَانُ بِلَالٍ وَلَا هَذَا الْبَيَاضُ حَتَّى يَسْتَطِيرَ هَكَذَا",
+                Doa.Words("Do not let the azan of Bilal or this upright whiteness fool you, until the light spreads out like this.", "Jangan kamu tertipu oleh azan Bilal dan cahaya putih yang tegak ini, sehingga cahaya itu melebar begini.", "Jangan kalian tertipu oleh azan Bilal dan cahaya putih yang tegak ini, sampai cahaya itu melebar seperti ini."),
+                Doa.Words("The Prophet ﷺ, narrated by Muslim", "Sabda Nabi ﷺ, riwayat Muslim", "Sabda Nabi ﷺ, riwayat Muslim"),
+                "Sahih Muslim 1094b",
+            ),
+            Hadith(
+                HadithId.FALAK_FEET,
+                "كَانَ قَدْرُ صَلَاةِ رَسُولِ اللَّهِ ﷺ الظُّهْرَ فِي الصَّيْفِ ثَلَاثَةَ أَقْدَامٍ إِلَى خَمْسَةِ أَقْدَامٍ",
+                Doa.Words("The shadow when the Prophet ﷺ prayed Dhuhr in summer was three to five feet, and in winter five to seven feet.", "Ukuran bayang ketika Rasulullah ﷺ solat Zohor pada musim panas ialah tiga hingga lima tapak kaki, dan pada musim sejuk lima hingga tujuh tapak kaki.", "Ukuran bayangan ketika Rasulullah ﷺ salat Zuhur pada musim panas adalah tiga sampai lima telapak kaki, dan pada musim dingin lima sampai tujuh telapak kaki."),
+                Doa.Words("Ibn Masud, narrated by Abu Dawud", "Ibn Masud, riwayat Abu Daud", "Ibnu Masud, riwayat Abu Dawud"),
+                "Sunan Abi Dawud 400 (Sahih, al Albani)",
             ),
         )
     }
