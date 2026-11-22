@@ -1183,4 +1183,44 @@
     <string name="method_note_tunisia" formatted="false">The method of Tunisia\'s Ministry of Religious Affairs.</string>
     <string name="method_note_morocco" formatted="false">The method of Morocco\'s Ministry of Habous and Islamic Affairs.</string>
     <string name="method_note_jordan" formatted="false">The method of Jordan\'s Ministry of Awqaf and Islamic Affairs. Also used in Palestine.</string>
+    <string name="phone_settings_homeScreen" formatted="false">Home screen</string>
+    <string name="phone_settings_widgets" formatted="false">Widgets</string>
+    <string name="phone_settings_back" formatted="false">Back</string>
+    <string name="phone_settings_countNotify" formatted="false">{n} notify</string>
+    <string name="phone_settings_countAlarm" formatted="false">{n} alarm</string>
+    <string name="phone_settings_countAlarms" formatted="false">{n} alarms</string>
+    <string name="phone_settings_timetablePhone" formatted="false">Worked out on your phone</string>
+    <string name="phone_settings_timetableSaved" formatted="false">Saved for offline</string>
+    <string name="phone_settings_timetableOnline" formatted="false">Downloads when online</string>
+    <string name="phone_settings_daysEarlier" formatted="false">{n} days earlier</string>
+    <string name="phone_settings_daysLater" formatted="false">{n} days later</string>
+    <string name="phone_settings_subscribeCal" formatted="false">Subscribe in a calendar app</string>
+    <string name="phone_settings_workOnly" formatted="false">{dhuhr} and {asr} only, for work</string>
+    <string name="phone_settings_acc1" formatted="false">In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year and keeps it for offline use. Only the year, zone code or area name is sent.</string>
+    <string name="phone_settings_acc2" formatted="false">Everywhere else, and before that download, times are worked out on your phone with the country\'s own method.</string>
+    <string name="phone_settings_acc3" formatted="false">That working is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables. For Singapore it is never earlier than the official time, and at most 2 minutes later. For Malaysia and Indonesia it is within about 2 minutes.</string>
+    <string name="phone_settings_letterTitle" formatted="false">The letter beside each day</string>
+    <string name="phone_settings_letterFoot" formatted="false">A falak reading from your own shadow stick only checks the times.</string>
+    <string name="phone_settings_followsPhone" formatted="false">The app follows your phone\'s language.</string>
+    <string name="phone_settings_samePhone" formatted="false">Same as your phone</string>
+    <string name="phone_settings_homeFoot" formatted="false">To add a widget, touch and hold an empty space on your home screen, tap Widgets, then find Prayer Times Asia.</string>
+    <string name="phone_settings_seeWidgets" formatted="false">See the widgets</string>
+    <string name="phone_settings_openRamadan" formatted="false">Open the Ramadan page</string>
+    <string name="phone_settings_pretendOff" formatted="false">Shows a pretend Ramadan or Eid date so you can try it early.</string>
+    <string name="phone_settings_pretendOnFoot" formatted="false">Pretend mode is on. The app shows a pretend date, not today\'s. Turn it off before you rely on the times.</string>
+    <string name="phone_settings_pretendIt" formatted="false">Pretend it is</string>
+    <string name="phone_settings_trackerNudge" formatted="false">The nudge before time runs out is in Alerts and alarms.</string>
+    <string name="phone_settings_privacyNoAds" formatted="false">No outside ads and no accounts</string>
+    <string name="phone_settings_privacyLocation" formatted="false">Your exact location stays on your phone</string>
+    <string name="phone_settings_privacyMasjid" formatted="false">Masjid search sends only your area</string>
+    <string name="phone_settings_usageFoot" formatted="false">Tells us which cities use the app, so we know where to add official timetables. A random number stands in for you. Never your name, exact location or IP address.</string>
+    <string name="phone_settings_permissions" formatted="false">Phone permissions</string>
+    <string name="phone_settings_permissionsFoot" formatted="false">If times or alerts look wrong, check these first.</string>
+    <string name="phone_settings_notAllowed" formatted="false">Not allowed</string>
+    <string name="phone_settings_openPhoneSettings" formatted="false">Open phone settings</string>
+    <string name="phone_settings_guideFoot" formatted="false">The quick guide is a short tour that taps the real buttons for you.</string>
+    <string name="phone_settings_helpCheck" formatted="false">Help check times where you live</string>
+    <string name="phone_settings_picksFoot" formatted="false">Halal Muslim businesses and causes we check by hand, safe for the whole family. Most are our own services, and paid ones are marked Sponsored. We only count how often a card is seen and tapped, never who you are.</string>
+    <string name="phone_settings_aboutFoot" formatted="false">Built in Asia, made for Muslims everywhere.</string>
+    <string name="phone_settings_moveFootAndroid" formatted="false">A QR code or link carries your places, choices and tracker. No account and nothing uploaded. Works with Android, iPhone and the web. Setting up a new Android phone from your Google backup brings them too.</string>
 </resources>

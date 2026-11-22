@@ -1183,4 +1183,44 @@
     <string name="method_note_tunisia" formatted="false">Metode Kementerian Urusan Agama Tunisia.</string>
     <string name="method_note_morocco" formatted="false">Metode Kementerian Wakaf dan Urusan Islam Maroko.</string>
     <string name="method_note_jordan" formatted="false">Metode Kementerian Wakaf dan Urusan Islam Yordania. Juga dipakai di Palestina.</string>
+    <string name="phone_settings_homeScreen" formatted="false">Layar utama</string>
+    <string name="phone_settings_widgets" formatted="false">Widget</string>
+    <string name="phone_settings_back" formatted="false">Kembali</string>
+    <string name="phone_settings_countNotify" formatted="false">{n} pemberitahuan</string>
+    <string name="phone_settings_countAlarm" formatted="false">{n} alarm</string>
+    <string name="phone_settings_countAlarms" formatted="false">{n} alarm</string>
+    <string name="phone_settings_timetablePhone" formatted="false">Dihitung di ponsel Anda</string>
+    <string name="phone_settings_timetableSaved" formatted="false">Disimpan untuk dipakai tanpa internet</string>
+    <string name="phone_settings_timetableOnline" formatted="false">Diunduh saat ada internet</string>
+    <string name="phone_settings_daysEarlier" formatted="false">{n} hari lebih awal</string>
+    <string name="phone_settings_daysLater" formatted="false">{n} hari lebih lambat</string>
+    <string name="phone_settings_subscribeCal" formatted="false">Berlangganan di aplikasi kalender</string>
+    <string name="phone_settings_workOnly" formatted="false">{dhuhr} dan {asr} saja, untuk waktu kerja</string>
+    <string name="phone_settings_acc1" formatted="false">Di Singapura, Malaysia dan Indonesia, aplikasi mengunduh jadwal resmi MUIS, JAKIM atau Kemenag untuk tahun itu dan menyimpannya untuk dipakai tanpa internet. Hanya tahun, kode zona atau nama wilayah yang dikirim.</string>
+    <string name="phone_settings_acc2" formatted="false">Di tempat lain, dan sebelum unduhan itu, waktu dihitung di ponsel Anda dengan metode negara itu sendiri.</string>
+    <string name="phone_settings_acc3" formatted="false">Perhitungan itu diperiksa terhadap setiap hari jadwal MUIS, JAKIM dan Kemenag 2026. Untuk Singapura, tidak pernah lebih awal dari waktu resmi dan paling lambat 2 menit. Untuk Malaysia dan Indonesia, selisihnya sekitar 2 menit.</string>
+    <string name="phone_settings_letterTitle" formatted="false">Huruf di samping setiap hari</string>
+    <string name="phone_settings_letterFoot" formatted="false">Pembacaan falak dari tongkat bayangan Anda sendiri hanya memeriksa waktu.</string>
+    <string name="phone_settings_followsPhone" formatted="false">Aplikasi mengikuti bahasa ponsel Anda.</string>
+    <string name="phone_settings_samePhone" formatted="false">Sama seperti ponsel Anda</string>
+    <string name="phone_settings_homeFoot" formatted="false">Untuk menambah widget, sentuh dan tahan ruang kosong di layar utama, ketuk Widget, lalu cari Prayer Times Asia.</string>
+    <string name="phone_settings_seeWidgets" formatted="false">Lihat widget</string>
+    <string name="phone_settings_openRamadan" formatted="false">Buka halaman Ramadan</string>
+    <string name="phone_settings_pretendOff" formatted="false">Menampilkan tanggal Ramadan atau Lebaran percobaan agar Anda dapat mencobanya lebih awal.</string>
+    <string name="phone_settings_pretendOnFoot" formatted="false">Mode percobaan menyala. Aplikasi menampilkan tanggal percobaan, bukan tanggal hari ini. Matikan sebelum Anda mengandalkan waktunya.</string>
+    <string name="phone_settings_pretendIt" formatted="false">Anggap sekarang</string>
+    <string name="phone_settings_trackerNudge" formatted="false">Pengingat sebelum waktu habis ada di Pemberitahuan dan alarm.</string>
+    <string name="phone_settings_privacyNoAds" formatted="false">Tanpa iklan luar dan tanpa akun</string>
+    <string name="phone_settings_privacyLocation" formatted="false">Lokasi tepat Anda tetap di ponsel Anda</string>
+    <string name="phone_settings_privacyMasjid" formatted="false">Pencarian masjid hanya mengirim wilayah Anda</string>
+    <string name="phone_settings_usageFoot" formatted="false">Memberi tahu kami kota mana yang memakai aplikasi, agar kami tahu di mana harus menambah jadwal resmi. Angka acak mewakili Anda. Tidak pernah nama, lokasi tepat atau alamat IP Anda.</string>
+    <string name="phone_settings_permissions" formatted="false">Izin ponsel</string>
+    <string name="phone_settings_permissionsFoot" formatted="false">Jika waktu atau pemberitahuan tampak salah, periksa ini dahulu.</string>
+    <string name="phone_settings_notAllowed" formatted="false">Tidak diizinkan</string>
+    <string name="phone_settings_openPhoneSettings" formatted="false">Buka pengaturan ponsel</string>
+    <string name="phone_settings_guideFoot" formatted="false">Panduan singkat adalah tur pendek yang menekan tombol sebenarnya untuk Anda.</string>
+    <string name="phone_settings_helpCheck" formatted="false">Bantu periksa waktu di tempat Anda</string>
+    <string name="phone_settings_picksFoot" formatted="false">Usaha bisnis Muslim yang halal dan kegiatan amal yang kami periksa sendiri, aman untuk seluruh keluarga. Sebagian besar adalah layanan kami sendiri, dan yang berbayar ditandai Bersponsor. Kami hanya menghitung seberapa sering kartu dilihat dan diketuk, tidak pernah siapa Anda.</string>
+    <string name="phone_settings_aboutFoot" formatted="false">Dibuat di Asia, untuk umat Islam di mana saja.</string>
+    <string name="phone_settings_moveFootAndroid" formatted="false">Kode QR atau tautan membawa tempat, pilihan dan pencatat Anda. Tanpa akun dan tanpa unggahan. Berfungsi di Android, iPhone dan web. Menyiapkan ponsel Android baru dari cadangan Google Anda juga membawanya.</string>
 </resources>
