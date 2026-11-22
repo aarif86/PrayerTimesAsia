@@ -299,7 +299,7 @@ private fun CreditsContent() {
         Triple("Maps and places", "Nearby masjids from OpenStreetMap (© OpenStreetMap contributors, ODbL) via the Overpass API. Directions open in your own maps app.", "https://www.openstreetmap.org/copyright"),
         Triple("Prayer rooms", "The musolla database on GitHub (LGPL 3.0), started by the KalamApps and PrayerTime.SG teams and kept by volunteers, for prayer rooms in malls, schools and sports centres. Our copy and fixes are shared back in the open.", "https://github.com/aarif86/musolla-database"),
         Triple("Font", "Nunito by the Nunito Project Authors, under the SIL Open Font License 1.1.", "https://github.com/googlefonts/nunito"),
-        Triple("Community data", "Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.", "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md"),
+        Triple("Community data", "Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.", "https://prayertimes.asia/verify.html"),
         Triple("Design", "The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my by Awsam Tech LLP, the Singapore and Malaysia app. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.", "https://www.awsamtech.com/"),
         Triple("This app", "Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.", "https://github.com/aarif86/PrayerTimesAsia"),
     )

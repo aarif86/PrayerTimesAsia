@@ -206,7 +206,7 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
       </div>
       <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('source.helpVerify')}</h3>
       <div class="group">
-        <a class="item" href="https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">
+        <a class="item" href="https://prayertimes.asia/verify.html" target="_blank" rel="noopener noreferrer">
           <span class="label">{tr('source.helpVerifySub')}</span>
         </a>
       </div>
@@ -434,7 +434,7 @@ const CREDITS: [string, string, string | null][] = [
   ['Maps and places', 'Map data © OpenStreetMap contributors (ODbL), tiles © CARTO, masjid lists built weekly from OpenStreetMap with the Overpass API, place search through Nominatim.', 'https://www.openstreetmap.org/copyright'],
   ['Prayer rooms', 'The musolla database on GitHub (LGPL 3.0), started by the KalamApps and PrayerTime.SG teams and kept by volunteers, for prayer rooms in malls, schools and sports centres. Our copy and fixes are shared back in the open.', 'https://github.com/aarif86/musolla-database'],
   ['Icons and fonts', 'Lucide icons (ISC); Inter and Nunito (SIL Open Font Licence).', 'https://lucide.dev'],
-  ['Community data', 'Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.', 'https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md'],
+  ['Community data', 'Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.', 'https://prayertimes.asia/verify.html'],
   ['Design', 'The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my by Awsam Tech LLP, the Singapore and Malaysia app. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.', 'https://www.awsamtech.com/'],
   ['This app', 'Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.', 'https://github.com/aarif86/PrayerTimesAsia'],
 ]

@@ -201,7 +201,7 @@ fun SanadSheetContent(state: AppState, day: PrayerDay) {
                 style = Txt.subheadline, color = Palette.primary)
             Text(tr(R.string.verify_howTo), style = Txt.subheadlineSemibold, color = Palette.accentText,
                 modifier = Modifier.padding(vertical = 10.dp).clickable {
-                    runCatching { uri.openUri("https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md") }
+                    runCatching { uri.openUri("https://prayertimes.asia/verify.html") }
                 })
             Text("Submissions are checked by a person before they change anyone's times, and shared openly under CC-BY 4.0.",
                 style = Txt.footnote, color = Palette.secondary)

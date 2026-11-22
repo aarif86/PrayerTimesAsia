@@ -177,9 +177,9 @@ enum SettingsLinks {
     static let join = URL(string: "https://prayertimes.asia/join")!
     static let instagram = URL(string: "https://www.instagram.com/prayertimesasia")!
     static let facebook = URL(string: "https://www.facebook.com/prayertimesasia")!
-    static let verify = URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md")!
+    static let verify = URL(string: "https://prayertimes.asia/verify.html")!
     static let newLook = URL(string: "https://prayertimes.asia/new-look.html")!
-    static let picksRules = URL(string: "https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md")!
+    static let picksRules = URL(string: "https://prayertimes.asia/barakah-picks.html")!
 
     /// TestFlight and debug builds only. The store app never shows tester switches.
     static var isTesterBuild: Bool {
