@@ -240,6 +240,14 @@
     .partner li:last-child { border-bottom: 0; }
     .partner li::before { content: "✓"; position: absolute; left: 0; top: 11px; width: 22px; height: 22px; border-radius: 50%;
       background: #4fd18b22; color: var(--green); font-weight: 800; font-size: 0.8rem; display: grid; place-items: center; }
+    .mscreen-pick { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 16px; }
+    .mscreen-pick button { font: inherit; font-size: 0.9rem; font-weight: 600; color: var(--text); background: rgba(255,255,255,0.07); border: 1px solid var(--card-line); border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+    .mscreen-pick button[aria-pressed="true"] { background: linear-gradient(135deg, #f2c063, #f39a4a); color: #1a1230; border-color: transparent; }
+    .mscreen-pick button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .mscreen-sep { width: 1px; height: 22px; background: var(--card-line); margin: 0 4px; }
+    @media (max-width: 520px) { .mscreen-sep { display: none; } }
+    .mscreen img { transition: opacity 0.2s ease; }
+    @media (prefers-reduced-motion: reduce) { .mscreen img { transition: none; } }
     @media (max-width: 860px) { .partner { grid-template-columns: 1fr; padding: 30px 22px; } }
 
     /* Mosque display mock */
@@ -338,11 +346,13 @@
     .ex-tv { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(160deg, #0d1436, #1a1446); border: 6px solid #05070f; border-radius: 12px; }
     .ex-big { font-size: 1.7rem; font-weight: 800; letter-spacing: .02em; font-variant-numeric: tabular-nums; color: var(--gold); line-height: 1.1; }
     .ex-qr { width: 58px; height: 58px; border-radius: 6px; flex: none; }
-    .ask-band { text-align: center; border-radius: 30px; padding: 56px 28px; border: 1px solid var(--card-line);
+    .ask-band { text-align: center; border-radius: 30px; padding: 72px 28px; border: 1px solid var(--card-line);
       background: radial-gradient(70% 120% at 50% 0%, #f39a4a33, transparent 70%), linear-gradient(135deg, #1d2160, #2b1a4f 60%, #3d1f3f); }
     .ask-band .lead { margin: 0 auto; }
     .ask-band .btns { justify-content: center; margin-top: 26px; }
-    .review-band { margin-top: 28px; border-radius: 30px; padding: 44px 28px; border: 1px solid var(--card-line); background: var(--card); max-width: 760px; margin-left: auto; margin-right: auto; }
+    .review-band { margin-top: 56px; border-radius: 30px; padding: 64px 28px; border: 1px solid var(--card-line); background: var(--card); }
+    .review-private { text-align: center; }
+    .review-band > * { max-width: 760px; margin-left: auto; margin-right: auto; }
     .review-head { text-align: center; }
     .review-head .lead { margin: 0 auto; }
     .review-steps { margin: 22px auto 16px; padding-left: 22px; color: var(--muted); line-height: 1.6; max-width: 560px; }
@@ -359,7 +369,7 @@
     .review-copied { text-align: center; color: var(--gold); margin: 12px 0 0; }
     .review-private { text-align: center; margin: 16px 0 0; font-size: 0.95rem; }
     .review-private a { color: var(--muted); }
-    @media (max-width: 720px) { .review-links { grid-template-columns: 1fr; } .review-band { padding: 32px 18px; } }
+    @media (max-width: 720px) { .review-links { grid-template-columns: 1fr; } .review-band { padding: 40px 18px; margin-top: 40px; } }
     @media (prefers-reduced-motion: reduce) { .review-link { transition: none; } }
 
     /* ---------- Motion ---------- */
@@ -1046,21 +1056,29 @@
       <div class="partner">
         <div>
           <span class="eyebrow">For masjids and imams</span>
-          <h2>Help us get it right for your community.</h2>
-          <p class="muted">We want to work with imams and masjid committees everywhere, so the app matches how your community prays. If you look after a masjid or prayer room, we would love to hear from you.</p>
+          <h2>A free prayer times screen for your masjid.</h2>
+          <p class="muted">Put today's prayer times on the TV in your masjid. It costs nothing, takes a few minutes to set up, and runs on any TV with a web browser.</p>
           <ul>
-            <li>Compare our times with your masjid's and tell us if they are different</li>
-            <li>Share your iqamah and Jumu'ah times so nearby jamaah can find them</li>
-            <li>Try the <a href="tv/">free masjid display screen</a> on the TV in your masjid</li>
-            <li>Tell us what your jamaah need, in your language</li>
+            <li>Choose a look, add your iqamah and Jumu'ah times, and open the link on your TV</li>
+            <li>Shows the time to the next prayer, in English, Malay or Indonesian</li>
+            <li>In Singapore it uses the official timetable from the Islamic Religious Council of Singapore (MUIS)</li>
           </ul>
           <div class="btns" style="margin-top: 24px">
-            <a class="btn btn-primary" href="mailto:salam@prayertimes.asia?subject=Masjid%20partnership&amp;body=Assalamualaikum%2C%0A%0AMasjid%20or%20musollah%20name%3A%0ACity%20and%20country%3A%0AMy%20role%3A%0AHow%20we%20would%20like%20to%20help%3A%0A">Become a partner masjid</a>
+            <a class="btn btn-primary" href="tv/">Try the free masjid screen</a>
+            <a class="btn btn-ghost" href="masjid.html">Compare our times with yours</a>
           </div>
         </div>
-        <div>
-          <div class="tv"><img src="img/who-masjid-screen.webp" alt="The free masjid display screen, showing today's times and the next prayer" width="960" height="540" loading="lazy" style="display:block;width:100%;height:auto;border-radius:9px" /></div>
-          <p class="muted center" style="font-size: 0.85rem; margin-top: 12px">The free masjid display screen. <a href="tv/">Try it on your TV</a>.</p>
+        <div class="mscreen" id="mscreen">
+          <div class="tv"><img id="mscreen-img" src="img/masjid-screen-sky-dark.webp" alt="The free masjid screen in the Sky look, dark" width="960" height="540" loading="lazy" style="display:block;width:100%;height:auto;border-radius:9px" /></div>
+          <div class="mscreen-pick" role="group" aria-label="Choose a look">
+            <button type="button" data-look="sky" aria-pressed="true">Sky</button>
+            <button type="button" data-look="bands" aria-pressed="false">Bands</button>
+            <button type="button" data-look="simple" aria-pressed="false">Simple</button>
+            <span class="mscreen-sep" aria-hidden="true"></span>
+            <button type="button" data-mode="dark" aria-pressed="true">Dark</button>
+            <button type="button" data-mode="light" aria-pressed="false">Light</button>
+          </div>
+          <p class="muted center" style="font-size: 0.85rem; margin-top: 12px">Six looks, each in dark or light. <a href="tv/">Pick yours</a>.</p>
         </div>
       </div>
     </div>
@@ -1109,7 +1127,7 @@
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg></div>
           <h3>No outside ads</h3>
-          <p>No Google, Facebook or Instagram ads, and no tracking of you. Never on the masjid screen, in reminders, alarms or the azan. Under Show more you may see one small Barakah Picks card. It is a space we check by hand for halal Muslim businesses and causes, safe for the whole family, with no gambling, alcohol, riba or anything immodest. We keep only simple counts of how often each card is seen and tapped, to share with our community partners. You can turn it off. <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md">Our rules for Barakah Picks</a>.</p>
+          <p>No Google, Facebook or Instagram ads, and no tracking. Never on the masjid screen, in reminders, alarms or the azan. <a href="https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md">Our rules for Barakah Picks</a>.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
@@ -1417,6 +1435,24 @@
       });
     }
     paint();
+  })();
+</script>
+<script>
+  // Masjid screen picker: three looks, dark or light.
+  (function () {
+    var box = document.getElementById('mscreen'); if (!box) return;
+    var img = document.getElementById('mscreen-img'), look = 'sky', mode = 'dark';
+    var names = { sky: 'Sky', bands: 'Bands', simple: 'Simple' };
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.look) look = b.dataset.look; else if (b.dataset.mode) mode = b.dataset.mode; else return;
+      box.querySelectorAll('button').forEach(function (x) {
+        var on = (x.dataset.look && x.dataset.look === look) || (x.dataset.mode && x.dataset.mode === mode);
+        x.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      img.src = 'img/masjid-screen-' + look + '-' + mode + '.webp';
+      img.alt = 'The free masjid screen in the ' + names[look] + ' look, ' + mode;
+    });
   })();
 </script>
 </body>

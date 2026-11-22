@@ -18,7 +18,7 @@ import { SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { daysToRamadan } from './Ramadan'
 
 import { VERSION } from './version'
-import { APP_LANGUAGE_LABEL, appearanceLabel, appLangFromLocales, styleLabel, tr } from '../core/appWords'
+import { APP_LANGUAGE_LABEL, appearanceLabel, appLangFromLocales, methodNote, styleLabel, tr } from '../core/appWords'
 export { VERSION }
 
 
@@ -208,7 +208,7 @@ function PrayerTimesPage({ openAccuracy }: { openAccuracy: () => void }) {
         <button class="item" onClick={openAccuracy}><span class="label">{tr('settings.howAccurate')}</span><ChevronRight size={16} class="secondary" /></button>
       </Group>
 
-      <Group title={tr('settings.calculation')} foot={<>{tr('settings.calcFootShort')} {s.method.note}</>}>
+      <Group title={tr('settings.calculation')} foot={<>{tr('settings.calcFootShort')} {methodNote(s.method)}</>}>
         <SelectItem label={tr('settings.method')} value={p.methodOverrideID ?? 'auto'}
           options={[{ value: 'auto', label: tr('common.automaticWith', { name: profileMethod(s.profile).shortName }) }, ...ALL_METHODS.map((m) => ({ value: m.id, label: m.name }))]}
           onChange={(v) => store.update((x) => { x.methodOverrideID = v === 'auto' ? null : v })} />

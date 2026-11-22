@@ -24,7 +24,7 @@ import { dayKey, daysBetween, deviceTimeZone, noonDaysAfter, ymdKey, zoned, zone
 export { parseCivil, civilKey }
 import { CITIES, nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
-import { appLangFromLocales, setAppLang } from '../core/appWords'
+import { appLang, appLangFromLocales, setAppLang } from '../core/appWords'
 import type { Lang3 } from '../core/ramadanContent'
 import { DEFAULT_PREFS, loadPreferences, savePreferences, TODAY_STYLES, type Preferences, type TodayStyle } from './prefs'
 import { fetchOK, readJSON, readString, writeJSON, writeString } from './storage'
@@ -230,7 +230,9 @@ class AppStore {
   /** Whose times these are, in plain words (official timetable, the authority's method, or a standard one). */
   get sourceSummary(): string { return officialSummary(this.officialSource) ?? sourceSummary(this.profile, this.method, !this.isMethodAutomatic) }
   /** The same in one sentence or two, for the welcome card. */
-  get sourceShort(): string { return officialSummary(this.officialSource, true) ?? sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true) }
+  get sourceShort(): string { return this.sourceShortIn(appLang()) }
+  /** The short source line in one language (Feedback always sends it in English). */
+  sourceShortIn(lang: Lang3): string { return officialSummary(this.officialSource, true, lang) ?? sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true, lang) }
   get asrSchool(): AsrSchool { return this.prefs.asrOverride ?? this.profile.asr }
   /** The language of the app's words: the user's pick in Settings, else Malay or Indonesian prayer names if picked, else the browser's language (English unless Malay or Indonesian). */
   get appLang(): Lang3 {
