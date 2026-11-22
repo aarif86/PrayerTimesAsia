@@ -1058,10 +1058,6 @@
     <string name="source_explainC" formatted="false">Kaedah disahkan oleh dua atau lebih penyumbang tempatan yang berasingan.</string>
     <string name="source_explainD" formatted="false">Pengiraan astronomi pada peranti anda. Kaedahnya ditunjukkan. Masjid setempat mungkin berbeza beberapa minit.</string>
     <string name="source_explainF" formatted="false">Dikira daripada pemerhatian anda sendiri terhadap bayang matahari atau langit, dengan ± minit yang jujur. Untuk belajar dan menyemak, bukan untuk menggantikan gred di atas.</string>
-    <string name="source_plainAngles" formatted="false">Subuh bermula apabila matahari berada {fajr}° di bawah ufuk, dan Isyak pada {isha}°.</string>
-    <string name="source_plainInterval" formatted="false">Subuh bermula apabila matahari berada {fajr}° di bawah ufuk, dan Isyak {mins} minit selepas Maghrib.</string>
-    <string name="source_plainAsrShafii" formatted="false">Asar bermula apabila bayang-bayang sama panjang dengan bendanya.</string>
-    <string name="source_plainAsrHanafi" formatted="false">Asar bermula apabila bayang-bayang dua kali panjang bendanya.</string>
     <string name="method_note_muis" formatted="false">Majlis Ugama Islam Singapura. Dalam talian, aplikasi menunjukkan jadual rasmi MUIS. Tanpa talian, aplikasi mengira sendiri dan tidak pernah lebih awal daripada waktu rasmi.</string>
     <string name="method_note_jakim" formatted="false">Kriteria Subuh 18° Malaysia (sejak 2019). Dalam talian, aplikasi menunjukkan jadual rasmi e-Solat JAKIM bagi zon anda. Tanpa talian, aplikasi mengira dengan perbezaan kira-kira 2 minit.</string>
     <string name="method_note_kemenag" formatted="false">Kementerian Agama Indonesia. Dalam talian, aplikasi menunjukkan jadual rasmi Kemenag bagi bandar atau kabupaten anda. Tanpa talian, aplikasi mengira dengan pelarasan yang dipadankan pada jadual penuh 2026 bagi Jakarta, Surabaya dan Makassar.</string>

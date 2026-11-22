@@ -90,13 +90,3 @@ export function methodNote(m: { id: string; note: string }): string {
 
 /** "MUIS method" in the current app language, for a day worked out with a method. */
 export function methodName(m: { shortName: string }): string { return tr('source.methodName', { method: m.shortName }) }
-
-const degrees = (v: number) => (Math.round(v) === v ? String(v) : v.toFixed(1))
-
-/** How a method's Fajr and Isha are worked out, in plain words, and the Asr rule. */
-export function methodPlain(m: { fajrAngle: number; ishaAngle: number | null; ishaInterval: number | null }, asr: 'standard' | 'hanafi'): string {
-  const times = m.ishaAngle != null
-    ? tr('source.plainAngles', { fajr: degrees(m.fajrAngle), isha: degrees(m.ishaAngle) })
-    : tr('source.plainInterval', { fajr: degrees(m.fajrAngle), mins: String(Math.trunc(m.ishaInterval ?? 0)) })
-  return `${times} ${tr(asr === 'hanafi' ? 'source.plainAsrHanafi' : 'source.plainAsrShafii')}`
-}
