@@ -156,7 +156,7 @@ page = f'''<!doctype html>
     <tbody>{''.join(rows)}</tbody>
   </table></div>
 </main>
-<footer class="wrap">Anywhere not listed uses the Muslim World League method. You can always change this in the app's Settings. <a href="./">Back to Prayer Times Asia</a></footer>
+<footer class="wrap">Anywhere not listed uses the Muslim World League method. You can always change this in the app's Settings. <a href="prayer-times/">Today's times by city</a> · <a href="about.html">How we work out the times</a> · <a href="./">Back to Prayer Times Asia</a></footer>
 <button class="totop" type="button" aria-label="Back to top" title="Back to top">&#8593;</button>
 <script>
   var q = document.getElementById('q'), s = document.getElementById('s'), rows = document.querySelectorAll('tbody tr');

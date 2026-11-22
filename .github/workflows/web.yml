@@ -14,6 +14,9 @@ on:
     paths: ['web/**', 'site/**', 'testdata/**', 'data/ramadan-words.json', 'data/community-cards.json', 'data/app-words/**', 'config/analytics.json', 'docs/website/changelog.json', 'tools/build_whatsnew_page.py', 'tools/build_credits_page.py', '.github/workflows/web.yml']
   pull_request:
     paths: ['web/**', 'site/**', 'testdata/**', 'data/ramadan-words.json', 'data/community-cards.json', 'data/app-words/**', 'config/analytics.json', 'docs/website/changelog.json', 'tools/build_whatsnew_page.py', 'tools/build_credits_page.py', '.github/workflows/web.yml']
+  # Daily rebuild so the "today" times written into the city pages stay fresh for search engines.
+  schedule:
+    - cron: '20 16 * * *'
   workflow_dispatch:
 
 permissions:
@@ -74,6 +77,7 @@ jobs:
         env:
           BASE_PATH: ${{ steps.pages.outputs.base }}app/
       - name: Accessibility check (axe on every screen, Light and Dark, every look, keyboard)
+        if: github.event_name != 'schedule'
         working-directory: web
         run: |
           # The runner's own Google Chrome (Playwright cannot install its Chromium on every runner image).
@@ -106,6 +110,9 @@ jobs:
           # "What's new", built from the same file as the GitHub changelog.
           python3 tools/build_whatsnew_page.py docs/website/changelog.json _site/whatsnew.html
           cp -R web/dist _site/app
+          # Pages for search engines and AI answers, from the same engine as the apps: one page per major
+          # city with today's times as plain text, an About and method page, sitemap.xml and robots.txt.
+          (cd web && npx vite-node scripts/build-search-pages.ts -- ../_site "${BASE}")
           sed -i "s#__BASE__#${BASE}#g" _site/404.html
           # Visitor counts on the promo page: the App ID from config/analytics.json (empty = off).
           id=$(jq -r 'if .enabled == false then "" else (.telemetryDeckAppID // "") end' config/analytics.json | tr -cd 'A-Za-z0-9-')
@@ -130,6 +137,12 @@ jobs:
           test -f _site/whatsnew.html
           for f in credits.html ms/credits.html id/credits.html; do test -f "_site/$f"; done
           test -f _site/press.html
+          test -f _site/about.html
+          test -f _site/sitemap.xml
+          test -f _site/robots.txt
+          test -f _site/prayer-times/singapore/index.html
+          test -f _site/prayer-times/kuala-lumpur/index.html
+          test -f _site/prayer-times/jakarta/index.html
           test -f _site/ramadan.html
           ! grep -q "__TELEMETRYDECK_APP_ID__" _site/index.html _site/ms/index.html _site/id/index.html _site/ar/index.html _site/ur/index.html _site/bn/index.html _site/tr/index.html _site/fr/index.html
           # Every image and page the promo page links to is there.
