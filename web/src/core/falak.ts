@@ -173,3 +173,75 @@ export function reading(height: number, shadow: number, clock: number, c: Coordi
     asrReached: afternoon ? shadow >= asrShadow(d, height, school) : null,
   }
 }
+
+// ---------------------------------------------------------------------------
+// Falak for everyone (Nov 2026 redesign): your own body as the shadow stick,
+// the shadow camera, and the sky slider. Same maths in Falak.swift and Falak.kt.
+
+/**
+ * A person is about seven of their own feet tall (the classical rule behind
+ * Ibn Mas'ud's "three to five feet", Sunan Abi Dawud 400), so a shadow counted
+ * heel to toe in your own feet works the same for anyone, tall or short.
+ */
+export const FEET_PER_BODY = 7
+
+/** Your shadow, in your own steps, with the sun at `altitude`. */
+export const shadowSteps = (altitude: number) => FEET_PER_BODY * shadowLength(1, altitude)
+
+/** Asr begins when your shadow reaches this many of your own steps. */
+export const asrSteps = (d: ShadowDay, school: AsrSchool) => FEET_PER_BODY * asrShadow(d, 1, school)
+
+/** Rounds to the nearest half step, for showing to people (8.46 → 8.5). */
+export const halfSteps = (x: number) => Math.round(x * 2) / 2
+
+/** A phone held at the chest is about this share of the person's height off the ground. */
+export const CHEST_HEIGHT = 0.72
+
+/**
+ * Shadow camera geometry. With the phone `phoneHeight` above level ground and
+ * a point seen `depression` degrees below the horizon, the point lies this far
+ * along the ground from the spot under the phone (your feet).
+ */
+export function groundDistance(phoneHeight: number, depression: number): number {
+  return depression <= 0.5 ? Infinity : phoneHeight / dtan(depression)
+}
+
+/** The other way round: how far below the horizon a ground point `distance` away appears. */
+export function depressionTo(phoneHeight: number, distance: number): number {
+  return darctan2(phoneHeight, Math.max(distance, 0.001))
+}
+
+export interface CameraReading {
+  /** Your shadow in your own steps. */
+  steps: number
+  /** Asr's mark in your own steps, for today. */
+  target: number
+  /** Before noon, Asr can't have begun (null); afterwards, whether it has. */
+  asrBegun: boolean | null
+}
+
+/**
+ * A shadow camera reading: the tip of your head's shadow, seen `depression`
+ * degrees below the horizon from a phone held at your chest.
+ */
+export function cameraReading(depression: number, clock: number, c: Coordinates, tz: string, school: AsrSchool): CameraReading {
+  const z = zoned(clock, tz)
+  const d = shadowDay(z.year, z.month, z.day, c)
+  const steps = FEET_PER_BODY * groundDistance(CHEST_HEIGHT, depression)
+  const target = asrSteps(d, school)
+  return { steps, target, asrBegun: clock < d.noon ? null : steps >= target }
+}
+
+export type SkyStage = 'night' | 'fajr' | 'sunrise' | 'morning' | 'dhuhr' | 'asr' | 'maghrib' | 'isha'
+
+/** What the sky shows at `t`, judged against the day's timetable. */
+export function skyStage(t: number, times: Record<'fajr' | 'sunrise' | 'dhuhr' | 'asr' | 'maghrib' | 'isha', number>): SkyStage {
+  if (t < times.fajr) return 'night'
+  if (t < times.sunrise) return 'fajr'
+  if (t < times.sunrise + 20 * 60_000) return 'sunrise'
+  if (t < times.dhuhr) return 'morning'
+  if (t < times.asr) return 'dhuhr'
+  if (t < times.maghrib) return 'asr'
+  if (t < times.isha) return 'maghrib'
+  return 'isha'
+}
