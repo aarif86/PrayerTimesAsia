@@ -922,7 +922,7 @@ final class AppModel {
             }
             if prefs.berbukaAlert && !maghribAlertOn {
                 out.append(.init(id: id + "-berbuka", title: "Time for iftar · \(formatted(pd.time(.maghrib)))",
-                                 body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu. Ramadan day \(s.ramadanDay ?? 0) · \(here)",
+                                 body: "Time to break your fast. Ramadan day \(s.ramadanDay ?? 0) · \(here)",
                                  fireDate: pd.time(.maghrib), silent: isSilent(pd.time(.maghrib), prayer: .maghrib)))
             }
         }
@@ -1042,7 +1042,7 @@ final class AppModel {
                 }
                 if prayer == .maghrib && isRamadanDay(time) {
                     alerts.append(.init(id: id, title: "Time for iftar · \(name) \(formatted(time))",
-                                        body: "Allahumma laka sumtu wa bika amantu wa 'ala rizqika aftartu", fireDate: time,
+                                        body: "Time to break your fast", fireDate: time,
                                         sound: prefs.azanSound ? .azan : .standard, silent: silent))
                     continue
                 }
