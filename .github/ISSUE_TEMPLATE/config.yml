@@ -1,5 +1,11 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
-  - name: How submissions are checked
-    url: https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md
-    about: The verification ladder, what gets published, and the CC-BY 4.0 data licence.
+  - name: Help verify prayer times
+    url: https://prayertimes.asia/verify.html
+    about: Send a masjid timetable, the method masjids in your area use, or an azan time you heard.
+  - name: Send us a note or idea
+    url: https://prayertimes.asia/note.html
+    about: A kind word, an idea, something not working, or a prayer room to add.
+  - name: Design a new look
+    url: https://prayertimes.asia/new-look.html
+    about: Suggest a new look for the app or the masjid screen.

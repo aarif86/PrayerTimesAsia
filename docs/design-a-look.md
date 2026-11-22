@@ -19,9 +19,8 @@ There are three ways, from easiest to most hands-on. Pick whichever suits you.
 | 3 | Build it in the code and open a pull request | Some web coding (CSS) | An evening |
 
 However you make it, the design ends up in the same place: the
-[**New look** form](https://github.com/aarif86/PrayerTimesAsia/issues/new?template=new-look.yml) on GitHub
-(a free GitHub account is needed). No account? Email the pictures to
-[salam@prayertimes.asia](mailto:salam@prayertimes.asia) with "New look" in the subject.
+[**Design a new look** form](https://prayertimes.asia/new-look.html)
+(no account needed, and you get a thank you and a confirmation email). Pictures and files can be uploaded there.
 
 ## What a masjid screen look must show
 
@@ -74,7 +73,7 @@ It helps to look at the current looks first: [app styles](../web/docs/screenshot
 
 1. Sketch it on paper, or make it in Canva, Figma, PowerPoint, anything. A rough sketch is fine.
 2. Take a photo or screenshot.
-3. Open the [**New look** form](https://github.com/aarif86/PrayerTimesAsia/issues/new?template=new-look.yml),
+3. Open the [**Design a new look** form](https://prayertimes.asia/new-look.html),
    give it a name, drag the picture in and describe the feeling in a sentence. Press **Submit**.
 
 ## Way 2: Ask an AI to make a mock-up
@@ -89,8 +88,8 @@ An AI chat can turn your idea into a working web page you can open on any comput
 4. Double-click the file to open it in your browser. Ask the AI for changes until you like it
    ("make the numbers bigger", "show the azan moment", "show the dark version").
 5. Take screenshots of each moment, then send them **and** the file in the
-   [**New look** form](https://github.com/aarif86/PrayerTimesAsia/issues/new?template=new-look.yml).
-   GitHub doesn't accept `.html` attachments, so zip the file first (right-click → *Compress* / *Send to → Compressed folder*),
+   [**Design a new look** form](https://prayertimes.asia/new-look.html).
+   The form may not accept `.html` files, so zip the file first (right-click → *Compress* / *Send to → Compressed folder*),
    or paste the code into the form.
 
 ### Prompt for a masjid screen look (copy everything in the box)
