@@ -32,7 +32,7 @@ enum class SourceGrade(val code: String) {
             OFFICIAL -> "Published by the national or state religious authority, or its exact published method."
             MASJID -> "From a named mosque's own timetable, checked against our calculation."
             COMMUNITY -> "Method confirmed by two or more independent local contributors."
-            CALCULATED -> "Astronomical calculation on your phone. The method is shown; local mosques may differ by a few minutes."
+            CALCULATED -> "Astronomical calculation on your phone. The method is shown. Local mosques may differ by a few minutes."
             FALAK -> "Worked out from your own observation of the sun's shadow or the sky, with honest ± minutes. Used to learn and to check, never in place of the grades above."
         }
 }

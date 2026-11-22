@@ -6,7 +6,6 @@ import {
   announcementDate, AUTHORITIES, authorityName, basisLabel, eventTitle, expectedDate, upcomingEvents,
 } from '../core/calendarSanad'
 import type { PrayerDay } from '../core/engine'
-import { parameterSummary } from '../core/methods'
 import { musafirDistanceCheck, musafirGuidance, musafirPlan } from '../core/musafir'
 import { isInAsia, isNear, placeProfile, placeSubtitle, type Place } from '../core/place'
 import { OBLIGATORY } from '../core/prayer'
@@ -22,7 +21,7 @@ import { TabJourney } from './icons'
 import { HijriMonthCard } from './HijriCalendar'
 import { MakersAbout } from './Makers'
 import { canInstall, install, isIOS } from './pwa'
-import { appLocale, gradeExplanation, gradeTitle, methodNote, tr, trWith } from '../core/appWords'
+import { appLocale, gradeExplanation, gradeTitle, tr, trWith } from '../core/appWords'
 
 // ---------- Places ----------
 
@@ -160,12 +159,12 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
       : tr('source.downloadedDetail')
     if (day.sunriseCalculated) detail += ` ${tr('source.sunriseCalculated', { name: s.name('sunrise') })}`
   } else if (day.grade === 'A') {
-    detail = `${parameterSummary(s.method)}. ${s.sourceSummary}`
+    detail = s.sourceSummary
   } else if (day.grade === 'B' || day.grade === 'C') {
     const m = s.nearbyMosque
     detail = (m && mosqueMethod(m)?.note) ?? gradeExplanation(day.grade)
   } else {
-    detail = `${parameterSummary(s.method)} · ${s.asrSchool === 'hanafi' ? tr('settings.hanafi') : tr('settings.shafii')} Asr. ${s.sourceSummary} ${methodNote(s.method)}`
+    detail = s.sourceSummary
   }
   const alternates = OBLIGATORY.filter((p) => day.alternate[p] != null)
   const jamaah = OBLIGATORY.filter((p) => day.jamaah[p] != null)

@@ -65,8 +65,8 @@ data class CountryProfile(
             TimesSource.AUTHORITY ->
                 "Follows ${authority ?: name}, worked out on your phone with their method so it works offline." + (note?.let { " $it" } ?: "")
             TimesSource.STANDARD ->
-                (note ?: "No official timetable the app can use here yet, so it uses ${method.name}, a standard method.") +
-                    " Your local masjid may differ by a few minutes. You can choose another method in Settings, or send us your masjid's timetable."
+                (note ?: "No official timetable here yet, so the app uses ${method.name}, a widely used international method.") +
+                    " Your local masjid may differ by a few minutes. Always follow your local religious authority."
         }
     }
 }
