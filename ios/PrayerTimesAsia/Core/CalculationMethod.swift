@@ -57,6 +57,13 @@ struct CalculationMethod: Identifiable, Hashable, Sendable {
         return "Fajr \(Self.format(fajrAngle))° · \(isha)"
     }
 
+    /// Fajr, Isha and Asr in plain words, for the Source screen.
+    func plainSummary(hanafi: Bool) -> String {
+        let times = ishaAngle.map { "Fajr starts when the sun is \(Self.format(fajrAngle))° below the horizon, and Isha at \(Self.format($0))°." }
+            ?? "Fajr starts when the sun is \(Self.format(fajrAngle))° below the horizon, and Isha \(Int(ishaInterval ?? 0)) minutes after Maghrib."
+        return times + (hanafi ? " Asr starts when a shadow is twice as long as its object." : " Asr starts when a shadow is as long as its object.")
+    }
+
     private static func format(_ v: Double) -> String {
         v.rounded() == v ? String(Int(v)) : String(format: "%.1f", v)
     }

@@ -53,6 +53,13 @@ data class CalculationMethod(
             return "Fajr ${format(fajrAngle)}° · $isha"
         }
 
+    /** Fajr, Isha and Asr in plain words, for the Source screen. */
+    fun plainSummary(hanafi: Boolean): String {
+        val times = ishaAngle?.let { "Fajr starts when the sun is ${format(fajrAngle)}° below the horizon, and Isha at ${format(it)}°." }
+            ?: "Fajr starts when the sun is ${format(fajrAngle)}° below the horizon, and Isha ${(ishaInterval ?: 0.0).toInt()} minutes after Maghrib."
+        return times + if (hanafi) " Asr starts when a shadow is twice as long as its object." else " Asr starts when a shadow is as long as its object."
+    }
+
     companion object {
         private fun format(v: Double): String =
             if (Math.rint(v) == v) v.toInt().toString() else String.format(java.util.Locale.US, "%.1f", v)

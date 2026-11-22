@@ -1058,6 +1058,10 @@
     <string name="source_explainC" formatted="false">Method confirmed by two or more independent local contributors.</string>
     <string name="source_explainD" formatted="false">Astronomical calculation on your device. The method is shown. Local mosques may differ by a few minutes.</string>
     <string name="source_explainF" formatted="false">Worked out from your own observation of the sun\'s shadow or the sky, with honest ± minutes. Used to learn and to check, never in place of the grades above.</string>
+    <string name="source_plainAngles" formatted="false">Fajr starts when the sun is {fajr}° below the horizon, and Isha at {isha}°.</string>
+    <string name="source_plainInterval" formatted="false">Fajr starts when the sun is {fajr}° below the horizon, and Isha {mins} minutes after Maghrib.</string>
+    <string name="source_plainAsrShafii" formatted="false">Asr starts when a shadow is as long as its object.</string>
+    <string name="source_plainAsrHanafi" formatted="false">Asr starts when a shadow is twice as long as its object.</string>
     <string name="method_note_muis" formatted="false">Majlis Ugama Islam Singapura. Online, the app shows MUIS\'s official timetable; offline it calculates, never earlier than the official time.</string>
     <string name="method_note_jakim" formatted="false">Malaysia\'s 18° Fajr criterion (since 2019). Online, the app shows JAKIM\'s official e-Solat timetable for your zone; offline it calculates to within about 2 minutes.</string>
     <string name="method_note_kemenag" formatted="false">Kementerian Agama. Online, the app shows Kemenag\'s official timetable for your city or regency; offline it calculates with offsets fitted on the full 2026 Jakarta, Surabaya and Makassar tables.</string>
