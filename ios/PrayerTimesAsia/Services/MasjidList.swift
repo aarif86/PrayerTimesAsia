@@ -30,7 +30,8 @@ final class MasjidList {
     }
 
     nonisolated static let baseURL = "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/masjids/"
-    nonisolated static let maxAge: TimeInterval = 7 * 24 * 3600
+    /// Lists are rebuilt weekly; a day keeps a phone from showing last week's list for long.
+    nonisolated static let maxAge: TimeInterval = 24 * 3600
 
     private var index: Index?
     private var loaded: [String: [Place]] = [:]

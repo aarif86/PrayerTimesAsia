@@ -10,6 +10,11 @@ final class MasjidExtrasTests: XCTestCase {
         XCTAssertEqual(MasjidExtras.fridayNearest(Coordinates(latitude: 1.3044, longitude: 103.8537)).first?.mosque.name, "Masjid Abdul Gafoor")
     }
 
+    func testSavedMasjidListsAreNeverMoreThanADayOld() {
+        // A week-old copy hid newly added prayer rooms from phones that had opened the tab before the rebuild.
+        XCTAssertLessThanOrEqual(MasjidList.maxAge, 24 * 3600)
+    }
+
     func testEidShowsTwoWeeksBefore() {
         let e = EidEvent(name: "Hari Raya Aidilfitri 1448H", date: "2027-03-10", sourceURL: "x",
                          mosques: [EidMosque(name: "Al-Ansar", lat: nil, lng: nil, sessions: [EidSession(time: "07:20", khutbah: "Malay", women: true)], note: nil)])

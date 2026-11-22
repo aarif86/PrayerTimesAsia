@@ -22,7 +22,8 @@ import kotlin.math.max
  */
 object MasjidLists {
     const val BASE_URL = "https://raw.githubusercontent.com/aarif86/PrayerTimesAsia/masjids/"
-    const val MAX_AGE_MS = 7L * 24 * 3600 * 1000
+    /** Lists are rebuilt weekly; a day keeps a phone from showing last week's list for long. */
+    const val MAX_AGE_MS = 24L * 3600 * 1000
 
     data class Index(val tiles: Set<String>, val countries: Set<String>)
 

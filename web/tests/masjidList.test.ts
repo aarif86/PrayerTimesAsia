@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { parseTile, tilesAround } from '../src/services/masjidList'
 
@@ -14,5 +15,14 @@ describe('ready-made masjid list on the web', () => {
     expect(p![0]).toMatchObject({ id: 'n1', name: 'Masjid Al-Istighfar', isMusollah: false })
     expect(p![1]).toMatchObject({ name: 'Prayer room', isMusollah: true })
     expect(parseTile({})).toBeNull()
+  })
+
+  it('loads the curated Singapore prayer rooms from the published square', () => {
+    // Copy of the Singapore part of square 1_103 on the masjids branch (built 21 Nov 2026).
+    const rows = JSON.parse(readFileSync(new URL('./fixtures/sg-tile.json', import.meta.url), 'utf8')) as { places: unknown[] }
+    const places = parseTile(rows)!
+    const curated = places.filter((p) => p.id.startsWith('m') && p.isMusollah)
+    expect(curated.length).toBeGreaterThanOrEqual(100)
+    expect(places.filter((p) => p.isMusollah).length).toBeGreaterThanOrEqual(140)
   })
 })
