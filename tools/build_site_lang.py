@@ -93,7 +93,7 @@ work = re.sub(r'\bsrcset="([^"]*)"', lambda m: 'srcset="' + ', '.join(
     for c in (part.strip() for part in m.group(1).split(','))) + '"', work)
 
 # The page lives one folder down: fix relative links (not #anchors, mailto or full URLs).
-work = re.sub(r'\b(href|src)="(?!https?:|mailto:|#|/|data:)([^"]*)"',
+work = re.sub(r'\b(href|src)="(?!https?:|mailto:|tel:|about:|javascript:|#|/|data:)([^"]*)"',
               lambda m: f'{m.group(1)}="../{m.group(2)}"', work)
 work = re.sub(r'\bsrcset="([^"]*)"',
               lambda m: 'srcset="' + ', '.join(

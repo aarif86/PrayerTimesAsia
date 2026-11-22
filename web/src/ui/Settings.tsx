@@ -40,7 +40,7 @@ const LINKS = {
   instagram: 'https://www.instagram.com/prayertimesasia',
   facebook: 'https://www.facebook.com/prayertimesasia',
   verify: 'https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md',
-  newLook: 'https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md',
+  newLook: 'https://prayertimes.asia/new-look.html',
   picksRules: 'https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md',
 }
 

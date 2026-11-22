@@ -170,7 +170,7 @@ private object SettingsLinks {
     const val INSTAGRAM = "https://www.instagram.com/prayertimesasia"
     const val FACEBOOK = "https://www.facebook.com/prayertimesasia"
     const val VERIFY = "https://github.com/aarif86/PrayerTimesAsia/blob/main/CONTRIBUTING.md"
-    const val NEW_LOOK = "https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/design-a-look.md"
+    const val NEW_LOOK = "https://prayertimes.asia/new-look.html"
     const val PICKS_RULES = "https://github.com/aarif86/PrayerTimesAsia/blob/main/docs/community-cards.md"
 }
 
