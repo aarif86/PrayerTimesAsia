@@ -95,7 +95,7 @@ extension CalculationMethod {
         id: "mwl", name: "Muslim World League", shortName: "MWL",
         fajrAngle: 18, ishaAngle: 17, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
         offsets: [:], matchesOfficialTable: false,
-        note: "The Muslim World League. A widely used international method.")
+        note: "A widely used international method.")
 
     static let karachi = CalculationMethod(
         id: "karachi", name: "Karachi · University of Islamic Sciences", shortName: "Karachi",

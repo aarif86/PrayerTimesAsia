@@ -1062,7 +1062,7 @@
     <string name="method_note_jakim" formatted="false">Kriteria Subuh 18° Malaysia (sejak 2019). Dalam talian, aplikasi menunjukkan jadual rasmi e-Solat JAKIM bagi zon anda. Tanpa talian, aplikasi mengira dengan perbezaan kira-kira 2 minit.</string>
     <string name="method_note_kemenag" formatted="false">Kementerian Agama Indonesia. Dalam talian, aplikasi menunjukkan jadual rasmi Kemenag bagi bandar atau kabupaten anda. Tanpa talian, aplikasi mengira dengan pelarasan yang dipadankan pada jadual penuh 2026 bagi Jakarta, Surabaya dan Makassar.</string>
     <string name="method_note_sea" formatted="false">Kebiasaan 20°/18° yang digunakan di seluruh Alam Melayu. Pilihan asas yang munasabah jika tiada jadual kebangsaan.</string>
-    <string name="method_note_mwl" formatted="false">Liga Muslim Sedunia. Kaedah antarabangsa yang digunakan secara meluas.</string>
+    <string name="method_note_mwl" formatted="false">Kaedah antarabangsa yang digunakan secara meluas.</string>
     <string name="method_note_karachi" formatted="false">Kaedah biasa di Pakistan, India, Bangladesh dan Afghanistan.</string>
     <string name="method_note_ummalqura" formatted="false">Kalendar rasmi Arab Saudi, diikuti oleh Haramain di Makkah dan Madinah. Isyak 90 minit selepas Maghrib, 120 minit pada bulan Ramadan.</string>
     <string name="method_note_dubai" formatted="false">Kebiasaan Emiriah Arab Bersatu.</string>

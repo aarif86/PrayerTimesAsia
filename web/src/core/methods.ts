@@ -80,7 +80,7 @@ export const METHODS = {
   mwl: M({
     id: 'mwl', name: 'Muslim World League', shortName: 'MWL', fajrAngle: 18, ishaAngle: 17,
     offsets: {}, matchesOfficialTable: false,
-    note: 'The Muslim World League. A widely used international method.',
+    note: 'A widely used international method.',
   }),
   karachi: M({
     id: 'karachi', name: 'Karachi · University of Islamic Sciences', shortName: 'Karachi', fajrAngle: 18, ishaAngle: 18,

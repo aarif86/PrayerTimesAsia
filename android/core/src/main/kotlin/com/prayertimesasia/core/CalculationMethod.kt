@@ -85,7 +85,7 @@ data class CalculationMethod(
 
         val MWL = CalculationMethod(
             "mwl", "Muslim World League", "MWL", 18.0, 17.0, null, null, null, emptyMap(), false,
-            "The Muslim World League. A widely used international method.")
+            "A widely used international method.")
 
         val KARACHI = CalculationMethod(
             "karachi", "Karachi · University of Islamic Sciences", "Karachi", 18.0, 18.0, null, null, null, emptyMap(), false,
