@@ -37,9 +37,9 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
   const extra = `${hide.times ? ' scr-no-times' : ''}${hide.clock ? ' scr-no-clock' : ''}${tucked ? ' scr-tucked' : ''}`
 
   return (
-    <div class={`scr scr-${phase.kind} scr-look-${c.look}${extra}`} style={{ '--tint': `var(--t-${tint})` }}>
-      {c.look !== 'bands' && <LivingSky colors={skyAt(now, today.day)} scheme={c.look === 'day' ? 'light' : 'dark'} soft={false} />}
-      {c.look !== 'day' && c.look !== 'bands' && <div class="scr-shade" aria-hidden="true" />}
+    <div class={`scr scr-${phase.kind} scr-look-${c.look} scr-${c.mode}${extra}`} style={{ '--tint': `var(--t-${tint})` }}>
+      {c.look !== 'bands' && c.look !== 'simple' && <LivingSky colors={skyAt(now, today.day)} scheme={c.mode} soft={false} />}
+      {c.mode === 'dark' && c.look !== 'bands' && c.look !== 'simple' && <div class="scr-shade" aria-hidden="true" />}
       <header class="scr-head">
         <div class="scr-title">
           <h1 class={lengthClass(c.name || c.place.name, 28, 48)}>{c.name || c.place.name}</h1>

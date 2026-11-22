@@ -2,24 +2,28 @@ import '@fontsource-variable/inter/wght.css'
 import '@fontsource-variable/nunito/wght.css'
 import '../ui/flags.css'
 import { render } from 'preact'
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useMemo, useState } from 'preact/hooks'
 import { zoned } from '../core/tz'
 import { ensureTable } from '../services/officialTables'
-import { readJSON, writeJSON } from '../services/storage'
+import { readJSON, readString, writeJSON, writeString } from '../services/storage'
 import { countScreenRunning, SCREEN_EVERY_MS } from '../services/usage'
 import { registerServiceWorker } from '../ui/pwa'
-import { configFromHash, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, sanitize, type ScreenConfig } from './config'
+import { configFromHash, decodeConfig, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, isTvHash, looksLikeTv, pairCodeFromHash, sanitize, shortCodeFromHash, type ScreenConfig } from './config'
 import { Display } from './Display'
+import { withPlace } from './place'
 import { Frame } from './Frame'
 import { officialSourceForScreen, setScreenAnnouncements, setScreenClock, WORDS } from './model'
 import type { CalendarDataset } from '../core/calendarSanad'
 import { fetchOK } from '../services/storage'
 import { Setup } from './Setup'
-import { checkClock, CLOCK_WARN_MS, nextClockFix, PING_EVERY_MS, pingScreen, saveClockFix, savedClockFix } from './live'
+import { PAIR_KEY, PAIR_SYNC_MS, PairScreen, type TvPair } from './pair'
+import { loadShortLink, pairSync, checkClock, CLOCK_WARN_MS, nextClockFix, PING_EVERY_MS, pingScreen, saveClockFix, savedClockFix } from './live'
 import { withBundled } from '../core/bundledCalendar'
 import './screen.css'
 
 const STORAGE = 'ptasia.screen'
+/** The short code the saved settings came from, so a new code on the link means fetching again. */
+const CODE_KEY = 'ptasia.screen.code'
 const SCREEN_VERSION = '1.0.0'
 
 /** Screenshot mode: ?demo (an example masjid) and ?now=2026-10-26T16:30:00%2B08:00 (a fixed clock). */
@@ -54,13 +58,16 @@ export const DEMO_CONFIG: ScreenConfig = {
 function initialConfig(): ScreenConfig | null {
   // ?demo&look=day&lang=ms for screenshots of each variation.
   if (query.has('demo')) {
-    return sanitize({ ...DEMO_CONFIG, look: query.get('look'), lang: query.get('lang') ?? 'en', names: query.get('names') ?? DEMO_CONFIG.names,
+    return sanitize({ ...DEMO_CONFIG, look: query.get('look'), mode: query.get('mode') ?? (query.get('look') === 'day' ? 'light' : 'dark'), lang: query.get('lang') ?? 'en', names: query.get('names') ?? DEMO_CONFIG.names,
       // ?season=ramadan|lastTen|raya: the committee's Ramadan preview, with typical settings.
       showIqamah: query.has('iqamah'),
       ramadan: { ishaExtra: 5, tarawih: true, tarawihAt: null, qiyamAt: '03:30', eidAt: '08:00', preview: query.get('season') ?? 'off' } })
   }
   const fromLink = configFromHash(location.hash)
-  if (fromLink) { writeJSON(STORAGE, fromLink); return fromLink }
+  if (fromLink) { writeJSON(STORAGE, fromLink); writeString(CODE_KEY, ''); return fromLink }
+  // A short link (#k=...): the saved copy is used only when it came from this same code. Otherwise App fetches it.
+  const code = shortCodeFromHash(location.hash)
+  if (code && readString(CODE_KEY) !== code) return null
   const saved = readJSON<unknown>(STORAGE)
   return saved ? sanitize(saved) : null
 }
@@ -68,6 +75,9 @@ function initialConfig(): ScreenConfig | null {
 /** How far the TV's own clock is off, from the last check-in (0 until then). The screen counts from the corrected time. */
 let clockFix = fixedNow == null && !query.has('demo') ? savedClockFix() : 0
 const screenNow = () => Date.now() + clockFix
+
+/** The look the dashboard counts: Sky in Light keeps its old name, Day. */
+const reportLook = (c: ScreenConfig): string => (c.look === 'night' && c.mode === 'light' ? 'day' : c.look)
 
 function useClock(): number {
   const [now, setNow] = useState(fixedNow ?? screenNow())
@@ -82,22 +92,76 @@ function useClock(): number {
   return now
 }
 
+/** Opening a short link on a new TV: fetch the settings, keep them on the TV, and retry while there is no internet. */
+function useShortLink(code: string | null, have: boolean, onLoaded: (c: ScreenConfig) => void): 'idle' | 'loading' | 'failed' {
+  const [state, setState] = useState<'idle' | 'loading' | 'failed'>(code && !have ? 'loading' : 'idle')
+  useEffect(() => {
+    if (!code || have) return
+    let stop = false, id: ReturnType<typeof setTimeout>
+    const attempt = async () => {
+      const text = await loadShortLink(code)
+      const c = text ? decodeConfig(text) : null
+      if (stop) return
+      if (c) { writeJSON(STORAGE, c); writeString(CODE_KEY, code); onLoaded(c); setState('idle'); return }
+      setState('failed')
+      id = setTimeout(attempt, 15_000)
+    }
+    void attempt()
+    return () => { stop = true; clearTimeout(id) }
+  }, [code, have])
+  return state
+}
+
 function App() {
   const [config, setConfig] = useState<ScreenConfig | null>(initialConfig)
-  const [editing, setEditing] = useState(() => !config || location.hash.includes('setup') || query.has('setup'))
+  const code = shortCodeFromHash(location.hash)
+  const link = useShortLink(code, config != null, setConfig)
+  // One address, prayertimes.asia/tv, for everyone: a TV (by its browser name) shows the pairing code,
+  // a phone or computer shows the setup page. #tv and #setup force one or the other.
+  const wantsSetup = location.hash.includes('setup') || query.has('setup') || pairCodeFromHash(location.hash) != null
+  const tv = isTvHash(location.hash) || (!wantsSetup && looksLikeTv(navigator.userAgent))
+  const [editing, setEditing] = useState(() => wantsSetup || (!config && !code && !tv))
   const now = useClock()
+  // No place chosen: the TV works out a place from its own time zone.
+  // A paired TV looks for changes from the phone, now and every 10 minutes.
+  useEffect(() => {
+    if (!config || fixedNow != null || query.has('demo')) return
+    let stop = false
+    const look = async () => {
+      const pair = readJSON<TvPair>(PAIR_KEY)
+      if (!pair || !navigator.onLine) return
+      const r = await pairSync(pair.code, pair.tvKey, pair.rev)
+      if (stop || !r || r === 'gone' || !r.c) return
+      const next = decodeConfig(r.c)
+      if (!next) return
+      const c = sanitize(next)
+      writeJSON(STORAGE, c); writeJSON(PAIR_KEY, { ...pair, rev: r.rev }); setConfig(c)
+    }
+    void look()
+    const id = setInterval(look, PAIR_SYNC_MS)
+    return () => { stop = true; clearInterval(id) }
+  }, [config != null])
+  const placed = useMemo(() => (config ? withPlace(config) : null), [config])
   // The setup page is in English; the screen speaks its chosen language (screen readers, TV translation prompts).
   useEffect(() => { document.documentElement.lang = editing || !config ? 'en' : config.lang }, [editing, config])
 
+  if (!config && tv && !code && !editing) {
+    return <PairScreen onPaired={(c, pair) => { writeJSON(STORAGE, c); writeJSON(PAIR_KEY, pair); writeString(CODE_KEY, ''); setConfig(c) }} />
+  }
+  if (!config && code && !editing) {
+    return <div class="scr scr-empty"><p>{link === 'failed' ? 'Could not open this link yet. Check that the TV is online. Trying again.' : 'Opening your masjid screen'}</p></div>
+  }
   if (editing || !config) {
     return <Setup initial={config ?? DEFAULT_CONFIG} now={now} onOpen={(c) => {
       writeJSON(STORAGE, c)
+      writeString(CODE_KEY, '')
+      writeJSON(PAIR_KEY, null)  // Changed on the TV itself: the phone no longer controls it.
       history.replaceState(null, '', `${location.pathname}${location.search}#c=${encodeConfig(c)}`)
       setConfig(c)
       setEditing(false)
     }} />
   }
-  return <Screen config={config} now={now} onEdit={() => { history.replaceState(null, '', `${location.pathname}#setup`); setEditing(true) }} />
+  return <Screen config={placed!} now={now} onEdit={() => { history.replaceState(null, '', `${location.pathname}#setup`); setEditing(true) }} />
 }
 
 function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; onEdit: () => void }) {
@@ -134,7 +198,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
     if (fixedNow != null || query.has('demo') || !config.report || !config.place) return
     const checkIn = () => countScreenRunning(SCREEN_VERSION, {
       masjid: config.name, city: config.place?.district || config.place?.name || null,
-      countryCode: config.place?.cc ?? null, look: config.look, language: config.lang,
+      countryCode: config.place?.cc ?? null, look: reportLook(config), language: config.lang,
     })
     const first = setTimeout(checkIn, 20_000)
     const id = setInterval(checkIn, SCREEN_EVERY_MS)
@@ -146,7 +210,7 @@ function Screen({ config, now, onEdit }: { config: ScreenConfig; now: number; on
   useEffect(() => {
     if (fixedNow != null || query.has('demo') || !config.place) return
     if (clockFix) setScreenClock(screenNow)
-    const ping = () => (config.report ? pingScreen({ cc: config.place?.cc ?? null, look: config.look, lang: config.lang }) : checkClock()).then((off) => {
+    const ping = () => (config.report ? pingScreen({ cc: config.place?.cc ?? null, look: reportLook(config), lang: config.lang }) : checkClock()).then((off) => {
       if (off == null) return
       clockFix = nextClockFix(clockFix, off)
       saveClockFix(clockFix)
