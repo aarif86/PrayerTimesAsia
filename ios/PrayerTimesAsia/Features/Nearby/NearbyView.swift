@@ -248,8 +248,17 @@ final class NearbySearch {
         var merged = apple.compactMap(measured)
         // The same masjid is often in both; keep Apple's (better directions)
         // and add OpenStreetMap places that aren't already pinned close by.
-        for space in osm.compactMap(measured) where !merged.contains(where: { Self.metres($0.coordinate, space.coordinate) < 80 }) {
-            merged.append(space)
+        // When Apple's pin wins, it still takes the facts only the list knows
+        // (how to find it, level, MRT, mats, notes), so they never get lost.
+        for space in osm.compactMap(measured) {
+            let close = merged.indices.filter { Self.metres(merged[$0].coordinate, space.coordinate) < 80 }
+            if let i = close.min(by: { Self.metres(merged[$0].coordinate, space.coordinate) < Self.metres(merged[$1].coordinate, space.coordinate) }) {
+                if merged[i].details == nil { merged[i].details = space.details }
+                if merged[i].facilities.isEmpty { merged[i].facilities = space.facilities }
+                if merged[i].hours == nil { merged[i].hours = space.hours }
+            } else {
+                merged.append(space)
+            }
         }
         spaces = merged.sorted { $0.distanceKm < $1.distanceKm }
         failed = spaces.isEmpty && !appleOK && !osmOK && !isLoading && !isAddingMore
