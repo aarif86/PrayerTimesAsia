@@ -41,6 +41,7 @@
   /* Gold for words, not just shapes: strong enough to read (WCAG AA) on this theme. */
   --gold-text: rgb(255, 214, 128);
   --green: rgb(48, 209, 88);
+  --green-solid: rgb(21, 115, 52); /* white text on it is 5.9:1, WCAG AA */
   --grade-d: rgba(255, 255, 255, 0.75);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   color-scheme: dark;
@@ -289,7 +290,7 @@ input, select, textarea { font: inherit; color: inherit; }
   -webkit-mask: radial-gradient(circle, transparent 15px, #000 15.5px); mask: radial-gradient(circle, transparent 15px, #000 15.5px);
 }
 .tracker-day > * { position: relative; }
-.tracker-day.full { background: var(--green); color: #fff; font-weight: 600; }
+.tracker-day.full { background: var(--green-solid); color: #fff; font-weight: 600; }
 .tracker-day.excused:not(.full) { background: color-mix(in srgb, #e06c8a 28%, transparent); color: #e06c8a; }
 .tracker-day.full::before, .tracker-day.excused::before, .tracker-day.future::before { display: none; }
 .tracker-day.future { opacity: 0.35; }
