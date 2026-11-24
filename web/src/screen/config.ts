@@ -49,7 +49,7 @@ export const SLIDE_TONES: readonly SlideTone[] = ['navy', 'gold', 'green', 'ligh
 export const MAX_SLIDES = 8
 export const MAX_SLIDE_TITLE = 50
 export const MAX_SLIDE_TEXT = 140
-export const MAX_SLIDE_IMG = 180
+export const MAX_SLIDE_IMG = 300
 /** How long each slide stays up. */
 export const SLIDE_SECONDS = 12
 

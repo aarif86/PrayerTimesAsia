@@ -186,14 +186,17 @@ function Stage({ items, now, config: c, big }: { items: Item[]; now: number; con
   const i = Math.floor(now / (SLIDE_SECONDS * 1000)) % items.length
   const it = items[i]
   // A picture that will not load (no internet, a wrong address) shows its caption card instead.
+  // Forgotten after ten minutes, so a Wi-Fi drop does not hide a picture for good.
+  const stamp = Math.floor(now / 600_000)
   const [broken, setBroken] = useState<Record<string, true>>({})
+  const bad = (img: string) => broken[`${img}|${stamp}`]
   let body
   if (it.kind === 'slide') {
     const s = it.slide
-    const pic = s.img && !broken[s.img]
+    const pic = s.img && !bad(s.img)
     body = pic ? (
       <figure class="slide slide-pic" key={`s${i}`}>
-        <img src={s.img} alt={s.title || s.text || ''} onError={() => setBroken((b) => ({ ...b, [s.img]: true }))} referrerpolicy="no-referrer" />
+        <img src={s.img} alt={s.title || s.text || ''} onError={() => setBroken((b) => ({ ...b, [`${s.img}|${stamp}`]: true }))} referrerpolicy="no-referrer" />
         {(s.title || s.text) && <figcaption>{s.title && <b>{s.title}</b>}{s.text && <span>{s.text}</span>}</figcaption>}
       </figure>
     ) : (
@@ -210,7 +213,7 @@ function Stage({ items, now, config: c, big }: { items: Item[]; now: number; con
     body = (
       <div class="slide slide-card slide-welcome tone-navy" key="w">
         <h2 class={lengthClass(c.name || c.place!.name, 22, 34)}>{c.name || c.place!.name}</h2>
-        {c.showQr && c.place && <QrCard config={c} caption={w.scan} />}
+        {c.showQr && c.place && !big && <QrCard config={c} caption={w.scan} />}
       </div>
     )
   }

@@ -218,7 +218,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         {fromQr && !pairMsg?.ok && (
           <div class="sp-pairbar" role="region" aria-label="Pairing with the TV">
             <div><b>Setting up the TV with code {fromQr}</b><span>Choose what shows below, then tap the button.</span></div>
-            <button type="button" class="sp-btn sp-btn-primary" onClick={pairNow} disabled={pairBusy}>{pairBusy ? 'Sending' : 'Show on my TV'}</button>
+            <button type="button" class="sp-btn sp-btn-primary" onClick={pairNow} disabled={pairBusy || tooBig}>{pairBusy ? 'Sending' : 'Show on my TV'}</button>
           </div>
         )}
         {fromQr && pairMsg && <p class={`sp-pairbar-msg ${pairMsg.ok ? 'sp-ok' : 'sp-error'}`} role="status">{pairMsg.text}</p>}
@@ -521,11 +521,11 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                 <button type="button" class="sp-link-btn" onClick={forgetTv}>Forget</button>
               </div>
             )}
-            {editor && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={updateNow} disabled={pairBusy}>{pairBusy ? 'Sending' : 'Update my TV'}</button>}
+            {editor && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={updateNow} disabled={pairBusy || tooBig}>{pairBusy ? 'Sending' : 'Update my TV'}</button>}
             <div class="sp-pairrow">
               <input id="s-pair" class="sp-input sp-codein" value={pairInput} maxLength={9} placeholder="Code, like K7M3QX" aria-label="The code shown on the TV"
                 autoCapitalize="characters" autoComplete="off" onInput={(e) => setPairInput((e.target as HTMLInputElement).value.toUpperCase())} />
-              <button type="button" class={`sp-btn${editor ? '' : ' sp-btn-primary'}`} onClick={pairNow} disabled={pairBusy || !pairInput.trim()}>{pairBusy ? 'Sending' : editor ? 'Pair a new TV' : 'Show on my TV'}</button>
+              <button type="button" class={`sp-btn${editor ? '' : ' sp-btn-primary'}`} onClick={pairNow} disabled={pairBusy || tooBig || !pairInput.trim()}>{pairBusy ? 'Sending' : editor ? 'Pair a new TV' : 'Show on my TV'}</button>
             </div>
             {pairMsg && <p class={pairMsg.ok ? 'sp-ok' : 'sp-error'} role="status">{pairMsg.text}</p>}
           </div>
@@ -533,8 +533,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
           <h3 class="sp-or">Or send the link</h3>
           <p class="sp-hint">For a TV where you would rather type nothing, or to try it on your own computer. Open the link on the TV or computer.</p>
           <div class="sp-actions">
-            {canShare && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={share}>{copied === 'shared' ? 'Sent' : 'Send the link'}</button>}
-            <button type="button" class={`sp-btn sp-btn-big${canShare ? '' : ' sp-btn-primary'}`} onClick={copy}>{copied === 'copied' ? 'Copied' : 'Copy the link'}</button>
+            {canShare && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={share} disabled={tooBig}>{copied === 'shared' ? 'Sent' : 'Send the link'}</button>}
+            <button type="button" class={`sp-btn sp-btn-big${canShare ? '' : ' sp-btn-primary'}`} onClick={copy} disabled={tooBig}>{copied === 'copied' ? 'Copied' : 'Copy the link'}</button>
           </div>
           <ol class="sp-howto">
             <li><span class="sp-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z" /></svg></span>Send the link to yourself, on WhatsApp or email.</li>

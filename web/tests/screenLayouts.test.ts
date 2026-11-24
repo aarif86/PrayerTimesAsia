@@ -32,7 +32,7 @@ describe('slides', () => {
 
   it('only shows pictures from https addresses', () => {
     expect(safeImageUrl('https://example.org/poster.png')).toBe('https://example.org/poster.png')
-    for (const bad of ['http://example.org/a.png', 'javascript:alert(1)', 'data:image/png;base64,AAAA', '//example.org/a.png', 'https://user:pw@example.org/a.png', '', 5, null, `https://example.org/${'a'.repeat(200)}`]) {
+    for (const bad of ['http://example.org/a.png', 'javascript:alert(1)', 'data:image/png;base64,AAAA', '//example.org/a.png', 'https://user:pw@example.org/a.png', '', 5, null, `https://example.org/${'a'.repeat(400)}`]) {
       expect(safeImageUrl(bad)).toBe('')
     }
     expect(sanitize({ slides: [{ title: 'Hi', img: 'javascript:alert(1)' }] }).slides[0].img).toBe('')
