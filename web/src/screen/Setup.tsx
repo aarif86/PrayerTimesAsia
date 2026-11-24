@@ -393,7 +393,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                     })}
                   </div>
                   <button type="button" class="sp-btn" onClick={addSlide} disabled={c.slides.length >= MAX_SLIDES}>+ Add a slide</button>
-                  <p class="sp-hint">Uploading a picture from your phone is not ready yet. For now, paste the address of a picture that is already on the web.</p>
+                  <p class="sp-hint">For a picture, paste a link to it. Easiest: a picture from your masjid's website or Facebook page (press and hold, then copy the picture address), or share a picture on Google Drive or Dropbox with "anyone with the link" and paste that link. We do not store your pictures.</p>
                 </>
               )}
               {tooBig && <p class="sp-error" role="alert">There is too much text to send to the TV. Shorten a slide or remove a notice.</p>}

@@ -38,6 +38,13 @@ describe('slides', () => {
     expect(sanitize({ slides: [{ title: 'Hi', img: 'javascript:alert(1)' }] }).slides[0].img).toBe('')
   })
 
+  it('turns Google Drive and Dropbox share links into the picture itself', () => {
+    expect(safeImageUrl('https://drive.google.com/file/d/1AbCdEfGhIjKlMn/view?usp=sharing')).toBe('https://lh3.googleusercontent.com/d/1AbCdEfGhIjKlMn')
+    expect(safeImageUrl('https://drive.google.com/open?id=1AbCdEfGhIjKlMn')).toBe('https://lh3.googleusercontent.com/d/1AbCdEfGhIjKlMn')
+    expect(safeImageUrl('https://www.dropbox.com/s/abc123/poster.jpg?dl=0')).toBe('https://www.dropbox.com/s/abc123/poster.jpg?raw=1')
+    expect(safeImageUrl('https://drive.google.com/drive/folders/1AbCdEfGhIjKlMn')).toBe('https://drive.google.com/drive/folders/1AbCdEfGhIjKlMn')
+  })
+
   it('puts notices among the slides only where there is no notice bar', () => {
     const c = { ...SG, slides: [slide(1)], notices: ['Notice A'], showQr: false }
     expect(stageItems(c, 'splitN', null).map((i) => i.kind)).toEqual(['slide'])

@@ -53,6 +53,23 @@ export const MAX_SLIDE_IMG = 300
 /** How long each slide stays up. */
 export const SLIDE_SECONDS = 12
 
+/**
+ * Share links from Google Drive and Dropbox are web pages, not pictures. Turn them into the picture's own address,
+ * so a committee can paste the link they already have. Other addresses pass through.
+ */
+function directPictureUrl(u: URL): URL {
+  if (u.hostname === 'drive.google.com') {
+    const id = /\/file\/d\/([\w-]{10,})/.exec(u.pathname)?.[1] ?? (u.pathname === '/open' || u.pathname === '/uc' ? u.searchParams.get('id') : null)
+    if (id && /^[\w-]{10,}$/.test(id)) return new URL(`https://lh3.googleusercontent.com/d/${id}`)
+  }
+  if (/^(www\.)?dropbox\.com$/.test(u.hostname) && /^\/(s|scl)\//.test(u.pathname)) {
+    const d = new URL(u.href)
+    d.searchParams.delete('dl'); d.searchParams.set('raw', '1')
+    return d
+  }
+  return u
+}
+
 /** A picture address we will show: https only. Anything else (javascript:, data:, http:) is dropped. */
 export function safeImageUrl(v: unknown): string {
   if (typeof v !== 'string') return ''
@@ -60,7 +77,9 @@ export function safeImageUrl(v: unknown): string {
   if (t.length > MAX_SLIDE_IMG) return ''
   try {
     const u = new URL(t)
-    return u.protocol === 'https:' && !u.username && !u.password ? u.href.length <= MAX_SLIDE_IMG ? u.href : '' : ''
+    if (u.protocol !== 'https:' || u.username || u.password) return ''
+    const href = directPictureUrl(u).href
+    return href.length <= MAX_SLIDE_IMG ? href : ''
   } catch { return '' }
 }
 export type ScreenMode = 'dark' | 'light'
