@@ -322,6 +322,8 @@ export interface Words {
   occasion: (name: string, days: number) => string
   /** "Sun over the Kaaba" + "today at" + time + the hint. Draft wording for the owner. */
   kaaba: string; kaabaAt: string; kaabaHint: string
+  /** The small maker line in the corner. */
+  built: string
 }
 
 export const WORDS: Record<ScreenLanguage, Words> = {
@@ -336,6 +338,7 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     raya: 'Eid Mubarak', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'The last ten nights',
     occasion: (n, d) => d === 0 ? `${n} today` : d === 1 ? `${n} tomorrow` : `${n} in ${d} days`,
     kaaba: 'Sun over the Kaaba', kaabaAt: 'today at', kaabaHint: 'face the sun and you face the qibla',
+    built: 'Built in Singapore',
   },
   ms: {
     next: 'Seterusnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Sila senyapkan telefon bimbit anda',
@@ -348,6 +351,7 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     raya: 'Selamat Hari Raya Aidilfitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'Sepuluh malam terakhir',
     occasion: (n, d) => d === 0 ? `Hari ini ${n}` : d === 1 ? `Esok ${n}` : `${d} hari lagi ${n}`,
     kaaba: 'Matahari tegak di atas Kaabah', kaabaAt: 'hari ini pada', kaabaHint: 'menghadap matahari bererti menghadap kiblat',
+    built: 'Dibina di Singapura',
   },
   id: {
     next: 'Berikutnya', iqamah: 'Iqamah', azan: 'Azan', iqamahIn: 'Iqamah dalam', silence: 'Mohon nonaktifkan nada dering ponsel',
@@ -360,6 +364,7 @@ export const WORDS: Record<ScreenLanguage, Words> = {
     raya: 'Selamat Hari Raya Idulfitri', takbir: 'Allahu akbar, Allahu akbar, Allahu akbar, la ilaha illallahu wallahu akbar, Allahu akbar wa lillahil hamd', lastTen: 'Sepuluh malam terakhir',
     occasion: (n, d) => d === 0 ? `Hari ini ${n}` : d === 1 ? `Besok ${n}` : `${d} hari lagi ${n}`,
     kaaba: 'Matahari tepat di atas Ka\'bah', kaabaAt: 'hari ini pukul', kaabaHint: 'menghadap matahari berarti menghadap kiblat',
+    built: 'Dibuat di Singapura',
   },
 }
 

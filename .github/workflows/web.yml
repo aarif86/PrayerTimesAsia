@@ -110,6 +110,10 @@ jobs:
           # "What's new", built from the same file as the GitHub changelog.
           python3 tools/build_whatsnew_page.py docs/website/changelog.json _site/whatsnew.html
           cp -R web/dist _site/app
+          # prayertimes.asia/tv is the masjid screen itself, not a redirect, so a TV shows its pairing code at the short address.
+          # The page's files are all absolute paths under /app/, so the same page works from here.
+          mkdir -p _site/tv
+          cp _site/app/screen/index.html _site/tv/index.html
           # Pages for search engines and AI answers, from the same engine as the apps: one page per major
           # city with today's times as plain text, an About and method page, sitemap.xml and robots.txt.
           (cd web && npx vite-node scripts/build-search-pages.ts -- ../_site "${BASE}")
@@ -129,6 +133,9 @@ jobs:
           test -f _site/app/index.html
           test -f _site/app/sw.js
           test -f _site/app/screen/index.html
+          test -f _site/tv/index.html
+          grep -q "${BASE_PATH}assets/" _site/tv/index.html
+          ! grep -q "http-equiv=\"refresh\"" _site/tv/index.html
           test -f _site/app/manifest.webmanifest
           grep -q "${BASE_PATH}assets/" _site/app/index.html
           ! grep -q "__BASE__" _site/404.html

@@ -47,7 +47,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .screen-shift > .scr { box-shadow: 0 0 0 calc(var(--u) * 2) var(--bg); }
 .screen-tools {
   position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: 16px; display: flex; gap: 12px; align-items: center;
-  font-size: 14px; color: var(--fg2); background: var(--glass-strong); padding: 8px 8px 8px 14px; border-radius: 999px;
+  font-size: 14px; color: #e4e4f0; background: #2a2a40; padding: 8px 8px 8px 14px; border-radius: 999px;
   -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid var(--stroke);
 }
 .screen-tools button { background: var(--accent); color: rgba(0, 0, 0, 0.82); border: 0; border-radius: 999px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
@@ -441,3 +441,5 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pair-foot { margin: 0; font-size: 1rem; color: var(--fg3); }
 
 .pair-foot a { color: var(--fg3); }
+.pair-phone { display: inline-block; margin-top: 1vh; padding: 14px 26px; border-radius: 999px; background: var(--gold); color: #1b1630; font-weight: 800; font-size: clamp(1rem, 2vw, 1.4rem); text-decoration: none; }
+.pair-phone:focus-visible { outline: 4px solid #fff; outline-offset: 3px; }

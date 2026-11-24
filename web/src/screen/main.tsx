@@ -20,6 +20,7 @@ import { PAIR_KEY, PAIR_SYNC_MS, PairScreen, type TvPair } from './pair'
 import { loadShortLink, pairSync, checkClock, CLOCK_WARN_MS, nextClockFix, PING_EVERY_MS, pingScreen, saveClockFix, savedClockFix } from './live'
 import { withBundled } from '../core/bundledCalendar'
 import './screen.css'
+import './layouts.css'
 
 const STORAGE = 'ptasia.screen'
 /** The short code the saved settings came from, so a new code on the link means fetching again. */
@@ -53,12 +54,17 @@ export const DEMO_CONFIG: ScreenConfig = {
   place: EXAMPLE_PLACE,
   jumuah: '13:00',
   notices: ['Kuliah Maghrib every Tuesday · Example notice', 'Please keep the corridors clear for wheelchairs · Example notice'],
+  slides: [
+    { title: 'Kuliah Maghrib', text: 'Every Tuesday after Maghrib with Ustaz Ahmad. Everyone is welcome · Example slide', img: '', tone: 'navy' },
+    { title: 'Zakat Fitrah', text: 'Pay at the office or at the counter after Zohor · Example slide', img: '', tone: 'gold' },
+    { title: 'Gotong royong', text: 'Saturday after Subuh. Bring gloves · Example slide', img: '', tone: 'green' },
+  ],
 }
 
 function initialConfig(): ScreenConfig | null {
   // ?demo&look=day&lang=ms for screenshots of each variation.
   if (query.has('demo')) {
-    return sanitize({ ...DEMO_CONFIG, look: query.get('look'), mode: query.get('mode') ?? (query.get('look') === 'day' ? 'light' : 'dark'), lang: query.get('lang') ?? 'en', names: query.get('names') ?? DEMO_CONFIG.names,
+    return sanitize({ ...DEMO_CONFIG, look: query.get('look'), layout: query.get('layout') ?? 'full', mode: query.get('mode') ?? (query.get('look') === 'day' ? 'light' : 'dark'), lang: query.get('lang') ?? 'en', names: query.get('names') ?? DEMO_CONFIG.names,
       // ?season=ramadan|lastTen|raya: the committee's Ramadan preview, with typical settings.
       showIqamah: query.has('iqamah'),
       ramadan: { ishaExtra: 5, tarawih: true, tarawihAt: null, qiyamAt: '03:30', eidAt: '08:00', preview: query.get('season') ?? 'off' } })
