@@ -224,3 +224,48 @@ select.sp-input option { background: #161a36; color: #fff; }
 .sp-pairbar div { display: grid; min-width: 0; }
 .sp-pairbar span { color: var(--sp-muted); font-size: 0.98rem; }
 .sp-pairbar-msg { margin: 0; text-align: center; font-size: 1.1rem; }
+
+/* Steps 2, 3 and 4: the preview beside the choices. */
+.sp-studio2 { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.sp-studio2 .sp-left { min-width: 0; }
+.sp-sticky { position: sticky; top: 74px; display: grid; gap: 12px; }
+.sp-right { display: grid; gap: 22px; min-width: 0; }
+.sp-tv.portrait { width: min(100%, 300px); margin-inline: auto; }
+.sp-tv.portrait .sp-preview { aspect-ratio: 9 / 16; }
+@media (max-width: 860px) {
+  .sp-studio2 { grid-template-columns: 1fr; }
+  .sp-studio2 .sp-left { display: contents; }
+  .sp-sticky { position: sticky; top: 60px; z-index: 5; width: min(100%, 250px); margin-inline: auto; }
+  .sp-sticky .sp-hint { display: none; }
+  .sp-tv.portrait { width: min(100%, 120px); }
+}
+.sp-sub { margin: 14px 0 0; font-size: 1.2rem; }
+.sp-map { flex-wrap: wrap; }
+
+/* Layout cards, each with a small drawing */
+.sp-layouts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.sp-layout { font: inherit; color: var(--sp-text); text-align: left; display: grid; gap: 8px; padding: 10px; border-radius: 16px; border: 1.5px solid var(--sp-field-line); background: var(--sp-field); cursor: pointer; align-content: start; }
+.sp-layout b { font-size: 0.98rem; }
+.sp-layout.on { border-color: var(--sp-gold); background: color-mix(in srgb, var(--sp-gold) 14%, var(--sp-field)); box-shadow: 0 0 0 2px color-mix(in srgb, var(--sp-gold) 60%, transparent); }
+.sp-layout:focus-visible { outline: 3px solid var(--sp-gold); outline-offset: 2px; }
+.lt { display: grid; gap: 3px; height: 62px; padding: 4px; border-radius: 8px; background: #0b0f2a; }
+.lt i { display: block; border-radius: 3px; background: #4a5088; }
+.lt .c { background: #fff; } .lt .s { background: #e2b65a; } .lt .n { background: #7a82c4; }
+.lt-full { grid-template-rows: 1.4fr 1fr; grid-template-areas: "c" "t"; }
+.lt-splitN { grid-template: "c s" 1fr "t s" 1.4fr "n n" 0.5fr / 1fr 1.1fr; }
+.lt-split { grid-template: "c s" 1fr "t s" 1.6fr / 1fr 1.1fr; }
+.lt-mirror { grid-template: "s c" 1fr "s t" 1.4fr "n n" 0.5fr / 1.1fr 1fr; }
+.lt-strip { grid-template: "s s" 2.2fr "n n" 0.5fr "c t" 1fr / 1fr 2fr; }
+.lt-big { grid-template: "s s" 2fr "c t" 1fr / 1fr 2fr; }
+.lt-big .s { background: #7a82c4; }
+.lt-port { grid-template: "c" 0.8fr "t" 1.2fr "s" 1.2fr "n" 0.4fr / 1fr; width: 36px; height: 62px; justify-self: center; }
+.lt-portT { grid-template: "c" 0.8fr "t" 2fr / 1fr; width: 36px; height: 62px; justify-self: center; }
+.lt .c { grid-area: c; } .lt .t { grid-area: t; } .lt .s { grid-area: s; } .lt .n { grid-area: n; }
+
+/* Slides */
+.sp-slides { display: grid; gap: 12px; }
+.sp-slide { display: grid; gap: 8px; margin: 0; padding: 12px 14px 14px; border-radius: 16px; border: 1.5px solid var(--sp-field-line); background: var(--sp-field); min-width: 0; }
+.sp-slide legend { font-weight: 800; padding: 0 6px; }
+.sp-tones { display: flex; flex-wrap: wrap; gap: 8px; }
+.sp-slide-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+.sp-link-btn:disabled { opacity: 0.4; cursor: default; }

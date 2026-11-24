@@ -20,8 +20,68 @@ export type ScreenLanguage = 'en' | 'ms' | 'id'
  * Bands (coloured bands), Day Dial, Sun Path, and Simple (plain and calm).
  * Old links that say 'day' still work: they open as Sky in Light.
  */
-export type ScreenLook = 'night' | 'board' | 'bands' | 'dial' | 'sunpath' | 'simple'
-export const LOOKS: readonly ScreenLook[] = ['night', 'board', 'bands', 'dial', 'sunpath', 'simple']
+export type ScreenLook = 'night' | 'board' | 'bands' | 'dial' | 'sunpath' | 'simple' | 'surau'
+export const LOOKS: readonly ScreenLook[] = ['night', 'board', 'bands', 'dial', 'sunpath', 'simple', 'surau']
+
+/**
+ * How the screen is arranged. `full` is the clock and the times across the whole screen (the original designs).
+ * The others share the screen between the times and a place for the masjid's slides and notices.
+ * Two are for a TV turned on its side (portrait).
+ */
+export type ScreenLayout = 'full' | 'splitN' | 'split' | 'mirror' | 'strip' | 'big' | 'port' | 'portT'
+export const LAYOUTS: readonly ScreenLayout[] = ['full', 'splitN', 'split', 'mirror', 'strip', 'big', 'port', 'portT']
+export const PORTRAIT_LAYOUTS: readonly ScreenLayout[] = ['port', 'portT']
+/** Layouts with a slim notice bar. Where there is none, the notices take turns with the slides instead. */
+export const LAYOUTS_WITH_NOTICE_BAR: readonly ScreenLayout[] = ['full', 'splitN', 'mirror', 'strip', 'port', 'portT']
+/** Layouts with a place for slides. */
+export const LAYOUTS_WITH_SLIDES: readonly ScreenLayout[] = ['splitN', 'split', 'mirror', 'strip', 'port']
+
+/** One slide: a picture (from a web address) or a few words on a coloured card. Up to MAX_SLIDES take turns. */
+export interface ScreenSlide {
+  title: string
+  text: string
+  /** A picture's web address (https). With a picture, the title and text are an optional caption. */
+  img: string
+  tone: SlideTone
+}
+export type SlideTone = 'navy' | 'gold' | 'green' | 'light'
+export const SLIDE_TONES: readonly SlideTone[] = ['navy', 'gold', 'green', 'light']
+export const MAX_SLIDES = 8
+export const MAX_SLIDE_TITLE = 50
+export const MAX_SLIDE_TEXT = 140
+export const MAX_SLIDE_IMG = 300
+/** How long each slide stays up. */
+export const SLIDE_SECONDS = 12
+
+/**
+ * Share links from Google Drive and Dropbox are web pages, not pictures. Turn them into the picture's own address,
+ * so a committee can paste the link they already have. Other addresses pass through.
+ */
+function directPictureUrl(u: URL): URL {
+  if (u.hostname === 'drive.google.com') {
+    const id = /\/file\/d\/([\w-]{10,})/.exec(u.pathname)?.[1] ?? (u.pathname === '/open' || u.pathname === '/uc' ? u.searchParams.get('id') : null)
+    if (id && /^[\w-]{10,}$/.test(id)) return new URL(`https://lh3.googleusercontent.com/d/${id}`)
+  }
+  if (/^(www\.)?dropbox\.com$/.test(u.hostname) && /^\/(s|scl)\//.test(u.pathname)) {
+    const d = new URL(u.href)
+    d.searchParams.delete('dl'); d.searchParams.set('raw', '1')
+    return d
+  }
+  return u
+}
+
+/** A picture address we will show: https only. Anything else (javascript:, data:, http:) is dropped. */
+export function safeImageUrl(v: unknown): string {
+  if (typeof v !== 'string') return ''
+  const t = v.trim()
+  if (t.length > MAX_SLIDE_IMG) return ''
+  try {
+    const u = new URL(t)
+    if (u.protocol !== 'https:' || u.username || u.password) return ''
+    const href = directPictureUrl(u).href
+    return href.length <= MAX_SLIDE_IMG ? href : ''
+  } catch { return '' }
+}
 export type ScreenMode = 'dark' | 'light'
 
 export interface ScreenPlace {
@@ -45,6 +105,8 @@ export interface ScreenConfig {
   arabic: boolean
   lang: ScreenLanguage
   look: ScreenLook
+  /** How the screen is shared between the times and the slides and notices. */
+  layout: ScreenLayout
   /** Light or Dark, for any design. */
   mode: ScreenMode
   iqamah: Partial<Record<Obligatory, IqamahRule>>
@@ -57,6 +119,8 @@ export interface ScreenConfig {
   /** A line for Friday, like the khatib's name and the khutbah language. Shown from Thursday Maghrib to Friday Zohor. */
   fridayNote: string
   notices: string[]
+  /** Pictures and cards that take turns beside the times (layouts with a place for slides). */
+  slides: ScreenSlide[]
   h24: boolean
   hijriAdj: number
   /** Minutes the screen stays dim after iqamah (prayer in progress). */
@@ -116,6 +180,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   arabic: false,
   lang: 'en',
   look: 'night',
+  layout: 'full',
   mode: 'dark',
   iqamah: { fajr: { after: 10 }, dhuhr: { after: 10 }, asr: { after: 10 }, maghrib: { after: 5 }, isha: { after: 10 } },
   showIqamah: false,
@@ -123,6 +188,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   jumuah: null,
   fridayNote: '',
   notices: [],
+  slides: [],
   h24: false,
   hijriAdj: 0,
   dimMinutes: 10,
@@ -201,6 +267,7 @@ export function sanitize(raw: unknown): ScreenConfig {
   if (LOOKS.includes(r.look as ScreenLook)) out.look = r.look as ScreenLook
   else if (r.look === 'day') { out.look = 'night'; out.mode = 'light' }
   if (r.mode === 'dark' || r.mode === 'light') out.mode = r.mode
+  if (LAYOUTS.includes(r.layout as ScreenLayout)) out.layout = r.layout as ScreenLayout
   if (r.iqamah && typeof r.iqamah === 'object') {
     out.iqamah = {}
     for (const prayer of OBLIGATORY_PRAYERS) {
@@ -216,6 +283,18 @@ export function sanitize(raw: unknown): ScreenConfig {
   if (Array.isArray(r.notices)) {
     out.notices = r.notices.filter((n): n is string => typeof n === 'string')
       .map((n) => n.trim().slice(0, MAX_NOTICE_LENGTH)).filter(Boolean).slice(0, MAX_NOTICES)
+  }
+  if (Array.isArray(r.slides)) {
+    out.slides = r.slides.flatMap((raw): ScreenSlide[] => {
+      if (!raw || typeof raw !== 'object') return []
+      const x = raw as Record<string, unknown>
+      const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '')
+      const slide: ScreenSlide = {
+        title: str(x.title, MAX_SLIDE_TITLE), text: str(x.text, MAX_SLIDE_TEXT), img: safeImageUrl(x.img),
+        tone: SLIDE_TONES.includes(x.tone as SlideTone) ? x.tone as SlideTone : 'navy',
+      }
+      return slide.title || slide.text || slide.img ? [slide] : []
+    }).slice(0, MAX_SLIDES)
   }
   out.h24 = r.h24 === true
   out.hijriAdj = clamp(r.hijriAdj, -2, 2, 0)
@@ -284,7 +363,9 @@ export function configFromHash(hash: string): ScreenConfig | null {
 /** The web app with this masjid's iqamah rules, for worshippers to scan (core/masjidLink.ts). */
 export function masjidAppLink(c: ScreenConfig, at: string = location.href): string | null {
   if (!c.place) return null
-  const app = new URL('../', at.split('#')[0])
+  // From /app/screen/ the app is one folder up. prayertimes.asia/tv serves the same page, where the app is at ../app/.
+  const page = at.split('#')[0].split('?')[0]
+  const app = /\/tv\/?$/.test(page) ? new URL('../app/', page.endsWith('/') ? page : `${page}/`) : new URL('../', page)
   return `${app.origin}${app.pathname}#${masjidQuery({
     name: c.name || c.place.name, lat: c.place.lat, lng: c.place.lng, tz: c.place.tz, cc: c.place.cc,
     jamaah: c.iqamah, jumuah: c.jumuah, eid: c.ramadan.eidAt,

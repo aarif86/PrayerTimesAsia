@@ -55,6 +55,12 @@ pages.push(['prayer-simple-large', { style: 'simple', appearance: 'dark', now: N
 pages.push(['prayer-text-200', { style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.addStyleTag({ content: 'html { font-size: 200% !important }' })])
 pages.push(['settings-text-200', { tab: 'settings', appearance: 'light', now: DAY }, (p) => p.addStyleTag({ content: 'html { font-size: 200% !important }' })])
 for (const look of ['night', 'day', 'board', 'bands', 'dial', 'sunpath']) pages.push([`screen-${look}`, { path: 'screen/', look }])
+pages.push(['screen-surau', { path: 'screen/', look: 'surau' }], ['screen-surau-light', { path: 'screen/', look: 'surau', mode: 'light' }])
+// The layouts with slides and notices, in a few looks, Light and Dark.
+for (const layout of ['splitN', 'split', 'mirror', 'strip', 'big', 'port', 'portT']) {
+  pages.push([`screen-layout-${layout}`, { path: 'screen/', look: 'surau', layout }], [`screen-layout-${layout}-light`, { path: 'screen/', look: 'night', mode: 'light', layout }])
+}
+for (const look of ['board', 'bands', 'dial', 'sunpath', 'simple']) pages.push([`screen-layout-splitN-${look}`, { path: 'screen/', look, layout: 'splitN' }])
 pages.push(['screen-setup', { path: 'screen/', hash: 'setup' }])
 
 const IMPACT = { minor: 0, moderate: 1, serious: 2, critical: 3 }

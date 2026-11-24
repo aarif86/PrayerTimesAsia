@@ -177,7 +177,7 @@ function App() {
   )
 }
 
-const LOOK_NAMES: Record<string, string> = { night: 'Sky dark', day: 'Sky light', board: 'Board', bands: 'Bands', dial: 'Day Dial', sunpath: 'Sun Path', simple: 'Simple' }
+const LOOK_NAMES: Record<string, string> = { night: 'Sky dark', day: 'Sky light', board: 'Board', bands: 'Bands', dial: 'Day Dial', sunpath: 'Sun Path', simple: 'Simple', surau: 'Surau' }
 const LANG_NAMES: Record<string, string> = { en: 'English', ms: 'Bahasa Melayu', id: 'Bahasa Indonesia' }
 const regionNames = typeof Intl !== 'undefined' && 'DisplayNames' in Intl ? new Intl.DisplayNames(['en'], { type: 'region' }) : null
 const countryName = (cc: string) => (cc === '?' ? 'Not known' : regionNames?.of(cc) ?? cc)

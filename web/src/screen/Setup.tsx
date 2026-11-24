@@ -6,8 +6,9 @@ import { deviceTimeZone, zoned } from '../core/tz'
 import { nearestCity, searchCities } from '../services/cities'
 import { ensureTable } from '../services/officialTables'
 import {
-  encodeConfig, iqamahText, pairCodeFromHash, isHHMM, MAX_FRIDAY_NOTE, MAX_NOTICE_LENGTH, MAX_NOTICES, OBLIGATORY_PRAYERS, parseIqamah, READY_NOTICES,
-  type Obligatory, type ScreenConfig, type ScreenHide, type ScreenLanguage, type ScreenLook, type ScreenPlace,
+  encodeConfig, iqamahText, pairCodeFromHash, isHHMM, LAYOUTS_WITH_NOTICE_BAR, LAYOUTS_WITH_SLIDES, MAX_FRIDAY_NOTE, MAX_NOTICE_LENGTH, MAX_NOTICES, MAX_SLIDE_IMG, MAX_SLIDE_TEXT, MAX_SLIDE_TITLE,
+  MAX_SLIDES, OBLIGATORY_PRAYERS, PORTRAIT_LAYOUTS, parseIqamah, READY_NOTICES, safeImageUrl, sanitize, SLIDE_TONES,
+  type Obligatory, type ScreenConfig, type ScreenHide, type ScreenLanguage, type ScreenLayout, type ScreenLook, type ScreenPlace, type ScreenSlide, type SlideTone,
 } from './config'
 import { Display } from './Display'
 import { fallbackPlace } from './place'
@@ -28,7 +29,34 @@ const LOOK_CHOICES: { id: ScreenLook; label: string; hint: string }[] = [
   { id: 'dial', label: 'Day Dial', hint: 'The whole day as a ring, like the app' },
   { id: 'sunpath', label: 'Sun Path', hint: 'The sun moving across the day, like the app' },
   { id: 'simple', label: 'Simple', hint: 'Plain and calm, with no moving sky' },
+  { id: 'surau', label: 'Surau', hint: 'Navy and gold with a faint pattern, calm and clear' },
 ]
+
+const LAYOUT_CHOICES: { id: ScreenLayout; label: string; hint: string }[] = [
+  { id: 'full', label: 'Full clock', hint: 'The clock and the times across the whole screen. No slides.' },
+  { id: 'splitN', label: 'Split with notice below', hint: 'Times on one side, slides on the other, and a slim notice bar at the bottom.' },
+  { id: 'split', label: 'Split, no notice bar', hint: 'Times and slides. Notices take turns with the slides.' },
+  { id: 'mirror', label: 'Slides on the left', hint: 'The same as the first split, with the slides on the left.' },
+  { id: 'strip', label: 'Slide with times strip', hint: 'A big slide, with the clock and the times along the bottom.' },
+  { id: 'big', label: 'Big notice, time below', hint: 'Notices in big letters, with the clock and times below.' },
+  { id: 'port', label: 'Portrait with slides', hint: 'For a TV turned on its side: times on top, slides below.' },
+  { id: 'portT', label: 'Portrait, times only', hint: 'For a TV turned on its side: tall, easy times.' },
+]
+
+const TONE_LABEL: Record<SlideTone, string> = { navy: 'Navy', gold: 'Gold', green: 'Green', light: 'Light' }
+
+/** The page is served at /app/screen/ and at /tv/, so links to other pages start from the app's own folder. */
+const BASE = import.meta.env.BASE_URL
+const SITE = `${BASE}../`
+
+/** A tiny drawing of a layout: the clock (c), the times (t), the slides (s) and the notice bar (n). */
+function LayoutThumb({ layout }: { layout: ScreenLayout }) {
+  return (
+    <span class={`lt lt-${layout}${PORTRAIT_LAYOUTS.includes(layout) ? ' lt-portrait' : ''}`} aria-hidden="true">
+      <i class="c" /><i class="t" />{layout !== 'full' && layout !== 'portT' && <i class="s" />}{LAYOUTS_WITH_NOTICE_BAR.includes(layout) && layout !== 'full' && <i class="n" />}
+    </span>
+  )
+}
 
 /** What the committee can switch off. Shown as "Show" switches, so on means it is on the TV. */
 const SHOW_CHOICES: { key: keyof ScreenHide; label: string; example: string }[] = [
@@ -70,7 +98,10 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const setRamadan = (change: Partial<ScreenConfig['ramadan']>) => setC((old) => ({ ...old, ramadan: { ...old.ramadan, ...change } }))
   const results = useMemo(() => searchCities(query, 6), [query])
   const official = officialSourceForScreen(c)
-  const encoded = encodeConfig(c)
+  // What goes to the TV is the cleaned-up copy: empty slides dropped, unsafe picture links removed.
+  const final = useMemo(() => sanitize(c), [c])
+  const encoded = encodeConfig(final)
+  const tooBig = encoded.length > 5800
   const longLink = `${location.origin}${location.pathname}#c=${encoded}`
   // The short link (#k=...) is made when the committee asks for the link, not on every change. If it can't be made, the long link still works.
   const [short, setShort] = useState<{ encoded: string; link: string } | null>(null)
@@ -121,6 +152,16 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
     set({ notices: text.split('\n').map((s) => s.trim().slice(0, MAX_NOTICE_LENGTH)).filter(Boolean).slice(0, MAX_NOTICES) })
   }
 
+  const setSlide = (i: number, change: Partial<ScreenSlide>) => setC((old) => ({ ...old, slides: old.slides.map((x, j) => (j === i ? { ...x, ...change } : x)) }))
+  const moveSlide = (i: number, by: -1 | 1) => setC((old) => {
+    const slides = [...old.slides], j = i + by
+    if (j < 0 || j >= slides.length) return old
+    ;[slides[i], slides[j]] = [slides[j], slides[i]]
+    return { ...old, slides }
+  })
+  const removeSlide = (i: number) => setC((old) => ({ ...old, slides: old.slides.filter((_, j) => j !== i) }))
+  const addSlide = () => setC((old) => old.slides.length >= MAX_SLIDES ? old : { ...old, slides: [...old.slides, { title: '', text: '', img: '', tone: 'navy' }] })
+
   const flash = (what: 'copied' | 'shared') => { setCopied(what); setTimeout(() => setCopied(null), 2500) }
   const copy = async () => {
     try { await navigator.clipboard.writeText(await getLink()); flash('copied') } catch {
@@ -139,7 +180,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
     const code = tidyPairCode(pairInput)
     if (!PAIR_CODE_RE.test(code)) { setPairMsg({ ok: false, text: 'The code has 6 letters or numbers. Look at the TV and type it again.' }); return }
     setPairBusy(true); setPairMsg(null)
-    const r = await pairClaim(code, encodeConfig(c))
+    const r = await pairClaim(code, encoded)
     setPairBusy(false)
     if (typeof r === 'object') {
       const e = { code, editKey: r.editKey }
@@ -150,7 +191,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const updateNow = async () => {
     if (!editor) return
     setPairBusy(true); setPairMsg(null)
-    const r = await pairUpdate(editor.code, editor.editKey, encodeConfig(c))
+    const r = await pairUpdate(editor.code, editor.editKey, encoded)
     setPairBusy(false)
     if (r === 'ok') setPairMsg({ ok: true, text: 'Updated. The TV changes within about 10 minutes, or at once if you reopen its page.' })
     else if (r === 'forgotten') { writeJSON(EDITOR_KEY, null); setEditor(null); setPairMsg({ ok: false, text: 'This phone can no longer change that TV. Pair again with the code the TV shows.' }) }
@@ -161,14 +202,15 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   // No place chosen: the TV (and this preview) use a place from the device's own time zone, so nothing is blank.
   const guess = useMemo(() => fallbackPlace(), [])
   const effective = c.place ? c : { ...c, place: guess }
-  const preview = { ...effective, name: c.name || 'Your masjid' }
+  const preview = { ...effective, name: c.name || 'Your masjid', slides: final.slides }
+  const portraitLayout = PORTRAIT_LAYOUTS.includes(c.layout)
   const countryName = c.place?.cc ? profileFor(c.place.cc)?.name ?? c.place.cc : null
 
   return (
     <div class="sp" data-theme={theme}>
       <Sky />
       <header class="sp-top">
-        <a class="sp-brand" href="../../"><img src="../icons/icon-192.png" alt="" width="34" height="34" />Prayer Times Asia</a>
+        <a class="sp-brand" href={SITE}><img src={`${BASE}icons/icon-192.png`} alt="" width="34" height="34" />Prayer Times Asia</a>
         <ModeButton theme={theme} onClick={flipTheme} />
       </header>
 
@@ -176,22 +218,24 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         {fromQr && !pairMsg?.ok && (
           <div class="sp-pairbar" role="region" aria-label="Pairing with the TV">
             <div><b>Setting up the TV with code {fromQr}</b><span>Choose what shows below, then tap the button.</span></div>
-            <button type="button" class="sp-btn sp-btn-primary" onClick={pairNow} disabled={pairBusy}>{pairBusy ? 'Sending' : 'Show on my TV'}</button>
+            <button type="button" class="sp-btn sp-btn-primary" onClick={pairNow} disabled={pairBusy || tooBig}>{pairBusy ? 'Sending' : 'Show on my TV'}</button>
           </div>
         )}
         {fromQr && pairMsg && <p class={`sp-pairbar-msg ${pairMsg.ok ? 'sp-ok' : 'sp-error'}`} role="status">{pairMsg.text}</p>}
         <section class="sp-hero">
           <p class="sp-eyebrow">For Masjids</p>
           <h1>Put prayer times on your Masjid TV</h1>
-          <p class="sp-lead">Free, with nothing to install and no sign up. Three easy steps on your phone.</p>
+          <p class="sp-lead">Free, with nothing to install and no sign up. Five easy steps on your phone.</p>
           {live != null && (
             <p class="sp-live" aria-live="polite"><i class="sp-dot" aria-hidden="true" /><b>{live.toLocaleString('en')}</b> masjid {live === 1 ? 'screen is' : 'screens are'} on right now</p>
           )}
           <p class="sp-hint"><a href="#tv" onClick={() => setTimeout(() => location.reload())}>On the TV itself? Show the pairing code</a></p>
           <ol class="sp-map" aria-hidden="true">
             <li><b>1</b>Add your masjid</li>
-            <li><b>2</b>Choose what shows</li>
-            <li><b>3</b>Open it on the TV</li>
+            <li><b>2</b>Layout</li>
+            <li><b>3</b>Look</li>
+            <li><b>4</b>What shows</li>
+            <li><b>5</b>Open on the TV</li>
           </ol>
         </section>
 
@@ -235,32 +279,48 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
           <input id="s-name" class="sp-input" value={c.name} maxLength={80} placeholder="Masjid Al Falah" onInput={(e) => set({ name: (e.target as HTMLInputElement).value })} />
         </section>
 
-        {/* Step 2 */}
-        <section class="sp-step sp-step2" aria-labelledby="sp-s2">
-          <h2 id="sp-s2"><span class="sp-num">2</span>Choose what shows</h2>
-          <div class="sp-studio">
-            <div class="sp-left">
-              <div class="sp-tv">
+        {/* Steps 2, 3 and 4: the preview stays beside the choices, so a change shows at once. */}
+        <div class="sp-studio2">
+          <div class="sp-left">
+            <div class="sp-sticky">
+              <div class={`sp-tv${portraitLayout ? ' portrait' : ''}`}>
                 <Frame class="sp-preview"><Display config={preview} now={now} /></Frame>
               </div>
               {!c.place && <p class="sp-hint center">Times shown are a guide until you add your masjid in step 1.</p>}
+            </div>
+          </div>
+          <div class="sp-right">
+            <section class="sp-step" aria-labelledby="sp-s2">
+              <h2 id="sp-s2"><span class="sp-num">2</span>Choose your layout</h2>
+              <p class="sp-hint">How the screen is shared between the times, your slides and your notices.</p>
+              <div class="sp-layouts" role="radiogroup" aria-label="Layout">
+                {LAYOUT_CHOICES.map((l) => (
+                  <button key={l.id} type="button" role="radio" aria-checked={c.layout === l.id} class={`sp-layout${c.layout === l.id ? ' on' : ''}`} onClick={() => set({ layout: l.id })}>
+                    <LayoutThumb layout={l.id} /><b>{l.label}</b>
+                  </button>
+                ))}
+              </div>
+              <p class="sp-hint">{LAYOUT_CHOICES.find((l) => l.id === c.layout)?.hint}</p>
+            </section>
 
-              <p class="sp-label">Look</p>
+            <section class="sp-step" aria-labelledby="sp-s3">
+              <h2 id="sp-s3"><span class="sp-num">3</span>Choose the look</h2>
               <div class="sp-looks" role="radiogroup" aria-label="Look">
                 {LOOK_CHOICES.map((l) => (
                   <button key={l.id} type="button" role="radio" aria-checked={c.look === l.id} class={`sp-chip${c.look === l.id ? ' on' : ''}`} onClick={() => set({ look: l.id })}>{l.label}</button>
                 ))}
               </div>
-              <p class="sp-hint">{LOOK_CHOICES.find((l) => l.id === c.look)?.hint}</p>
+              <p class="sp-hint">{LOOK_CHOICES.find((l) => l.id === c.look)?.hint}. Every look fits every layout.</p>
               <div class="sp-modes" role="radiogroup" aria-label="Light or dark">
                 {(['dark', 'light'] as const).map((m) => (
                   <button key={m} type="button" role="radio" aria-checked={c.mode === m} class={`sp-chip${c.mode === m ? ' on' : ''}`} onClick={() => set({ mode: m })}>{m === 'dark' ? 'Dark' : 'Light'}</button>
                 ))}
               </div>
               <p class="sp-hint">Dark suits a dim prayer hall. Light suits a bright hall or the foyer.</p>
-            </div>
+            </section>
 
-            <div class="sp-right">
+            <section class="sp-step" aria-labelledby="sp-s4">
+              <h2 id="sp-s4"><span class="sp-num">4</span>Choose what shows</h2>
               <p class="sp-label">Show on the TV</p>
               <div class="sp-toggles">
                 {SHOW_CHOICES.map((s) => (
@@ -277,12 +337,71 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                 </label>
                 <div class="sp-toggle locked on">
                   <svg class="sp-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-                  <span class="sp-tl"><b>prayertimes.asia</b><small>Always shown, so others can find it too</small></span>
+                  <span class="sp-tl"><b>prayertimes.asia and Built in Singapore</b><small>Always shown, small, next to where the times come from</small></span>
                 </div>
               </div>
-            </div>
-          </div>
 
+              <h3 class="sp-sub">Notices</h3>
+              <p class="sp-hint">{c.layout === 'full' ? 'One notice per line, up to 8. They take turns at the bottom of the screen.'
+                : c.layout === 'big' ? 'One notice per line, up to 8. They show in big letters, one at a time.'
+                : LAYOUTS_WITH_NOTICE_BAR.includes(c.layout) ? 'One notice per line, up to 8. They take turns in the slim bar at the bottom.'
+                : 'This layout has no notice bar, so your notices take turns with the slides. One notice per line, up to 8.'}</p>
+              <textarea id="s-notices" class="sp-input" rows={4} value={notices} aria-label="Notices, one per line" placeholder={'Kuliah Maghrib every Tuesday with Ustaz Ahmad\nPlease keep the corridors clear'}
+                onInput={(e) => setNoticeText((e.target as HTMLTextAreaElement).value)} />
+              <div class="sp-ready">
+                {READY_NOTICES.map((n) => (
+                  <button key={n} type="button" class="sp-chip small" disabled={c.notices.includes(n) || c.notices.length >= MAX_NOTICES}
+                    onClick={() => setNoticeText([...c.notices, n].join('\n'))}>+ {n}</button>
+                ))}
+              </div>
+
+              <h3 class="sp-sub">Slides</h3>
+              {!LAYOUTS_WITH_SLIDES.includes(c.layout) ? (
+                <p class="sp-hint">This layout has no place for slides. Choose a layout with slides in step 2 to add pictures and cards.</p>
+              ) : (
+                <>
+                  <p class="sp-hint">Up to {MAX_SLIDES} pictures or cards, each shown for 12 seconds. Your QR code takes a turn too.</p>
+                  <div class="sp-slides">
+                    {c.slides.map((sl, i) => {
+                      const badImg = sl.img.trim() !== '' && safeImageUrl(sl.img) === ''
+                      return (
+                        <fieldset key={i} class="sp-slide">
+                          <legend>Slide {i + 1}</legend>
+                          <label class="sp-small-label" for={`sl-img-${i}`}>Picture address (optional)</label>
+                          <input id={`sl-img-${i}`} class={`sp-input${badImg ? ' invalid' : ''}`} value={sl.img} maxLength={MAX_SLIDE_IMG} inputMode="url" placeholder="https://" aria-invalid={badImg}
+                            onInput={(e) => setSlide(i, { img: (e.target as HTMLInputElement).value })} />
+                          {badImg && <p class="sp-error">This address will not work. It must start with https and be short enough.</p>}
+                          <label class="sp-small-label" for={`sl-title-${i}`}>Title</label>
+                          <input id={`sl-title-${i}`} class="sp-input" value={sl.title} maxLength={MAX_SLIDE_TITLE} placeholder="Kuliah Maghrib" onInput={(e) => setSlide(i, { title: (e.target as HTMLInputElement).value })} />
+                          <label class="sp-small-label" for={`sl-text-${i}`}>Words</label>
+                          <textarea id={`sl-text-${i}`} class="sp-input" rows={2} value={sl.text} maxLength={MAX_SLIDE_TEXT} placeholder="Every Tuesday after Maghrib. Everyone is welcome."
+                            onInput={(e) => setSlide(i, { text: (e.target as HTMLTextAreaElement).value })} />
+                          {!sl.img.trim() && (
+                            <div class="sp-tones" role="radiogroup" aria-label={`Colour of slide ${i + 1}`}>
+                              {SLIDE_TONES.map((t) => (
+                                <button key={t} type="button" role="radio" aria-checked={sl.tone === t} class={`sp-chip small tone-${t}${sl.tone === t ? ' on' : ''}`} onClick={() => setSlide(i, { tone: t })}>{TONE_LABEL[t]}</button>
+                              ))}
+                            </div>
+                          )}
+                          <div class="sp-slide-actions">
+                            <button type="button" class="sp-link-btn" onClick={() => moveSlide(i, -1)} disabled={i === 0}>Move up</button>
+                            <button type="button" class="sp-link-btn" onClick={() => moveSlide(i, 1)} disabled={i === c.slides.length - 1}>Move down</button>
+                            <button type="button" class="sp-link-btn" onClick={() => removeSlide(i)}>Remove</button>
+                          </div>
+                        </fieldset>
+                      )
+                    })}
+                  </div>
+                  <button type="button" class="sp-btn" onClick={addSlide} disabled={c.slides.length >= MAX_SLIDES}>+ Add a slide</button>
+                  <p class="sp-hint">For a picture, paste a link to it. Easiest: a picture from your masjid's website or Facebook page (press and hold, then copy the picture address), or share a picture on Google Drive or Dropbox with "anyone with the link" and paste that link. We do not store your pictures.</p>
+                </>
+              )}
+              {tooBig && <p class="sp-error" role="alert">There is too much text to send to the TV. Shorten a slide or remove a notice.</p>}
+            </section>
+          </div>
+        </div>
+
+        <section class="sp-step sp-step-more">
           <details class="sp-more">
             <summary>More settings <span>(you can skip this)</span></summary>
             <div class="sp-more-body">
@@ -317,18 +436,6 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
               <label class="sp-small-label" for="s-friday">A line for Friday, like who gives the khutbah. Shows from Thursday night to Friday afternoon.</label>
               <input id="s-friday" class="sp-input" value={c.fridayNote} maxLength={MAX_FRIDAY_NOTE} placeholder="Khutbah by Ustaz Ahmad, in Malay"
                 onInput={(e) => set({ fridayNote: (e.target as HTMLInputElement).value })} />
-
-              <h3>Notices</h3>
-              <label class="sp-small-label" for="s-notices">One notice per line, up to {MAX_NOTICES}. They take turns every 12 seconds.</label>
-              <textarea id="s-notices" class="sp-input" rows={4} value={notices} placeholder={'Kuliah Maghrib every Tuesday with Ustaz Ahmad\nPlease keep the corridors clear'}
-                onInput={(e) => setNoticeText((e.target as HTMLTextAreaElement).value)} />
-              <p class="sp-small-label">Add one with a tap</p>
-              <div class="sp-ready">
-                {READY_NOTICES.map((n) => (
-                  <button key={n} type="button" class="sp-chip small" disabled={c.notices.includes(n) || c.notices.length >= MAX_NOTICES}
-                    onClick={() => setNoticeText([...c.notices, n].join('\n'))}>+ {n}</button>
-                ))}
-              </div>
 
               <h3>Ramadan and Eid</h3>
               <p class="sp-hint">In Ramadan the screen adds Imsak and the Ramadan day by itself, on the days your country announces.</p>
@@ -397,8 +504,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
         </section>
 
         {/* Step 3 */}
-        <section class="sp-step" aria-labelledby="sp-s3">
-          <h2 id="sp-s3"><span class="sp-num">3</span>Open it on the TV</h2>
+        <section class="sp-step" aria-labelledby="sp-s5">
+          <h2 id="sp-s5"><span class="sp-num">5</span>Open it on the TV</h2>
           {!c.place && <p class="sp-hint">No masjid added, so the TV uses the times for its own time zone. Add your masjid in step 1 for exact times.</p>}
 
           <div class="sp-pairbox">
@@ -414,11 +521,11 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
                 <button type="button" class="sp-link-btn" onClick={forgetTv}>Forget</button>
               </div>
             )}
-            {editor && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={updateNow} disabled={pairBusy}>{pairBusy ? 'Sending' : 'Update my TV'}</button>}
+            {editor && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={updateNow} disabled={pairBusy || tooBig}>{pairBusy ? 'Sending' : 'Update my TV'}</button>}
             <div class="sp-pairrow">
               <input id="s-pair" class="sp-input sp-codein" value={pairInput} maxLength={9} placeholder="Code, like K7M3QX" aria-label="The code shown on the TV"
                 autoCapitalize="characters" autoComplete="off" onInput={(e) => setPairInput((e.target as HTMLInputElement).value.toUpperCase())} />
-              <button type="button" class={`sp-btn${editor ? '' : ' sp-btn-primary'}`} onClick={pairNow} disabled={pairBusy || !pairInput.trim()}>{pairBusy ? 'Sending' : editor ? 'Pair a new TV' : 'Show on my TV'}</button>
+              <button type="button" class={`sp-btn${editor ? '' : ' sp-btn-primary'}`} onClick={pairNow} disabled={pairBusy || tooBig || !pairInput.trim()}>{pairBusy ? 'Sending' : editor ? 'Pair a new TV' : 'Show on my TV'}</button>
             </div>
             {pairMsg && <p class={pairMsg.ok ? 'sp-ok' : 'sp-error'} role="status">{pairMsg.text}</p>}
           </div>
@@ -426,8 +533,8 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
           <h3 class="sp-or">Or send the link</h3>
           <p class="sp-hint">For a TV where you would rather type nothing, or to try it on your own computer. Open the link on the TV or computer.</p>
           <div class="sp-actions">
-            {canShare && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={share}>{copied === 'shared' ? 'Sent' : 'Send the link'}</button>}
-            <button type="button" class={`sp-btn sp-btn-big${canShare ? '' : ' sp-btn-primary'}`} onClick={copy}>{copied === 'copied' ? 'Copied' : 'Copy the link'}</button>
+            {canShare && <button type="button" class="sp-btn sp-btn-primary sp-btn-big" onClick={share} disabled={tooBig}>{copied === 'shared' ? 'Sent' : 'Send the link'}</button>}
+            <button type="button" class={`sp-btn sp-btn-big${canShare ? '' : ' sp-btn-primary'}`} onClick={copy} disabled={tooBig}>{copied === 'copied' ? 'Copied' : 'Copy the link'}</button>
           </div>
           <ol class="sp-howto">
             <li><span class="sp-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z" /></svg></span>Send the link to yourself, on WhatsApp or email.</li>
@@ -444,15 +551,15 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             <ol>
               <li>Buy an Android TV box, or a Google TV streamer, and plug it into the TV with the HDMI cable. Prices vary by country, often under 100 US dollars. We do not suggest the Amazon Fire TV stick for this, because it is less reliable at starting an app on its own.</li>
               <li>On the box, open the app store and install <b>Fully Kiosk Browser</b>. It is free to try, and a small watermark shows until you pay for it. The full version costs about 11 US dollars once for each TV.</li>
-              <li>Open Fully Kiosk Browser and type <b>prayertimes.asia/tv</b> as the Start URL. The first time, tap the small link that says On the TV itself, and the TV shows a code. Pair it with your phone as in step 3. After that, this address opens your masjid screen by itself.</li>
+              <li>Open Fully Kiosk Browser and type <b>prayertimes.asia/tv</b> as the Start URL. The first time, tap the small link that says On the TV itself, and the TV shows a code. Pair it with your phone as in step 5. After that, this address opens your masjid screen by itself.</li>
               <li>In its settings, turn on "Autostart on boot". Now after a power cut the screen comes back by itself.</li>
               <li>In the box's own settings, turn on automatic date and time, so the clock stays right.</li>
             </ol>
             <p class="sp-hint">Test it once. Switch the box off and on, and check the screen returns. On some boxes you must also allow the app to start by itself in the box's app settings.</p>
           </details>
           <div class="sp-actions">
-            <button type="button" class="sp-btn" onClick={() => onOpen(c)}>Try it full screen here</button>
-            <a class="sp-btn" href={`../print/#c=${encodeConfig({ ...effective, showIqamah: true })}&sheet=month`} target="_blank" rel="noopener">Print a timetable</a>
+            <button type="button" class="sp-btn" onClick={() => onOpen(final)}>Try it full screen here</button>
+            <a class="sp-btn" href={`${BASE}print/#c=${encodeConfig(sanitize({ ...effective, showIqamah: true }))}&sheet=month`} target="_blank" rel="noopener">Print a timetable</a>
           </div>
           <details id="screen-link-box" class="sp-showlink" onToggle={(e) => { if ((e.target as HTMLDetailsElement).open) void getLink() }}>
             <summary>Show the link</summary>
@@ -465,7 +572,7 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
       <footer class="sp-foot">
         <p class="sp-ask">Questions or ideas for your masjid screen? <a href="https://prayertimes.asia/note.html" target="_blank" rel="noopener">Send us a note</a></p>
         <p>Always follow your local religious authority.</p>
-        <p><a href="../../">prayertimes.asia</a></p>
+        <p><a href={SITE}>prayertimes.asia</a></p>
       </footer>
     </div>
   )
