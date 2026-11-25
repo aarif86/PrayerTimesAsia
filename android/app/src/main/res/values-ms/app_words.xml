@@ -1186,4 +1186,13 @@
     <string name="method_note_tunisia" formatted="false">Kaedah Kementerian Hal Ehwal Agama Tunisia.</string>
     <string name="method_note_morocco" formatted="false">Kaedah Kementerian Habous dan Hal Ehwal Islam Maghribi.</string>
     <string name="method_note_jordan" formatted="false">Kaedah Kementerian Wakaf dan Hal Ehwal Islam Jordan. Turut digunakan di Palestin.</string>
+    <string name="menu_appearance" formatted="false">Paparan</string>
+    <string name="menu_auto" formatted="false">Auto</string>
+    <string name="menu_light" formatted="false">Cerah</string>
+    <string name="menu_dark" formatted="false">Gelap</string>
+    <string name="menu_lookAndFeel" formatted="false">Rupa dan rasa</string>
+    <string name="menu_streak" formatted="false">Rentetan solat</string>
+    <string name="menu_days" formatted="false">{n} hari</string>
+    <string name="menu_days_one" formatted="false">{n} hari</string>
+    <string name="menu_back" formatted="false">Rupa dan rasa</string>
 </resources>
