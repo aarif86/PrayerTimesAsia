@@ -913,7 +913,7 @@ html[data-large-text] .pname { font-size: 20px; }
 .centre-page .list-wrap.fill { flex: 0 0 auto; }
 .centre-page .prayer-list.slim { gap: 0; padding: 0; overflow: hidden; border-radius: 20px; background: var(--card); border-color: var(--stroke); flex: 0 0 auto; }
 .centre-page .prayer-list.slim .prayer-row, .centre-page .list-wrap.fill .prayer-list.slim .prayer-row { flex: 0 0 auto; min-height: 54px; max-height: none; padding: 0 4px 0 28px; border-radius: 0; border-bottom: 1px solid var(--hair);
-  gap: 8px; opacity: 1 !important; box-shadow: none; background: none; }
+  gap: 8px; opacity: 1 !important; box-shadow: none; }
 .centre-page .prayer-row.past { color: var(--fg2); }
 .centre-page .prayer-row.current { background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: none; }
 .centre-page .prayer-list.slim .prayer-row .bar { left: 0; top: 12px; bottom: 12px; width: 4px; opacity: 1 !important; }
