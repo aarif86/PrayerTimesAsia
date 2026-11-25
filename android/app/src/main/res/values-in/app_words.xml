@@ -112,9 +112,9 @@
     <string name="today_midnightShort" formatted="false">Tengah malam</string>
     <string name="today_lastThirdShort" formatted="false">Sepertiga akhir</string>
     <string name="today_imsakNote" formatted="false">10 menit sebelum Subuh. Selesaikan sahur sebelum ini</string>
-    <string name="today_dhuhaNote" formatted="false">Matahari naik setinggi tombak (sekitar 4½°)</string>
+    <string name="today_dhuhaNote" formatted="false">Salat sunah setelah matahari naik</string>
     <string name="today_midnightNote" formatted="false">Separuh waktu dari Magrib ke Subuh</string>
-    <string name="today_lastThirdNote" formatted="false">Waktu terbaik untuk tahajud dan doa</string>
+    <string name="today_lastThirdNote" formatted="false">Waktu tenang untuk tahajud</string>
     <string name="today_prayed" formatted="false">, sudah salat</string>
     <string name="today_moreTimes" formatted="false">Lihat waktu lainnya</string>
     <string name="today_nowNext" formatted="false">Sekarang {now}. {next} pukul {time}.</string>
@@ -1195,4 +1195,18 @@
     <string name="menu_days" formatted="false">{n} hari</string>
     <string name="menu_days_one" formatted="false">{n} hari</string>
     <string name="menu_back" formatted="false">Gaya tampilan</string>
+    <string name="log_ask" formatted="false">Kapan Anda salat? Awal atau lambat, kami hanya mencatat jamnya.</string>
+    <string name="log_justNow" formatted="false">Baru saja, {time}</string>
+    <string name="log_atTime" formatted="false">Pada waktunya, {time}</string>
+    <string name="log_pick" formatted="false">Pilih jam</string>
+    <string name="log_save" formatted="false">Simpan</string>
+    <string name="log_remove" formatted="false">Hapus centang</string>
+    <string name="log_catchTitle" formatted="false">Catat salat saya</string>
+    <string name="log_catchIntro" formatted="false">Lupa mencentang? Tambahkan jam Anda salat. Awal atau lambat, kami hanya mencatat yang Anda katakan.</string>
+    <string name="log_tickAll" formatted="false">Centang semua tepat waktu</string>
+    <string name="log_prayedAt" formatted="false">Salat {time}</string>
+    <string name="log_prayed" formatted="false">Sudah salat</string>
+    <string name="log_from" formatted="false">dari {time}</string>
+    <string name="log_allDone" formatted="false">Semua salat sejauh ini hari ini sudah dicentang.</string>
+    <string name="log_timeLabel" formatted="false">Jam Anda salat</string>
 </resources>

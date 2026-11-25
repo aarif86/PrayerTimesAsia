@@ -4,6 +4,8 @@ import {
   CloudMoon, Globe, Heart, Palette, Star, MapPin, Navigation, Smartphone, Sparkles, Sun, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, type BlessedTime } from '../core/blessed'
+import { extraMode, isExtra, nextExtraMode, type ExtraTime } from '../core/extraAlerts'
+import { stopAlarm } from '../services/alarmSound'
 import type { PrayerDay } from '../core/engine'
 import { parameterSummary } from '../core/methods'
 import { isInAsia, placeProfile } from '../core/place'
@@ -57,6 +59,26 @@ async function turnOnAlerts(only?: Prayer) {
 function toggleNotify(prayer: Prayer) {
   if (!store.prefs.notificationsEnabled && alertMode(store.prefs, prayer) === 'off' && alertSupport() !== 'supported') { openSheet({ kind: 'alerts-help' }); return }
   announce(cycleAlert(prayer))
+}
+
+/** The bell on Dhuha, the middle of the night and the last third: Off, Notify, Alarm. */
+function cycleExtra(b: ExtraTime) {
+  const next = nextExtraMode(store.prefs, b)
+  store.update((p) => { p.extraAlerts = { ...p.extraAlerts, [b]: next } })
+  if (next === 'off') stopAlarm()
+  else if (alertSupport() === 'supported') void requestPermission()
+  announce(tr(next === 'off' ? 'alerts.nowOff' : next === 'notify' ? 'alerts.nowNotify' : 'alerts.nowAlarm', { name: BLESSED_NAME[b] }))
+}
+
+function ExtraBell({ b }: { b: BlessedTime }) {
+  if (!isExtra(b)) return <span style={{ width: '30px', flex: 'none' }} />
+  const mode = extraMode(store.prefs, b)
+  return (
+    <button class={`bell bell-${mode}`} aria-label={tr('today.bellAria', { name: BLESSED_NAME[b], mode: modeWord(mode) })}
+      onClick={(e) => { e.stopPropagation(); cycleExtra(b) }}>
+      <ModeIcon mode={mode} />
+    </button>
+  )
 }
 
 /** Read out what the bell changed, for screen reader users. */
@@ -438,7 +460,7 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: n
   const other = day.alternate[p]
   return (
     <div class={`prayer-row ${isCurrent ? 'current' : ''}`} style={{ '--tint': tint(p), '--tint-soft': tint(p, 0.16), '--tint-line': tint(p, 0.45), opacity: passed && !prayed ? 0.55 : 1 }}
-      onClick={() => { if (trackable) store.togglePrayed(p, t); else onTap?.() }}>
+      onClick={() => { if (trackable) openSheet({ kind: 'log-prayer', prayer: p, t }); else onTap?.() }}>
       <span class="bar" style={{ opacity: isCurrent ? 1 : 0.55 }} />
       <div class="names">
         <div class="name-line">
@@ -471,7 +493,7 @@ function BlessedRow({ b, t, now }: { b: BlessedTime; t: number; now: number }) {
         <div class="bnote">{blessedNote(b)}</div>
       </div>
       <TimeText ms={t} size={22} weight={500} />
-      <span style={{ width: '30px', flex: 'none' }} />
+      <ExtraBell b={b} />
     </div>
   )
 }
@@ -572,7 +594,7 @@ function SimplePage({ c }: { c: Ctx }) {
           return (
             <button class={`simple-row ${isNow ? 'current' : ''}`} style={{ '--tint': tint(p) }} disabled={!trackable}
               aria-label={`${store.name(p, time)} ${store.formatted(time)}${prayed ? tr('today.prayed') : ''}`}
-              onClick={() => trackable && store.togglePrayed(p, time)}>
+              onClick={() => trackable && openSheet({ kind: 'log-prayer', prayer: p, t: time })}>
               <span class="simple-name">{store.name(p, time)}</span>
               <span class="simple-time mono">{store.formatted(time)}</span>
               {trackable && (prayed ? <><PrayedTime store={store} p={p} t={time} /><CheckCircle2 size={30} class="accent" /></> : <span class="simple-tick" />)}
@@ -590,10 +612,12 @@ function SimplePage({ c }: { c: Ctx }) {
             <div class="simple-row blessed" style={{ opacity: t <= now ? 0.6 : 1 }}>
               <span class="simple-name">{BLESSED_NAME[b]}<span class="simple-note">{blessedNote(b)}</span></span>
               <span class="simple-time mono">{store.formatted(t)}</span>
+              <ExtraBell b={b} />
             </div>
           ))}
         </div>
       )}
+      <Offer c={c} />
       <div class="simple-date">{fmtDate(day.times.dhuhr, { weekday: 'long', day: 'numeric', month: 'long' })} · {hijri(day.times.dhuhr)}</div>
     </div>
   )
@@ -754,7 +778,7 @@ function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: numb
   return (
     <button class={`band ${isCurrent ? 'current' : ''}`} style={{ background: BAND[p] }}
       aria-label={`${store.name(p, t)}, ${store.formatted(t)}${isCurrent ? tr('today.isNow') : ''}${prayed ? tr('today.prayed') : ''}`}
-      onClick={() => (trackable ? store.togglePrayed(p, t) : toggleNotify(p))}>
+      onClick={() => (trackable ? openSheet({ kind: 'log-prayer', prayer: p, t }) : toggleNotify(p))}>
       <span class="band-names">
         <span class="row" style={{ gap: '8px', alignItems: 'baseline' }}>
           <span class="band-name">{store.name(p, t)}</span>
@@ -786,6 +810,7 @@ function BlessedBand({ b, t, now }: { b: BlessedTime; t: number; now: number }) 
       </span>
       <span class="spacer" />
       <span class="band-time small"><span>{parts.time}</span>{parts.suffix && <span class="sfx">{parts.suffix}</span>}</span>
+      <ExtraBell b={b} />
     </div>
   )
 }

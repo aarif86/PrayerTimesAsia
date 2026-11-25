@@ -824,3 +824,25 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .menu .mi-pick small { display: block; font-size: 10px; letter-spacing: 0.08em; font-weight: 700; color: var(--fg2); line-height: 1.3; }
 .menu .mi-pick > span { line-height: 1.2; }
 .menu button.mi > span { white-space: nowrap; }
+
+/* Log a prayer: the tap-circle sheet and the Log my prayers page (v10 mockup). */
+.log-ask { padding: 0 24px 12px; font-size: 15px; margin: 0; }
+.log-choices { display: flex; flex-direction: column; gap: 10px; padding: 0 24px; }
+.log-choice { display: flex; align-items: center; min-height: 52px; padding: 0 18px; background: var(--fill); border: 1px solid var(--stroke); border-radius: var(--r, 14px); font-weight: 600; font-size: 17px; text-align: left; }
+.log-choice > span { flex: 1; }
+.log-choice.first { background: var(--accent); color: var(--on-accent); }
+.bands-page .log-choice, .log-choice { border-radius: var(--r, 14px); }
+.log-pick { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 52px; }
+.log-pick input[type="time"] { min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--stroke); background: var(--fill); color: inherit; font: inherit; }
+.log-remove { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding-bottom: 12px; text-align: center; font-size: 15px; color: var(--fg2); }
+.log-choices.chips { flex-direction: row; flex-wrap: wrap; gap: 8px; padding: 0; }
+.log-choice.chip { min-height: 44px; padding: 0 14px; border-radius: 999px; font-size: 15px; }
+.log-choice.chip.first { background: var(--fill); color: inherit; }
+.log-list { padding: 0; margin: 0 20px; }
+.log-item { padding: 12px 18px; border-top: 1px solid var(--stroke); }
+.log-item:first-child { border-top: 0; }
+.log-item-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 17px; }
+.log-open { display: flex; align-items: center; gap: 10px; width: calc(100% - 0px); min-height: 48px; padding: 0 16px; text-align: left; font-weight: 600; }
+.log-open > span { flex: 1; }
+.primary-btn.wide { width: 100%; min-height: 48px; }
+.blessed-band .bell { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; flex: none; color: inherit; }

@@ -1,4 +1,5 @@
 import { unifyAlerts } from '../core/alertMode'
+import type { ExtraAlerts } from '../core/extraAlerts'
 import { JUMUAH_LEAVE_CHOICES, snapLeaveMinutes, type JumuahSession } from '../core/jumuahLeave'
 import { TARAWIH_RAKAAT } from '../core/tarawih'
 import type { MasjidLink } from '../core/masjidLink'
@@ -109,6 +110,8 @@ export interface Preferences {
   berbukaAlert: boolean
   /** The last ten nights: a gentle alert at the last third of the night. */
   qiyamAlert: boolean
+  /** Off, Notify or Alarm for Dhuha, the middle of the night and the last third (core/extraAlerts.ts). */
+  extraAlerts: ExtraAlerts
   /** Ramadan screen: a juz a day to finish the Quran in the month. */
   khatamPlan: boolean
   /** "yyyy-MM-dd" to how that day's fast went (fasted, a reason it was missed, a replaced or Syawal fast). */
@@ -216,6 +219,7 @@ export const DEFAULT_PREFS: Preferences = {
   imsakAlert: true,
   berbukaAlert: true,
   qiyamAlert: false,
+  extraAlerts: {},
   khatamPlan: false,
   fastLog: {},
   tarawihLog: [],
@@ -315,6 +319,10 @@ export function decodePreferences(raw: unknown): Preferences {
   if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
   // One Off, Notify or Alarm per prayer in Alerts and alarms (core/alertMode.ts).
   unifyAlerts(out)
+  // Dhuha and night time alerts: keep only the three known times with Notify or Alarm.
+  const extra: ExtraAlerts = {}
+  for (const b of ['dhuha', 'midnight', 'lastThird'] as const) { const m = out.extraAlerts?.[b]; if (m === 'notify' || m === 'alarm') extra[b] = m }
+  out.extraAlerts = extra
   return out
 }
 
