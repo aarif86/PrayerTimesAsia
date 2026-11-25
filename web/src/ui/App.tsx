@@ -90,23 +90,25 @@ function useAppearance(now: number) {
   const a = store.prefs.appearance
   const scheme: 'light' | 'dark' = a === 'light' ? 'light' : a === 'dark' ? 'dark' : isNight == null ? (prefersLight() ? 'light' : 'dark') : isNight ? 'dark' : 'light'
   const bands = store.tab === 'today' && store.prefs.todayStyle === 'bands'
-  return { sky, scheme, soft: a === 'system', bands }
+  const gold = store.prefs.todayStyle === 'gold'
+  return { sky, scheme, soft: a === 'system', bands, gold }
 }
 
 export function App() {
   const s = useStore()
   const now = useNow(30_000)
   const sheet = useSheet()
-  const { sky, scheme, soft, bands } = useAppearance(now)
+  const { sky, scheme, soft, bands, gold } = useAppearance(now)
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = scheme
     document.documentElement.toggleAttribute('data-large-text', s.prefs.largeText)
     document.documentElement.dataset.menu = s.prefs.menuSide
+    document.documentElement.dataset.look = s.prefs.todayStyle
     document.documentElement.lang = s.appLang
     const meta = document.querySelector('meta[name="theme-color"]')
     meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
-  }, [scheme, bands, s.prefs.largeText, s.prefs.menuSide, s.appLang])
+  }, [scheme, bands, s.prefs.todayStyle, s.prefs.largeText, s.prefs.menuSide, s.appLang])
 
   useEffect(() => {
     const moved = takeMoveFromLink()
@@ -171,8 +173,9 @@ export function App() {
 
   return (
     <>
-      <LivingSky colors={sky} scheme={scheme} soft={soft} />
+      {!gold && <LivingSky colors={sky} scheme={scheme} soft={soft} />}
       {bands && <div class="bands-backdrop" />}
+      {gold && <div class="gold-backdrop" />}
       <div class="shell">
         <main class={`screen tab-${s.tab}`} id="main">
           {/* Prayer and Masjid place the home button in their own top bars. */}

@@ -57,6 +57,7 @@
     <string name="style_sunPath" formatted="false">Lintasan Matahari</string>
     <string name="style_bands" formatted="false">Pita Warna</string>
     <string name="style_simple" formatted="false">Besar dan Sederhana</string>
+    <string name="style_gold" formatted="false">Emas Tenang</string>
     <string name="preview_off" formatted="false">Nonaktif (tanggal sebenarnya)</string>
     <string name="preview_sighting" formatted="false">Malam rukyat (29 Syakban)</string>
     <string name="preview_ramadan" formatted="false">Ramadan (hari 12)</string>
@@ -500,6 +501,8 @@
     <string name="settings_tracker" formatted="false">Pencatat</string>
     <string name="settings_trackerFoot" formatted="false">Ketuk salat di layar Salat setelah waktunya lewat untuk mencentangnya, dan jaga rangkaian beruntun. Ketuk rangkaian beruntun untuk menandai hari uzur (haid, sakit) agar tetap berlanjut. Hanya disimpan di peramban ini.</string>
     <string name="settings_trackerOn" formatted="false">Pencatat salat</string>
+    <string name="settings_trackerShowTime" formatted="false">Tampilkan jam saya salat</string>
+    <string name="settings_trackerShowTimeSub" formatted="false">Jam kecil setelah centang. Matikan untuk centang saja.</string>
     <string name="settings_nudge" formatted="false">Pengingat sebelum waktu habis</string>
     <string name="settings_nudgeSub" formatted="false">Satu pemberitahuan lembut sekitar 30 menit sebelum waktu salat habis, hanya jika belum dicentang. Tidak untuk {name}, yang waktunya berlanjut sampai {until}. Tidak berbunyi saat dijeda.</string>
     <string name="settings_display" formatted="false">Tampilan</string>

@@ -57,6 +57,7 @@
     <string name="style_sunPath" formatted="false">Laluan Matahari</string>
     <string name="style_bands" formatted="false">Jalur Warna</string>
     <string name="style_simple" formatted="false">Besar dan Mudah</string>
+    <string name="style_gold" formatted="false">Emas Tenang</string>
     <string name="preview_off" formatted="false">Tutup (tarikh sebenar)</string>
     <string name="preview_sighting" formatted="false">Malam rukyah (29 Syaaban)</string>
     <string name="preview_ramadan" formatted="false">Ramadan (hari 12)</string>
@@ -500,6 +501,8 @@
     <string name="settings_tracker" formatted="false">Penjejak</string>
     <string name="settings_trackerFoot" formatted="false">Ketik solat pada skrin Solat selepas waktunya berlalu untuk menandanya, dan kekalkan rekod berturut. Ketik rekod berturut untuk menanda hari uzur (haid, sakit) supaya ia berterusan. Disimpan dalam pelayar ini sahaja.</string>
     <string name="settings_trackerOn" formatted="false">Penjejak solat</string>
+    <string name="settings_trackerShowTime" formatted="false">Papar masa saya solat</string>
+    <string name="settings_trackerShowTimeSub" formatted="false">Masa kecil selepas tanda. Matikan untuk tanda sahaja.</string>
     <string name="settings_nudge" formatted="false">Peringatan sebelum waktu tamat</string>
     <string name="settings_nudgeSub" formatted="false">Satu makluman lembut lebih kurang 30 minit sebelum waktu solat tamat, hanya jika anda belum menandanya. Tidak untuk {name}, yang waktunya berterusan hingga {until}. Tidak berbunyi semasa dijeda.</string>
     <string name="settings_display" formatted="false">Paparan</string>

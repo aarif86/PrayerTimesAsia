@@ -25,10 +25,10 @@ export const APPEARANCE_LABEL: Record<Appearance, string> = {
 }
 
 /** How the Prayer screen shows the day (same order as the iOS TodayStyle). */
-export type TodayStyle = 'list' | 'centre' | 'dial' | 'sunPath' | 'bands' | 'simple'
-export const TODAY_STYLES: TodayStyle[] = ['centre', 'list', 'dial', 'sunPath', 'bands', 'simple']
+export type TodayStyle = 'centre' | 'sunPath' | 'bands' | 'simple' | 'gold'
+export const TODAY_STYLES: TodayStyle[] = ['centre', 'sunPath', 'bands', 'simple', 'gold']
 export const TODAY_STYLE_LABEL: Record<TodayStyle, string> = {
-  list: 'Side Dial', centre: 'Centre Dial', dial: 'Day Dial', sunPath: 'Sun Path', bands: 'Colour Bands', simple: 'Big and Simple',
+  centre: 'Centre Dial', sunPath: 'Sun Path', bands: 'Colour Bands', simple: 'Big and Simple', gold: 'Calm Gold',
 }
 
 export interface TripStop { countryCode: string; countryName: string; placeName: string; arrived: number }
@@ -73,6 +73,10 @@ export interface Preferences {
   excusedDays: string[]
   /** "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from then until it is ended counts as excused. */
   trackerPausedSince: string | null
+  /** When each prayer was ticked (ms), by day. Only used to show the small "6:15 AM" after the tick. */
+  prayedAt: Record<string, Partial<Record<Prayer, number>>>
+  /** Show that time after the tick. Off keeps just the tick. */
+  trackerShowTime: boolean
   /** The Subuh alarm; null = off. On the web it rings only while the app is open (or through the calendar file). */
   wakeUp: WakeUpTiming | null
   /** The earlier sahur alarm; null = off. Rings only on `sahurDays`. */
@@ -188,6 +192,8 @@ export const DEFAULT_PREFS: Preferences = {
   prayedLog: {},
   excusedDays: [],
   trackerPausedSince: null,
+  prayedAt: {},
+  trackerShowTime: true,
   wakeUp: null,
   sahurAlarm: null,
   sahurDays: [...DEFAULT_SAHUR_DAYS],
@@ -248,7 +254,7 @@ const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat',
 const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   appearance: ['system', 'light', 'dark'],
   menuSide: MENU_SIDES,
-  todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands', 'simple'],
+  todayStyle: ['centre', 'sunPath', 'bands', 'simple', 'gold'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,
   appLanguageOverride: APP_LANGUAGES,
@@ -269,7 +275,9 @@ const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
 export function decodePreferences(raw: unknown): Preferences {
   const out: Preferences = structuredClone(DEFAULT_PREFS)
   if (!raw || typeof raw !== 'object') return out
-  const r = raw as Record<string, unknown>
+  const r = { ...(raw as Record<string, unknown>) }
+  // Side Dial and Day Dial are retired: anyone on them moves to Centre Dial.
+  if (r.todayStyle === 'list' || r.todayStyle === 'dial') r.todayStyle = 'centre'
   for (const key of Object.keys(DEFAULT_PREFS) as (keyof Preferences)[]) {
     if (!(key in r)) continue
     const v = r[key]
