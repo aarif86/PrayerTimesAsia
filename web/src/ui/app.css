@@ -389,4 +389,4 @@ input, select, textarea { font: inherit; color: inherit; }
 .alert-big > svg { flex: none; }
 
 /* The tiny time a prayer was ticked, after the tick. */
-.prayed-time { font-size: 11px; font-weight: 600; opacity: 0.75; margin-left: 4px; white-space: nowrap; align-self: center; }
+.prayed-time { font-size: 12px; font-weight: 600; opacity: 0.75; margin-left: 4px; white-space: nowrap; align-self: center; }

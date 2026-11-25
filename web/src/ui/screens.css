@@ -56,12 +56,12 @@
 .blessed-row .bar { width: 2px; top: 12px; bottom: 12px; background: color-mix(in srgb, var(--fg) 16%, transparent); }
 .prayer-row .names, .blessed-row .names { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .name-line { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-.pname { font-size: 20px; font-weight: 600; white-space: nowrap; }
-.local { font-size: 12px; font-weight: 500; color: var(--fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pname { font-size: 22px; font-weight: 600; white-space: nowrap; }
+.local { font-size: 13px; font-weight: 500; color: var(--fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .check { align-self: center; flex: none; }
 .now-tag { font-size: 11px; font-weight: 800; color: var(--tint); }
-.in-tag { font-size: 12px; font-weight: 600; color: var(--tint); }
-.extra { font-size: 12px; font-weight: 500; opacity: 0.75; }
+.in-tag { font-size: 13px; font-weight: 600; color: var(--tint); }
+.extra { font-size: 13px; font-weight: 500; opacity: 0.75; }
 .extra.alt { color: var(--grade-b); opacity: 1; }
 .prayer-row .bell { width: 30px; height: 34px; display: flex; align-items: center; justify-content: center; flex: none; }
 .blessed-row { position: relative; display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 14px; flex: none; }
@@ -153,10 +153,10 @@
 .band { position: relative; display: flex; align-items: center; gap: 8px; padding: 0 var(--gutter); min-height: 64px; flex: 1 1 64px; color: #fff; text-align: left; width: 100%; }
 .band.current::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: #fff; }
 .band-names { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.band-name { font-size: 26px; font-weight: 700; white-space: nowrap; }
+.band-name { font-size: 28px; font-weight: 700; white-space: nowrap; }
 .now-pill { font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.25); align-self: center; }
-.band-time { display: inline-flex; align-items: baseline; gap: 4px; font-size: 34px; font-weight: 300; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.band-time .sfx { font-size: 22px; font-weight: 700; }
+.band-time { display: inline-flex; align-items: baseline; gap: 4px; font-size: 36px; font-weight: 300; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.band-time .sfx { font-size: 24px; font-weight: 700; }
 .band-time.small { font-size: 24px; }
 .band-time.small .sfx { font-size: 15px; }
 .blessed-band { display: flex; align-items: center; gap: 8px; padding: 6px var(--gutter); min-height: 52px; background: rgb(77, 77, 77); color: #fff; }
@@ -874,3 +874,12 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .sheet-back { display: flex; align-items: center; padding: 4px 8px 0; }
 .sheet-back button { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; font-size: 17px; color: var(--accent); }
 .sheet-pagetitle { margin: 0; padding: 2px 20px 8px; font-size: 32px; line-height: 1.1; font-weight: 700; }
+
+/* Narrow phones: keep the earlier sizes so long names like Maghrib never run into the time. */
+@media (max-width: 360px) {
+  .pname { font-size: 20px; }
+  .band-name { font-size: 26px; }
+  .band-time { font-size: 34px; }
+  .band-time .sfx { font-size: 22px; }
+}
+html[data-large-text] .pname { font-size: 20px; }
