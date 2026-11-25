@@ -1,5 +1,5 @@
 {
   "about": "Anonymous usage counts (TelemetryDeck). Paste the App ID from the TelemetryDeck dashboard below and commit to main: the website, web app, mosque screen and both phone apps start counting within a day, no app update needed. Set enabled to false to stop all counting. See docs/analytics.md.",
-  "telemetryDeckAppID": "",
+  "telemetryDeckAppID": "CE604D23-2F1E-4E63-BDE9-0FCB859C7E0B",
   "enabled": true
 }
