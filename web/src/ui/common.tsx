@@ -162,6 +162,21 @@ export function SourceBadge({ day, compact }: { day: PrayerDay; compact?: boolea
   )
 }
 
+/** The quiet source line under the Centre Dial list: "Official · MUIS · Grade A". Tap for the full story. */
+export function SourceLine({ day }: { day: PrayerDay }) {
+  const grade = day.grade
+  const authority = grade === 'A'
+    ? (store.officialSource && day.officialSource ? sourceAuthority(store.officialSource) : store.method.shortName)
+    : grade === 'B' || grade === 'C' ? day.mosqueName : store.method.shortName
+  const sourceName = day.officialSource ?? methodName(store.method)
+  return (
+    <button class="source-line" onClick={() => openSheet({ kind: 'sanad', day })}
+      aria-label={tr('common.sourceBadge', { grade, name: gradeTitle(grade), detail: sourceName })}>
+      <b>{gradeTitle(grade)}</b>{authority ? ` · ${authority}` : ''} · {tr('source.grade')} {grade}
+    </button>
+  )
+}
+
 export function CloseButton({ onClick, label = tr('common.close') }: { onClick: () => void; label?: string }) {
   return <button class="round-btn" onClick={onClick} aria-label={label}><X size={16} /></button>
 }

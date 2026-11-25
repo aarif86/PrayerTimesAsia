@@ -1,6 +1,7 @@
+import type { ComponentChildren } from 'preact'
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
-  AlarmClock, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck, Ellipsis,
+  AlarmClock, BellOff, BellRing, Calendar, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck, Ellipsis,
   CloudMoon, Globe, Heart, Palette, Star, MapPin, Navigation, Smartphone, Sparkles, Sun, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, type BlessedTime } from '../core/blessed'
@@ -20,7 +21,7 @@ import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { cycleAlert, ModeIcon, modeWord, WakeChip } from './WakeUp'
 import { alertMode } from '../core/alertMode'
-import { fmtDate, openSheet, Segmented, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
+import { fmtDate, openSheet, Segmented, useDayRequests, short, SourceBadge, SourceLine, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
 import { DayDial, SunPath, tint } from './Dials'
 import { cardOfTheDay, cardURL } from '../core/communityCards'
@@ -233,6 +234,17 @@ function PlaceChip() {
   return <button class="place-chip" onClick={() => openSheet({ kind: 'places' })} aria-label={tr('today.changeLocation')}><PlaceLabel /></button>
 }
 
+/** The quiet "Show more" link at the foot of the list card (Centre Dial). */
+function ShowMoreLink({ c }: { c: Ctx }) {
+  return (
+    <button class="more-link" onClick={() => c.setShowMore(!c.showMore)} aria-expanded={c.showMore}
+      aria-label={`${c.showMore ? tr('common.showLess') : tr('common.showMore')}, ${tr('today.blessedTimes', { name: store.name('sunrise') })}`}>
+      {c.showMore ? tr('common.showLess') : tr('common.showMore')}
+      {c.showMore ? <ChevronUp size={22} strokeWidth={2.2} /> : <ChevronDown size={22} strokeWidth={2.2} />}
+    </button>
+  )
+}
+
 function ShowMoreButton({ c, inline }: { c: Ctx; inline?: boolean }) {
   const btn = (
     <button class="capsule-btn" onClick={() => c.setShowMore(!c.showMore)} aria-expanded={c.showMore}
@@ -417,7 +429,7 @@ function entries(c: Ctx, day: PrayerDay): Entry[] {
   return list.sort((a, b) => a.t - b.t)
 }
 
-function PrayerList({ c, fill }: { c: Ctx; fill: boolean }) {
+function PrayerList({ c, fill, slim, footer }: { c: Ctx; fill: boolean; slim?: boolean; footer?: ComponentChildren }) {
   const day = c.shown
   const list = entries(c, day)
   const swipe = useSwipe(c)
@@ -429,14 +441,15 @@ function PrayerList({ c, fill }: { c: Ctx; fill: boolean }) {
   const syurukOpen = syuruk && store.prefs.showHadith && !store.prefs.hiddenHadith.includes('syuruk')
   return (
     <div class={`list-wrap ${fill ? 'fill' : ''}`} {...swipe}>
-      <div class="prayer-list glass" style={fill ? { maxHeight: `${prayerRows * 92 + (list.length - 1) * 6 + 16 + (list.length - prayerRows) * 66 + (syurukOpen ? 200 : 0)}px` } : undefined}>
+      <div class={`prayer-list glass ${slim ? 'slim' : ''}`} style={fill && !slim ? { maxHeight: `${prayerRows * 92 + (list.length - 1) * 6 + 16 + (list.length - prayerRows) * 66 + (syurukOpen ? 200 : 0)}px` } : undefined}>
         {list.map((e) => e.kind === 'prayer'
           ? <>
-              <PrayerRow p={e.p} t={e.t} now={c.now} day={day} isCurrent={e.p === current && e.t <= c.now} next={next?.prayer === e.p && next.time === e.t ? next : null}
+              <PrayerRow slim={slim} lit={slim ? e.p === (current ?? next?.prayer) && c.offset === 0 : false} p={e.p} t={e.t} now={c.now} day={day} isCurrent={e.p === current && e.t <= c.now} next={next?.prayer === e.p && next.time === e.t ? next : null}
                 onTap={e.p === 'sunrise' && store.prefs.showHadith ? () => setSyuruk(!syuruk) : undefined} />
               {e.p === 'sunrise' && syurukOpen && <div class="syuruk-hadith"><Hadith id="syuruk" variant="line" /></div>}
             </>
           : <BlessedRow b={e.b} t={e.t} now={c.now} />)}
+        {footer}
       </div>
     </div>
   )
@@ -449,7 +462,7 @@ function jamaahText(day: PrayerDay, p: Prayer, now: number): string | null {
   return day.times[p] <= now && now < j ? `Jamaah ${store.formatted(j)} · in ${short(j - now)}` : `Jamaah ${store.formatted(j)}`
 }
 
-function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: number; now: number; day: PrayerDay; isCurrent: boolean; next: Moment; onTap?: () => void }) {
+function PrayerRow({ p, t, now, day, isCurrent, next, onTap, slim, lit }: { p: Prayer; t: number; now: number; day: PrayerDay; isCurrent: boolean; next: Moment; onTap?: () => void; slim?: boolean; lit?: boolean }) {
   const prefs = store.prefs
   const passed = t <= now && !isCurrent
   const mode = alertMode(prefs, p)
@@ -459,14 +472,14 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: n
   const jamaah = jamaahText(day, p, now)
   const other = day.alternate[p]
   return (
-    <div class={`prayer-row ${isCurrent ? 'current' : ''}`} style={{ '--tint': tint(p), '--tint-soft': tint(p, 0.16), '--tint-line': tint(p, 0.45), opacity: passed && !prayed ? 0.55 : 1 }}
+    <div class={`prayer-row ${isCurrent || lit ? 'current' : ''} ${lit ? 'lit' : ''} ${passed ? 'past' : ''}`} style={{ '--tint': tint(p), '--tint-soft': tint(p, 0.16), '--tint-line': tint(p, 0.45), opacity: passed && !prayed ? 0.55 : 1 }}
       onClick={() => { if (trackable) openSheet({ kind: 'log-prayer', prayer: p, t }); else onTap?.() }}>
       <span class="bar" style={{ opacity: isCurrent ? 1 : 0.55 }} />
       <div class="names">
         <div class="name-line">
           <span class="pname">{store.name(p, t)}</span>
           {local && <span class="local" aria-label={tr('today.calledHere', { name: local })}>{local}</span>}
-          {prayed && <CheckCircle2 size={16} class="check" fill="var(--accent)" color="var(--bg-check, #fff)" />}
+          {prayed && (slim ? <span class="tick" aria-hidden="true"><Check size={11} strokeWidth={3.4} /></span> : <CheckCircle2 size={16} class="check" fill="var(--accent)" color="var(--bg-check, #fff)" />)}
           {prayed && <PrayedTime store={store} p={p} t={t} />}
         </div>
         {isCurrent && <div class="now-tag">{tr('today.now')}</div>}
@@ -474,7 +487,7 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: n
         {jamaah && <div class="extra">{jamaah}</div>}
         {other != null && day.alternateSource && <div class="extra alt">{day.alternateSource} {store.formatted(other)}</div>}
       </div>
-      <TimeText ms={t} size={29} />
+      <TimeText ms={t} size={slim ? 20 : 29} />
       <button class={`bell bell-${mode}`} aria-label={tr('today.bellAria', { name: store.name(p, t), mode: modeWord(mode) })}
         onClick={(e) => { e.stopPropagation(); toggleNotify(p) }}
         onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); openSheet({ kind: 'wakeup', prayer: p }) }}>
@@ -520,21 +533,18 @@ function SmallDial({ c, size }: { c: Ctx; size: number }) {
   const tomorrow = store.day(noonDaysAfter(now, 1, store.timeZone))
   const top = lead(current, next)
   if (!top || !tomorrow) return <div style={{ width: `${size}px`, height: `${size}px` }} />
+  const t = countdown(now)
+  const name = store.name(top.prayer, top.time)
+  // In a prayer's time (not yet ticked): the prayer's name, the time left. Otherwise: the next prayer and the wait.
+  const inPrayer = !t.toNext
+  const kicker = inPrayer ? name : tr('today.nextPrayer')
+  const count = inPrayer ? t.count : t.bare
+  const label = inPrayer ? t.label : tr('today.untilName', { name: next ? store.name(next.prayer, next.time) : name })
   return (
     <DayDial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}
-      currentPrayer={top.prayer} currentName={store.name(top.prayer, top.time)} isNext={top.isNext}
-      countdown={countdown(now).count} label={countdown(now).label} />
+      kicker={kicker} countdown={count} label={label} urgent={t.urgent}
+      ariaLabel={inPrayer ? `${tr('common.now')} ${name}. ${count} ${label}.` : tr('today.nextAria', { name: next ? store.name(next.prayer, next.time) : name, time: count })} />
   )
-}
-
-/** One line under the dial: "Dhuhr in 3h 52m", or how long is left to pray. */
-function CountLine({ c }: { c: Ctx }) {
-  if (c.offset !== 0) return null
-  const top = lead(c.current, c.next)
-  const t = countdown(c.now)
-  if (!top || !t.text) return null
-  const text = top.isNext && !t.done ? `${store.name(top.prayer, top.time)} ${tr('today.inTime', { time: short(top.time - c.now) })}` : t.text
-  return <div class={`count-line mono ${t.urgent ? 'urgent' : ''}`} aria-live="off">{text}</div>
 }
 
 // ---------- Time left to pray ----------
@@ -546,23 +556,23 @@ function CountLine({ c }: { c: Ctx }) {
  * the same moment as the next prayer, said the way busy people ask it.
  * Between Syuruk and Zohor, or once ticked, it counts to the next prayer.
  */
-export function countdown(now: number): { count: string; label: string; text: string; urgent: boolean; done: boolean } {
+export function countdown(now: number): { count: string; label: string; text: string; urgent: boolean; done: boolean; toNext: boolean; bare: string } {
   const w = store.window(now)
   const done = !!w && store.prefs.trackerEnabled && store.isPrayed(w.prayer, w.start)
   if (w && !done) {
     const count = short(w.end - now)
-    return { count, label: tr('today.leftLabel'), text: tr('today.leftToPray', { time: count }), urgent: w.prayer !== 'isha' && now >= nudgeAt(w), done }
+    return { count, label: tr('today.leftLabel'), text: tr('today.leftToPray', { time: count }), urgent: w.prayer !== 'isha' && now >= nudgeAt(w), done, toNext: false, bare: count }
   }
   const next = store.next(now)
-  if (!next) return { count: '', label: '', text: '', urgent: false, done }
+  if (!next) return { count: '', label: '', text: '', urgent: false, done, toNext: true, bare: '' }
   // Syuruk to Zohor: the next prayer's name leads, so the count only says when.
   if (!w && store.current(now)?.prayer === 'sunrise') {
     const text = tr('today.inTime', { time: short(next.time - now) })
-    return { count: text, label: '', text, urgent: false, done }
+    return { count: text, label: '', text, urgent: false, done, toNext: true, bare: short(next.time - now) }
   }
   const count = short(next.time - now)
   const label = tr('today.untilName', { name: store.name(next.prayer, next.time) })
-  return { count, label, text: `${count} ${label}`, urgent: false, done }
+  return { count, label, text: `${count} ${label}`, urgent: false, done, toNext: true, bare: count }
 }
 
 // ---------- Big and Simple ----------
@@ -629,12 +639,12 @@ function DayNavigator({ c }: { c: Ctx }) {
   const date = c.shown.times.dhuhr
   return (
     <div class="day-nav">
-      <button class="chev" aria-label={tr('today.prevDay')} onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={22} strokeWidth={2.4} /></button>
+      <button class="chev" aria-label={tr('today.prevDay')} onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={26} strokeWidth={2} /></button>
       <button class="day-nav-main" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? tr('today.datesSources') : tr('today.backToToday')}>
-        <span class="day-nav-date">{fmtDate(date, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-        <span class="day-nav-hijri">{hijri(date)} {c.offset === 0 ? <Calendar size={12} /> : <Undo2 size={12} />}</span>
+        <span class="day-nav-date">{fmtDate(date, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+        <span class="day-nav-hijri">{hijri(date)} {c.offset === 0 ? <Calendar size={20} /> : <Undo2 size={18} />}</span>
       </button>
-      <button class="chev" aria-label={tr('today.nextDay')} onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={22} strokeWidth={2.4} /></button>
+      <button class="chev" aria-label={tr('today.nextDay')} onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={26} strokeWidth={2} /></button>
     </div>
   )
 }
@@ -654,11 +664,13 @@ function MusafirChip({ now }: { now: number }) {
 }
 
 function CentrePage({ c }: { c: Ctx }) {
+  const wrap = useRef<HTMLDivElement>(null)
+  const width = useWidth(wrap, 393)
+  const size = Math.round(Math.max(150, Math.min(190, width * 0.485)))
   return (
-    <div class="today-page page centre-page">
+    <div class="today-page page centre-page" ref={wrap}>
       <div class="row top-bar"><PlaceChip /><span class="spacer" /><Controls c={c} /></div>
-      <div class="centre-dial"><SmallDial c={c} size={148} /></div>
-      <CountLine c={c} />
+      <div class="centre-dial"><SmallDial c={c} size={size} /></div>
       <TopPrompt />
       <PrayerHadith c={c} />
       <ArrivalCard />
@@ -666,8 +678,8 @@ function CentrePage({ c }: { c: Ctx }) {
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={c.now} />
       <DayNavigator c={c} />
-      <PrayerList c={c} fill />
-      <div class="row foot-row"><SourceBadge day={c.shown} compact /><span class="spacer" /><ShowMoreButton c={c} inline /></div>
+      <PrayerList c={c} fill slim footer={<ShowMoreLink c={c} />} />
+      <SourceLine day={c.shown} />
       <NotePrompt c={c} />
       <Offer c={c} />
     </div>
