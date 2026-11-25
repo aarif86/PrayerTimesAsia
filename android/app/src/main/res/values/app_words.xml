@@ -500,6 +500,8 @@
     <string name="settings_tracker" formatted="false">Tracker</string>
     <string name="settings_trackerFoot" formatted="false">Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only in this browser.</string>
     <string name="settings_trackerOn" formatted="false">Prayer tracker</string>
+    <string name="settings_trackerShowTime" formatted="false">Show the time I prayed</string>
+    <string name="settings_trackerShowTimeSub" formatted="false">A tiny time after the tick. Off keeps just the tick.</string>
     <string name="settings_nudge" formatted="false">Nudge before time runs out</string>
     <string name="settings_nudgeSub" formatted="false">One gentle alert about 30 minutes before a prayer\'s time ends, only if you haven\'t ticked it. Not for {name}, which stays open until {until}. Never while paused.</string>
     <string name="settings_display" formatted="false">Display</string>
