@@ -42,17 +42,17 @@ const click = (sel) => (p) => p.click(sel)
 const pages = []
 for (const appearance of ['light', 'dark']) {
   for (const style of STYLES) pages.push([`prayer-${style}-${appearance}`, { style, appearance, now: appearance === 'light' ? DAY : NIGHT }])
-  pages.push([`prayer-more-${appearance}`, { style: 'list', appearance, now: NIGHT, more: '1' }])
+  pages.push([`prayer-more-${appearance}`, { style: 'centre', appearance, now: NIGHT, more: '1' }])
   for (const tab of ['qibla', 'falak', 'masjid', 'settings']) pages.push([`${tab}-${appearance}`, { tab, appearance, now: appearance === 'light' ? DAY : NIGHT }])
-  pages.push([`source-sheet-${appearance}`, { style: 'list', appearance, now: NIGHT }, click('.source-badge')])
-  pages.push([`calendar-sheet-${appearance}`, { style: 'list', appearance, now: NIGHT }, click('.date-main')])
-  pages.push([`places-sheet-${appearance}`, { style: 'list', appearance, now: NIGHT }, async (p) => { await p.click('.place-chip'); await p.fill('input[type=search]', 'ku') }])
+  pages.push([`source-sheet-${appearance}`, { style: 'centre', appearance, now: NIGHT }, click('.source-badge')])
+  pages.push([`calendar-sheet-${appearance}`, { style: 'centre', appearance, now: NIGHT }, click('.day-nav-main')])
+  pages.push([`places-sheet-${appearance}`, { style: 'centre', appearance, now: NIGHT }, async (p) => { await p.click('.place-chip'); await p.fill('input[type=search]', 'ku') }])
   pages.push([`alarms-sheet-${appearance}`, { style: 'centre', appearance, now: NIGHT }, click('button[aria-label^="Alerts and alarms"]')])
-  pages.push([`journey-sheet-${appearance}`, { demo: 'travel', style: 'list', appearance, now: NIGHT }, click('button[aria-label^="Musafir"]')])
+  pages.push([`journey-sheet-${appearance}`, { demo: 'travel', style: 'centre', appearance, now: NIGHT }, click('button[aria-label^="Musafir"]')])
   pages.push([`masjid-about-${appearance}`, { tab: 'masjid', appearance, now: NIGHT }, click('button[aria-label="About this app"]')])
 }
 pages.push(['prayer-simple-large', { style: 'simple', appearance: 'dark', now: NIGHT, large: '1' }])
-pages.push(['prayer-text-200', { style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.addStyleTag({ content: 'html { font-size: 200% !important }' })])
+pages.push(['prayer-text-200', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.addStyleTag({ content: 'html { font-size: 200% !important }' })])
 pages.push(['settings-text-200', { tab: 'settings', appearance: 'light', now: DAY }, (p) => p.addStyleTag({ content: 'html { font-size: 200% !important }' })])
 for (const look of ['night', 'day', 'board', 'bands', 'dial', 'sunpath']) pages.push([`screen-${look}`, { path: 'screen/', look }])
 pages.push(['screen-surau', { path: 'screen/', look: 'surau' }], ['screen-surau-light', { path: 'screen/', look: 'surau', mode: 'light' }])
@@ -104,7 +104,7 @@ for (const [name, params, action] of pages) {
 // Keyboard only: a sheet opens with Enter, takes the focus, keeps Tab inside, and Escape gives the focus back.
 if (!only || only.test('keyboard')) {
   const page = await newPage()
-  await page.goto(`${origin}?${new URLSearchParams({ demo: '1', preview: 'off', style: 'list', now: NIGHT })}`, { waitUntil: 'load' })
+  await page.goto(`${origin}?${new URLSearchParams({ demo: '1', preview: 'off', style: 'centre', now: NIGHT })}`, { waitUntil: 'load' })
   await page.waitForTimeout(1200)
   await page.focus('.source-badge')
   await page.keyboard.press('Enter')

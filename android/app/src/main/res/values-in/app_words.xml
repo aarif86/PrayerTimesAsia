@@ -57,6 +57,7 @@
     <string name="style_sunPath" formatted="false">Lintasan Matahari</string>
     <string name="style_bands" formatted="false">Pita Warna</string>
     <string name="style_simple" formatted="false">Besar dan Sederhana</string>
+    <string name="style_gold" formatted="false">Emas Tenang</string>
     <string name="preview_off" formatted="false">Nonaktif (tanggal sebenarnya)</string>
     <string name="preview_sighting" formatted="false">Malam rukyat (29 Syakban)</string>
     <string name="preview_ramadan" formatted="false">Ramadan (hari 12)</string>

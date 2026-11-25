@@ -57,6 +57,7 @@
     <string name="style_sunPath" formatted="false">Sun Path</string>
     <string name="style_bands" formatted="false">Colour Bands</string>
     <string name="style_simple" formatted="false">Big and Simple</string>
+    <string name="style_gold" formatted="false">Calm Gold</string>
     <string name="preview_off" formatted="false">Off (real dates)</string>
     <string name="preview_sighting" formatted="false">Moon sighting night (29 Sha\'ban)</string>
     <string name="preview_ramadan" formatted="false">Ramadan (day 12)</string>

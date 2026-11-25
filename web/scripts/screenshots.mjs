@@ -35,19 +35,21 @@ const NIGHT = '2026-10-25T00:49:00+08:00'
 const DAY = '2026-10-25T13:35:00+08:00'
 
 const shots = [
-  ['01-classic-night', { style: 'list', appearance: 'dark', now: NIGHT }],
-  ['02-classic-day', { style: 'list', appearance: 'system', now: DAY }],
-  ['03-classic-show-more', { style: 'list', appearance: 'dark', now: NIGHT, more: '1' }],
+  ['01-classic-night', { style: 'centre', appearance: 'dark', now: NIGHT }],
+  ['02-classic-day', { style: 'centre', appearance: 'system', now: DAY }],
+  ['03-classic-show-more', { style: 'centre', appearance: 'dark', now: NIGHT, more: '1' }],
   ['04-centre-night', { style: 'centre', appearance: 'dark', now: NIGHT }],
   ['05-centre-day', { style: 'centre', appearance: 'system', now: DAY }],
-  ['06-dial-night', { style: 'dial', appearance: 'dark', now: NIGHT }],
-  ['07-dial-day', { style: 'dial', appearance: 'system', now: DAY }],
+  ['06-dial-night', { style: 'centre', appearance: 'dark', now: NIGHT }],
+  ['07-dial-day', { style: 'centre', appearance: 'system', now: DAY }],
   ['08-sunpath-night', { style: 'sunPath', appearance: 'dark', now: NIGHT }],
   ['09-sunpath-day', { style: 'sunPath', appearance: 'system', now: DAY }],
+  ['09b-gold-night', { style: 'gold', appearance: 'dark', now: NIGHT }],
+  ['09c-gold-day', { style: 'gold', appearance: 'light', now: DAY }],
   ['10-bands-night', { style: 'bands', appearance: 'dark', now: NIGHT }],
   ['11-bands-day-more', { style: 'bands', appearance: 'system', now: DAY, more: '1' }],
-  ['12-auto-soft-night', { style: 'list', appearance: 'system', now: NIGHT }],
-  ['13-light-night', { style: 'list', appearance: 'light', now: NIGHT }],
+  ['12-auto-soft-night', { style: 'centre', appearance: 'system', now: NIGHT }],
+  ['13-light-night', { style: 'centre', appearance: 'light', now: NIGHT }],
   ['14-qibla-aligned', { tab: 'qibla', appearance: 'dark', now: NIGHT, aligned: '1' }],
   ['15-qibla-day', { tab: 'qibla', appearance: 'system', now: DAY }],
   ['16-falak-night', { tab: 'falak', appearance: 'dark', now: NIGHT }],
@@ -61,15 +63,15 @@ const shots = [
   ['18-masjid', { tab: 'masjid', appearance: 'dark', now: NIGHT }],
   ['19-settings', { tab: 'settings', appearance: 'dark', now: NIGHT }],
   ['20-settings-makers', { tab: 'settings', appearance: 'dark', now: NIGHT, settings: 'makers' }],
-  ['21-visitor-kl', { demo: 'visitor', style: 'list', appearance: 'dark', now: NIGHT }],
-  ['22-travel-hanoi', { demo: 'travel', style: 'list', appearance: 'dark', now: NIGHT }],
+  ['21-visitor-kl', { demo: 'visitor', style: 'centre', appearance: 'dark', now: NIGHT }],
+  ['22-travel-hanoi', { demo: 'travel', style: 'centre', appearance: 'dark', now: NIGHT }],
   ['23-masjid-about', { tab: 'masjid', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label="About this app"]')],
-  ['24-source-sheet', { style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('.source-badge')],
-  ['25-calendar-sheet', { style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('.date-main')],
-  ['26-places-sheet', { style: 'list', appearance: 'dark', now: NIGHT }, async (p) => { await p.click('.place-chip'); await p.fill('input[type=search]', 'ku') }],
-  ['27-style-menu', { style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Prayer screen style"]', { button: 'right' })],
-  ['29-your-masjid-link', { style: 'list', appearance: 'dark', now: NIGHT, masjid: 'link' }],
-  ['30-jamaah-countdown', { style: 'list', appearance: 'system', now: '2026-10-25T12:57:00+08:00', masjid: 'on' }],
+  ['24-source-sheet', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('.source-badge')],
+  ['25-calendar-sheet', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('.day-nav-main')],
+  ['26-places-sheet', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => { await p.click('.place-chip'); await p.fill('input[type=search]', 'ku') }],
+  ['27-style-menu', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Prayer screen style"]', { button: 'right' })],
+  ['29-your-masjid-link', { style: 'centre', appearance: 'dark', now: NIGHT, masjid: 'link' }],
+  ['30-jamaah-countdown', { style: 'centre', appearance: 'system', now: '2026-10-25T12:57:00+08:00', masjid: 'on' }],
   ['31-masjid-yours', { tab: 'masjid', appearance: 'dark', now: NIGHT, masjid: 'on' }],
   ['32-wake-up', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => {
     await p.click('button[aria-label^="Alerts and alarms"]'); await p.waitForTimeout(400)
@@ -94,8 +96,8 @@ const shots = [
   // Ramadan 1448 on its real dates (1 Ramadan 9 Feb 2027 in Singapore), for the website's Ramadan page.
   ['39-ramadan-berbuka', { style: 'centre', appearance: 'dark', now: '2027-02-20T17:40:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }],
   ['40-ramadan-sheet', { style: 'centre', appearance: 'dark', now: '2027-02-20T17:40:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }, (p) => p.click('.season-main, button.season-card')],
-  ['41-ramadan-sahur', { style: 'list', appearance: 'dark', now: '2027-02-20T04:50:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }],
-  ['42-syawal-sheet', { style: 'list', appearance: 'system', now: '2027-03-17T10:00:00+08:00', season: 'syawal', preview: 'off', alerts: 'on' }, (p) => p.click('.season-main, button.season-card')],
+  ['41-ramadan-sahur', { style: 'centre', appearance: 'dark', now: '2027-02-20T04:50:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }],
+  ['42-syawal-sheet', { style: 'centre', appearance: 'system', now: '2027-03-17T10:00:00+08:00', season: 'syawal', preview: 'off', alerts: 'on' }, (p) => p.click('.season-main, button.season-card')],
   ['43-ramadan-fasts', { style: 'centre', appearance: 'dark', now: '2027-02-20T17:40:00+08:00', season: 'ramadan', preview: 'off', alerts: 'on' }, async (p) => {
     await p.click('.season-main'); await p.waitForTimeout(500)
     await p.evaluate(() => [...document.querySelectorAll('.sheet h2, .sheet h3')].find((h) => /Your fasts/.test(h.textContent ?? ''))?.scrollIntoView({ block: 'center' }))
@@ -121,18 +123,18 @@ const shots = [
     await p.evaluate(() => document.getElementById('demo-extras')?.scrollIntoView({ block: 'start' }))
   }],
   // Hijri calendar: tap the date on the Prayer screen.
-  ['45-hijri-calendar', { style: 'list', appearance: 'dark', now: '2026-11-19T21:00:00+08:00' }, (p) => p.click('.date-main')],
-  ['46-hijri-calendar-day', { style: 'list', appearance: 'system', now: '2026-11-19T13:00:00+08:00' }, async (p) => {
-    await p.click('.date-main'); await p.waitForTimeout(400); await p.click('.hcal-next'); await p.waitForTimeout(200); await p.click('.hcal-next'); await p.waitForTimeout(300)
+  ['45-hijri-calendar', { style: 'centre', appearance: 'dark', now: '2026-11-19T21:00:00+08:00' }, (p) => p.click('.day-nav-main')],
+  ['46-hijri-calendar-day', { style: 'centre', appearance: 'system', now: '2026-11-19T13:00:00+08:00' }, async (p) => {
+    await p.click('.day-nav-main'); await p.waitForTimeout(400); await p.click('.hcal-next'); await p.waitForTimeout(200); await p.click('.hcal-next'); await p.waitForTimeout(300)
     await p.click('.hcal-row')
   }],
-  ['47-hijri-calendar-malay', { style: 'list', appearance: 'dark', now: '2026-11-19T21:00:00+08:00', naming: 'malay' }, async (p) => {
-    await p.click('.date-main'); await p.waitForTimeout(400); for (let i = 0; i < 5; i++) { await p.click('.hcal-prev'); await p.waitForTimeout(150) }
+  ['47-hijri-calendar-malay', { style: 'centre', appearance: 'dark', now: '2026-11-19T21:00:00+08:00', naming: 'malay' }, async (p) => {
+    await p.click('.day-nav-main'); await p.waitForTimeout(400); for (let i = 0; i < 5; i++) { await p.click('.hcal-prev'); await p.waitForTimeout(150) }
   }],
-  ['48-hijri-calendar-zulhijjah', { style: 'list', appearance: 'dark', now: '2026-11-19T21:00:00+08:00' }, async (p) => {
-    await p.click('.date-main'); await p.waitForTimeout(400); for (let i = 0; i < 6; i++) { await p.click('.hcal-next'); await p.waitForTimeout(150) }
+  ['48-hijri-calendar-zulhijjah', { style: 'centre', appearance: 'dark', now: '2026-11-19T21:00:00+08:00' }, async (p) => {
+    await p.click('.day-nav-main'); await p.waitForTimeout(400); for (let i = 0; i < 6; i++) { await p.click('.hcal-next'); await p.waitForTimeout(150) }
   }],
-  ['28-journey', { demo: 'travel', style: 'list', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Musafir"]')],
+  ['28-journey', { demo: 'travel', style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Musafir"]')],
 ]
 
 const feed = process.env.FEED_FILE && existsSync(process.env.FEED_FILE) ? readFileSync(process.env.FEED_FILE, 'utf8') : null

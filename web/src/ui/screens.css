@@ -786,3 +786,21 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .sc-how { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-size: 17px; font-weight: 600; }
 .sc-foot { font-size: 12px; color: var(--fg2); margin-top: 12px; }
 .sc-sheet .primary-btn { margin-top: 12px; }
+
+/* Top bar: slim location pill on the left, streak, alarm and menu on the right (every look) */
+.top-bar { display: flex; align-items: center; gap: 8px; padding-top: 6px; }
+.top-bar .place-chip { padding: 6px 12px; min-height: 44px; }
+.top-bar .round-btn, .top-bar .streak-chip { min-width: 44px; min-height: 44px; }
+.menu a.menu-link { display: flex; width: 100%; align-items: center; gap: 10px; padding: 11px 12px; border-radius: 10px; font-size: 16px; }
+.menu a.menu-link:hover { background: var(--fill); }
+.centre-dial { display: flex; justify-content: center; }
+.count-line { text-align: center; font-size: 17px; font-weight: 600; color: var(--fg2); }
+.count-line.urgent { color: var(--accent); }
+
+/* Calm Gold: flat navy or warm white, one gold accent, across every tab */
+.gold-backdrop { position: fixed; inset: 0; z-index: 0; background: #0f1b3d; }
+:root[data-theme="light"] .gold-backdrop { background: #faf6ec; }
+:root[data-look="gold"], :root[data-look="gold"][data-theme="dark"] { --accent: #d4b25a; --on-accent: #0f1b3d; }
+:root[data-look="gold"][data-theme="light"] { --accent: #8a6a14; --on-accent: #fff; }
+.style-gold .prayer-row { --tint: var(--accent) !important; --tint-soft: color-mix(in srgb, var(--accent) 14%, transparent) !important; --tint-line: color-mix(in srgb, var(--accent) 45%, transparent) !important; }
+.style-gold .prayer-list { background: transparent; box-shadow: none; border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
