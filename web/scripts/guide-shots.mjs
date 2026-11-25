@@ -43,8 +43,6 @@ const SHOTS = {
   look_sunPath: [{ ...home, style: 'sunPath' }, null, (p) => p.locator('button[aria-label^="Prayer screen style"]')],
   look_bands: [{ ...home, style: 'bands' }, null, (p) => p.locator('button[aria-label^="Prayer screen style"]')],
   look_simple: [{ ...home, style: 'simple' }, null, (p) => p.locator('button[aria-label^="Prayer screen style"]')],
-  look_light: [{ ...home, style: 'centre', appearance: 'dark' }, null, (p) => p.locator('button[aria-label^="Appearance"]')],
-  look_lightOn: [{ ...home, style: 'centre', appearance: 'light' }, null, (p) => p.locator('button[aria-label^="Appearance"]')],
   bell: [home, null, (p) => p.locator('button.bell').first()],
   alarm: [home, null, (p) => p.locator('button[aria-label^="Alerts and alarms"]')],
   alarm_sheet: [home, (p) => p.locator('button[aria-label^="Alerts and alarms"]').click(), (p) => p.locator('.sheet .mode-switch[aria-label="Fajr"]')],

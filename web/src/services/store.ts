@@ -36,7 +36,7 @@ export const TABS: Tab[] = ['today', 'qibla', 'falak', 'masjid', 'settings']
 
 export type GpsStatus = 'idle' | 'locating' | 'denied' | 'unavailable' | 'ok'
 
-/** Screenshot / demo mode, from the URL: ?demo&now=2026-10-25T00:49:00%2B08:00&style=list&appearance=dark&tab=today */
+/** Screenshot / demo mode, from the URL: ?demo&now=2026-10-25T00:49:00%2B08:00&style=centre&appearance=dark&tab=today */
 export interface Demo {
   now: number | null
   variant: 'home' | 'travel' | 'visitor' | 'makkah'

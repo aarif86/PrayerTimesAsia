@@ -120,6 +120,8 @@ export function movedFrom(p: Preferences): MovedSettings {
   const out: MovedSettings = { v: MOVE_VERSION }
   const o = out as unknown as Record<string, unknown>
   for (const k of SIMPLE_KEYS) if (p[k] !== DEFAULT_PREFS[k] && p[k] != null) o[k] = p[k]
+  // The phone apps do not have Calm Gold yet: send Centre Dial so their decode never meets an unknown look.
+  if (out.todayStyle === 'gold') out.todayStyle = 'centre'
   if (p.home) out.home = movedPlace(p.home)
   if (p.manualPlace) out.manualPlace = movedPlace(p.manualPlace)
   if (p.savedPlaces.length) out.savedPlaces = p.savedPlaces.map(movedPlace)

@@ -35,13 +35,8 @@ const NIGHT = '2026-10-25T00:49:00+08:00'
 const DAY = '2026-10-25T13:35:00+08:00'
 
 const shots = [
-  ['01-classic-night', { style: 'centre', appearance: 'dark', now: NIGHT }],
-  ['02-classic-day', { style: 'centre', appearance: 'system', now: DAY }],
-  ['03-classic-show-more', { style: 'centre', appearance: 'dark', now: NIGHT, more: '1' }],
   ['04-centre-night', { style: 'centre', appearance: 'dark', now: NIGHT }],
   ['05-centre-day', { style: 'centre', appearance: 'system', now: DAY }],
-  ['06-dial-night', { style: 'centre', appearance: 'dark', now: NIGHT }],
-  ['07-dial-day', { style: 'centre', appearance: 'system', now: DAY }],
   ['08-sunpath-night', { style: 'sunPath', appearance: 'dark', now: NIGHT }],
   ['09-sunpath-day', { style: 'sunPath', appearance: 'system', now: DAY }],
   ['09b-gold-night', { style: 'gold', appearance: 'dark', now: NIGHT }],
@@ -69,7 +64,7 @@ const shots = [
   ['24-source-sheet', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('.source-badge')],
   ['25-calendar-sheet', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('.day-nav-main')],
   ['26-places-sheet', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => { await p.click('.place-chip'); await p.fill('input[type=search]', 'ku') }],
-  ['27-style-menu', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Prayer screen style"]', { button: 'right' })],
+  ['27-style-menu', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Prayer screen style"]')],
   ['29-your-masjid-link', { style: 'centre', appearance: 'dark', now: NIGHT, masjid: 'link' }],
   ['30-jamaah-countdown', { style: 'centre', appearance: 'system', now: '2026-10-25T12:57:00+08:00', masjid: 'on' }],
   ['31-masjid-yours', { tab: 'masjid', appearance: 'dark', now: NIGHT, masjid: 'on' }],
