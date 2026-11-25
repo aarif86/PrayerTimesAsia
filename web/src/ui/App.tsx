@@ -30,6 +30,8 @@ const FalakExpertSheet = later(() => import('./Falak').then((m) => m.FalakExpert
 const ShadowStepsSheet = later(() => import('./FalakShadow').then((m) => m.ShadowStepsSheet))
 const ShadowCamera = later(() => import('./FalakShadow').then((m) => m.ShadowCamera))
 const TrackerSheet = later(() => import('./Tracker').then((m) => m.TrackerSheet))
+const LogPrayerSheet = later(() => import('./LogSheets').then((m) => m.LogPrayerSheet))
+const CatchUpSheet = later(() => import('./LogSheets').then((m) => m.CatchUpSheet))
 const MasjidLinkSheet = later(() => import('./MyMasjid').then((m) => m.MasjidLinkSheet))
 const MoveInSheet = later(() => import('./Move').then((m) => m.MoveInSheet))
 const MoveOutSheet = later(() => import('./Move').then((m) => m.MoveOutSheet))
@@ -215,6 +217,8 @@ export function App() {
       {sheet?.kind === 'makers' && <MakersSheet placement={sheet.placement} />}
       {sheet?.kind === 'journey' && <JourneySheet />}
       {sheet?.kind === 'tracker' && <TrackerSheet />}
+      {sheet?.kind === 'log-prayer' && <LogPrayerSheet prayer={sheet.prayer} t={sheet.t} />}
+      {sheet?.kind === 'log-catchup' && <CatchUpSheet />}
       {sheet?.kind === 'ramadan' && <RamadanSheet />}
       {sheet?.kind === 'wakeup' && <WakeUpSheet start={sheet.prayer} view={sheet.view} />}
       {sheet?.kind === 'level' && <LevelSheet />}

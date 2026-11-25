@@ -614,6 +614,29 @@ class AppStore {
     })
   }
 
+  /**
+   * Log a prayer from the tap-circle sheet or the catch-up page. `at` is when it was prayed,
+   * and we only note the time (no early or late). null takes the tick away.
+   */
+  setPrayed(p: Prayer, ms: number, at: number | null): void {
+    const key = this.dayKey(ms)
+    this.update((prefs) => {
+      const set = new Set(prefs.prayedLog[key] ?? [])
+      const times = (prefs.prayedAt[key] ??= {})
+      if (at === null) { set.delete(p); delete times[p] } else { set.add(p); times[p] = at }
+      if (!Object.keys(times).length) delete prefs.prayedAt[key]
+      if (set.size) prefs.prayedLog[key] = [...set]; else delete prefs.prayedLog[key]
+    })
+  }
+
+  /** The instant of "hh:mm" on the same local day as `ms`, in the shown place's time zone. */
+  timeOnDayOf(ms: number, hhmm: string): number | null {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm)
+    if (!m) return null
+    const [y, mo, d] = this.dayKey(ms).split('-').map(Number)
+    return zonedTime(y, mo, d, Number(m[1]), Number(m[2]), 0, this.timeZone)
+  }
+
   isExcused(ms: number): boolean { return this.isExcusedKey(this.dayKey(ms)) }
 
   /** Marked excused on its own, or inside a pause (from the day it began; days ahead aren't counted yet). */

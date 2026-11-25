@@ -11,6 +11,9 @@ import { playAzan } from './azan'
 import { playAlarm } from './alarmSound'
 import { hadithAlertLine, type HadithId } from '../core/hadith'
 import { alertLine } from '../core/alertLines'
+import { BLESSED_NAME } from '../core/blessed'
+import { EXTRA_TIMES, extraMode } from '../core/extraAlerts'
+import { blessedNote } from '../core/appWords'
 import { store } from './store'
 import { tr } from '../core/appWords'
 import { ramadanWord } from '../core/ramadanWords'
@@ -151,6 +154,11 @@ export function upcomingAlerts(now: number): Alert[] {
         at, silent: isSilent(at, 'dhuhr', tz),
       })
     }
+    for (const [b, at] of store.blessed(day)) {
+      if (!(EXTRA_TIMES as readonly string[]).includes(b) || extraMode(prefs, b as 'dhuha') !== 'notify') continue
+      const name = BLESSED_NAME[b]
+      out.push({ id: `${day.year}-${day.month}-${day.day}-${b}`, title: `${name} · ${store.formatted(at)}`, body: blessedNote(b), at, silent: isSilent(at, b === 'dhuha' ? 'dhuhr' : 'isha', tz) })
+    }
     if (!onTime && early <= 0) continue
     for (const prayer of PRAYERS) {
       if (!prefs.notifyPrayers.includes(prayer)) continue
@@ -193,7 +201,7 @@ export interface WakeUp { id: string; title: string; body: string; at: number; s
 
 /** Is any alarm on: Subuh, sahur or one of the other prayers? */
 export function anyAlarm(p = store.prefs): boolean {
-  return !!(p.wakeUp || p.sahurAlarm || ALARM_PRAYERS.some((x) => p[ALARM_KEY[x]]) || (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0))
+  return !!(p.wakeUp || p.sahurAlarm || EXTRA_TIMES.some((b) => extraMode(p, b) === 'alarm') || ALARM_PRAYERS.some((x) => p[ALARM_KEY[x]]) || (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0))
 }
 
 /** Does this prayer have an alarm at the very start, which stands in for its alert? */
@@ -237,6 +245,12 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
         body: prayer === 'isha' ? tr('notify.beganAt', { name, time: store.formatted(begins), place: place.name }) : tr('notify.openUntil', { name, time: store.formatted(end), place: place.name }),
         at: prayerAlarmTime(t, begins, end), sahur: false, prayer,
       })
+    }
+    // Dhuha, the middle of the night and the last third, when set to Alarm.
+    for (const [b, at] of store.blessed(day)) {
+      if (!(EXTRA_TIMES as readonly string[]).includes(b) || extraMode(p, b as 'dhuha') !== 'alarm') continue
+      const name = BLESSED_NAME[b]
+      out.push({ id: `${key}-${b}-alarm`, title: tr('notify.timeFor', { name }), body: `${blessedNote(b)} · ${store.formatted(at)} · ${place.name}`, at, sahur: false })
     }
     // Leave for Jumaat, when it rings as an alarm.
     if (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0 && store.isFriday(day.times.dhuhr)) {
