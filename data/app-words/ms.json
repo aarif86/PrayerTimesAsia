@@ -1183,5 +1183,14 @@
   "method.note.algeria": "Kaedah Kementerian Hal Ehwal Agama dan Wakaf Algeria.",
   "method.note.tunisia": "Kaedah Kementerian Hal Ehwal Agama Tunisia.",
   "method.note.morocco": "Kaedah Kementerian Habous dan Hal Ehwal Islam Maghribi.",
-  "method.note.jordan": "Kaedah Kementerian Wakaf dan Hal Ehwal Islam Jordan. Turut digunakan di Palestin."
+  "method.note.jordan": "Kaedah Kementerian Wakaf dan Hal Ehwal Islam Jordan. Turut digunakan di Palestin.",
+  "menu.appearance": "Paparan",
+  "menu.auto": "Auto",
+  "menu.light": "Cerah",
+  "menu.dark": "Gelap",
+  "menu.lookAndFeel": "Rupa dan rasa",
+  "menu.streak": "Rentetan solat",
+  "menu.days": "{n} hari",
+  "menu.days_one": "{n} hari",
+  "menu.back": "Rupa dan rasa"
 }

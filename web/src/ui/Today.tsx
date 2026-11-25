@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
-  AlarmClock, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck, Ellipsis, House,
-  CloudMoon, Contrast, Droplet, Pause, Star, MapPin, Navigation, Smartphone, Sparkles, Sun, Moon, Undo2, Utensils, X,
+  AlarmClock, BellOff, BellRing, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck, Ellipsis,
+  CloudMoon, Globe, Heart, Palette, Star, MapPin, Navigation, Smartphone, Sparkles, Sun, Undo2, Utensils, X,
 } from 'lucide-preact'
 import { BLESSED_NAME, type BlessedTime } from '../core/blessed'
 import type { PrayerDay } from '../core/engine'
@@ -13,21 +13,21 @@ import { flag } from '../core/regions'
 import { noonDaysAfter } from '../core/tz'
 import { nudgeAt } from '../core/window'
 import { alertSupport, requestPermission } from '../services/notifications'
-import { APPEARANCES, TODAY_STYLES } from '../services/prefs'
+import { TODAY_STYLES } from '../services/prefs'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { cycleAlert, ModeIcon, modeWord, WakeChip } from './WakeUp'
 import { alertMode } from '../core/alertMode'
-import { fmtDate, openSheet, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
+import { fmtDate, openSheet, Segmented, useDayRequests, short, SourceBadge, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
 import { DayDial, SunPath, tint } from './Dials'
-import { cardOfTheDay } from '../core/communityCards'
-import { MakersCard } from './Makers'
+import { cardOfTheDay, cardURL } from '../core/communityCards'
+import { MakersCard, PICKS_NAME } from './Makers'
 import { appBannerShownByBrowser, isStandalone, phoneAppOffer } from './pwa'
 import { TabJourney } from './icons'
 import { SeasonCard } from './Ramadan'
 import { Hadith } from './Hadith'
-import { appearanceLabel, blessedNote, styleLabel, tr } from '../core/appWords'
+import { blessedNote, styleLabel, tr } from '../core/appWords'
 
 type Moment = { prayer: Prayer; time: number } | null
 
@@ -106,61 +106,69 @@ interface Ctx {
 /** The menu: pick a look, change light or dark, go to the website. */
 function MenuButton({ c }: { c: Ctx }) {
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
+  const [looks, setLooks] = useState(false)
+  const card = store.prefs.showOffers ? cardOfTheDay(store.offerCountry, new Date(c.now)) : null
   const ref = useRef<HTMLButtonElement>(null)
   const a = store.prefs.appearance
   const bandsLook = store.prefs.todayStyle === 'bands'
   const open = () => {
     const r = ref.current!.getBoundingClientRect()
-    setMenu({ x: Math.max(12, Math.min(r.right - 230, window.innerWidth - 242)), y: r.bottom + 8 })
+    setMenu({ x: Math.max(12, Math.min(r.right - 262, window.innerWidth - 274)), y: r.bottom + 8 })
   }
   const pick = (style: (typeof TODAY_STYLES)[number]) => {
     store.update((p) => { p.todayStyle = style })
     c.showToast(styleLabel(style))
   }
-  const AIcon = a === 'system' ? Contrast : a === 'light' ? Sun : Moon
   return (
     <>
       <button ref={ref} class="round-btn" aria-haspopup="menu" aria-expanded={!!menu} aria-label={tr('today.styleButton', { name: styleLabel(store.prefs.todayStyle) })} onClick={open}>
         <Ellipsis size={18} strokeWidth={2.4} />
       </button>
       {menu && (
-        <div class="sheet-backdrop" style={{ background: 'transparent' }} onClick={() => setMenu(null)}>
-          <div class="menu" style={{ left: `${menu.x}px`, top: `${menu.y}px` }} role="menu">
-            {TODAY_STYLES.map((st) => (
-              <button role="menuitem" onClick={() => { setMenu(null); pick(st) }}>
-                <span style={{ width: '16px' }}>{st === store.prefs.todayStyle && <CircleCheck size={16} />}</span>
-                {styleLabel(st)}
-              </button>
-            ))}
-            {!bandsLook && (
-              <button role="menuitem" onClick={() => {
-                const next = APPEARANCES[(APPEARANCES.indexOf(a) + 1) % APPEARANCES.length]
-                store.update((p) => { p.appearance = next })
-                setMenu(null)
-                c.showToast(next === 'system' ? tr('today.followsSky') : appearanceLabel(next))
-              }}>
-                <AIcon size={16} />{tr('today.appearanceButton', { name: appearanceLabel(a) })}
-              </button>
-            )}
-            {!isStandalone() && (
-              <a role="menuitem" class="menu-link" href="../"><House size={16} />{tr('app.websiteHome')}</a>
+        <div class="sheet-backdrop" style={{ background: 'rgba(0,0,0,0.28)' }} onClick={() => { setMenu(null); setLooks(false) }}>
+          <div class="menu" style={{ left: `${menu.x}px`, top: `${menu.y}px` }} role="menu" onClick={(e) => e.stopPropagation()}>
+            {looks ? (
+              <>
+                <button role="menuitem" class="mi" onClick={() => setLooks(false)}><ChevronLeft size={20} /><span>{tr('menu.back')}</span></button>
+                {TODAY_STYLES.map((st) => (
+                  <button role="menuitemradio" aria-checked={st === store.prefs.todayStyle} class="mi" onClick={() => { setMenu(null); setLooks(false); pick(st) }}>
+                    <span class="mi-tick">{st === store.prefs.todayStyle && <CircleCheck size={20} />}</span>
+                    <span>{styleLabel(st)}</span>
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                {!bandsLook && (
+                  <div class="mi mi-block">
+                    <div class="mi-cap">{tr('menu.appearance').toLocaleUpperCase()}</div>
+                    <Segmented value={a} onChange={(v) => store.update((p) => { p.appearance = v })}
+                      options={[{ value: 'system', label: tr('menu.auto') }, { value: 'light', label: tr('menu.light') }, { value: 'dark', label: tr('menu.dark') }]} />
+                  </div>
+                )}
+                <button role="menuitem" class="mi" onClick={() => setLooks(true)}>
+                  <Palette size={20} /><span>{tr('menu.lookAndFeel')}</span><em>{styleLabel(store.prefs.todayStyle)}</em>
+                </button>
+                {store.prefs.trackerEnabled && (
+                  <button role="menuitem" class="mi" onClick={() => { setMenu(null); openSheet({ kind: 'tracker' }) }}>
+                    <CircleCheck size={20} /><span>{tr('menu.streak')}</span><em>{tr('menu.days', { n: store.streak(c.now) })}</em>
+                  </button>
+                )}
+                {!isStandalone() && (
+                  <a role="menuitem" class="mi" href="../"><Globe size={20} /><span>prayertimes.asia</span><em>↗</em></a>
+                )}
+                {card && (
+                  <a role="menuitem" class="mi mi-pick" href={cardURL(card, 'menu')} target="_blank" rel="noopener noreferrer sponsored"
+                    onClick={() => store.countCard('Card.tapped', { id: card.id, kind: card.kind, placement: 'menu' })}>
+                    <Heart size={20} /><span><small>{PICKS_NAME.toLocaleUpperCase()}</small>{card.title}</span><em>↗</em>
+                  </a>
+                )}
+              </>
             )}
           </div>
         </div>
       )}
     </>
-  )
-}
-
-function StreakChip({ now }: { now: number }) {
-  const excused = store.isExcused(now)
-  const paused = store.trackerPaused
-  return (
-    <button class="streak-chip" onClick={() => openSheet({ kind: 'tracker' })}
-      aria-label={tr('today.trackerButton', { n: store.streak(now), extra: paused ? tr('today.trackerPaused') : excused ? tr('today.trackerExcused') : '' })}>
-      {paused ? <Pause size={15} /> : excused ? <Droplet size={15} fill="currentColor" /> : <CircleCheck size={16} strokeWidth={2.4} />}
-      <span class="mono">{store.streak(now)}</span>
-    </button>
   )
 }
 
@@ -181,7 +189,6 @@ function Controls({ c }: { c: Ctx }) {
   return (
     <>
       <JourneyButton now={c.now} />
-      {store.prefs.trackerEnabled && <StreakChip now={c.now} />}
       <WakeChip now={c.now} open={() => openSheet({ kind: 'wakeup' })} />
       <MenuButton c={c} />
     </>
