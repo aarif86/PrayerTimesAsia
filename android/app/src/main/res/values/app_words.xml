@@ -1186,4 +1186,13 @@
     <string name="method_note_tunisia" formatted="false">The method of Tunisia\'s Ministry of Religious Affairs.</string>
     <string name="method_note_morocco" formatted="false">The method of Morocco\'s Ministry of Habous and Islamic Affairs.</string>
     <string name="method_note_jordan" formatted="false">The method of Jordan\'s Ministry of Awqaf and Islamic Affairs. Also used in Palestine.</string>
+    <string name="menu_appearance" formatted="false">Appearance</string>
+    <string name="menu_auto" formatted="false">Auto</string>
+    <string name="menu_light" formatted="false">Light</string>
+    <string name="menu_dark" formatted="false">Dark</string>
+    <string name="menu_lookAndFeel" formatted="false">Look and feel</string>
+    <string name="menu_streak" formatted="false">Prayer streak</string>
+    <string name="menu_days" formatted="false">{n} days</string>
+    <string name="menu_days_one" formatted="false">{n} day</string>
+    <string name="menu_back" formatted="false">Look and feel</string>
 </resources>

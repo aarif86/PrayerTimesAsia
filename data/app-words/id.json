@@ -1183,5 +1183,14 @@
   "method.note.algeria": "Metode Kementerian Urusan Agama dan Wakaf Aljazair.",
   "method.note.tunisia": "Metode Kementerian Urusan Agama Tunisia.",
   "method.note.morocco": "Metode Kementerian Wakaf dan Urusan Islam Maroko.",
-  "method.note.jordan": "Metode Kementerian Wakaf dan Urusan Islam Yordania. Juga dipakai di Palestina."
+  "method.note.jordan": "Metode Kementerian Wakaf dan Urusan Islam Yordania. Juga dipakai di Palestina.",
+  "menu.appearance": "Tampilan",
+  "menu.auto": "Otomatis",
+  "menu.light": "Terang",
+  "menu.dark": "Gelap",
+  "menu.lookAndFeel": "Gaya tampilan",
+  "menu.streak": "Rentetan salat",
+  "menu.days": "{n} hari",
+  "menu.days_one": "{n} hari",
+  "menu.back": "Gaya tampilan"
 }

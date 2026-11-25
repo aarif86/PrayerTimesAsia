@@ -1186,4 +1186,13 @@
     <string name="method_note_tunisia" formatted="false">Metode Kementerian Urusan Agama Tunisia.</string>
     <string name="method_note_morocco" formatted="false">Metode Kementerian Wakaf dan Urusan Islam Maroko.</string>
     <string name="method_note_jordan" formatted="false">Metode Kementerian Wakaf dan Urusan Islam Yordania. Juga dipakai di Palestina.</string>
+    <string name="menu_appearance" formatted="false">Tampilan</string>
+    <string name="menu_auto" formatted="false">Otomatis</string>
+    <string name="menu_light" formatted="false">Terang</string>
+    <string name="menu_dark" formatted="false">Gelap</string>
+    <string name="menu_lookAndFeel" formatted="false">Gaya tampilan</string>
+    <string name="menu_streak" formatted="false">Rentetan salat</string>
+    <string name="menu_days" formatted="false">{n} hari</string>
+    <string name="menu_days_one" formatted="false">{n} hari</string>
+    <string name="menu_back" formatted="false">Gaya tampilan</string>
 </resources>
