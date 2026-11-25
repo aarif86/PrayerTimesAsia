@@ -151,7 +151,7 @@ function MenuButton({ c }: { c: Ctx }) {
                 </button>
                 {store.prefs.trackerEnabled && (
                   <button role="menuitem" class="mi" onClick={() => { setMenu(null); openSheet({ kind: 'tracker' }) }}>
-                    <CircleCheck size={20} /><span>{tr('menu.streak')}</span><em>{tr('menu.days', { n: store.streak(c.now) })}</em>
+                    <CircleCheck size={20} /><span>{tr('menu.streak')}</span><em>{store.trackerPaused ? tr('today.trackerPaused').replace(/^,\s*/, '') : store.isExcused(c.now) ? tr('today.trackerExcused').replace(/^,\s*/, '') : tr('menu.days', { n: store.streak(c.now) })}</em>
                   </button>
                 )}
                 {!isStandalone() && (
@@ -160,7 +160,7 @@ function MenuButton({ c }: { c: Ctx }) {
                 {card && (
                   <a role="menuitem" class="mi mi-pick" href={cardURL(card, 'menu')} target="_blank" rel="noopener noreferrer sponsored"
                     onClick={() => store.countCard('Card.tapped', { id: card.id, kind: card.kind, placement: 'menu' })}>
-                    <Heart size={20} /><span><small>{PICKS_NAME.toLocaleUpperCase()}</small>{card.title}</span><em>↗</em>
+                    <Heart size={20} /><span><small>{(card.kind === 'sponsor' ? `${PICKS_NAME} · ${tr('makers.sponsored')}` : PICKS_NAME).toLocaleUpperCase()}</small>{card.title}</span><em>↗</em>
                   </a>
                 )}
               </>
