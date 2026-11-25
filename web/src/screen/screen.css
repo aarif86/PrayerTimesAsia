@@ -17,8 +17,8 @@
   --grade-c: rgb(255, 209, 115);
   /* The app's dark palette. */
   --fg: #fff;
-  --fg2: rgba(235, 235, 245, 0.62);
-  --fg3: rgba(235, 235, 245, 0.35);
+  --fg2: rgba(235, 235, 245, 0.78);
+  --fg3: rgba(235, 235, 245, 0.6);
   --fill: rgba(255, 255, 255, 0.10);
   --stroke: rgba(255, 255, 255, 0.12);
   --line: rgba(255, 255, 255, 0.12);
@@ -99,7 +99,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-title p { margin: calc(var(--u) * 0.9) 0 0; font-size: min(calc(var(--u) * 3), var(--tcap)); color: var(--fg2); }
 .scr-clock, .scr-t, .scr-big { font-family: var(--font-display); }
 .scr-clock { font-size: calc(var(--u) * 7.4); font-weight: 700; white-space: nowrap; }
-.scr-clock small, .scr-t small { font-size: 0.42em; font-weight: 700; margin-left: 0.2em; opacity: 0.7; letter-spacing: 0.02em; }
+.scr-clock small, .scr-t small { font-size: 0.42em; font-weight: 700; margin-left: 0.2em; opacity: 0.9; letter-spacing: 0.02em; }
 
 .scr-hero { display: grid; align-content: center; justify-items: center; text-align: center; gap: calc(var(--u) * 1.2); min-height: 0; }
 .scr-kicker { margin: 0; font-size: calc(var(--u) * 3.6); font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; }
@@ -122,7 +122,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .scr-bar { position: absolute; left: 22%; right: 22%; top: calc(var(--u) * -0.35); height: calc(var(--u) * 0.6); border-radius: 99px; background: var(--tint); }
 .scr-cell.on { background: rgba(255, 255, 255, 0.14); background: color-mix(in srgb, var(--tint) 16%, var(--glass)); border-color: color-mix(in srgb, var(--tint) 45%, transparent); }
-.scr-cell.passed { opacity: 0.55; }
+.scr-cell.passed { opacity: 0.72; }
 .scr-name { font-family: var(--font), var(--arabic); font-size: calc(var(--u) * 3.6); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .scr-name em { font-style: normal; color: var(--gold); }
 .scr-tag { font-size: min(calc(var(--u) * 2.3), var(--tcap)); font-weight: 800; color: var(--tint); text-transform: uppercase; letter-spacing: 0.06em; min-height: 1.1em; white-space: nowrap; }
@@ -176,10 +176,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Light: the app's light appearance (the bright sky with sun and clouds), for any design. */
 .scr-light {
-  --fg: #111114; --fg2: rgba(60, 60, 67, 0.66); --fg3: rgba(60, 60, 67, 0.36);
+  --fg: #111114; --fg2: rgba(60, 60, 67, 0.82); --fg3: rgba(60, 60, 67, 0.74);
   --fill: rgba(0, 0, 0, 0.07); --stroke: rgba(0, 0, 0, 0.08); --line: rgba(0, 0, 0, 0.08);
   --glass: rgba(255, 255, 255, 0.46); --glass-strong: rgba(255, 255, 255, 0.78);
   --accent: rgb(232, 140, 87); --gold: rgb(184, 128, 10); --bg: #dfe9f3;
+  /* Deeper prayer colours, so the next prayer's name and time read on light backgrounds. */
+  --t-fajr: rgb(45, 78, 160); --t-sunrise: rgb(125, 86, 0); --t-dhuhr: rgb(150, 80, 0); --t-asr: rgb(158, 72, 10); --t-maghrib: rgb(176, 48, 40); --t-isha: rgb(86, 70, 170);
   color-scheme: light;
 }
 .scr-light .scr-cell.on { background: rgba(255, 255, 255, 0.7); background: color-mix(in srgb, var(--tint) 16%, rgba(255, 255, 255, 0.6)); }
@@ -241,14 +243,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   border: 0; border-radius: 0; color: #fff; background: var(--band); -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 .scr-look-bands .p-fajr { --band: rgb(33, 110, 92); }
-.scr-look-bands .p-sunrise { --band: rgb(131, 154, 75); }
-.scr-look-bands .p-dhuhr { --band: rgb(179, 141, 27); }
-.scr-look-bands .p-asr { --band: rgb(220, 119, 36); }
-.scr-look-bands .p-maghrib { --band: rgb(224, 110, 84); }
-.scr-look-bands .p-isha { --band: rgb(219, 79, 89); }
+.scr-look-bands .p-sunrise { --band: rgb(100, 124, 44); }
+.scr-look-bands .p-dhuhr { --band: rgb(140, 106, 10); }
+.scr-look-bands .p-asr { --band: rgb(178, 88, 18); }
+.scr-look-bands .p-maghrib { --band: rgb(196, 74, 56); }
+.scr-look-bands .p-isha { --band: rgb(192, 52, 64); }
 .scr-look-bands .scr-imsak { --band: rgb(75, 75, 82); }
 .scr-look-bands .scr-cell.on { background: var(--band); box-shadow: inset calc(var(--u) * 1) 0 0 #fff; }
-.scr-look-bands .scr-cell.passed { opacity: 1; filter: saturate(0.55) brightness(0.62); }
+.scr-look-bands .scr-cell.passed { opacity: 1; filter: saturate(0.7) brightness(0.8); }
 .scr-look-bands .scr-bar { display: none; }
 .scr-look-bands .scr-name { grid-area: name; font-size: calc(var(--u) * 4.6); font-weight: 700; }
 .scr-look-bands .scr-tag { grid-area: tag; color: #fff; opacity: 0.9; font-size: min(calc(var(--u) * 2.4), var(--tcap)); min-height: 0; }
@@ -258,7 +260,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-look-bands .scr-syuruk .scr-t, .scr-look-bands .scr-imsak .scr-t { font-size: min(calc(var(--u) * 6), var(--tcap)); }
 
 /* Bands in Light: a warm paper background, the coloured bands stay. */
-.scr-look-bands.scr-light { --bg: #efeae3; --glass: #ffffff; --fill: rgba(0, 0, 0, 0.07); --fg3: rgba(60, 60, 67, 0.6); }
+.scr-look-bands.scr-light { --bg: #efeae3; --glass: #ffffff; --fill: rgba(0, 0, 0, 0.07); --fg3: rgba(60, 60, 67, 0.74); }
 .scr-look-bands.scr-light .scr-next-name { color: var(--fg); }
 
 /* Simple: no sky, no glass. A plain background, the countdown, and the times in flat rows. */
@@ -283,7 +285,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-dm { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1.05;
   border-radius: 16px; border: 1.5px solid transparent; }
 .scr-dm.on { background: color-mix(in srgb, var(--tint) 18%, transparent); border-color: color-mix(in srgb, var(--tint) 55%, transparent); }
-.scr-dm.passed { opacity: 0.55; }
+.scr-dm.passed { opacity: 0.72; }
 .scr-dm-name { font-size: 21px; font-weight: 700; white-space: nowrap; font-variant-numeric: normal; }
 .scr-dm.on .scr-dm-name { color: var(--tint); }
 .scr-dm .scr-t { font-size: 33px; font-weight: 700; white-space: nowrap; }
