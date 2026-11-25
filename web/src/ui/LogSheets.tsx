@@ -30,7 +30,7 @@ function Choices({ p, t, done, chips }: { p: Prayer; t: number; done: () => void
         <div class="log-pick">
           <label class="caption secondary" for={`log-time-${p}`}>{tr('log.timeLabel')}</label>
           <input id={`log-time-${p}`} type="time" value={value} onInput={(e) => setValue((e.target as HTMLInputElement).value)} />
-          <button class="primary-btn" onClick={() => { const at = s.timeOnDayOf(t, value); if (at !== null) save(Math.min(at, now)) }}>{tr('log.save')}</button>
+          <button class="primary-btn" onClick={() => { let at = s.timeOnDayOf(t, value); if (at === null) return; if (at < t) at += 86_400_000 /* Isha prayed after midnight */; save(Math.min(at, now)) }}>{tr('log.save')}</button>
         </div>
       ) : row(tr('log.pick'), () => setPicking(true), false, true)}
     </div>

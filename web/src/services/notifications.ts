@@ -156,6 +156,8 @@ export function upcomingAlerts(now: number): Alert[] {
     }
     for (const [b, at] of store.blessed(day)) {
       if (!(EXTRA_TIMES as readonly string[]).includes(b) || extraMode(prefs, b as 'dhuha') !== 'notify') continue
+      // The last ten nights already have their own qiyam alert at this time: one alert, not two.
+      if (b === 'lastThird' && prefs.qiyamAlert && store.season(day.times.dhuhr).lastTen) continue
       const name = BLESSED_NAME[b]
       out.push({ id: `${day.year}-${day.month}-${day.day}-${b}`, title: `${name} · ${store.formatted(at)}`, body: blessedNote(b), at, silent: isSilent(at, b === 'dhuha' ? 'dhuhr' : 'isha', tz) })
     }

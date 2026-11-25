@@ -319,6 +319,10 @@ export function decodePreferences(raw: unknown): Preferences {
   if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
   // One Off, Notify or Alarm per prayer in Alerts and alarms (core/alertMode.ts).
   unifyAlerts(out)
+  // Dhuha and night time alerts: keep only the three known times with Notify or Alarm.
+  const extra: ExtraAlerts = {}
+  for (const b of ['dhuha', 'midnight', 'lastThird'] as const) { const m = out.extraAlerts?.[b]; if (m === 'notify' || m === 'alarm') extra[b] = m }
+  out.extraAlerts = extra
   return out
 }
 
