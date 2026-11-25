@@ -106,10 +106,7 @@ export function DayDial(props: {
   size: number; now: number; day: PrayerDay; nextFajr: number; tz: string
   /** First small line in the ring: "Next prayer", or the name of the prayer we are in. */
   kicker: string; countdown: string; label: string; ariaLabel: string; urgent?: boolean
-  /** Calm Gold: a thin grey ring, the day so far in gold from midnight to now (v12 mockup). */
-  gold?: boolean
 }) {
-  if (props.gold) return <GoldDial {...props} />
   const { size, now, day, nextFajr, tz } = props
   const midnight = useMemo(() => startOfDay(day.times.dhuhr, tz), [day, tz])
   const stops = useMemo(() => skyStops(day, midnight), [day, midnight])
@@ -145,7 +142,7 @@ export function DayDial(props: {
 }
 
 /** Calm Gold's dial: one thin ring, the hours since midnight drawn in gold, a white dot at now. */
-function GoldDial(props: { size: number; now: number; day: PrayerDay; tz: string; kicker: string; countdown: string; label: string; ariaLabel: string; urgent?: boolean }) {
+export function GoldDial(props: { size: number; now: number; day: PrayerDay; tz: string; kicker: string; countdown: string; label: string; ariaLabel: string; urgent?: boolean }) {
   const { size, now, day, tz } = props
   const midnight = useMemo(() => startOfDay(day.times.dhuhr, tz), [day, tz])
   const k = size / 214

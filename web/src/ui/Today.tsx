@@ -23,7 +23,7 @@ import { cycleAlert, ModeIcon, modeWord, WakeChip } from './WakeUp'
 import { alertMode } from '../core/alertMode'
 import { fmtDate, openSheet, Segmented, useDayRequests, short, SourceLine, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
-import { DayDial, SunPath, tint } from './Dials'
+import { DayDial, GoldDial, SunPath, tint } from './Dials'
 import { cardOfTheDay, cardURL } from '../core/communityCards'
 import { MakersCard, PICKS_NAME } from './Makers'
 import { appBannerShownByBrowser, isStandalone, phoneAppOffer } from './pwa'
@@ -518,6 +518,7 @@ function SmallDial({ c, size, gold }: { c: Ctx; size: number; gold?: boolean }) 
   const top = lead(current, next)
   if (!top || !tomorrow) return <div style={{ width: `${size}px`, height: `${size}px` }} />
   const t = countdown(now)
+  const Dial = gold ? GoldDial : DayDial
   const name = store.name(top.prayer, top.time)
   // In a prayer's time (not yet ticked): the prayer's name, the time left. Otherwise: the next prayer and the wait.
   const inPrayer = !t.toNext
@@ -525,8 +526,8 @@ function SmallDial({ c, size, gold }: { c: Ctx; size: number; gold?: boolean }) 
   const count = inPrayer ? t.count : t.bare
   const label = inPrayer ? t.label : tr('today.untilName', { name: next ? store.name(next.prayer, next.time) : name })
   return (
-    <DayDial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}
-      kicker={kicker} countdown={count} label={label} urgent={t.urgent} gold={gold}
+    <Dial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}
+      kicker={kicker} countdown={count} label={label} urgent={t.urgent}
       ariaLabel={inPrayer ? `${tr('common.now')} ${name}. ${count} ${label}.` : tr('today.nextAria', { name: next ? store.name(next.prayer, next.time) : name, time: count })} />
   )
 }
@@ -744,7 +745,7 @@ function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: numb
   const local = store.localName(p, t)
   return (
     <button class={`band ${isCurrent ? 'current' : ''}`} style={{ background: BAND[p] }}
-      aria-label={`${store.name(p, t)}, ${store.formatted(t)}${isCurrent ? tr('today.isNow') : ''}${prayed ? tr('today.prayed') : ''}`}
+      aria-label={`${store.name(p, t)}, ${store.formatted(t)}${isCurrent ? tr('today.isNow') : ''}${prayed ? tr('today.prayed') : ''}, ${modeWord(mode)}`}
       onClick={() => (trackable ? openSheet({ kind: 'log-prayer', prayer: p, t }) : toggleNotify(p))}>
       <span class="band-names">
         <span class="row" style={{ gap: '8px', alignItems: 'baseline' }}>

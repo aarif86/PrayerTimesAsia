@@ -995,6 +995,9 @@ html[data-large-text] .pname { font-size: 20px; }
 .style-gold .v12 .prayer-list.slim .blessed-row { padding-left: 18px; }
 .style-gold .v12 .prayer-row .tick { background: var(--gold-fill); color: var(--gold-on); }
 .style-gold .v12 .prayer-row .bell-alarm { color: var(--gold-fill); }
+/* On white, a deeper gold for the small icons and the dot so they stay visible (3:1). */
+:root[data-theme="light"] .style-gold .v12 .prayer-row .bell-alarm { color: #A87A12; }
+:root[data-theme="light"] .style-gold .v12 .prayer-list.slim .prayer-row.lit .bar { background: #A87A12; }
 
 /* ---------- Colour Bands rebuilt to the v12 mockup (Prayer screen) ---------- */
 .bands-backdrop { background: #232326; }
@@ -1011,7 +1014,6 @@ html[data-large-text] .pname { font-size: 20px; }
 /* One line date between two hairlines */
 .bands-page.v12 .bands-date, :root[data-theme="light"] .bands-page.v12 .bands-date { background: transparent; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); font-size: 15px; padding: 0 4px; }
 .bands-page.v12 .bands-date > button:first-child, .bands-page.v12 .bands-date > button:last-child { width: 44px; height: 44px; color: var(--fg2); }
-.bands-page.v12 .bands-date-main { flex-wrap: nowrap; overflow: hidden; }
 /* Bands: 26 point names, 32 point times, tick, in 3h 52m and the bell on every band */
 .bands-page.v12 .band { min-height: 60px; padding: 0 20px 0 24px; gap: 4px; }
 .bands-page.v12 .band.current::before { display: none; }
