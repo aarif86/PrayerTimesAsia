@@ -946,3 +946,4 @@ html[data-large-text] .pname { font-size: 20px; }
 .tabbar button[aria-current="page"] svg { fill: color-mix(in srgb, currentColor 18%, transparent); }
 .centre-page .prayer-list.slim .in-tag { color: var(--accent) !important; }
 :root[data-theme="light"] .tabbar button[aria-current="page"] { color: color-mix(in srgb, var(--accent) 68%, #000); }
+.centre-page .prayer-list.slim .prayer-row.current { background: color-mix(in srgb, var(--accent) 12%, transparent); }
