@@ -487,7 +487,8 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap }: { p: Prayer; t: n
         <div class="name-line">
           <span class="pname">{store.name(p, t)}</span>
           {local && <span class="local" aria-label={tr('today.calledHere', { name: local })}>{local}</span>}
-          {prayed && <CheckCircle2 size={16} class="check" fill="var(--green)" color="var(--bg-check, #fff)" />}
+          {prayed && <CheckCircle2 size={16} class="check" fill="var(--accent)" color="var(--bg-check, #fff)" />}
+          {prayed && <PrayedTime store={store} p={p} t={t} />}
         </div>
         {isCurrent && <div class="now-tag">{tr('today.now')}</div>}
         {!isCurrent && next && <div class="in-tag mono">{tr('today.inTime', { time: short(next.time - now) })}</div>}
@@ -634,7 +635,7 @@ function SimplePage({ c }: { c: Ctx }) {
               onClick={() => trackable && store.togglePrayed(p, time)}>
               <span class="simple-name">{store.name(p, time)}</span>
               <span class="simple-time mono">{store.formatted(time)}</span>
-              {trackable && (prayed ? <CheckCircle2 size={30} class="accent" /> : <span class="simple-tick" />)}
+              {trackable && (prayed ? <><PrayedTime store={store} p={p} t={time} /><CheckCircle2 size={30} class="accent" /></> : <span class="simple-tick" />)}
             </button>
           )
         })}
@@ -806,7 +807,8 @@ function DialPrayerLabel({ p, t, now, size, day, isCurrent }: { p: Prayer; t: nu
       onClick={() => (trackable ? store.togglePrayed(p, t) : toggleNotify(p))}>
       <span class="dm-name" style={{ fontSize: `${size * 0.034}px`, fontWeight: isCurrent ? 700 : 600 }}>
         {name}
-        {prayed && <CheckCircle2 size={size * 0.03} fill="var(--green)" color="#fff" />}
+        {prayed && <CheckCircle2 size={size * 0.03} fill="var(--accent)" color="#fff" />}
+        {prayed && <PrayedTime store={store} p={p} t={t} />}
         {!prayed && mode === 'alarm' && <AlarmClock size={size * 0.026} style={{ opacity: 0.8 }} />}
         {!prayed && mode === 'off' && prefs.notificationsEnabled && isObligatory(p) && <BellOff size={size * 0.026} style={{ opacity: 0.5 }} />}
       </span>
@@ -942,6 +944,7 @@ function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: numb
           {local && <span class="caption" style={{ fontWeight: 600, opacity: 0.8 }}>{local}</span>}
           {isCurrent && <span class="now-pill">{tr('today.now')}</span>}
           {prayed && <CheckCircle2 size={16} />}
+          {prayed && <PrayedTime store={store} p={p} t={t} />}
         </span>
         {next && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>{tr('today.inTime', { time: short(next.time - now) })}</span>}
         {isCurrent && jamaah != null && t <= now && now < jamaah && <span class="caption mono" style={{ fontWeight: 600, opacity: 0.85 }}>{tr('today.jamaahIn', { time: short(jamaah - now) })}</span>}
@@ -982,4 +985,10 @@ function NoPlace() {
       <button class="primary-btn" onClick={() => openSheet({ kind: 'places' })}>{tr('today.chooseCity')}</button>
     </div>
   )
+}
+
+/** The small "6:15 AM" after a tick. Nothing when the setting is off or the time isn't known. */
+function PrayedTime({ store, p, t }: { store: typeof import("../services/store").store; p: Prayer; t: number }) {
+  const at = store.prayedTime(p, t)
+  return at ? <span class="prayed-time mono">{at}</span> : null
 }

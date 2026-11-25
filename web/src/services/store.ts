@@ -594,14 +594,23 @@ class AppStore {
     return this.prefs.prayedLog[this.dayKey(ms)]?.includes(p) ?? false
   }
 
+  /** The time this prayer was ticked, as "6:15 AM", or null when it isn't known or the setting is off. */
+  prayedTime(p: Prayer, ms: number): string | null {
+    if (!this.prefs.trackerShowTime) return null
+    const at = this.prefs.prayedAt[this.dayKey(ms)]?.[p]
+    return at ? this.formatted(at) : null
+  }
+
   togglePrayed(p: Prayer, ms: number): void {
     const key = this.dayKey(ms)
     this.update((prefs) => {
       const set = new Set(prefs.prayedLog[key] ?? [])
-      if (set.has(p)) set.delete(p); else set.add(p)
+      const at = (prefs.prayedAt[key] ??= {})
+      if (set.has(p)) { set.delete(p); delete at[p] } else { set.add(p); at[p] = this.now() }
+      if (!Object.keys(at).length) delete prefs.prayedAt[key]
       if (set.size) prefs.prayedLog[key] = [...set]; else delete prefs.prayedLog[key]
       const keys = Object.keys(prefs.prayedLog).sort()
-      if (keys.length > 400) delete prefs.prayedLog[keys[0]]
+      if (keys.length > 400) { delete prefs.prayedLog[keys[0]]; delete prefs.prayedAt[keys[0]] }
     })
   }
 

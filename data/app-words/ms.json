@@ -498,6 +498,8 @@
   "settings.tracker": "Penjejak",
   "settings.trackerFoot": "Ketik solat pada skrin Solat selepas waktunya berlalu untuk menandanya, dan kekalkan rekod berturut. Ketik rekod berturut untuk menanda hari uzur (haid, sakit) supaya ia berterusan. Disimpan dalam pelayar ini sahaja.",
   "settings.trackerOn": "Penjejak solat",
+  "settings.trackerShowTime": "Papar masa saya solat",
+  "settings.trackerShowTimeSub": "Masa kecil selepas tanda. Matikan untuk tanda sahaja.",
   "settings.nudge": "Peringatan sebelum waktu tamat",
   "settings.nudgeSub": "Satu makluman lembut lebih kurang 30 minit sebelum waktu solat tamat, hanya jika anda belum menandanya. Tidak untuk {name}, yang waktunya berterusan hingga {until}. Tidak berbunyi semasa dijeda.",
   "settings.display": "Paparan",

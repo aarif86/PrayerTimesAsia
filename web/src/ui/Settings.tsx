@@ -331,6 +331,7 @@ function TrackerPage() {
   return (
     <Group foot={tr('settings.trackerFoot')}>
       <ToggleItem label={tr('settings.trackerOn')} on={p.trackerEnabled} onChange={(v) => store.update((x) => { x.trackerEnabled = v })} />
+      {p.trackerEnabled && <ToggleItem label={tr('settings.trackerShowTime')} sub={tr('settings.trackerShowTimeSub')} on={p.trackerShowTime} onChange={(v) => store.update((x) => { x.trackerShowTime = v })} />}
     </Group>
   )
 }

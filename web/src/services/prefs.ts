@@ -73,6 +73,10 @@ export interface Preferences {
   excusedDays: string[]
   /** "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from then until it is ended counts as excused. */
   trackerPausedSince: string | null
+  /** When each prayer was ticked (ms), by day. Only used to show the small "6:15 AM" after the tick. */
+  prayedAt: Record<string, Partial<Record<Prayer, number>>>
+  /** Show that time after the tick. Off keeps just the tick. */
+  trackerShowTime: boolean
   /** The Subuh alarm; null = off. On the web it rings only while the app is open (or through the calendar file). */
   wakeUp: WakeUpTiming | null
   /** The earlier sahur alarm; null = off. Rings only on `sahurDays`. */
@@ -188,6 +192,8 @@ export const DEFAULT_PREFS: Preferences = {
   prayedLog: {},
   excusedDays: [],
   trackerPausedSince: null,
+  prayedAt: {},
+  trackerShowTime: true,
   wakeUp: null,
   sahurAlarm: null,
   sahurDays: [...DEFAULT_SAHUR_DAYS],

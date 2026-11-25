@@ -498,6 +498,8 @@
   "settings.tracker": "Pencatat",
   "settings.trackerFoot": "Ketuk salat di layar Salat setelah waktunya lewat untuk mencentangnya, dan jaga rangkaian beruntun. Ketuk rangkaian beruntun untuk menandai hari uzur (haid, sakit) agar tetap berlanjut. Hanya disimpan di peramban ini.",
   "settings.trackerOn": "Pencatat salat",
+  "settings.trackerShowTime": "Tampilkan jam saya salat",
+  "settings.trackerShowTimeSub": "Jam kecil setelah centang. Matikan untuk centang saja.",
   "settings.nudge": "Pengingat sebelum waktu habis",
   "settings.nudgeSub": "Satu pemberitahuan lembut sekitar 30 menit sebelum waktu salat habis, hanya jika belum dicentang. Tidak untuk {name}, yang waktunya berlanjut sampai {until}. Tidak berbunyi saat dijeda.",
   "settings.display": "Tampilan",
