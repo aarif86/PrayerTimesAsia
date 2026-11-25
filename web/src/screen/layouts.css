@@ -12,7 +12,7 @@
 .scr-look-surau.scr-light, .lay-look-surau.scr-light {
   --bg: #fbf6ea; --panel: #fffdf7; --glass: rgba(255, 253, 247, 0.95); --glass-strong: #fffdf7; --fg: #151a45; --fg2: rgba(21, 26, 69, 0.7); --fg3: rgba(21, 26, 69, 0.4);
   --accent: #a87b1c; --gold: #a87b1c; --fill: rgba(21, 26, 69, 0.06); --stroke: rgba(21, 26, 69, 0.12);
-  --t-fajr: #c4932f; --t-sunrise: #c4932f; --t-dhuhr: #c4932f; --t-asr: #c4932f; --t-maghrib: #c4932f; --t-isha: #c4932f;
+  --t-fajr: #8a620d; --t-sunrise: #8a620d; --t-dhuhr: #8a620d; --t-asr: #8a620d; --t-maghrib: #8a620d; --t-isha: #8a620d;
 }
 .scr-look-surau::before, .lay-look-surau::before {
   content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.07;
@@ -21,10 +21,11 @@
 }
 .scr-look-surau.scr-light::before, .lay-look-surau.scr-light::before { opacity: 0.1; filter: brightness(0.7); }
 .scr-look-surau .scr-cell.on { background: var(--gold); border-color: var(--gold); color: #151a45; }
-.scr-look-surau .scr-cell.on .scr-name, .scr-look-surau .scr-cell.on .scr-iq, .scr-look-surau .scr-cell.on .scr-iq .scr-t { color: #151a45; }
-.scr-look-surau.scr-light .scr-cell.on .scr-name { color: #fff; }
-.scr-look-surau.scr-light .scr-cell.on { color: #fff; }
-.scr-look-surau.scr-light .scr-cell.on .scr-iq, .scr-look-surau.scr-light .scr-cell.on .scr-iq .scr-t { color: #fff; }
+.scr-look-surau .scr-cell.on .scr-name, .scr-look-surau .scr-cell.on .scr-iq, .scr-look-surau .scr-cell.on .scr-iq .scr-t, .scr-look-surau .scr-cell.on .scr-t { color: #151a45; }
+/* Light: the next prayer is a navy block with a gold name and a white time, the strongest thing on the screen. */
+.scr-look-surau.scr-light .scr-cell.on { background: #151a45; border-color: #151a45; color: #fff; }
+.scr-look-surau.scr-light .scr-cell.on .scr-name { color: #f0cd7e; }
+.scr-look-surau.scr-light .scr-cell.on .scr-t, .scr-look-surau.scr-light .scr-cell.on .scr-iq, .scr-look-surau.scr-light .scr-cell.on .scr-iq .scr-t { color: #fff; }
 
 /* MARK: The maker line, in every layout */
 .scr-maker { font-weight: 500; }
@@ -73,7 +74,8 @@
 .lay-row .scr-iq .scr-t { font-size: 1em; }
 .lay-row.on { background: color-mix(in srgb, var(--tint) 18%, transparent); box-shadow: inset 0 0 0 calc(var(--u) * 0.18) color-mix(in srgb, var(--tint) 55%, transparent); }
 .lay-row.on .scr-name { color: var(--tint); font-weight: 800; }
-.lay-row.passed { opacity: 0.5; }
+.scr-light .lay-row.on { background: color-mix(in srgb, var(--tint) 16%, rgba(255, 255, 255, 0.6)); }
+.lay-row.passed { opacity: 0.72; }
 .lay-syuruk .scr-t, .lay-imsak .scr-t { font-size: min(calc(var(--u) * 4.4), var(--tcap)); font-weight: 600; }
 .lay-imsak .scr-name { color: var(--fg2); }
 
@@ -209,7 +211,8 @@
 .lay-look-bands .lay-row .scr-t { font-weight: 400; font-family: var(--font); }
 .lay-look-bands .lay-row.on { box-shadow: inset calc(var(--u) * 0.9) 0 0 #fff; background: var(--band); }
 .lay-look-bands .lay-row.on .scr-name { color: #fff; }
-.lay-look-bands .lay-row.passed { opacity: 1; filter: saturate(0.55) brightness(0.62); }
+.lay-look-bands .lay-row.on .scr-t { font-weight: 800; }
+.lay-look-bands .lay-row.passed { opacity: 1; filter: saturate(0.7) brightness(0.8); }
 .lay-look-bands .p-fajr { --band: rgb(33, 110, 92); }
 .lay-look-bands .p-sunrise { --band: rgb(100, 124, 44); }
 .lay-look-bands .p-dhuhr { --band: rgb(140, 106, 10); }
@@ -248,8 +251,10 @@
 .lay-look-simple .lay-times { gap: calc(var(--u) * 0.5); }
 .lay-look-surau .lay-times { gap: calc(var(--u) * 0.3); }
 .lay-look-surau .lay-row.on { background: var(--gold); box-shadow: none; color: #151a45; }
-.lay-look-surau .lay-row.on .scr-name, .lay-look-surau .lay-row.on .scr-iq, .lay-look-surau .lay-row.on .scr-iq .scr-t { color: #151a45; }
-.lay-look-surau.scr-light .lay-row.on, .lay-look-surau.scr-light .lay-row.on .scr-name, .lay-look-surau.scr-light .lay-row.on .scr-iq, .lay-look-surau.scr-light .lay-row.on .scr-iq .scr-t { color: #fff; }
+.lay-look-surau .lay-row.on .scr-name, .lay-look-surau .lay-row.on .scr-t, .lay-look-surau .lay-row.on .scr-iq, .lay-look-surau .lay-row.on .scr-iq .scr-t { color: #151a45; }
+.lay-look-surau.scr-light .lay-row.on { background: #151a45; color: #fff; }
+.lay-look-surau.scr-light .lay-row.on .scr-name { color: #f0cd7e; }
+.lay-look-surau.scr-light .lay-row.on .scr-t, .lay-look-surau.scr-light .lay-row.on .scr-iq, .lay-look-surau.scr-light .lay-row.on .scr-iq .scr-t { color: #fff; }
 .lay-look-surau .lay-row { border-bottom: 1px solid var(--stroke); border-radius: 0; }
 .lay-look-surau .lay-row.on { border-radius: calc(var(--u) * 1.4); border-bottom-color: transparent; }
 .lay-look-surau .lay-bar { background: var(--panel); border-color: var(--stroke); }
@@ -260,7 +265,6 @@
 
 /* Light for the layouts: the app's light appearance (variables set in screen.css). */
 .scr-light .lay-bar { background: var(--glass-strong); }
-.scr-light .lay-row.on { background: color-mix(in srgb, var(--tint) 16%, rgba(255, 255, 255, 0.6)); }
 
 /* Portrait fixes: the wide strips turn into a stack, and the two-column list keeps its rows tight. */
 .portrait .lay-big .lay-left, .portrait .lay-strip .lay-left { flex-direction: column; align-items: stretch; }
