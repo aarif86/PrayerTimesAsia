@@ -112,9 +112,9 @@
     <string name="today_midnightShort" formatted="false">Tengah malam</string>
     <string name="today_lastThirdShort" formatted="false">Sepertiga akhir</string>
     <string name="today_imsakNote" formatted="false">10 minit sebelum Subuh. Habiskan sahur sebelum ini</string>
-    <string name="today_dhuhaNote" formatted="false">Solat sunat selepas matahari naik</string>
-    <string name="today_midnightNote" formatted="false">Separuh masa dari Maghrib ke Subuh</string>
-    <string name="today_lastThirdNote" formatted="false">Waktu tenang untuk tahajud</string>
+    <string name="today_dhuhaNote" formatted="false">Solat sunat, dua rakaat atau lebih</string>
+    <string name="today_midnightNote" formatted="false">Elok solat Isyak sebelum ini</string>
+    <string name="today_lastThirdNote" formatted="false">Waktu untuk tahajud</string>
     <string name="today_prayed" formatted="false">, sudah solat</string>
     <string name="today_moreTimes" formatted="false">Lihat waktu lain</string>
     <string name="today_nowNext" formatted="false">Sekarang {now}. {next} pada {time}.</string>
@@ -1202,6 +1202,7 @@
     <string name="log_save" formatted="false">Simpan</string>
     <string name="log_remove" formatted="false">Buang tanda</string>
     <string name="log_catchTitle" formatted="false">Catat solat saya</string>
+    <string name="bands_credit" formatted="false">Penghormatan kepada prayertimes.sg &amp; my oleh Awsam Tech LLP. Digunakan dengan kebenaran.</string>
     <string name="log_catchIntro" formatted="false">Terlupa menanda? Tambah masa anda solat. Awal atau lewat, kami hanya catat apa yang anda beritahu.</string>
     <string name="log_tickAll" formatted="false">Tanda semua pada waktunya</string>
     <string name="log_prayedAt" formatted="false">Solat {time}</string>

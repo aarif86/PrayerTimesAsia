@@ -137,9 +137,9 @@ input, select, textarea { font: inherit; color: inherit; }
 .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px;
   background: var(--fill); border: 1px solid var(--stroke); white-space: nowrap; }
 .chip svg { width: 15px; height: 15px; }
-.capsule-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; background: var(--fill);
-  font-size: 13px; font-weight: 700; letter-spacing: 0.6px; white-space: nowrap; }
-.capsule-btn svg { width: 14px; height: 14px; }
+.capsule-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 44px; padding: 0 8px; background: none;
+  font-size: 15px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+.capsule-btn svg { width: 16px; height: 16px; }
 .display { font-family: var(--font-display); }
 .secondary { color: var(--fg2); }
 .accent { color: var(--accent); }

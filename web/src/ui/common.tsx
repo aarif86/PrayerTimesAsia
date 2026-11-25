@@ -1,6 +1,6 @@
 import type { ComponentChildren, JSX } from 'preact'
 import { useEffect, useRef, useState } from 'preact/hooks'
-import { Info, X } from 'lucide-preact'
+import { ChevronLeft, Info, X } from 'lucide-preact'
 import type { Coordinates, PrayerDay } from '../core/engine'
 import type { Prayer } from '../core/prayer'
 import { sourceAuthority } from '../core/official'
@@ -69,7 +69,7 @@ export function useSheet(): SheetKind | null {
 }
 
 /** `label` names the sheet for screen readers when it has no visible title. */
-export function Sheet({ title, label, children, full, onDone }: { title?: string; label?: string; children: ComponentChildren; full?: boolean; onDone?: () => void }) {
+export function Sheet({ title, label, children, full, onDone, back }: { title?: string; label?: string; children: ComponentChildren; full?: boolean; onDone?: () => void; back?: string }) {
   const done = onDone ?? closeSheet
   const box = useRef<HTMLDivElement>(null)
   // Keyboard and screen reader users land in the sheet, and go back where they were when it closes.
@@ -96,12 +96,21 @@ export function Sheet({ title, label, children, full, onDone }: { title?: string
   return (
     <div class="sheet-backdrop" onClick={(e) => { if (e.target === e.currentTarget) done() }}>
       <div ref={box} tabIndex={-1} class={`sheet ${full ? 'full' : ''}`} role="dialog" aria-modal="true" aria-label={title || label}>
-        <div class="grabber" />
-        <div class="sheet-head">
-          <span style={{ width: '64px' }} />
-          {title ? <h2>{title}</h2> : <span />}
-          <button class="done" onClick={done}>{tr('common.done')}</button>
-        </div>
+        {back ? (
+          <>
+            <div class="sheet-back"><button onClick={done}><ChevronLeft size={24} />{back}</button></div>
+            {title && <h1 class="sheet-pagetitle">{title}</h1>}
+          </>
+        ) : (
+          <>
+            <div class="grabber" />
+            <div class="sheet-head">
+              <span style={{ width: '64px' }} />
+              {title ? <h2>{title}</h2> : <span />}
+              <button class="done" onClick={done}>{tr('common.done')}</button>
+            </div>
+          </>
+        )}
         {children}
       </div>
     </div>

@@ -132,7 +132,6 @@ function MenuButton({ c }: { c: Ctx }) {
   const card = store.prefs.showOffers ? cardOfTheDay(store.offerCountry, new Date(c.now)) : null
   const ref = useRef<HTMLButtonElement>(null)
   const a = store.prefs.appearance
-  const bandsLook = store.prefs.todayStyle === 'bands'
   const open = () => {
     const r = ref.current!.getBoundingClientRect()
     setMenu({ x: Math.max(12, Math.min(r.right - 262, window.innerWidth - 274)), y: r.bottom + 8 })
@@ -161,21 +160,17 @@ function MenuButton({ c }: { c: Ctx }) {
               </>
             ) : (
               <>
-                {!bandsLook && (
-                  <div class="mi mi-block">
-                    <div class="mi-cap">{tr('menu.appearance').toLocaleUpperCase()}</div>
-                    <Segmented value={a} onChange={(v) => store.update((p) => { p.appearance = v })}
-                      options={[{ value: 'system', label: tr('menu.auto') }, { value: 'light', label: tr('menu.light') }, { value: 'dark', label: tr('menu.dark') }]} />
-                  </div>
-                )}
+                <div class="mi mi-block">
+                  <div class="mi-cap">{tr('menu.appearance').toLocaleUpperCase()}</div>
+                  <Segmented value={a} onChange={(v) => store.update((p) => { p.appearance = v })}
+                    options={[{ value: 'system', label: tr('menu.auto') }, { value: 'light', label: tr('menu.light') }, { value: 'dark', label: tr('menu.dark') }]} />
+                </div>
                 <button role="menuitem" class="mi" onClick={() => setLooks(true)}>
                   <Palette size={20} /><span>{tr('menu.lookAndFeel')}</span><em>{styleLabel(store.prefs.todayStyle)}</em>
                 </button>
-                {store.prefs.trackerEnabled && (
-                  <button role="menuitem" class="mi" onClick={() => { setMenu(null); openSheet({ kind: 'tracker' }) }}>
-                    <CircleCheck size={20} /><span>{tr('menu.streak')}</span><em>{store.trackerPaused ? tr('today.trackerPaused').replace(/^,\s*/, '') : store.isExcused(c.now) ? tr('today.trackerExcused').replace(/^,\s*/, '') : tr('menu.days', { n: store.streak(c.now) })}</em>
-                  </button>
-                )}
+                <button role="menuitem" class="mi" onClick={() => { setMenu(null); openSheet({ kind: 'tracker' }) }}>
+                  <CircleCheck size={20} /><span>{tr('menu.streak')}</span><em>{!store.prefs.trackerEnabled ? tr('common.off') : store.trackerPaused ? tr('today.trackerPaused').replace(/^,\s*/, '') : store.isExcused(c.now) ? tr('today.trackerExcused').replace(/^,\s*/, '') : tr('menu.days', { n: store.streak(c.now) })}</em>
+                </button>
                 {!isStandalone() && (
                   <a role="menuitem" class="mi" href="../"><Globe size={20} /><span>prayertimes.asia</span><em>↗</em></a>
                 )}
@@ -237,7 +232,7 @@ function ShowMoreButton({ c, inline }: { c: Ctx; inline?: boolean }) {
   const btn = (
     <button class="capsule-btn" onClick={() => c.setShowMore(!c.showMore)} aria-expanded={c.showMore}
       aria-label={`${c.showMore ? tr('common.showLess') : tr('common.showMore')}, ${tr('today.blessedTimes', { name: store.name('sunrise') })}`}>
-      {(c.showMore ? tr('common.showLess') : tr('common.showMore')).toLocaleUpperCase()}
+      {c.showMore ? tr('common.showLess') : tr('common.showMore')}
       {c.showMore ? <ChevronUp size={14} strokeWidth={3} /> : <ChevronDown size={14} strokeWidth={3} />}
     </button>
   )
@@ -740,7 +735,7 @@ function BandsPage({ c }: { c: Ctx }) {
           <Controls c={c} />
         </div>
         {top && offset === 0 && (
-          <div class="bands-status mono">{top.isNext ? store.name(top.prayer, top.time) : tr('today.nameNow', { name: store.name(top.prayer, top.time) })} · {countdown(now).text}</div>
+          <div class="bands-hero"><span class="bands-hero-name">{top.isNext ? store.name(top.prayer, top.time) : tr('today.nameNow', { name: store.name(top.prayer, top.time) })}</span><span class="bands-hero-count">{countdown(now).text}</span></div>
         )}
         <TopPrompt />
         <ArrivalCard />
@@ -763,6 +758,7 @@ function BandsPage({ c }: { c: Ctx }) {
         <div class="row foot-row"><SourceBadge day={shown} compact /><span class="spacer" /><ShowMoreButton c={c} inline /></div>
         <NotePrompt c={c} />
       <Offer c={c} />
+        <p class="bands-credit">{tr('bands.credit')}</p>
       </div>
     </div>
   )
