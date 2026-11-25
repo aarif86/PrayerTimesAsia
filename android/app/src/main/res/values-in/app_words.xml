@@ -112,9 +112,9 @@
     <string name="today_midnightShort" formatted="false">Tengah malam</string>
     <string name="today_lastThirdShort" formatted="false">Sepertiga akhir</string>
     <string name="today_imsakNote" formatted="false">10 menit sebelum Subuh. Selesaikan sahur sebelum ini</string>
-    <string name="today_dhuhaNote" formatted="false">Salat sunah setelah matahari naik</string>
-    <string name="today_midnightNote" formatted="false">Separuh waktu dari Magrib ke Subuh</string>
-    <string name="today_lastThirdNote" formatted="false">Waktu tenang untuk tahajud</string>
+    <string name="today_dhuhaNote" formatted="false">Salat sunah, dua rakaat atau lebih</string>
+    <string name="today_midnightNote" formatted="false">Sebaiknya salat Isya sebelum ini</string>
+    <string name="today_lastThirdNote" formatted="false">Waktu untuk tahajud</string>
     <string name="today_prayed" formatted="false">, sudah salat</string>
     <string name="today_moreTimes" formatted="false">Lihat waktu lainnya</string>
     <string name="today_nowNext" formatted="false">Sekarang {now}. {next} pukul {time}.</string>
@@ -1202,6 +1202,7 @@
     <string name="log_save" formatted="false">Simpan</string>
     <string name="log_remove" formatted="false">Hapus centang</string>
     <string name="log_catchTitle" formatted="false">Catat salat saya</string>
+    <string name="bands_credit" formatted="false">Penghormatan untuk prayertimes.sg &amp; my oleh Awsam Tech LLP. Digunakan dengan izin.</string>
     <string name="log_catchIntro" formatted="false">Lupa mencentang? Tambahkan jam Anda salat. Awal atau lambat, kami hanya mencatat yang Anda katakan.</string>
     <string name="log_tickAll" formatted="false">Centang semua tepat waktu</string>
     <string name="log_prayedAt" formatted="false">Salat {time}</string>

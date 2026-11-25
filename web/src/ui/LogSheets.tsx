@@ -58,7 +58,7 @@ export function CatchUpSheet() {
   const due = day ? OBLIGATORY.filter((p) => day.times[p] <= now) : []
   const todo = due.filter((p) => !s.isPrayed(p, day!.times[p]))
   return (
-    <Sheet title={tr('log.catchTitle')} full>
+    <Sheet title={tr('log.catchTitle')} back={tr('settings.trackerOn')} full>
       <p class="secondary log-ask">{tr('log.catchIntro')}</p>
       <div class="glass card log-list">
         {due.map((p) => {

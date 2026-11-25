@@ -112,9 +112,9 @@
     <string name="today_midnightShort" formatted="false">Midnight</string>
     <string name="today_lastThirdShort" formatted="false">Last third</string>
     <string name="today_imsakNote" formatted="false">10 minutes before Fajr. Finish sahur by now</string>
-    <string name="today_dhuhaNote" formatted="false">Optional prayer after sunrise</string>
-    <string name="today_midnightNote" formatted="false">Halfway from Maghrib to Fajr</string>
-    <string name="today_lastThirdNote" formatted="false">A quiet time for tahajjud</string>
+    <string name="today_dhuhaNote" formatted="false">Optional prayer, 2 rakaat or more</string>
+    <string name="today_midnightNote" formatted="false">Best to pray Isha before this</string>
+    <string name="today_lastThirdNote" formatted="false">Time for tahajjud</string>
     <string name="today_prayed" formatted="false">, prayed</string>
     <string name="today_moreTimes" formatted="false">Show more times</string>
     <string name="today_nowNext" formatted="false">Now {now}. {next} at {time}.</string>
@@ -1202,6 +1202,7 @@
     <string name="log_save" formatted="false">Save</string>
     <string name="log_remove" formatted="false">Remove tick</string>
     <string name="log_catchTitle" formatted="false">Log my prayers</string>
+    <string name="bands_credit" formatted="false">A tribute to prayertimes.sg &amp; my by Awsam Tech LLP. Used with permission.</string>
     <string name="log_catchIntro" formatted="false">Forgot to tick? Add the time you prayed. Early or late, we only note what you tell us.</string>
     <string name="log_tickAll" formatted="false">Tick all as on time</string>
     <string name="log_prayedAt" formatted="false">Prayed {time}</string>
