@@ -523,20 +523,8 @@
 .simple-big { font-size: 56px; font-weight: 800; line-height: 1.05; }
 .simple-kicker { font-size: 13px; font-weight: 800; letter-spacing: 0.1em; color: var(--fg2); }
 .simple-left { font-size: 34px; font-weight: 700; }
-.simple-list { display: flex; flex-direction: column; gap: 10px; }
-.simple-row { display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 12px 20px; border-radius: 20px; background: var(--fill);
-  border-left: 8px solid var(--tint); text-align: left; color: var(--fg); }
-.simple-row:disabled { cursor: default; opacity: 1; }
-.simple-row.current { background: color-mix(in srgb, var(--tint) 22%, transparent); }
 .simple-name { flex: 1; min-width: 0; font-size: 28px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .simple-time { font-size: 28px; font-weight: 600; white-space: nowrap; }
-.simple-tick { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--fg2); flex: none; }
-.simple-more { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin: 14px 0 4px; padding: 16px; border-radius: 20px; background: var(--fill); font-size: 22px; font-weight: 700; color: var(--accent); }
-.simple-row.blessed { min-height: 64px; border-left: 5px solid color-mix(in srgb, var(--fg) 25%, transparent); }
-.simple-row.blessed .simple-name, .simple-row.blessed .simple-time { font-size: 24px; }
-.simple-row.blessed .simple-name { white-space: normal; }
-.simple-note { display: block; font-size: 16px; font-weight: 500; color: var(--fg2); white-space: normal; }
-.simple-date { text-align: center; margin-top: 18px; font-size: 18px; color: var(--fg2); }
 
 /* Bigger text: everything scales together, so layouts keep their shape. */
 html[data-large-text] #app { zoom: 1.2; }
@@ -885,18 +873,18 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 html[data-large-text] .pname { font-size: 20px; }
 
 /* ---------- Centre Dial rebuilt to the v12 mockup (Prayer screen) ---------- */
-.style-centre .centre-page { --fg: #151A45; --fg2: #4A5080; --fg3: #6E7499; --card: rgba(255, 255, 255, 0.62); --hair: rgba(21, 26, 69, 0.09); gap: 10px; }
-:root[data-theme="dark"] .style-centre .centre-page { --fg: #EEF0FA; --fg2: #B9C0E2; --fg3: #8E97C4; --card: rgba(255, 255, 255, 0.09); --hair: rgba(255, 255, 255, 0.1); }
-@media (prefers-color-scheme: light) { :root:not([data-theme]) .style-centre .centre-page { --fg: #151A45; --fg2: #4A5080; --fg3: #6E7499; --card: rgba(255, 255, 255, 0.62); --hair: rgba(21, 26, 69, 0.09); } }
+:is(.style-centre, .style-sunPath, .style-simple) .v12 { --fg: #151A45; --fg2: #4A5080; --fg3: #6E7499; --card: rgba(255, 255, 255, 0.62); --hair: rgba(21, 26, 69, 0.09); gap: 10px; }
+:root[data-theme="dark"] :is(.style-centre, .style-sunPath, .style-simple) .v12 { --fg: #EEF0FA; --fg2: #B9C0E2; --fg3: #8E97C4; --card: rgba(255, 255, 255, 0.09); --hair: rgba(255, 255, 255, 0.1); }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) :is(.style-centre, .style-sunPath, .style-simple) .v12 { --fg: #151A45; --fg2: #4A5080; --fg3: #6E7499; --card: rgba(255, 255, 255, 0.62); --hair: rgba(21, 26, 69, 0.09); } }
 /* Top bar: slim pill, round buttons */
-.centre-page .top-bar .place-chip { position: relative; min-height: 36px; padding: 0 12px; gap: 5px; font-size: 15px; background: var(--card); border: 1px solid var(--stroke);
+.v12 .top-bar .place-chip { position: relative; min-height: 36px; padding: 0 12px; gap: 5px; font-size: 15px; background: var(--card); border: 1px solid var(--stroke);
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
-.centre-page .top-bar .place-chip::after { content: ""; position: absolute; inset: -4px 0; }
-.centre-page .top-bar .place-chip > svg:first-child { color: var(--accent); }
-.centre-page .top-bar .round-btn { width: 44px; height: 44px; background: var(--card); border: 1px solid var(--stroke); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
-.centre-page .top-bar .round-btn svg { width: 22px; height: 22px; }
+.v12 .top-bar .place-chip::after { content: ""; position: absolute; inset: -4px 0; }
+.v12 .top-bar .place-chip > svg:first-child { color: var(--accent); }
+.v12 .top-bar .round-btn { width: 44px; height: 44px; background: var(--card); border: 1px solid var(--stroke); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.v12 .top-bar .round-btn svg { width: 22px; height: 22px; }
 /* Dial */
-.centre-page .centre-dial { margin: 2px 0 0; }
+.v12 .centre-dial { margin: 2px 0 0; }
 .daydial .dial-sun, .daydial .dial-moon { color: var(--accent); line-height: 0; }
 .daydial .dial-sun svg, .daydial .dial-moon svg { fill: none; }
 .daydial-centre { gap: 0; }
@@ -905,45 +893,147 @@ html[data-large-text] .pname { font-size: 20px; }
 .dial-count.accent { color: var(--accent); }
 .dial-label-line { color: var(--fg2); line-height: 1.3; }
 /* Date and arrows */
-.centre-page .day-nav { padding: 0 6px 0 2px; margin-top: 2px; }
-.centre-page .day-nav .chev { width: 44px; height: 44px; opacity: 1; color: var(--fg2); }
-.centre-page .day-nav-date { font-size: 18px; font-weight: 700; color: var(--fg); line-height: 1.2; }
-.centre-page .day-nav-hijri { font-size: 14px; color: var(--fg2); gap: 6px; }
+.v12 .day-nav { padding: 0 6px 0 2px; margin-top: 2px; }
+.v12 .day-nav .chev { width: 44px; height: 44px; opacity: 1; color: var(--fg2); }
+.v12 .day-nav-date { font-size: 18px; font-weight: 700; color: var(--fg); line-height: 1.2; }
+.v12 .day-nav-hijri { font-size: 14px; color: var(--fg2); gap: 6px; }
 /* One compact list */
-.centre-page .list-wrap.fill { flex: 0 0 auto; }
-.centre-page .prayer-list.slim { gap: 0; padding: 0; overflow: hidden; border-radius: 20px; background: var(--card); border-color: var(--stroke); flex: 0 0 auto; }
-.centre-page .prayer-list.slim .prayer-row, .centre-page .list-wrap.fill .prayer-list.slim .prayer-row { flex: 0 0 auto; min-height: 54px; max-height: none; padding: 0 4px 0 28px; border-radius: 0; border-bottom: 1px solid var(--hair);
+.v12 .list-wrap.fill { flex: 0 0 auto; }
+.v12 .prayer-list.slim { gap: 0; padding: 0; overflow: hidden; border-radius: 20px; background: var(--card); border-color: var(--stroke); flex: 0 0 auto; }
+.v12 .prayer-list.slim .prayer-row, .v12 .list-wrap.fill .prayer-list.slim .prayer-row { flex: 0 0 auto; min-height: 54px; max-height: none; padding: 0 4px 0 28px; border-radius: 0; border-bottom: 1px solid var(--hair);
   gap: 8px; opacity: 1 !important; box-shadow: none; }
-.centre-page .prayer-row.past { color: var(--fg2); }
-.centre-page .prayer-row.current { background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: none; }
-.centre-page .prayer-list.slim .prayer-row .bar { left: 0; top: 12px; bottom: 12px; width: 4px; opacity: 1 !important; }
-.centre-page .prayer-list.slim .prayer-row .names { flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: 8px; row-gap: 0; }
-.centre-page .prayer-list.slim .pname { font-size: 19px; font-weight: 500; }
-.centre-page .prayer-list.slim .prayer-row.lit .pname { font-weight: 700; }
-.centre-page .prayer-list.slim .in-tag { font-size: 13px; font-weight: 600; }
-.centre-page .prayer-list.slim .now-tag { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.centre-page .prayer-list.slim .extra { flex-basis: 100%; font-size: 13px; }
-.centre-page .prayer-list.slim .time { font-weight: 600; }
-.centre-page .prayer-list.slim .time .sfx { font-size: 13px !important; opacity: 1; color: var(--fg2); font-weight: 600; }
-.centre-page .prayer-row .tick { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: inline-flex; align-items: center; justify-content: center; flex: none; align-self: center; }
-.centre-page .prayed-time { font-size: 13px; font-weight: 500; opacity: 1; color: var(--fg2); margin-left: 0; }
-.centre-page .prayer-list.slim .prayer-row .bell { width: 48px; height: 48px; }
-.centre-page .prayer-row .bell svg { width: 22px; height: 22px; opacity: 0.8 !important; }
-.centre-page .prayer-row .bell-off, .centre-page .prayer-row .bell-notify { color: var(--fg3); }
-.centre-page .prayer-row .bell-alarm { color: var(--accent); }
-.centre-page .prayer-row .bell-alarm svg { opacity: 1 !important; }
-.centre-page .prayer-list.slim .blessed-row { min-height: 54px; padding: 4px 4px 4px 28px; border-bottom: 1px solid var(--hair); opacity: 1 !important; color: var(--fg2); }
-.centre-page .prayer-list.slim .blessed-row .bar { left: 0; width: 4px; top: 12px; bottom: 12px; }
-.centre-page .prayer-list.slim .blessed-row .time { font-size: 20px !important; }
-.centre-page .prayer-list.slim .blessed-row .time .sfx { font-size: 13px !important; }
-.centre-page .more-link { display: flex; justify-content: center; align-items: center; gap: 4px; width: 100%; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--accent); }
-.centre-page .syuruk-hadith { padding: 0 12px 8px; }
-.centre-page .source-line { align-self: center; font-size: 15px; color: var(--fg3); text-align: center; min-height: 44px; margin-top: -8px; }
-.centre-page .source-line b { color: var(--accent); font-weight: 700; }
+.v12 .prayer-row.past { color: var(--fg2); }
+.v12 .prayer-row.current { background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: none; }
+.v12 .prayer-list.slim .prayer-row .bar { left: 0; top: 12px; bottom: 12px; width: 4px; opacity: 1 !important; }
+.v12 .prayer-list.slim .prayer-row .names { flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: 8px; row-gap: 0; }
+.v12 .prayer-list.slim .pname { font-size: 19px; font-weight: 500; }
+.v12 .prayer-list.slim .prayer-row.lit .pname { font-weight: 700; }
+.v12 .prayer-list.slim .in-tag { font-size: 13px; font-weight: 600; }
+.v12 .prayer-list.slim .now-tag { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.v12 .prayer-list.slim .extra { flex-basis: 100%; font-size: 13px; }
+.v12 .prayer-list.slim .time { font-weight: 600; }
+.v12 .prayer-list.slim .time .sfx { font-size: 13px !important; opacity: 1; color: var(--fg2); font-weight: 600; }
+.v12 .prayer-row .tick { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: inline-flex; align-items: center; justify-content: center; flex: none; align-self: center; }
+.v12 .prayed-time { font-size: 13px; font-weight: 500; opacity: 1; color: var(--fg2); margin-left: 0; }
+.v12 .prayer-list.slim .prayer-row .bell { width: 48px; height: 48px; }
+.v12 .prayer-row .bell svg { width: 22px; height: 22px; opacity: 0.8 !important; }
+.v12 .prayer-row .bell-off, .v12 .prayer-row .bell-notify { color: var(--fg3); }
+.v12 .prayer-row .bell-alarm { color: var(--accent); }
+.v12 .prayer-row .bell-alarm svg { opacity: 1 !important; }
+.v12 .prayer-list.slim .blessed-row { min-height: 54px; padding: 4px 4px 4px 28px; border-bottom: 1px solid var(--hair); opacity: 1 !important; color: var(--fg2); }
+.v12 .prayer-list.slim .blessed-row .bar { left: 0; width: 4px; top: 12px; bottom: 12px; }
+.v12 .prayer-list.slim .blessed-row .time { font-size: 20px !important; }
+.v12 .prayer-list.slim .blessed-row .time .sfx { font-size: 13px !important; }
+.v12 .more-link { display: flex; justify-content: center; align-items: center; gap: 4px; width: 100%; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--accent); }
+.v12 .syuruk-hadith { padding: 0 12px 8px; }
+.v12 .source-line { align-self: center; font-size: 15px; color: var(--fg3); text-align: center; min-height: 44px; margin-top: -8px; }
+.v12 .source-line b { color: var(--accent); font-weight: 700; }
 /* Tab bar: the current tab in the accent colour */
 .tabbar button { color: var(--fg2); }
 .tabbar button[aria-current="page"] { background: none; color: var(--accent); font-weight: 700; }
 .tabbar button[aria-current="page"] svg { fill: color-mix(in srgb, currentColor 18%, transparent); }
-.centre-page .prayer-list.slim .in-tag { color: var(--accent) !important; }
+.v12 .prayer-list.slim .in-tag { color: var(--accent) !important; }
 :root[data-theme="light"] .tabbar button[aria-current="page"] { color: color-mix(in srgb, var(--accent) 68%, #000); }
-.centre-page .prayer-list.slim .prayer-row.current { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.v12 .prayer-list.slim .prayer-row.current { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* ---------- Sun Path rebuilt to the v12 mockup (Prayer screen) ---------- */
+.sunpath-page.v12 { gap: 10px; }
+.sunpath-page.v12 .sun-status { gap: 8px; padding-top: 2px; }
+.sunpath-page.v12 .sun-name-row { display: flex; align-items: center; gap: 10px; }
+.sunpath-page.v12 .sun-status .dot { width: 10px; height: 10px; }
+.sunpath-page.v12 .sun-name { font-family: var(--font-display, inherit); font-size: 44px; line-height: 1; font-weight: 700; letter-spacing: -0.01em; }
+.sunpath-page.v12 .status-pill { padding: 8px 16px; font-size: 16px; background: var(--card); border: 1px solid var(--stroke); color: var(--fg);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.sunpath-page.v12 .status-pill.urgent { color: var(--accent); }
+.sunpath-page.v12 .sunpath-wrap { height: 120px; margin-top: -4px; }
+
+/* ---------- Big and Simple rebuilt to the v12 mockup (Prayer screen) ---------- */
+.style-simple .simple-page.v12 { --fg: #0E1236; --fg2: #2E345E; --fg3: #4B5078; --card: rgba(255, 255, 255, 0.8); --simple-name: #4B3CBF; gap: 8px; padding-bottom: 0; }
+:root[data-theme="dark"] .style-simple .simple-page.v12 { --fg: #fff; --fg2: #DDE0F2; --fg3: #BEC4E2; --card: rgba(255, 255, 255, 0.12); --simple-name: #B2A8FF; }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) .style-simple .simple-page.v12 { --fg: #0E1236; --fg2: #2E345E; --fg3: #4B5078; --card: rgba(255, 255, 255, 0.8); --simple-name: #4B3CBF; } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) .style-simple .simple-page.v12 { --fg: #fff; --fg2: #DDE0F2; --fg3: #BEC4E2; --card: rgba(255, 255, 255, 0.12); --simple-name: #B2A8FF; } }
+.simple-page.v12 .simple-now { padding: 0 4px 2px; gap: 2px; }
+.simple-page.v12 .simple-big { display: flex; align-items: center; justify-content: center; font-size: 46px; line-height: 1.05; font-weight: 700; color: var(--simple-name); }
+.simple-page.v12 .simple-left { font-size: 24px; font-weight: 600; color: var(--fg); white-space: nowrap; }
+.simple-page.v12 .simple-left.accent { color: var(--accent); }
+.simple-page.v12 .day-nav { margin-top: 0; }
+/* Big rows: no colour edge, a dot on the prayer now, 23 point names and times */
+.simple-page.v12 .prayer-list.slim .prayer-row, .simple-page.v12 .list-wrap.fill .prayer-list.slim .prayer-row { min-height: 62px; padding: 0 4px 0 18px; }
+.simple-page.v12 .prayer-list.slim .prayer-row .bar { display: none; }
+.simple-page.v12 .prayer-list.slim .prayer-row.lit .bar { display: block; position: static; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: -2px; }
+.simple-page.v12 .prayer-list.slim .pname { font-size: 23px; }
+.simple-page.v12 .prayer-list.slim .time { font-size: 23px !important; }
+.simple-page.v12 .prayer-list.slim .time .sfx { font-size: 15px !important; }
+.simple-page.v12 .prayer-list.slim .in-tag, .simple-page.v12 .prayer-list.slim .prayed-time { font-size: 15px; }
+.simple-page.v12 .prayer-list.slim .blessed-row { min-height: 62px; padding-left: 18px; }
+.simple-page.v12 .prayer-list.slim .blessed-row .bar { display: none; }
+.simple-page.v12 .prayer-list.slim .blessed-row .time { font-size: 21px !important; }
+.simple-page.v12 .more-link { min-height: 48px; font-size: 17px; }
+/* The big list fills the screen like the mockup, rows grow from 62 up to 76 point */
+.simple-page.v12 .list-wrap.fill { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+.simple-page.v12 .list-wrap.fill .prayer-list.slim { flex: 1 1 auto; display: flex; flex-direction: column; }
+.simple-page.v12 .list-wrap.fill .prayer-list.slim .prayer-row { flex: 1 1 62px; max-height: 76px; }
+
+/* ---------- Calm Gold rebuilt to the v12 mockup (Prayer screen) ---------- */
+.gold-backdrop { background: linear-gradient(#0B0F2A, #151A45); }
+:root[data-theme="light"] .gold-backdrop { background: linear-gradient(#FBFAF7, #F1EEE8); }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) .gold-backdrop { background: linear-gradient(#FBFAF7, #F1EEE8); } }
+.style-gold .v12 { --fg: #EEF0FA; --fg2: #A9B2D6; --fg3: #7E88B3; --card: rgba(255, 255, 255, 0.07); --stroke: rgba(255, 255, 255, 0.09); --hair: rgba(255, 255, 255, 0.08);
+  --gold-track: rgba(255, 255, 255, 0.08); --gold-fill: #E2B65A; --gold-on: #151100; --gold-tint: rgba(226, 182, 90, 0.14); gap: 10px; }
+:root[data-theme="light"] .style-gold .v12 { --fg: #151A45; --fg2: #5B6188; --fg3: #8B90AE; --card: #fff; --stroke: rgba(21, 26, 69, 0.07); --hair: rgba(21, 26, 69, 0.08);
+  --gold-track: rgba(21, 26, 69, 0.1); --gold-tint: rgba(226, 182, 90, 0.2); }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) .style-gold .v12 { --fg: #151A45; --fg2: #5B6188; --fg3: #8B90AE; --card: #fff; --stroke: rgba(21, 26, 69, 0.07); --hair: rgba(21, 26, 69, 0.08);
+  --gold-track: rgba(21, 26, 69, 0.1); --gold-tint: rgba(226, 182, 90, 0.2); } }
+.golddial path, .golddial circle:last-child { stroke: var(--gold-fill); }
+.golddial .dial-sun, .golddial .dial-moon { color: var(--accent); }
+.style-gold .v12 .prayer-list.slim { background: var(--card); border: 1px solid var(--stroke); box-shadow: none; }
+:root[data-theme="light"] .style-gold .v12 .prayer-list.slim { box-shadow: 0 1px 6px rgba(21, 26, 69, 0.05); }
+.style-gold .v12 .prayer-list.slim .prayer-row, .style-gold .v12 .list-wrap.fill .prayer-list.slim .prayer-row { padding-left: 18px; }
+.style-gold .v12 .prayer-list.slim .prayer-row .bar, .style-gold .v12 .prayer-list.slim .blessed-row .bar { display: none; }
+.style-gold .v12 .prayer-list.slim .prayer-row.lit .bar { display: block; position: static; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--gold-fill); margin-right: -2px; }
+.style-gold .v12 .prayer-row.current { background: var(--gold-tint); }
+.style-gold .v12 .prayer-list.slim .blessed-row { padding-left: 18px; }
+.style-gold .v12 .prayer-row .tick { background: var(--gold-fill); color: var(--gold-on); }
+.style-gold .v12 .prayer-row .bell-alarm { color: var(--gold-fill); }
+
+/* ---------- Colour Bands rebuilt to the v12 mockup (Prayer screen) ---------- */
+.bands-backdrop { background: #232326; }
+:root[data-theme="light"] .bands-backdrop { background: #F2F0EB; }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) .bands-backdrop { background: #F2F0EB; } }
+.bands-page.v12 { --fg: #F4F2EE; --fg2: #C7C7CC; --fg3: #98989E; --card: #2c2c30; --stroke: rgba(255, 255, 255, 0.08); --hair: rgba(255, 255, 255, 0.1); --accent: #F2A65A; color: var(--fg); }
+:root[data-theme="light"] .bands-page.v12 { --fg: #1d1d20; --fg2: #55555c; --fg3: #80808a; --card: #fff; --stroke: rgba(0, 0, 0, 0.08); --hair: rgba(0, 0, 0, 0.09); --accent: #A9560F; }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) .bands-page.v12 { --fg: #1d1d20; --fg2: #55555c; --fg3: #80808a; --card: #fff; --stroke: rgba(0, 0, 0, 0.08); --hair: rgba(0, 0, 0, 0.09); --accent: #A9560F; } }
+/* Top bar: square-cornered pill and buttons */
+.bands-page.v12 .top-bar .place-chip { border-radius: 6px; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.bands-page.v12 .top-bar .round-btn { border-radius: 10px; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.bands-page.v12 .bands-top { gap: 8px; padding-bottom: 10px; }
+.bands-page.v12 .bands-hero-name { font-family: var(--font-display); }
+/* One line date between two hairlines */
+.bands-page.v12 .bands-date, :root[data-theme="light"] .bands-page.v12 .bands-date { background: transparent; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); font-size: 15px; padding: 0 4px; }
+.bands-page.v12 .bands-date > button:first-child, .bands-page.v12 .bands-date > button:last-child { width: 44px; height: 44px; color: var(--fg2); }
+.bands-page.v12 .bands-date-main { flex-wrap: nowrap; overflow: hidden; }
+/* Bands: 26 point names, 32 point times, tick, in 3h 52m and the bell on every band */
+.bands-page.v12 .band { min-height: 60px; padding: 0 20px 0 24px; gap: 4px; }
+.bands-page.v12 .band.current::before { display: none; }
+.bands-page.v12 .band-names .row { align-items: center !important; flex-wrap: wrap; row-gap: 0; }
+.bands-page.v12 .band-name { font-size: 26px; font-weight: 700; }
+.bands-page.v12 .band .tick { width: 18px; height: 18px; border-radius: 50%; background: #fff; color: #222; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.bands-page.v12 .band .prayed-time { font-size: 13px; font-weight: 600; opacity: 0.9; color: #fff; margin-left: -2px; }
+.bands-page.v12 .band-in { font-size: 15px; font-weight: 600; opacity: 0.9; white-space: nowrap; }
+.bands-page.v12 .band-time { font-family: var(--font-display); font-size: 32px; font-weight: 500; gap: 5px; }
+.bands-page.v12 .band-time .sfx { font-size: 15px; font-weight: 600; opacity: 0.9; }
+.bands-page.v12 .band-bell { display: inline-flex; flex: none; margin-left: 10px; color: #fff; }
+.bands-page.v12 .band-bell-off { opacity: 0.55; }
+/* Footer: source on the left, Show more on the right, then the credit */
+.bands-page.v12 .bands-foot { padding-top: 4px; gap: 0; }
+.bands-page.v12 .foot-row { align-items: center; }
+.bands-page.v12 .source-line { align-self: auto; margin: 0; font-size: 13px; text-align: left; color: var(--fg2); min-height: 44px; }
+.bands-page.v12 .more-link { width: auto; font-size: 15px; }
+.bands-page.v12 .bands-credit { font-size: 12px; color: var(--fg3); opacity: 1; padding-bottom: 8px; }
+:root[data-look="bands"] .tabbar { border-radius: 14px; }
+:root[data-look="bands"] .tabbar button { border-radius: 10px; }
+@media (max-width: 360px) { .bands-page.v12 .band-name { font-size: 24px; } .bands-page.v12 .band-time { font-size: 29px; } }
+:root[data-look="bands"] .tabbar { background: rgba(32, 32, 36, 0.82); border-color: rgba(255, 255, 255, 0.08); }
+:root[data-look="bands"][data-theme="light"] .tabbar { background: rgba(255, 255, 255, 0.85); border-color: rgba(0, 0, 0, 0.08); }
+.bands-page.v12 .now-pill { background: #fff; color: #1d1d20; }
+.bands-page.v12 .bands-credit { color: var(--fg2); }
