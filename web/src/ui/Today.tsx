@@ -635,16 +635,16 @@ function SimplePage({ c }: { c: Ctx }) {
 
 // ---------- Centre Dial ----------
 
-function DayNavigator({ c }: { c: Ctx }) {
+function DayNavigator({ c, slim }: { c: Ctx; slim?: boolean }) {
   const date = c.shown.times.dhuhr
   return (
     <div class="day-nav">
-      <button class="chev" aria-label={tr('today.prevDay')} onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={26} strokeWidth={2} /></button>
+      <button class="chev" aria-label={tr('today.prevDay')} onClick={() => c.setOffset(c.offset - 1)}><ChevronLeft size={slim ? 26 : 22} strokeWidth={slim ? 2 : 2.4} /></button>
       <button class="day-nav-main" onClick={() => dateTap(c)} aria-label={c.offset === 0 ? tr('today.datesSources') : tr('today.backToToday')}>
-        <span class="day-nav-date">{fmtDate(date, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-        <span class="day-nav-hijri">{hijri(date)} {c.offset === 0 ? <Calendar size={20} /> : <Undo2 size={18} />}</span>
+        <span class="day-nav-date">{fmtDate(date, slim ? { weekday: 'short', day: 'numeric', month: 'short' } : { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+        <span class="day-nav-hijri">{hijri(date)} {c.offset === 0 ? <Calendar size={slim ? 20 : 12} /> : <Undo2 size={slim ? 18 : 12} />}</span>
       </button>
-      <button class="chev" aria-label={tr('today.nextDay')} onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={26} strokeWidth={2} /></button>
+      <button class="chev" aria-label={tr('today.nextDay')} onClick={() => c.setOffset(c.offset + 1)}><ChevronRight size={slim ? 26 : 22} strokeWidth={slim ? 2 : 2.4} /></button>
     </div>
   )
 }
@@ -677,7 +677,7 @@ function CentrePage({ c }: { c: Ctx }) {
       {c.offset === 0 && <LongDaysNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={c.now} />
-      <DayNavigator c={c} />
+      <DayNavigator c={c} slim />
       <PrayerList c={c} fill slim footer={<ShowMoreLink c={c} />} />
       <SourceLine day={c.shown} />
       <NotePrompt c={c} />

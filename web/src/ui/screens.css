@@ -860,7 +860,6 @@ html[data-large-text] .pname { font-size: 20px; }
 .style-centre .centre-page { --fg: #151A45; --fg2: #4A5080; --fg3: #6E7499; --card: rgba(255, 255, 255, 0.62); --hair: rgba(21, 26, 69, 0.09); gap: 10px; }
 :root[data-theme="dark"] .style-centre .centre-page { --fg: #EEF0FA; --fg2: #B9C0E2; --fg3: #8E97C4; --card: rgba(255, 255, 255, 0.09); --hair: rgba(255, 255, 255, 0.1); }
 @media (prefers-color-scheme: light) { :root:not([data-theme]) .style-centre .centre-page { --fg: #151A45; --fg2: #4A5080; --fg3: #6E7499; --card: rgba(255, 255, 255, 0.62); --hair: rgba(21, 26, 69, 0.09); } }
-.style-gold .centre-page { --card: var(--glass); --hair: var(--stroke); gap: 10px; }
 /* Top bar: slim pill, round buttons */
 .centre-page .top-bar .place-chip { position: relative; min-height: 36px; padding: 0 12px; gap: 5px; font-size: 15px; background: var(--card); border: 1px solid var(--stroke);
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
@@ -911,7 +910,7 @@ html[data-large-text] .pname { font-size: 20px; }
 .centre-page .prayer-list.slim .blessed-row .time .sfx { font-size: 13px !important; }
 .centre-page .more-link { display: flex; justify-content: center; align-items: center; gap: 4px; width: 100%; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--accent); }
 .centre-page .syuruk-hadith { padding: 0 12px 8px; }
-.centre-page .source-line { align-self: center; font-size: 15px; color: var(--fg3); text-align: center; min-height: 28px; }
+.centre-page .source-line { align-self: center; font-size: 15px; color: var(--fg3); text-align: center; min-height: 44px; margin-top: -8px; }
 .centre-page .source-line b { color: var(--accent); font-weight: 700; }
 /* Tab bar: the current tab in the accent colour */
 .tabbar button { color: var(--fg3); }
