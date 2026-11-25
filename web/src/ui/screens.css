@@ -528,8 +528,8 @@
   border-left: 8px solid var(--tint); text-align: left; color: var(--fg); }
 .simple-row:disabled { cursor: default; opacity: 1; }
 .simple-row.current { background: color-mix(in srgb, var(--tint) 22%, transparent); }
-.simple-name { flex: 1; min-width: 0; font-size: 30px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.simple-time { font-size: 30px; font-weight: 600; white-space: nowrap; }
+.simple-name { flex: 1; min-width: 0; font-size: 28px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.simple-time { font-size: 28px; font-weight: 600; white-space: nowrap; }
 .simple-tick { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--fg2); flex: none; }
 .simple-more { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin: 14px 0 4px; padding: 16px; border-radius: 20px; background: var(--fill); font-size: 22px; font-weight: 700; color: var(--accent); }
 .simple-row.blessed { min-height: 64px; border-left: 5px solid color-mix(in srgb, var(--fg) 25%, transparent); }
@@ -846,3 +846,12 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
 .log-open > span { flex: 1; }
 .primary-btn.wide { width: 100%; min-height: 48px; }
 .blessed-band .bell { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; flex: none; color: inherit; }
+
+/* Narrow phones: keep the earlier sizes so long names like Maghrib never run into the time. */
+@media (max-width: 360px) {
+  .pname { font-size: 20px; }
+  .band-name { font-size: 26px; }
+  .band-time { font-size: 34px; }
+  .band-time .sfx { font-size: 22px; }
+}
+html[data-large-text] .pname { font-size: 20px; }
