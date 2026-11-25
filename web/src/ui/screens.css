@@ -883,3 +883,66 @@ html[data-large-text] .today.style-simple { zoom: 0.8334; }
   .band-time .sfx { font-size: 22px; }
 }
 html[data-large-text] .pname { font-size: 20px; }
+
+/* ---------- Centre Dial rebuilt to the v12 mockup (Prayer screen) ---------- */
+.style-centre .centre-page { --fg: #151A45; --fg2: #4A5080; --fg3: #6E7499; --card: rgba(255, 255, 255, 0.62); --hair: rgba(21, 26, 69, 0.09); gap: 10px; }
+:root[data-theme="dark"] .style-centre .centre-page { --fg: #EEF0FA; --fg2: #B9C0E2; --fg3: #8E97C4; --card: rgba(255, 255, 255, 0.09); --hair: rgba(255, 255, 255, 0.1); }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) .style-centre .centre-page { --fg: #151A45; --fg2: #4A5080; --fg3: #6E7499; --card: rgba(255, 255, 255, 0.62); --hair: rgba(21, 26, 69, 0.09); } }
+/* Top bar: slim pill, round buttons */
+.centre-page .top-bar .place-chip { position: relative; min-height: 36px; padding: 0 12px; gap: 5px; font-size: 15px; background: var(--card); border: 1px solid var(--stroke);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.centre-page .top-bar .place-chip::after { content: ""; position: absolute; inset: -4px 0; }
+.centre-page .top-bar .place-chip > svg:first-child { color: var(--accent); }
+.centre-page .top-bar .round-btn { width: 44px; height: 44px; background: var(--card); border: 1px solid var(--stroke); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.centre-page .top-bar .round-btn svg { width: 22px; height: 22px; }
+/* Dial */
+.centre-page .centre-dial { margin: 2px 0 0; }
+.daydial .dial-sun, .daydial .dial-moon { color: var(--accent); line-height: 0; }
+.daydial .dial-sun svg, .daydial .dial-moon svg { fill: none; }
+.daydial-centre { gap: 0; }
+.dial-kicker { color: var(--fg2); line-height: 1.3; }
+.dial-count { font-weight: 700; line-height: 1.15; color: var(--fg); }
+.dial-count.accent { color: var(--accent); }
+.dial-label-line { color: var(--fg2); line-height: 1.3; }
+/* Date and arrows */
+.centre-page .day-nav { padding: 0 6px 0 2px; margin-top: 2px; }
+.centre-page .day-nav .chev { width: 44px; height: 44px; opacity: 1; color: var(--fg2); }
+.centre-page .day-nav-date { font-size: 18px; font-weight: 700; color: var(--fg); line-height: 1.2; }
+.centre-page .day-nav-hijri { font-size: 14px; color: var(--fg2); gap: 6px; }
+/* One compact list */
+.centre-page .list-wrap.fill { flex: 0 0 auto; }
+.centre-page .prayer-list.slim { gap: 0; padding: 0; overflow: hidden; border-radius: 20px; background: var(--card); border-color: var(--stroke); flex: 0 0 auto; }
+.centre-page .prayer-list.slim .prayer-row, .centre-page .list-wrap.fill .prayer-list.slim .prayer-row { flex: 0 0 auto; min-height: 54px; max-height: none; padding: 0 4px 0 28px; border-radius: 0; border-bottom: 1px solid var(--hair);
+  gap: 8px; opacity: 1 !important; box-shadow: none; background: none; }
+.centre-page .prayer-row.past { color: var(--fg2); }
+.centre-page .prayer-row.current { background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: none; }
+.centre-page .prayer-list.slim .prayer-row .bar { left: 0; top: 12px; bottom: 12px; width: 4px; opacity: 1 !important; }
+.centre-page .prayer-list.slim .prayer-row .names { flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: 8px; row-gap: 0; }
+.centre-page .prayer-list.slim .pname { font-size: 19px; font-weight: 500; }
+.centre-page .prayer-list.slim .prayer-row.lit .pname { font-weight: 700; }
+.centre-page .prayer-list.slim .in-tag { font-size: 13px; font-weight: 600; }
+.centre-page .prayer-list.slim .now-tag { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.centre-page .prayer-list.slim .extra { flex-basis: 100%; font-size: 13px; }
+.centre-page .prayer-list.slim .time { font-weight: 600; }
+.centre-page .prayer-list.slim .time .sfx { font-size: 13px !important; opacity: 1; color: var(--fg2); font-weight: 600; }
+.centre-page .prayer-row .tick { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: inline-flex; align-items: center; justify-content: center; flex: none; align-self: center; }
+.centre-page .prayed-time { font-size: 13px; font-weight: 500; opacity: 1; color: var(--fg2); margin-left: 0; }
+.centre-page .prayer-list.slim .prayer-row .bell { width: 48px; height: 48px; }
+.centre-page .prayer-row .bell svg { width: 22px; height: 22px; opacity: 0.8 !important; }
+.centre-page .prayer-row .bell-off, .centre-page .prayer-row .bell-notify { color: var(--fg3); }
+.centre-page .prayer-row .bell-alarm { color: var(--accent); }
+.centre-page .prayer-row .bell-alarm svg { opacity: 1 !important; }
+.centre-page .prayer-list.slim .blessed-row { min-height: 54px; padding: 4px 4px 4px 28px; border-bottom: 1px solid var(--hair); opacity: 1 !important; color: var(--fg2); }
+.centre-page .prayer-list.slim .blessed-row .bar { left: 0; width: 4px; top: 12px; bottom: 12px; }
+.centre-page .prayer-list.slim .blessed-row .time { font-size: 20px !important; }
+.centre-page .prayer-list.slim .blessed-row .time .sfx { font-size: 13px !important; }
+.centre-page .more-link { display: flex; justify-content: center; align-items: center; gap: 4px; width: 100%; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--accent); }
+.centre-page .syuruk-hadith { padding: 0 12px 8px; }
+.centre-page .source-line { align-self: center; font-size: 15px; color: var(--fg3); text-align: center; min-height: 44px; margin-top: -8px; }
+.centre-page .source-line b { color: var(--accent); font-weight: 700; }
+/* Tab bar: the current tab in the accent colour */
+.tabbar button { color: var(--fg2); }
+.tabbar button[aria-current="page"] { background: none; color: var(--accent); font-weight: 700; }
+.tabbar button[aria-current="page"] svg { fill: color-mix(in srgb, currentColor 18%, transparent); }
+.centre-page .prayer-list.slim .in-tag { color: var(--accent) !important; }
+:root[data-theme="light"] .tabbar button[aria-current="page"] { color: color-mix(in srgb, var(--accent) 68%, #000); }

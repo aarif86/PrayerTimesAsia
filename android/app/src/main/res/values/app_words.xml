@@ -91,6 +91,7 @@
     <string name="today_calledHere" formatted="false">called {name} here</string>
     <string name="today_now" formatted="false">NOW</string>
     <string name="today_next" formatted="false">NEXT</string>
+    <string name="today_nextPrayer" formatted="false">Next prayer</string>
     <string name="today_nextIn" formatted="false">{name} in {time}</string>
     <string name="today_in" formatted="false">in {time}</string>
     <string name="today_alertOff" formatted="false">Turn off alert</string>

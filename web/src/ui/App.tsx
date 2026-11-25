@@ -8,7 +8,8 @@ import { ChevronsLeft, ChevronsRight, Compass, Globe2, Plane } from 'lucide-prea
 import { scheduleAlerts } from '../services/notifications'
 import { store, TABS, useNow, useStore, type Tab } from '../services/store'
 import { closeSheet, openSheet, useSheet } from './common'
-import { TabFalak, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
+import { TabMasjid } from './icons'
+import { Clock, SlidersHorizontal, Sun } from 'lucide-preact'
 import { LivingSky } from './LivingSky'
 import { takeMoveFromLink } from './moveLink'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
@@ -74,7 +75,8 @@ function warmUpScreens(): ReturnType<typeof setTimeout> {
 
 const tabLabel = (tab: Tab): string => ({ today: tr('tab.prayer'), qibla: tr('tab.qibla'), falak: tr('tab.falak'), masjid: tr('tab.masjid'), settings: tr('tab.settings') })[tab]
 const TAB_ICON: Record<Tab, (p: { size?: number }) => preact.JSX.Element> = {
-  today: TabPrayer, qibla: TabQibla, falak: TabFalak, masjid: TabMasjid, settings: TabSettings,
+  today: (p) => <Clock size={p.size} strokeWidth={1.75} />, qibla: (p) => <Compass size={p.size} strokeWidth={1.75} />,
+  falak: (p) => <Sun size={p.size} strokeWidth={1.75} />, masjid: TabMasjid, settings: (p) => <SlidersHorizontal size={p.size} strokeWidth={1.75} />,
 }
 
 function prefersLight(): boolean {
