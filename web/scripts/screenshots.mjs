@@ -61,7 +61,7 @@ const shots = [
   ['21-visitor-kl', { demo: 'visitor', style: 'centre', appearance: 'dark', now: NIGHT }],
   ['22-travel-hanoi', { demo: 'travel', style: 'centre', appearance: 'dark', now: NIGHT }],
   ['23-masjid-about', { tab: 'masjid', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label="About this app"]')],
-  ['24-source-sheet', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('.source-badge')],
+  ['24-source-sheet', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('.source-line')],
   ['25-calendar-sheet', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('.day-nav-main')],
   ['26-places-sheet', { style: 'centre', appearance: 'dark', now: NIGHT }, async (p) => { await p.click('.place-chip'); await p.fill('input[type=search]', 'ku') }],
   ['27-style-menu', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.click('button[aria-label^="Prayer screen style"]')],

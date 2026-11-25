@@ -913,7 +913,8 @@ html[data-large-text] .pname { font-size: 20px; }
 .centre-page .source-line { align-self: center; font-size: 15px; color: var(--fg3); text-align: center; min-height: 44px; margin-top: -8px; }
 .centre-page .source-line b { color: var(--accent); font-weight: 700; }
 /* Tab bar: the current tab in the accent colour */
-.tabbar button { color: var(--fg3); }
+.tabbar button { color: var(--fg2); }
 .tabbar button[aria-current="page"] { background: none; color: var(--accent); font-weight: 700; }
 .tabbar button[aria-current="page"] svg { fill: color-mix(in srgb, currentColor 18%, transparent); }
 .centre-page .prayer-list.slim .in-tag { color: var(--accent) !important; }
+:root[data-theme="light"] .tabbar button[aria-current="page"] { color: color-mix(in srgb, var(--accent) 68%, #000); }
