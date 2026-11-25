@@ -112,9 +112,9 @@
     <string name="today_midnightShort" formatted="false">Midnight</string>
     <string name="today_lastThirdShort" formatted="false">Last third</string>
     <string name="today_imsakNote" formatted="false">10 minutes before Fajr. Finish sahur by now</string>
-    <string name="today_dhuhaNote" formatted="false">Sun a spear\'s length up (about 4½°)</string>
+    <string name="today_dhuhaNote" formatted="false">Optional prayer after sunrise</string>
     <string name="today_midnightNote" formatted="false">Halfway from Maghrib to Fajr</string>
-    <string name="today_lastThirdNote" formatted="false">Best time for tahajjud and dua</string>
+    <string name="today_lastThirdNote" formatted="false">A quiet time for tahajjud</string>
     <string name="today_prayed" formatted="false">, prayed</string>
     <string name="today_moreTimes" formatted="false">Show more times</string>
     <string name="today_nowNext" formatted="false">Now {now}. {next} at {time}.</string>
@@ -1195,4 +1195,18 @@
     <string name="menu_days" formatted="false">{n} days</string>
     <string name="menu_days_one" formatted="false">{n} day</string>
     <string name="menu_back" formatted="false">Look and feel</string>
+    <string name="log_ask" formatted="false">When did you pray it? Early or late, we only note the time.</string>
+    <string name="log_justNow" formatted="false">Just now, {time}</string>
+    <string name="log_atTime" formatted="false">At its time, {time}</string>
+    <string name="log_pick" formatted="false">Pick a time</string>
+    <string name="log_save" formatted="false">Save</string>
+    <string name="log_remove" formatted="false">Remove tick</string>
+    <string name="log_catchTitle" formatted="false">Log my prayers</string>
+    <string name="log_catchIntro" formatted="false">Forgot to tick? Add the time you prayed. Early or late, we only note what you tell us.</string>
+    <string name="log_tickAll" formatted="false">Tick all as on time</string>
+    <string name="log_prayedAt" formatted="false">Prayed {time}</string>
+    <string name="log_prayed" formatted="false">Prayed</string>
+    <string name="log_from" formatted="false">from {time}</string>
+    <string name="log_allDone" formatted="false">Every prayer so far today is ticked.</string>
+    <string name="log_timeLabel" formatted="false">Time you prayed</string>
 </resources>
