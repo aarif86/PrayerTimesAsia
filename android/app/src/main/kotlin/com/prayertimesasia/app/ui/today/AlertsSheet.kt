@@ -37,6 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.StopCircle
@@ -113,6 +114,7 @@ fun WakeUpSheetContent(state: AppState) {
         null -> AlertsMainList(state, go)
         "all" -> SubPage(tr(R.string.all_row), go) { AllFivePage(state) }
         "check" -> SubPage(tr(R.string.alerts_checkPhone), go) { CheckPhonePage(state) }
+        "ownAzan" -> SubPage("Your own azan", go) { Column { com.prayertimesasia.app.ui.settings.OwnAzanPage(state) } }
         "friday" -> SubPage(tr(R.string.jumuah_leaveFor, "friday" to Prayer.DHUHR.name(state.resolver.naming, true)), go) { FridayAlertPage(state) }
         else -> {
             val prayer = Prayer.entries.firstOrNull { it.raw == now }
@@ -156,7 +158,7 @@ private fun AlertsMainList(state: AppState, go: (String?) -> Unit) {
             EachPrayerSection(state, go) { justSet = it }
             NextAlarmSection(state)
             ExtrasSection(state)
-            SoundSection(state)
+            SoundSection(state, go)
             AlarmSoundSection(state)
             WakeHadith()
         }
@@ -512,7 +514,7 @@ private fun ExtrasSection(state: AppState) {
 }
 
 @Composable
-private fun SoundSection(state: AppState) {
+private fun SoundSection(state: AppState, go: (String?) -> Unit) {
     val r = state.resolver
     val p = state.prefs
     val context = LocalContext.current
@@ -520,8 +522,8 @@ private fun SoundSection(state: AppState) {
         if (Azan.isAvailable(context)) {
             SwitchRow(tr(R.string.settings_azan), p.azanSound, sub = tr(R.string.phone_alerts_azanSub)) { on -> state.update { it.copy(azanSound = on) } }
             // Short call or full azan. Their own azan (Settings, Your own azan) replaces both, so the choice hides then.
-            if (p.azanSound && Azan.voices(context).isNotEmpty() && !OwnAzan.isSet(context)) {
-                AzanChoiceRows(state)
+            if (p.azanSound && Azan.voices(context).isNotEmpty()) {
+                AzanChoiceRows(state, go)
             }
         }
         SwitchRow(tr(R.string.settings_buzzOnly), p.buzzOnly, sub = tr(R.string.alerts_buzzSub)) { on -> state.update { it.copy(buzzOnly = on) } }
@@ -536,7 +538,7 @@ private fun SoundSection(state: AppState) {
 
 /** Which voice and how long. Tapping a choice picks it and plays it; tapping again stops it. */
 @Composable
-private fun AzanChoiceRows(state: AppState) {
+private fun AzanChoiceRows(state: AppState, go: (String?) -> Unit) {
     val context = LocalContext.current
     val p = state.prefs
     val voice = Azan.voiceOrDefault(context, p.azanVoice) ?: return
@@ -558,6 +560,21 @@ private fun AzanChoiceRows(state: AppState) {
         playing = key
     }
     DisposableEffect(Unit) { onDispose { stop() } }
+    val ownSet = OwnAzan.isSet(context)
+    val ownRow: @Composable () -> Unit = {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable { go("ownAzan") }.padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("Your own azan", style = Txt.body, color = Palette.primary)
+                Text(if (ownSet) "Your file plays for every prayer" else "Pick an audio file on this phone", style = Txt.footnote, color = Palette.secondary)
+            }
+            Text(if (ownSet) tr(R.string.common_on) else tr(R.string.common_off), style = Txt.body, color = Palette.secondary)
+            Icon(Icons.Filled.ChevronRight, null, Modifier.size(20.dp), tint = Palette.secondary)
+        }
+    }
+    if (ownSet) { ownRow(); return }
     if (voices.size > 1) {
         Text(tr(R.string.alerts_azanVoice), style = Txt.footnote, color = Palette.secondary,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp))
@@ -570,6 +587,7 @@ private fun AzanChoiceRows(state: AppState) {
             val name = voiceName(v)
             val selected = v == voice
             val described = tr(R.string.phone_alerts_selected, "label" to name)
+            val playWord = "${tr(if (playing == v) R.string.alerts_azanStop else R.string.alerts_azanListen)}, $name"
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable { state.update { it.copy(azanVoice = v) } }
                     .padding(start = 6.dp, end = 16.dp, top = 6.dp, bottom = 6.dp)
@@ -577,8 +595,8 @@ private fun AzanChoiceRows(state: AppState) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Box(Modifier.size(44.dp).clip(CircleShape).clickable { play(v, v, full = false) }
-                    .semantics { contentDescription = "${tr(if (playing == v) R.string.alerts_azanStop else R.string.alerts_azanListen)}, $name" },
+                Box(Modifier.size(48.dp).clip(CircleShape).clickable { play(v, v, full = false) }
+                    .semantics { contentDescription = playWord },
                     contentAlignment = Alignment.Center) {
                     Icon(if (playing == v) Icons.Filled.StopCircle else Icons.Filled.PlayCircle, null, Modifier.size(30.dp), tint = Palette.accent)
                 }
@@ -590,6 +608,7 @@ private fun AzanChoiceRows(state: AppState) {
             }
         }
     }
+    ownRow()
     if (Azan.has(context, voice, Azan.Kind.FULL)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(tr(R.string.alerts_azanLength), style = Txt.body, color = Palette.primary, modifier = Modifier.weight(1f))

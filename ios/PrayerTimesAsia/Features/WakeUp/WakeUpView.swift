@@ -630,9 +630,30 @@ private struct AzanChoiceRows: View {
         "sudais": "Makkah, Sheikh Sudais", "aqsa": "Al-Aqsa", "egypt": "Egyptian style", "madinah": "Madinah",
     ]
 
+    @State private var ownSet = OwnAzan.isSet
+
+    private var ownRow: some View {
+        NavigationLink {
+            OwnAzanView()
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Your own azan")
+                    Text(ownSet ? "Your file plays for every prayer" : "Pick an audio file on this iPhone").font(.footnote).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Text(ownSet ? "On" : "Off").foregroundStyle(.secondary)
+            }
+        }
+    }
+
     var body: some View {
         let voices = Azan.voices
         let voice = Azan.voiceOrDefault(model.prefs.azanVoice) ?? "asim"
+        if ownSet {
+            Section { ownRow }
+                .onAppear { ownSet = OwnAzan.isSet }
+        } else {
         Section {
             if voices.count > 1 {
                 ForEach(voices, id: \.self) { v in
@@ -662,6 +683,7 @@ private struct AzanChoiceRows: View {
                         .buttonStyle(.borderless)
                     }
                 }
+                ownRow
             }
             if Azan.has(voice, .full) {
                 HStack {
@@ -700,6 +722,8 @@ private struct AzanChoiceRows: View {
                 Text("Tap play to hear a voice. Free for everyone, with no ads. We only use recordings their owners let anyone share, so paid or non commercial recordings cannot be included. More voices will come as owners say yes.")
                     .font(.caption)
             }
+        }
+        .onAppear { ownSet = OwnAzan.isSet }
         }
     }
 
@@ -773,7 +797,7 @@ private struct SoundSection: View {
             Text("Buzz only and Quiet hours are for shift workers sleeping in the day, a baby asleep in the room, or a calm night. Notifications only buzz then. Alarms keep their sound.")
         }
         // Voice and length. Their own azan (Settings, Your own azan) replaces these, so they hide then.
-        if Azan.isAvailable && model.prefs.azanSound && !Azan.voices.isEmpty && !OwnAzan.isSet {
+        if Azan.isAvailable && model.prefs.azanSound && !Azan.voices.isEmpty {
             AzanChoiceRows()
         }
     }
