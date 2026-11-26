@@ -773,7 +773,7 @@ function BlessedBand({ b, t, now }: { b: BlessedTime; t: number; now: number }) 
       <Icon size={17} style={{ opacity: 0.8, flex: 'none' }} />
       <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <span class="headline">{BLESSED_NAME[b]}</span>
-        <span class="caption" style={{ opacity: 0.7, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{blessedNote(b)}</span>
+        <span class="caption" style={{ opacity: 0.7 }}>{blessedNote(b)}</span>
       </span>
       <span class="spacer" />
       <span class="band-time small"><span>{parts.time}</span>{parts.suffix && <span class="sfx">{parts.suffix}</span>}</span>

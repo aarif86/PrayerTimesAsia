@@ -319,6 +319,28 @@ export default function MasjidScreen() {
   const mine = s.prefs.myMasjid
   const isMine = (c: Coordinates) => !!mine && Math.abs(mine.lat - c.latitude) < 0.003 && Math.abs(mine.lng - c.longitude) < 0.003
 
+  /** The opened details of a place: room info, hours, second Friday, Eid, and the actions. */
+  const moreOf = (sp: typeof visible[number]) => {
+    const fri = singapore ? fridayMosqueAt(sp.coordinates) : null
+    const h = hoursOf(sp)
+    const raya = eid ? eidAt(eid, sp.name, sp.coordinates) : null
+    return (
+      <div class="space-more">
+                    <RoomInfo d={sp.details} f={sp.facilities} />
+                    {h && <p><Clock size={14} /> {hoursText(h, use24)}</p>}
+                    {fri && <p class="accent-text">{secondFridayLine(fri.womenSession2, use24)}</p>}
+                    {raya && <p class="accent-text">{tr('masjid.eidAt', { name: eidPrayerName(eid!), times: raya.sessions.map((x) => clock(x.time, use24)).join(', ') })}</p>}
+                    <div class="space-actions">
+                      <a class="plain-btn" href={directionsURL(sp.coordinates, mode)} target="_blank" rel="noopener noreferrer">{mode === 'walk' ? <Footprints size={15} /> : <Car size={15} />} {tr('masjid.directions')}</a>
+                      {isMine(sp.coordinates)
+                        ? <span class="plain-btn done"><Star size={15} fill="currentColor" /> {sp.isMusollah ? tr('masjid.keptTop') : tr('myMasjid.title')}</span>
+                        : <button class="plain-btn" onClick={() => s.chooseMasjid(sp.name, sp.coordinates)}><Star size={15} /> {sp.isMusollah ? tr('masjid.keepTop') : tr('masjid.makeMine')}</button>}
+                      <a class="plain-btn quiet" href={reportURL(sp.coordinates)} target="_blank" rel="noopener noreferrer"><Flag size={15} /> {tr('masjid.report')}</a>
+                    </div>
+                  </div>
+    )
+  }
+
   const fridayCard = singapore && here
     ? <FridayCard from={here.coordinates} all={allFriday} onAll={() => setAllFriday((v) => !v)} today={friday} use24={use24} mode={mode} onFocus={focus} />
     : null
@@ -350,9 +372,12 @@ export default function MasjidScreen() {
         {look === 'simple' && nearest && (
           <section class="m-near" aria-label={tr('masjid.nearestMasjid')}>
             <h2 class="m-near-h">{tr('masjid.nearestMasjid')}</h2>
-            <div class="m-near-card">
-              <div class="m-near-name">{nearest.name}</div>
-              <div class="m-near-line">{distanceText(nearest.distanceKm)}{tripText(nearest.distanceKm, mode) ? `, ${tripText(nearest.distanceKm, mode)}` : ''}</div>
+            <div class={`m-near-card${expanded === nearest.id ? ' open' : ''}`}>
+              <button class="m-near-hit" aria-expanded={expanded === nearest.id} onClick={() => { setExpanded(expanded === nearest.id ? null : nearest.id); focus(nearest.coordinates) }}>
+                <span class="m-near-name">{isMine(nearest.coordinates) && <Star size={18} class="accent" fill="currentColor" style={{ marginRight: 6 }} />}{nearest.name}</span>
+                <span class="m-near-line">{distanceText(nearest.distanceKm)}{tripText(nearest.distanceKm, mode) ? `, ${tripText(nearest.distanceKm, mode)}` : ''}</span>
+              </button>
+              {expanded === nearest.id && moreOf(nearest)}
               <a class="m-near-btn" href={directionsURL(nearest.coordinates, mode)} target="_blank" rel="noopener noreferrer">{tr('masjid.showWay')}</a>
             </div>
           </section>
@@ -387,7 +412,6 @@ export default function MasjidScreen() {
             const fri = singapore ? fridayMosqueAt(sp.coordinates) : null
             const trip = tripText(sp.distanceKm, mode)
             const h = hoursOf(sp)
-            const raya = eid ? eidAt(eid, sp.name, sp.coordinates) : null
             const open = expanded === sp.id
             return (
               <li class={`${open ? 'open' : ''}${sp.isMusollah ? ' sp-mus' : ''}`}>
@@ -411,21 +435,7 @@ export default function MasjidScreen() {
                   </button>
                   <a class="walk" href={directionsURL(sp.coordinates, mode)} target="_blank" rel="noopener noreferrer" aria-label={mode === 'walk' ? tr('masjid.walking', { name: sp.name }) : tr('masjid.drivingTo', { name: sp.name })}>{mode === 'walk' ? <Footprints size={17} /> : <Car size={17} />}</a>
                 </div>
-                {open && (
-                  <div class="space-more">
-                    <RoomInfo d={sp.details} f={sp.facilities} />
-                    {h && <p><Clock size={14} /> {hoursText(h, use24)}</p>}
-                    {fri && <p class="accent-text">{secondFridayLine(fri.womenSession2, use24)}</p>}
-                    {raya && <p class="accent-text">{tr('masjid.eidAt', { name: eidPrayerName(eid!), times: raya.sessions.map((x) => clock(x.time, use24)).join(', ') })}</p>}
-                    <div class="space-actions">
-                      <a class="plain-btn" href={directionsURL(sp.coordinates, mode)} target="_blank" rel="noopener noreferrer">{mode === 'walk' ? <Footprints size={15} /> : <Car size={15} />} {tr('masjid.directions')}</a>
-                      {isMine(sp.coordinates)
-                        ? <span class="plain-btn done"><Star size={15} fill="currentColor" /> {sp.isMusollah ? tr('masjid.keptTop') : tr('myMasjid.title')}</span>
-                        : <button class="plain-btn" onClick={() => s.chooseMasjid(sp.name, sp.coordinates)}><Star size={15} /> {sp.isMusollah ? tr('masjid.keepTop') : tr('masjid.makeMine')}</button>}
-                      <a class="plain-btn quiet" href={reportURL(sp.coordinates)} target="_blank" rel="noopener noreferrer"><Flag size={15} /> {tr('masjid.report')}</a>
-                    </div>
-                  </div>
-                )}
+                {open && moreOf(sp)}
               </li>
             )
           })}
