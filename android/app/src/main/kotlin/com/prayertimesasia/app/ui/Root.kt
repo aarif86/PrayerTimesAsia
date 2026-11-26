@@ -79,6 +79,7 @@ import com.prayertimesasia.app.ui.theme.LocalSkyScheme
 import com.prayertimesasia.app.ui.theme.LocalLook
 import com.prayertimesasia.app.ui.theme.Look
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.lerp
@@ -292,7 +293,8 @@ fun TabBar(state: AppState, modifier: Modifier = Modifier) {
     Row(
         modifier.navigationBarsPadding().padding(horizontal = 14.dp).padding(bottom = 8.dp).fillMaxWidth().height(64.dp)
             .shadow(if (dark) 18.dp else 14.dp, shape, ambientColor = Color.Black.copy(alpha = 0.35f), spotColor = Color.Black.copy(alpha = if (dark) 0.35f else 0.15f))
-            .clip(shape).background(glass).border(1.dp, stroke, shape).padding(4.dp),
+            .clip(shape).background(glass).border(1.dp, stroke, shape)
+            .selectableGroup().padding(4.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {

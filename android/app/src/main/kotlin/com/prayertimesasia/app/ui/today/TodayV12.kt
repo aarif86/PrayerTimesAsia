@@ -170,6 +170,7 @@ private fun ListPageV12(
     var bottomH by remember { mutableStateOf(0.dp) }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val width = maxWidth - 40.dp
+        val screenW = maxWidth
         // Big and Simple: the list grows to fill the screen, rows 62 to 76 tall (web .simple-page.v12).
         val rows = entries(f.state, f.shown, f.state.prefs.showMore).size
         val simpleRow = if (simple) {
@@ -187,7 +188,8 @@ private fun ListPageV12(
                     simple -> SimpleNow(f, col)
                     look.sunPath -> SunStatus(f, col, width)
                     else -> Box(Modifier.fillMaxWidth().padding(top = 2.dp), contentAlignment = Alignment.Center) {
-                        val size = if (look.gold) (width.value * 0.52f).coerceIn(160f, 204f) else (width.value * 0.485f).coerceIn(150f, 190f)
+                        // The web sizes the dial from the screen width (clamp with vw), not the padded column.
+                        val size = if (look.gold) (screenW.value * 0.52f).coerceIn(160f, 204f) else (screenW.value * 0.485f).coerceIn(150f, 190f)
                         SmallDial(f, size.dp, gold = look.gold, col = col)
                     }
                 }
@@ -212,8 +214,8 @@ private fun ListPageV12(
 private fun TopBarV12(f: TodayFrame, openPlaces: () -> Unit) {
     val state = f.state
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        PlaceChipV12(state, openPlaces, Modifier.weight(1f, fill = false))
-        Spacer(Modifier.weight(1f))
+        // The chip takes the room the buttons leave, and shrinks only when the name is long.
+        Box(Modifier.weight(1f)) { PlaceChipV12(state, openPlaces) }
         if (state.prefs.musafirEnabled && state.resolver.musafirStatus(f.now)?.isTraveller == true) {
             RoundButton(AppIcons.journey, tr(R.string.today_musafirButton), iconSize = 18.dp,
                 background = pageColors().accent.copy(alpha = 0.25f)) { state.showJourney = true }
@@ -474,7 +476,7 @@ private fun SunStatus(f: TodayFrame, col: PageColors, width: Dp) {
                     .padding(horizontal = 16.dp, vertical = 8.dp))
         }
     }
-    SunPathV12(f, col, Modifier.fillMaxWidth().height(120.dp).offset(y = (-4).dp))
+    SunPathV12(f, col, Modifier.bleed(20.dp).fillMaxWidth().height(120.dp).offset(y = (-4).dp))
 }
 
 /** The day as one arc, midnight to midnight, as the web's v12 Sun Path. */
@@ -952,7 +954,7 @@ private fun BandV12(
     ) {
         Column(Modifier.weight(1f).clearAndSetSemantics {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             FlowLine {
-                Text(name, fontFamily = Rounded, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1, modifier = Modifier.align(Alignment.CenterVertically))
+                Text(name, fontFamily = Body, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1, modifier = Modifier.align(Alignment.CenterVertically))
                 r.localName(prayer, time)?.let { Text(it, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.8f), modifier = Modifier.align(Alignment.CenterVertically)) }
                 if (isCurrent) Text(tr(R.string.today_now), fontFamily = Body, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1D1D20),
                     modifier = Modifier.align(Alignment.CenterVertically).clip(CircleShape).background(Color.White).padding(horizontal = 7.dp, vertical = 3.dp))
