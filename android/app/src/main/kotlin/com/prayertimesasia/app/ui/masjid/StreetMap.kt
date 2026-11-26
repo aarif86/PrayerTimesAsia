@@ -255,6 +255,31 @@ internal class MapCamera {
         if (animate && ready) target = Triple(c.latitude, c.longitude, z) else { lat = c.latitude; lng = c.longitude; zoom = z; target = null }
     }
 
+    /**
+     * As on the web app: frame the nearest places with at least the 1 km ring round you, in the part
+     * of the map the sheet does not cover ([bottomDp] at its foot), no closer in than zoom 16.
+     */
+    fun frame(c: Coordinates, near: List<Coordinates>, bottomDp: Double) {
+        if (!ready) return
+        val d = 1 / 111.2
+        val dl = d / max(0.2, cos(c.latitude * PI / 180))
+        val pts = near + listOf(Coordinates(c.latitude - d, c.longitude - dl), Coordinates(c.latitude + d, c.longitude + dl))
+        val minLat = pts.minOf { it.latitude }; val maxLat = pts.maxOf { it.latitude }
+        val minLng = pts.minOf { it.longitude }; val maxLng = pts.maxOf { it.longitude }
+        val usableH = max(80.0, heightDp - bottomDp)
+        var z = 16.0
+        while (z > 3) {
+            val w = Mercator.x(maxLng, z) - Mercator.x(minLng, z)
+            val h = Mercator.y(minLat, z) - Mercator.y(maxLat, z)
+            if (w <= widthDp - 72 && h <= usableH - 72) break
+            z -= 0.125
+        }
+        // Centre the framed area in the open part of the map, above the sheet.
+        val cy = (Mercator.y(minLat, z) + Mercator.y(maxLat, z)) / 2 + bottomDp / 2
+        val cx = (Mercator.x(minLng, z) + Mercator.x(maxLng, z)) / 2
+        lat = Mercator.lat(cy, z); lng = Mercator.lng(cx, z); zoom = z; target = null
+    }
+
     /** Fit every point, with room for the pins. */
     fun fit(points: List<Coordinates>) {
         if (points.isEmpty() || !ready) return
@@ -311,7 +336,13 @@ internal fun StreetMap(
     val star = rememberVectorPainter(Icons.Filled.Star)
 
     // Centre on you whenever "you" moves or Walk and Drive switch, as on iPhone.
-    LaunchedEffect(center, mode, camera.ready) { if (camera.ready) camera.show(center, spanFor(mode), animate = false) }
+    // Frame you and the nearest five places, as the web app does, whenever "you", Walk and Drive or the list change.
+    val nearest = spaces.take(5)
+    LaunchedEffect(center, mode, camera.ready, nearest.map { it.id }) {
+        if (!camera.ready) return@LaunchedEffect
+        if (nearest.isEmpty()) camera.show(center, spanFor(mode), animate = false)
+        else camera.frame(center, nearest.map { it.coordinates }, bottomInset.value.toDouble())
+    }
     LaunchedEffect(camera.target) {
         val t = camera.target ?: return@LaunchedEffect
         val from = Triple(camera.lat, camera.lng, camera.zoom)
