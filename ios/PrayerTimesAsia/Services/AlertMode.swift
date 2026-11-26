@@ -43,6 +43,12 @@ enum AlertMode: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// What "Set for all prayers" can do: Off, Notification, Short azan (a notification that plays it) or Alarm.
+enum AllLevel: String, CaseIterable, Identifiable, Sendable {
+    case off, notify, azan, alarm
+    var id: String { rawValue }
+}
+
 extension Preferences {
     static let defaultFridayMinutes = 30
 
@@ -102,6 +108,28 @@ extension Preferences {
         // Alerts were never turned on: an old saved list is only a leftover, so start clean (same as setNotify).
         if !notificationsEnabled { notificationsEnabled = true; notifyPrayers = [] }
         for prayer in Prayer.obligatory { notifyPrayers.insert(prayer) }
+    }
+
+    /// "Set for all prayers": one choice for the five main prayers at once. Sunrise and
+    /// Jumu'ah are not touched. Short azan is a notification, and the azan sound is one
+    /// setting for the whole app, so Notification turns it off and Short azan turns it on.
+    /// Fajr is left alone when includeFajr is false, so a Fajr alarm someone set up
+    /// carefully is never replaced by accident. early is the early reminder in minutes,
+    /// or nil to leave it as it is. Same rule as the web applyToAllFive.
+    mutating func applyToAllFive(_ level: AllLevel, early: Int?, includeFajr: Bool = true) {
+        let mode: AlertMode = level == .off ? .off : (level == .alarm ? .alarm : .notify)
+        for prayer in Prayer.obligatory where prayer != .fajr || includeFajr { setAlertMode(mode, prayer) }
+        if level == .notify { azanSound = false }
+        if level == .azan { azanSound = true }
+        guard let early else { return }
+        reminderMinutesBefore = early
+        // Away from home the app uses its own minutes for each prayer, so they follow the same choice.
+        // A Fajr that has an alarm keeps its own (Off), so the two never ring together.
+        let away = early == 0 ? 0 : (AwayReminder.choices.min { abs($0 - early) < abs($1 - early) } ?? 0)
+        for prayer in Prayer.obligatory {
+            if prayer == .fajr && (!includeFajr || hasAlarm(.fajr)) { continue }
+            awayMinutes[prayer.rawValue] = away
+        }
     }
 
     /// The bell on the Prayer screen: Off, then Notify, then Alarm, then Off again.
