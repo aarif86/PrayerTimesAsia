@@ -12,7 +12,7 @@ import {
   type AlarmPrayer, type AlarmSound, type PrayerAlarmTiming, type SahurTiming, type WakeUpTiming,
 } from '../core/wakeup'
 import { previewAlarm, stopAlarm } from '../services/alarmSound'
-import { azanAvailable } from '../services/azan'
+import { azanAvailable, hasBothLengths, playAzan, stopAzan } from '../services/azan'
 import { alertSupport, anyAlarm, downloadWakeICS, nextJumuahLeave, nextWakeUp, permission, requestPermission, testAlert } from '../services/notifications'
 import { REMINDER_CHOICES, type Preferences } from '../services/prefs'
 import { AWAY_CHOICES, AWAY_PRAYERS, isAway } from '../core/away'
@@ -70,6 +70,34 @@ export function cycleAlert(prayer: Prayer): string {
 }
 
 /** When this choice would next ring: today if it is still ahead, else tomorrow. */
+/** Short call or full azan. Tapping one picks it and plays it, tapping again stops it. */
+function AzanLength({ full, fajr }: { full: boolean; fajr: string }) {
+  const [playing, setPlaying] = useState<boolean | null>(null)
+  useEffect(() => () => stopAzan(), [])
+  const pick = (v: boolean) => {
+    if (playing === v) { stopAzan(); setPlaying(null); return }
+    store.update((x) => { x.azanFull = v })
+    setPlaying(v)
+    playAzan(false, v, () => setPlaying((cur) => (cur === v ? null : cur)))
+  }
+  return (
+    <>
+      <div class="item"><span class="label">{tr('alerts.azanLength')}</span></div>
+      {[false, true].map((v) => {
+        const name = v ? tr('alerts.azanFull') : tr('alerts.azanShort')
+        return (
+          <button class="item choice" onClick={() => pick(v)} aria-pressed={full === v}>
+            <Play size={14} class="secondary" />
+            <span class="label">{name}</span>
+            <Check size={18} class="choice-tick" style={{ opacity: full === v ? 1 : 0 }} />
+          </button>
+        )
+      })}
+      <p class="group-foot">{tr('alerts.azanLengthSub', { name: fajr })}</p>
+    </>
+  )
+}
+
 function soon(now: number, at: (d: PrayerDay) => number): string | null {
   const t = soonAt(now, at)
   return t === null ? null : store.formatted(t)
@@ -381,6 +409,7 @@ function MainPage({ open }: { open: (v: View) => void }) {
         <h2 class="group-title" id="demo-sound">{tr('alerts.sound')}</h2>
         <div class="group">
           {azanAvailable() && <ToggleItem label={tr('settings.azan')} sub={tr('alerts.azanSub', { name: s.name('fajr') })} on={p.azanSound} onChange={(v) => store.update((x) => { x.azanSound = v })} />}
+          {azanAvailable() && p.azanSound && hasBothLengths() && <AzanLength full={p.azanFull} fajr={s.name('fajr')} />}
           <ToggleItem label={tr('settings.buzzOnly')} sub={tr('alerts.buzzSub')} on={p.buzzOnly} onChange={(v) => store.update((x) => { x.buzzOnly = v })} />
           <ToggleItem label={tr('settings.quietHours')} sub={tr('alerts.quietSub', { name: s.name('fajr') })} on={p.quietHours} onChange={(v) => store.update((x) => { x.quietHours = v })} />
           {p.quietHours && (

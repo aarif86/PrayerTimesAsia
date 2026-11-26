@@ -1,5 +1,6 @@
 package com.prayertimesasia.app.ui.today
 
+import android.media.MediaPlayer
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -45,6 +46,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +76,8 @@ import kotlinx.coroutines.launch
 import com.prayertimesasia.app.ui.components.AppWords
 import com.prayertimesasia.app.ui.components.HadithView
 import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.alarms.OwnAzan
+import com.prayertimesasia.app.ui.settings.LinkRow
 import com.prayertimesasia.app.ui.settings.PickerRow
 import com.prayertimesasia.app.ui.settings.Section
 import com.prayertimesasia.app.ui.settings.SwitchRow
@@ -513,6 +517,10 @@ private fun SoundSection(state: AppState) {
     Section(tr(R.string.alerts_sound), tr(R.string.phone_alerts_soundFoot)) {
         if (Azan.isAvailable(context)) {
             SwitchRow(tr(R.string.settings_azan), p.azanSound, sub = tr(R.string.phone_alerts_azanSub)) { on -> state.update { it.copy(azanSound = on) } }
+            // Short call or full azan. Their own azan (Settings, Your own azan) replaces both, so the choice hides then.
+            if (p.azanSound && Azan.hasBothLengths(context) && !OwnAzan.isSet(context)) {
+                AzanLengthRows(state)
+            }
         }
         SwitchRow(tr(R.string.settings_buzzOnly), p.buzzOnly, sub = tr(R.string.alerts_buzzSub)) { on -> state.update { it.copy(buzzOnly = on) } }
         SwitchRow(tr(R.string.settings_quietHours), p.quietHours, sub = tr(R.string.alerts_quietSub, "name" to Prayer.FAJR.name(r.naming))) { on -> state.update { it.copy(quietHours = on) } }
@@ -520,6 +528,35 @@ private fun SoundSection(state: AppState) {
             val halfHours = (0 until 1440 step 30).toList()
             PickerRow(tr(R.string.settings_from), r.clock(p.quietFrom), halfHours.map { r.clock(it) to it }, p.quietFrom) { m -> state.update { it.copy(quietFrom = m) } }
             PickerRow(tr(R.string.settings_until), r.clock(p.quietTo), halfHours.map { r.clock(it) to it }, p.quietTo) { m -> state.update { it.copy(quietTo = m) } }
+        }
+    }
+}
+
+/** Short call or full azan, with a Listen button that plays the chosen one. */
+@Composable
+private fun AzanLengthRows(state: AppState) {
+    val context = LocalContext.current
+    val p = state.prefs
+    val short = tr(R.string.alerts_azanShort)
+    val full = tr(R.string.alerts_azanFull)
+    var player by remember { mutableStateOf<MediaPlayer?>(null) }
+    fun stop() { player?.run { stop(); release() }; player = null }
+    DisposableEffect(Unit) { onDispose { stop() } }
+    PickerRow(tr(R.string.alerts_azanLength), if (p.azanFull) full else short, listOf(short to false, full to true), p.azanFull) { on ->
+        stop()
+        state.update { it.copy(azanFull = on) }
+    }
+    Text(tr(R.string.alerts_azanLengthSub, "name" to Prayer.FAJR.name(state.resolver.naming)), style = Txt.footnote, color = Palette.secondary,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+    LinkRow(if (player != null) tr(R.string.alerts_azanStop) else tr(R.string.alerts_azanListen), null) {
+        if (player != null) stop() else (if (p.azanFull) Azan.fullUri(context) else Azan.shortUri(context))?.let { uri ->
+            player = MediaPlayer().apply {
+                setAudioAttributes(Azan.attributes)
+                setDataSource(context, uri)
+                setOnCompletionListener { stop() }
+                prepare()
+                start()
+            }
         }
     }
 }

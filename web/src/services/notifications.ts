@@ -331,7 +331,7 @@ export function scheduleAlerts(): void {
       if (!done) {
         void show(next.title, next.body, next.id, next.silent)
         if (isAlarm(next.id)) playAlarm(store.prefs.alarmSound)
-        else if (next.prayer && store.prefs.azanSound && !next.silent) playAzan(next.prayer === 'fajr')
+        else if (next.prayer && store.prefs.azanSound && !next.silent) playAzan(next.prayer === 'fajr', store.prefs.azanFull)
       }
     }
     scheduleAlerts()
@@ -359,7 +359,7 @@ export async function testAlert(): Promise<'sent' | 'blocked'> {
   setTimeout(() => {
     const quiet = store.prefs.buzzOnly
     void show(tr('notify.testTitle', { name }), tr('notify.testBody'), 'test', quiet)
-    if (store.prefs.azanSound && !quiet) playAzan(false)
+    if (store.prefs.azanSound && !quiet) playAzan(false, store.prefs.azanFull)
   }, TEST_ALERT_DELAY_MS)
   return 'sent'
 }

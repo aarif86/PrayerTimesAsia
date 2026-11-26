@@ -5,14 +5,21 @@ import android.media.AudioAttributes
 import android.net.Uri
 
 /**
- * The azan for prayer time alerts: res/raw/azan.ogg and azan_subuh.ogg, made
- * from one source recording by tools/make_azan.sh. Looked up by name, so the
- * app builds and runs before the recordings are added; until then the switch
- * stays hidden and alerts use the phone's sound. Android plays the whole file.
+ * The azan for prayer time alerts, in two lengths made from one recording by
+ * tools/make_azan.sh (see docs/azan-clip-spec.md):
+ *   res/raw/azan_short.ogg  the opening takbir only, about 12 seconds (the default)
+ *   res/raw/azan.ogg        the full azan
+ * Looked up by name, so the app builds and runs without them; until they are
+ * added the switch stays hidden and alerts use the phone's sound.
+ *
+ * Fajr always uses the short call: the full recording is the ordinary azan,
+ * without the Fajr line. A res/raw/azan_subuh.ogg, if one is ever added, is used
+ * for Fajr instead.
  */
 object Azan {
-    private const val FILE = "azan"
-    private const val SUBUH_FILE = "azan_subuh"
+    private const val FULL = "azan"
+    private const val SHORT = "azan_short"
+    private const val SUBUH = "azan_subuh"
 
     val attributes: AudioAttributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_NOTIFICATION)
@@ -20,10 +27,23 @@ object Azan {
         .build()
 
     /** True when the app has its own recording, or the person picked their own (see [OwnAzan]). */
-    fun isAvailable(context: Context): Boolean = id(context, FILE) != 0 || OwnAzan.isSet(context)
+    fun isAvailable(context: Context): Boolean =
+        id(context, SHORT) != 0 || id(context, FULL) != 0 || OwnAzan.isSet(context)
 
-    fun uri(context: Context, subuh: Boolean): Uri? {
-        val id = id(context, if (subuh) SUBUH_FILE else FILE).takeIf { it != 0 } ?: return null
+    /** True when the app has both lengths, so the Short or Full choice is worth showing. */
+    fun hasBothLengths(context: Context): Boolean = id(context, SHORT) != 0 && id(context, FULL) != 0
+
+    /** The short call, falling back to the full file if only that one is there. */
+    fun shortUri(context: Context): Uri? = uri(context, SHORT) ?: uri(context, FULL)
+
+    /** The full azan, falling back to the short call if only that one is there. */
+    fun fullUri(context: Context): Uri? = uri(context, FULL) ?: uri(context, SHORT)
+
+    /** A separate Fajr recording, when the app has one. */
+    fun subuhUri(context: Context): Uri? = uri(context, SUBUH)
+
+    private fun uri(context: Context, name: String): Uri? {
+        val id = id(context, name).takeIf { it != 0 } ?: return null
         return Uri.parse("android.resource://${context.packageName}/$id")
     }
 

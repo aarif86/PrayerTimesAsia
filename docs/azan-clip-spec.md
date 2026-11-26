@@ -5,6 +5,20 @@ Our own clips are made by `tools/make_azan.sh`. "Your own azan" files are shaped
 on the phone by `AudioClip` (iOS `Core/AudioClip.swift`, Android core
 `AudioClip.kt`) with the same numbers.
 
+## Two lengths
+
+Every app has a **Short call** (the default) and a **Full azan**, chosen in
+Alerts and alarms, Sound. Fajr always plays the short call, because the full
+recording is the ordinary azan without the Fajr line (an `azan-subuh` file, if
+one is ever added, is used for Fajr instead). Made with:
+
+    tools/make_azan.sh RECORDING SHORT_END [IOS_END]
+
+Today's azan: Asim Javed, ICR Friday 2nd adhan (CC0),
+`tools/make_azan.sh asim-javed-2nd-adhan.flac 11.9 24.3`. Short call 11.9 s; full
+74.9 s on Android and the web, 24.3 s on iPhone (the last phrase that ends before
+iOS's 30 second limit).
+
 ## Short call (the default alert)
 
 - **Length 10 to 15 seconds.** Start at the first "Allahu akbar", end after the

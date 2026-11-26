@@ -63,6 +63,8 @@ export interface Preferences {
   awayMinutes: Record<string, number>
   /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings - see services/azan.ts. */
   azanSound: boolean
+  /** Full azan instead of the short call (opening takbir only). Fajr always uses the short call. */
+  azanFull: boolean
   musafirThresholdKm: number
   jakimZoneOverride: string | null
   lastCountryCode: string | null
@@ -190,6 +192,7 @@ export const DEFAULT_PREFS: Preferences = {
   awayReminder: true,
   awayMinutes: { ...DEFAULT_AWAY_MINUTES },
   azanSound: true,
+  azanFull: false,
   musafirThresholdKm: 81,
   jakimZoneOverride: null,
   lastCountryCode: null,
