@@ -17,9 +17,9 @@ struct SkySliderCard: View {
 
     var body: some View {
         if let day = model.day(containing: now) {
-            let start = day.time(.fajr).addingTimeInterval(-45 * 60)
-            let end = day.time(.isha).addingTimeInterval(45 * 60)
-            let span = end.timeIntervalSince(start) / 60
+            let range = Falak.skyRange(now: now, fajr: day.time(.fajr), isha: day.time(.isha))
+            let start = range.start
+            let span = range.end.timeIntervalSince(start) / 60
             let clock = min(max(now.timeIntervalSince(start) / 60, 0), span)
             let t = start.addingTimeInterval((picked ?? clock) * 60)
             let stage = Falak.skyStage(t, times: day.times)
@@ -48,6 +48,13 @@ struct SkySliderCard: View {
                     Text("Slide the sun").font(.caption.weight(.semibold)).opacity(0.7)
                     Spacer()
                     Text("West").font(.caption2.weight(.semibold)).opacity(0.6)
+                }
+                if picked != nil {
+                    Button("Now") { withAnimation(.snappy) { picked = nil } }
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(look.palette.actx)
+                        .frame(maxWidth: .infinity)
+                        .accessibilityHint("Puts the sun back to the time now")
                 }
             }
             .modifier(SkyCardStyle())
