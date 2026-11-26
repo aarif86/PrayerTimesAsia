@@ -20,11 +20,18 @@ are in the app; until then alerts use the phone's own sound.
 
 ## Where each recording comes from
 
-Every recording needs written permission from the person whose voice it is.
-Collections found online mostly copy famous muezzins without permission, so
-they are not used.
+Every recording needs written permission or a clear open licence from the person
+whose voice it is. Collections found online mostly copy famous muezzins without
+permission, so they are not used.
+
+**Starting point (26 Nov 2026):** one free recording is used for all five prayers
+until a Subuh azan (with "As-salatu khayrun minan-nawm") and a masjid in Asia give
+permission for theirs. Subuh falls back to this azan on all three platforms. The
+owner is asking a Singapore masjid and a Malaysian or Indonesian source for
+permission. Candidates and licences are in the shared project folder
+(research/azan-licensing-2026-11-26.md).
 
 | File | Muezzin | Recorded | Permission |
 |---|---|---|---|
-| azan | *(waiting for the recording)* | | |
-| azan-subuh | *(waiting for the recording)* | | |
+| azan | Asim Javed, ICR (Friday 1st adhan, 17 May 2024, 3 min 40 s, "Called by: Asim Javed") | 2024, uploaded by Asim Javed | CC0 1.0 public domain dedication on the Internet Archive: https://archive.org/details/icr-friday-prayer-1st-adhan-17th-may-2024-9th-dhul-qadah-1445-by-asim-javed (https://creativecommons.org/publicdomain/zero/1.0/). No credit required; courtesy credit welcome. Volume evened out, silence trimmed, iPhone copy cut to 29.5 s with a fade. |
+| azan-subuh | *(none yet, Subuh uses the azan above)* | | Wanted: a proper Fajr azan with "As-salatu khayrun minan-nawm". Best open candidate: Besim Azemi, Islamic Center Malmo, CC BY 3.0 (credit needed, licence checked by a bot only). |
