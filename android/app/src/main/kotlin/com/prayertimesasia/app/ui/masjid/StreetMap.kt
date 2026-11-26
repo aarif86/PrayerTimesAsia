@@ -5,13 +5,11 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.util.LruCache
 import androidx.compose.animation.core.Animatable
-import androidx.compose.material.icons.filled.Brightness2
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.prayertimesasia.core.MasjidLink
@@ -74,10 +72,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prayertimesasia.app.ui.theme.LocalSkyScheme
 import com.prayertimesasia.app.ui.theme.Palette
-import com.prayertimesasia.app.ui.theme.tint
 import com.prayertimesasia.core.Coordinates
 import com.prayertimesasia.core.MasjidExtras
-import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerSpace
 import com.prayertimesasia.core.TripMode
 import kotlinx.coroutines.Dispatchers
@@ -259,6 +255,31 @@ internal class MapCamera {
         if (animate && ready) target = Triple(c.latitude, c.longitude, z) else { lat = c.latitude; lng = c.longitude; zoom = z; target = null }
     }
 
+    /**
+     * As on the web app: frame the nearest places with at least the 1 km ring round you, in the part
+     * of the map the sheet does not cover ([bottomDp] at its foot), no closer in than zoom 16.
+     */
+    fun frame(c: Coordinates, near: List<Coordinates>, bottomDp: Double) {
+        if (!ready) return
+        val d = 1 / 111.2
+        val dl = d / max(0.2, cos(c.latitude * PI / 180))
+        val pts = near + listOf(Coordinates(c.latitude - d, c.longitude - dl), Coordinates(c.latitude + d, c.longitude + dl))
+        val minLat = pts.minOf { it.latitude }; val maxLat = pts.maxOf { it.latitude }
+        val minLng = pts.minOf { it.longitude }; val maxLng = pts.maxOf { it.longitude }
+        val usableH = max(80.0, heightDp - bottomDp)
+        var z = 16.0
+        while (z > 3) {
+            val w = Mercator.x(maxLng, z) - Mercator.x(minLng, z)
+            val h = Mercator.y(minLat, z) - Mercator.y(maxLat, z)
+            if (w <= widthDp - 72 && h <= usableH - 72) break
+            z -= 0.125
+        }
+        // Centre the framed area in the open part of the map, above the sheet.
+        val cy = (Mercator.y(minLat, z) + Mercator.y(maxLat, z)) / 2 + bottomDp / 2
+        val cx = (Mercator.x(minLng, z) + Mercator.x(maxLng, z)) / 2
+        lat = Mercator.lat(cy, z); lng = Mercator.lng(cx, z); zoom = z; target = null
+    }
+
     /** Fit every point, with room for the pins. */
     fun fit(points: List<Coordinates>) {
         if (points.isEmpty() || !ready) return
@@ -290,15 +311,17 @@ internal fun spanFor(mode: TripMode) = if (mode == TripMode.WALK) 3_000.0 else 1
 internal fun StreetMap(
     center: Coordinates, spaces: List<PrayerSpace>, mine: MasjidLink?, isMine: (Coordinates) -> Boolean,
     selected: PrayerSpace?, mode: TripMode, camera: MapCamera, youLabel: String, modifier: Modifier,
+    /** How much of the map's foot the Masjid sheet covers, so the buttons, card and credit sit above it. */
+    bottomInset: androidx.compose.ui.unit.Dp = 0.dp,
     onSelect: (PrayerSpace?) -> Unit, card: @Composable (PrayerSpace) -> Unit,
 ) {
+    val look = com.prayertimesasia.app.ui.theme.LocalLook.current
     val context = LocalContext.current
+    val whereLabel = com.prayertimesasia.app.ui.components.tr(com.prayertimesasia.app.R.string.phone_showWhereIAm)
     LaunchedEffect(Unit) { OsmTiles.attach(context); OsmTiles.retryFailed() }
     val density = LocalDensity.current.density
     val dark = LocalSkyScheme.current.dark
     val reduceMotion = LocalSkyScheme.current.reduceMotion
-    val accent = Palette.accent
-    val musollah = Prayer.FAJR.tint
     // Brighter blue on the dark map, with lighter rings, so both show.
     val you = if (dark) Color(0xFF3D9BFF) else Color(0xFF0A6BFF)
     val glow = if (dark) Color(0xFF5AAFFF).copy(alpha = 0.55f) else you.copy(alpha = 0.30f)
@@ -309,12 +332,18 @@ internal fun StreetMap(
     val chipText = if (dark) Color(0xFFCFE4FF) else Color(0xFF0A55C8)
     val material = Palette.materialStrong
     val primary = Palette.primary
-    val moon = rememberVectorPainter(Icons.Filled.Brightness2)
+    val moon = rememberVectorPainter(com.prayertimesasia.app.ui.theme.AppIcons.masjid)
     val house = rememberVectorPainter(Icons.Filled.Home)
     val star = rememberVectorPainter(Icons.Filled.Star)
 
     // Centre on you whenever "you" moves or Walk and Drive switch, as on iPhone.
-    LaunchedEffect(center, mode, camera.ready) { if (camera.ready) camera.show(center, spanFor(mode), animate = false) }
+    // Frame you and the nearest five places, as the web app does, whenever "you", Walk and Drive or the list change.
+    val nearest = spaces.take(5)
+    LaunchedEffect(center, mode, camera.ready, nearest.map { it.id }) {
+        if (!camera.ready) return@LaunchedEffect
+        if (nearest.isEmpty()) camera.show(center, spanFor(mode), animate = false)
+        else camera.frame(center, nearest.map { it.coordinates }, bottomInset.value.toDouble())
+    }
     LaunchedEffect(camera.target) {
         val t = camera.target ?: return@LaunchedEffect
         val from = Triple(camera.lat, camera.lng, camera.zoom)
@@ -366,9 +395,9 @@ internal fun StreetMap(
             }
             .pointerInput(Unit) {
                 detectTapGestures(onDoubleTap = { camera.target = Triple(camera.lat, camera.lng, (camera.zoom + 1).coerceAtMost(18.5)) }) { tap ->
-                    // A pin's tip is its place; its head sits 24 dp above, which is what people tap.
-                    val hit = placed.minByOrNull { hypot((it.second.x - tap.x).toDouble(), (it.second.y - 24.dp.toPx() - tap.y).toDouble()) }
-                        ?.takeIf { hypot((it.second.x - tap.x).toDouble(), (it.second.y - 24.dp.toPx() - tap.y).toDouble()) < 26.dp.toPx() }
+                    // A pin sits on its place, as on the web.
+                    val hit = placed.minByOrNull { hypot((it.second.x - tap.x).toDouble(), (it.second.y - tap.y).toDouble()) }
+                        ?.takeIf { hypot((it.second.x - tap.x).toDouble(), (it.second.y - tap.y).toDouble()) < 26.dp.toPx() }
                     onSelect(hit?.first?.let { h -> currentSpaces.firstOrNull { it.id == h.id } ?: h })
                 }
             }) {
@@ -418,31 +447,56 @@ internal fun StreetMap(
             val now = mutableListOf<Pair<PrayerSpace, Offset>>()
             val names = mutableListOf<androidx.compose.ui.geometry.Rect>()
             val order = spaces.reversed().sortedBy { it.id == selected?.id }
-            fun pin(p: Offset, color: Color, icon: androidx.compose.ui.graphics.vector.VectorPainter, big: Boolean) {
-                val r = (if (big) 15 else 12).dp.toPx()
-                val head = Offset(p.x, p.y - r - 8.dp.toPx())
-                drawCircle(Color.Black.copy(alpha = 0.22f), r + 1.dp.toPx(), head + Offset(0f, 1.5.dp.toPx()))
-                val tail = Path().apply {
-                    moveTo(p.x, p.y); lineTo(p.x - r * 0.55f, head.y + r * 0.6f); lineTo(p.x + r * 0.55f, head.y + r * 0.6f); close()
+            // Pins in the look, as the web's .space-pin: a round badge on the place with a white rim.
+            // Centre Dial a double rim, Sun Path a glow, Colour Bands a square in the band colours,
+            // Big and Simple bigger, Calm Gold navy with a gold rim.
+            val bandPins = listOf(0xFF3A6F63, 0xFF8A9A52, 0xFFAB8D3A, 0xFFCD7D38, 0xFFD3705C, 0xFFC9565D).map { Color(it) }
+            fun pin(p: Offset, musollah: Boolean, index: Int, icon: androidx.compose.ui.graphics.vector.VectorPainter, big: Boolean) {
+                val r = ((if (look.simple) 19f else 15f) + (if (big) 3f else 0f)).dp.toPx()
+                val fill = when {
+                    look.gold -> if (look.dark) Color(0xFF151A45).copy(alpha = 0.6f) else Color.White.copy(alpha = 0.85f)
+                    look.bands -> if (musollah) Color(0xFF4A63B8) else bandPins[index % 6]
+                    musollah -> Color(108, 132, 204)
+                    else -> Color(232, 140, 87)
                 }
-                drawPath(tail, Color.White)
-                drawCircle(Color.White, r + 1.5.dp.toPx(), head)
-                drawCircle(color, r, head)
-                val s = r * 1.15f
-                translate(head.x - s / 2, head.y - s / 2) { with(icon) { draw(Size(s, s), colorFilter = ColorFilter.tint(Color.White)) } }
+                val rim = if (look.gold) Color(0xFFE2B65A) else Color.White.copy(alpha = 0.9f)
+                val ink = when { look.gold -> if (look.dark) Color(0xFFE2B65A) else Color(0xFF8A6410); else -> Color.White }
+                if (look.sunPath) {
+                    drawCircle(Brush.radialGradient(0f to Color(247, 189, 143, 0x99), 1f to Color.Transparent, center = p, radius = r + 16.dp.toPx()), r + 16.dp.toPx(), p)
+                    drawCircle(Color(247, 189, 143).copy(alpha = 0.28f), r + 7.dp.toPx(), p)
+                }
+                if (look.bands) {
+                    val half = r
+                    val tl = Offset(p.x - half, p.y - half)
+                    drawRoundRect(Color.Black.copy(alpha = 0.3f), tl + Offset(0f, 2.dp.toPx()), Size(half * 2, half * 2), CornerRadius(4.dp.toPx()))
+                    drawRoundRect(fill, tl, Size(half * 2, half * 2), CornerRadius(4.dp.toPx()))
+                    drawRoundRect(rim, tl, Size(half * 2, half * 2), CornerRadius(4.dp.toPx()), style = Stroke(2.dp.toPx()))
+                } else {
+                    drawCircle(Color.Black.copy(alpha = 0.3f), r, p + Offset(0f, 2.dp.toPx()))
+                    drawCircle(fill, r, p)
+                    if (look.centre) {
+                        // A 3 px double rim: two thin white rings.
+                        drawCircle(rim, r - 0.5.dp.toPx(), p, style = Stroke(1.dp.toPx()))
+                        drawCircle(rim, r - 2.5.dp.toPx(), p, style = Stroke(1.dp.toPx()))
+                    } else {
+                        drawCircle(rim, r - 1.dp.toPx(), p, style = Stroke(2.dp.toPx()))
+                    }
+                }
+                val s = if (look.simple) 22.dp.toPx() else 16.dp.toPx()
+                translate(p.x - s / 2, p.y - s / 2) { with(icon) { draw(Size(s, s), colorFilter = ColorFilter.tint(ink)) } }
             }
             for (sp in order) {
                 val p = toScreen(sp.coordinates.latitude, sp.coordinates.longitude)
-                if (p.x < -30 || p.y < -10 || p.x > size.width + 30 || p.y > size.height + 50) continue
+                if (p.x < -30 || p.y < -30 || p.x > size.width + 30 || p.y > size.height + 30) continue
                 now += sp to p
                 val minePin = isMine(sp.coordinates)
-                pin(p, if (sp.isMusollah) musollah else accent, if (minePin) star else if (sp.isMusollah) house else moon, sp.id == selected?.id)
+                pin(p, sp.isMusollah, spaces.indexOf(sp), if (minePin) star else if (sp.isMusollah) house else moon, sp.id == selected?.id)
             }
-            if (mine != null && spaces.none { isMine(it.coordinates) }) pin(toScreen(mine.lat, mine.lng), accent, star, false)
+            if (mine != null && spaces.none { isMine(it.coordinates) }) pin(toScreen(mine.lat, mine.lng), false, 0, star, false)
             // Names under the pins once close enough to read streets, as Apple Maps does, without overlapping.
             if (z >= 15.0) for ((sp, p) in now.reversed()) {
                 val m = measurer.measure(sp.name, nameStyle, maxLines = 1, constraints = androidx.compose.ui.unit.Constraints(maxWidth = 120.dp.roundToPx()))
-                val box = androidx.compose.ui.geometry.Rect(p.x - m.size.width / 2f, p.y + 2.dp.toPx(), p.x + m.size.width / 2f, p.y + 2.dp.toPx() + m.size.height)
+                val box = androidx.compose.ui.geometry.Rect(p.x - m.size.width / 2f, p.y + 20.dp.toPx(), p.x + m.size.width / 2f, p.y + 20.dp.toPx() + m.size.height)
                 if (names.any { it.overlaps(box) }) continue
                 names += box
                 drawText(m, topLeft = box.topLeft,
@@ -481,21 +535,23 @@ internal fun StreetMap(
             val credit = measurer.measure("© OpenStreetMap contributors", attributionStyle)
             val cw = credit.size.width + 8.dp.toPx()
             val ch = credit.size.height + 2.dp.toPx()
-            drawRect(Color.White.copy(alpha = 0.75f), Offset(0f, size.height - ch), Size(cw, ch))
-            drawText(credit, topLeft = Offset(4.dp.toPx(), size.height - ch + 1.dp.toPx()))
+            // Bottom right, above the sheet, as Leaflet puts it on the web.
+            val foot = size.height - bottomInset.toPx()
+            drawRect(Color.White.copy(alpha = 0.75f), Offset(size.width - cw, foot - ch), Size(cw, ch))
+            drawText(credit, topLeft = Offset(size.width - cw + 4.dp.toPx(), foot - ch + 1.dp.toPx()))
         }
 
         if (selected == null) {
-            Box(Modifier.align(Alignment.TopEnd).padding(12.dp).size(48.dp).clip(CircleShape)
-                .clickable(onClickLabel = "Show where I am") { camera.show(center, spanFor(mode), animate = true) }
-                .semantics { contentDescription = "Show where I am" },
+            Box(Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = bottomInset + 22.dp).size(48.dp).clip(CircleShape)
+                .clickable(onClickLabel = whereLabel) { camera.show(center, spanFor(mode), animate = true) }
+                .semantics { contentDescription = whereLabel },
                 contentAlignment = Alignment.Center) {
                 Box(Modifier.size(44.dp).clip(CircleShape).background(material), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Filled.NearMe, "Show where I am", Modifier.size(22.dp), tint = you)
+                    Icon(Icons.Filled.NearMe, whereLabel, Modifier.size(22.dp), tint = you)
                 }
             }
         }
-        selected?.let { Box(Modifier.align(Alignment.BottomCenter).padding(10.dp)) { card(it) } }
+        selected?.let { Box(Modifier.align(Alignment.BottomCenter).padding(start = 10.dp, end = 10.dp, bottom = bottomInset + 10.dp)) { card(it) } }
     }
 }
 

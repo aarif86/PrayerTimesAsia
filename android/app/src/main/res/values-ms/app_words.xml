@@ -346,6 +346,7 @@
     <string name="falakTools_tilt" formatted="false">Kecondongan 1° mengalihkan hujung bayang tongkat 1 m lebih kurang 1.7 cm, cukup untuk mengubah bacaan sebanyak seminit.</string>
     <string name="masjid_title" formatted="false">Masjid dan Surau</string>
     <string name="masjid_about" formatted="false">Tentang aplikasi ini</string>
+    <string name="masjid_refresh" formatted="false">Muat semula senarai masjid</string>
     <string name="masjid_all" formatted="false">Semua</string>
     <string name="masjid_masjid" formatted="false">Masjid</string>
     <string name="masjid_musollah" formatted="false">Surau</string>
@@ -1089,6 +1090,25 @@
     <string name="settings_facebook" formatted="false">Ikuti kami di Facebook</string>
     <string name="settings_freeLine" formatted="false">Percuma untuk semua. Tiada versi berbayar.</string>
     <string name="settings_back" formatted="false">Kembali ke Tetapan</string>
+    <string name="settings_homeScreen" formatted="false">Skrin utama</string>
+    <string name="settings_widgets" formatted="false">Widget</string>
+    <string name="settings_widgetsFoot" formatted="false">Untuk menambah widget, sentuh dan tahan ruang kosong pada skrin utama anda, ketik Widget, kemudian cari Prayer Times Asia.</string>
+    <string name="settings_seeWidgets" formatted="false">Lihat widget</string>
+    <string name="settings_accuracyPhone" formatted="false">Setiap hari memaparkan gred sumbernya. A rasmi, B disahkan oleh masjid, C disemak oleh masyarakat, D dikira pada telefon anda. F (falak) menandakan bacaan daripada tongkat bayang anda sendiri, yang hanya menyemak waktu. Di Singapura, Malaysia dan Indonesia, aplikasi memuat turun jadual waktu rasmi MUIS, JAKIM atau Kemenag bagi tahun itu dan menyimpannya pada telefon anda untuk kegunaan tanpa internet. Hanya tahun, kod zon atau nama kawasan yang dihantar. Di tempat lain, dan sebelum muat turun itu, waktu dikira pada telefon anda dengan kaedah negara itu sendiri. Pengiraan ini disemak dengan setiap hari jadual waktu MUIS, JAKIM dan Kemenag 2026. Bagi Singapura, ia tidak pernah lebih awal daripada waktu rasmi dan paling lewat 2 minit. Bagi Malaysia dan Indonesia, perbezaannya dalam lingkungan 2 minit.</string>
+    <string name="settings_followsPhone" formatted="false">Aplikasi mengikut bahasa telefon anda.</string>
+    <string name="settings_samePhone" formatted="false">Sama seperti telefon anda</string>
+    <string name="settings_namesFootPhone" formatted="false">Pilih Bahasa Melayu untuk Subuh dan Isyak. Apabila anda bermusafir, nama tempatan dipaparkan kecil di sebelahnya, supaya papan tanda masjid mudah difahami.</string>
+    <string name="settings_pretendFoot" formatted="false">Memaparkan tarikh Ramadan atau Hari Raya sebagai contoh supaya anda boleh mencubanya lebih awal.</string>
+    <string name="settings_pretendOnFoot" formatted="false">Mod cubaan sedang dihidupkan. Aplikasi memaparkan tarikh contoh, bukan tarikh hari ini. Matikannya sebelum anda bergantung pada waktu solat.</string>
+    <string name="settings_trackerFootPhone" formatted="false">Tandakan setiap solat pada skrin Solat selepas waktunya berlalu, dan kekalkan rekod berturut. Ketik rekod berturut untuk menanda hari uzur, seperti haid atau sakit, supaya ia berterusan. Disimpan pada telefon ini sahaja.</string>
+    <string name="settings_trackerNudgeNote" formatted="false">Peringatan sebelum waktu tamat ada dalam Makluman dan penggera.</string>
+    <string name="settings_movingFootPhone" formatted="false">Kod QR atau pautan membawa tempat, pilihan dan penjejak anda. Tiada akaun dan tiada apa yang dimuat naik. Berfungsi dengan Android, iPhone dan web. Menyediakan telefon Android baharu daripada sandaran Google anda juga akan membawanya.</string>
+    <string name="settings_privacyPhone" formatted="false">Lokasi tepat anda kekal pada telefon anda</string>
+    <string name="settings_privacyMasjid" formatted="false">Carian masjid hanya menghantar kawasan anda</string>
+    <string name="settings_phonePermissions" formatted="false">Kebenaran telefon</string>
+    <string name="settings_phonePermissionsFoot" formatted="false">Jika waktu atau makluman kelihatan salah, semak ini dahulu.</string>
+    <string name="settings_notAllowed" formatted="false">Tidak dibenarkan</string>
+    <string name="settings_openPhoneSettings" formatted="false">Buka tetapan telefon</string>
     <string name="suggestRoom_button" formatted="false">Cadangkan bilik solat</string>
     <string name="suggestRoom_title" formatted="false">Cadangkan bilik solat</string>
     <string name="suggestRoom_intro" formatted="false">Tahu musollah atau bilik solat yang tiada dalam peta kami? Beritahu kami. Kami menyemak setiap satu, kemudian menambahnya untuk semua.</string>
