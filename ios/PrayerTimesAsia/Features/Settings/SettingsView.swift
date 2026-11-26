@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var showReview = false
     @State private var showNote = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.look) private var look
     /// A main tab (no Done button) rather than a sheet.
     var isTab = false
     /// Every half hour of the day, in minutes past midnight.
@@ -32,7 +33,7 @@ struct SettingsView: View {
             Form {
                 // The app's own card: the icon on the navy compass-ring colour. Opens About and credits.
                 Section {
-                    AppCard()
+                    LookAppCard()
                         .overlay { NavigationLink { AboutPage() } label: { EmptyView() }.opacity(0) }
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
@@ -40,78 +41,82 @@ struct SettingsView: View {
 
                 Section {
                     NavigationLink { LocationPage() } label: {
-                        SettingsRow("Location", icon: "location.fill", color: .blue, value: model.activePlace?.name ?? "Not set")
+                        SettingsRow("Location", icon: "location.fill", slot: 0, color: .blue, value: model.activePlace?.name ?? "Not set")
                     }
                     NavigationLink { PrayerTimesPage() } label: {
-                        SettingsRow("Prayer times", icon: "clock.fill", color: .teal, value: model.method.shortName)
+                        SettingsRow("Prayer times", icon: "clock.fill", slot: 1, color: .teal, value: model.method.shortName)
                     }
                     Button { model.openAlerts() } label: {
                         HStack {
-                            SettingsRow("Alerts and alarms", icon: "alarm.fill", color: .red, value: alertsCount)
+                            SettingsRow("Alerts and alarms", icon: "alarm.fill", slot: 2, color: .red, value: alertsCount)
                             Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
                         }
                     }
                     .foregroundStyle(.primary)
                 }
+                .lookRows(look)
 
                 Section {
                     NavigationLink { LookPage() } label: {
-                        SettingsRow("Look and feel", icon: "paintpalette.fill", color: .purple, value: model.prefs.todayStyle.label)
+                        SettingsRow("Look and feel", icon: "paintpalette.fill", slot: 3, color: .purple, value: model.prefs.todayStyle.label)
                     }
                     NavigationLink { LanguagePage() } label: {
-                        SettingsRow("Language", icon: "globe", color: .blue, value: "English")
+                        SettingsRow("Language", icon: "globe", slot: 4, color: .blue, value: "English")
                     }
                     NavigationLink { LockScreenPage() } label: {
-                        SettingsRow("Home and Lock Screen", icon: "iphone", color: .indigo,
+                        SettingsRow("Home and Lock Screen", icon: "iphone", slot: 5, color: .indigo,
                                     value: model.prefs.liveActivityEnabled ? "Countdown on" : "Countdown off")
                     }
                 }
+                .lookRows(look)
 
                 Section {
                     NavigationLink { RamadanSettingsPage() } label: {
-                        SettingsRow("Ramadan", icon: "moon.stars.fill", color: Brand.duskIndigo,
+                        SettingsRow("Ramadan", icon: "moon.stars.fill", slot: 0, color: Brand.duskIndigo,
                                     value: model.prefs.seasonPreview == .off ? "Starts by itself" : "Pretend on")
                     }
                     NavigationLink { TrackerPage() } label: {
-                        SettingsRow("Prayer tracker", icon: "checkmark.circle.fill", color: .green, value: model.prefs.trackerEnabled ? "On" : "Off")
+                        SettingsRow("Prayer tracker", icon: "checkmark.circle.fill", slot: 1, color: .green, value: model.prefs.trackerEnabled ? "On" : "Off")
                     }
                     NavigationLink { HadithPage() } label: {
-                        SettingsRow("Hadith", icon: "book.fill", color: .brown,
+                        SettingsRow("Hadith", icon: "book.fill", slot: 2, color: .brown,
                                     value: model.prefs.showHadith || model.prefs.hadithInAlerts ? "On" : "Off")
                     }
                 }
+                .lookRows(look)
 
                 Section {
                     NavigationLink { MovePhonePage() } label: {
-                        SettingsRow("Move to a new phone", icon: "arrow.left.arrow.right", color: .cyan)
+                        SettingsRow("Move to a new phone", icon: "arrow.left.arrow.right", slot: 3, color: .cyan)
                     }
                     NavigationLink { PrivacyPage() } label: {
-                        SettingsRow("Privacy", icon: "hand.raised.fill", color: .blue)
+                        SettingsRow("Privacy", icon: "hand.raised.fill", slot: 4, color: .blue)
                     }
                     NavigationLink { HelpPage() } label: {
-                        SettingsRow("Help", icon: "questionmark.circle.fill", color: .orange)
+                        SettingsRow("Help", icon: "questionmark.circle.fill", slot: 5, color: .orange)
                     }
                 }
+                .lookRows(look)
 
                 Section {
                     ShareLink(item: SettingsLinks.appPage,
                               message: Text("Prayer Times Asia, free prayer times for iPhone and Android.")) {
-                        SettingsRow("Share with family and friends", icon: "square.and.arrow.up", color: .green)
+                        SettingsRow("Share with family and friends", icon: "square.and.arrow.up", slot: 0, color: .green)
                     }
                     .foregroundStyle(.primary)
                     Button { showReview = true } label: {
-                        SettingsRow("Rate the app", icon: "star.fill", color: .yellow)
+                        SettingsRow("Rate the app", icon: "star.fill", slot: 1, color: .yellow)
                     }
                     .foregroundStyle(.primary)
                     Button { showNote = true } label: {
-                        SettingsRow("Send us a note", icon: "envelope.fill", color: .blue)
+                        SettingsRow("Send us a note", icon: "envelope.fill", slot: 2, color: .blue)
                     }
                     .foregroundStyle(.primary)
                     NavigationLink { PicksPage() } label: {
-                        SettingsRow(picksName, icon: "gift.fill", color: .pink, value: model.prefs.showOffers ? "On" : "Off")
+                        SettingsRow(picksName, icon: "gift.fill", slot: 3, color: .pink, value: model.prefs.showOffers ? "On" : "Off")
                     }
                     NavigationLink { AboutPage() } label: {
-                        SettingsRow("About and credits", icon: "info.circle.fill", color: .gray)
+                        SettingsRow("About and credits", icon: "info.circle.fill", slot: 4, color: .gray)
                     }
                     .id("makers")
                 } footer: {
@@ -119,6 +124,7 @@ struct SettingsView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 8)
                 }
+                .lookRows(look)
             }
             .onAppear {
                 // `-settings-end` (CI screenshots): open at the bottom group.
@@ -139,32 +145,167 @@ struct SettingsView: View {
 
 // MARK: - Building blocks
 
-/// One main-page row: a small coloured icon, the name, and the current choice on the right.
+/// One main-page row: a tonal icon tile (the icon in the look's accent on a soft wash of it,
+/// or a band colour in Colour Bands), the name, and the current choice on the right.
 struct SettingsRow: View {
+    @Environment(\.look) private var look
     let title: String
     let icon: String
+    let slot: Int
     let color: Color
     var value: String = ""
 
-    init(_ title: String, icon: String, color: Color, value: String = "") {
-        self.title = title; self.icon = icon; self.color = color; self.value = value
+    /// Colour Bands' six band colours, as on the web (icon tiles cycle through them).
+    private static let bandTiles: [Color] = [
+        Color(hex: 0x3A6F63), Color(hex: 0x8A9A52), Color(hex: 0xAB8D3A),
+        Color(hex: 0xCD7D38), Color(hex: 0xD3705C), Color(hex: 0xC9565D)
+    ]
+
+    init(_ title: String, icon: String, slot: Int = 0, color: Color, value: String = "") {
+        self.title = title; self.icon = icon; self.slot = slot; self.color = color; self.value = value
+    }
+
+    private var tileSize: CGFloat { look == .simple ? 36 : 32 }
+
+    private var tile: some View {
+        let p = look.palette
+        let bands = look == .bands
+        let fg: Color = bands ? .white : p.actx
+        let bg: Color = bands ? Self.bandTiles[slot % 6] : p.tint
+        return Image(systemName: icon)
+            .font(.system(size: look == .simple ? 18 : 16, weight: .semibold))
+            .foregroundStyle(fg)
+            .frame(width: tileSize, height: tileSize)
+            .background(bg, in: RoundedRectangle(cornerRadius: bands ? 0 : 8, style: .continuous))
+            .accessibilityHidden(true)
     }
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 29, height: 29)
-                .background(color, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
-                .accessibilityHidden(true)
+        let p = look.palette
+        HStack(spacing: 14) {
+            tile
             Text(title)
+                .font(look == .simple ? .title3 : .body)
+                .foregroundStyle(p.tx)
             Spacer(minLength: 8)
             if !value.isEmpty {
-                Text(value).foregroundStyle(.secondary).lineLimit(1)
+                Text(value)
+                    .font(look == .simple ? .body : .subheadline)
+                    .foregroundStyle(p.tx2).lineLimit(1)
             }
         }
+        .frame(minHeight: look == .simple ? 48 : 0)
         .accessibilityElement(children: .combine)
+    }
+}
+
+extension View {
+    /// Settings rows in the look's colours: a card behind them (none in Colour Bands, which sits on
+    /// its flat page) and the look's line between rows.
+    func lookRows(_ look: TodayStyle) -> some View {
+        let p = look.palette
+        return self
+            .listRowBackground(look == .bands ? Color.clear : p.card)
+            .listRowSeparatorTint(p.sep)
+    }
+}
+
+/// The card at the top of Settings. The logo never changes; the card follows the look: navy with
+/// kawung and stitching (Centre Dial), the sun's curve (Sun Path), a band of green with the six
+/// stripes (Colour Bands), a plain card with an accent edge (Big and Simple, Calm Gold).
+private struct LookAppCard: View {
+    @Environment(\.look) private var look
+    @Environment(\.colorScheme) private var scheme
+
+    private var p: LookPalette { look.palette }
+    /// Light Sun Path is a pale sky, so its words go dark.
+    private var darkWords: Bool { look == .sunPath && scheme == .light }
+    private var card: Bool { look == .simple || look == .gold }
+
+    private var nameColor: Color { card ? p.tx : (darkWords ? Color(hex: 0x151A45) : .white) }
+    private var lineColor: Color {
+        if card { return p.tx2 }
+        if darkWords { return Color(hex: 0x4A5080) }
+        return look == .bands ? Color.white.opacity(0.85) : Brand.moonText.opacity(0.85)
+    }
+
+    var body: some View {
+        HStack(spacing: look == .simple ? 16 : 14) {
+            Image("AppIconImage")
+                .resizable()
+                .frame(width: look == .simple ? 76 : 64, height: look == .simple ? 76 : 64)
+                .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+                .shadow(color: .black.opacity(0.3), radius: 7, y: 4)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Prayer Times Asia")
+                    .font(look == .simple ? Theme.display(26, .bold) : .title3.weight(.bold))
+                    .foregroundStyle(nameColor)
+                if look != .simple {
+                    Text("Built fisabilillah in Singapore").font(.subheadline).foregroundStyle(lineColor)
+                }
+                Text("Version \(Bundle.main.appVersion)")
+                    .font(look == .simple ? .subheadline : .footnote).foregroundStyle(lineColor)
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(lineColor)
+        }
+        .padding(look == .bands ? EdgeInsets(top: 22, leading: 20, bottom: 16, trailing: 20) : EdgeInsets(top: 18, leading: 18, bottom: 18, trailing: 18))
+        .background { cardBackground }
+        .overlay { cardEdge }
+        .clipShape(RoundedRectangle(cornerRadius: look == .bands ? 0 : Theme.corner, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Sources and credits")
+    }
+
+    @ViewBuilder
+    private var cardBackground: some View {
+        switch look {
+        case .bands:
+            ZStack(alignment: .top) {
+                Color(hex: 0x3A6F63)
+                HStack(spacing: 0) {
+                    Color(hex: 0x3A6F63); Color(hex: 0x8A9A52); Color(hex: 0xAB8D3A)
+                    Color(hex: 0xCD7D38); Color(hex: 0xD3705C); Color(hex: 0xC9565D)
+                }
+                .frame(height: 8)
+            }
+        case .sunPath:
+            ZStack {
+                LinearGradient(colors: [.dyn(0xBFD9F2, 0x3A3480), .dyn(0xF6E9D5, 0x1D1F55)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+                Canvas { ctx, size in
+                    var path = Path()
+                    path.move(to: CGPoint(x: -10, y: size.height - 6))
+                    path.addQuadCurve(to: CGPoint(x: size.width + 10, y: size.height - 6),
+                                      control: CGPoint(x: size.width / 2, y: -size.height * 0.5))
+                    ctx.stroke(path, with: .color(p.ac.opacity(0.55)), lineWidth: 3)
+                    ctx.fill(Path(ellipseIn: CGRect(x: size.width * 0.73 - 6, y: 12, width: 12, height: 12)), with: .color(p.ac))
+                }
+            }
+        case .simple, .gold:
+            ZStack { Rectangle().fill(.ultraThinMaterial); p.card }
+        default:
+            ZStack {
+                Brand.compassRing
+                KawungPattern().opacity(0.16)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var cardEdge: some View {
+        switch look {
+        case .simple:
+            RoundedRectangle(cornerRadius: Theme.corner, style: .continuous).strokeBorder(p.ac, lineWidth: 2)
+        case .gold:
+            RoundedRectangle(cornerRadius: Theme.corner, style: .continuous).strokeBorder(p.ac, lineWidth: 1)
+        case .centre, .list, .dial:
+            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .strokeBorder(Brand.stitchThread.opacity(0.45), style: StrokeStyle(lineWidth: 1.4, dash: [4, 3.2]))
+                .padding(6)
+        default:
+            EmptyView()
+        }
     }
 }
 

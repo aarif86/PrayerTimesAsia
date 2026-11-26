@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// Qibla compass. The dial turns with the phone so the Kaaba marker always sits
-/// at the true qibla; line it up with the top marker and the whole dial turns
-/// green, with a tick, a ripple and a tap.
+/// Qibla compass, in the look the person picked (as the web app: web/src/ui/Qibla.tsx).
+/// The dial turns with the phone so the Ka'bah always sits at the true qibla; line it
+/// up with the top marker and the dial glows green, with a tick, a ripple and a tap.
 struct QiblaView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.look) private var look
     @State private var aligned = false
     /// Heading accumulated without wrapping, so crossing north turns the dial a
     /// few degrees instead of spinning it the long way round.
@@ -16,6 +17,17 @@ struct QiblaView: View {
     /// Lights up inside 4°, goes out past 6°, so it doesn't flicker at the edge.
     private let enter = 4.0, leave = 6.0
 
+    @ScaledMetric(relativeTo: .largeTitle) private var bigTitle: CGFloat = 38
+    @ScaledMetric(relativeTo: .largeTitle) private var sunSay: CGFloat = 38
+    @ScaledMetric(relativeTo: .title) private var sunSayWide: CGFloat = 28
+    @ScaledMetric(relativeTo: .title) private var simpleWord: CGFloat = 26
+    @ScaledMetric(relativeTo: .largeTitle) private var simpleDegrees: CGFloat = 60
+    @ScaledMetric(relativeTo: .title) private var simpleSay: CGFloat = 28
+    @ScaledMetric(relativeTo: .title2) private var simpleKm: CGFloat = 23
+    @ScaledMetric(relativeTo: .body) private var buttonText: CGFloat = 17
+    @ScaledMetric(relativeTo: .title2) private var bigButtonText: CGFloat = 23
+    @ScaledMetric(relativeTo: .title3) private var bandText: CGFloat = 19
+
     var body: some View {
         let location = model.location
         let place = model.activePlace
@@ -25,20 +37,13 @@ struct QiblaView: View {
                 let bearing = Geo.qiblaBearing(from: place.coordinates)
                 let heading = demoAligned ? bearing : location.heading
                 let delta = heading.map { Geo.angleDelta(bearing, $0) }
-                ScrollView {
-                    VStack(spacing: 20) {
-                        header(delta: delta, bearing: bearing)
-                        Dial(bearing: bearing, heading: dialHeading, delta: delta, aligned: aligned)
-                            .frame(maxWidth: 320)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 8)
-                        stats(place: place, bearing: bearing, heading: heading)
-                        steps(location: location)
+                GeometryReader { geo in
+                    ScrollView {
+                        page(reading(place: place, bearing: bearing, heading: heading, delta: delta),
+                             location: location, width: geo.size.width)
                     }
-                    .padding(.horizontal, Theme.gutter)
-                    .padding(.bottom, 24)
+                    .scrollIndicators(.hidden)
                 }
-                .scrollIndicators(.hidden)
                 .onChange(of: delta) { _, d in
                     guard let d else { aligned = false; return }
                     if aligned, abs(d) > leave { aligned = false } else if !aligned, abs(d) < enter { aligned = true }
@@ -52,222 +57,311 @@ struct QiblaView: View {
                     if demoAligned { dialHeading = bearing; aligned = true }
                 }
             } else {
-                Text("Choose a place to find the qibla.").font(.headline)
+                Text("Choose a place to find the qibla.").font(.headline).foregroundStyle(look.palette.tx)
             }
         }
-        .foregroundStyle(.primary)
         .sensoryFeedback(.success, trigger: aligned) { _, now in now }
         .onAppear { location.beginHeading() }
         .onDisappear { location.endHeading() }
     }
 
-    private func header(delta: Double?, bearing: Double) -> some View {
-        VStack(spacing: 8) {
-            Text("Qibla").font(Theme.screenTitle)
-                .accessibilityAddTraits(.isHeader)
-            Text(instruction(delta, bearing: bearing))
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(aligned ? Color.green : Color.primary.opacity(0.9))
-                .contentTransition(.numericText())
-                .animation(.snappy, value: aligned)
-            Button { model.selectedTab = .falak } label: { Chip(text: "Check with the sun", systemImage: "sun.max.fill") }
-                .buttonStyle(.plain)
-                .accessibilityHint("Falak Mode: find the qibla from the sun")
+    // MARK: What the screen shows
+
+    /// Everything the looks show, worked out once.
+    private struct Reading {
+        var bearing: Double
+        var heading: Double?
+        var delta: Double?
+        var aligned: Bool
+        var dial: QiblaDialState
+        var instruction: String
+        var qibla: String
+        var facing: String
+        var km: String
+    }
+
+    private func reading(place: Place, bearing: Double, heading: Double?, delta: Double?) -> Reading {
+        let isAligned = demoAligned || aligned
+        let h = heading != nil ? dialHeading : 0
+        let instruction: String
+        if let delta {
+            let deg = Int(abs(delta).rounded())
+            instruction = isAligned ? "You're facing the qibla" : (delta > 0 ? "Turn right \(deg)°" : "Turn left \(deg)°")
+        } else {
+            instruction = "Face \(Int(bearing.rounded()))° from north"
         }
-        .padding(.top, 12)
+        return Reading(
+            bearing: bearing, heading: heading, delta: delta, aligned: isAligned,
+            dial: QiblaDialState(heading: h, rel: bearing - h, aligned: isAligned),
+            instruction: instruction,
+            qibla: "\(Int(bearing.rounded()))° \(Geo.compassPoint(bearing))",
+            facing: heading.map { "\(Int(Astro.fix($0, 360).rounded()))°" } ?? "…",
+            km: Int(Geo.distanceKm(place.coordinates, Geo.kaaba).rounded()).formatted())
     }
 
-    private func instruction(_ delta: Double?, bearing: Double) -> String {
-        guard let delta else { return "Face \(Int(bearing.rounded()))° from north" }
-        if aligned { return "You're facing the Qibla" }
-        let deg = Int(abs(delta).rounded())
-        return delta > 0 ? "Turn right \(deg)°" : "Turn left \(deg)°"
+    private func page(_ r: Reading, location: LocationService, width: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            lookBody(r, width: width)
+            steps(location: location)
+                .padding(.top, 22)
+                .padding(.horizontal, look == .bands ? 24 : Theme.gutter)
+        }
+        .padding(.bottom, 24)
     }
 
-    private func stats(place: Place, bearing: Double, heading: Double?) -> some View {
-        GlassCard {
-            HStack {
-                stat("\(Int(bearing.rounded()))° \(Geo.compassPoint(bearing))", "Qibla")
-                Divider().frame(height: 34).overlay(Color.primary.opacity(0.3))
-                stat(heading.map { "\(Int(Astro.fix($0, 360).rounded()))° \(Geo.compassPoint($0))" } ?? "-", "You're facing")
-                Divider().frame(height: 34).overlay(Color.primary.opacity(0.3))
-                stat("\(Int(Geo.distanceKm(place.coordinates, Geo.kaaba).rounded()).formatted()) km", "To Makkah")
+    private func lookBody(_ r: Reading, width: CGFloat) -> AnyView {
+        switch look {
+        case .bands: AnyView(bandsBody(r, width: width))
+        case .simple: AnyView(simpleBody(r, width: width))
+        case .sunPath: AnyView(sunPathBody(r, width: width))
+        case .gold: AnyView(dialBody(r, dial: AnyView(GoldCompass(state: r.dial, size: qiblaDialSize(screen: width, max: 330, margin: 50)))))
+        default: AnyView(dialBody(r, dial: AnyView(BezelCompass(state: r.dial, size: qiblaDialSize(screen: width, max: 340, margin: 40)))))
+        }
+    }
+
+    // MARK: The looks
+
+    /// Centre Dial and Calm Gold: title, words, dial, numbers, the sun button.
+    private func dialBody(_ r: Reading, dial: AnyView) -> some View {
+        VStack(spacing: 0) {
+            title(Theme.screenTitle)
+            say(r, font: look == .gold ? Font.headline : Font.title3.weight(.semibold),
+                color: look == .gold ? look.palette.actx : look.palette.tx)
+                .padding(.bottom, look == .gold ? 6 : 8)
+            dial.padding(.top, 6)
+            stats(r).padding(.top, 12)
+            sunButton(size: buttonText, height: 54).padding(.top, 12)
+        }
+        .padding(.horizontal, Theme.gutter)
+    }
+
+    /// Sun Path: the sun moves along the day's curve to a fixed Ka'bah.
+    private func sunPathBody(_ r: Reading, width: CGFloat) -> some View {
+        let wide = r.heading == nil || r.aligned
+        return VStack(spacing: 0) {
+            title(Theme.screenTitle).padding(.horizontal, Theme.gutter)
+            QiblaSunCurve(rel: r.delta ?? Geo.angleDelta(r.bearing, 0), aligned: r.aligned,
+                          hasHeading: r.heading != nil, width: width)
+            VStack(spacing: 0) {
+                say(r, font: Theme.display(wide ? sunSayWide : sunSay, .bold), color: look.palette.tx)
+                if r.heading != nil && !r.aligned {
+                    Text("Turn until the sun reaches the Ka'bah.")
+                        .font(.subheadline)
+                        .foregroundStyle(look.palette.tx2)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 6)
+                        .padding(.bottom, 4)
+                }
+                stats(r).padding(.top, 12)
+                sunButton(size: buttonText, height: 54).padding(.top, 12)
             }
+            .padding(.top, 4)
+            .padding(.horizontal, Theme.gutter)
         }
     }
 
-    private func stat(_ value: String, _ label: String) -> some View {
-        VStack(spacing: 3) {
-            Text(label.uppercased()).font(.caption2.weight(.semibold)).tracking(0.5).opacity(0.6)
-            Text(value).font(Theme.display(18)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+    /// Big and Simple: big words, one big arrow, the distance, a bigger button.
+    private func simpleBody(_ r: Reading, width: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            title(Theme.display(bigTitle, .bold))
+            simpleSayView(r)
+            SimpleCompass(state: r.dial, size: qiblaDialSize(screen: width, max: 300, margin: 80))
+                .padding(.top, 16)
+            Text("\(r.km) km to Makkah")
+                .font(Theme.display(simpleKm, .semibold))
+                .foregroundStyle(look.palette.tx2)
+                .multilineTextAlignment(.center)
+                .padding(.top, 12)
+            sunButton(size: bigButtonText, height: 60).padding(.top, 14)
+        }
+        .padding(.horizontal, Theme.gutter)
+    }
+
+    @ViewBuilder
+    private func simpleSayView(_ r: Reading) -> some View {
+        if let delta = r.delta, !r.aligned {
+            VStack(spacing: 2) {
+                Text(delta > 0 ? "Turn right" : "Turn left").font(Theme.display(simpleWord, .bold))
+                Text("\(Int(abs(delta).rounded()))°").font(Theme.display(simpleDegrees, .heavy)).monospacedDigit()
+            }
+            .foregroundStyle(look.palette.tx)
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
+            .contentTransition(.numericText())
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(r.instruction)
+        } else {
+            say(r, font: Theme.display(simpleSay, .bold), color: look.palette.tx)
+        }
+    }
+
+    /// Colour Bands: full width bands, square corners, the numbers as three bands.
+    private func bandsBody(_ r: Reading, width: CGFloat) -> some View {
+        let rows: [(String, String)] = [("Qibla", r.qibla), ("Facing", r.facing), ("To Makkah", "\(r.km) km")]
+        return VStack(spacing: 0) {
+            Text("Qibla")
+                .font(Theme.screenTitle)
+                .foregroundStyle(.white)
+                .accessibilityAddTraits(.isHeader)
+                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity, minHeight: 80, alignment: .leading)
+                .background(QiblaColors.bands[0].padding(.top, -400))
+            say(r, font: Font.title3.bold(), color: look.palette.tx, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
+                .padding(.top, 14)
+                .padding(.bottom, 4)
+            BandsCompass(state: r.dial, size: qiblaDialSize(screen: width, max: 330, margin: 50))
+                .padding(.top, 6)
+            VStack(spacing: 0) {
+                ForEach(0..<3, id: \.self) { i in
+                    bandRow(rows[i].0, rows[i].1, color: QiblaColors.bands[i + 1])
+                }
+            }
+            .padding(.top, 14)
+        }
+    }
+
+    private func bandRow(_ name: String, _ value: String, color: Color) -> some View {
+        HStack {
+            Text(name)
+            Spacer(minLength: 8)
+            Text(value).font(Theme.display(bandText, .bold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+        }
+        .font(.system(size: bandText, weight: .bold))
+        .foregroundStyle(.white)
+        .shadow(color: .black.opacity(0.25), radius: 1, y: 1)
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity, minHeight: 54)
+        .background(color)
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Shared parts
+
+    private func title(_ font: Font) -> some View {
+        Text("Qibla")
+            .font(font)
+            .tracking(-0.5)
+            .foregroundStyle(look.palette.tx)
+            .accessibilityAddTraits(.isHeader)
+            .padding(.top, 8)
+            .padding(.bottom, 4)
+    }
+
+    /// The headline: "Turn right 175°", or "You're facing the qibla" in green.
+    private func say(_ r: Reading, font: Font, color: Color, alignment: TextAlignment = .center) -> some View {
+        Text(r.instruction)
+            .font(font)
+            .foregroundStyle(r.aligned ? QiblaColors.green : color)
+            .multilineTextAlignment(alignment)
+            .contentTransition(.numericText())
+            .animation(.snappy, value: r.aligned)
+    }
+
+    /// QIBLA, FACING and TO MAKKAH in one card.
+    private func stats(_ r: Reading) -> some View {
+        HStack(spacing: 0) {
+            stat("Qibla", r.qibla)
+            stat("Facing", r.facing)
+            stat("To Makkah", "\(r.km) km")
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 4)
+        .lookCard(padding: 0)
+    }
+
+    private func stat(_ label: String, _ value: String) -> some View {
+        VStack(spacing: 2) {
+            Text(label.uppercased())
+                .font(.caption2.weight(.medium))
+                .tracking(0.9)
+                .foregroundStyle(look.palette.tx2)
+            Text(value)
+                .font(.headline.weight(.bold))
+                .monospacedDigit()
+                .foregroundStyle(look.palette.tx)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
     }
 
-    /// How to use it, step by step - plus a calibration note only when needed.
+    /// The big "Check with the sun" button in the look's button colour: opens Falak.
+    private func sunButton(size: CGFloat, height: CGFloat) -> some View {
+        let p = look.palette
+        return Button { model.selectedTab = .falak } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "sun.max").font(.system(size: 20, weight: .semibold)).accessibilityHidden(true)
+                Text("Check with the sun").font(.system(size: size, weight: .bold))
+            }
+            .foregroundStyle(p.onBtn)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, minHeight: height)
+            .background(RoundedRectangle(cornerRadius: p.radius + 8, style: .continuous).fill(p.btn))
+            .contentShape(RoundedRectangle(cornerRadius: p.radius + 8, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Falak Mode, find the qibla from the sun")
+    }
+
+    /// How to use it, step by step, plus a calibration note only when needed.
     private func steps(location: LocationService) -> some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("How to find the qibla").font(.headline)
-                if !location.headingAvailable && !demoAligned {
-                    step("map", "This phone has no compass. Use the qibla bearing above with a map, or the sun in Falak.")
-                } else {
-                    step("1.circle.fill", "Hold your phone flat in front of you, screen facing up.")
-                    step("2.circle.fill", "Turn your whole body slowly until the Ka'bah reaches the marker at the top.")
-                    step("3.circle.fill", "When the dial turns green and your phone taps, you're facing the qibla.")
-                    if location.headingAccuracy < 0 || location.headingAccuracy > 25 {
-                        step("exclamationmark.triangle.fill",
-                             "The compass needs calibrating: wave your phone in a figure-8 a few times, away from cars, laptops and magnetic cases.",
-                             tint: .orange)
-                    }
+        let p = look.palette
+        let sun = look == .sunPath
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("How to find the qibla").font(.headline).foregroundStyle(p.tx)
+                .accessibilityAddTraits(.isHeader)
+            if !location.headingAvailable && !demoAligned {
+                step(icon: AnyView(Image(systemName: "map").foregroundStyle(p.actx)),
+                     "This phone has no compass. Use the qibla bearing above with a map, or the sun in Falak.")
+            } else {
+                step(icon: AnyView(NumBadge(n: 1)), "Hold your phone flat in front of you, screen facing up.")
+                step(icon: AnyView(NumBadge(n: 2)), sun
+                     ? "Turn your whole body slowly until the sun reaches the Ka'bah."
+                     : "Turn your whole body slowly until the Ka'bah reaches the marker at the top.")
+                step(icon: AnyView(NumBadge(n: 3)), sun
+                     ? "When the words turn green and your phone taps, you're facing the qibla."
+                     : "When the dial turns green and your phone taps, you're facing the qibla.")
+                if !demoAligned && (location.headingAccuracy < 0 || location.headingAccuracy > 25) {
+                    step(icon: AnyView(Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Theme.warning)),
+                         "The compass needs calibrating. Wave your phone in a figure 8 a few times, away from cars, laptops and magnetic cases.")
                 }
             }
         }
+        .lookCard()
     }
 
-    private func step(_ symbol: String, _ text: String, tint: Color = Theme.gold) -> some View {
+    private func step(icon: AnyView, _ text: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: symbol).font(.body).foregroundStyle(tint).frame(width: 22)
-            Text(text).font(.subheadline).fixedSize(horizontal: false, vertical: true)
+            icon.font(.body).frame(width: 22).accessibilityHidden(true)
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(look.palette.tx2)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
 
-private struct Dial: View {
-    let bearing: Double
-    let heading: Double
-    let delta: Double?
-    let aligned: Bool
-
-    private let green = Color.green
-    @Environment(\.colorScheme) private var scheme
+/// The numbered dot in the steps, in the look's colour.
+private struct NumBadge: View {
+    let n: Int
+    @Environment(\.look) private var look
+    @ScaledMetric(relativeTo: .subheadline) private var d: CGFloat = 19
 
     var body: some View {
-        GeometryReader { geo in
-            let size = min(geo.size.width, geo.size.height)
-            ZStack {
-                // Fixed "you are pointing here" marker at the top.
-                Capsule().fill(aligned ? green : Color.primary).frame(width: 4, height: 22).offset(y: -size / 2 - 8)
-
-                // Face (inside the navy compass ring): tinted green and glowing when aligned,
-                // white like the icon's dial in Light.
-                Circle()
-                    .fill(aligned
-                          ? AnyShapeStyle(RadialGradient(colors: [green.opacity(0.28), green.opacity(0.08)],
-                                                         center: .center, startRadius: 10, endRadius: size / 2))
-                          : scheme == .light
-                            ? AnyShapeStyle(RadialGradient(colors: [.white, .white, Color(red: 0.90, green: 0.91, blue: 0.95)],
-                                                           center: .center, startRadius: 0, endRadius: size / 2 - Brand.bezel))
-                            : AnyShapeStyle(Color.primary.opacity(0.07)))
-                    .frame(width: size - 2 * Brand.bezel, height: size - 2 * Brand.bezel)
-                if aligned { Ripple(color: green).frame(width: size, height: size) }
-
-                ZStack {
-                    // The app icon's compass ring: navy, kawung batik, cream stitching.
-                    CompassBezel(size: size)
-                    ForEach(0..<72, id: \.self) { i in
-                        Capsule()
-                            .fill(Color.white.opacity(i % 18 == 0 ? 0.9 : (i % 6 == 0 ? 0.55 : 0.25)))
-                            .frame(width: i % 6 == 0 ? 2 : 1, height: i % 6 == 0 ? 12 : 6)
-                            .offset(y: -size / 2 + 14)
-                            .rotationEffect(.degrees(Double(i) * 5))
-                    }
-                    ForEach(Array(["N", "E", "S", "W"].enumerated()), id: \.offset) { i, letter in
-                        Text(letter)
-                            .font(.headline.weight(i == 0 ? .heavy : .semibold))
-                            .foregroundStyle(i == 0 ? Brand.northOnRing : Color.white)
-                            .rotationEffect(.degrees(-Double(i) * 90 + heading))
-                            .offset(y: -size / 2 + 38)
-                            .rotationEffect(.degrees(Double(i) * 90))
-                    }
-                    // Qibla pointer, from the centre ring out to the Kaaba.
-                    ZStack {
-                        Capsule()
-                            .fill(aligned ? AnyShapeStyle(green.opacity(0.8))
-                                  : AnyShapeStyle(LinearGradient(colors: [Theme.gold, Color.primary.opacity(0.1)],
-                                                                 startPoint: .top, endPoint: .bottom)))
-                            .frame(width: 4, height: size * 0.14)
-                            .offset(y: -size * 0.29)
-                        ZStack {
-                            Circle()
-                                .fill(aligned ? green.opacity(0.25) : Color.clear)
-                                .overlay(Circle().strokeBorder(aligned ? green : Color.clear, lineWidth: 2.5))
-                                .frame(width: 52, height: 52)
-                            KaabaGlyph().frame(width: 30, height: 30)
-                        }
-                        .rotationEffect(.degrees(-bearing + heading))
-                        .offset(y: -size * 0.40)
-                    }
-                    .rotationEffect(.degrees(bearing))
-                }
-                .rotationEffect(.degrees(-heading))
-                .animation(.interpolatingSpring(stiffness: 60, damping: 14), value: heading)
-
-                // Green trim closes round the ring when aligned (drawn over the navy ring).
-                Circle()
-                    .inset(by: 2.5)
-                    .trim(from: 0, to: aligned ? 1 : 0)
-                    .stroke(green, style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .shadow(color: green.opacity(0.7), radius: 12)
-
-                // Centre: a tick when aligned, otherwise an arrow pointing at the qibla.
-                Circle()
-                    .fill(.ultraThinMaterial)
-                    .overlay(Circle().strokeBorder(aligned ? green.opacity(0.5) : Color.primary.opacity(0.15), lineWidth: 1))
-                    .frame(width: size * 0.42, height: size * 0.42)
-                Group {
-                    if aligned {
-                        VStack(spacing: 4) {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: size * 0.12, weight: .bold))
-                                .foregroundStyle(green)
-                                .symbolEffect(.bounce, value: aligned)
-                            Text("Aligned").font(.subheadline.weight(.semibold))
-                        }
-                        .transition(.scale(scale: 0.6).combined(with: .opacity))
-                    } else if let delta {
-                        // A compass arrow that always points at the qibla - no numbers here.
-                        Image(systemName: "location.north.fill")
-                            .font(.system(size: size * 0.16, weight: .bold))
-                            .foregroundStyle(Theme.gold)
-                            .shadow(color: Theme.gold.opacity(0.4), radius: 8)
-                            .rotationEffect(.degrees(delta))
-                            .animation(.interpolatingSpring(stiffness: 60, damping: 14), value: delta)
-                            .transition(.opacity)
-                    } else {
-                        Image(systemName: "location.north.line").font(.system(size: size * 0.08)).opacity(0.6)
-                    }
-                }
-            }
-            .frame(width: size, height: size)
-            .position(x: geo.size.width / 2, y: geo.size.height / 2)
-            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: aligned)
-        }
-        .aspectRatio(1, contentMode: .fit)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(aligned ? "Facing the qibla" : "Qibla compass")
+        Text("\(n)")
+            .font(.caption.weight(.heavy))
+            .foregroundStyle(look.palette.onBtn)
+            .frame(width: d, height: d)
+            .background(Circle().fill(look.palette.ac))
+            .padding(.top, 1)
     }
 }
 
-/// A soft green ring that keeps spreading out from the dial while aligned.
-private struct Ripple: View {
-    let color: Color
-    @State private var on = false
-
-    var body: some View {
-        Circle()
-            .stroke(color.opacity(0.6), lineWidth: 2)
-            .scaleEffect(on ? 1.18 : 1)
-            .opacity(on ? 0 : 1)
-            .onAppear {
-                withAnimation(.easeOut(duration: 1.6).repeatForever(autoreverses: false)) { on = true }
-            }
-            .allowsHitTesting(false)
-    }
-}
-
-/// A simple cube with the gold band, drawn so it scales crisply.
+/// A simple cube with the gold band, drawn so it scales crisply (used by Makers).
 struct KaabaGlyph: View {
     var body: some View {
         GeometryReader { g in

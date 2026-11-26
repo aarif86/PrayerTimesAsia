@@ -43,52 +43,15 @@ struct TodayView: View {
         let shown = dayOffset == 0 ? day : (model.day(containing: model.noon(now, plus: dayOffset)) ?? day)
 
         ZStack {
-            LivingSkyBackground(colors: sky)
-            // Fill the screen when it all fits: the list stretches into the free
-            // height so it breathes. Otherwise (small phones, Show more open) scroll.
-            if model.prefs.todayStyle == .simple {
-                ScrollView {
-                    VStack(spacing: 12) {
-                        topBar(now)
-                        if model.showAlertsPrompt { alertsPrompt }
-                        SimpleTimes(now: now, day: day, current: current, next: next)
-                    }
-                    .padding(.horizontal, Theme.gutter)
-                    .padding(.bottom, 32)
-                }
-                .scrollIndicators(.hidden)
-            } else if model.prefs.todayStyle == .sunPath {
-                AnyView(sunPathPage(now: now, day: day, shown: shown, current: current, next: next))
-            } else if model.prefs.todayStyle == .bands {
-                ViewThatFits(in: .vertical) {
-                    AnyView(bandsPage(now: now, shown: shown, current: current, next: next, fill: true))
-                    ScrollView {
-                        AnyView(bandsPage(now: now, shown: shown, current: current, next: next, fill: false))
-                    }
-                    .scrollIndicators(.hidden)
-                }
-                .background(BandsPalette.header.ignoresSafeArea())
-                .environment(\.colorScheme, .dark)
-            } else {
+            LookBackdrop(sky: sky)
+            // Fill the screen when it all fits; otherwise (small phones, Show more
+            // open, bigger text) scroll. Every look follows the web app's layout.
             ViewThatFits(in: .vertical) {
-                if model.prefs.todayStyle == .centre {
-                    AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
-                } else if model.prefs.todayStyle == .dial {
-                    AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: true))
-                } else {
-                    AnyView(page(now: now, day: day, shown: shown, current: current, next: next, fill: true))
-                }
+                v12Page(now: now, day: day, shown: shown, current: current, next: next, fill: true)
                 ScrollView {
-                    if model.prefs.todayStyle == .centre {
-                        AnyView(centrePage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
-                    } else if model.prefs.todayStyle == .dial {
-                        AnyView(dialPage(now: now, day: day, shown: shown, current: current, next: next, fill: false))
-                    } else {
-                        AnyView(page(now: now, day: day, shown: shown, current: current, next: next, fill: false))
-                    }
+                    v12Page(now: now, day: day, shown: shown, current: current, next: next, fill: false)
                 }
                 .scrollIndicators(.hidden)
-            }
             }
         }
         .foregroundStyle(.primary)
@@ -941,7 +904,7 @@ struct TodayView: View {
         let paused = model.trackerPaused
         return Button { showTracker = true } label: {
             HStack(spacing: 4) {
-                Image(systemName: paused ? "pause.fill" : excused ? "drop.fill" : "flame.fill")
+                Image(systemName: paused ? "pause.fill" : excused ? "drop.fill" : "checkmark.circle")
                 Text("\(model.streak)").monospacedDigit()
             }
             .font(.subheadline.weight(.semibold))
@@ -1570,5 +1533,1127 @@ private struct NoPlaceView: View {
             .padding(32)
             .foregroundStyle(.primary)
         }
+    }
+}
+
+// MARK: - The five looks, as on the web app (mockup v10 layout, v12 sizes)
+//
+// Ported from web/src/ui/Today.tsx and the `.v12` rules in web/src/ui/screens.css.
+// Every look shares the same parts: the top bar (place on the left, alarm and menu on
+// the right), the look's own top (dial, sun path, big words or the bands heading),
+// the date with arrows right above the times, the list card with Show more inside,
+// and the source line. Only colour, shape and each look's signature change.
+
+extension TodayView {
+    typealias Moment = (prayer: Prayer, time: Date)
+
+    var lookStyle: TodayStyle { model.prefs.todayStyle }
+    var pal: LookPalette { lookStyle.palette }
+
+    /// A size that still follows the phone's text size (and Settings, Bigger text).
+    func vf(_ size: CGFloat, _ weight: Font.Weight = .regular, display: Bool = false) -> Font {
+        V12Type.font(size, weight, display: display, typeSize)
+    }
+
+    func v12Page(now: Date, day: PrayerDay, shown: PrayerDay, current: Moment?, next: Moment?, fill: Bool) -> AnyView {
+        if lookStyle == .bands {
+            return AnyView(v12Bands(now: now, shown: shown, current: current, next: next, fill: fill))
+        }
+        return AnyView(v12Stack(now: now, day: day, shown: shown, current: current, next: next, fill: fill))
+    }
+
+    // MARK: Centre Dial, Sun Path, Big and Simple, Calm Gold
+
+    private func v12Stack(now: Date, day: PrayerDay, shown: PrayerDay, current: Moment?, next: Moment?, fill: Bool) -> some View {
+        VStack(spacing: 10) {
+            v12TopBar(now)
+            AnyView(v12Hero(now: now, day: day, current: current, next: next))
+            if model.showAlertsPrompt { alertsPrompt }
+            if lookStyle != .simple { prayerHadith(next) }
+            if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+            if dayOffset == 0 { TodayNotes(now: now) }
+            if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
+            v12DayNav(shown)
+            V12List(look: lookStyle, day: shown, now: now,
+                    current: dayOffset == 0 ? PrayerLead.open(current)?.prayer : nil,
+                    next: dayOffset == 0 ? next : nil,
+                    showMore: $showMore,
+                    onSwipe: { step in withAnimation(.snappy) { dayOffset += step } })
+                .frame(maxHeight: fill && lookStyle == .simple ? .infinity : nil, alignment: .top)
+            if lookStyle != .simple { V12SourceLine(day: shown, look: lookStyle).frame(maxWidth: .infinity) }
+            if dayOffset == 0 { ReviewLine(now: now) }
+            if model.prefs.showOffers && showMore { CommunityCardSlot(now: now, next: next) }
+            if fill && lookStyle != .simple { Spacer(minLength: 0) }
+        }
+        .foregroundStyle(pal.tx)
+        .padding(.horizontal, Theme.gutter)
+        .padding(.top, 4)
+        .padding(.bottom, fill ? 8 : 24)
+    }
+
+    /// Each look's own top: the dial, the sun's path, or the big words.
+    @ViewBuilder
+    private func v12Hero(now: Date, day: PrayerDay, current: Moment?, next: Moment?) -> some View {
+        if let lead = PrayerLead(current: current, next: next), let next {
+            let count = PrayerCountdown(now: now, next: next, model: model)
+            let name = lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time))
+            switch lookStyle {
+            case .sunPath:
+                v12SunHero(now: now, day: day, lead: lead, name: name, next: next, count: count)
+            case .simple:
+                v12SimpleHero(name: name, count: count)
+            default:
+                v12DialHero(now: now, day: day, name: name, next: next, count: count)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func v12DialHero(now: Date, day: PrayerDay, name: String, next: Moment, count: PrayerCountdown) -> some View {
+        let gold = lookStyle == .gold
+        let inPrayer = count.label == "left to pray"
+        let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
+        let bare = TodayView.short(next.time.timeIntervalSince(now))
+        let tomorrowFajr = model.day(containing: model.noon(now, plus: 1))?.time(.fajr) ?? day.time(.fajr).addingTimeInterval(86_400)
+        V12Dial(now: now, day: day, nextFajr: tomorrowFajr, timeZone: model.timeZone, gold: gold,
+                kicker: inPrayer ? name : "Next prayer",
+                count: inPrayer ? count.count : bare,
+                label: inPrayer ? count.label : "until \(nextName)",
+                urgent: count.urgent,
+                spoken: inPrayer ? "Now \(name). \(count.count) left to pray." : "Next \(nextName), in \(TodayView.spoken(next.time.timeIntervalSince(now))).")
+            .frame(width: gold ? 204 : 190, height: gold ? 204 : 190)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 2)
+    }
+
+    /// Sun Path: the prayer's name big, the time left in a pill, the day's arc edge to edge.
+    private func v12SunHero(now: Date, day: PrayerDay, lead: PrayerLead, name: String, next: Moment, count: PrayerCountdown) -> some View {
+        let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
+        let remaining = next.time.timeIntervalSince(now)
+        return VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 10) {
+                    Circle().fill(lead.prayer.tint).frame(width: 10, height: 10)
+                    Text(name).font(vf(44, .bold, display: true)).lineLimit(1).minimumScaleFactor(0.5)
+                }
+                Text(count.text)
+                    .font(vf(16, .semibold)).monospacedDigit()
+                    .foregroundStyle(count.urgent ? pal.accent : pal.tx)
+                    .contentTransition(.numericText(countsDown: true))
+                    .padding(.horizontal, 16).padding(.vertical, 8)
+                    .background(v12Shape(18).fill(pal.card))
+                    .overlay(v12Shape(18).strokeBorder(pal.stroke, lineWidth: 1))
+            }
+            .padding(.top, 2)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(lead.isNext
+                ? "Next \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))"
+                : "Now \(name). \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))")
+            if let place = model.activePlace {
+                V12SunPath(now: now, day: day, timeZone: place.timeZone)
+                    .frame(height: 120)
+                    .padding(.horizontal, -Theme.gutter)
+                    .padding(.top, -4)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+
+    /// Big and Simple: the prayer and the time left in big words.
+    private func v12SimpleHero(name: String, count: PrayerCountdown) -> some View {
+        VStack(spacing: 2) {
+            HStack(spacing: 8) {
+                Text(name).font(vf(46, .bold, display: true)).foregroundStyle(Color.dyn(0x4B3CBF, 0xB2A8FF))
+                    .lineLimit(1).minimumScaleFactor(0.6)
+                if count.done {
+                    Image(systemName: "checkmark.circle.fill").font(.system(size: 30)).foregroundStyle(pal.accent)
+                }
+            }
+            Text(count.text)
+                .font(vf(24, .semibold, display: true)).monospacedDigit()
+                .foregroundStyle(count.urgent ? pal.accent : pal.tx)
+                .lineLimit(1).minimumScaleFactor(0.7)
+                .contentTransition(.numericText(countsDown: true))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 4).padding(.bottom, 2)
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Top bar
+
+    /// Place on the left; the trip button, alarm and menu on the right.
+    func v12TopBar(_ now: Date) -> some View {
+        HStack(spacing: 8) {
+            v12PlaceChip
+            Spacer(minLength: 0)
+            if model.prefs.musafirEnabled, model.prefs.musafirChipDismissed, model.musafirStatus?.isTraveller == true {
+                Button { model.showJourney = true } label: {
+                    Image("Tab-journey").resizable().scaledToFit().frame(width: 18, height: 18)
+                        .frame(width: 44, height: 44)
+                        .background(v12Shape(22).fill(pal.accent.opacity(0.25)))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Musafir: you may shorten and combine prayers")
+            }
+            v12WakeChip(now)
+            v12Menu(now)
+        }
+    }
+
+    /// Square in Colour Bands, round everywhere else.
+    func v12Shape(_ radius: CGFloat) -> RoundedRectangle {
+        RoundedRectangle(cornerRadius: lookStyle == .bands ? min(radius, 10) : radius, style: .continuous)
+    }
+
+    /// The glass under a chip on the sky; flat on Colour Bands and Calm Gold.
+    @ViewBuilder
+    private func v12Chip(_ radius: CGFloat) -> some View {
+        let shape = v12Shape(radius)
+        ZStack {
+            if lookStyle != .bands && lookStyle != .gold { shape.fill(.ultraThinMaterial) }
+            shape.fill(pal.card)
+            shape.strokeBorder(pal.stroke, lineWidth: 1)
+        }
+    }
+
+    private var v12PlaceChip: some View {
+        let name = model.activePlace?.name ?? "Choose a place"
+        return Button { showPlaces = true } label: {
+            HStack(spacing: 5) {
+                Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(pal.accent)
+                    .symbolEffect(.pulse, isActive: model.isCheckingLocation)
+                Text(name).lineLimit(typeSize.isAccessibilitySize ? 2 : 1).minimumScaleFactor(0.8)
+                if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
+                Image(systemName: "chevron.down").font(.system(size: 10, weight: .heavy)).opacity(0.6)
+            }
+            .font(vf(name.count > 11 ? 13 : 15, .semibold))
+            .foregroundStyle(pal.tx)
+            .padding(.horizontal, 12)
+            .frame(minHeight: 36)
+            .background(v12Chip(lookStyle == .bands ? 6 : 18))
+            .padding(.vertical, 4)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(name). Change location")
+    }
+
+    /// The alarm clock, with the next alarm's time when one is set.
+    private func v12WakeChip(_ now: Date) -> some View {
+        let next = model.nextWakeUp(after: now)
+        let fajr = Prayer.fajr.name(model.naming)
+        return Button { model.openAlerts() } label: {
+            HStack(spacing: 5) {
+                Image(systemName: next == nil ? "alarm" : "alarm.fill").font(.system(size: next == nil ? 19 : 15, weight: .medium))
+                if let next {
+                    Text(model.formatted(next.date).replacingOccurrences(of: " AM", with: "").replacingOccurrences(of: " PM", with: ""))
+                        .font(vf(15, .semibold)).monospacedDigit()
+                }
+            }
+            .foregroundStyle(next == nil ? pal.tx : pal.accent)
+            .padding(.horizontal, next == nil ? 0 : 12)
+            .frame(minWidth: 44, minHeight: 44)
+            .background(v12Chip(22))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(next.map { "Next alarm at \(model.formatted($0.date))" } ?? "Alerts and alarms")
+        .accessibilityHint("Off, Notify or Alarm for \(fajr) and every prayer, sahur, and how they sound.")
+    }
+
+    /// The menu: light or dark, the five looks, and the prayer tracker.
+    private func v12Menu(_ now: Date) -> some View {
+        Menu {
+            Section("Appearance") {
+                ForEach(Appearance.allCases) { a in
+                    Button { withAnimation(.easeInOut) { model.prefs.appearance = a } } label: {
+                        if a == model.prefs.appearance { Label(v12AppearanceWord(a), systemImage: "checkmark") } else { Text(v12AppearanceWord(a)) }
+                    }
+                }
+            }
+            Menu {
+                ForEach(TodayStyle.looks) { style in
+                    Button { withAnimation(.snappy) { model.prefs.todayStyle = style } } label: {
+                        if style == model.prefs.todayStyle { Label(style.label, systemImage: "checkmark") } else { Text(style.label) }
+                    }
+                }
+            } label: {
+                Label("Look and feel", systemImage: "paintpalette")
+            }
+            Button { showTracker = true } label: {
+                Label("Prayer tracker", systemImage: "checkmark.circle")
+                Text(v12TrackerWord(now))
+            }
+        } label: {
+            Image(systemName: "ellipsis").font(.system(size: 18, weight: .bold))
+                .foregroundStyle(pal.tx)
+                .frame(width: 44, height: 44)
+                .background(v12Chip(22))
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: model.prefs.todayStyle)
+        .accessibilityLabel("Menu. Look: \(model.prefs.todayStyle.label)")
+        .accessibilityHint("Light or dark, the five looks and the prayer tracker.")
+    }
+
+    private func v12AppearanceWord(_ a: Appearance) -> String {
+        switch a {
+        case .system: "Automatic"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+
+    private func v12TrackerWord(_ now: Date) -> String {
+        if !model.prefs.trackerEnabled { return "Off" }
+        if model.trackerPaused { return "Paused" }
+        if model.isExcused(now) { return "Excused today" }
+        return model.streak == 1 ? "1 day" : "\(model.streak) days"
+    }
+
+    // MARK: Date
+
+    /// "Thu 26 Nov" over the Hijri date, with ‹ › for other days. Tap for the calendar.
+    private func v12DayNav(_ shown: PrayerDay) -> some View {
+        let date = shown.time(.dhuhr)
+        let f = DateFormatter()
+        f.timeZone = model.timeZone
+        f.dateFormat = "EEE d MMM"
+        return HStack(spacing: 0) {
+            Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
+                Image(systemName: "chevron.left").font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(pal.tx2).frame(width: 44, height: 44).contentShape(Rectangle())
+            }
+            .accessibilityLabel("Previous day")
+            Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
+                VStack(spacing: 1) {
+                    Text(f.string(from: date)).font(vf(18, .bold)).foregroundStyle(pal.tx)
+                    HStack(spacing: 6) {
+                        Text(model.hijriLabel(date))
+                        Image(systemName: dayOffset == 0 ? "calendar" : "arrow.uturn.backward").font(.system(size: 13))
+                    }
+                    .font(vf(14)).foregroundStyle(pal.tx2)
+                }
+                .lineLimit(1).minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+            Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
+                Image(systemName: "chevron.right").font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(pal.tx2).frame(width: 44, height: 44).contentShape(Rectangle())
+            }
+            .accessibilityLabel("Next day")
+        }
+        .buttonStyle(.plain)
+        .padding(.top, 2)
+    }
+
+    // MARK: Colour Bands
+
+    private func v12Bands(now: Date, shown: PrayerDay, current: Moment?, next: Moment?, fill: Bool) -> some View {
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 8) {
+                v12TopBar(now)
+                if dayOffset == 0, let lead = PrayerLead(current: current, next: next), let next {
+                    let name = lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time))
+                    let hero = Text(lead.isNext ? name : "\(name) now").font(vf(34, .bold, display: true))
+                        + Text("  " + PrayerCountdown(now: now, next: next, model: model).text).font(vf(17)).foregroundColor(pal.tx2)
+                    hero
+                        .lineLimit(2).minimumScaleFactor(0.7)
+                        .padding(.top, 2)
+                }
+                if model.showAlertsPrompt { alertsPrompt }
+                if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+                if dayOffset == 0 { TodayNotes(now: now) }
+            }
+            .padding(.horizontal, Theme.gutter)
+            .padding(.top, 4).padding(.bottom, 10)
+
+            v12BandsDate(shown)
+
+            VStack(spacing: 0) {
+                ForEach(Prayer.allCases) { prayer in
+                    V12Band(prayer: prayer, time: shown.time(prayer), now: now,
+                            isCurrent: dayOffset == 0 && prayer == PrayerLead.open(current)?.prayer,
+                            next: dayOffset == 0 && prayer == next?.prayer ? next : nil,
+                            fill: fill)
+                }
+                ForEach(blessedTimes(shown), id: \.0) { item in
+                    V12BlessedBand(blessed: item.0, time: item.1, now: now)
+                }
+            }
+            .frame(maxHeight: fill ? .infinity : nil)
+            .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { v in
+                guard abs(v.translation.width) > abs(v.translation.height) * 2 else { return }
+                withAnimation(.snappy) { dayOffset += v.translation.width < 0 ? 1 : -1 }
+            })
+
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    V12SourceLine(day: shown, look: .bands)
+                    Spacer(minLength: 8)
+                    V12MoreLink(showMore: $showMore, look: .bands).fixedSize()
+                }
+                if dayOffset == 0 { ReviewLine(now: now) }
+                if model.prefs.showOffers && showMore { CommunityCardSlot(now: now, next: next) }
+                V12AllFiveLine(look: .bands)
+                Text("A tribute to prayertimes.sg & my by Awsam Tech LLP. Used with permission.")
+                    .font(vf(12)).foregroundStyle(pal.tx2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.bottom, 8)
+            }
+            .padding(.horizontal, Theme.gutter)
+            .padding(.top, 4)
+            .padding(.bottom, fill ? 0 : 16)
+        }
+        .foregroundStyle(pal.tx)
+    }
+
+    /// "‹  26 Nov · 16 Jumada al-Akhirah 1448  ›" between two hairlines.
+    private func v12BandsDate(_ shown: PrayerDay) -> some View {
+        let date = shown.time(.dhuhr)
+        let f = DateFormatter()
+        f.timeZone = model.timeZone
+        f.dateFormat = "d MMM"
+        return HStack(spacing: 0) {
+            Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
+                Image(systemName: "chevron.left").font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(pal.tx2).frame(width: 44, height: 44).contentShape(Rectangle())
+            }
+            .accessibilityLabel("Previous day")
+            Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
+                HStack(spacing: 6) {
+                    if dayOffset != 0 { Image(systemName: "arrow.uturn.backward").font(.caption) }
+                    Text("\(f.string(from: date)) · \(model.hijriLabel(date))").lineLimit(1).minimumScaleFactor(0.7)
+                }
+                .font(vf(15))
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .contentShape(Rectangle())
+            }
+            .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+            Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
+                Image(systemName: "chevron.right").font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(pal.tx2).frame(width: 44, height: 44).contentShape(Rectangle())
+            }
+            .accessibilityLabel("Next day")
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, Theme.gutter - 4)
+        .overlay(alignment: .top) { Rectangle().fill(pal.sep).frame(height: 1).padding(.horizontal, Theme.gutter) }
+        .overlay(alignment: .bottom) { Rectangle().fill(pal.sep).frame(height: 1).padding(.horizontal, Theme.gutter) }
+    }
+}
+
+/// Text sizes in points at the phone's default text size, scaled with its setting.
+enum V12Type {
+    static func scale(_ t: DynamicTypeSize) -> CGFloat {
+        switch t {
+        case .xSmall: 0.82
+        case .small: 0.88
+        case .medium: 0.94
+        case .large: 1
+        case .xLarge: 1.1
+        case .xxLarge: 1.2
+        case .xxxLarge: 1.3
+        case .accessibility1: 1.45
+        case .accessibility2: 1.6
+        case .accessibility3: 1.75
+        case .accessibility4: 1.9
+        default: 2
+        }
+    }
+
+    static func font(_ size: CGFloat, _ weight: Font.Weight, display: Bool, _ t: DynamicTypeSize) -> Font {
+        .system(size: (size * scale(t)).rounded(), weight: weight, design: display ? .rounded : .default)
+    }
+}
+
+/// Calm Gold's fill for the tick, the dot and the alarm: gold, deeper on white.
+private func v12Fill(_ look: TodayStyle) -> Color {
+    look == .gold ? Color(hex: 0xE2B65A) : look.palette.accent
+}
+
+// MARK: - The dial (Centre Dial and Calm Gold)
+
+/// Centre Dial: the whole day as a 24 hour ring in the colours of the sky, noon at the
+/// top, a glowing dot for now. Calm Gold: one thin ring, the hours since midnight in gold.
+/// The centre says the prayer we are in and the time left (web DayDial and GoldDial).
+private struct V12Dial: View {
+    @Environment(\.look) private var look
+    let now: Date
+    let day: PrayerDay
+    let nextFajr: Date
+    let timeZone: TimeZone
+    let gold: Bool
+    let kicker: String
+    let count: String
+    let label: String
+    let urgent: Bool
+    let spoken: String
+
+    private var midnight: Date {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        return cal.startOfDay(for: day.time(.dhuhr))
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let size = min(geo.size.width, geo.size.height)
+            ZStack {
+                if gold { goldRing(size) } else { skyRing(size) }
+                glyphs(size)
+                centre(size)
+            }
+            .frame(width: size, height: size)
+            .position(x: geo.size.width / 2, y: geo.size.height / 2)
+        }
+        .aspectRatio(1, contentMode: .fit)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spoken)
+        .accessibilityIdentifier("dial-centre")
+    }
+
+    /// Degrees clockwise from the top, with noon at the top and midnight at the bottom.
+    private func angle(_ date: Date) -> Double { date.timeIntervalSince(midnight) / 3600 / 24 * 360 + 180 }
+
+    private func arc(_ c: CGPoint, _ r: CGFloat, _ a0: Double, _ a1: Double) -> Path {
+        var p = Path()
+        p.addArc(center: c, radius: r, startAngle: .degrees(a0 - 90), endAngle: .degrees(a1 - 90), clockwise: false)
+        return p
+    }
+
+    private func point(_ c: CGPoint, _ r: CGFloat, _ a: Double) -> CGPoint {
+        let rad = a * .pi / 180
+        return CGPoint(x: c.x + CGFloat(sin(rad)) * r, y: c.y - CGFloat(cos(rad)) * r)
+    }
+
+    private func skyRing(_ size: CGFloat) -> some View {
+        let p = look.palette
+        let stops = V12Sky.stops(day: day, midnight: midnight)
+        return Canvas { ctx, sz in
+            let k = size / 190
+            let ring = 10 * k
+            let r = size / 2 - ring / 2
+            let c = CGPoint(x: sz.width / 2, y: sz.height / 2)
+            ctx.stroke(arc(c, r, 0, 360), with: .color(p.tx.opacity(0.1)), lineWidth: ring)
+            let order = Prayer.allCases
+            for (i, prayer) in order.enumerated() {
+                let a0 = angle(day.time(prayer)) + 0.9
+                let a1 = (i + 1 < order.count ? angle(day.time(order[i + 1])) : angle(nextFajr)) - 0.9
+                guard a1 > a0 else { continue }
+                let n = max(1, Int(((a1 - a0) / 2.5).rounded(.up)))
+                let step = (a1 - a0) / Double(n)
+                for j in 0..<n {
+                    let s = a0 + Double(j) * step
+                    let e = min(a1, s + step + (j < n - 1 ? 0.4 : 0))
+                    let mid = (s + min(a1, s + step)) / 2
+                    ctx.stroke(arc(c, r, s, e), with: .color(V12Sky.color(stops, (mid - 180) / 360)), lineWidth: ring)
+                }
+            }
+            let dot = point(c, r, angle(now))
+            ctx.fill(Path(ellipseIn: CGRect(x: dot.x - 13 * k, y: dot.y - 13 * k, width: 26 * k, height: 26 * k)), with: .color(p.accent.opacity(0.5)))
+            ctx.fill(Path(ellipseIn: CGRect(x: dot.x - 9 * k, y: dot.y - 9 * k, width: 18 * k, height: 18 * k)), with: .color(.white))
+        }
+        .frame(width: size, height: size)
+    }
+
+    private func goldRing(_ size: CGFloat) -> some View {
+        let track = Color.dyn(Color(hex: 0x151A45, opacity: 0.1), Color.white.opacity(0.08))
+        let fill = Color(hex: 0xE2B65A)
+        let fraction = now.timeIntervalSince(midnight) / 86_400
+        let a1 = 180 + min(359.5, max(0.5, fraction * 360))
+        return Canvas { ctx, sz in
+            let k = size / 214
+            let r = 98 * k
+            let w = 3 * k
+            let c = CGPoint(x: sz.width / 2, y: sz.height / 2)
+            ctx.stroke(arc(c, r, 0, 360), with: .color(track), lineWidth: w)
+            ctx.stroke(arc(c, r, 180, a1), with: .color(fill), style: StrokeStyle(lineWidth: w, lineCap: .round))
+            let dot = point(c, r, a1)
+            let dotRect = CGRect(x: dot.x - 7 * k, y: dot.y - 7 * k, width: 14 * k, height: 14 * k)
+            ctx.fill(Path(ellipseIn: dotRect), with: .color(.white))
+            ctx.stroke(Path(ellipseIn: dotRect), with: .color(fill), lineWidth: w)
+        }
+        .frame(width: size, height: size)
+    }
+
+    /// The sun at noon and the moon at midnight, inside the ring.
+    private func glyphs(_ size: CGFloat) -> some View {
+        let k = gold ? size / 214 : size / 190
+        let glyph = gold ? 16 * k : 15 * k
+        let fromEdge = gold ? 20 * k : 10 * k + 5 * k + 7.5 * k
+        let colour = gold ? Color(hex: 0xE2B65A) : look.palette.accent
+        return ZStack {
+            Image(systemName: "sun.max").font(.system(size: glyph, weight: .regular))
+                .offset(y: -(size / 2 - fromEdge))
+            Image(systemName: "moon").font(.system(size: glyph * 0.9, weight: .regular))
+                .offset(y: size / 2 - fromEdge)
+        }
+        .foregroundStyle(colour)
+    }
+
+    private func centre(_ size: CGFloat) -> some View {
+        let p = look.palette
+        let k = gold ? size / 214 : size / 190
+        return VStack(spacing: 0) {
+            Text(kicker).font(.system(size: (gold ? 14 : 13) * k, weight: .medium)).foregroundStyle(p.tx2)
+            Text(count)
+                .font(.system(size: (gold ? 40 : 32) * k, weight: .bold, design: .rounded)).monospacedDigit()
+                .foregroundStyle(urgent ? p.accent : p.tx)
+                .contentTransition(.numericText(countsDown: true))
+            if !label.isEmpty {
+                Text(label).font(.system(size: 14 * k, weight: .medium)).foregroundStyle(p.tx2)
+            }
+        }
+        .lineLimit(1)
+        .minimumScaleFactor(0.6)
+        .padding(.horizontal, size * 0.16)
+    }
+}
+
+/// The sky through the day as colour stops, midnight (0) to midnight (1). Same as the web.
+enum V12Sky {
+    typealias RGB = (Double, Double, Double)
+    static let night: RGB = (0.13, 0.15, 0.36)
+    static let dawnPeach: RGB = (0.96, 0.70, 0.58)
+    static let tint: [Prayer: RGB] = [
+        .fajr: (0.50, 0.61, 0.88), .sunrise: (0.95, 0.77, 0.42), .dhuhr: (0.95, 0.60, 0.20),
+        .asr: (0.91, 0.50, 0.25), .maghrib: (0.87, 0.36, 0.33), .isha: (0.42, 0.37, 0.76),
+    ]
+
+    static func stops(day: PrayerDay, midnight: Date) -> [(Double, RGB)] {
+        func f(_ p: Prayer) -> Double { min(1, max(0, day.time(p).timeIntervalSince(midnight) / 86_400)) }
+        let t = { (p: Prayer) -> RGB in tint[p] ?? night }
+        return [
+            (0, night),
+            (max(0, f(.fajr) - 0.06), t(.isha)),
+            (f(.fajr), t(.fajr)),
+            (f(.sunrise), dawnPeach),
+            ((f(.sunrise) + f(.dhuhr)) / 2, t(.sunrise)),
+            (f(.dhuhr), t(.dhuhr)),
+            (f(.asr), t(.asr)),
+            (f(.maghrib), t(.maghrib)),
+            (f(.isha), t(.isha)),
+            (1, night),
+        ]
+    }
+
+    static func color(_ stops: [(Double, RGB)], _ x: Double) -> Color {
+        let f = (x.truncatingRemainder(dividingBy: 1) + 1).truncatingRemainder(dividingBy: 1)
+        var i = 0
+        while i < stops.count - 2 && f > stops[i + 1].0 { i += 1 }
+        let (a, ca) = stops[i]
+        let (b, cb) = stops[i + 1]
+        let k = b > a ? min(1, max(0, (f - a) / (b - a))) : 0
+        return Color(red: ca.0 + (cb.0 - ca.0) * k, green: ca.1 + (cb.1 - ca.1) * k, blue: ca.2 + (cb.2 - ca.2) * k)
+    }
+}
+
+// MARK: - The sun's path (Sun Path)
+
+/// The day as one smooth arc, midnight to midnight: highest at solar noon, crossing the
+/// horizon at sunrise and Maghrib, a hollow ring at each prayer, a warm sun (or the
+/// moon) at now. Port of the web SunPath with its v12 look.
+private struct V12SunPath: View {
+    @Environment(\.look) private var look
+    let now: Date
+    let day: PrayerDay
+    let timeZone: TimeZone
+
+    var body: some View {
+        let p = look.palette
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        let start = cal.startOfDay(for: day.time(.dhuhr))
+        func fraction(_ d: Date) -> Double { min(1, max(0, d.timeIntervalSince(start) / 86_400)) }
+        let noon = fraction(day.time(.dhuhr))
+        let halfDay = (fraction(day.time(.maghrib)) - fraction(day.time(.sunrise))) / 2
+        let horizonValue = cos(2 * .pi * halfDay)
+        let isDay = now >= day.time(.sunrise) && now < day.time(.maghrib)
+        let prayerFractions = Prayer.allCases.map { fraction(day.time($0)) }
+        let nowFraction = fraction(now)
+        return Canvas { ctx, sz in
+            let width = sz.width
+            let top: CGFloat = 22, bottom = sz.height - 14
+            func y(_ v: Double) -> CGFloat { bottom - CGFloat((v + 1) / 2) * (bottom - top) }
+            func pt(_ f: Double) -> CGPoint { CGPoint(x: CGFloat(f) * width, y: y(cos(2 * .pi * (f - noon)))) }
+            let horizon = y(horizonValue)
+            var curve = Path()
+            for i in 0...240 {
+                let q = pt(Double(i) / 240)
+                if i == 0 { curve.move(to: q) } else { curve.addLine(to: q) }
+            }
+            var line = Path()
+            line.move(to: CGPoint(x: 0, y: horizon))
+            line.addLine(to: CGPoint(x: width, y: horizon))
+            ctx.stroke(line, with: .color(p.tx3.opacity(0.5)), lineWidth: 1)
+            ctx.stroke(curve, with: .color(p.tx3.opacity(0.7)), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+            ctx.drawLayer { layer in
+                layer.clip(to: Path(CGRect(x: 0, y: -20, width: width, height: max(0, horizon + 20))))
+                layer.stroke(curve, with: .color(p.accent), style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+            }
+            for f in prayerFractions {
+                let q = pt(f)
+                ctx.stroke(Path(ellipseIn: CGRect(x: q.x - 5.5, y: q.y - 5.5, width: 11, height: 11)), with: .color(p.tx), lineWidth: 2)
+            }
+            let sun = pt(nowFraction)
+            ctx.drawLayer { glow in
+                glow.addFilter(.blur(radius: 6))
+                glow.fill(Path(ellipseIn: CGRect(x: sun.x - 22, y: sun.y - 22, width: 44, height: 44)), with: .color(Color(hex: 0xF7BD8F, opacity: 0.6)))
+            }
+            if isDay {
+                ctx.fill(Path(ellipseIn: CGRect(x: sun.x - 9, y: sun.y - 9, width: 18, height: 18)), with: .color(Color(hex: 0xFFD98A)))
+            } else {
+                var moon = ctx.resolve(Image(systemName: "moon.fill"))
+                moon.shading = .color(p.accent)
+                ctx.draw(moon, in: CGRect(x: sun.x - 7, y: sun.y - 7, width: 14, height: 14))
+            }
+        }
+    }
+}
+
+// MARK: - The list card
+
+private struct V12List: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
+    let look: TodayStyle
+    let day: PrayerDay
+    let now: Date
+    let current: Prayer?
+    let next: (prayer: Prayer, time: Date)?
+    @Binding var showMore: Bool
+    let onSwipe: (Int) -> Void
+    @State private var syurukOpen = false
+
+    private enum Entry: Identifiable {
+        case prayer(Prayer, Date)
+        case blessed(BlessedTime, Date)
+        var id: String {
+            switch self {
+            case .prayer(let p, _): p.rawValue
+            case .blessed(let b, _): b.rawValue
+            }
+        }
+        var time: Date {
+            switch self {
+            case .prayer(_, let d), .blessed(_, let d): d
+            }
+        }
+    }
+
+    private var entries: [Entry] {
+        var list = Prayer.allCases.map { Entry.prayer($0, day.time($0)) }
+        if let place = model.activePlace,
+           let nextDay = model.day(containing: day.time(.dhuhr).addingTimeInterval(86_400)) {
+            list += BlessedTime.compute(day: day, nextDay: nextDay, coordinates: place.coordinates, isRamadan: model.isRamadanDay(day.time(.dhuhr)))
+                .filter { showMore || $0.0 == .imsak }
+                .map { Entry.blessed($0.0, $0.1) }
+        }
+        return list.sorted { $0.time < $1.time }
+    }
+
+    private var pal: LookPalette { look.palette }
+    private var simple: Bool { look == .simple }
+    /// Centre Dial and Sun Path have a coloured bar per prayer; the others a dot on the lit row.
+    private var bars: Bool { look != .simple && look != .gold }
+    private func vf(_ size: CGFloat, _ weight: Font.Weight = .regular, display: Bool = false) -> Font {
+        V12Type.font(size, weight, display: display, min(typeSize, .accessibility2))
+    }
+
+    var body: some View {
+        VStack(spacing: 6) {
+            card
+            V12AllFiveLine(look: look)
+        }
+    }
+
+    private var card: some View {
+        let shape = RoundedRectangle(cornerRadius: 20, style: .continuous)
+        return VStack(spacing: 0) {
+            ForEach(entries) { entry in
+                switch entry {
+                case .prayer(let p, let t):
+                    row(p, t)
+                    if p == .sunrise && syurukOpen && model.prefs.showHadith {
+                        HadithView(id: .syuruk, style: .line).padding(.horizontal, 12).padding(.bottom, 8)
+                    }
+                case .blessed(let b, let t):
+                    blessedRow(b, t)
+                }
+            }
+            V12MoreLink(showMore: $showMore, look: look)
+        }
+        .background {
+            ZStack {
+                if look != .gold { shape.fill(.ultraThinMaterial) }
+                shape.fill(pal.card)
+            }
+        }
+        .clipShape(shape)
+        .overlay(shape.strokeBorder(pal.stroke, lineWidth: 1))
+        .shadow(color: look == .gold ? Color.dyn(Color(hex: 0x151A45, opacity: 0.05), .clear) : .clear, radius: 3, y: 1)
+        .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { v in
+            guard abs(v.translation.width) > abs(v.translation.height) * 2 else { return }
+            onSwipe(v.translation.width < 0 ? 1 : -1)
+        })
+    }
+
+    private func row(_ prayer: Prayer, _ time: Date) -> some View {
+        let isCurrent = prayer == current && time <= now
+        let isNext = prayer == next?.prayer && next?.time == time
+        let lit = prayer == (current ?? next?.prayer) && (current != nil || next != nil)
+        let passed = time <= now && !isCurrent
+        let mode = model.prefs.alertMode(prayer)
+        let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
+        let prayed = trackable && model.isPrayed(prayer, on: time)
+        let parts = model.timeParts(time)
+        let fill = v12Fill(look)
+        return HStack(spacing: 8) {
+            if !bars && lit {
+                Circle().fill(look == .gold ? LookPalette.goldIcon : pal.accent).frame(width: 8, height: 8)
+            }
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(alignment: .center, spacing: 8) {
+                    Text(prayer.name(model.naming, isFriday: model.isFriday(time)))
+                        .font(vf(simple ? 23 : 19, lit ? .bold : .medium))
+                        .lineLimit(1).minimumScaleFactor(0.8)
+                    if let local = model.localName(prayer, at: time) {
+                        Text(local).font(vf(13, .medium)).foregroundStyle(pal.tx2)
+                            .lineLimit(1).layoutPriority(-1)
+                            .accessibilityLabel("called \(local) here")
+                    }
+                    if prayed {
+                        Image(systemName: "checkmark").font(.system(size: 10, weight: .heavy))
+                            .foregroundStyle(look == .gold ? Color(hex: 0x151100) : Color.dyn(0xFFFFFF, 0x2A1500))
+                            .frame(width: 18, height: 18)
+                            .background(fill, in: Circle())
+                            .transition(.scale.combined(with: .opacity))
+                            .accessibilityLabel("prayed")
+                    }
+                    if isNext && !isCurrent, let next {
+                        Text("in \(TodayView.short(next.time.timeIntervalSince(now)))")
+                            .font(vf(simple ? 15 : 13, .semibold)).monospacedDigit()
+                            .foregroundStyle(pal.accent)
+                            .lineLimit(1).fixedSize()
+                    }
+                }
+                if let jamaah = day.jamaah[prayer] {
+                    Text(TodayView.jamaahText(jamaah, for: prayer, on: day, now: now, model: model))
+                        .font(vf(13, .medium)).foregroundStyle(pal.tx2)
+                }
+                if let other = day.alternate[prayer], let name = day.alternateSource {
+                    Text("\(name) \(model.formatted(other))")
+                        .font(vf(13, .medium))
+                        .foregroundStyle(SourceGrade.masjid.tint)
+                        .accessibilityLabel("\(name) gives \(model.formatted(other))")
+                }
+            }
+            .layoutPriority(-1)
+            Spacer(minLength: 6)
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(parts.time).font(vf(simple ? 23 : 20, .semibold, display: true)).monospacedDigit()
+                if let suffix = parts.suffix {
+                    Text(suffix).font(vf(simple ? 15 : 13, .semibold)).foregroundStyle(pal.tx2)
+                }
+            }
+            .lineLimit(1).fixedSize()
+            .accessibilityElement(children: .combine)
+            if prayer.isObligatory && model.allFiveOnAndAllowed {
+                Color.clear.frame(width: 44, height: 44).accessibilityHidden(true)
+            } else {
+                bell(prayer, mode)
+            }
+        }
+        .foregroundStyle(passed ? pal.tx2 : pal.tx)
+        .padding(.leading, bars ? 28 : 18).padding(.trailing, 2)
+        .frame(minHeight: simple ? 62 : 54)
+        .frame(maxHeight: simple ? 76 : nil)
+        .background((isCurrent || lit) ? pal.tint : Color.clear)
+        .overlay(alignment: .leading) {
+            if bars {
+                RoundedRectangle(cornerRadius: 2).fill(prayer.tint).frame(width: 4).padding(.vertical, 12)
+            }
+        }
+        .overlay(alignment: .bottom) { Rectangle().fill(pal.sep).frame(height: 1) }
+        .opacity(passed && !prayed ? 0.55 : 1)
+        .contentShape(Rectangle())
+        // Tracker (opt in): tap a prayer that has passed to tick it off.
+        .onTapGesture {
+            guard trackable else {
+                if prayer == .sunrise && model.prefs.showHadith { withAnimation(.snappy) { syurukOpen.toggle() } }
+                return
+            }
+            withAnimation(.snappy) { model.togglePrayed(prayer, on: time) }
+        }
+        .sensoryFeedback(.success, trigger: prayed) { _, new in new }
+        .accessibilityElement(children: .contain)
+        .accessibilityAction(named: prayed ? "Mark as not prayed" : "Mark as prayed") {
+            if trackable { model.togglePrayed(prayer, on: time) }
+        }
+        .accessibilityValue(isCurrent ? "now" : "")
+    }
+
+    private func bell(_ prayer: Prayer, _ mode: AlertMode) -> some View {
+        let alarmColour = look == .gold ? LookPalette.goldIcon : pal.accent
+        return Button { cycleAlert(prayer, model: model) } label: {
+            Image(systemName: mode.symbol)
+                .font(.system(size: 19))
+                .foregroundStyle(mode == .alarm ? alarmColour : pal.tx3)
+                .opacity(mode == .off ? 0.5 : (mode == .alarm ? 1 : 0.85))
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(prayer.name(model.naming)) \(mode.word)")
+        .accessibilityHint("Tap to change. Hold for more.")
+        .contextMenu { AlertMenuItems(prayer: prayer) }
+    }
+
+    private func blessedRow(_ blessed: BlessedTime, _ time: Date) -> some View {
+        let parts = model.timeParts(time)
+        return HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(blessed.name(model.naming)).font(vf(simple ? 21 : 17, .semibold)).lineLimit(1).minimumScaleFactor(0.8)
+                Text(blessed.note).font(vf(13)).foregroundStyle(pal.tx2).lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .layoutPriority(-1)
+            Spacer(minLength: 6)
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(parts.time).font(vf(simple ? 21 : 20, .medium, display: true)).monospacedDigit()
+                if let suffix = parts.suffix { Text(suffix).font(vf(13, .semibold)).foregroundStyle(pal.tx2) }
+            }
+            .lineLimit(1).fixedSize()
+            Color.clear.frame(width: 44, height: 44)
+        }
+        .foregroundStyle(pal.tx2)
+        .padding(.leading, bars ? 28 : 18).padding(.trailing, 2).padding(.vertical, 4)
+        .frame(minHeight: simple ? 62 : 54)
+        .overlay(alignment: .leading) {
+            if bars {
+                RoundedRectangle(cornerRadius: 2).fill(pal.tx3.opacity(0.35)).frame(width: 4).padding(.vertical, 12)
+            }
+        }
+        .overlay(alignment: .bottom) { Rectangle().fill(pal.sep).frame(height: 1) }
+        .opacity(time <= now ? 0.55 : 1)
+        .accessibilityElement(children: .combine)
+        .transition(.opacity.combined(with: .move(edge: .top)))
+    }
+}
+
+/// The quiet "Show more" link at the foot of the list card.
+private struct V12MoreLink: View {
+    @Binding var showMore: Bool
+    let look: TodayStyle
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    var body: some View {
+        let big = look == .simple
+        Button { withAnimation(.snappy) { showMore.toggle() } } label: {
+            HStack(spacing: 4) {
+                Text(showMore ? "Show less" : "Show more")
+                Image(systemName: showMore ? "chevron.up" : "chevron.down").font(.system(size: big ? 17 : 15, weight: .semibold))
+            }
+            .font(V12Type.font(big ? 17 : 15, .semibold, display: false, min(typeSize, .accessibility2)))
+            .foregroundStyle(look.palette.accent)
+            .frame(maxWidth: look == .bands ? nil : .infinity, minHeight: big ? 48 : 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(showMore ? "Show less" : "Show more")
+        .accessibilityHint("Dhuha and the blessed times of the night")
+    }
+}
+
+/// Shown instead of five identical bells: every main prayer is on Notify.
+private struct V12AllFiveLine: View {
+    @Environment(AppModel.self) private var model
+    let look: TodayStyle
+
+    var body: some View {
+        if model.allFiveOnAndAllowed {
+            Button { model.showWakeUp = true } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "bell.fill").font(.caption)
+                    Text("Alerts on for all 5 prayers").font(.footnote)
+                    Text("Change").font(.footnote.weight(.bold)).foregroundStyle(look.palette.accent)
+                }
+                .foregroundStyle(look.palette.tx2)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: look == .bands ? .leading : .center)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Alerts on for all 5 prayers. Change")
+        }
+    }
+}
+
+/// "Calculated · MUIS · Grade D". Tap for where these times come from.
+private struct V12SourceLine: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
+    let day: PrayerDay
+    let look: TodayStyle
+    @State private var showSanad = false
+
+    private var authority: String? {
+        switch day.grade {
+        case .official: model.officialSource?.authority ?? model.method.shortName
+        case .masjid, .community: day.mosqueName
+        default: model.method.shortName
+        }
+    }
+
+    var body: some View {
+        let p = look.palette
+        let size: CGFloat = look == .bands ? 13 : 15
+        Button { showSanad = true } label: {
+            (Text(day.grade.title).bold().foregroundColor(look == .bands ? p.tx2 : p.accent)
+                + Text(authority.map { " · \($0)" } ?? "")
+                + Text(" · Grade \(day.grade.rawValue)"))
+                .font(V12Type.font(size, .regular, display: false, min(typeSize, .accessibility2)))
+                .foregroundStyle(look == .bands ? p.tx2 : p.tx3)
+                .multilineTextAlignment(look == .bands ? .leading : .center)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Source: grade \(day.grade.rawValue), \(day.grade.title)")
+        .accessibilityHint("Shows where these times come from")
+        .sheet(isPresented: $showSanad) { SanadSheet(day: day) }
+    }
+}
+
+// MARK: - Colour Bands
+
+/// The six band colours of the v10 and v12 mockups.
+private func v12BandColour(_ prayer: Prayer) -> Color {
+    switch prayer {
+    case .fajr: Color(hex: 0x3A6F63)
+    case .sunrise: Color(hex: 0x8A9A52)
+    case .dhuhr: Color(hex: 0xAB8D3A)
+    case .asr: Color(hex: 0xCD7D38)
+    case .maghrib: Color(hex: 0xD3705C)
+    case .isha: Color(hex: 0xC9565D)
+    }
+}
+
+/// One prayer as a full width band. Tap for its alert and, with the tracker on, to tick it off.
+private struct V12Band: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
+    let prayer: Prayer
+    let time: Date
+    let now: Date
+    let isCurrent: Bool
+    let next: (prayer: Prayer, time: Date)?
+    let fill: Bool
+
+    private func vf(_ size: CGFloat, _ weight: Font.Weight = .regular, display: Bool = false) -> Font {
+        V12Type.font(size, weight, display: display, min(typeSize, .accessibility2))
+    }
+
+    var body: some View {
+        let mode = model.prefs.alertMode(prayer)
+        let trackable = model.prefs.trackerEnabled && prayer.isObligatory && time <= now
+        let prayed = trackable && model.isPrayed(prayer, on: time)
+        let hideBell = prayer.isObligatory && model.allFiveOnAndAllowed
+        Menu {
+            AlertMenuItems(prayer: prayer)
+            if trackable {
+                Button { withAnimation(.snappy) { model.togglePrayed(prayer, on: time) } } label: {
+                    Label(prayed ? "Mark as not prayed" : "Mark as prayed",
+                          systemImage: prayed ? "xmark.circle" : "checkmark.circle")
+                }
+            }
+        } label: {
+            bandLabel(mode: mode, prayed: prayed, hideBell: hideBell)
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.success, trigger: prayed) { _, new in new }
+        .accessibilityLabel("\(prayer.name(model.naming)), \(model.formatted(time))\(isCurrent ? ", now" : "")\(prayed ? ", prayed" : ""), \(mode.word)")
+    }
+
+    private func bandLabel(mode: AlertMode, prayed: Bool, hideBell: Bool) -> some View {
+        let parts = model.timeParts(time)
+        return HStack(alignment: .center, spacing: 4) {
+            HStack(alignment: .center, spacing: 8) {
+                Text(prayer.name(model.naming, isFriday: model.isFriday(time))).font(vf(26, .bold))
+                if let local = model.localName(prayer, at: time) {
+                    Text(local).font(vf(12, .semibold)).opacity(0.8)
+                }
+                if isCurrent {
+                    Text("NOW").font(.system(size: 11, weight: .heavy))
+                        .foregroundStyle(Color(hex: 0x1D1D20))
+                        .padding(.horizontal, 7).padding(.vertical, 3)
+                        .background(.white, in: Capsule())
+                }
+                if prayed {
+                    Image(systemName: "checkmark").font(.system(size: 10, weight: .heavy))
+                        .foregroundStyle(Color(hex: 0x222222))
+                        .frame(width: 18, height: 18).background(.white, in: Circle())
+                }
+                if let next {
+                    Text("in \(TodayView.short(next.time.timeIntervalSince(now)))")
+                        .font(vf(15, .semibold)).monospacedDigit().opacity(0.9).fixedSize()
+                }
+            }
+            .lineLimit(1).minimumScaleFactor(0.75)
+            Spacer(minLength: 6)
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Text(parts.time).font(vf(32, .medium, display: true)).monospacedDigit()
+                if let suffix = parts.suffix { Text(suffix).font(vf(15, .semibold)).opacity(0.9) }
+            }
+            .fixedSize()
+            Image(systemName: mode.symbol).font(.system(size: 19))
+                .opacity(mode == .off ? 0.55 : 1)
+                .frame(width: 24)
+                .padding(.leading, 6)
+                .opacity(hideBell ? 0 : 1)
+        }
+        .foregroundStyle(.white)
+        .padding(.leading, 24).padding(.trailing, 20)
+        .frame(maxWidth: .infinity, minHeight: 60, maxHeight: fill || typeSize.isAccessibilitySize ? 84 : 60)
+        .background(v12BandColour(prayer))
+        .contentShape(Rectangle())
+    }
+}
+
+/// A blessed time under Show more: a thinner, quiet band.
+private struct V12BlessedBand: View {
+    @Environment(AppModel.self) private var model
+    let blessed: BlessedTime
+    let time: Date
+    let now: Date
+
+    var body: some View {
+        let parts = model.timeParts(time)
+        HStack(spacing: 8) {
+            Image(systemName: blessed.symbol).font(.subheadline).opacity(0.8)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(blessed.name(model.naming)).font(.headline)
+                Text(blessed.note).font(.caption).opacity(0.7)
+            }
+            .lineLimit(1).minimumScaleFactor(0.8)
+            Spacer(minLength: 6)
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(parts.time).font(.system(size: 22, weight: .regular, design: .rounded)).monospacedDigit()
+                if let suffix = parts.suffix { Text(suffix).font(.system(size: 13, weight: .semibold)) }
+            }
+            .fixedSize()
+        }
+        .foregroundStyle(Color.dyn(0x17171C, 0xFFFFFF))
+        .padding(.leading, 24).padding(.trailing, 20)
+        .frame(maxWidth: .infinity, minHeight: 52)
+        .background(Color.dyn(Color(red: 224 / 255, green: 219 / 255, blue: 207 / 255), Color(white: 0.3)))
+        .opacity(time <= now ? 0.7 : 1)
+        .transition(.opacity.combined(with: .move(edge: .top)))
+        .accessibilityElement(children: .combine)
     }
 }

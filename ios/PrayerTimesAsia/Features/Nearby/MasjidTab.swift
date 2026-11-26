@@ -8,6 +8,8 @@ import SwiftUI
 /// Kept in step with the web app (web/src/ui/Masjid.tsx) and Android.
 struct NearbyView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.look) private var look
+    private var p: LookPalette { look.palette }
     @State private var search = NearbySearch()
     @State private var kind: PrayerSpace.Kind = .all
     @State private var camera: MapCameraPosition = .automatic
@@ -91,14 +93,14 @@ struct NearbyView: View {
             TimelineView(.periodic(from: .now, by: 300)) { context in
                 let now = context.date
                 let list = visible(at: now)
-                VStack(spacing: 0) {
+                VStack(spacing: look == .bands ? 0 : -overlap) {
                     map(list)
                     ScrollView {
                         content(list: list, now: now)
-                            .padding(.vertical, 14)
+                            .padding(.bottom, 14)
                     }
-                    .background(.regularMaterial,
-                                in: UnevenRoundedRectangle(topLeadingRadius: 22, topTrailingRadius: 22, style: .continuous))
+                    .background(sheetBackground)
+                    .zIndex(1)
                 }
             }
             .background(SkyNow())
@@ -138,6 +140,29 @@ struct NearbyView: View {
         }
     }
 
+    // MARK: Sheet
+
+    /// How far the list sheet rides up over the map (none in Colour Bands, which is flat).
+    private var overlap: CGFloat { look == .bands ? 0 : 24 }
+
+    private var sheetShape: UnevenRoundedRectangle {
+        let r: CGFloat = look == .bands ? 0 : 28
+        return UnevenRoundedRectangle(topLeadingRadius: r, bottomLeadingRadius: 0, bottomTrailingRadius: 0,
+                                      topTrailingRadius: r, style: .continuous)
+    }
+
+    @ViewBuilder
+    private var sheetBackground: some View {
+        switch look {
+        case .bands:
+            Color.dyn(0xF2F0EB, 0x232326)
+        case .gold:
+            sheetShape.fill(Color.dyn(0xFBFAF7, 0x0F1338))
+        default:
+            sheetShape.fill(.regularMaterial)
+        }
+    }
+
     // MARK: Map
 
     @ViewBuilder
@@ -147,12 +172,12 @@ struct NearbyView: View {
             ForEach(list) { space in
                 Marker(space.name, systemImage: space.isMusollah ? "house.fill" : "moon.stars.fill",
                        coordinate: space.coordinate)
-                    .tint(space.isMusollah ? Prayer.fajr.tint : Theme.accent)
+                    .tint(space.isMusollah ? Prayer.fajr.tint : p.ac)
                     .tag(space)
             }
             if let m = model.prefs.myMasjid, !list.contains(where: { model.isMyMasjid($0.coordinates) }) {
                 Marker(m.name, systemImage: "star.fill", coordinate: CLLocationCoordinate2D(latitude: m.lat, longitude: m.lng))
-                    .tint(Theme.accent)
+                    .tint(p.ac)
             }
             // Three rings in 1 2 5 steps that follow the zoom (500 m, 1 and 2 km on foot, 1, 2 and 5 km by car).
             // Their labels are drawn over the map below, so pins never hide them.
@@ -183,9 +208,9 @@ struct NearbyView: View {
             }
         }
         }
-        .frame(height: 260)
+        .frame(height: look == .simple ? 300 : 340)
         .overlay(alignment: .bottom) {
-            if let s = selected { pinCard(s) }
+            if let s = selected { pinCard(s).padding(.bottom, overlap) }
         }
         .overlay(alignment: .topTrailing) {
             if youCoordinate != nil, selected == nil {
@@ -209,14 +234,14 @@ struct NearbyView: View {
         return HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(s.name).font(.subheadline.weight(.semibold)).lineLimit(2)
-                Text(distanceLine(s.distanceKm)).font(.caption).foregroundStyle(.secondary)
+                Text(distanceLine(s.distanceKm)).font(.caption).foregroundStyle(p.tx2)
                 if let h {
                     Text(OpeningHours.text(h, use24: use24)).font(.caption)
                         .foregroundStyle(h.open ? Color.green : .secondary)
                 }
                 if fri != nil {
                     Text("Two Friday prayers, 2nd from \(MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24))")
-                        .font(.caption).foregroundStyle(Theme.accentText)
+                        .font(.caption).foregroundStyle(p.actx)
                 }
             }
             Spacer(minLength: 4)
@@ -224,13 +249,12 @@ struct NearbyView: View {
                 Label("Directions", systemImage: mode == .walk ? "figure.walk" : "car.fill")
                     .font(.footnote.weight(.semibold))
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
+            .buttonStyle(LookProminent(p))
             Button { selected = nil } label: {
                 Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 30, height: 30)
             }
             .accessibilityLabel("Close")
-            .foregroundStyle(.secondary)
+            .foregroundStyle(p.tx2)
         }
         .padding(12)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -263,6 +287,8 @@ struct NearbyView: View {
         let eid = currentEid(now)
         let friday = isFridayMorning(now)
         LazyVStack(alignment: .leading, spacing: 12) {
+            LookStrip(look: look, p: p)
+
             if let m = model.prefs.myMasjid, let here {
                 YourMasjidCard(link: m, from: here, mode: mode, singapore: singapore, eid: eid,
                                onFocus: focus, onDirections: { directions(to: mapItem(m.name, m.coordinates)) })
@@ -301,7 +327,7 @@ struct NearbyView: View {
                             .padding(.top, 6)
                     }
                 }
-                .font(.footnote).foregroundStyle(.secondary)
+                .font(.footnote).foregroundStyle(p.tx2)
                 .padding(.horizontal)
                 .padding(.top, 6)
             }
@@ -312,18 +338,21 @@ struct NearbyView: View {
         VStack(alignment: .leading, spacing: 6) {
             Button(action: findNearMe) {
                 HStack(spacing: 8) {
-                    if locating { ProgressView().tint(.white) } else { Image(systemName: "location.viewfinder") }
+                    if locating { ProgressView().tint(p.actx) } else { Image(systemName: "location.viewfinder") }
                     Text(locating ? "Finding where you are…" : nearMe != nil ? "Search again from here" : "Find prayer places near me")
-                        .font(.headline)
+                        .font(.system(size: look == .simple ? 19 : 16, weight: .semibold))
                 }
-                .frame(maxWidth: .infinity, minHeight: 30)
+                .foregroundStyle(p.actx)
+                .frame(maxWidth: .infinity, minHeight: look == .simple ? 56 : 48)
+                .background(look == .bands ? p.card : p.tint,
+                            in: RoundedRectangle(cornerRadius: look == .bands ? 0 : p.radius + 8, style: .continuous))
+                .contentShape(Rectangle())
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
+            .buttonStyle(.plain)
             .disabled(locating)
             if model.location.isDenied {
                 Text("Location is turned off for this app in Settings. Showing places near \(model.activePlace?.name ?? "your saved place").")
-                    .font(.footnote).foregroundStyle(.secondary)
+                    .font(.footnote).foregroundStyle(p.tx2)
             }
         }
         .padding(.horizontal)
@@ -350,29 +379,26 @@ struct NearbyView: View {
     private func header(list: [PrayerSpace], now: Date) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Nearest to \(hereLabel)").font(.title3.weight(.semibold)).lineLimit(1)
-                Spacer(minLength: 8)
-                Picker("How you're going", selection: $modeRaw) {
-                    Text("Walk").tag(TripMode.walk.rawValue)
-                    Text("Drive").tag(TripMode.drive.rawValue)
-                }
-                .pickerStyle(.segmented)
-                .frame(maxWidth: 170)
+                Text("Nearest to \(hereLabel)").font(Theme.display(look == .simple ? 26 : 22, .bold))
+                    .foregroundStyle(p.tx).lineLimit(2)
+                Spacer(minLength: 0)
             }
-            Picker("Type", selection: $kind) {
-                ForEach(PrayerSpace.Kind.allCases) { Text($0.rawValue).tag($0) }
-            }
-            .pickerStyle(.segmented)
+            LookSegmented(p: p, label: "How you're going",
+                          options: [("Walk", TripMode.walk.rawValue), ("Drive", TripMode.drive.rawValue)],
+                          selection: $modeRaw)
+            LookSegmented(p: p, label: "Type",
+                          options: PrayerSpace.Kind.allCases.map { ($0.rawValue, $0) },
+                          selection: $kind)
             if search.spaces.contains(where: { hoursNow($0, at: now) != nil }) {
                 Toggle(isOn: $openOnly) { Label("Open now only", systemImage: "clock") }
                     .toggleStyle(.button)
                     .buttonStyle(.bordered)
-                    .tint(openOnly ? Theme.accent : .secondary)
+                    .tint(openOnly ? p.actx : p.tx2)
                     .font(.footnote.weight(.semibold))
             }
             if mode == .drive {
                 Text("Drive times are a rough guide. Your maps app shows the traffic, so a masjid a little further away may be quicker.")
-                    .font(.footnote).foregroundStyle(.secondary)
+                    .font(.footnote).foregroundStyle(p.tx2)
             }
         }
         .padding(.horizontal)
@@ -413,24 +439,10 @@ struct NearbyView: View {
                     ProgressView().controlSize(.mini)
                     Text("Looking for more prayer rooms…")
                 }
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(p.tx2)
                 .padding(.horizontal)
             }
-            VStack(spacing: 0) {
-                ForEach(Array(list.prefix(MasjidExtras.show))) { space in
-                    SpaceRow(space: space, mode: mode, singapore: singapore, eid: eid,
-                             hours: hoursNow(space, at: now),
-                             isOpen: expanded == space.id,
-                             onTap: {
-                                 withAnimation(.snappy) { expanded = expanded == space.id ? nil : space.id }
-                                 focus(space.coordinates)
-                             },
-                             onDirections: { directions(to: space.item) },
-                             onReport: { if let url = MasjidExtras.reportURL(space.coordinates) { openURL(url) } })
-                    if space.id != list.prefix(MasjidExtras.show).last?.id { Divider().padding(.leading, 52) }
-                }
-            }
-            .padding(.horizontal)
+            placesList(list: list, now: now, eid: eid)
             let more = list.count - min(list.count, MasjidExtras.show)
             if more > 0 {
                 Button {
@@ -440,15 +452,50 @@ struct NearbyView: View {
                     Text("\(more) more within 15 km are on the map. Tap a pin to see its name and directions.")
                         .multilineTextAlignment(.leading)
                 }
-                .font(.footnote).foregroundStyle(.secondary)
+                .font(.footnote).foregroundStyle(p.tx2)
                 .padding(.horizontal)
             }
             if model.prefs.myMasjid == nil {
                 Text("Tap a place and choose Make it my masjid to keep it at the top.")
-                    .font(.footnote).foregroundStyle(.secondary)
+                    .font(.footnote).foregroundStyle(p.tx2)
                     .padding(.horizontal)
             }
         }
+    }
+
+    /// The rows: in the look's card, or edge to edge bands of colour in Colour Bands.
+    @ViewBuilder
+    private func placesList(list: [PrayerSpace], now: Date, eid: EidEvent?) -> some View {
+        let shown = Array(list.prefix(MasjidExtras.show))
+        if look == .bands {
+            VStack(spacing: 0) {
+                ForEach(shown.indices, id: \.self) { i in
+                    spaceRow(shown[i], index: i, now: now, eid: eid)
+                }
+            }
+        } else {
+            VStack(spacing: 0) {
+                ForEach(shown.indices, id: \.self) { i in
+                    spaceRow(shown[i], index: i, now: now, eid: eid)
+                    if i < shown.count - 1 { Rectangle().fill(p.sep).frame(height: 1) }
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: p.radius, style: .continuous))
+            .lookCard(padding: 0)
+            .padding(.horizontal)
+        }
+    }
+
+    private func spaceRow(_ space: PrayerSpace, index: Int, now: Date, eid: EidEvent?) -> some View {
+        SpaceRow(space: space, index: index, mode: mode, singapore: singapore, eid: eid,
+                 hours: hoursNow(space, at: now),
+                 isOpen: expanded == space.id,
+                 onTap: {
+                     withAnimation(.snappy) { expanded = expanded == space.id ? nil : space.id }
+                     focus(space.coordinates)
+                 },
+                 onDirections: { directions(to: space.item) },
+                 onReport: { if let url = MasjidExtras.reportURL(space.coordinates) { openURL(url) } })
     }
 
     // MARK: Helpers
@@ -474,7 +521,18 @@ struct NearbyView: View {
 
 private struct SpaceRow: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.look) private var look
+    /// The look's colours. In Colour Bands the row is a solid band, so words and icons go white.
+    private var p: LookPalette {
+        var q = look.palette
+        if look == .bands {
+            q.tx = .white; q.tx2 = .white; q.actx = .white; q.ac = .white
+            q.btn = Color.black.opacity(0.3); q.onBtn = .white; q.sep = Color.white.opacity(0.22)
+        }
+        return q
+    }
     let space: PrayerSpace
+    let index: Int
     let mode: TripMode
     let singapore: Bool
     let eid: EidEvent?
@@ -492,34 +550,36 @@ private struct SpaceRow: View {
         let trip = MasjidExtras.tripText(space.distanceKm, mode: mode)
         VStack(alignment: .leading, spacing: 10) {
             Button(action: onTap) {
-                HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: space.isMusollah ? "house.fill" : "moon.stars.fill")
-                        .foregroundStyle(space.isMusollah ? Prayer.fajr.tint : Theme.accent)
-                        .frame(width: 28)
-                        .padding(.top, 2)
+                HStack(alignment: .top, spacing: 14) {
+                    if look != .bands { iconTile }
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(spacing: 4) {
-                            if mine { Image(systemName: "star.fill").font(.caption).foregroundStyle(Theme.accentText) }
-                            Text(space.name).font(.body.weight(.semibold)).foregroundStyle(.primary)
+                            if mine { Image(systemName: "star.fill").font(.caption).foregroundStyle(p.actx) }
+                            Text(space.name).font(.system(size: look == .simple ? 19 : 17, weight: look == .bands ? .bold : .semibold))
+                                .foregroundStyle(p.tx)
                                 .multilineTextAlignment(.leading)
                         }
                         if !space.address.isEmpty {
-                            Text(space.address).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                            Text(space.address).font(.system(size: 13)).foregroundStyle(p.tx2).lineLimit(1)
                         }
                         if fri != nil || hours != nil {
                             HStack(spacing: 6) {
-                                if fri != nil { chip("2 Friday prayers", color: Theme.accentText) }
-                                if let hours { chip(hours.open ? "Open now" : "Closed now", color: hours.open ? .green : .secondary) }
+                                if fri != nil { chip("2 Friday prayers", fg: p.actx, fill: p.tint) }
+                                if let hours {
+                                    chip(hours.open ? "Open now" : "Closed now", fg: hours.open ? p.tx : p.tx2,
+                                         fill: hours.open ? Color.green.opacity(0.2) : p.sep)
+                                }
                             }
                         }
                     }
                     Spacer(minLength: 6)
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(MasjidExtras.distanceText(space.distanceKm))
-                            .font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
-                        if let trip { Text(trip).font(.caption).foregroundStyle(.secondary) }
+                            .font(.system(size: 15).monospacedDigit()).foregroundStyle(p.tx2)
+                        if let trip { Text(trip).font(.caption).foregroundStyle(p.tx2) }
                     }
                 }
+                .frame(minHeight: 58)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -534,39 +594,70 @@ private struct SpaceRow: View {
                     }
                     if let fri {
                         Text("Second Friday prayer from \(MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24))\(fri.womenSession2 ? ", with space for women" : "").")
-                            .font(.footnote).foregroundStyle(Theme.accentText)
+                            .font(.footnote).foregroundStyle(p.actx)
                     }
                     if let raya, let eid {
                         Text("\(eid.shortName) prayer at \(raya.sessions.map { MasjidExtras.clock($0.time, use24: use24) }.joined(separator: ", ")).")
-                            .font(.footnote).foregroundStyle(Theme.accentText)
+                            .font(.footnote).foregroundStyle(p.actx)
                     }
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             Button(action: onDirections) {
                                 Label("Directions", systemImage: mode == .walk ? "figure.walk" : "car.fill")
                             }
-                            .buttonStyle(.borderedProminent).tint(Theme.accent)
+                            .buttonStyle(LookProminent(p))
                             if mine {
                                 Label(space.isMusollah ? "Kept at the top" : "Your masjid", systemImage: "star.fill")
-                                    .foregroundStyle(Theme.accentText)
+                                    .foregroundStyle(p.actx)
                                     .padding(.horizontal, 8)
                             } else {
                                 Button { model.chooseMasjid(name: space.name, coordinates: space.coordinates) } label: {
                                     Label(space.isMusollah ? "Keep it at the top" : "Make it my masjid", systemImage: "star")
                                 }
-                                .buttonStyle(.bordered).tint(Theme.accent)
+                                .buttonStyle(LookQuiet(p))
                             }
                             Button(action: onReport) { Label("Report a problem", systemImage: "flag") }
-                                .buttonStyle(.bordered).tint(.secondary)
+                                .buttonStyle(LookQuiet(p))
                         }
                         .font(.footnote.weight(.semibold))
                     }
                 }
-                .padding(.leading, 40)
+                .foregroundStyle(p.tx)
+                .padding(.leading, look == .bands ? 0 : 44)
                 .transition(.opacity)
             }
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
+        .padding(.horizontal, look == .bands ? 24 : 14)
+        .background(rowBackground)
+    }
+
+    /// Colour Bands: each row a solid deeper band tone (white words pass contrast), prayer rooms in blue.
+    private static let bandTones: [Color] = [
+        Color(hex: 0x3A6F63), Color(hex: 0xA3632C), Color(hex: 0xBC5057), Color(hex: 0x6D7940), Color(hex: 0x88702E)
+    ]
+
+    @ViewBuilder
+    private var rowBackground: some View {
+        if look == .bands {
+            (space.isMusollah ? Color(hex: 0x4A63B8) : Self.bandTones[index % 5])
+        } else if isOpen {
+            look.palette.tint
+        } else {
+            Color.clear
+        }
+    }
+
+    private var iconTile: some View {
+        let room = space.isMusollah
+        let fg = room ? Color(hex: 0x6E82E6) : p.actx
+        let bg = room ? Color(hex: 0x6E82E6, opacity: 0.2) : p.tint
+        return Image(systemName: room ? "house.fill" : "moon.stars.fill")
+            .font(.system(size: 16))
+            .foregroundStyle(fg)
+            .frame(width: 30, height: 30)
+            .background(bg, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .accessibilityHidden(true)
     }
 
     /// The prayer room details from the community list, only the parts we have.
@@ -574,12 +665,12 @@ private struct SpaceRow: View {
     private func roomInfo(_ d: MasjidList.RoomDetails) -> some View {
         if !d.howToFind.isEmpty {
             VStack(alignment: .leading, spacing: 2) {
-                Text("HOW TO FIND IT").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                Text("HOW TO FIND IT").font(.caption2.weight(.semibold)).foregroundStyle(p.tx2)
                 Text(d.howToFind).font(.footnote)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 12).padding(.vertical, 8)
-            .background(Theme.accent.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+            .background(look == .bands ? Color.white.opacity(0.18) : p.tint, in: RoundedRectangle(cornerRadius: look == .bands ? 0 : 12))
         }
         let chips = d.chips
         if !chips.isEmpty {
@@ -602,11 +693,11 @@ private struct SpaceRow: View {
                     }
                     if !d.notes.isEmpty { Text(d.notes).font(.footnote) }
                     Text("These details come from the community and may have changed. Tell us if something is wrong.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(p.tx2)
                 }
                 .padding(.top, 4)
             }
-            .font(.footnote.weight(.semibold)).tint(Theme.accentText)
+            .font(.footnote.weight(.semibold)).tint(p.actx)
         }
     }
 
@@ -614,7 +705,7 @@ private struct SpaceRow: View {
     private func facilities(quiet: Bool = false) -> some View {
         let have = MasjidExtras.facilityLabels.filter { space.facilities.contains($0.0) }
         if have.isEmpty {
-            if !quiet { Text("The map doesn't list this place's facilities yet.").font(.footnote).foregroundStyle(.secondary) }
+            if !quiet { Text("The map doesn't list this place's facilities yet.").font(.footnote).foregroundStyle(p.tx2) }
         } else {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
@@ -629,12 +720,13 @@ private struct SpaceRow: View {
         }
     }
 
-    private func chip(_ text: String, color: Color) -> some View {
-        Text(text)
+    private func chip(_ text: String, fg: Color, fill: Color) -> some View {
+        let bands = look == .bands
+        return Text(text)
             .font(.caption2.weight(.semibold))
-            .foregroundStyle(color)
-            .padding(.horizontal, 7).padding(.vertical, 3)
-            .background(color.opacity(0.12), in: Capsule())
+            .foregroundStyle(bands ? Color.white : fg)
+            .padding(.horizontal, 8).padding(.vertical, 3)
+            .background(bands ? Color.white.opacity(0.22) : fill, in: RoundedRectangle(cornerRadius: bands ? 0 : 10, style: .continuous))
     }
 }
 
@@ -653,6 +745,8 @@ private struct SpaceRow: View {
 
 private struct YourMasjidCard: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.look) private var look
+    private var p: LookPalette { look.palette }
     let link: MasjidLink
     let from: Coordinates
     let mode: TripMode
@@ -671,12 +765,12 @@ private struct YourMasjidCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Button { onFocus(c) } label: {
                 HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: "star.fill").foregroundStyle(Theme.accentText).frame(width: 24).padding(.top, 2)
+                    Image(systemName: "star.fill").foregroundStyle(p.actx).frame(width: 24).padding(.top, 2)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("YOUR MASJID").font(.caption2.weight(.bold)).foregroundStyle(.secondary)
-                        Text(link.name).font(.body.weight(.semibold)).foregroundStyle(.primary).multilineTextAlignment(.leading)
+                        Text("YOUR MASJID").font(.caption2.weight(.bold)).foregroundStyle(p.tx2)
+                        Text(link.name).font(.body.weight(.semibold)).foregroundStyle(p.tx).multilineTextAlignment(.leading)
                         Text("\(MasjidExtras.distanceText(km)) away\(trip.map { ", \($0)" } ?? "")")
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(.caption).foregroundStyle(p.tx2)
                     }
                     Spacer(minLength: 0)
                 }
@@ -688,17 +782,17 @@ private struct YourMasjidCard: View {
                     Text("Iqamah \(iq)")
                 } else {
                     Text("Iqamah times show here when your masjid puts up a Prayer Times Asia screen. Scan its QR code once.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(p.tx2)
                 }
                 if let fri {
                     Text("Second Friday prayer from \(MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24))\(fri.womenSession2 ? ", with space for women" : "").")
-                        .foregroundStyle(Theme.accentText)
+                        .foregroundStyle(p.actx)
                 }
                 if let raya, let eid {
                     Text("\(eid.shortName) prayer at \(raya.sessions.map { MasjidExtras.clock($0.time, use24: use24) }.joined(separator: ", ")).")
-                        .foregroundStyle(Theme.accentText)
+                        .foregroundStyle(p.actx)
                 } else if let e = link.eid {
-                    Text("Eid prayer at \(MasjidExtras.clock(e, use24: use24)).").foregroundStyle(Theme.accentText)
+                    Text("Eid prayer at \(MasjidExtras.clock(e, use24: use24)).").foregroundStyle(p.actx)
                 }
             }
             .font(.footnote)
@@ -707,16 +801,15 @@ private struct YourMasjidCard: View {
                 Button(action: onDirections) {
                     Label("Directions", systemImage: mode == .walk ? "figure.walk" : "car.fill")
                 }
-                .buttonStyle(.borderedProminent).tint(Theme.accent)
+                .buttonStyle(LookProminent(p))
                 Button("Remove") { model.forgetMasjid() }
-                    .buttonStyle(.bordered).tint(.secondary)
+                    .buttonStyle(LookQuiet(p))
             }
             .font(.footnote.weight(.semibold))
             .padding(.leading, 36)
         }
-        .padding(14)
-        .background(Theme.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Theme.accent.opacity(0.25)))
+        .lookCard(padding: 14)
+        .overlay(RoundedRectangle(cornerRadius: p.radius, style: .continuous).strokeBorder(p.ac.opacity(0.55), lineWidth: 1))
         .padding(.horizontal)
     }
 }
@@ -725,6 +818,8 @@ private struct YourMasjidCard: View {
 
 private struct FridayCard: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.look) private var look
+    private var p: LookPalette { look.palette }
     let from: Coordinates
     let today: Bool
     @Binding var all: Bool
@@ -748,11 +843,11 @@ private struct FridayCard: View {
         let shown = all ? list : Array(list.prefix(3))
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "calendar").foregroundStyle(Theme.accentText).frame(width: 24)
+                Image(systemName: "calendar").foregroundStyle(p.actx).frame(width: 24)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(today ? "Friday prayer today" : "Friday prayer in Singapore").font(.headline)
                     Text("\(list.count) masjids hold a second Friday prayer from \(MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24)), for those who can't make the first one at \(Prayer.dhuhr.name(model.naming)).")
-                        .font(.footnote).foregroundStyle(.secondary)
+                        .font(.footnote).foregroundStyle(p.tx2)
                 }
             }
             VStack(spacing: 0) {
@@ -761,18 +856,18 @@ private struct FridayCard: View {
                     HStack(spacing: 10) {
                         Button { onFocus(row.mosque.coordinates) } label: {
                             HStack(alignment: .top, spacing: 12) {
-                                Image(systemName: "moon.stars.fill").foregroundStyle(Theme.accent).frame(width: 24)
+                                Image(systemName: "moon.stars.fill").foregroundStyle(p.actx).frame(width: 24)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(row.mosque.name).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
+                                    Text(row.mosque.name).font(.subheadline.weight(.semibold)).foregroundStyle(p.tx)
                                         .multilineTextAlignment(.leading)
                                     Text(row.mosque.district + (row.mosque.womenSession2 ? ". Space for women in the 2nd prayer" : ""))
-                                        .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.leading)
+                                        .font(.caption).foregroundStyle(p.tx2).multilineTextAlignment(.leading)
                                 }
                                 Spacer(minLength: 4)
                                 VStack(alignment: .trailing, spacing: 2) {
-                                    Text(MasjidExtras.distanceText(row.km)).font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
+                                    Text(MasjidExtras.distanceText(row.km)).font(.subheadline.monospacedDigit()).foregroundStyle(p.tx2)
                                     if let trip = MasjidExtras.tripText(row.km, mode: mode) {
-                                        Text(trip).font(.caption).foregroundStyle(.secondary)
+                                        Text(trip).font(.caption).foregroundStyle(p.tx2)
                                     }
                                 }
                             }
@@ -782,10 +877,10 @@ private struct FridayCard: View {
                         Button { onDirections(row.mosque) } label: {
                             Image(systemName: mode == .walk ? "figure.walk" : "car.fill")
                                 .frame(width: 36, height: 36)
-                                .background(Theme.accent.opacity(0.15), in: Circle())
+                                .background(p.tint, in: Circle())
                         }
                         .accessibilityLabel("Directions to \(row.mosque.name)")
-                        .foregroundStyle(Theme.accentText)
+                        .foregroundStyle(p.actx)
                     }
                     .padding(.vertical, 8)
                 }
@@ -800,17 +895,22 @@ private struct FridayCard: View {
                     Button("See the MUIS list") { openURL(url) }.font(.caption.weight(.semibold))
                 }
             }
-            .font(.caption).foregroundStyle(.secondary)
+            .font(.caption).foregroundStyle(p.tx2)
         }
-        .padding(14)
-        .background(Theme.accent.opacity(today ? 0.12 : 0.06), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Theme.accent.opacity(today ? 0.3 : 0.15)))
+        .lookCard(padding: 14)
+        .overlay {
+            if today {
+                RoundedRectangle(cornerRadius: p.radius, style: .continuous).strokeBorder(p.ac.opacity(0.55), lineWidth: 1)
+            }
+        }
         .padding(.horizontal)
     }
 }
 
 private struct EidCard: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.look) private var look
+    private var p: LookPalette { look.palette }
     let event: EidEvent
     let from: Coordinates
     let spaces: [PrayerSpace]
@@ -836,29 +936,29 @@ private struct EidCard: View {
         let shown = all ? rows : Array(rows.prefix(3))
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "moon.stars.fill").foregroundStyle(Theme.accentText).frame(width: 24)
+                Image(systemName: "moon.stars.fill").foregroundStyle(p.actx).frame(width: 24)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("\(event.shortName) prayer").font(.headline)
-                    Text("\(dateText). Prayer times at the masjids nearest you.").font(.footnote).foregroundStyle(.secondary)
+                    Text("\(dateText). Prayer times at the masjids nearest you.").font(.footnote).foregroundStyle(p.tx2)
                 }
             }
             ForEach(shown) { row in
                 HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: "moon.stars.fill").foregroundStyle(Theme.accent).frame(width: 24)
+                    Image(systemName: "moon.stars.fill").foregroundStyle(p.actx).frame(width: 24)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(row.mosque.name).font(.subheadline.weight(.semibold))
                         Text(row.mosque.sessions.map { s in
                             MasjidExtras.clock(s.time, use24: use24) + (s.khutbah.map { " (\($0))" } ?? "")
                         }.joined(separator: ", "))
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(p.tx2)
                         let extra = [row.mosque.sessions.contains { $0.women } ? "Space for women" : nil, row.mosque.note].compactMap { $0 }
                         if !extra.isEmpty {
-                            Text(extra.joined(separator: ". ")).font(.caption).foregroundStyle(.secondary)
+                            Text(extra.joined(separator: ". ")).font(.caption).foregroundStyle(p.tx2)
                         }
                     }
                     Spacer(minLength: 4)
                     if let km = row.km {
-                        Text(MasjidExtras.distanceText(km)).font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
+                        Text(MasjidExtras.distanceText(km)).font(.subheadline.monospacedDigit()).foregroundStyle(p.tx2)
                     }
                 }
                 .padding(.vertical, 4)
@@ -875,11 +975,10 @@ private struct EidCard: View {
                     Button("See the MUIS list") { openURL(url) }.font(.caption.weight(.semibold))
                 }
             }
-            .font(.caption).foregroundStyle(.secondary)
+            .font(.caption).foregroundStyle(p.tx2)
         }
-        .padding(14)
-        .background(Theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Theme.accent.opacity(0.3)))
+        .lookCard(padding: 14)
+        .overlay(RoundedRectangle(cornerRadius: p.radius, style: .continuous).strokeBorder(p.ac.opacity(0.55), lineWidth: 1))
         .padding(.horizontal)
     }
 
@@ -890,6 +989,163 @@ private struct EidCard: View {
         guard let d = f.date(from: event.date) else { return event.date }
         f.dateFormat = "EEEE d MMMM"
         return f.string(from: d)
+    }
+}
+
+// MARK: - The look's own parts
+
+/// The slim strip on top of the list sheet: kawung dots for Centre Dial, the sun's curve for
+/// Sun Path, six colour stripes for Colour Bands, a thin gold line for Calm Gold.
+private struct LookStrip: View {
+    let look: TodayStyle
+    let p: LookPalette
+
+    private static let stripes: [Color] = [
+        Color(hex: 0x3A6F63), Color(hex: 0x8A9A52), Color(hex: 0xAB8D3A),
+        Color(hex: 0xCD7D38), Color(hex: 0xD3705C), Color(hex: 0xC9565D)
+    ]
+
+    var body: some View {
+        switch look {
+        case .bands:
+            HStack(spacing: 0) {
+                ForEach(0..<6, id: \.self) { i in Self.stripes[i] }
+            }
+            .frame(height: 8)
+            .accessibilityHidden(true)
+        case .simple:
+            grab
+        case .gold:
+            VStack(spacing: 10) {
+                grab
+                Rectangle().fill(p.ac.opacity(0.7)).frame(height: 1)
+                    .padding(.horizontal)
+            }
+            .accessibilityHidden(true)
+        case .sunPath:
+            VStack(spacing: 0) {
+                grab
+                SunCurve(color: p.ac).frame(height: 34)
+            }
+            .accessibilityHidden(true)
+        default:
+            VStack(spacing: 10) {
+                grab
+                KawungDots()
+                    .frame(height: 10)
+                    .padding(.horizontal)
+            }
+            .accessibilityHidden(true)
+        }
+    }
+
+    private var grab: some View {
+        Capsule().fill(p.tx3.opacity(0.5)).frame(width: 38, height: 5)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 8)
+    }
+}
+
+/// The sun's arc with the sun at the top.
+private struct SunCurve: View {
+    let color: Color
+
+    var body: some View {
+        Canvas { ctx, size in
+            var path = Path()
+            path.move(to: CGPoint(x: -10, y: size.height - 2))
+            path.addQuadCurve(to: CGPoint(x: size.width + 10, y: size.height - 2),
+                              control: CGPoint(x: size.width / 2, y: -size.height * 0.5))
+            ctx.stroke(path, with: .color(color.opacity(0.6)), lineWidth: 2.5)
+            let sun = CGRect(x: size.width / 2 - 6, y: 5, width: 12, height: 12)
+            ctx.fill(Path(ellipseIn: sun), with: .color(color))
+        }
+    }
+}
+
+/// A small navy bar with a ring pattern, the Centre Dial strip.
+private struct KawungDots: View {
+    private static let gold = Color(hex: 0xE2B65A)
+
+    var body: some View {
+        Canvas { ctx, size in
+            ctx.fill(Path(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: 5), with: .color(Color(hex: 0x262B5E)))
+            var x: CGFloat = 0
+            while x < size.width + 22 {
+                let ring = CGRect(x: x - 10, y: size.height / 2 - 10, width: 20, height: 20)
+                ctx.stroke(Path(ellipseIn: ring), with: .color(Self.gold.opacity(0.16)), lineWidth: 1)
+                x += 22
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 5, style: .continuous).strokeBorder(Self.gold.opacity(0.4), lineWidth: 1))
+    }
+}
+
+/// Walk and Drive, or All, Masjid and Prayer room, in the look's colours.
+private struct LookSegmented<Value: Hashable>: View {
+    let p: LookPalette
+    let label: String
+    let options: [(String, Value)]
+    @Binding var selection: Value
+
+    var body: some View {
+        let radius: CGFloat = p.radius == 0 ? 0 : 10
+        HStack(spacing: 0) {
+            ForEach(options.indices, id: \.self) { i in
+                let on = options[i].1 == selection
+                Button { selection = options[i].1 } label: {
+                    Text(options[i].0)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(on ? p.tx : p.tx2)
+                        .frame(maxWidth: .infinity, minHeight: 40)
+                        .background {
+                            if on {
+                                RoundedRectangle(cornerRadius: max(radius - 2, 0), style: .continuous)
+                                    .fill(Color.dyn(Color.white, Color.white.opacity(0.16)))
+                                    .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(on ? .isSelected : [])
+            }
+        }
+        .padding(2)
+        .background(p.sep, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(label)
+    }
+}
+
+/// The look's big button: its button colour with the matching words.
+private struct LookProminent: ButtonStyle {
+    let p: LookPalette
+    init(_ p: LookPalette) { self.p = p }
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(p.onBtn)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 44)
+            .background(p.btn, in: RoundedRectangle(cornerRadius: p.radius == 0 ? 0 : 22, style: .continuous))
+            .opacity(configuration.isPressed ? 0.8 : 1)
+    }
+}
+
+/// The look's quiet button: a soft fill with the main text colour.
+private struct LookQuiet: ButtonStyle {
+    let p: LookPalette
+    init(_ p: LookPalette) { self.p = p }
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(p.tx)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 44)
+            .background(p.sep, in: RoundedRectangle(cornerRadius: p.radius == 0 ? 0 : 22, style: .continuous))
+            .opacity(configuration.isPressed ? 0.8 : 1)
     }
 }
 
