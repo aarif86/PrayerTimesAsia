@@ -9,6 +9,7 @@ import SwiftUI
 /// left, so the sun moves the same way as the finger, morning to night.
 struct SkySliderCard: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.look) private var look
     let place: Place
     let now: Date
     /// Minutes since the start of the slider; nil follows the clock.
@@ -25,19 +26,20 @@ struct SkySliderCard: View {
             let ymd = model.ymd(t)
             let plan = Falak.shadowDay(year: ymd.0, month: ymd.1, day: ymd.2, coordinates: place.coordinates)
             VStack(alignment: .leading, spacing: 12) {
-                SkyPicture(day: day, plan: plan, t: t, coordinates: place.coordinates, school: model.asrSchool)
+                SkyPicture(day: day, plan: plan, t: t, coordinates: place.coordinates, school: model.asrSchool, stage: stage, look: look)
                     .frame(height: 170)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: look == .bands ? 0 : 18, style: .continuous))
                     .accessibilityHidden(true)
                 HStack(alignment: .firstTextBaseline) {
-                    Text(title(stage)).font(.title3.weight(.bold))
+                    Text(title(stage)).font(.system(size: look == .simple ? 34 : 28, weight: .bold, design: .rounded))
                     Spacer()
-                    Text(model.formatted(t)).font(.title3.weight(.semibold)).monospacedDigit().opacity(0.8)
+                    Text(model.formatted(t)).font(.system(size: 13, weight: .medium)).monospacedDigit()
+                        .foregroundStyle(look.palette.tx2)
                 }
-                Text(say(stage)).font(.subheadline).opacity(0.85)
+                Text(say(stage)).font(.system(size: 15)).foregroundStyle(look.palette.tx2)
                     .fixedSize(horizontal: false, vertical: true)
                 Slider(value: Binding(get: { picked ?? clock }, set: { picked = $0 }), in: 0...span)
-                    .tint(Theme.gold)
+                    .tint(look.palette.actx)
                     .accessibilityLabel("Slide the sun")
                     .accessibilityValue("\(model.formatted(t)), \(title(stage))")
                 HStack {
@@ -48,8 +50,7 @@ struct SkySliderCard: View {
                     Text("West").font(.caption2.weight(.semibold)).opacity(0.6)
                 }
             }
-            .padding(14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+            .modifier(SkyCardStyle())
             .sensoryFeedback(.selection, trigger: stage)
         }
     }
@@ -83,6 +84,24 @@ struct SkySliderCard: View {
     }
 }
 
+/// The sky card's frame: a look card, or in Colour Bands a flat full width strip.
+private struct SkyCardStyle: ViewModifier {
+    @Environment(\.look) private var look
+
+    func body(content: Content) -> some View {
+        if look == .bands {
+            content
+                .padding(.horizontal, 24).padding(.vertical, 14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(look.palette.card)
+                .overlay(Rectangle().strokeBorder(look.palette.sep, lineWidth: 1))
+                .padding(.horizontal, -Theme.gutter)
+        } else {
+            content.lookCard(padding: 14)
+        }
+    }
+}
+
 /// The drawing: sky colour, the sun on its arc, a stick and its shadow, and the
 /// gold mark where the shadow reaches at Asr.
 private struct SkyPicture: View {
@@ -91,14 +110,19 @@ private struct SkyPicture: View {
     let t: Date
     let coordinates: Coordinates
     let school: AsrSchool
+    let stage: Falak.SkyStage
+    let look: TodayStyle
 
     var body: some View {
+        let pal = look.palette
         Canvas { ctx, size in
             let w = size.width, h = size.height
             let ground = h * 0.78, stickX = w / 2, stick: CGFloat = 44
             let sun = Falak.sunPosition(at: t, coordinates: coordinates)
             // Sky.
-            let colors = skyColors(sun.altitude)
+            // In daylight the sky takes the look's own colours, as on the web. Dawn, dusk and night keep real ones.
+            let lit = sun.altitude > 0 && stage != .fajr && stage != .maghrib
+            let colors = lit ? [pal.fk1, pal.fk2] : skyColors(sun.altitude)
             ctx.fill(Path(CGRect(x: 0, y: 0, width: w, height: ground)),
                      with: .linearGradient(Gradient(colors: colors), startPoint: .zero, endPoint: CGPoint(x: 0, y: ground)))
             // Glow on the horizon at dawn and dusk, east (left) in the morning, west (right) in the evening.
@@ -112,7 +136,7 @@ private struct SkyPicture: View {
             }
             // Ground.
             ctx.fill(Path(CGRect(x: 0, y: ground, width: w, height: h - ground)),
-                     with: .color(sun.altitude > 0 ? Color(red: 0.36, green: 0.55, blue: 0.33) : Color(red: 0.12, green: 0.2, blue: 0.16)))
+                     with: .color(lit ? pal.ground : (sun.altitude > 0 ? Color(red: 0.36, green: 0.55, blue: 0.33) : Color(red: 0.12, green: 0.2, blue: 0.16))))
             // Sun along its daytime arc, east on the left.
             let rise = day.time(.sunrise), set = day.time(.maghrib)
             let f = t.timeIntervalSince(rise) / max(set.timeIntervalSince(rise), 1)
@@ -144,12 +168,12 @@ private struct SkyPicture: View {
                 var s = Path()
                 s.move(to: CGPoint(x: stickX, y: ground + 1))
                 s.addLine(to: CGPoint(x: toLeft ? stickX - len : stickX + len, y: ground + 1))
-                ctx.stroke(s, with: .color(.black.opacity(0.55)), style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                ctx.stroke(s, with: .color(lit ? (look == .bands ? Color.white : pal.actx) : Color.black.opacity(0.55)), style: StrokeStyle(lineWidth: 5, lineCap: .round))
             }
             // The stick.
             var st = Path()
             st.move(to: CGPoint(x: stickX, y: ground)); st.addLine(to: CGPoint(x: stickX, y: ground - stick))
-            ctx.stroke(st, with: .color(Color(red: 0.42, green: 0.28, blue: 0.16)), style: StrokeStyle(lineWidth: 4, lineCap: .round))
+            ctx.stroke(st, with: .color(lit ? pal.stick : Color(red: 0.42, green: 0.28, blue: 0.16)), style: StrokeStyle(lineWidth: 4, lineCap: .round))
         }
     }
 
@@ -219,9 +243,7 @@ private struct StoryCard<Extra: View>: View {
             }
             extra()
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+        .lookCard(padding: 16)
     }
 }
 
@@ -239,7 +261,7 @@ struct WhyItHelps: View {
                 Divider().padding(.leading, 60)
                 row("building.columns.fill", .teal, "Your masjid uses it too", "Official times are worked out from the sun by scholars of falak. They add a few minutes of care so nobody prays too early.")
             }
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+            .lookCard(padding: 0)
             VStack(alignment: .leading, spacing: 6) {
                 Label("Always follow your local religious authority", systemImage: "checkmark.seal.fill")
                     .font(.headline).foregroundStyle(Theme.gold)
