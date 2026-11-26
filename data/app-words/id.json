@@ -924,6 +924,8 @@
   "masjid.savedPlace": "tempat yang Anda simpan",
   "masjid.nearestYou": "Paling dekat dengan Anda",
   "masjid.nearestTo": "Paling dekat dengan {place}",
+  "masjid.nearestMasjid": "Masjid terdekat",
+  "masjid.showWay": "Tunjukkan arahnya",
   "masjid.howGoing": "Cara Anda ke sana",
   "masjid.walk": "Jalan kaki",
   "masjid.drive": "Berkendara",

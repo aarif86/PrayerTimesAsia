@@ -93,8 +93,8 @@ function useAppearance(now: number) {
   const isNight = day ? now < day.times.sunrise || now >= day.times.maghrib : null
   const a = store.prefs.appearance
   const scheme: 'light' | 'dark' = a === 'light' ? 'light' : a === 'dark' ? 'dark' : isNight == null ? (prefersLight() ? 'light' : 'dark') : isNight ? 'dark' : 'light'
-  // Colour Bands' flat page: Prayer, Qibla and Falak so far (the other tabs follow).
-  const bands = (store.tab === 'today' || store.tab === 'qibla' || store.tab === 'falak') && store.prefs.todayStyle === 'bands'
+  // Colour Bands' flat page: every tab.
+  const bands = (store.tab === 'today' || store.tab === 'qibla' || store.tab === 'falak' || store.tab === 'masjid' || store.tab === 'settings') && store.prefs.todayStyle === 'bands'
   const gold = store.prefs.todayStyle === 'gold'
   return { sky, scheme, soft: a === 'system', bands, gold }
 }

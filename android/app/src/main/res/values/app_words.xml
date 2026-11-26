@@ -926,6 +926,8 @@
     <string name="masjid_savedPlace" formatted="false">your saved place</string>
     <string name="masjid_nearestYou" formatted="false">Nearest to you</string>
     <string name="masjid_nearestTo" formatted="false">Nearest to {place}</string>
+    <string name="masjid_nearestMasjid" formatted="false">Nearest masjid</string>
+    <string name="masjid_showWay" formatted="false">Show me the way</string>
     <string name="masjid_howGoing" formatted="false">How you\'re going</string>
     <string name="masjid_walk" formatted="false">Walk</string>
     <string name="masjid_drive" formatted="false">Drive</string>

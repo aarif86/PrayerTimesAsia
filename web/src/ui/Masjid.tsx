@@ -17,6 +17,7 @@ import { OBLIGATORY, prayerName } from '../core/prayer'
 import type { MasjidLink } from '../core/masjidLink'
 import { store } from '../services/store'
 import { tint } from './Dials'
+import { TabMasjid } from './icons'
 import { appLocale, tr, trWith } from '../core/appWords'
 
 /**
@@ -189,6 +190,7 @@ export default function MasjidScreen() {
   const map = useRef<{ api: typeof import('./leafletMap'); map: import('leaflet').Map; layer: import('leaflet').LayerGroup; ringLayer: import('leaflet').LayerGroup; rings: string; you: import('leaflet').Marker } | null>(null)
   const drawRingsRef = useRef<() => void>(() => undefined)
   const dark = document.documentElement.dataset.theme !== 'light'
+  const look = s.prefs.todayStyle
   const use24 = s.prefs.use24Hour
   const tz = place?.timeZoneID || Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -263,11 +265,11 @@ export default function MasjidScreen() {
     if (!m || !here) return
     m.you.setLatLng([here.coordinates.latitude, here.coordinates.longitude])
     m.layer.clearLayers()
-    for (const sp of visibleRef.current) {
+    for (const [i, sp] of visibleRef.current.entries()) {
       const fri = singapore ? fridayMosqueAt(sp.coordinates) : null
       const h = hoursOf(sp)
       const trip = tripText(sp.distanceKm, mode)
-      const pin = m.api.spaceMarker(sp.coordinates, sp.isMusollah, sp.name)
+      const pin = m.api.spaceMarker(sp.coordinates, sp.isMusollah, sp.name, i)
       pin.bindPopup(`<div class="pin-pop"><b>${escapeHTML(sp.name)}</b><span>${escapeHTML(tr('masjid.away', { distance: distanceText(sp.distanceKm) }))}${trip ? ', ' + escapeHTML(trip) : ''}</span>` +
         (h ? `<span class="${h.open ? 'pin-open' : ''}">${hoursText(h, use24)}</span>` : '') +
         (fri ? `<span class="pin-fri">${escapeHTML(tr('masjid.twoFriday', { time: clock(FRIDAY_SG.secondSessionFrom, use24) }))}</span>` : '') +
@@ -310,7 +312,10 @@ export default function MasjidScreen() {
   }
 
   const top = visible.slice(0, SHOW)
-  const more = visible.length - top.length
+  // Big and Simple: the nearest masjid is one big card, then only two rows.
+  const nearest = look === 'simple' ? visible.find((sp) => !sp.isMusollah) ?? visible[0] : undefined
+  const rowsShown = look === 'simple' ? top.filter((sp) => sp !== nearest).slice(0, 2) : top
+  const more = visible.length - rowsShown.length - (nearest ? 1 : 0)
   const mine = s.prefs.myMasjid
   const isMine = (c: Coordinates) => !!mine && Math.abs(mine.lat - c.latitude) < 0.003 && Math.abs(mine.lng - c.longitude) < 0.003
 
@@ -319,7 +324,7 @@ export default function MasjidScreen() {
     : null
 
   return (
-    <div class="masjid">
+    <div class={`masjid v12s v12m m-${look}`}>
       <div class="masjid-map-wrap">
         <div ref={mapEl} class="masjid-map" />
         <div class="masjid-title">
@@ -331,6 +336,8 @@ export default function MasjidScreen() {
         </div>
       </div>
       <div class="page masjid-page">
+        <div class="m-grab" aria-hidden="true" />
+        <div class="m-deco" aria-hidden="true" />
         {mine && here && <YourMasjid m={mine} from={here.coordinates} mode={mode} use24={use24} singapore={singapore} eid={eid} onFocus={focus} />}
         <button class="near-me-btn" onClick={findNearMe} disabled={locating === 'busy'}>
           {locating === 'busy' ? <Loader2 class="spin" size={20} /> : <LocateFixed size={20} />}
@@ -340,6 +347,16 @@ export default function MasjidScreen() {
         {locating === 'failed' && <p class="near-me-note secondary">{tr('masjid.locationFailed', { place: place?.name ?? tr('masjid.savedPlace') })}</p>}
         {eid && here && <EidCard e={eid} from={here.coordinates} spaces={spaces} use24={use24} />}
         {friday && fridayCard}
+        {look === 'simple' && nearest && (
+          <section class="m-near" aria-label={tr('masjid.nearestMasjid')}>
+            <h2 class="m-near-h">{tr('masjid.nearestMasjid')}</h2>
+            <div class="m-near-card">
+              <div class="m-near-name">{nearest.name}</div>
+              <div class="m-near-line">{distanceText(nearest.distanceKm)}{tripText(nearest.distanceKm, mode) ? `, ${tripText(nearest.distanceKm, mode)}` : ''}</div>
+              <a class="m-near-btn" href={directionsURL(nearest.coordinates, mode)} target="_blank" rel="noopener noreferrer">{tr('masjid.showWay')}</a>
+            </div>
+          </section>
+        )}
         <div class="near-head">
           <div class="near-title">
             <h2>{here && !here.fromGps && here.label ? tr('masjid.nearestTo', { place: here.label }) : tr('masjid.nearestYou')}</h2>
@@ -366,17 +383,17 @@ export default function MasjidScreen() {
             action={failed ? <button class="primary-btn" style={{ marginTop: 14 }} onClick={() => setAttempt((n) => n + 1)}>{tr('common.tryAgain')}</button> : undefined} />
         )}
         <ul class="space-list">
-          {top.map((sp) => {
+          {rowsShown.map((sp) => {
             const fri = singapore ? fridayMosqueAt(sp.coordinates) : null
             const trip = tripText(sp.distanceKm, mode)
             const h = hoursOf(sp)
             const raya = eid ? eidAt(eid, sp.name, sp.coordinates) : null
             const open = expanded === sp.id
             return (
-              <li class={open ? 'open' : ''}>
+              <li class={`${open ? 'open' : ''}${sp.isMusollah ? ' sp-mus' : ''}`}>
                 <div class="space-line">
                   <button class="space-row" aria-expanded={open} onClick={() => { setExpanded(open ? null : sp.id); focus(sp.coordinates) }}>
-                    {sp.isMusollah ? <House size={20} style={{ color: tint('fajr') }} fill="currentColor" /> : <MoonStar size={20} class="accent" />}
+                    {sp.isMusollah ? <House size={20} style={{ color: tint('fajr') }} fill="currentColor" /> : <TabMasjid size={20} class="accent" />}
                     <span class="space-text">
                       <span class="space-name">{isMine(sp.coordinates) && <Star size={14} class="accent" fill="currentColor" style={{ marginRight: 4 }} />}{sp.name}</span>
                       {sp.address && <span class="space-addr">{sp.address}</span>}

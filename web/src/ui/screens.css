@@ -515,7 +515,6 @@
 .wake-hadith .next { font-weight: 600; margin: 4px 0 0; color: var(--accent); }
 .item.choice .choice-tick { color: var(--accent); flex: none; }
 /* ---------- Time left to pray ---------- */
-  background: var(--fill); font-size: 14px; font-weight: 500; line-height: 1.3; }
 
 /* ---------- Big and Simple ---------- */
 .simple-page { padding-bottom: 32px; }
@@ -1204,3 +1203,183 @@ html[data-large-text] .pname { font-size: 20px; }
 .f-bands .falak-tools .item:nth-child(6n+4) { background: #8a9a52; }
 .f-bands .falak-tools .item:nth-child(6n+5) { background: #ab8d3a; }
 .f-bands .falak-tools .item:nth-child(6n+6) { background: #d3705c; }
+
+/* ---------- Masjid in the five looks (mockup v12) ---------- */
+.v12m { color: var(--s-tx); --m-bg: #232326; }
+:root[data-theme="light"] .v12m { --m-bg: #F2F0EB; }
+.v12m .masjid-map-wrap { isolation: isolate; }
+.v12m .masjid-page { position: relative; z-index: 1; margin-top: -28px; padding-top: 0; padding-bottom: 24px; border-radius: 28px 28px 0 0; background: var(--glass);
+  -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.25); }
+.v12m .m-grab { width: 38px; height: 5px; border-radius: 3px; background: var(--s-tx3); opacity: .5; margin: 8px auto; }
+.v12m .m-deco { height: 10px; margin: 0 0 10px; border-radius: 5px; background-color: #262B5E; border: 1px solid rgba(226, 182, 90, 0.4);
+  background-image: radial-gradient(circle, transparent 9px, rgba(226, 182, 90, 0.16) 10px, transparent 11px); background-size: 22px 22px; }
+.m-sunPath .m-deco { height: 34px; margin: -6px calc(-1 * var(--gutter)) -6px; border: 0; border-radius: 0; background-color: transparent; background-size: 100% 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 390 34%27%3E%3Cpath d=%27M-10 32 Q195 -18 400 32%27 fill=%27none%27 stroke=%27%23F7BD8F%27 stroke-opacity=%27.6%27 stroke-width=%272.5%27/%3E%3Ccircle cx=%27195%27 cy=%277%27 r=%276%27 fill=%27%23F7BD8F%27/%3E%3C/svg%3E"); }
+:root[data-theme="light"] .m-sunPath .m-deco { background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 390 34%27%3E%3Cpath d=%27M-10 32 Q195 -18 400 32%27 fill=%27none%27 stroke=%27%23C9622A%27 stroke-opacity=%27.6%27 stroke-width=%272.5%27/%3E%3Ccircle cx=%27195%27 cy=%277%27 r=%276%27 fill=%27%23C9622A%27/%3E%3C/svg%3E"); }
+.m-bands .m-deco { height: 8px; margin: 0 calc(-1 * var(--gutter)) 12px; border: 0; border-radius: 0; background-size: auto;
+  background-image: linear-gradient(90deg, #3a6f63 0 16.66%, #8a9a52 0 33.33%, #ab8d3a 0 50%, #cd7d38 0 66.66%, #d3705c 0 83.33%, #c9565d 0); }
+.m-simple .m-deco { display: none; }
+.m-gold .m-deco { height: 1px; border: 0; border-radius: 0; background: var(--s-ac); background-image: none; opacity: .7; margin: 0 0 12px; }
+.m-bands .masjid-page { background: var(--m-bg); border-radius: 0; margin-top: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.m-bands .m-grab { display: none; }
+.v12m .secondary { color: var(--s-tx2); }
+.v12m .accent, .v12m .accent-text { color: var(--s-actx); }
+.v12m .near-me-btn { background: var(--s-btn); color: var(--s-ong); border-radius: calc(var(--s-r) + 8px); box-shadow: 0 6px 18px color-mix(in srgb, var(--s-btn) 30%, transparent); }
+.m-bands .near-me-btn { border-radius: 0; box-shadow: none; }
+.v12m .near-head { gap: 8px; margin-top: 16px; }
+.v12m .near-head h2 { font: 700 22px var(--font-display); color: var(--s-tx); }
+.v12m .near-title { flex-direction: column; align-items: stretch; gap: 8px; }
+.v12m .segmented, .v12m .mode-switch { display: flex; padding: 2px; gap: 0; border-radius: 10px; background: var(--s-sep); }
+.v12m .segmented button, .v12m .mode-switch button { flex: 1; justify-content: center; min-height: 36px; padding: 6px 0; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--s-tx2); background: none; }
+.v12m .segmented button[aria-pressed="true"], .v12m .mode-switch button[aria-pressed="true"] { background: var(--s-card); color: var(--s-tx); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18); }
+:root[data-theme="light"] .v12m .segmented button[aria-pressed="true"], :root[data-theme="light"] .v12m .mode-switch button[aria-pressed="true"] { background: #fff; }
+.m-bands .segmented, .m-bands .segmented button, .m-bands .mode-switch, .m-bands .mode-switch button { border-radius: 0; }
+.v12m .open-chip { background: var(--s-sep); color: var(--s-tx); }
+.v12m .open-chip.on { background: color-mix(in srgb, var(--s-ac) 28%, transparent); }
+.m-bands .open-chip { border-radius: 0; }
+.v12m .masjid-page > .space-list { margin: 8px 0 0; background: var(--s-card); border: 1px solid var(--s-strk); border-radius: var(--s-r); overflow: hidden; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.v12m .space-list li { border-bottom: 1px solid var(--s-sep); padding: 0 14px; }
+.v12m .space-list li:last-child { border-bottom: 0; }
+.v12m .space-list li.open { margin: 0; padding: 0 14px; border-radius: 0; background: var(--s-tint); }
+.v12m .space-row { gap: 14px; min-height: 58px; color: var(--s-tx); }
+.v12m .space-row > svg { box-sizing: content-box; width: 18px; height: 18px; padding: 6px; border-radius: 8px; background: var(--s-tint); color: var(--s-actx); }
+.v12m .space-row > svg[class*="house"] { background: rgba(110, 130, 230, 0.2); color: #6E82E6 !important; }
+.v12m .space-name { font-size: 17px; font-weight: 600; }
+.v12m .space-addr { font-size: 13px; color: var(--s-tx2); }
+.v12m .space-dist { font-size: 15px; color: var(--s-tx2); }
+.v12m .space-walk { color: var(--s-tx2); }
+.v12m .walk { color: var(--s-tx2); }
+.v12m .space-chip { background: var(--s-tint); color: var(--s-actx); }
+.v12m .space-chip.ok { background: color-mix(in srgb, #34c759 20%, transparent); color: var(--s-tx); }
+.v12m .space-chip.closed, .v12m .space-chip.plain { background: var(--s-sep); color: var(--s-tx2); }
+.v12m .friday-card, .v12m .your-masjid { background: var(--s-card); border-color: var(--s-strk); border-radius: var(--s-r); }
+.v12m .friday-card.today, .v12m .your-masjid { border-color: color-mix(in srgb, var(--s-ac) 55%, transparent); }
+.v12m .friday-card .space-list { background: none; border: 0; }
+.v12m .friday-card .space-list li { padding: 0; }
+.v12m .space-actions .plain-btn { background: var(--s-sep); color: var(--s-tx); }
+.v12m .space-actions .plain-btn.quiet { background: transparent; color: var(--s-tx2); }
+.v12m .space-actions .plain-btn.done { color: var(--s-actx); }
+.v12m .room-find { background: var(--s-tint); }
+.v12m .room-more { color: var(--s-actx); }
+.v12m .suggest-room-btn { display: flex; align-items: center; justify-content: flex-start; width: 100%; min-height: 50px; margin-top: 10px; padding: 0 16px; background: var(--s-card); border: 1px solid var(--s-strk);
+  border-radius: var(--s-r); color: var(--s-actx); font-weight: 600; font-size: 16px; }
+.m-bands .suggest-room-btn { margin-left: calc(-1 * var(--gutter)); margin-right: calc(-1 * var(--gutter)); width: calc(100% + 2 * var(--gutter)); padding: 0 24px; border: 0; }
+/* Colour Bands: full width bands, square corners */
+.m-bands .masjid-page > .space-list { margin: 8px calc(-1 * var(--gutter)) 0; border: 0; border-radius: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.m-bands .space-list li { padding: 0 24px; border: 0; background: #3a6f63; color: #fff; }
+.m-bands .space-list li:nth-child(5n+2) { background: #a3632c; }
+.m-bands .space-list li:nth-child(5n+3) { background: #bc5057; }
+.m-bands .space-list li:nth-child(5n+4) { background: #6d7940; }
+.m-bands .space-list li:nth-child(5n+5) { background: #88702e; }
+.m-bands .space-list li.sp-mus { background: #4a63b8; }
+.m-bands .space-list li.open { padding: 0 24px; }
+.m-bands .space-row { min-height: 62px; color: #fff; }
+.m-bands .space-row > svg { display: none; }
+.m-bands .space-name { font-weight: 700; }
+.m-bands .space-addr, .m-bands .space-dist, .m-bands .space-walk, .m-bands .walk { color: #fff; opacity: 1; }
+.m-bands .space-chip, .m-bands .space-chip.plain, .m-bands .space-chip.ok, .m-bands .space-chip.closed { background: rgba(255, 255, 255, 0.22); color: #fff; border-radius: 0; }
+.m-bands .space-more { color: #fff; }
+.m-bands .space-actions .plain-btn { background: rgba(255, 255, 255, 0.22); color: #fff; border-radius: 0; }
+.m-bands .room-find { background: rgba(255, 255, 255, 0.18); border-radius: 0; }
+.m-bands .room-more { color: #fff; }
+.m-bands .friday-card, .m-bands .your-masjid { border-radius: 0; }
+/* Big and Simple: the nearest masjid as one big card, then two rows */
+.m-near-h { font: 700 calc(22px * 1.24) var(--font-display); margin: 4px 0 10px; color: var(--s-tx); }
+.m-near-card { border: 2px solid var(--s-ac); background: var(--s-card); border-radius: var(--s-r); padding: 14px 18px; margin-bottom: 10px; }
+.m-near-name { font: 700 24px/1.15 var(--font-display); }
+.m-near-line { font-size: 19px; color: var(--s-tx2); margin-top: 4px; }
+.m-near-btn { display: flex; align-items: center; justify-content: center; min-height: 56px; margin-top: 12px; border-radius: calc(var(--s-r) + 8px); background: var(--s-btn); color: var(--s-ong); font-weight: 700; font-size: 20px; text-decoration: none; }
+.m-simple .near-title h2 { display: none; }
+.m-simple .space-row { min-height: 64px; }
+.m-simple .space-name { font-size: 21px; }
+.m-simple .space-addr { font-size: 15px; }
+.m-simple .space-dist { font-size: 19px; }
+.m-simple .near-me-btn { min-height: 60px; font-size: 20px; }
+/* Pins follow the look; the map stays neutral */
+.space-pin.pk0, .space-pin.pk1, .space-pin.pk2, .space-pin.pk3, .space-pin.pk4, .space-pin.pk5 { }
+:root[data-look="centre"] .space-pin span, :root[data-look="list"] .space-pin span, :root[data-look="dial"] .space-pin span { border: 3px double #fff; }
+:root[data-look="sunPath"] .space-pin span { box-shadow: 0 0 0 7px rgba(247, 189, 143, 0.28), 0 0 16px rgba(247, 189, 143, 0.6); }
+:root[data-look="bands"] .space-pin span { border-radius: 4px; border: 2px solid #fff; }
+:root[data-look="bands"] .space-pin.masjid.pk0 span { background: #3a6f63; }
+:root[data-look="bands"] .space-pin.masjid.pk1 span { background: #8a9a52; }
+:root[data-look="bands"] .space-pin.masjid.pk2 span { background: #ab8d3a; }
+:root[data-look="bands"] .space-pin.masjid.pk3 span { background: #cd7d38; }
+:root[data-look="bands"] .space-pin.masjid.pk4 span { background: #d3705c; }
+:root[data-look="bands"] .space-pin.masjid.pk5 span { background: #c9565d; }
+:root[data-look="bands"] .space-pin.musollah span { background: #4a63b8; }
+:root[data-look="simple"] .space-pin span { width: 38px; height: 38px; margin: -4px 0 0 -4px; }
+:root[data-look="simple"] .space-pin span svg { width: 22px; height: 22px; }
+:root[data-look="gold"] .space-pin span { background: rgba(21, 26, 69, 0.6); border: 2px solid #E2B65A; color: #E2B65A; }
+:root[data-look="gold"][data-theme="light"] .space-pin span { background: rgba(255, 255, 255, 0.85); color: #8A6410; }
+@media (min-width: 1100px) and (min-height: 500px) {
+  .v12m .masjid-page { margin-top: 0; padding: 16px 0 40px; border-radius: 0; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .v12m .m-grab, .v12m .m-deco { display: none; }
+  .m-bands .masjid-page > .space-list { margin: 8px 0 0; }
+}
+
+/* ---------- Settings in the five looks (mockup v12) ---------- */
+.v12st .h-title { color: var(--s-tx); }
+.st-simple .h-title { font-size: 38px; }
+.v12st .group { background: var(--s-card); border: 1px solid var(--s-strk); border-radius: var(--s-r); }
+.v12st .group > .item + .item { border-top: 1px solid var(--s-sep); }
+.v12st .item { color: var(--s-tx); }
+.v12st .item .value, .v12st .secondary, .v12st .item .sub { color: var(--s-tx2); }
+.v12st .item .value { font-size: 15px; }
+.v12st .item svg.secondary { color: var(--s-tx3); }
+.v12st .group-foot, .v12st .group-title { color: var(--s-tx2); }
+.v12st .settings-back { color: var(--s-actx); }
+.v12st .nav-item .nav-icon { background: var(--s-tint) !important; color: var(--s-actx); }
+.v12st .nav-item .nav-icon svg { color: var(--s-actx); }
+.st-simple .item { min-height: 64px; font-size: 21px; }
+.st-simple .item .value { font-size: 17px; }
+.st-simple .nav-item .nav-icon { width: 36px; height: 36px; }
+/* the app card follows the look, the logo never changes */
+.st-sunPath .app-card-batik, .st-bands .app-card-batik, .st-simple .app-card-batik, .st-gold .app-card-batik { display: none; }
+.st-sunPath .app-card { background: linear-gradient(135deg, #3A3480, #1d1f55); box-shadow: none; }
+:root[data-theme="light"] .st-sunPath .app-card { background: linear-gradient(135deg, #BFD9F2, #F6E9D5); color: #151A45; }
+.st-sunPath .app-card::after { inset: 0; border: 0; border-radius: 0; opacity: .8; background: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 342 90%27 preserveAspectRatio=%27none%27%3E%3Cpath d=%27M-10 84 Q171 -40 352 84%27 fill=%27none%27 stroke=%27%23F7BD8F%27 stroke-opacity=%27.55%27 stroke-width=%273%27/%3E%3Ccircle cx=%27250%27 cy=%2718%27 r=%276%27 fill=%27%23F7BD8F%27/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+:root[data-theme="light"] .st-sunPath .app-card::after { background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 342 90%27 preserveAspectRatio=%27none%27%3E%3Cpath d=%27M-10 84 Q171 -40 352 84%27 fill=%27none%27 stroke=%27%23C9622A%27 stroke-opacity=%27.55%27 stroke-width=%273%27/%3E%3Ccircle cx=%27250%27 cy=%2718%27 r=%276%27 fill=%27%23C9622A%27/%3E%3C/svg%3E"); }
+:root[data-theme="light"] .st-sunPath .app-card-line, :root[data-theme="light"] .st-sunPath .app-card-version, :root[data-theme="light"] .st-sunPath .app-card-chevron { color: #4A5080; }
+.st-bands .app-card { width: calc(100% + 2 * var(--gutter)); margin: 10px calc(-1 * var(--gutter)) 6px; padding: 24px 24px 16px; border-radius: 0; background: #3a6f63; box-shadow: none; }
+.st-bands .app-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 8px;
+  background: linear-gradient(90deg, #3a6f63 0 16.66%, #8a9a52 0 33.33%, #ab8d3a 0 50%, #cd7d38 0 66.66%, #d3705c 0 83.33%, #c9565d 0); }
+.st-bands .app-card::after { display: none; }
+.st-bands .app-card-line, .st-bands .app-card-version, .st-bands .app-card-chevron { color: rgba(255, 255, 255, 0.85); }
+.st-simple button.app-card { background: var(--s-card); color: var(--s-tx); border: 2px solid var(--s-ac); box-shadow: none; padding: 18px; gap: 16px; }
+.st-simple .app-card::after { display: none; }
+.st-simple .app-card img { width: 76px; height: 76px; }
+.st-simple .app-card-name { font: 700 26px/1.1 var(--font-display); }
+.st-simple .app-card-line { display: none; }
+.st-simple .app-card-version, .st-simple .app-card-chevron { color: var(--s-tx2); font-size: 15px; }
+.st-gold button.app-card { background: var(--s-card); color: var(--s-tx); border: 1px solid var(--s-ac); box-shadow: none; }
+.st-gold .app-card::after { display: none; }
+.st-gold .app-card-line, .st-gold .app-card-version, .st-gold .app-card-chevron { color: var(--s-tx2); }
+/* Colour Bands: rows on a flat page, icons in the six band colours */
+.st-bands .group { margin-left: calc(-1 * var(--gutter)); margin-right: calc(-1 * var(--gutter)); border: 0; border-radius: 0; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.st-bands .group > .item { padding-left: 24px; padding-right: 24px; }
+.st-bands.st-main .group { background: none; }
+.st-bands .nav-item .nav-icon { border-radius: 0; }
+.st-bands.st-main .nav-item .nav-icon { color: #fff; }
+.st-bands.st-main .nav-item .nav-icon svg { color: #fff; }
+.st-bands.st-main section:nth-of-type(odd) .nav-item:nth-child(1) .nav-icon { background: #3a6f63 !important; }
+.st-bands.st-main section:nth-of-type(even) .nav-item:nth-child(1) .nav-icon { background: #cd7d38 !important; }
+.st-bands.st-main section:nth-of-type(odd) .nav-item:nth-child(2) .nav-icon { background: #8a9a52 !important; }
+.st-bands.st-main section:nth-of-type(even) .nav-item:nth-child(2) .nav-icon { background: #d3705c !important; }
+.st-bands.st-main section:nth-of-type(odd) .nav-item:nth-child(3) .nav-icon { background: #ab8d3a !important; }
+.st-bands.st-main section:nth-of-type(even) .nav-item:nth-child(3) .nav-icon { background: #c9565d !important; }
+.st-bands.st-main section:nth-of-type(odd) .nav-item:nth-child(4) .nav-icon { background: #cd7d38 !important; }
+.st-bands.st-main section:nth-of-type(even) .nav-item:nth-child(4) .nav-icon { background: #3a6f63 !important; }
+.st-bands.st-main section:nth-of-type(odd) .nav-item:nth-child(5) .nav-icon { background: #d3705c !important; }
+.st-bands.st-main section:nth-of-type(even) .nav-item:nth-child(5) .nav-icon { background: #8a9a52 !important; }
+.st-bands.st-main section:nth-of-type(odd) .nav-item:nth-child(6) .nav-icon { background: #c9565d !important; }
+.st-bands.st-main section:nth-of-type(even) .nav-item:nth-child(6) .nav-icon { background: #ab8d3a !important; }
+/* Masjid: a taller map, the sheet over it, a quiet Near me row, rows without the extra walk button */
+.v12m .masjid-map-wrap { height: calc(400px + var(--safe-top)); }
+.m-simple .masjid-map-wrap { height: calc(340px + var(--safe-top)); }
+.v12m .near-me-btn { min-height: 46px; font-size: 16px; background: var(--s-tint); color: var(--s-actx); box-shadow: none; }
+.m-bands .near-me-btn { background: var(--s-card); }
+.m-simple .near-me-btn { min-height: 52px; font-size: 19px; }
+.v12m .masjid-page > .space-list .walk { display: none; }
+.m-simple .space-name { white-space: normal; }
+@media (min-width: 1100px) and (min-height: 500px) { .v12m .masjid-map-wrap { height: calc(100vh - 32px); } }
+.st-bands .group-title, .st-bands .group-foot { margin-left: 4px; margin-right: 4px; }

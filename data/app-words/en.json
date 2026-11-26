@@ -924,6 +924,8 @@
   "masjid.savedPlace": "your saved place",
   "masjid.nearestYou": "Nearest to you",
   "masjid.nearestTo": "Nearest to {place}",
+  "masjid.nearestMasjid": "Nearest masjid",
+  "masjid.showWay": "Show me the way",
   "masjid.howGoing": "How you're going",
   "masjid.walk": "Walk",
   "masjid.drive": "Drive",
