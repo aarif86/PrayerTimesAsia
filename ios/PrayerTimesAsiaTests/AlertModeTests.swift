@@ -98,3 +98,56 @@ final class AlertModeTests: XCTestCase {
         XCTAssertFalse(untouched.notificationsEnabled)
     }
 }
+
+/// Set for all prayers. Same cases as the web tests.
+final class SetForAllTests: XCTestCase {
+    private func OLD() -> Preferences { var p = Preferences(); p.notificationsEnabled = false; return p }
+
+    func testNotificationTurnsAzanOffAndShortAzanTurnsItOn() {
+        var p = OLD(); p.azanSound = true
+        p.applyToAllFive(.notify, early: nil)
+        for x in Prayer.obligatory { XCTAssertEqual(p.alertMode(x), .notify) }
+        XCTAssertFalse(p.azanSound)
+        XCTAssertEqual(p.alertMode(.sunrise), .off)
+        var a = OLD()
+        a.applyToAllFive(.azan, early: nil)
+        for x in Prayer.obligatory { XCTAssertEqual(a.alertMode(x), .notify) }
+        XCTAssertTrue(a.azanSound)
+    }
+
+    func testAlarmAndOff() {
+        var p = OLD()
+        p.applyToAllFive(.alarm, early: nil)
+        for x in Prayer.obligatory { XCTAssertEqual(p.alertMode(x), .alarm) }
+        p.applyToAllFive(.off, early: nil)
+        for x in Prayer.obligatory { XCTAssertEqual(p.alertMode(x), .off) }
+        XCTAssertNil(p.wakeUp)
+    }
+
+    func testLeavesFajrAloneWhenNotIncluded() {
+        var p = OLD()
+        p.wakeUp = .fajrMinus30
+        p.applyToAllFive(.notify, early: nil, includeFajr: false)
+        XCTAssertEqual(p.wakeUp, .fajrMinus30)
+        XCTAssertEqual(p.alertMode(.dhuhr), .notify)
+    }
+
+    func testEarlyReminderAlsoSetsAwayMinutes() {
+        var p = OLD()
+        p.reminderMinutesBefore = 20
+        p.applyToAllFive(.notify, early: nil)
+        XCTAssertEqual(p.reminderMinutesBefore, 20)
+        p.applyToAllFive(.notify, early: 30)
+        XCTAssertEqual(p.reminderMinutesBefore, 30)
+        XCTAssertEqual(p.awayMinutes["dhuhr"], 30)
+        p.applyToAllFive(.notify, early: 20)
+        XCTAssertEqual(p.awayMinutes["asr"], 15)
+        p.applyToAllFive(.notify, early: 0)
+        XCTAssertEqual(p.awayMinutes["maghrib"], 0)
+        var q = OLD()
+        q.wakeUp = .atFajr
+        q.awayMinutes["fajr"] = 0
+        q.applyToAllFive(.alarm, early: 30)
+        XCTAssertEqual(q.awayMinutes["fajr"], 0)
+    }
+}
