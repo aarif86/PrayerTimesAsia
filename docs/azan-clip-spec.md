@@ -13,7 +13,7 @@ At Fajr, Full plays the voice's own Fajr azan when it has one; otherwise Fajr
 plays the short call (an ordinary full azan has no Fajr line).
 
 A voice shows only when its files are in the app. Slots for voices waiting for
-permission (sudais, aqsa, egypt, madinah) are in the code and stay hidden; their
+permission (sudais, egypt, madinah) are in the code and stay hidden; their
 prepared files are kept privately, never in this repo. Made with
 `tools/make_azan.sh` (the commands for today's voices are at its top):
 
@@ -21,6 +21,7 @@ prepared files are kept privately, never in this repo. Made with
 |---|---|---|---|---|
 | asim (Asim Javed, CC0) | 11.9 s | 74.9 s | 24.3 s | short call |
 | khalaf (Ahmed Khalaf, CC BY 4.0) | 26.9 s | 143 s | same as short | own Fajr azan, 99 s (iPhone 28 s) |
+| aqsa (Simtech Productions, written permission 27 Nov 2026) | 25.8 s | 225 s | same as short | short call |
 | makkah (Seyfula Islam recording, CC BY 3.0) | 25 s | none (recording is cut short) | none | short call |
 
 ## Short call (the default alert)
