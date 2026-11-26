@@ -11,8 +11,8 @@ No outside ads, no sign up, no tracking, and your exact location stays on your p
   masjid display screen at [prayertimes.asia/app/screen/](https://prayertimes.asia/app/screen/).
 - **iPhone** live on the [App Store](https://apps.apple.com/app/id6825604927) since
   26 November 2026, as Nasar Pte Ltd (version 1.0).
-- **Android** sent to Google Play review on 17 November, as Nasar Pte Ltd. Testers
-  use the Play internal test. Samsung Galaxy Store follows after Google approves.
+- **Android** live on [Google Play](https://play.google.com/store/apps/details?id=com.prayertimesasia.app)
+  as Nasar Pte Ltd. Samsung Galaxy Store is next.
 - **What's new** in every build: [docs/website/changelog.md](docs/website/changelog.md).
   **Where it's heading**: [docs/website/roadmap.md](docs/website/roadmap.md).
 
