@@ -81,37 +81,32 @@ function AzanChoice({ voice, full, fajr }: { voice: AzanVoice; full: boolean; fa
   }
   const voices = availableVoices()
   const note = (v: AzanVoice) => (!hasFull(v) ? tr('voice.shortOnly') : hasFajr(v) ? tr('voice.fajrToo') : null)
+  const pickLength = (v: boolean) => { store.update((x) => { x.azanFull = v }); play(v ? 'full' : 'short', azanUrl(voice, v)) }
   return (
     <>
       {voices.length > 1 && (
         <>
-          <div class="item"><span class="label">{tr('alerts.azanVoice')}</span></div>
+          <div class="item azan-head"><span class="label">{tr('alerts.azanVoice')}</span></div>
           {voices.map((v) => (
-            <button class="item choice" onClick={() => { store.update((x) => { x.azanVoice = v }); play(v, azanUrl(v, false)) }} aria-pressed={voice === v}>
-              <Play size={14} class="secondary" />
+            <button class="item choice azan-voice" onClick={() => { store.update((x) => { x.azanVoice = v }); play(v, azanUrl(v, false)) }} aria-pressed={voice === v}>
               <span class="label">{voiceName(v)}{note(v) && <span class="sub">{note(v)}</span>}</span>
+              {playing === v && <Play size={14} class="secondary" />}
               <Check size={18} class="choice-tick" style={{ opacity: voice === v ? 1 : 0 }} />
             </button>
           ))}
-          <p class="group-foot">{tr('alerts.azanVoiceSub')}</p>
         </>
       )}
       {hasFull(voice) && (
-        <>
-          <div class="item"><span class="label">{tr('alerts.azanLength')}</span></div>
-          {[false, true].map((v) => {
-            const name = v ? tr('alerts.azanFull') : tr('alerts.azanShort')
-            return (
-              <button class="item choice" onClick={() => { store.update((x) => { x.azanFull = v }); play(v ? 'full' : 'short', azanUrl(voice, v)) }} aria-pressed={full === v}>
-                <Play size={14} class="secondary" />
-                <span class="label">{name}</span>
-                <Check size={18} class="choice-tick" style={{ opacity: full === v ? 1 : 0 }} />
-              </button>
-            )
-          })}
-          <p class="group-foot">{tr('alerts.azanLengthSub', { name: fajr })}</p>
-        </>
+        <div class="item azan-length">
+          <span class="label">{tr('alerts.azanLength')}</span>
+          <div class="segmented" role="group">
+            <button aria-pressed={!full} onClick={() => pickLength(false)}>{tr('alerts.azanShort')}</button>
+            <button aria-pressed={full} onClick={() => pickLength(true)}>{tr('alerts.azanFull')}</button>
+          </div>
+        </div>
       )}
+      {hasFull(voice) && <p class="group-foot azan-foot">{tr('alerts.azanLengthSub', { name: fajr })}</p>}
+      <p class="group-foot azan-foot azan-free">{tr('alerts.azanVoiceSub')}</p>
     </>
   )
 }

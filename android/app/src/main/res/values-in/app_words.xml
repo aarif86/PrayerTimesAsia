@@ -795,24 +795,24 @@
     <string name="alerts_extras" formatted="false">Tambahan</string>
     <string name="alerts_nudgeSub" formatted="false">Pemberitahuan sekitar 30 menit sebelum waktu salat habis, hanya jika belum dicentang di pelacak. Tidak untuk {name}.</string>
     <string name="alerts_sound" formatted="false">Suara</string>
-    <string name="alerts_azanSub" formatted="false">Pemberitahuan dibuka dengan azan, dan azan {name} pada waktu {name}</string>
-    <string name="alerts_azanLength" formatted="false">Panjang azan</string>
+    <string name="alerts_azanSub" formatted="false">Pemberitahuan salat dibuka dengan azan</string>
+    <string name="alerts_azanLength" formatted="false">Durasi</string>
     <string name="alerts_azanShort" formatted="false">Seruan pendek</string>
     <string name="alerts_azanFull" formatted="false">Azan lengkap</string>
-    <string name="alerts_azanLengthSub" formatted="false">Seruan pendek adalah Allahu akbar di awal azan. Dengan Lengkap, {name} memutar azan Subuh suara itu jika ada, jika tidak seruan pendek.</string>
+    <string name="alerts_azanLengthSub" formatted="false">Pendek adalah Allahu akbar di awal azan. Lengkap adalah azan seutuhnya, dengan azan Subuh pada waktu {name} jika suara itu punya.</string>
     <string name="alerts_azanListen" formatted="false">Dengarkan</string>
     <string name="alerts_azanStop" formatted="false">Berhenti</string>
-    <string name="alerts_azanVoice" formatted="false">Suara azan</string>
-    <string name="alerts_azanVoiceSub" formatted="false">Ketuk satu suara untuk mendengarnya. Suara lain akan ditambahkan setelah pemiliknya memberi izin.</string>
+    <string name="alerts_azanVoice" formatted="false">Suara</string>
+    <string name="alerts_azanVoiceSub" formatted="false">Ketuk satu suara untuk mendengarnya. Gratis untuk semua, tanpa iklan. Kami hanya memakai rekaman yang pemiliknya izinkan untuk dibagikan siapa saja, jadi rekaman berbayar atau nonkomersial tidak bisa dimasukkan. Suara lain akan ditambahkan setelah pemiliknya setuju.</string>
     <string name="voice_asim" formatted="false">Asim Javed</string>
     <string name="voice_khalaf" formatted="false">Ahmed Khalaf</string>
-    <string name="voice_makkah" formatted="false">Makkah, direkam di Masjidil Haram</string>
+    <string name="voice_makkah" formatted="false">Makkah, rekaman seorang pengunjung</string>
     <string name="voice_sudais" formatted="false">Makkah, Syekh Sudais</string>
     <string name="voice_aqsa" formatted="false">Al-Aqsa</string>
     <string name="voice_egypt" formatted="false">Gaya Mesir</string>
     <string name="voice_madinah" formatted="false">Madinah</string>
     <string name="voice_shortOnly" formatted="false">Hanya seruan pendek</string>
-    <string name="voice_fajrToo" formatted="false">Dengan azan Subuhnya sendiri</string>
+    <string name="voice_fajrToo" formatted="false">Ada azan Subuh</string>
     <string name="alerts_buzzSub" formatted="false">Pemberitahuan bergetar tanpa suara sepanjang hari. Alarm tetap berbunyi.</string>
     <string name="alerts_quietSub" formatted="false">Di antara jam yang Anda pilih, pemberitahuan hanya bergetar. {name} dan alarm tetap bersuara.</string>
     <string name="alerts_soundFoot" formatted="false">Getar saja dan Jam senyap cocok untuk pekerja shift yang tidur siang, bayi yang tidur di kamar, atau malam yang tenang. Alarm tetap bersuara.</string>

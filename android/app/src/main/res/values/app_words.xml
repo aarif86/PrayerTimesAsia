@@ -795,24 +795,24 @@
     <string name="alerts_extras" formatted="false">Extras</string>
     <string name="alerts_nudgeSub" formatted="false">A notification about 30 minutes before a prayer\'s time ends, only if you have not ticked it in your tracker. Not for {name}.</string>
     <string name="alerts_sound" formatted="false">Sound</string>
-    <string name="alerts_azanSub" formatted="false">Notifications open with the azan, and the {name} azan at {name}</string>
-    <string name="alerts_azanLength" formatted="false">Azan length</string>
+    <string name="alerts_azanSub" formatted="false">Prayer notifications open with the azan</string>
+    <string name="alerts_azanLength" formatted="false">Length</string>
     <string name="alerts_azanShort" formatted="false">Short call</string>
     <string name="alerts_azanFull" formatted="false">Full azan</string>
-    <string name="alerts_azanLengthSub" formatted="false">The short call is the opening Allahu akbar. With Full, {name} plays the voice\'s own Fajr azan when it has one, otherwise the short call.</string>
+    <string name="alerts_azanLengthSub" formatted="false">Short is the opening Allahu akbar. Full is the whole azan, with a Fajr azan at {name} when the voice has one.</string>
     <string name="alerts_azanListen" formatted="false">Listen</string>
     <string name="alerts_azanStop" formatted="false">Stop</string>
-    <string name="alerts_azanVoice" formatted="false">Azan voice</string>
-    <string name="alerts_azanVoiceSub" formatted="false">Tap a voice to hear it. More voices are added as their owners give permission.</string>
+    <string name="alerts_azanVoice" formatted="false">Voice</string>
+    <string name="alerts_azanVoiceSub" formatted="false">Tap a voice to hear it. Free for everyone, with no ads. We only use recordings their owners let anyone share, so paid or non commercial recordings cannot be included. More voices will come as owners say yes.</string>
     <string name="voice_asim" formatted="false">Asim Javed</string>
     <string name="voice_khalaf" formatted="false">Ahmed Khalaf</string>
-    <string name="voice_makkah" formatted="false">Makkah, recorded at Masjid al-Haram</string>
+    <string name="voice_makkah" formatted="false">Makkah, a visitor\'s recording</string>
     <string name="voice_sudais" formatted="false">Makkah, Sheikh Sudais</string>
     <string name="voice_aqsa" formatted="false">Al-Aqsa</string>
     <string name="voice_egypt" formatted="false">Egyptian style</string>
     <string name="voice_madinah" formatted="false">Madinah</string>
     <string name="voice_shortOnly" formatted="false">Short call only</string>
-    <string name="voice_fajrToo" formatted="false">With its own Fajr azan</string>
+    <string name="voice_fajrToo" formatted="false">Has a Fajr azan</string>
     <string name="alerts_buzzSub" formatted="false">Notifications vibrate without sound, all day. Alarms still ring.</string>
     <string name="alerts_quietSub" formatted="false">Between the times you pick, notifications only vibrate. {name} and alarms keep their sound.</string>
     <string name="alerts_soundFoot" formatted="false">Buzz only and Quiet hours are for shift workers sleeping in the day, a baby asleep in the room, or a calm night. Alarms keep their sound.</string>

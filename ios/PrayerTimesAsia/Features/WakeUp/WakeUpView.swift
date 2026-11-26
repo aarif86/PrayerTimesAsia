@@ -626,63 +626,67 @@ private struct AzanChoiceRows: View {
     @State private var playing: String?
 
     private static let names = [
-        "asim": "Asim Javed", "makkah": "Makkah, recorded at Masjid al-Haram", "khalaf": "Ahmed Khalaf",
+        "asim": "Asim Javed", "makkah": "Makkah, a visitor's recording", "khalaf": "Ahmed Khalaf",
         "sudais": "Makkah, Sheikh Sudais", "aqsa": "Al-Aqsa", "egypt": "Egyptian style", "madinah": "Madinah",
     ]
 
     var body: some View {
         let voices = Azan.voices
         let voice = Azan.voiceOrDefault(model.prefs.azanVoice) ?? "asim"
-        if voices.count > 1 {
-            Section {
+        Section {
+            if voices.count > 1 {
                 ForEach(voices, id: \.self) { v in
                     Button {
                         model.prefs.azanVoice = v
                         play(v, voice: v, full: false)
                     } label: {
                         HStack {
-                            Image(systemName: playing == v ? "stop.fill" : "play.fill").font(.footnote).foregroundStyle(.secondary)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(Self.names[v] ?? v).foregroundStyle(.primary)
                                 if let note = note(v) { Text(note).font(.footnote).foregroundStyle(.secondary) }
                             }
                             Spacer()
+                            if playing == v { Image(systemName: "speaker.wave.2.fill").font(.footnote).foregroundStyle(.secondary) }
                             if v == voice { Image(systemName: "checkmark").foregroundStyle(.tint) }
                         }
                     }
                 }
-            } header: {
-                Text("Azan voice")
-            } footer: {
-                Text("Tap a voice to hear it. More voices are added as their owners give permission.")
             }
-        }
-        if Azan.has(voice, .full) {
-            Section {
-                ForEach([false, true], id: \.self) { full in
-                    Button {
-                        model.prefs.azanFull = full
-                        play(full ? "full" : "short", voice: voice, full: full)
-                    } label: {
-                        HStack {
-                            Image(systemName: playing == (full ? "full" : "short") ? "stop.fill" : "play.fill").font(.footnote).foregroundStyle(.secondary)
-                            Text(full ? "Full azan" : "Short call").foregroundStyle(.primary)
-                            Spacer()
-                            if model.prefs.azanFull == full { Image(systemName: "checkmark").foregroundStyle(.tint) }
+            if Azan.has(voice, .full) {
+                HStack {
+                    Text("Length")
+                    Spacer()
+                    Picker("Length", selection: Binding(
+                        get: { model.prefs.azanFull },
+                        set: { full in
+                            model.prefs.azanFull = full
+                            play(full ? "full" : "short", voice: voice, full: full)
                         }
+                    )) {
+                        Text("Short call").tag(false)
+                        Text("Full azan").tag(true)
                     }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .frame(maxWidth: 210)
                 }
-            } header: {
-                Text("Azan length")
-            } footer: {
-                Text("The short call is the opening Allahu akbar. iPhone plays up to 30 seconds of the full azan. With Full, \(Prayer.fajr.name(model.naming)) plays the voice's own Fajr azan when it has one, otherwise the short call.")
+            }
+        } header: {
+            Text("Voice")
+        } footer: {
+            VStack(alignment: .leading, spacing: 8) {
+                if Azan.has(voice, .full) {
+                    Text("Short is the opening Allahu akbar. Full is the whole azan, with a Fajr azan at \(Prayer.fajr.name(model.naming)) when the voice has one. iPhone plays up to 30 seconds of it.")
+                }
+                Text("Tap a voice to hear it. Free for everyone, with no ads. We only use recordings their owners let anyone share, so paid or non commercial recordings cannot be included. More voices will come as owners say yes.")
+                    .font(.caption)
             }
         }
     }
 
     private func note(_ v: String) -> String? {
         if !Azan.has(v, .full) { return "Short call only" }
-        if Azan.has(v, .fajr) { return "With its own Fajr azan" }
+        if Azan.has(v, .fajr) { return "Has a Fajr azan" }
         return nil
     }
 

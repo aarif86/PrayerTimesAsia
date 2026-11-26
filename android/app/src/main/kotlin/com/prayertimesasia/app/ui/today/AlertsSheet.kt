@@ -569,21 +569,31 @@ private fun AzanChoiceRows(state: AppState) {
                 play(v, v, full = false)
             }
         }
-        Text(tr(R.string.alerts_azanVoiceSub), style = Txt.footnote, color = Palette.secondary,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
     }
     if (Azan.has(context, voice, Azan.Kind.FULL)) {
-        Text(tr(R.string.alerts_azanLength), style = Txt.footnote, color = Palette.secondary,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp))
-        for (full in listOf(false, true)) {
-            ChoiceRow(if (full) tr(R.string.alerts_azanFull) else tr(R.string.alerts_azanShort), null, p.azanFull == full) {
-                state.update { it.copy(azanFull = full) }
-                play(if (full) "full" else "short", voice, full)
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(tr(R.string.alerts_azanLength), style = Txt.body, color = Palette.primary, modifier = Modifier.weight(1f))
+            val lengths = listOf(false, true)
+            SingleChoiceSegmentedButtonRow(Modifier.width(210.dp)) {
+                lengths.forEachIndexed { i, full ->
+                    val word = if (full) tr(R.string.alerts_azanFull) else tr(R.string.alerts_azanShort)
+                    SegmentedButton(p.azanFull == full, {
+                        state.update { it.copy(azanFull = full) }
+                        play(if (full) "full" else "short", voice, full)
+                    }, SegmentedButtonDefaults.itemShape(i, lengths.size),
+                        colors = SegmentedButtonDefaults.colors(
+                            activeContainerColor = Palette.primary.copy(alpha = 0.18f), activeContentColor = Palette.primary,
+                            inactiveContainerColor = Color.Transparent, inactiveContentColor = Palette.primary,
+                            activeBorderColor = Palette.primary.copy(alpha = 0.2f), inactiveBorderColor = Palette.primary.copy(alpha = 0.2f)),
+                        icon = {}) { Text(word, style = Txt.footnoteSemibold, maxLines = 1) }
+                }
             }
         }
         Text(tr(R.string.alerts_azanLengthSub, "name" to Prayer.FAJR.name(state.resolver.naming)), style = Txt.footnote, color = Palette.secondary,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
     }
+    Text(tr(R.string.alerts_azanVoiceSub), style = Txt.caption, color = Palette.secondary,
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp))
 }
 
 @Composable
