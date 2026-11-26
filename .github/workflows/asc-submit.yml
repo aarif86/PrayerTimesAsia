@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: read or submit
+        description: read, submit, or release (only after the owner says release)
         default: read
       build:
         description: Build number to pick (empty for the newest build of the version)
