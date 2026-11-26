@@ -15,19 +15,23 @@ enum Azan {
     static let fileName = "azan.caf"
     static let subuhFileName = "azan-subuh.caf"
 
-    static var isAvailable: Bool { has(fileName) }
+    /// True when the app has its own recording, or the person picked their own (see OwnAzan).
+    static var isAvailable: Bool { has(fileName) || OwnAzan.isSet }
 
     static func notificationSound(_ sound: Sound) -> UNNotificationSound {
         switch sound {
         case .standard:
             return .default
         case .azan:
+            // Their own azan (one file for every prayer, Fajr too) comes before the app's.
+            if let own = OwnAzan.soundName { return UNNotificationSound(named: UNNotificationSoundName(own)) }
             return has(fileName) ? UNNotificationSound(named: UNNotificationSoundName(fileName)) : .default
         case .alarm(let sound):
             // Older iPhones without AlarmKit: the chosen alarm tone as the alert sound.
             guard let file = sound.fileName, has(file) else { return .default }
             return UNNotificationSound(named: UNNotificationSoundName(file))
         case .azanSubuh:
+            if let own = OwnAzan.soundName { return UNNotificationSound(named: UNNotificationSoundName(own)) }
             // No separate Subuh recording? The ordinary azan is the next best thing.
             if has(subuhFileName) { return UNNotificationSound(named: UNNotificationSoundName(subuhFileName)) }
             return notificationSound(.azan)

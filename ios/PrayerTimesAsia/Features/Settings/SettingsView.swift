@@ -52,6 +52,9 @@ struct SettingsView: View {
                         }
                     }
                     .foregroundStyle(.primary)
+                    NavigationLink { OwnAzanView() } label: {
+                        SettingsRow("Your own azan", icon: "music.note", color: .teal, value: OwnAzan.isSet ? "On" : "Off")
+                    }
                 }
 
                 Section {

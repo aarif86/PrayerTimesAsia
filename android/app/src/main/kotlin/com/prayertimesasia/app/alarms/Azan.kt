@@ -19,7 +19,8 @@ object Azan {
         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
         .build()
 
-    fun isAvailable(context: Context): Boolean = id(context, FILE) != 0
+    /** True when the app has its own recording, or the person picked their own (see [OwnAzan]). */
+    fun isAvailable(context: Context): Boolean = id(context, FILE) != 0 || OwnAzan.isSet(context)
 
     fun uri(context: Context, subuh: Boolean): Uri? {
         val id = id(context, if (subuh) SUBUH_FILE else FILE).takeIf { it != 0 } ?: return null

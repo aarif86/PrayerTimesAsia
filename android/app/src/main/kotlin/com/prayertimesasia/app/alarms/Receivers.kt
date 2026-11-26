@@ -175,6 +175,8 @@ object Notifications {
             AlarmScheduler.Kind.WAKE -> wakeChannel(context)
             else -> when {
                 sound == AlarmScheduler.Sound.STANDARD || !Azan.isAvailable(context) -> PRAYER
+                // Their own azan (one file for every prayer, Fajr too) comes before the app's.
+                OwnAzan.channel(context) != null -> OwnAzan.channel(context)!!
                 sound == AlarmScheduler.Sound.AZAN_SUBUH -> AZAN_SUBUH
                 else -> AZAN
             }
