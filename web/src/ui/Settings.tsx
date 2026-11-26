@@ -65,6 +65,7 @@ function NavItem({ icon, color, label, value, onClick, id }: { icon: preact.Comp
  */
 export function SettingsScreen() {
   const [page, setPage] = useState<Page | null>(null)
+  const look = useStore().prefs.todayStyle
   const go = (next: Page | null) => { setPage(next); window.scrollTo({ top: 0 }) }
   useEffect(() => {
     if (store.demo && new URLSearchParams(location.search).get('settings') === 'makers') {
@@ -79,7 +80,7 @@ export function SettingsScreen() {
     move: tr('settings.movePhone'), privacy: tr('settings.privacy'), help: tr('settings.help'), picks: PICKS_NAME, about: tr('settings.aboutCredits'),
   }
   return (
-    <div class="page settings">
+    <div class={`page settings v12s v12st st-${look}`}>
       <button class="settings-back" onClick={back}><ChevronLeft size={20} />{page === 'accuracy' ? tr('settings.prayerTimes') : tr('settings.title')}</button>
       <h1 class="h-title settings-sub-title">{titles[page]}</h1>
       {page === 'location' && <LocationPage />}
@@ -119,7 +120,7 @@ function SettingsMain({ go }: { go: (p: Page) => void }) {
   }
   const onOff = (on: boolean) => (on ? tr('common.on') : tr('common.off'))
   return (
-    <div class="page settings">
+    <div class={`page settings v12s v12st st-main st-${s.prefs.todayStyle}`}>
       <h1 class="h-title" style={{ margin: '28px 0 4px' }}>{tr('settings.title')}</h1>
       <AppCard onClick={() => go('about')} />
 
