@@ -81,6 +81,7 @@ import com.prayertimesasia.app.ui.components.AppWords
 import com.prayertimesasia.app.ui.components.HadithView
 import com.prayertimesasia.app.ui.components.tr
 import com.prayertimesasia.app.alarms.OwnAzan
+import com.prayertimesasia.app.ui.settings.OwnAzanPage
 import com.prayertimesasia.app.ui.settings.PickerRow
 import com.prayertimesasia.app.ui.settings.Section
 import com.prayertimesasia.app.ui.settings.SwitchRow
@@ -114,7 +115,7 @@ fun WakeUpSheetContent(state: AppState) {
         null -> AlertsMainList(state, go)
         "all" -> SubPage(tr(R.string.all_row), go) { AllFivePage(state) }
         "check" -> SubPage(tr(R.string.alerts_checkPhone), go) { CheckPhonePage(state) }
-        "ownAzan" -> SubPage("Your own azan", go) { Column { com.prayertimesasia.app.ui.settings.OwnAzanPage(state) } }
+        "ownAzan" -> SubPage("Your own azan", go) { Column { OwnAzanPage(state) } }
         "friday" -> SubPage(tr(R.string.jumuah_leaveFor, "friday" to Prayer.DHUHR.name(state.resolver.naming, true)), go) { FridayAlertPage(state) }
         else -> {
             val prayer = Prayer.entries.firstOrNull { it.raw == now }
