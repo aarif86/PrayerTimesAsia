@@ -170,6 +170,7 @@ private fun ListPageV12(
     var bottomH by remember { mutableStateOf(0.dp) }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val width = maxWidth - 40.dp
+        val screenW = maxWidth
         // Big and Simple: the list grows to fill the screen, rows 62 to 76 tall (web .simple-page.v12).
         val rows = entries(f.state, f.shown, f.state.prefs.showMore).size
         val simpleRow = if (simple) {
@@ -188,7 +189,7 @@ private fun ListPageV12(
                     look.sunPath -> SunStatus(f, col, width)
                     else -> Box(Modifier.fillMaxWidth().padding(top = 2.dp), contentAlignment = Alignment.Center) {
                         // The web sizes the dial from the screen width (clamp with vw), not the padded column.
-                        val size = if (look.gold) (maxWidth.value * 0.52f).coerceIn(160f, 204f) else (maxWidth.value * 0.485f).coerceIn(150f, 190f)
+                        val size = if (look.gold) (screenW.value * 0.52f).coerceIn(160f, 204f) else (screenW.value * 0.485f).coerceIn(150f, 190f)
                         SmallDial(f, size.dp, gold = look.gold, col = col)
                     }
                 }
