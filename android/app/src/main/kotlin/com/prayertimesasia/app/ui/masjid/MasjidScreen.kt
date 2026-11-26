@@ -525,15 +525,17 @@ private fun NearMeButton(look: Look, locating: Boolean, found: Boolean, onClick:
     val c = look.c
     val shape = RoundedCornerShape(if (look.bands) 0.dp else look.r + 8.dp)
     val ink = c.accentText
+    val label = if (locating) tr(R.string.today_finding) else if (found) tr(R.string.masjid_searchAgain) else tr(R.string.masjid_findNear)
     Row(
-        Modifier.fillMaxWidth().heightIn(min = if (look.simple) 52.dp else 46.dp).clip(shape).background(if (look.bands) c.card else c.tint)
-            .clickable(enabled = !locating, onClick = onClick).padding(horizontal = 18.dp, vertical = 10.dp),
+        Modifier.fillMaxWidth().heightIn(min = if (look.simple) 52.dp else 48.dp).clip(shape).background(if (look.bands) c.card else c.tint)
+            .clickable(enabled = !locating, onClick = onClick).semantics { contentDescription = label; role = Role.Button }
+            .padding(horizontal = 18.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
         if (locating) CircularProgressIndicator(Modifier.size(18.dp), color = ink, strokeWidth = 2.dp)
         else Icon(LineIcons.of("locate-fixed"), null, Modifier.size(20.dp), tint = ink)
         Spacer(Modifier.width(10.dp))
-        Text(if (locating) tr(R.string.today_finding) else if (found) tr(R.string.masjid_searchAgain) else tr(R.string.masjid_findNear),
+        Text(label,
             fontSize = if (look.simple) 19.sp else 16.sp, fontWeight = FontWeight.SemiBold, color = ink)
     }
 }
@@ -604,11 +606,13 @@ private fun SpaceRow(
         else -> Color.Transparent
     }
     val pad = if (bands) 24.dp else 14.dp
+    val rowLabel = listOf(space.name, space.address, MasjidExtras.distanceText(space.distanceKm)).filter { it.isNotEmpty() }.joinToString(", ")
     Column(Modifier.fillMaxWidth().background(bg)) {
         if (index > 0 && !bands) Box(Modifier.fillMaxWidth().height(1.dp).background(c.sep))
         Row(
             Modifier.fillMaxWidth().heightIn(min = if (look.simple) 64.dp else if (bands) 62.dp else 58.dp)
                 .clickable(onClickLabel = if (open) tr(R.string.common_close) else space.name, onClick = onToggle)
+                .semantics { contentDescription = rowLabel }
                 .padding(horizontal = pad, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -861,7 +865,7 @@ private fun CardRow(look: Look, name: String, lines: List<String>, km: Double?, 
     dirIcon: String = "footprints", onDirections: (() -> Unit)?) {
     val c = look.c
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(Modifier.weight(1f).heightIn(min = 52.dp).then(if (onTap != null) Modifier.clickable(onClickLabel = name, onClick = onTap) else Modifier).padding(vertical = 8.dp),
+        Row(Modifier.weight(1f).heightIn(min = 52.dp).then(if (onTap != null) Modifier.clickable(onClickLabel = name, onClick = onTap).semantics { contentDescription = (listOf(name) + lines).joinToString(", ") } else Modifier).padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(LineIcons.of(icon), null, Modifier.size(20.dp), tint = c.accentText)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -963,6 +967,7 @@ private fun EidCard(look: Look, e: EidEvent, from: Coordinates, spaces: List<Pra
 @Composable
 private fun SuggestButton(look: Look, onClick: () -> Unit) {
     val c = look.c
+    val label = tr(R.string.suggestRoom_button)
     Row(
         Modifier.padding(top = 10.dp)
             .then(if (look.bands) Modifier.layout { m, k ->
@@ -973,7 +978,8 @@ private fun SuggestButton(look: Look, onClick: () -> Unit) {
             } else Modifier)
             .fillMaxWidth().heightIn(min = 50.dp)
             .then(if (look.bands) Modifier.background(c.card) else Modifier.clip(look.shape).background(c.card).border(1.dp, c.stroke, look.shape))
-            .clickable(onClick = onClick).padding(horizontal = if (look.bands) 24.dp else 16.dp),
+            .clickable(onClick = onClick).semantics { contentDescription = label; role = Role.Button }
+            .padding(horizontal = if (look.bands) 24.dp else 16.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Icon(LineIcons.of("plus"), null, Modifier.size(16.dp), tint = c.accentText)
