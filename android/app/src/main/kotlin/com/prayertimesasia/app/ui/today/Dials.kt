@@ -54,7 +54,7 @@ import kotlin.math.sin
 private val dialNight = rgb(0.13, 0.15, 0.36)
 
 /** Local midnight of the day the dial shows. */
-private fun midnight(day: PrayerDay, zone: ZoneId): Instant = day.date.atStartOfDay(zone).toInstant()
+internal fun midnight(day: PrayerDay, zone: ZoneId): Instant = day.date.atStartOfDay(zone).toInstant()
 
 /** Degrees clockwise from the top, with noon at the top and midnight at the bottom. */
 internal fun dialAngle(date: Instant, midnight: Instant): Double = date.secondsSince(midnight) / 3600 / 24 * 360 + 180
@@ -84,7 +84,7 @@ private fun skyBrush(day: PrayerDay, midnight: Instant, center: Offset): Brush {
  * Draws each prayer's period as a segment of the sky ring. With noon at the top, the
  * canvas is turned a quarter so the sweep gradient starts (midnight) at the bottom.
  */
-private fun DrawScope.skySegments(
+internal fun DrawScope.skySegments(
     day: PrayerDay, nextFajr: Instant, midnight: Instant, radius: Float, ring: Float,
     current: Prayer?, gapDegrees: Float,
 ) {
@@ -106,7 +106,7 @@ private fun DrawScope.skySegments(
     }
 }
 
-private fun point(c: Offset, angleDeg: Double, radius: Float) =
+internal fun point(c: Offset, angleDeg: Double, radius: Float) =
     Offset((c.x + sin(angleDeg * PI / 180) * radius).toFloat(), (c.y - cos(angleDeg * PI / 180) * radius).toFloat())
 
 private fun DrawScope.nowDot(c: Offset, ring: Float, accent: Color, glow: Color) {

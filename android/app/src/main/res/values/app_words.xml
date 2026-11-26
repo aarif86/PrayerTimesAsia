@@ -69,6 +69,7 @@
     <string name="today_appearanceButton" formatted="false">Appearance is {name}. Switches between Automatic, Light and Dark.</string>
     <string name="today_followsSky" formatted="false">Automatic follows the sky</string>
     <string name="today_styleButton" formatted="false">Prayer screen style is {name}. Switches to the next style. Touch and hold to choose one.</string>
+    <string name="today_menuButton" formatted="false">More options</string>
     <string name="today_trackerButton" formatted="false">Prayer tracker, streak {n} days{extra}</string>
     <string name="today_trackerPaused" formatted="false">, paused</string>
     <string name="today_trackerExcused" formatted="false">, excused today</string>
@@ -346,6 +347,7 @@
     <string name="falakTools_tilt" formatted="false">A tilt of 1° moves a 1 m stick\'s shadow tip by about 1.7 cm, enough to shift a reading by a minute.</string>
     <string name="masjid_title" formatted="false">Masjids and prayer rooms</string>
     <string name="masjid_about" formatted="false">About this app</string>
+    <string name="masjid_refresh" formatted="false">Refresh the masjid list</string>
     <string name="masjid_all" formatted="false">All</string>
     <string name="masjid_masjid" formatted="false">Masjid</string>
     <string name="masjid_musollah" formatted="false">Prayer room</string>
@@ -1106,6 +1108,25 @@
     <string name="settings_facebook" formatted="false">Follow us on Facebook</string>
     <string name="settings_freeLine" formatted="false">Free for everyone. No paid version.</string>
     <string name="settings_back" formatted="false">Back to Settings</string>
+    <string name="settings_homeScreen" formatted="false">Home screen</string>
+    <string name="settings_widgets" formatted="false">Widgets</string>
+    <string name="settings_widgetsFoot" formatted="false">To add a widget, touch and hold an empty space on your home screen, tap Widgets, then find Prayer Times Asia.</string>
+    <string name="settings_seeWidgets" formatted="false">See the widgets</string>
+    <string name="settings_accuracyPhone" formatted="false">Every day shows its source grade. A is official, B is confirmed by a masjid, C is checked by the community, D is worked out on your phone. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year and keeps it on your phone for offline use. Only the year, zone code or area name is sent. Everywhere else, and before that download, times are worked out on your phone with the country\'s own method. That working is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables. For Singapore it is never earlier than the official time, and at most 2 minutes later. For Malaysia and Indonesia it is within about 2 minutes.</string>
+    <string name="settings_followsPhone" formatted="false">The app follows your phone\'s language.</string>
+    <string name="settings_samePhone" formatted="false">Same as your phone</string>
+    <string name="settings_namesFootPhone" formatted="false">Pick Malay for Subuh and Isyak. When you travel, the local name shows small beside it, so the masjid\'s signs make sense.</string>
+    <string name="settings_pretendFoot" formatted="false">Shows a pretend Ramadan or Eid date so you can try it early.</string>
+    <string name="settings_pretendOnFoot" formatted="false">Pretend mode is on. The app shows a pretend date, not today\'s. Turn it off before you rely on the times.</string>
+    <string name="settings_trackerFootPhone" formatted="false">Tick off each prayer on the Prayer screen once it has passed, and keep a streak. Tap the streak to mark a day as excused, like haid or illness, so it carries on. Kept only on this phone.</string>
+    <string name="settings_trackerNudgeNote" formatted="false">The nudge before time runs out is in Alerts and alarms.</string>
+    <string name="settings_movingFootPhone" formatted="false">A QR code or link carries your places, choices and tracker. No account and nothing uploaded. Works with Android, iPhone and the web. Setting up a new Android phone from your Google backup brings them too.</string>
+    <string name="settings_privacyPhone" formatted="false">Your exact location stays on your phone</string>
+    <string name="settings_privacyMasjid" formatted="false">Masjid search sends only your area</string>
+    <string name="settings_phonePermissions" formatted="false">Phone permissions</string>
+    <string name="settings_phonePermissionsFoot" formatted="false">If times or alerts look wrong, check these first.</string>
+    <string name="settings_notAllowed" formatted="false">Not allowed</string>
+    <string name="settings_openPhoneSettings" formatted="false">Open phone settings</string>
     <string name="suggestRoom_button" formatted="false">Suggest a prayer room</string>
     <string name="suggestRoom_title" formatted="false">Suggest a prayer room</string>
     <string name="suggestRoom_intro" formatted="false">Know a musollah or prayer room that is not on our map? Tell us about it. We check every one and then add it for everyone.</string>

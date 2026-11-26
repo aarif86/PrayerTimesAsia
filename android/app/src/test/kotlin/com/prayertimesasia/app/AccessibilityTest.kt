@@ -50,8 +50,8 @@ class AccessibilityTest {
     )
 
     private fun d(style: TodayStyle, appearance: Appearance = Appearance.DARK, now: Instant = night,
-                  variant: String = "home", tab: Tab = Tab.PRAYER) =
-        DemoConfig(variant, style, appearance, tab, now, false, false)
+                  variant: String = "home", tab: Tab = Tab.PRAYER, more: Boolean = false) =
+        DemoConfig(variant, style, appearance, tab, now, more, false)
 
     private fun check(demo: DemoConfig, fontScale: Float = 1f, setup: (AppState) -> Unit = {}) {
         if (fontScale != 1f) RuntimeEnvironment.setFontScale(fontScale)
@@ -68,22 +68,22 @@ class AccessibilityTest {
     }
 
     // The Prayer screen in each style, Dark at night and Light by day.
-    @Test fun prayer_list_dark() = check(d(TodayStyle.LIST))
-    @Test fun prayer_list_light() = check(d(TodayStyle.LIST, Appearance.LIGHT, morning))
     @Test fun prayer_centre_dark() = check(d(TodayStyle.CENTRE))
     @Test fun prayer_centre_light() = check(d(TodayStyle.CENTRE, Appearance.LIGHT, morning))
-    @Test fun prayer_dial_dark() = check(d(TodayStyle.DIAL))
-    @Test fun prayer_dial_light() = check(d(TodayStyle.DIAL, Appearance.LIGHT, morning))
+    @Test fun prayer_gold_dark() = check(d(TodayStyle.GOLD))
+    @Test fun prayer_gold_light() = check(d(TodayStyle.GOLD, Appearance.LIGHT, morning))
     @Test fun prayer_sunpath_dark() = check(d(TodayStyle.SUN_PATH))
     @Test fun prayer_sunpath_light() = check(d(TodayStyle.SUN_PATH, Appearance.LIGHT, morning))
     @Test fun prayer_bands_dark() = check(d(TodayStyle.BANDS))
     @Test fun prayer_bands_light() = check(d(TodayStyle.BANDS, Appearance.LIGHT, morning))
     @Test fun prayer_simple_dark() = check(d(TodayStyle.SIMPLE))
-    @Test fun prayer_travel() = check(d(TodayStyle.LIST, variant = "travel"))
+    @Test fun prayer_simple_light() = check(d(TodayStyle.SIMPLE, Appearance.LIGHT, morning))
+    @Test fun prayer_centre_more() = check(d(TodayStyle.CENTRE, more = true))
+    @Test fun prayer_travel() = check(d(TodayStyle.CENTRE, variant = "travel"))
     @Test fun prayer_wake_chip() = check(d(TodayStyle.CENTRE)) { s -> s.update { it.copy(wakeUp = WakeUpTiming.AT_FAJR) } }
 
     // The largest font size.
-    @Test fun prayer_list_big_font() = check(d(TodayStyle.LIST), fontScale = 2f)
+    @Test fun prayer_centre_big_font() = check(d(TodayStyle.CENTRE), fontScale = 2f)
     @Test fun settings_big_font() = check(d(TodayStyle.LIST, tab = Tab.SETTINGS), fontScale = 2f)
 
     // The other tabs and the first open.
@@ -91,6 +91,30 @@ class AccessibilityTest {
     @Test fun qibla_light() = check(d(TodayStyle.LIST, Appearance.LIGHT, morning, tab = Tab.QIBLA))
     @Test fun falak_dark() = check(d(TodayStyle.LIST, tab = Tab.FALAK))
     @Test fun falak_light() = check(d(TodayStyle.LIST, Appearance.LIGHT, morning, tab = Tab.FALAK))
+
+    // Qibla and Falak in every look, Light by day and Dark at night, the phone facing 118°.
+    private fun look(tab: Tab, style: TodayStyle, light: Boolean) =
+        check(if (light) d(style, Appearance.LIGHT, morning, tab = tab) else d(style, tab = tab)) { it.demoHeading = 118.0 }
+    @Test fun qibla_centre_light() = look(Tab.QIBLA, TodayStyle.CENTRE, true)
+    @Test fun qibla_centre_dark() = look(Tab.QIBLA, TodayStyle.CENTRE, false)
+    @Test fun qibla_sunpath_light() = look(Tab.QIBLA, TodayStyle.SUN_PATH, true)
+    @Test fun qibla_sunpath_dark() = look(Tab.QIBLA, TodayStyle.SUN_PATH, false)
+    @Test fun qibla_bands_light() = look(Tab.QIBLA, TodayStyle.BANDS, true)
+    @Test fun qibla_bands_dark() = look(Tab.QIBLA, TodayStyle.BANDS, false)
+    @Test fun qibla_simple_light() = look(Tab.QIBLA, TodayStyle.SIMPLE, true)
+    @Test fun qibla_simple_dark() = look(Tab.QIBLA, TodayStyle.SIMPLE, false)
+    @Test fun qibla_gold_light() = look(Tab.QIBLA, TodayStyle.GOLD, true)
+    @Test fun qibla_gold_dark() = look(Tab.QIBLA, TodayStyle.GOLD, false)
+    @Test fun falak_centre_light() = look(Tab.FALAK, TodayStyle.CENTRE, true)
+    @Test fun falak_centre_dark() = look(Tab.FALAK, TodayStyle.CENTRE, false)
+    @Test fun falak_sunpath_light() = look(Tab.FALAK, TodayStyle.SUN_PATH, true)
+    @Test fun falak_sunpath_dark() = look(Tab.FALAK, TodayStyle.SUN_PATH, false)
+    @Test fun falak_bands_light() = look(Tab.FALAK, TodayStyle.BANDS, true)
+    @Test fun falak_bands_dark() = look(Tab.FALAK, TodayStyle.BANDS, false)
+    @Test fun falak_simple_light() = look(Tab.FALAK, TodayStyle.SIMPLE, true)
+    @Test fun falak_simple_dark() = look(Tab.FALAK, TodayStyle.SIMPLE, false)
+    @Test fun falak_gold_light() = look(Tab.FALAK, TodayStyle.GOLD, true)
+    @Test fun falak_gold_dark() = look(Tab.FALAK, TodayStyle.GOLD, false)
     @Test fun masjid_dark() = check(d(TodayStyle.LIST, tab = Tab.MASJID))
     @Test fun settings_dark() = check(d(TodayStyle.LIST, tab = Tab.SETTINGS))
     @Test fun settings_light() = check(d(TodayStyle.LIST, Appearance.LIGHT, morning, tab = Tab.SETTINGS))

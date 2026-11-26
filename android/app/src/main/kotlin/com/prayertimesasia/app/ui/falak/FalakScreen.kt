@@ -53,6 +53,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.semantics.heading as markHeading
+import androidx.compose.ui.semantics.semantics
+import com.prayertimesasia.app.ui.components.LookIcons
+import com.prayertimesasia.app.ui.components.lookCard
+import com.prayertimesasia.app.ui.components.lookText
+import com.prayertimesasia.app.ui.theme.LocalLook
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -107,25 +114,29 @@ enum class FalakTool { STEPS, SHADOW_CAMERA, EXPERT, CAMERA, LEVEL }
  * parts: the Sky (slide the sun), Then (how Muslims read the sky), Now (try it
  * yourself) and Why it helps. The detailed tools stay under Expert tools.
  * Everything here is Grade F, for learning, never in place of the authority's times.
+ * Drawn in the five looks as on the web app (web/src/ui/Falak.tsx, `.v12f`).
  */
 @Composable
 fun FalakScreen(state: AppState, open: (FalakTool) -> Unit) {
     val place = state.resolver.activePlace
+    val look = LocalLook.current
     var part by remember { mutableStateOf(FalakPart.SKY) }
+    // The root draws the page behind (Living Sky, or the flat Colour Bands and Calm Gold page).
     Box(Modifier.fillMaxSize()) {
-        LivingSkyBackground(state.skyNow)
         if (place == null) {
-            Text(tr(R.string.falak_choosePlace), style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
+            Text(tr(R.string.falak_choosePlace), style = lookText(17.sp, FontWeight.SemiBold), color = look.c.tx,
+                modifier = Modifier.align(Alignment.Center))
             return@Box
         }
         val now = state.now
         Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Dims.gutter).padding(bottom = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Dims.gutter).padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(tr(R.string.tab_falak), style = display(34.sp, FontWeight.Bold), color = Palette.primary)
-                Text(tr(R.string.falak_lede), style = Txt.subheadline, color = Palette.secondary)
+            Column(Modifier.padding(top = 6.dp)) {
+                Text(tr(R.string.tab_falak), style = lookText(if (look.simple) 38.sp else 34.sp, FontWeight.Bold, 1.1f), color = look.c.tx,
+                    modifier = Modifier.semantics { markHeading() })
+                Text(tr(R.string.falak_lede), style = lookText(15.sp), color = look.c.tx2, modifier = Modifier.padding(top = 4.dp))
             }
             PartPicker(part) { part = it }
             when (part) {
@@ -140,27 +151,32 @@ fun FalakScreen(state: AppState, open: (FalakTool) -> Unit) {
                 }
                 FalakPart.WHY -> WhyItHelps()
             }
-            Text(tr(R.string.falak_footer), style = Txt.footnote, color = Palette.secondary, textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth())
+            Text(tr(R.string.falak_footer), style = lookText(12.sp), color = look.c.tx2, textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp))
         }
     }
 }
 
-/** An iPhone style segmented control. */
+/** The segmented control, in the look's colours (square in Colour Bands). */
 @Composable
 private fun PartPicker(selected: FalakPart, onPick: (FalakPart) -> Unit) {
+    val look = LocalLook.current
     val labels = listOf(FalakPart.SKY to tr(R.string.falak_tabSky), FalakPart.THEN to tr(R.string.falak_tabThen),
         FalakPart.NOW to tr(R.string.falak_tabNow), FalakPart.WHY to tr(R.string.falak_tabWhy))
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Palette.material).padding(2.dp)) {
+    val outer = RoundedCornerShape(if (look.bands) 0.dp else 10.dp)
+    val inner = RoundedCornerShape(if (look.bands) 0.dp else 8.dp)
+    val on = if (look.dark) look.c.card else Color.White
+    Row(Modifier.fillMaxWidth().clip(outer).background(look.c.sep).padding(2.dp)) {
         labels.forEach { (p, label) ->
-            val on = p == selected
+            val isOn = p == selected
             Box(
-                Modifier.weight(1f).heightIn(min = 48.dp).clip(RoundedCornerShape(8.dp))
-                    .background(if (on) Palette.primary.copy(alpha = 0.16f) else Color.Transparent)
-                    .selectable(selected = on, role = Role.Tab) { onPick(p) },
+                // 48 dp tall for touch (Android's rule); the web's is 36 px.
+                Modifier.weight(1f).heightIn(min = 48.dp)
+                    .then(if (isOn) Modifier.shadow(2.dp, inner).clip(inner).background(on) else Modifier.clip(inner))
+                    .selectable(selected = isOn, role = Role.Tab) { onPick(p) },
                 contentAlignment = Alignment.Center,
             ) {
-                Text(label, style = if (on) Txt.footnoteSemibold else Txt.footnote, color = Palette.primary)
+                Text(label, style = lookText(14.sp, FontWeight.SemiBold), color = if (isOn) look.c.tx else look.c.tx2)
             }
         }
     }
@@ -168,6 +184,7 @@ private fun PartPicker(selected: FalakPart, onPick: (FalakPart) -> Unit) {
 
 @Composable
 private fun ToolRows(state: AppState, place: Place, now: Instant, full: Boolean, open: (FalakTool) -> Unit) {
+    val look = LocalLook.current
     val r = state.resolver
     val d = now.atZone(r.zone).toLocalDate()
     val plan = remember(d, place.coordinates) { Falak.shadowDay(d.year, d.monthValue, d.dayOfMonth, place.coordinates) }
@@ -180,40 +197,68 @@ private fun ToolRows(state: AppState, place: Place, now: Instant, full: Boolean,
         later != null -> tr(R.string.falak_qiblaSunNext, "date" to DateTimeFormatter.ofPattern("d MMMM", Locale.ENGLISH).format(later.time.atZone(r.zone)))
         else -> tr(R.string.falak_qiblaSunNone)
     }
-    val divider = @Composable { HorizontalDivider(Modifier.padding(start = 62.dp), color = Palette.primary.copy(alpha = 0.12f)) }
-    GlassCard(padding = 0.dp) {
-        ToolRow(Icons.AutoMirrored.Filled.DirectionsWalk, Color(0xFFD4A017), tr(R.string.falak_stepsTitle), tr(R.string.falak_stepsSub, "name" to asr),
-            Falak.stepsText(Falak.asrSteps(plan, r.asrSchool))) { open(FalakTool.STEPS) }
-        divider()
-        ToolRow(Icons.Filled.CameraAlt, Color(0xFF2EAD5B), tr(R.string.falak_cameraTitle), tr(R.string.falak_cameraTitleSub)) { open(FalakTool.SHADOW_CAMERA) }
-        divider()
-        ToolRow(Icons.Filled.Navigation, Color(0xFF2F7DE1), tr(R.string.falak_qiblaSunTitle), qiblaLine) { open(FalakTool.EXPERT) }
-        if (full) {
-            divider()
-            ToolRow(Icons.Filled.WbSunny, Color(0xFFF08A24), tr(R.string.falak_sunOverKaaba), longDate(state, Falak.nextQiblaDay(now))) { open(FalakTool.EXPERT) }
-            divider()
-            ToolRow(Icons.Filled.Visibility, Color(0xFF8E5BD6), tr(R.string.falak_camera), tr(R.string.falak_cameraSub)) { open(FalakTool.CAMERA) }
-            divider()
-            ToolRow(Icons.Filled.Straighten, Color(0xFF1FA39A), tr(R.string.falak_level), tr(R.string.falak_levelSub)) { open(FalakTool.LEVEL) }
-            divider()
-            ToolRow(Icons.Filled.Tune, Color(0xFF8A8A8E), tr(R.string.falak_expert), tr(R.string.falak_expertSub)) { open(FalakTool.EXPERT) }
+    val rows = mutableListOf<ToolRowData>()
+    rows += ToolRowData("footprints", tr(R.string.falak_stepsTitle), tr(R.string.falak_stepsSub, "name" to asr),
+        Falak.stepsText(Falak.asrSteps(plan, r.asrSchool))) { open(FalakTool.STEPS) }
+    rows += ToolRowData("camera", tr(R.string.falak_cameraTitle), tr(R.string.falak_cameraTitleSub)) { open(FalakTool.SHADOW_CAMERA) }
+    rows += ToolRowData("compass", tr(R.string.falak_qiblaSunTitle), qiblaLine) { open(FalakTool.EXPERT) }
+    if (full) {
+        val qd = Falak.nextQiblaDay(now)
+        rows += ToolRowData("sun", tr(R.string.falak_sunOverKaaba),
+            "${DateTimeFormatter.ofPattern("d MMMM", Locale.ENGLISH).format(qd.atZone(r.zone))} · ${r.formatted(qd)}") { open(FalakTool.EXPERT) }
+        r.day(now)?.let { official ->
+            rows += ToolRowData("moonStar", tr(R.string.falak_skyTonight),
+                tr(R.string.falak_skyTonightSub, "name" to Prayer.MAGHRIB.name(r.naming), "time" to r.formatted(official.time(Prayer.MAGHRIB)))) { open(FalakTool.EXPERT) }
+        }
+        rows += ToolRowData("scanEye", tr(R.string.falak_camera), tr(R.string.falak_cameraSub)) { open(FalakTool.CAMERA) }
+        rows += ToolRowData("level", tr(R.string.falak_level), tr(R.string.falak_levelSub)) { open(FalakTool.LEVEL) }
+        rows += ToolRowData("ruler", tr(R.string.falak_expert), tr(R.string.falak_expertSub)) { open(FalakTool.EXPERT) }
+    }
+    // Colour Bands: each tool a full width band (deeper band tones, so white words pass 4.5:1).
+    val group = if (look.bands) Modifier.wideBy(Dims.gutter) else Modifier.fillMaxWidth().lookCard(look)
+    Column(group) {
+        rows.forEachIndexed { i, row ->
+            if (i > 0 && !look.bands) Box(Modifier.fillMaxWidth().height(1.dp).background(look.c.sep))
+            ToolRow(row, if (look.bands) ToolBands[i % ToolBands.size] else null)
         }
     }
 }
 
+/** Colour Bands tool rows: the web's band order, in deeper tones so white words read clearly. */
+private val ToolBands = listOf(Color(0xFF3A6F63), Color(0xFFA3632C), Color(0xFFBC5057), Color(0xFF6D7940), Color(0xFF88702E), Color(0xFFB0584A))
+
+private class ToolRowData(val icon: String, val title: String, val subtitle: String, val trailing: String? = null, val onClick: () -> Unit)
+
+/** The web's level icon: a bar with a bubble. */
+private val LevelIcon by lazy {
+    androidx.compose.ui.graphics.vector.ImageVector.Builder("level", 24.dp, 24.dp, 24f, 24f).apply {
+        addPath(androidx.compose.ui.graphics.vector.addPathNodes("M4.5 7.5h15a2.5 2.5 0 0 1 2.5 2.5v4a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 14v-4a2.5 2.5 0 0 1 2.5-2.5z"),
+            stroke = androidx.compose.ui.graphics.SolidColor(Color.Black), strokeLineWidth = 2.4f)
+        addPath(androidx.compose.ui.graphics.vector.addPathNodes("M11 10h2a2 2 0 0 1 0 4h-2a2 2 0 0 1 0-4z"), fill = androidx.compose.ui.graphics.SolidColor(Color.Black))
+    }.build()
+}
+
 @Composable
-private fun ToolRow(icon: ImageVector, tint: Color, title: String, subtitle: String, trailing: String? = null, onClick: () -> Unit) {
+private fun ToolRow(row: ToolRowData, band: Color?) {
+    val look = LocalLook.current
+    val big = look.simple
+    val words = if (band != null) Color.White else look.c.tx
+    val soft = if (band != null) Color.White else look.c.tx2
+    val icon = if (row.icon == "level") LevelIcon else LookIcons.get(row.icon, 2.4f)
     Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 12.dp),
+        Modifier.fillMaxWidth().then(if (band != null) Modifier.background(band) else Modifier)
+            .heightIn(min = if (band != null) 64.dp else if (big) 72.dp else 58.dp)
+            .clickable(onClick = row.onClick).padding(horizontal = if (band != null) 24.dp else 18.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        IconTile(icon, tint)
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(title, style = Txt.bodySemibold, color = Palette.primary)
-            Text(subtitle, style = Txt.footnote, color = Palette.secondary, maxLines = 2)
+        FalakIco(icon, onBand = band != null)
+        Column(Modifier.weight(1f)) {
+            Text(row.title, style = lookText(if (band != null) 19.sp else if (big) 21.sp else 17.sp, if (band != null) FontWeight.Bold else FontWeight.SemiBold), color = words)
+            Text(row.subtitle, style = lookText(if (band != null) 15.sp else 13.sp, if (band != null) FontWeight.SemiBold else FontWeight.Normal),
+                color = soft, maxLines = 2, modifier = Modifier.padding(top = 2.dp))
         }
-        if (trailing != null) Text(trailing, style = StepsNumber, color = Palette.gold)
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.size(20.dp), tint = Palette.primary.copy(alpha = 0.4f))
+        if (row.trailing != null) Text(row.trailing, style = lookText(15.sp, if (band != null) FontWeight.SemiBold else FontWeight.Normal), color = soft)
+        Icon(LookIcons.get("chevron"), null, Modifier.size(16.dp), tint = if (band != null) Color.White else look.c.tx3)
     }
 }
 
@@ -251,13 +296,14 @@ private fun CardTitle(title: String, icon: ImageVector) {
 
 @Composable
 fun SunSafetyCard() {
+    val look = LocalLook.current
+    val shape = RoundedCornerShape(look.c.radius)
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(Dims.corner)).background(Palette.warning.copy(alpha = 0.22f)).padding(14.dp),
+        Modifier.fillMaxWidth().clip(shape).background(Palette.warning.copy(alpha = 0.22f), shape).padding(14.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Icon(Icons.Filled.Visibility, null, Modifier.size(26.dp), tint = Palette.warning)
-        Text("Never look at the sun - not briefly, not through sunglasses, binoculars or your phone's camera. Look only at the shadow on the ground.",
-            style = Txt.footnoteSemibold, color = Palette.primary)
+        Icon(LookIcons.get("warn"), null, Modifier.size(26.dp), tint = Palette.warning)
+        Text(tr(R.string.falak_neverLook), style = lookText(13.sp, FontWeight.SemiBold), color = look.c.tx)
     }
 }
 

@@ -62,7 +62,7 @@ data class WidgetModel(
                 hijri = r.hijri(now),
                 dateLine = DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.ENGLISH).format(day.date),
                 sourceLabel = day.officialSource ?: "${r.method.shortName} · calculated",
-                day = day, now = now, current = r.current(now), next = next, style = style,
+                day = day, now = now, current = r.current(now), next = next, style = if (style == TodayStyle.GOLD) TodayStyle.CENTRE else style,
                 names = Prayer.all.associateWith { r.prayerName(it, day.time(it)) },
                 times = Prayer.all.associateWith { r.timeParts(day.time(it)) },
                 nextName = next?.let { r.prayerName(it.first, it.second) },

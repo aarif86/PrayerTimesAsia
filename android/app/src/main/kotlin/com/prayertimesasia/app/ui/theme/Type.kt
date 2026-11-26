@@ -21,16 +21,29 @@ val Rounded = FontFamily(
     Font(R.font.nunito_extrabold, FontWeight.Black),
 )
 
+/**
+ * Inter (SIL Open Font License), the web app's body face on Android phones: names,
+ * rows, notes and buttons. Nunito stays for the big rounded figures and titles.
+ */
+val Body = FontFamily(
+    Font(R.font.inter_regular, FontWeight.Normal),
+    Font(R.font.inter_medium, FontWeight.Medium),
+    Font(R.font.inter_semibold, FontWeight.SemiBold),
+    Font(R.font.inter_bold, FontWeight.Bold),
+    Font(R.font.inter_bold, FontWeight.ExtraBold),
+    Font(R.font.inter_bold, FontWeight.Black),
+)
+
 /** Big rounded figures: times, countdowns, titles. Tabular digits so times line up. */
 fun display(size: TextUnit, weight: FontWeight = FontWeight.SemiBold) =
     TextStyle(fontFamily = Rounded, fontSize = size, fontWeight = weight, fontFeatureSettings = "tnum", lineHeight = size * 1.15)
 
 /** Body text, the iOS text styles in sp. */
 object Txt {
-    private fun s(size: Int, weight: FontWeight = FontWeight.Normal) =
-        TextStyle(fontFamily = Rounded, fontSize = size.sp, fontWeight = weight, lineHeight = (size * 1.25).sp)
+    private fun s(size: Int, weight: FontWeight = FontWeight.Normal, family: FontFamily = Body) =
+        TextStyle(fontFamily = family, fontSize = size.sp, fontWeight = weight, lineHeight = (size * 1.25).sp)
 
-    val largeTitle = s(34, FontWeight.Bold)
+    val largeTitle = s(34, FontWeight.Bold, Rounded)
     val title2 = s(22, FontWeight.Bold)
     val title3 = s(20, FontWeight.SemiBold)
     val headline = s(17, FontWeight.Bold)
