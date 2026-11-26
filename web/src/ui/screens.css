@@ -734,6 +734,7 @@ html[data-large-text] .today.style-simple { zoom: 0.9167; }
 .sky-time { font-size: 13px; font-weight: 600; letter-spacing: 0.3px; color: var(--fg2); text-transform: uppercase; font-variant-numeric: tabular-nums; }
 .sky-name { font-size: 28px; font-weight: 700; margin-top: 2px; }
 .sky-info p { margin: 4px 0 14px; font-size: 15px; min-height: 40px; }
+.sky-now { display: block; margin: 12px auto 0; padding: 7px 22px; border: 0; border-radius: 999px; background: var(--fill2); color: inherit; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 .sky-info input[type=range] { width: 100%; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: var(--fill2); outline-offset: 6px; }
 .sky-info input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); border: 0; }
 .sky-info input[type=range]::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); border: 0; }
@@ -1390,3 +1391,17 @@ html[data-large-text] .pname { font-size: 20px; }
 .all-five-line { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px auto 0; padding: 8px 12px; min-height: 44px; font-size: 14px; color: var(--fg2, inherit); }
 .all-five-line b { color: var(--accent); font-weight: 700; }
 .prayer-row .bell-none { pointer-events: none; }
+
+/* Azan voice and length: compact list, one length switch, one note */
+.item.azan-head { min-height: 36px; padding-top: 14px; padding-bottom: 4px; }
+.item.azan-head .label { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--fg2); }
+.item.azan-voice { min-height: 52px; padding: 6px 16px 6px 10px; gap: 6px; }
+.azan-play { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent, #fff); }
+.azan-pick { flex: 1; display: flex; align-items: center; gap: 12px; text-align: left; min-height: 44px; font-size: 17px; color: inherit; }
+.azan-pick .label { flex: 1; }
+.item.azan-length { flex-wrap: wrap; gap: 10px; }
+.item.azan-length .label { flex: 1 1 auto; }
+.item.azan-length .segmented { flex: 0 1 210px; min-width: 190px; }
+.item.azan-length .segmented button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent, #fff); }
+.azan-foot { margin: 0; padding: 4px 16px 10px; }
+.azan-foot.azan-free { padding-bottom: 14px; font-size: 12px; opacity: .85; }

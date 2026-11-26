@@ -69,6 +69,7 @@
     <string name="today_appearanceButton" formatted="false">Appearance is {name}. Switches between Automatic, Light and Dark.</string>
     <string name="today_followsSky" formatted="false">Automatic follows the sky</string>
     <string name="today_styleButton" formatted="false">Prayer screen style is {name}. Switches to the next style. Touch and hold to choose one.</string>
+    <string name="today_menuButton" formatted="false">More options</string>
     <string name="today_trackerButton" formatted="false">Prayer tracker, streak {n} days{extra}</string>
     <string name="today_trackerPaused" formatted="false">, paused</string>
     <string name="today_trackerExcused" formatted="false">, excused today</string>
@@ -346,6 +347,7 @@
     <string name="falakTools_tilt" formatted="false">A tilt of 1° moves a 1 m stick\'s shadow tip by about 1.7 cm, enough to shift a reading by a minute.</string>
     <string name="masjid_title" formatted="false">Masjids and prayer rooms</string>
     <string name="masjid_about" formatted="false">About this app</string>
+    <string name="masjid_refresh" formatted="false">Refresh the masjid list</string>
     <string name="masjid_all" formatted="false">All</string>
     <string name="masjid_masjid" formatted="false">Masjid</string>
     <string name="masjid_musollah" formatted="false">Prayer room</string>
@@ -795,7 +797,24 @@
     <string name="alerts_extras" formatted="false">Extras</string>
     <string name="alerts_nudgeSub" formatted="false">A notification about 30 minutes before a prayer\'s time ends, only if you have not ticked it in your tracker. Not for {name}.</string>
     <string name="alerts_sound" formatted="false">Sound</string>
-    <string name="alerts_azanSub" formatted="false">Notifications open with the azan, and the {name} azan at {name}</string>
+    <string name="alerts_azanSub" formatted="false">Prayer notifications open with the azan</string>
+    <string name="alerts_azanLength" formatted="false">Length</string>
+    <string name="alerts_azanShort" formatted="false">Short call</string>
+    <string name="alerts_azanFull" formatted="false">Full azan</string>
+    <string name="alerts_azanLengthSub" formatted="false">Short is the opening Allahu akbar. Full is the whole azan, with a Fajr azan at {name} when the voice has one.</string>
+    <string name="alerts_azanListen" formatted="false">Listen</string>
+    <string name="alerts_azanStop" formatted="false">Stop</string>
+    <string name="alerts_azanVoice" formatted="false">Voice</string>
+    <string name="alerts_azanVoiceSub" formatted="false">Tap play to hear a voice. Free for everyone, with no ads. We only use recordings their owners let anyone share, so paid or non commercial recordings cannot be included. More voices will come as owners say yes.</string>
+    <string name="voice_asim" formatted="false">Asim Javed</string>
+    <string name="voice_khalaf" formatted="false">Ahmed Khalaf</string>
+    <string name="voice_makkah" formatted="false">Makkah, a visitor\'s recording</string>
+    <string name="voice_sudais" formatted="false">Makkah, Sheikh Sudais</string>
+    <string name="voice_aqsa" formatted="false">Al-Aqsa</string>
+    <string name="voice_egypt" formatted="false">Egyptian style</string>
+    <string name="voice_madinah" formatted="false">Madinah</string>
+    <string name="voice_shortOnly" formatted="false">Short call only</string>
+    <string name="voice_fajrToo" formatted="false">Has a Fajr azan</string>
     <string name="alerts_buzzSub" formatted="false">Notifications vibrate without sound, all day. Alarms still ring.</string>
     <string name="alerts_quietSub" formatted="false">Between the times you pick, notifications only vibrate. {name} and alarms keep their sound.</string>
     <string name="alerts_soundFoot" formatted="false">Buzz only and Quiet hours are for shift workers sleeping in the day, a baby asleep in the room, or a calm night. Alarms keep their sound.</string>
@@ -1089,6 +1108,25 @@
     <string name="settings_facebook" formatted="false">Follow us on Facebook</string>
     <string name="settings_freeLine" formatted="false">Free for everyone. No paid version.</string>
     <string name="settings_back" formatted="false">Back to Settings</string>
+    <string name="settings_homeScreen" formatted="false">Home screen</string>
+    <string name="settings_widgets" formatted="false">Widgets</string>
+    <string name="settings_widgetsFoot" formatted="false">To add a widget, touch and hold an empty space on your home screen, tap Widgets, then find Prayer Times Asia.</string>
+    <string name="settings_seeWidgets" formatted="false">See the widgets</string>
+    <string name="settings_accuracyPhone" formatted="false">Every day shows its source grade. A is official, B is confirmed by a masjid, C is checked by the community, D is worked out on your phone. F (falak) marks a reading from your own shadow stick, which only checks the times. In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year and keeps it on your phone for offline use. Only the year, zone code or area name is sent. Everywhere else, and before that download, times are worked out on your phone with the country\'s own method. That working is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables. For Singapore it is never earlier than the official time, and at most 2 minutes later. For Malaysia and Indonesia it is within about 2 minutes.</string>
+    <string name="settings_followsPhone" formatted="false">The app follows your phone\'s language.</string>
+    <string name="settings_samePhone" formatted="false">Same as your phone</string>
+    <string name="settings_namesFootPhone" formatted="false">Pick Malay for Subuh and Isyak. When you travel, the local name shows small beside it, so the masjid\'s signs make sense.</string>
+    <string name="settings_pretendFoot" formatted="false">Shows a pretend Ramadan or Eid date so you can try it early.</string>
+    <string name="settings_pretendOnFoot" formatted="false">Pretend mode is on. The app shows a pretend date, not today\'s. Turn it off before you rely on the times.</string>
+    <string name="settings_trackerFootPhone" formatted="false">Tick off each prayer on the Prayer screen once it has passed, and keep a streak. Tap the streak to mark a day as excused, like haid or illness, so it carries on. Kept only on this phone.</string>
+    <string name="settings_trackerNudgeNote" formatted="false">The nudge before time runs out is in Alerts and alarms.</string>
+    <string name="settings_movingFootPhone" formatted="false">A QR code or link carries your places, choices and tracker. No account and nothing uploaded. Works with Android, iPhone and the web. Setting up a new Android phone from your Google backup brings them too.</string>
+    <string name="settings_privacyPhone" formatted="false">Your exact location stays on your phone</string>
+    <string name="settings_privacyMasjid" formatted="false">Masjid search sends only your area</string>
+    <string name="settings_phonePermissions" formatted="false">Phone permissions</string>
+    <string name="settings_phonePermissionsFoot" formatted="false">If times or alerts look wrong, check these first.</string>
+    <string name="settings_notAllowed" formatted="false">Not allowed</string>
+    <string name="settings_openPhoneSettings" formatted="false">Open phone settings</string>
     <string name="suggestRoom_button" formatted="false">Suggest a prayer room</string>
     <string name="suggestRoom_title" formatted="false">Suggest a prayer room</string>
     <string name="suggestRoom_intro" formatted="false">Know a musollah or prayer room that is not on our map? Tell us about it. We check every one and then add it for everyone.</string>
@@ -1259,8 +1297,8 @@
     <string name="all_offDesc" formatted="false">Nothing for these prayers.</string>
     <string name="all_notifyName" formatted="false">Notification</string>
     <string name="all_notifyDesc" formatted="false">A message on your screen with a normal alert sound.</string>
-    <string name="all_azanName" formatted="false">Short azan</string>
-    <string name="all_azanDesc" formatted="false">A message that plays a short azan, about 9 seconds.</string>
+    <string name="all_azanName" formatted="false">Azan</string>
+    <string name="all_azanDesc" formatted="false">A message that plays the azan. Choose the short call or the full azan under Sound.</string>
     <string name="all_alarmDesc" formatted="false">Rings like a clock until you stop it. Works on silent.</string>
     <string name="all_step2" formatted="false">A reminder before each prayer</string>
     <string name="all_keep" formatted="false">Leave as it is</string>

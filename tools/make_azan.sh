@@ -1,33 +1,60 @@
 #!/usr/bin/env bash
-# Turns one azan recording (and, optionally, a Subuh azan) into the files each
-# app needs, in the right places:
-#   iPhone   ios/PrayerTimesAsia/Resources/azan.caf, azan-subuh.caf  (first 30 s: iOS plays no more of an alert sound)
-#   Android  android/app/src/main/res/raw/azan.ogg, azan_subuh.ogg  (full length)
-#   Web      web/src/assets/azan/azan.mp3, azan-subuh.mp3           (full length)
-# The "Play the azan" switch appears in each app as soon as these files exist.
+# Turns one azan recording into the small files each app needs, to the numbers
+# in docs/azan-clip-spec.md. Each voice has up to three sounds:
 #
-# Usage:  tools/make_azan.sh AZAN.(wav|m4a|mp3...) [SUBUH_AZAN.(...)]
-# Needs ffmpeg. Record in a quiet room; the script evens out the volume,
-# trims silence at the start and fades out the iPhone clip.
+#   short  the opening takbir only, the default alert
+#   full   the whole azan (iPhone: as much as fits in 30 s, see below)
+#   fajr   a Fajr azan (with the Fajr line), used at Fajr when "Full" is chosen
 #
-# Every recording needs written permission from the person who recorded it,
-# noted in docs/azan.md (who, when, and the permission).
+#   iPhone   ios/PrayerTimesAsia/Resources/azan-VOICE-short.caf, azan-VOICE.caf, azan-VOICE-fajr.caf
+#   Android  android/app/src/main/res/raw/azan_VOICE_short.ogg, azan_VOICE.ogg, azan_VOICE_fajr.ogg
+#   Web      web/src/assets/azan/azan-VOICE-short.mp3, azan-VOICE.mp3, azan-VOICE-fajr.mp3
+#
+# iOS plays no more than 30 seconds of an alert sound, and plays the default
+# sound instead if the file is longer, so the iPhone file stops at the end of a
+# phrase before 30 s (IOS_END). Android and the web play to FULL_END.
+#
+# Usage:
+#   tools/make_azan.sh VOICE RECORDING START SHORT_END IOS_END FULL_END         (short + full)
+#   tools/make_azan.sh VOICE RECORDING START SHORT_END IOS_END -                (short only)
+#   tools/make_azan.sh VOICE RECORDING START - IOS_END FULL_END fajr            (fajr only)
+# Times are seconds into the recording. VOICE is a short lower-case id (asim).
+#
+# The voices in the app today (sources and licences in docs/AUDIO_LICENSES.csv):
+#   tools/make_azan.sh asim   asim-javed-2nd-adhan.flac 0 11.9 24.3 74.9
+#   tools/make_azan.sh khalaf Developer_Athan-1.mp3 1.2 28.3 28.3 144.6
+#   tools/make_azan.sh khalaf Developer_Athan-3_Fajr.mp3 0.5 - 29.0 99.5 fajr
+#   tools/make_azan.sh makkah makkah-2013-seyfula.webm 7.4 32.6 32.6 -
+#
+# Needs ffmpeg. Every recording must be logged in docs/AUDIO_LICENSES.csv with
+# its licence or written permission before it goes in the app.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-[ $# -ge 1 ] || { sed -n 2,14p "$0"; exit 1; }
+[ $# -ge 6 ] || { sed -n 2,29p "$0"; exit 1; }
+voice=$1 src=$2 start=$3 short_end=$4 ios_end=$5 full_end=$6 kind=${7:-}
 
-clean="silenceremove=start_periods=1:start_threshold=-45dB,loudnorm=I=-16:TP=-1.5:LRA=11"
-
-make() { # source, ios name, android name, web name
-  ffmpeg -loglevel error -y -i "$1" -af "$clean,afade=t=out:st=27.5:d=2" -t 29.5 -ac 1 -ar 22050 \
-    -c:a adpcm_ima_qt -f caf "ios/PrayerTimesAsia/Resources/$2.caf"
-  ffmpeg -loglevel error -y -i "$1" -af "$clean" -ac 1 -ar 44100 -c:a libvorbis -q:a 4 \
-    "android/app/src/main/res/raw/$3.ogg"
-  ffmpeg -loglevel error -y -i "$1" -af "$clean" -ac 1 -ar 44100 -c:a libmp3lame -b:a 96k \
-    "web/src/assets/azan/$4.mp3"
-  echo "Made $2 for iPhone, Android and web."
+# Cut (START is set by ear, so the first sound is never clipped), even out the loudness (-16 LUFS, peaks under
+# -1 dB), then a 0.5 s fade at the very end (reversed, so the length need not be known).
+shape() { # end-seconds
+  echo "atrim=start=$start:end=$1,asetpts=PTS-STARTPTS,loudnorm=I=-16:TP=-1.5:LRA=11,areverse,afade=t=in:d=0.5,areverse"
 }
+ios()     { ffmpeg -loglevel error -y -i "$src" -vn -af "$(shape "$1")" -ac 1 -ar 22050 -c:a adpcm_ima_qt -f caf "ios/PrayerTimesAsia/Resources/$2.caf"; }
+android() { ffmpeg -loglevel error -y -i "$src" -vn -af "$(shape "$1")" -ac 1 -ar 32000 -c:a libvorbis -q:a 1 "android/app/src/main/res/raw/$2.ogg"; }
+web()     { ffmpeg -loglevel error -y -i "$src" -vn -af "$(shape "$1")" -ac 1 -ar 32000 -c:a libmp3lame -b:a 48k "web/src/assets/azan/$2.mp3"; }
 
 mkdir -p web/src/assets/azan android/app/src/main/res/raw
-make "$1" azan azan azan
-if [ $# -ge 2 ]; then make "$2" azan-subuh azan_subuh azan-subuh; fi
+made=()
+if [ "$kind" = fajr ]; then
+  ios "$ios_end" "azan-$voice-fajr"; android "$full_end" "azan_${voice}_fajr"; web "$full_end" "azan-$voice-fajr"
+  made+=("ios/PrayerTimesAsia/Resources/azan-$voice-fajr.caf" "android/app/src/main/res/raw/azan_${voice}_fajr.ogg" "web/src/assets/azan/azan-$voice-fajr.mp3")
+else
+  ios "$short_end" "azan-$voice-short"; android "$short_end" "azan_${voice}_short"; web "$short_end" "azan-$voice-short"
+  made+=("ios/PrayerTimesAsia/Resources/azan-$voice-short.caf" "android/app/src/main/res/raw/azan_${voice}_short.ogg" "web/src/assets/azan/azan-$voice-short.mp3")
+  if [ "$full_end" != - ]; then
+    ios "$ios_end" "azan-$voice"; android "$full_end" "azan_$voice"; web "$full_end" "azan-$voice"
+    made+=("ios/PrayerTimesAsia/Resources/azan-$voice.caf" "android/app/src/main/res/raw/azan_$voice.ogg" "web/src/assets/azan/azan-$voice.mp3")
+  fi
+fi
+for f in "${made[@]}"; do
+  printf '%-52s %5.1f s %4d KB\n' "$f" "$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$f")" $(( $(stat -c %s "$f") / 1024 ))
+done

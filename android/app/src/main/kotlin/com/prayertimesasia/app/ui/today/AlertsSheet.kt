@@ -1,5 +1,6 @@
 package com.prayertimesasia.app.ui.today
 
+import android.media.MediaPlayer
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -35,7 +36,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.outlined.NotificationsOff
@@ -45,6 +50,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +80,8 @@ import kotlinx.coroutines.launch
 import com.prayertimesasia.app.ui.components.AppWords
 import com.prayertimesasia.app.ui.components.HadithView
 import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.alarms.OwnAzan
+import com.prayertimesasia.app.ui.settings.OwnAzanPage
 import com.prayertimesasia.app.ui.settings.PickerRow
 import com.prayertimesasia.app.ui.settings.Section
 import com.prayertimesasia.app.ui.settings.SwitchRow
@@ -107,6 +115,7 @@ fun WakeUpSheetContent(state: AppState) {
         null -> AlertsMainList(state, go)
         "all" -> SubPage(tr(R.string.all_row), go) { AllFivePage(state) }
         "check" -> SubPage(tr(R.string.alerts_checkPhone), go) { CheckPhonePage(state) }
+        "ownAzan" -> SubPage("Your own azan", go) { Column { OwnAzanPage(state) } }
         "friday" -> SubPage(tr(R.string.jumuah_leaveFor, "friday" to Prayer.DHUHR.name(state.resolver.naming, true)), go) { FridayAlertPage(state) }
         else -> {
             val prayer = Prayer.entries.firstOrNull { it.raw == now }
@@ -150,7 +159,7 @@ private fun AlertsMainList(state: AppState, go: (String?) -> Unit) {
             EachPrayerSection(state, go) { justSet = it }
             NextAlarmSection(state)
             ExtrasSection(state)
-            SoundSection(state)
+            SoundSection(state, go)
             AlarmSoundSection(state)
             WakeHadith()
         }
@@ -506,13 +515,17 @@ private fun ExtrasSection(state: AppState) {
 }
 
 @Composable
-private fun SoundSection(state: AppState) {
+private fun SoundSection(state: AppState, go: (String?) -> Unit) {
     val r = state.resolver
     val p = state.prefs
     val context = LocalContext.current
     Section(tr(R.string.alerts_sound), tr(R.string.phone_alerts_soundFoot)) {
         if (Azan.isAvailable(context)) {
             SwitchRow(tr(R.string.settings_azan), p.azanSound, sub = tr(R.string.phone_alerts_azanSub)) { on -> state.update { it.copy(azanSound = on) } }
+            // Short call or full azan. Their own azan (Settings, Your own azan) replaces both, so the choice hides then.
+            if (p.azanSound && Azan.voices(context).isNotEmpty()) {
+                AzanChoiceRows(state, go)
+            }
         }
         SwitchRow(tr(R.string.settings_buzzOnly), p.buzzOnly, sub = tr(R.string.alerts_buzzSub)) { on -> state.update { it.copy(buzzOnly = on) } }
         SwitchRow(tr(R.string.settings_quietHours), p.quietHours, sub = tr(R.string.alerts_quietSub, "name" to Prayer.FAJR.name(r.naming))) { on -> state.update { it.copy(quietHours = on) } }
@@ -522,6 +535,117 @@ private fun SoundSection(state: AppState) {
             PickerRow(tr(R.string.settings_until), r.clock(p.quietTo), halfHours.map { r.clock(it) to it }, p.quietTo) { m -> state.update { it.copy(quietTo = m) } }
         }
     }
+}
+
+/** Which voice and how long. Tapping a choice picks it and plays it; tapping again stops it. */
+@Composable
+private fun AzanChoiceRows(state: AppState, go: (String?) -> Unit) {
+    val context = LocalContext.current
+    val p = state.prefs
+    val voice = Azan.voiceOrDefault(context, p.azanVoice) ?: return
+    val voices = Azan.voices(context)
+    var player by remember { mutableStateOf<MediaPlayer?>(null) }
+    var playing by remember { mutableStateOf<String?>(null) }
+    fun stop() { player?.let { mp -> runCatching { mp.stop() }; mp.release() }; player = null; playing = null }
+    fun play(key: String, v: String, full: Boolean) {
+        if (playing == key) { stop(); return }
+        stop()
+        val uri = Azan.uri(context, v, Azan.kindFor(context, v, full, fajr = false)) ?: return
+        player = MediaPlayer().apply {
+            setAudioAttributes(Azan.attributes)
+            setDataSource(context, uri)
+            setOnCompletionListener { stop() }
+            prepare()
+            start()
+        }
+        playing = key
+    }
+    DisposableEffect(Unit) { onDispose { stop() } }
+    val ownSet = OwnAzan.isSet(context)
+    val ownRow: @Composable () -> Unit = {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable { go("ownAzan") }.padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("Your own azan", style = Txt.body, color = Palette.primary)
+                Text(if (ownSet) "Your file plays for every prayer" else "Pick an audio file on this phone", style = Txt.footnote, color = Palette.secondary)
+            }
+            Text(if (ownSet) tr(R.string.common_on) else tr(R.string.common_off), style = Txt.body, color = Palette.secondary)
+            Icon(Icons.Filled.ChevronRight, null, Modifier.size(20.dp), tint = Palette.secondary)
+        }
+    }
+    if (ownSet) { ownRow(); return }
+    if (voices.size > 1) {
+        Text(tr(R.string.alerts_azanVoice), style = Txt.footnote, color = Palette.secondary,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp))
+        for (v in voices) {
+            val note = when {
+                !Azan.has(context, v, Azan.Kind.FULL) -> tr(R.string.voice_shortOnly)
+                Azan.has(context, v, Azan.Kind.FAJR) -> tr(R.string.voice_fajrToo)
+                else -> null
+            }
+            val name = voiceName(v)
+            val selected = v == voice
+            val described = tr(R.string.phone_alerts_selected, "label" to name)
+            val playWord = "${tr(if (playing == v) R.string.alerts_azanStop else R.string.alerts_azanListen)}, $name"
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable { state.update { it.copy(azanVoice = v) } }
+                    .padding(start = 6.dp, end = 16.dp, top = 6.dp, bottom = 6.dp)
+                    .semantics { if (selected) contentDescription = described },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Box(Modifier.size(48.dp).clip(CircleShape).clickable { play(v, v, full = false) }
+                    .semantics { contentDescription = playWord },
+                    contentAlignment = Alignment.Center) {
+                    Icon(if (playing == v) Icons.Filled.StopCircle else Icons.Filled.PlayCircle, null, Modifier.size(30.dp), tint = Palette.accent)
+                }
+                Column(Modifier.weight(1f)) {
+                    Text(name, style = Txt.body, color = Palette.primary)
+                    if (note != null) Text(note, style = Txt.footnote, color = Palette.secondary)
+                }
+                Icon(Icons.Filled.Check, null, Modifier.size(20.dp), tint = if (selected) Palette.sunArc else Color.Transparent)
+            }
+        }
+    }
+    ownRow()
+    if (Azan.has(context, voice, Azan.Kind.FULL)) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(tr(R.string.alerts_azanLength), style = Txt.body, color = Palette.primary, modifier = Modifier.weight(1f))
+            val lengths = listOf(false, true)
+            SingleChoiceSegmentedButtonRow(Modifier.width(210.dp)) {
+                lengths.forEachIndexed { i, full ->
+                    val word = if (full) tr(R.string.alerts_azanFull) else tr(R.string.alerts_azanShort)
+                    SegmentedButton(p.azanFull == full, {
+                        state.update { it.copy(azanFull = full) }
+                        play(if (full) "full" else "short", voice, full)
+                    }, SegmentedButtonDefaults.itemShape(i, lengths.size),
+                        colors = SegmentedButtonDefaults.colors(
+                            activeContainerColor = Palette.accent.copy(alpha = 0.35f), activeContentColor = Palette.primary,
+                            inactiveContainerColor = Color.Transparent, inactiveContentColor = Palette.primary,
+                            activeBorderColor = Palette.accent, inactiveBorderColor = Palette.accent),
+                        icon = {}) { Text(word, style = Txt.footnoteSemibold, maxLines = 1) }
+                }
+            }
+        }
+        Text(tr(R.string.alerts_azanLengthSub, "name" to Prayer.FAJR.name(state.resolver.naming)), style = Txt.footnote, color = Palette.secondary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+    }
+    Text(tr(R.string.alerts_azanVoiceSub), style = Txt.caption, color = Palette.secondary,
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp))
+}
+
+@Composable
+private fun voiceName(v: String): String = when (v) {
+    "asim" -> tr(R.string.voice_asim)
+    "makkah" -> tr(R.string.voice_makkah)
+    "khalaf" -> tr(R.string.voice_khalaf)
+    "sudais" -> tr(R.string.voice_sudais)
+    "aqsa" -> tr(R.string.voice_aqsa)
+    "egypt" -> tr(R.string.voice_egypt)
+    "madinah" -> tr(R.string.voice_madinah)
+    else -> v
 }
 
 @Composable

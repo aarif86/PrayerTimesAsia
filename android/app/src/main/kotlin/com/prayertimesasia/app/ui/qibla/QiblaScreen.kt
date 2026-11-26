@@ -2,105 +2,81 @@ package com.prayertimesasia.app.ui.qibla
 
 import android.os.Build
 import android.view.HapticFeedbackConstants
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.Navigation
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.prayertimesasia.app.ui.falak.wideBy
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading as markHeading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prayertimesasia.app.AppState
+import com.prayertimesasia.app.R
 import com.prayertimesasia.app.Tab
-import com.prayertimesasia.app.ui.components.Chip
+import com.prayertimesasia.app.ui.components.BandColors
 import com.prayertimesasia.app.ui.components.Dims
-import com.prayertimesasia.app.ui.components.GlassCard
-import com.prayertimesasia.app.ui.makers.KaabaGlyph
-import com.prayertimesasia.app.ui.theme.Brand
-import com.prayertimesasia.app.ui.theme.LivingSkyBackground
-import com.prayertimesasia.app.ui.theme.drawCompassBezel
-import com.prayertimesasia.app.ui.theme.LocalSkyScheme
-import com.prayertimesasia.app.ui.theme.Palette
-import com.prayertimesasia.app.ui.theme.Txt
-import com.prayertimesasia.app.ui.theme.display
+import com.prayertimesasia.app.ui.components.LookButton
+import com.prayertimesasia.app.ui.components.LookIcons
+import com.prayertimesasia.app.ui.components.green
+import com.prayertimesasia.app.ui.components.lookCard
+import com.prayertimesasia.app.ui.components.lookText
+import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.ui.theme.LocalLook
 import com.prayertimesasia.core.Astro
 import com.prayertimesasia.core.Geo
 import com.prayertimesasia.core.Place
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
-import kotlin.math.cos
+import kotlin.math.max
 import kotlin.math.roundToInt
-import kotlin.math.sin
-import com.prayertimesasia.app.ui.components.tr
-import com.prayertimesasia.app.R
 
 /**
- * Qibla compass. The dial turns with the phone so the Kaaba marker always sits
- * at the true qibla; line it up with the top marker and the whole dial turns
- * green, with a tick, a ripple and a tap.
+ * Qibla compass, in the five looks as on the web app (web/src/ui/Qibla.tsx). The dial turns
+ * with the phone so the Ka'bah always sits at the true qibla; line it up with the top marker
+ * and the dial shows a green tick and the phone taps.
  */
 @Composable
 fun QiblaScreen(state: AppState) {
     val place = state.resolver.activePlace
+    val look = LocalLook.current
+    // The root draws the page behind (Living Sky, or the flat Colour Bands and Calm Gold page).
     Box(Modifier.fillMaxSize()) {
-        LivingSkyBackground(state.skyNow)
         if (place == null) {
-            Text(tr(R.string.qibla_choosePlace), style = Txt.headline, color = Palette.primary, modifier = Modifier.align(Alignment.Center))
+            Text(tr(R.string.qibla_choosePlace), style = lookText(17.sp, FontWeight.SemiBold), color = look.c.tx,
+                textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center).padding(horizontal = Dims.gutter))
         } else {
             QiblaContent(state, place)
         }
@@ -111,209 +87,180 @@ fun QiblaScreen(state: AppState) {
 private fun QiblaContent(state: AppState, place: Place) {
     val context = LocalContext.current
     val view = LocalView.current
+    val look = LocalLook.current
     val compass = remember { hasCompass(context) }
     val bearing = Geo.qiblaBearing(place.coordinates)
-    val live by rememberHeading(place.coordinates, enabled = !state.demoAligned)
-    val heading: Double? = if (state.demoAligned) bearing else live?.degrees
+    val fixedHeading = state.demoHeading
+    val live by rememberHeading(place.coordinates, enabled = !state.demoAligned && fixedHeading == null)
+    val heading: Double? = when {
+        state.demoAligned -> bearing
+        fixedHeading != null -> fixedHeading
+        else -> live?.degrees
+    }
     val delta = heading?.let { Geo.angleDelta(bearing, it) }
     var aligned by remember { mutableStateOf(state.demoAligned) }
-    aligned = nextAligned(aligned, delta)
+    aligned = state.demoAligned || nextAligned(aligned, delta)
     // Heading accumulated without wrapping, so crossing north turns the dial a few degrees, not the long way round.
-    var dialHeading by remember { mutableDoubleStateOf(heading ?: 0.0) }
-    var last by remember { mutableStateOf<Double?>(null) }
-    LaunchedEffect(heading) {
-        val h = heading ?: return@LaunchedEffect
-        val l = last
-        dialHeading = if (l == null) h else dialHeading + Geo.angleDelta(h, l)
-        last = h
+    val acc = remember { HeadingSum() }
+    if (heading != null) {
+        val l = acc.last
+        acc.heading = if (l == null) heading else acc.heading + Geo.angleDelta(heading, l)
+        acc.last = heading
     }
+    val dialHeading = acc.heading
     LaunchedEffect(aligned) {
         if (aligned && !state.demoAligned) {
             view.performHapticFeedback(if (Build.VERSION.SDK_INT >= 30) HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.LONG_PRESS)
         }
     }
-    val green = Palette.success
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Dims.gutter).padding(bottom = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-    ) {
-        Column(Modifier.padding(top = 12.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(tr(R.string.tab_qibla), style = display(34.sp, FontWeight.Bold), color = Palette.primary)
-            val instruction = when {
-                delta == null -> "Face ${bearing.roundToInt()}° from north"
-                aligned -> "You're facing the Qibla"
-                delta > 0 -> "Turn right ${abs(delta).roundToInt()}°"
-                else -> "Turn left ${abs(delta).roundToInt()}°"
-            }
-            Text(instruction, style = Txt.title3, color = if (aligned) green else Palette.primary.copy(alpha = 0.9f))
-            Chip("Check with the sun", Icons.Filled.WbSunny) { state.selectedTab = Tab.FALAK }
-        }
-        BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), contentAlignment = Alignment.Center) {
-            val size = minOf(maxWidth, 320.dp)
-            QiblaDial(bearing, dialHeading, delta, aligned, size)
-        }
-        Stats(place, bearing, heading)
-        Steps(compass || state.demoAligned, live)
-    }
-}
 
-@Composable
-private fun QiblaDial(bearing: Double, heading: Double, delta: Double?, aligned: Boolean, size: Dp) {
-    val green = Palette.success
-    val primary = Palette.primary
-    val gold = Palette.gold
-    val reduce = LocalSkyScheme.current.reduceMotion
-    val light = !LocalSkyScheme.current.dark
-    Box(Modifier.size(size).semantics { contentDescription = if (aligned) "Facing the qibla" else "Qibla compass" },
-        contentAlignment = Alignment.Center) {
-        // Fixed "you are pointing here" marker at the top.
-        Box(Modifier.offset(y = -size / 2 - 8.dp).size(4.dp, 22.dp).clip(CircleShape).background(if (aligned) green else primary))
-        Canvas(Modifier.fillMaxSize()) {
-            val r = this.size.minDimension / 2
-            if (aligned) {
-                drawCircle(Brush.radialGradient(listOf(green.copy(alpha = 0.28f), green.copy(alpha = 0.08f)), center, r), r - Brand.bezel.toPx())
-            } else {
-                // Face inside the navy compass ring: white like the icon's dial in Light.
-                val face = r - Brand.bezel.toPx()
-                if (light) drawCircle(Brush.radialGradient(0.65f to Color.White, 1f to Color(0xFFE6E8F1), center = center, radius = face), face)
-                else drawCircle(primary.copy(alpha = 0.07f), face)
+    val instruction = when {
+        delta == null -> tr(R.string.qibla_faceFromNorth, "deg" to bearing.roundToInt())
+        aligned -> tr(R.string.qibla_youAreFacing)
+        delta > 0 -> tr(R.string.qibla_turnRight, "deg" to abs(delta).roundToInt())
+        else -> tr(R.string.qibla_turnLeft, "deg" to abs(delta).roundToInt())
+    }
+    // Spoken in steps of 10 degrees, so a screen reader is not interrupted at every degree.
+    val step = if (delta == null) 0 else max(10, (abs(delta) / 10).roundToInt() * 10)
+    val spoken = when {
+        delta == null || aligned -> instruction
+        delta > 0 -> tr(R.string.qibla_turnRightAbout, "deg" to step)
+        else -> tr(R.string.qibla_turnLeftAbout, "deg" to step)
+    }
+    val km = NumberFormat.getIntegerInstance(Locale.US).format(Geo.distanceKm(place.coordinates, Geo.kaaba).roundToInt())
+    val statQibla = "${bearing.roundToInt()}° ${Geo.compassPoint(bearing)}"
+    val statFacing = heading?.let { "${Astro.fix(it, 360.0).roundToInt() % 360}°" } ?: "…"
+    val statKm = tr(R.string.common_km, "n" to km)
+    val dial = DialInput(heading = dialHeading.toFloat(), rel = (bearing - (if (heading != null) dialHeading else 0.0)).toFloat(), aligned = aligned)
+    val toSun = { state.selectedTab = Tab.FALAK }
+    val sayColor = if (aligned) look.green else look.c.tx
+    val title = tr(R.string.qibla_title)
+    val sunLabel = tr(R.string.qibla_falakMode)
+
+    @Composable
+    fun Title(size: Int = 34) = Text(title, style = lookText(size.sp, FontWeight.Bold, 1.1f), color = look.c.tx, textAlign = TextAlign.Center,
+        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp).semantics { markHeading() })
+
+    @Composable
+    fun Say(size: Int, weight: FontWeight, color: Color = sayColor, modifier: Modifier = Modifier, align: TextAlign = TextAlign.Center, lineHeight: Float = 1.25f) =
+        Text(instruction, style = lookText(size.sp, weight, lineHeight), color = color, textAlign = align,
+            modifier = modifier.clearAndSetSemantics { contentDescription = spoken; liveRegion = LiveRegionMode.Polite })
+
+    @Composable
+    fun Stats() = Row(Modifier.fillMaxWidth().padding(top = 12.dp).lookCard(look).padding(horizontal = 4.dp, vertical = 12.dp)) {
+        listOf(tr(R.string.qibla_title) to statQibla, tr(R.string.qibla_facingShort) to statFacing, tr(R.string.qibla_toMakkah) to statKm).forEach { (a, b) ->
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(a.uppercase(), style = lookText(11.sp, FontWeight.Medium).copy(letterSpacing = 0.9.sp), color = look.c.tx2, maxLines = 1)
+                Text(b, style = lookText(17.sp, FontWeight.Bold).copy(fontFeatureSettings = "tnum"), color = look.c.tx, maxLines = 1)
             }
         }
-        if (aligned && !reduce) Ripple(green, size)
-        // The face turns with the phone.
-        Box(Modifier.fillMaxSize().graphicsLayer { rotationZ = (-heading).toFloat() }, contentAlignment = Alignment.Center) {
-            Canvas(Modifier.fillMaxSize()) {
-                val r = this.size.minDimension / 2
-                // The app icon's compass ring: navy, kawung batik, cream stitching.
-                drawCompassBezel()
-                for (i in 0 until 72) {
-                    val major = i % 6 == 0
-                    val alpha = if (i % 18 == 0) 0.9f else if (major) 0.55f else 0.25f
-                    val len = (if (major) 12 else 6).dp.toPx()
-                    val outer = r - 14.dp.toPx() + len / 2
-                    rotate(i * 5f, center) {
-                        drawLine(Color.White.copy(alpha = alpha), Offset(center.x, center.y - outer), Offset(center.x, center.y - outer + len),
-                            strokeWidth = (if (major) 2 else 1).dp.toPx(), cap = StrokeCap.Round)
+    }
+
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            .padding(horizontal = if (look.bands) 0.dp else Dims.gutter).padding(bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        when {
+            look.bands -> {
+                Box(Modifier.fillMaxWidth().heightIn(min = 80.dp).background(BandColors[0]).padding(horizontal = 24.dp), contentAlignment = Alignment.CenterStart) {
+                    Text(title, style = lookText(34.sp, FontWeight.Bold, 1f), color = Color.White, modifier = Modifier.semantics { markHeading() })
+                }
+                Say(20, FontWeight.Bold, align = TextAlign.Start, modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 14.dp, bottom = 4.dp))
+                Box(Modifier.padding(top = 18.dp)) { BandsCompass(dial) }
+                Column(Modifier.fillMaxWidth().padding(top = 14.dp)) {
+                    listOf(tr(R.string.qibla_title) to statQibla, tr(R.string.qibla_facingShort) to statFacing, tr(R.string.qibla_toMakkah) to statKm)
+                        .forEachIndexed { i, (a, b) ->
+                            Row(Modifier.fillMaxWidth().heightIn(min = 54.dp).background(BandColors[i + 1]).padding(horizontal = 24.dp),
+                                verticalAlignment = Alignment.CenterVertically) {
+                                Text(a, style = lookText(19.sp, FontWeight.Bold), color = Color.White, modifier = Modifier.weight(1f))
+                                Text(b, style = lookText(19.sp, FontWeight.Bold).copy(fontFeatureSettings = "tnum"), color = Color.White)
+                            }
+                        }
+                }
+            }
+            look.simple -> {
+                Title(38)
+                if (delta != null && !aligned) {
+                    Column(Modifier.clearAndSetSemantics { contentDescription = spoken; liveRegion = LiveRegionMode.Polite },
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(tr(if (delta > 0) R.string.qibla_turnRightWord else R.string.qibla_turnLeftWord), style = lookText(26.sp, FontWeight.Bold, 1f), color = look.c.tx)
+                        Text("${abs(delta).roundToInt()}°", style = lookText(60.sp, FontWeight.ExtraBold, 1f).copy(fontFeatureSettings = "tnum"), color = look.c.tx,
+                            modifier = Modifier.padding(top = 2.dp))
+                    }
+                } else {
+                    Say(28, FontWeight.Bold, lineHeight = 1.15f, modifier = Modifier.padding(bottom = 8.dp))
+                }
+                Box(Modifier.padding(top = 28.dp)) { SimpleCompass(dial) }
+                Text(tr(R.string.qibla_kmToMakkah, "km" to km), style = lookText(23.sp, FontWeight.SemiBold), color = look.c.tx2,
+                    textAlign = TextAlign.Center, modifier = Modifier.padding(top = 12.dp))
+                LookButton(tr(R.string.qibla_checkSun), LookIcons.get("sun"), Modifier.padding(top = 14.dp), big = true, onClickLabel = sunLabel, onClick = toSun)
+            }
+            look.sunPath -> {
+                Title()
+                SunCurve(if (delta != null) delta.toFloat() else Geo.angleDelta(bearing, 0.0).toFloat(), aligned, heading != null,
+                    Modifier.padding(top = 18.dp, bottom = 6.dp).fillMaxWidth().wideBy(Dims.gutter))
+                Column(Modifier.padding(top = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Say(if (heading == null || aligned) 28 else 38, FontWeight.Bold, lineHeight = 1.05f)
+                    if (heading != null && !aligned) {
+                        Text(tr(R.string.qibla_sunHint), style = lookText(15.sp), color = look.c.tx2, textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 6.dp, bottom = 4.dp))
                     }
                 }
-                // Qibla pointer, from the centre ring out towards the Kaaba.
-                rotate(bearing.toFloat(), center) {
-                    val w = 4.dp.toPx()
-                    val h = r * 2 * 0.14f
-                    val top = center.y - r * 2 * 0.29f - h / 2
-                    val brush = if (aligned) Brush.verticalGradient(listOf(green.copy(alpha = 0.8f), green.copy(alpha = 0.8f)), top, top + h)
-                    else Brush.verticalGradient(listOf(gold, primary.copy(alpha = 0.1f)), top, top + h)
-                    drawRoundRect(brush, topLeft = Offset(center.x - w / 2, top), size = Size(w, h),
-                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(w / 2, w / 2))
-                }
+                Stats()
+                LookButton(tr(R.string.qibla_checkSun), LookIcons.get("sun"), Modifier.padding(top = 12.dp), onClickLabel = sunLabel, onClick = toSun)
             }
-            listOf("N", "E", "S", "W").forEachIndexed { i, letter ->
-                val a = Math.toRadians(i * 90.0)
-                val rr = size / 2 - 38.dp
-                Text(letter, fontSize = 17.sp, fontWeight = if (i == 0) FontWeight.ExtraBold else FontWeight.SemiBold,
-                    color = if (i == 0) Brand.northOnRing else Color.White,
-                    modifier = Modifier.offset(x = rr * sin(a).toFloat(), y = -rr * cos(a).toFloat()).rotate(heading.toFloat()))
-            }
-            val b = Math.toRadians(bearing)
-            val kr = size * 0.40f
-            Box(
-                Modifier.offset(x = kr * sin(b).toFloat(), y = -kr * cos(b).toFloat()).rotate(heading.toFloat()).size(52.dp)
-                    .then(if (aligned) Modifier.clip(CircleShape).background(green.copy(alpha = 0.25f)).border(2.5.dp, green, CircleShape) else Modifier),
-                contentAlignment = Alignment.Center,
-            ) { KaabaGlyph(Modifier.size(30.dp)) }
-        }
-        // Green trim closes round the navy ring when aligned.
-        if (aligned) Canvas(Modifier.fillMaxSize()) {
-            val r = this.size.minDimension / 2
-            drawCircle(green.copy(alpha = 0.7f), r - 2.5.dp.toPx(), style = Stroke(5.dp.toPx() + 8.dp.toPx()), alpha = 0.18f)
-            drawCircle(green, r - 2.5.dp.toPx(), style = Stroke(5.dp.toPx()))
-        }
-        // Centre: a tick when aligned, otherwise an arrow pointing at the qibla.
-        Box(
-            Modifier.size(size * 0.42f).clip(CircleShape).background(Palette.material)
-                .border(1.dp, if (aligned) green.copy(alpha = 0.5f) else primary.copy(alpha = 0.15f), CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            when {
-                aligned -> Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Icon(Icons.Filled.Check, null, Modifier.size(size * 0.14f), tint = green)
-                    Text(tr(R.string.qibla_aligned), style = Txt.subheadlineSemibold, color = primary)
-                }
-                delta != null -> Icon(Icons.Filled.Navigation, "Points to the qibla", Modifier.size(size * 0.16f).rotate(delta.toFloat()), tint = gold)
-                else -> Icon(Icons.Filled.Navigation, null, Modifier.size(size * 0.09f), tint = primary.copy(alpha = 0.6f))
+            else -> {
+                Title()
+                if (look.gold) Say(17, FontWeight.SemiBold, color = if (aligned) look.green else look.c.accentText, modifier = Modifier.padding(bottom = 6.dp))
+                else Say(19, FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp))
+                Box(Modifier.padding(top = 18.dp)) { if (look.gold) GoldCompass(dial) else BezelCompass(dial) }
+                Stats()
+                LookButton(tr(R.string.qibla_checkSun), LookIcons.get("sun"), Modifier.padding(top = 12.dp), onClickLabel = sunLabel, onClick = toSun)
             }
         }
+        Steps(compass || state.demoAligned || fixedHeading != null, live, sunPath = look.sunPath, bearing = bearing,
+            modifier = Modifier.padding(top = 22.dp).padding(horizontal = if (look.bands) 24.dp else 0.dp))
     }
 }
 
-/** A soft green ring that keeps spreading out from the dial while aligned. */
-@Composable
-private fun Ripple(color: Color, size: Dp) {
-    val t = rememberInfiniteTransition(label = "ripple")
-    val p by t.animateFloat(0f, 1f, infiniteRepeatable(tween(1600, easing = LinearEasing), RepeatMode.Restart), label = "p")
-    Canvas(Modifier.size(size)) {
-        drawCircle(color.copy(alpha = 0.6f * (1 - p)), radius = this.size.minDimension / 2 * (1 + 0.18f * p), style = Stroke(2.dp.toPx()))
-    }
-}
+/** The heading added up without wrapping (the web keeps this in a ref, not in state). */
+private class HeadingSum { var heading = 0.0; var last: Double? = null }
 
+/** How to use it, step by step, plus a calibration note only when needed. */
 @Composable
-private fun Stats(place: Place, bearing: Double, heading: Double?) {
-    val km = NumberFormat.getIntegerInstance(Locale.US).format(Geo.distanceKm(place.coordinates, Geo.kaaba).roundToInt())
-    GlassCard(padding = 14.dp) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Stat("${bearing.roundToInt()}° ${Geo.compassPoint(bearing)}", "Qibla", Modifier.weight(1f))
-            Box(Modifier.size(1.dp, 34.dp).background(Palette.primary.copy(alpha = 0.3f)))
-            Stat(heading?.let { "${Astro.fix(it, 360.0).roundToInt() % 360}° ${Geo.compassPoint(it)}" } ?: "-", "You're facing", Modifier.weight(1f))
-            Box(Modifier.size(1.dp, 34.dp).background(Palette.primary.copy(alpha = 0.3f)))
-            Stat("$km km", "To Makkah", Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-private fun Stat(value: String, label: String, modifier: Modifier) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
-        Text(label.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp, color = Palette.primary.copy(alpha = 0.6f))
-        Text(value, style = display(18.sp), color = Palette.primary, maxLines = 1)
-    }
-}
-
-/** How to use it, step by step - plus a calibration note only when needed. */
-@Composable
-private fun Steps(hasCompass: Boolean, heading: Heading?) {
-    GlassCard {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(tr(R.string.qibla_howTo), style = Txt.headline, color = Palette.primary)
-            if (!hasCompass) {
-                Step(null, Icons.Filled.Map, "This phone has no compass. Use the qibla bearing above with a map, or the sun in Falak.")
-            } else {
-                Step("1", null, "Hold your phone flat in front of you, screen facing up.")
-                Step("2", null, "Turn your whole body slowly until the Ka'bah reaches the marker at the top.")
-                Step("3", null, "When the dial turns green and your phone taps, you're facing the qibla.")
-                if (heading != null && (heading.unreliable || heading.accuracy > 25)) {
-                    Step(null, Icons.Filled.Warning,
-                        "The compass needs calibrating: wave your phone in a figure-8 a few times, away from cars, laptops and magnetic cases.",
-                        Color(0xFFFF9F0A))
-                }
+private fun Steps(hasCompass: Boolean, heading: Heading?, sunPath: Boolean, bearing: Double, modifier: Modifier) {
+    val look = LocalLook.current
+    Column(modifier.fillMaxWidth().lookCard(look).padding(16.dp)) {
+        Text(tr(R.string.qibla_howTo), style = lookText(17.sp, FontWeight.SemiBold), color = look.c.tx,
+            modifier = Modifier.padding(bottom = 12.dp).semantics { markHeading() })
+        if (!hasCompass) {
+            Step(icon = LookIcons.get("map"), tint = look.c.accentText,
+                text = tr(R.string.qibla_noCompass) + " " + tr(R.string.qibla_noCompassHelp, "deg" to bearing.roundToInt(), "point" to Geo.compassPoint(bearing)))
+        } else {
+            Step(1, text = tr(R.string.qibla_step1))
+            Step(2, text = tr(if (sunPath) R.string.qibla_sunStep2 else R.string.qibla_step2))
+            Step(3, text = tr(if (sunPath) R.string.qibla_sunStep3 else R.string.qibla_step3))
+            if (heading != null && (heading.unreliable || heading.accuracy > 25)) {
+                Step(icon = LookIcons.get("warn"), tint = Color(0xFFFF9F0A), text = tr(R.string.qibla_calibrate))
             }
         }
     }
 }
 
 @Composable
-private fun Step(number: String?, icon: androidx.compose.ui.graphics.vector.ImageVector?, text: String, tint: Color = Palette.gold) {
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Box(Modifier.size(22.dp), contentAlignment = Alignment.Center) {
-            if (number != null) {
-                Box(Modifier.size(20.dp).clip(CircleShape).background(tint), contentAlignment = Alignment.Center) {
-                    Text(number, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black.copy(alpha = 0.8f), textAlign = TextAlign.Center)
+private fun ColumnScope.Step(n: Int? = null, icon: ImageVector? = null, tint: Color = Color.Unspecified, text: String) {
+    val look = LocalLook.current
+    Row(Modifier.padding(bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Box(Modifier.size(22.dp).padding(top = 1.dp), contentAlignment = Alignment.TopCenter) {
+            if (n != null) {
+                Box(Modifier.size(19.dp).clip(CircleShape).background(look.c.accent), contentAlignment = Alignment.Center) {
+                    Text("$n", style = lookText(12.sp, FontWeight.ExtraBold, 1f), color = look.c.onButton)
                 }
             } else if (icon != null) {
                 Icon(icon, null, Modifier.size(20.dp), tint = tint)
             }
         }
-        Text(text, style = Txt.subheadline, color = Palette.primary, modifier = Modifier.weight(1f))
+        Text(text, style = lookText(15.sp), color = look.c.tx2, modifier = Modifier.weight(1f))
     }
 }
-
