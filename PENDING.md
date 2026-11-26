@@ -47,6 +47,7 @@ and where it's heading is in [docs/website/roadmap.md](docs/website/roadmap.md).
 - [ ] Mac, Apple Watch, Wear OS, Windows and TV apps, one by one after the phones launch (plan agreed 20 November).
 - [ ] Time Sensitive alerts in the app (after the Apple setting is on): add the capability and a fresh signing profile.
 - [ ] Retake store screenshots in Malay and Indonesian once the whole app is translated.
+- [ ] **iPhone app in Malay and Indonesian (issue 85)** - the word list is in the iPhone code (#196). Next, after the Settings redesign lands: switch each screen to it, starting with Settings, and add the App language choice (English, Bahasa Melayu, Bahasa Indonesia).
 - [ ] Badal Haji season wording on the Prayer screen (after the dates arrive), and Badal.my for Malaysian users (when that site is ready).
 - [ ] Hari Raya Aidilfitri 1448 prayer sessions: when MUIS posts its list (about early March 2027), type it into `data/eid-sg.json`. Include the non-masjid venues MUIS lists (fields, halls, about 48 of 117 in 2026) with their own lat and lng, since the app matches by spot. Also recheck `data/friday-sg.json` against the MUIS Friday prayers page.
 - [ ] Masjid screen pilot with two or three masjids in Singapore.
