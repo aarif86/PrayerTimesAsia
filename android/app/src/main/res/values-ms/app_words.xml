@@ -237,6 +237,7 @@
     <string name="falak_slideSun" formatted="false">Luncurkan matahari</string>
     <string name="falak_east" formatted="false">Timur</string>
     <string name="falak_west" formatted="false">Barat</string>
+    <string name="falak_shadowLabel" formatted="false">Bayang</string>
     <string name="falak_stageNight" formatted="false">Malam</string>
     <string name="falak_stageNightSay" formatted="false">Langit masih gelap. Waktu {name} belum masuk.</string>
     <string name="falak_stageFajrSay" formatted="false">Cahaya putih melebar di ufuk timur. Waktu {name} sudah masuk.</string>

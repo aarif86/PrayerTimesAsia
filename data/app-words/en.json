@@ -235,6 +235,7 @@
   "falak.slideSun": "Slide the sun",
   "falak.east": "East",
   "falak.west": "West",
+  "falak.shadowLabel": "Shadow",
   "falak.stageNight": "Night",
   "falak.stageNightSay": "The sky is dark. {name} has not come yet.",
   "falak.stageFajrSay": "A white line spreads along the eastern sky. {name} has begun.",
