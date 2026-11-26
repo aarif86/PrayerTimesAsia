@@ -317,6 +317,7 @@ internal fun StreetMap(
 ) {
     val look = com.prayertimesasia.app.ui.theme.LocalLook.current
     val context = LocalContext.current
+    val whereLabel = com.prayertimesasia.app.ui.components.tr(com.prayertimesasia.app.R.string.phone_showWhereIAm)
     LaunchedEffect(Unit) { OsmTiles.attach(context); OsmTiles.retryFailed() }
     val density = LocalDensity.current.density
     val dark = LocalSkyScheme.current.dark
@@ -542,11 +543,11 @@ internal fun StreetMap(
 
         if (selected == null) {
             Box(Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = bottomInset + 22.dp).size(48.dp).clip(CircleShape)
-                .clickable(onClickLabel = "Show where I am") { camera.show(center, spanFor(mode), animate = true) }
-                .semantics { contentDescription = "Show where I am" },
+                .clickable(onClickLabel = whereLabel) { camera.show(center, spanFor(mode), animate = true) }
+                .semantics { contentDescription = whereLabel },
                 contentAlignment = Alignment.Center) {
                 Box(Modifier.size(44.dp).clip(CircleShape).background(material), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Filled.NearMe, "Show where I am", Modifier.size(22.dp), tint = you)
+                    Icon(Icons.Filled.NearMe, whereLabel, Modifier.size(22.dp), tint = you)
                 }
             }
         }

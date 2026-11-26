@@ -275,7 +275,8 @@ private fun SettingsMain(state: AppState, listState: LazyListState, go: (String)
 private fun SettingsAppCard(version: String, onClick: () -> Unit) {
     val look = LocalLook.current
     val c = look.c
-    val a11y = Modifier.semantics(mergeDescendants = true) { contentDescription = "Prayer Times Asia, version $version. Sources and credits"; role = Role.Button }
+    val aboutLabel = tr(R.string.settings_aboutVersion, "v" to version)
+    val a11y = Modifier.semantics(mergeDescendants = true) { contentDescription = aboutLabel; role = Role.Button }
     if (look.centre) {
         AppCard(version, onClick, Modifier.padding(start = Dims.gutter, end = Dims.gutter, top = 10.dp, bottom = 6.dp))
         return

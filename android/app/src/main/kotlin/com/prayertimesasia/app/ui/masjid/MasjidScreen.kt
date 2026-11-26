@@ -431,7 +431,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                     }
                     Column(Modifier.padding(horizontal = Dims.gutter)) {
                         if (more > 0) Text(trCount(R.string.masjid_moreOnMap, R.string.masjid_moreOnMap_one, more), fontSize = 14.sp, color = c.tx2,
-                            modifier = Modifier.padding(top = 12.dp, start = 2.dp, end = 2.dp).clickable(onClickLabel = "Show them all on the map") {
+                            modifier = Modifier.padding(top = 12.dp, start = 2.dp, end = 2.dp).clickable {
                                 pinned = null
                                 camera.fit(visible.map { it.coordinates } + listOfNotNull(here))
                             })
