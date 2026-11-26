@@ -137,9 +137,9 @@ fun StyleButton(state: AppState, background: Color = Palette.primary.copy(alpha 
                     onLongClickLabel = "Choose a style",
                     onLongClick = { menu = true },
                     onClick = {
-                        val all = TodayStyle.entries
+                        val all = TodayStyle.looks
                         haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        state.update { it.copy(todayStyle = all[(all.indexOf(it.todayStyle) + 1) % all.size]) }
+                        state.update { it.copy(todayStyle = all[(all.indexOf(it.todayStyle.look) + 1) % all.size]) }
                     },
                 )
                 .semantics { contentDescription = "Prayer screen style: ${state.prefs.todayStyle.label}" },
@@ -150,10 +150,10 @@ fun StyleButton(state: AppState, background: Color = Palette.primary.copy(alpha 
             }
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            TodayStyle.entries.forEach { style ->
+            TodayStyle.looks.forEach { style ->
                 DropdownMenuItem(
                     text = { Text(style.label) },
-                    trailingIcon = { if (style == state.prefs.todayStyle) Icon(Icons.Filled.Check, null) },
+                    trailingIcon = { if (style == state.prefs.todayStyle.look) Icon(Icons.Filled.Check, null) },
                     onClick = { menu = false; state.update { it.copy(todayStyle = style) } },
                 )
             }

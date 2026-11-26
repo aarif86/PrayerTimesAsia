@@ -74,6 +74,46 @@ object AppIcons {
             .build()
     }
 
+    /**
+     * A line icon from SVG path data, drawn like the web app's icons: round ends, [width] stroke.
+     * [fill] adds the web's soft fill (currentColor at 18%) used for the current tab.
+     * Use [circle] for SVG circles. The tab icons below are Lucide's (ISC licence), as on the web.
+     */
+    fun line(name: String, vararg d: String, width: Float = 1.75f, fill: Boolean = false): ImageVector {
+        val b = ImageVector.Builder(name, 24.dp, 24.dp, 24f, 24f)
+        d.forEach {
+            b.addPath(addPathNodes(it), fill = if (fill) SolidColor(Color.Black.copy(alpha = 0.18f)) else null,
+                stroke = SolidColor(Color.Black), strokeLineWidth = width,
+                strokeLineCap = StrokeCap.Round, strokeLineJoin = StrokeJoin.Round)
+        }
+        return b.build()
+    }
+
+    fun circlePath(cx: Float, cy: Float, r: Float): String = circle(cx, cy, r)
+
+    private val tabPaths: Map<String, Array<String>> = mapOf(
+        "prayer" to arrayOf(circle(12f, 12f, 10f), "M12 6v6l4 2"),
+        "qibla" to arrayOf(circle(12f, 12f, 10f), "m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"),
+        "falak" to arrayOf(circle(12f, 12f, 4f), "M12 2v2", "M12 20v2", "m4.93 4.93 1.41 1.41", "m17.66 17.66 1.41 1.41",
+            "M2 12h2", "M20 12h2", "m6.34 17.66-1.41 1.41", "m19.07 4.93-1.41 1.41"),
+        "masjid" to arrayOf("M6.2 13.2C6.2 9.6 9 7.8 12 5.8c3 2 5.8 3.8 5.8 7.4", "M12 5.8V3.4", "M4.8 13.2h14.4v7.3H4.8z",
+            "M10.4 20.5v-2.9a1.6 1.6 0 0 1 3.2 0v2.9", "M2.8 20.5h18.4"),
+        "settings" to arrayOf("M10 5H3", "M12 19H3", "M14 3v4", "M16 17v4", "M21 12h-9", "M21 19h-5", "M21 5h-7", "M8 10v4", "M8 12H3"),
+    )
+    private val tabCache = HashMap<String, ImageVector>()
+
+    /** The web app's tab bar icons: clock, compass, sun, masjid, sliders. */
+    fun tab(key: String, selected: Boolean): ImageVector = tabCache.getOrPut("$key-$selected") {
+        val v = line("tab-$key", *tabPaths.getValue(key), width = if (key == "masjid") 1.6f else 1.75f, fill = selected)
+        if (key != "masjid") v else ImageVector.Builder("tab-masjid-dot", 24.dp, 24.dp, 24f, 24f).apply {
+            tabPaths.getValue(key).forEach {
+                addPath(addPathNodes(it), fill = if (selected) SolidColor(Color.Black.copy(alpha = 0.18f)) else null,
+                    stroke = SolidColor(Color.Black), strokeLineWidth = 1.6f, strokeLineCap = StrokeCap.Round, strokeLineJoin = StrokeJoin.Round)
+            }
+            addPath(addPathNodes(circle(12f, 2.6f, 0.5f)), fill = SolidColor(Color.Black))
+        }.build()
+    }
+
     /** Google's own Material "luggage" icon, so it reads as travel and never as Airplane Mode. */
     val journey: ImageVector get() = Icons.Filled.Luggage
 }

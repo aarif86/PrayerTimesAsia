@@ -332,7 +332,7 @@ private fun TimetableBody(context: Context, m: WidgetModel, size: DpSize) {
             TimesGrid(m, GlanceModifier.defaultWeight())
         }
         // The Day Dial centred at the top, the day and the list below. Needs a tall widget, else it is the Side Dial.
-        TodayStyle.CENTRE -> if (!tall) {
+        TodayStyle.CENTRE, TodayStyle.GOLD -> if (!tall) {
             Column(base.then(sky).padding(14.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) { DialBadge(context, m, 110); Spacer(GlanceModifier.width(12.dp)); PlaceBlock(m) }
                 Spacer(GlanceModifier.height(8.dp))

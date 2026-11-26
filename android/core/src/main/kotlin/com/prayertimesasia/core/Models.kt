@@ -213,7 +213,15 @@ enum class TodayStyle {
     /** Each prayer a full-width band of colour, like the classic Singapore timetable. */
     @SerialName("bands") BANDS,
     /** Big and Simple: the prayer now, the time left, and five big rows. For older eyes. */
-    @SerialName("simple") SIMPLE;
+    @SerialName("simple") SIMPLE,
+    /** Calm Gold: flat navy or warm white, one gold accent, on every tab. */
+    @SerialName("gold") GOLD;
+
+    /**
+     * The look this choice shows. Side Dial and Day Dial were retired with the new looks
+     * (as on the web), so anyone still on them sees Centre Dial.
+     */
+    val look: TodayStyle get() = if (this == LIST || this == DIAL) CENTRE else this
 
     val label: String
         get() = when (this) {
@@ -223,7 +231,13 @@ enum class TodayStyle {
             SUN_PATH -> "Sun Path"
             BANDS -> "Colour Bands"
             SIMPLE -> "Big and Simple"
+            GOLD -> "Calm Gold"
         }
+
+    companion object {
+        /** The five looks people can choose, in the web app's order. */
+        val looks: List<TodayStyle> = listOf(CENTRE, SUN_PATH, BANDS, SIMPLE, GOLD)
+    }
 }
 
 /**
@@ -421,6 +435,7 @@ data class Preferences(
 
         /** Times of day must be real ones and the Jumaat reminder one of the choices. */
         private fun Preferences.sane(): Preferences = copy(
+            todayStyle = todayStyle.look,
             quietFrom = quietFrom.takeIf { it in 0 until 1440 } ?: 23 * 60,
             quietTo = quietTo.takeIf { it in 0 until 1440 } ?: 6 * 60,
             jumuahReminderMinutes = JumuahLeave.snap(jumuahReminderMinutes),

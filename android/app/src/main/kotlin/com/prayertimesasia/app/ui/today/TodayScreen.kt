@@ -1,5 +1,7 @@
 package com.prayertimesasia.app.ui.today
 
+import com.prayertimesasia.app.ui.theme.LocalLook
+
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.app.ui.components.HadithView
 import androidx.compose.animation.AnimatedVisibility
@@ -136,18 +138,18 @@ fun TodayScreen(state: AppState, openPlaces: () -> Unit, openCalendar: () -> Uni
     )
     val setOffset: (Int) -> Unit = { offset = it }
     StarBoxAsker(state, f.current?.second, f.next?.second)
-    val style = state.prefs.todayStyle
+    val style = state.prefs.todayStyle.look
+    val backdrop = LocalLook.current.backdrop
 
     Box(Modifier.fillMaxSize()) {
-        if (style == TodayStyle.BANDS) {
-            Box(Modifier.fillMaxSize().background(BandsPalette.header))
+        if (backdrop != null) {
+            Box(Modifier.fillMaxSize().background(backdrop))
         } else {
             LivingSkyBackground(SkyColors.at(now, day))
         }
         when (style) {
-            TodayStyle.LIST -> ClassicPage(f, setOffset, openPlaces, openCalendar, openSanad)
-            TodayStyle.CENTRE -> CentrePage(f, setOffset, openPlaces, openCalendar, openSanad)
-            TodayStyle.DIAL -> DialPage(f, setOffset, openPlaces, openCalendar, openSanad)
+            TodayStyle.LIST, TodayStyle.DIAL, TodayStyle.CENTRE -> CentrePage(f, setOffset, openPlaces, openCalendar, openSanad)
+            TodayStyle.GOLD -> CentrePage(f, setOffset, openPlaces, openCalendar, openSanad)
             TodayStyle.SUN_PATH -> SunPathPage(f, setOffset, openPlaces, openCalendar, openSanad)
             TodayStyle.BANDS -> BandsPage(f, setOffset, openPlaces, openCalendar, openSanad)
             TodayStyle.SIMPLE -> SimplePage(state, day, f.current, f.next, openPlaces)

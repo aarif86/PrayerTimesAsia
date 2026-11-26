@@ -353,10 +353,10 @@ private fun AccuracyPage() {
 private fun LookPage(state: AppState) {
     val p = state.prefs
     Section(tr(R.string.settings_prayerScreen)) {
-        TodayStyle.entries.forEach { s ->
+        TodayStyle.looks.forEach { s ->
             RowShell({ state.update { it.copy(todayStyle = s) } }) {
                 Text(s.label, style = Txt.body, color = Palette.primary, modifier = Modifier.weight(1f))
-                RadioButton(p.todayStyle == s, { state.update { it.copy(todayStyle = s) } }, colors = RadioButtonDefaults.colors(selectedColor = Palette.accent))
+                RadioButton(p.todayStyle.look == s, { state.update { it.copy(todayStyle = s) } }, colors = RadioButtonDefaults.colors(selectedColor = Palette.accent))
             }
         }
     }
