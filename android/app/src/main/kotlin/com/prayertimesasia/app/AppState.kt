@@ -13,6 +13,8 @@ import com.prayertimesasia.app.data.PrefsStore
 import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
+import com.prayertimesasia.core.withNotifyAllFive
+import com.prayertimesasia.core.withAllFive
 import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.Coordinates
@@ -104,6 +106,8 @@ class AppState(
     var permissions: Permissions? = null
     /** Screenshots: pretend the phone faces the qibla. */
     var demoAligned = false
+    /** Screenshots: a Ramadan preview without the testers' PREVIEW tag (store pictures). */
+    var demoMode = false
     /** Screenshots: show the Google Play review button before the app is live. */
     var demoShowsStores = false
 
@@ -138,6 +142,8 @@ class AppState(
         if (new == old) return
         prefs = new
         preferencesChanged(old)
+        // Picked a city by hand: no location question is waiting, so ask about alerts right away. GPS users are asked when the app comes back from that question.
+        if (!old.hasOnboarded && new.hasOnboarded && !new.useGPS) askNotificationsOnce()
     }
 
     private fun preferencesChanged(old: Preferences) {
@@ -331,6 +337,24 @@ class AppState(
         }
     }
 
+    /** "Notify me for all 5 prayers": every prayer that is Off goes to Notify; one on Alarm stays on Alarm. */
+    fun notifyAllFive() {
+        update { it.withNotifyAllFive() }
+        scope.launch { permissions?.notifications() }
+    }
+
+    /**
+     * New installs have alerts on, so ask the phone once, after the welcome screen, if it may show them.
+     * The answer is the phone's; the choice stays and "Check my phone" explains how to change it.
+     */
+    private fun askNotificationsOnce() {
+        if (!sideEffects || !prefs.hasOnboarded || !prefs.notificationsEnabled) return
+        val install = context.getSharedPreferences("install", Context.MODE_PRIVATE)
+        if (install.getBoolean("notificationsAsked", false)) return
+        install.edit().putBoolean("notificationsAsked", true).apply()
+        scope.launch { if (permissions?.notifications() == true) rescheduleAlerts() }
+    }
+
     /** "Reminder before prayer": asks for notification permission, then rings [minutes] before each chosen prayer. */
     fun enableReminder(minutes: Int = AlarmScheduler.DEFAULT_REMINDER_MINUTES) {
         scope.launch {
@@ -339,6 +363,17 @@ class AppState(
             update { it.copy(reminderMinutesBefore = minutes) }
         }
     }
+
+    /** "Remind me when I am out": asks for notification permission first, then turns it on or off. */
+    fun setAwayReminder(on: Boolean) {
+        scope.launch {
+            if (on && permissions?.notifications() == false) return@launch
+            update { it.copy(awayReminder = on) }
+        }
+    }
+
+    fun setAwayMinutes(prayer: com.prayertimesasia.core.Prayer, minutes: Int) =
+        update { it.copy(awayMinutes = it.awayMinutes + (prayer.raw to minutes)) }
 
     /** The Subuh alarm: asks for notification permission first (the alarm rings as one). */
     fun setWakeUp(timing: com.prayertimesasia.core.WakeUpTiming) {
@@ -423,6 +458,35 @@ class AppState(
         }
     }
 
+    /**
+     * "Send a test alert": a sample alert about 3 seconds later, the way a real one arrives, with the
+     * azan when that sound is on. False when the phone will not show alerts (the page says so).
+     */
+    suspend fun sendTestAlert(title: String, body: String): Boolean {
+        if (permissions?.notifications() == false) return false
+        if (!com.prayertimesasia.app.alarms.Notifications.canPost(context)) return false
+        scope.launch {
+            delay(3000)
+            val quiet = prefs.buzzOnly
+            val sound = if (prefs.azanSound && !quiet && com.prayertimesasia.app.alarms.Azan.isAvailable(context)) AlarmScheduler.Sound.AZAN else AlarmScheduler.Sound.STANDARD
+            com.prayertimesasia.app.alarms.Notifications.post(context, "test", title, body, AlarmScheduler.Kind.PRAYER, sound, silent = quiet)
+        }
+        return true
+    }
+
+    /** "Set for all prayers": one level for the five prayers, and an optional early reminder. Asks for permission when something turns on. */
+    fun setAllFive(level: com.prayertimesasia.core.AllLevel, early: Int?, includeFajr: Boolean) {
+        if (level == com.prayertimesasia.core.AllLevel.OFF) {
+            stopRinging()
+            update { it.withAllFive(level, early, includeFajr) }
+            return
+        }
+        scope.launch {
+            permissions?.notifications()
+            update { it.withAllFive(level, early, includeFajr) }
+        }
+    }
+
     /** The bell on the Prayer screen: Off, then Notify, then Alarm. */
     fun cycleAlert(prayer: Prayer) = setAlertMode(prayer, prefs.nextAlertMode(prayer))
 
@@ -472,6 +536,7 @@ class AppState(
             rescheduleAlerts()
         }
         rescheduleAlerts()
+        askNotificationsOnce()
         countOpen()
         countOpenDay()
     }

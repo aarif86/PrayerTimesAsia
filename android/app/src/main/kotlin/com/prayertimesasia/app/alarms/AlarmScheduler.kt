@@ -1,6 +1,8 @@
 package com.prayertimesasia.app.alarms
 
+import com.prayertimesasia.core.AwayReminder
 import com.prayertimesasia.core.RamadanContent
+import com.prayertimesasia.core.hasAlarm
 import com.prayertimesasia.core.AlertLines
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.core.JumuahLeave
@@ -79,18 +81,23 @@ object AlarmScheduler {
                     j.second, r.formatted(j.at), j.where)
                 out += Alert("$key-jumuah", title, body, at, Kind.JUMUAH, silent = r.isSilent(at, Prayer.DHUHR))
             }
-            val early = p.reminderMinutesBefore
-            if (p.notificationsEnabled || early > 0) {
+            val atHome = p.reminderMinutesBefore
+            val away = AwayReminder.isAway(p.home, p.homeConfirmed, place)
+            val anyEarly = atHome > 0 || (away && p.awayReminder && p.awayMinutes.values.any { it > 0 })
+            if (p.notificationsEnabled || anyEarly) {
                 for (prayer in Prayer.all.filter { it in p.notifyPrayers }) {
                     val time = day.time(prayer)
                     val name = r.prayerName(prayer, time)
                     val id = "$key-${prayer.raw}"
+                    // One early reminder per prayer: the away choice when away from home, else the at-home choice.
+                    val early = AwayReminder.minutes(prayer, away, p.awayReminder, p.awayMinutes, atHome, p.hasAlarm(prayer))
                     if (early > 0) {
                         // The heads-up before the prayer, on its own switch: for when a
                         // meeting or work would otherwise run past the time.
-                        val title = if (prayer == Prayer.SUNRISE) "${Prayer.FAJR.name(r.naming)} ends in $early min" else "$name in $early min"
+                        val title = if (prayer == Prayer.SUNRISE) "${Prayer.FAJR.name(r.naming)} ends in $early min" else if (early == 60) "$name in 1 hour" else "$name in $early min"
                         val at = time.minusSeconds(early * 60L)
-                        out += Alert("$id-early", title, "$name at ${r.formatted(time)}", at, Kind.EARLY, silent = r.isSilent(at, prayer))
+                        val body = if (away && p.awayReminder && prayer != Prayer.SUNRISE) "$name begins at ${r.formatted(time)}. A good time to find a place to pray." else "$name at ${r.formatted(time)}"
+                        out += Alert("$id-early", title, body, at, Kind.EARLY, silent = r.isSilent(at, prayer))
                     }
                     if (!p.notificationsEnabled) continue
                     // An alarm at the same minute rings instead, so it doesn't sound twice.

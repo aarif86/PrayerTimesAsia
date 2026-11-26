@@ -55,7 +55,7 @@ export function tr(key: AppWordKey, args?: AppWordArgs): string {
 
 /** Appearance and Prayer screen style names in the current app language. */
 export function appearanceLabel(a: 'system' | 'light' | 'dark'): string { return tr(`appearance.${a}`) }
-export function styleLabel(s: 'list' | 'centre' | 'dial' | 'sunPath' | 'bands' | 'simple'): string { return tr(`style.${s}`) }
+export function styleLabel(s: 'centre' | 'sunPath' | 'bands' | 'simple' | 'gold'): string { return tr(`style.${s}`) }
 
 /**
  * A line with pieces that are not text (an icon, bold words) in its {holes}:

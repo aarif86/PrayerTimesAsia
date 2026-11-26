@@ -9,10 +9,10 @@ No outside ads, no sign up, no tracking, and your exact location stays on your p
 
 - **Web app** live at [prayertimes.asia/app/](https://prayertimes.asia/app/), and the
   masjid display screen at [prayertimes.asia/app/screen/](https://prayertimes.asia/app/screen/).
-- **iPhone** on TestFlight (build 40). The App Store listing is filled in and waits
-  only for Apple to move the developer account to Nasar Pte Ltd.
-- **Android** sent to Google Play review on 17 November, as Nasar Pte Ltd. Testers
-  use the Play internal test. Samsung Galaxy Store follows after Google approves.
+- **iPhone** live on the [App Store](https://apps.apple.com/app/id6825604927) since
+  26 November 2026, as Nasar Pte Ltd (version 1.0).
+- **Android** live on [Google Play](https://play.google.com/store/apps/details?id=com.prayertimesasia.app)
+  as Nasar Pte Ltd. Samsung Galaxy Store is next.
 - **What's new** in every build: [docs/website/changelog.md](docs/website/changelog.md).
   **Where it's heading**: [docs/website/roadmap.md](docs/website/roadmap.md).
 
@@ -35,7 +35,7 @@ alert and alarm (Off, Notify or Alarm for each prayer).
 
 | Folder | What it is | Status |
 |---|---|---|
-| [`ios/`](ios/) | The iPhone app (SwiftUI) with widgets, Live Activity and alarms | On TestFlight, App Store listing ready |
+| [`ios/`](ios/) | The iPhone app (SwiftUI) with widgets, Live Activity and alarms | Live on the App Store |
 | [`android/`](android/) | The Android app (Kotlin + Jetpack Compose) with widgets and alarms | In Google Play review |
 | [`web/`](web/) | The web app: installable, works offline | Live at prayertimes.asia/app/ |
 | [`site/`](site/) | The website for prayertimes.asia, in 8 languages (English, Malay, Indonesian, Arabic, Urdu, Bangla, Turkish, French) | Live at prayertimes.asia |

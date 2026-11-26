@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """Turn raw app screenshots into captioned store images.
 
-  python3 tools/store_frames.py iphone RAW_DIR OUT_DIR   # App Store 6.9" (1320x2868)
-  python3 tools/store_frames.py ipad   RAW_DIR OUT_DIR   # App Store 13"  (2064x2752)
-  python3 tools/store_frames.py play   RAW_DIR OUT_DIR   # Google Play phone (1080x1920)
-  python3 tools/store_frames.py feature - OUT_DIR        # Play feature graphic (1024x500)
+  python3 tools/store_frames.py iphone RAW_DIR design/store/app-store   # App Store 6.9" (1320x2868)
+  python3 tools/store_frames.py ipad   RAW_DIR design/store/app-store   # App Store 13"  (2064x2752)
+  python3 tools/store_frames.py play   RAW_DIR design/store/play        # Google Play phone (1080x2160)
+  python3 tools/store_frames.py feature - design/store/play             # Play feature graphic (1024x500)
+
+Each run writes an en/, ms/ and id/ folder (one per listing language).
 
 Raw iPhone/iPad shots come from the store-screenshots-raw branch (workflow
 "Store screenshots"); Android ones from the screenshots-android branch.
-Captions match docs/app-store.md and docs/play-store.md. Needs Pillow.
+Captions match docs/store-listings. Needs Pillow.
 """
 import os
 import sys
@@ -23,24 +25,54 @@ ICON = os.path.join(ROOT, "ios/PrayerTimesAsia/Resources/Assets.xcassets/AppIcon
 NIGHT_TOP, NIGHT_BOTTOM = (11, 15, 42), (34, 30, 74)
 GOLD, TEXT = (242, 192, 99), (238, 240, 250)
 
-APPLE = [  # (raw file suffix, caption)
-    ("1-today", "Know when to pray, wherever you land"),
-    ("2-landed", "Switches the moment you arrive"),
-    ("3-journey", "Jamak & qasar, worked out for you"),
-    ("4-qibla", "Face the Kaaba in one glance"),
-    ("5-masjid", "Find a masjid or musollah nearby"),
-    ("6-falak", "Qibla Day and the shadow stick"),
-    ("7-today-day", "A sky that follows the sun"),
+# Captions in English, Malay and Indonesian. Same wording as docs/store-listings.
+# Each row is (iPhone/iPad raw suffix, Android raw file, {lang: caption}).
+# A shot with None for a platform is left out on that platform.
+SHOTS = [
+    ("1-today", "02-today-centre-night.png",
+     {"en": "Know when to pray, wherever you land",
+      "ms": "Tahu waktu solat, di mana sahaja anda berada",
+      "id": "Tahu waktu sholat, di mana pun Anda berada"}),
+    ("2-landed", "06-today-travel-hanoi.png",
+     {"en": "Your times switch the moment you arrive",
+      "ms": "Waktu solat bertukar sebaik sahaja anda tiba",
+      "id": "Jadwal berganti begitu Anda tiba"}),
+    ("3-journey", "11-journey.png",
+     {"en": "Jamak and qasar, worked out for you",
+      "ms": "Jamak dan qasar, dikira untuk anda",
+      "id": "Jamak dan qashar, dihitung untuk Anda"}),
+    ("4-qibla", "07b-qibla-aligned.png",
+     {"en": "Face the Kaaba in one glance",
+      "ms": "Hadap Kaabah dengan sekali pandang",
+      "id": "Menghadap Ka'bah dengan sekali lihat"}),
+    ("5-ramadan", "14-ramadan-berbuka.png",
+     {"en": "Imsak and Berbuka, counted down for you",
+      "ms": "Kiraan detik ke imsak dan berbuka",
+      "id": "Hitung mundur menuju imsak dan buka puasa"}),
+    ("6-wakeup", "10c-wake-up.png",
+     {"en": "Never miss Subuh again",
+      "ms": "Jangan terlepas Subuh lagi",
+      "id": "Jangan sampai terlewat Subuh lagi"}),
+    ("7-masjid", "13b-your-masjid-jamaah-countdown.png",
+     {"en": "Your masjid's jamaah times, right here",
+      "ms": "Waktu jemaah masjid anda, di sini",
+      "id": "Jadwal jamaah masjid Anda, di sini"}),
+    ("8-looks", "03-today-dial-night.png",
+     {"en": "Five looks for your Prayer screen",
+      "ms": "Lima gaya paparan waktu solat",
+      "id": "Lima tampilan layar sholat"}),
+    (None, "12-widget-list.png",
+     {"en": "Your times on the home screen",
+      "ms": "Waktu solat di skrin utama",
+      "id": "Jadwal sholat di layar utama"}),
 ]
-PLAY = [
-    ("02-today-centre-night.png", "Know when to pray, wherever you land"),
-    ("06-today-travel-hanoi.png", "Switches the moment you arrive"),
-    ("11-journey.png", "Jamak & qasar, worked out for you"),
-    ("07b-qibla-aligned.png", "Face the Kaaba in one glance"),
-    ("13b-your-masjid-jamaah-countdown.png", "Find your masjid, see its iqamah"),
-    ("05-today-bands-night.png", "Five looks for your Prayer screen"),
-]
-SIZES = {"iphone": (1320, 2868), "ipad": (2064, 2752), "play": (1080, 1920)}
+LANGS = ("en", "ms", "id")
+FEATURE = {  # Play feature graphic: line 1, line 2, small line
+    "en": ("Prayer times & qibla,", "wherever you land", "Asia first, works worldwide. No outside ads."),
+    "ms": ("Waktu solat & kiblat,", "di mana sahaja anda berada", "Bermula di Asia, untuk seluruh dunia. Tiada iklan luar."),
+    "id": ("Jadwal sholat & kiblat,", "di mana pun Anda berada", "Berawal dari Asia, untuk seluruh dunia. Tanpa iklan luar."),
+}
+SIZES = {"iphone": (1320, 2868), "ipad": (2064, 2752), "play": (1080, 2160)}
 
 
 def sky(w, h):
@@ -100,35 +132,43 @@ def frame(raw_path, caption, size):
     return canvas.convert("RGB")
 
 
-def feature(out_dir):
+def feature(out_dir, lang="en"):
     w, h = 1024, 500
     canvas = sky(w, h).convert("RGBA")
     icon = Image.open(ICON).convert("RGB").resize((300, 300), Image.LANCZOS)
     canvas.alpha_composite(rounded(icon, 66), (70, 100))
     d = ImageDraw.Draw(canvas)
     d.text((420, 150), "Prayer Times Asia", font=ImageFont.truetype(FONT, 64), fill=TEXT)
+    line1, line2, small = FEATURE[lang]
     sub = ImageFont.truetype(FONT_SUB, 34)
-    d.text((422, 245), "Prayer times & qibla,", font=sub, fill=GOLD)
-    d.text((422, 290), "wherever you land in Asia", font=sub, fill=GOLD)
-    d.text((422, 360), "Official MUIS & JAKIM · offline · no ads", font=ImageFont.truetype(FONT_SUB, 24), fill=(169, 178, 214))
+    d.text((422, 245), line1, font=sub, fill=GOLD)
+    d.text((422, 290), line2, font=sub, fill=GOLD)
+    d.text((422, 360), small, font=ImageFont.truetype(FONT_SUB, 22), fill=(169, 178, 214))
     canvas.convert("RGB").save(os.path.join(out_dir, "feature-graphic.png"))
     Image.open(ICON).convert("RGB").resize((512, 512), Image.LANCZOS).save(os.path.join(out_dir, "icon-512.png"))
 
 
 def main():
-    kind, raw_dir, out_dir = sys.argv[1:4]
-    os.makedirs(out_dir, exist_ok=True)
-    if kind == "feature":
-        return feature(out_dir)
-    items = PLAY if kind == "play" else [(f"{kind}-{name}.png", cap) for name, cap in APPLE]
-    for n, (name, caption) in enumerate(items, 1):
-        src = os.path.join(raw_dir, name)
-        if not os.path.exists(src):
-            print(f"skip (missing): {name}")
+    kind, raw_dir, out_root = sys.argv[1:4]
+    for lang in LANGS:
+        out_dir = os.path.join(out_root, lang)
+        os.makedirs(out_dir, exist_ok=True)
+        if kind == "feature":
+            feature(out_dir, lang)
             continue
-        dest = os.path.join(out_dir, f"{'phone' if kind == 'play' else kind}-{n}.png")
-        frame(src, caption, SIZES[kind]).save(dest)
-        print(dest)
+        n = 0
+        for apple, android, captions in SHOTS:
+            name = android if kind == "play" else apple and f"{kind}-{apple}.png"
+            if not name or n == 8:  # Play takes at most 8 phone screenshots
+                continue
+            src = os.path.join(raw_dir, name)
+            if not os.path.exists(src):
+                print(f"skip (missing): {name}")
+                continue
+            n += 1
+            dest = os.path.join(out_dir, f"{'phone' if kind == 'play' else kind}-{n}.png")
+            frame(src, captions[lang], SIZES[kind]).save(dest)
+            print(dest)
 
 
 if __name__ == "__main__":

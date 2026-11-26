@@ -18,9 +18,9 @@ export const BLESSED_SHORT: Record<BlessedTime, string> = {
 
 export const BLESSED_NOTE: Record<BlessedTime, string> = {
   imsak: '10 minutes before Fajr. Finish sahur by now',
-  dhuha: "Sun a spear's length up (about 4½°)",
-  midnight: 'Halfway from Maghrib to Fajr',
-  lastThird: 'Best time for tahajjud and dua',
+  dhuha: 'Optional prayer, 2 rakaat or more',
+  midnight: 'Best to pray Isha before this',
+  lastThird: 'Time for tahajjud',
 }
 
 const roundUp = (ms: number) => Math.ceil(ms / 60_000) * 60_000

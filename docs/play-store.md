@@ -1,6 +1,8 @@
 # Google Play listing - Prayer Times Asia
 
-Copy-paste ready for Play Console. Character limits checked. The App Store
+The text to paste (English, Malay, Indonesian) is in
+[store-listings/](store-listings/README.md). This page keeps the Play Console
+settings, graphics and policy answers. The App Store
 version is in [app-store.md](app-store.md); the build steps are in
 [android/README.md](../android/README.md) → *Google Play releases*.
 
@@ -21,130 +23,21 @@ version is in [app-store.md](app-store.md); the build steps are in
 | Website | https://prayertimes.asia/ |
 | Privacy policy | https://prayertimes.asia/privacy.html |
 
-## Short description (78 / 80)
+## Short and full description
 
-```
-Prayer times & qibla across Asia. Official MUIS & JAKIM times, offline, no ads
-```
-
-## Malay and Indonesian listings (search words)
-
-Google Play has no keyword box: it finds apps by the title, short description
-and full description in each listing language. Add **Malay (ms)** and
-**Indonesian (id)** under Grow → Store presence → Main store listing → Manage
-translations → Add your own translations. Paste the English full description
-for now; these short descriptions carry the local search words.
-
-Malay short description (80 / 80):
-
-```
-Waktu solat & kiblat di Asia. Waktu rasmi MUIS & JAKIM, tanpa iklan, luar talian
-```
-
-Indonesian short description (71 / 80):
-
-```
-Jadwal sholat & kiblat. Waktu resmi Kemenag, tanpa iklan, bisa offline.
-```
-
-## Ramadan search words (draft, not live yet)
-
-Google Play reads the short and full description in each language, and both
-can be changed at any time in Play Console (a listing change is checked by
-Google, usually within a few days). The idea is to swap in the Ramadan short
-descriptions and add the Ramadan part to the full description about three
-weeks before Ramadan 1448 (expected around mid January 2027), then swap back
-after Hari Raya.
-
-This is a draft for the owner to pick. Nothing has been sent to Play Console.
-
-| Language | Now | Ramadan draft |
-|---|---|---|
-| English | Prayer times & qibla across Asia. Official MUIS & JAKIM times, offline, no ads (78 / 80) | Prayer times, imsak & berbuka across Asia. Official MUIS & JAKIM times, no ads (78 / 80) |
-| Malay | Waktu solat & kiblat di Asia. Waktu rasmi MUIS & JAKIM, tanpa iklan, luar talian (80 / 80) | Waktu solat, imsak & berbuka. Waktu rasmi MUIS & JAKIM, tanpa iklan (67 / 80) |
-| Indonesian | Jadwal sholat & kiblat. Waktu resmi Kemenag, tanpa iklan, bisa offline. (71 / 80) | Jadwal sholat & imsakiyah Ramadhan. Waktu resmi Kemenag, tanpa iklan (68 / 80) |
-
-Ramadan part for the full description, pasted right after the first
-paragraph (about 330 characters, so the total stays well under 4,000):
-
-```
-RAMADAN AND SYAWAL
-• Countdown to Imsak and Berbuka on the Prayer screen and the home screen widget
-• Sahur alarm, so you wake in time
-• Tarawih counter for 8 or 20 rakaat
-• Your fasting record, with the days to replace
-• Hari Raya and the six days of Syawal
-• Printable Ramadan timetable for home or the masjid
-```
-
-The Malay and Indonesian lines should be read once by a native speaker
-before they go live.
-
-## Full description (about 1,900 / 4,000)
-
-```
-Prayer times and qibla for Muslims living and travelling across Asia.
-
-Most prayer apps either stop working when you cross a border, or use one global setting for everyone. Prayer Times Asia knows how each country calculates its prayer times, and switches for you the moment you land.
-
-AT HOME, EXACT
-• Singapore: the official MUIS timetable
-• Malaysia: the official JAKIM e-Solat timetable for your zone (found automatically, or pick it yourself)
-• Indonesia: Kemenag's method
-Downloaded once a year and kept on your phone, so it works offline.
-
-ON THE ROAD, READY
-• Vietnam, Thailand, Japan, Korea, India, Türkiye, the Gulf and the rest of Asia, each with its local method, Asr school and prayer names
-• Calculated on your phone: no data roaming needed
-• A welcome card when you arrive tells you what changed
-
-MUSAFIR MADE SIMPLE
-• See how far you are from home and whether you may shorten (qasar) and combine (jamak) your prayers
-• Shafi'i (81 or 89 km, up to 3 days) and Hanafi (78 km, up to 15 days)
-• A log of the countries you've prayed in
-
-QIBLA IN ONE GLANCE
-• A calm compass that lights up and buzzes when you face the Kaaba
-• Bearing and distance to Makkah
-• Falak tools: Qibla Day, rashdul qiblat and the shadow stick
-
-YOUR MASJID
-• Find a masjid or surau nearby (OpenStreetMap)
-• Set your own masjid to see its jamaah times and a countdown to iqamah
-
-A SKY THAT MOVES WITH YOU
-• Five Prayer screen styles, with a background that follows the real sun where you are
-• Home screen widgets: next prayer with a live countdown, and today's timetable
-
-ALSO
-• Prayer alerts on time, early reminders and a Subuh wake-up, even after a restart
-• Jumaat on Fridays, Hijri date with ±2 day adjustment, 24-hour time
-• Move your settings to a new phone with a QR code
-
-PRIVATE BY DESIGN
-No ads. No account. No tracking. Your exact location never leaves your phone. Free, and open source.
-
-WHO MAKES IT
-Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd). It started on a family trip to Vietnam, when none of our prayer apps worked and everyone turned to Ustaz Aarif to ask when to pray. Back home, our parents had the same trouble with apps full of ads that play the azan out loud on the train. So we built one for the people we love, and for you.
-
-Musafir guidance is general information, not a fatwa. When unsure, follow your local religious authority.
-```
+Moved to [store-listings/en.md](store-listings/en.md),
+[ms.md](store-listings/ms.md) and [id.md](store-listings/id.md), including the
+Ramadan swap.
 
 ## Graphics
 
 | Asset | Size | File |
 |---|---|---|
-| App icon | 512 × 512 PNG | `design/store/play/icon-512.png` |
-| Feature graphic | 1024 × 500 PNG | `design/store/play/feature-graphic.png` |
-| Phone screenshots (2 to 8) | 1080 × 1920 | `design/store/play/phone-*.png` |
+| App icon | 512 × 512 PNG | `design/store/play/en/icon-512.png` |
+| Feature graphic | 1024 × 500 PNG | `design/store/play/<en|ms|id>/feature-graphic.png` |
+| Phone screenshots (up to 8) | 1080 × 2160 | `design/store/play/<en|ms|id>/phone-*.png` |
 
-Captions on the screenshots, in order:
-1. "Know when to pray, wherever you land"
-2. "Switches the moment you arrive"
-3. "Jamak & qasar, worked out for you"
-4. "Face the Kaaba in one glance"
-5. "Find your masjid, see its iqamah"
-6. "Five looks for your Prayer screen"
+The same files work for the Samsung Galaxy Store.
 
 ## App content (Policy → App content)
 

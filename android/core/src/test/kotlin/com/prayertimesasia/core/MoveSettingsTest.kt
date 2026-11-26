@@ -43,6 +43,15 @@ class MoveSettingsTest {
         assertNull(MovedSettings.fromCode("hello"))
     }
 
+    @Test fun alertsOffTravelWithTheCode() {
+        val code = MovedSettings.from(Preferences(notificationsEnabled = false))
+        assertEquals(false, code.notificationsEnabled)
+        assertFalse(code.appliedTo(Preferences()).notificationsEnabled)
+        // A code that says nothing leaves this phone's choice as it is.
+        assertFalse(MovedSettings().appliedTo(Preferences(notificationsEnabled = false)).notificationsEnabled)
+        assertTrue(MovedSettings().appliedTo(Preferences()).notificationsEnabled)
+    }
+
     @Test fun roundTrip() {
         val moved = cases[1].settings
         val prefs = moved.appliedTo(Preferences())

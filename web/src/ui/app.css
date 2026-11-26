@@ -41,6 +41,7 @@
   /* Gold for words, not just shapes: strong enough to read (WCAG AA) on this theme. */
   --gold-text: rgb(255, 214, 128);
   --green: rgb(48, 209, 88);
+  --green-solid: rgb(21, 115, 52); /* white text on it is 5.9:1, WCAG AA */
   --grade-d: rgba(255, 255, 255, 0.75);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   color-scheme: dark;
@@ -137,9 +138,9 @@ input, select, textarea { font: inherit; color: inherit; }
 .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px;
   background: var(--fill); border: 1px solid var(--stroke); white-space: nowrap; }
 .chip svg { width: 15px; height: 15px; }
-.capsule-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; background: var(--fill);
-  font-size: 13px; font-weight: 700; letter-spacing: 0.6px; white-space: nowrap; }
-.capsule-btn svg { width: 14px; height: 14px; }
+.capsule-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 44px; padding: 0 8px; background: none;
+  font-size: 15px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+.capsule-btn svg { width: 16px; height: 16px; }
 .display { font-family: var(--font-display); }
 .secondary { color: var(--fg2); }
 .accent { color: var(--accent); }
@@ -289,7 +290,7 @@ input, select, textarea { font: inherit; color: inherit; }
   -webkit-mask: radial-gradient(circle, transparent 15px, #000 15.5px); mask: radial-gradient(circle, transparent 15px, #000 15.5px);
 }
 .tracker-day > * { position: relative; }
-.tracker-day.full { background: var(--green); color: #fff; font-weight: 600; }
+.tracker-day.full { background: var(--green-solid); color: #fff; font-weight: 600; }
 .tracker-day.excused:not(.full) { background: color-mix(in srgb, #e06c8a 28%, transparent); color: #e06c8a; }
 .tracker-day.full::before, .tracker-day.excused::before, .tracker-day.future::before { display: none; }
 .tracker-day.future { opacity: 0.35; }
@@ -387,3 +388,14 @@ input, select, textarea { font: inherit; color: inherit; }
 .alert-big b { display: block; font-size: 28px; line-height: 1.1; }
 .alert-big .sub { display: block; font-size: 13px; color: var(--fg2); margin-top: 2px; }
 .alert-big > svg { flex: none; }
+
+/* The tiny time a prayer was ticked, after the tick. */
+.prayed-time { font-size: 12px; font-weight: 600; opacity: 0.75; margin-left: 4px; white-space: nowrap; align-self: center; }
+
+.all-five-btn { width: 100%; text-align: start; display: flex; align-items: center; gap: 12px; }
+.all-five-btn .label { flex: 1; font-weight: 700; }
+.all-five-btn:disabled { opacity: 1; cursor: default; }
+.all-five-btn:disabled .label { font-weight: 600; }
+.test-card { display: block; padding: 14px 16px; margin-bottom: 18px; }
+.test-card .sub { display: block; font-size: 13px; color: var(--fg2); margin-top: 4px; }
+.test-card-btn { border: 0; cursor: pointer; min-height: 44px; font-family: inherit; }

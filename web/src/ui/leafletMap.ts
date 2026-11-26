@@ -53,14 +53,14 @@ export function distanceRings(c: Coordinates, rings: { km: number; label: string
   return group
 }
 
-const MASJID_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z" fill="currentColor" stroke="none"/></svg>'
+const MASJID_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.2 13.2C6.2 9.6 9 7.8 12 5.8c3 2 5.8 3.8 5.8 7.4"/><path d="M12 5.8V3.4"/><path d="M4.8 13.2h14.4v7.3H4.8z"/><path d="M10.4 20.5v-2.9a1.6 1.6 0 0 1 3.2 0v2.9"/><path d="M2.8 20.5h18.4"/></svg>'
 const HOUSE_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3 2.5 11h2.7v9h5.3v-5.5h3V20h5.3v-9h2.7z"/></svg>'
 
-export function spaceMarker(c: Coordinates, musollah: boolean, title: string): L.Marker {
+export function spaceMarker(c: Coordinates, musollah: boolean, title: string, k = 0): L.Marker {
   return L.marker([c.latitude, c.longitude], {
     title,
     icon: L.divIcon({
-      className: `space-pin ${musollah ? 'musollah' : 'masjid'}`,
+      className: `space-pin ${musollah ? 'musollah' : 'masjid'} pk${k % 6}`,
       html: `<span>${musollah ? HOUSE_SVG : MASJID_SVG}</span>`, iconSize: [30, 30], iconAnchor: [15, 15],
     }),
   })

@@ -29,7 +29,7 @@ describe('phone apps on offer', () => {
   })
 
   it('prefers the store, then the test version', () => {
-    const beta = withApps((a) => { a.ios.testFlightUrl = 'https://testflight.apple.com/join/abc'; a.android.onGooglePlay = false; a.android.apkUrl = 'https://example.org/app.apk' })
+    const beta = withApps((a) => { a.ios.appStoreId = ''; a.ios.testFlightUrl = 'https://testflight.apple.com/join/abc'; a.android.onGooglePlay = false; a.android.apkUrl = 'https://example.org/app.apk' })
     expect(appOffer('ios', beta)).toMatchObject({ kind: 'beta', href: 'https://testflight.apple.com/join/abc' })
     expect(appOffer('android', beta)).toMatchObject({ kind: 'beta', href: 'https://example.org/app.apk' })
     const live = withApps((a) => { a.ios.appStoreId = '123'; a.ios.testFlightUrl = 'x'; a.android.onGooglePlay = true; a.android.apkUrl = 'x' })

@@ -258,11 +258,15 @@ struct Preferences: Codable, Equatable, Sendable {
     var use24Hour = Preferences.phoneUses24Hour
     var hijriAdjustment = 0
 
-    var notificationsEnabled = false
+    // New installs are told when each prayer begins; alerts only go out once the phone allows them.
+    var notificationsEnabled = true
     var notifyPrayers: Set<Prayer> = Set(Prayer.obligatory)
     /// Minutes before each chosen prayer for the "Reminder before prayer"
     /// heads-up; 0 = off. Separate from the alert at the prayer time itself.
     var reminderMinutesBefore = 0
+    /// Early reminder when the phone is away from the confirmed home (Core/AwayReminder.swift). On by default, 1 hour, Fajr off.
+    var awayReminder = true
+    var awayMinutes: [String: Int] = AwayReminder.defaultMinutes
     static let defaultReminderMinutes = 15
     static let reminderChoices = [5, 10, 15, 20, 30, 45, 60]
     /// Prayer time alerts play the azan (a Subuh azan at Subuh) instead of the
@@ -455,9 +459,12 @@ struct Preferences: Codable, Equatable, Sendable {
         namingOverride = v(.namingOverride, d.namingOverride)
         use24Hour = v(.use24Hour, d.use24Hour)
         hijriAdjustment = v(.hijriAdjustment, d.hijriAdjustment)
-        notificationsEnabled = v(.notificationsEnabled, d.notificationsEnabled)
+        // Saved settings without this choice come from before it defaulted to on: keep them Off.
+        notificationsEnabled = v(.notificationsEnabled, false)
         notifyPrayers = v(.notifyPrayers, d.notifyPrayers)
         reminderMinutesBefore = v(.reminderMinutesBefore, d.reminderMinutesBefore)
+        awayReminder = v(.awayReminder, d.awayReminder)
+        awayMinutes = AwayReminder.clean(v(.awayMinutes, d.awayMinutes))
         azanSound = v(.azanSound, d.azanSound)
         musafirThresholdKm = v(.musafirThresholdKm, d.musafirThresholdKm)
         jakimZoneOverride = v(.jakimZoneOverride, d.jakimZoneOverride)

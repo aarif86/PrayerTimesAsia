@@ -11,6 +11,11 @@ import { playAzan } from './azan'
 import { playAlarm } from './alarmSound'
 import { hadithAlertLine, type HadithId } from '../core/hadith'
 import { alertLine } from '../core/alertLines'
+import { BLESSED_NAME } from '../core/blessed'
+import { EXTRA_TIMES, extraMode } from '../core/extraAlerts'
+import { blessedNote } from '../core/appWords'
+import { earlyMinutes, isAway } from '../core/away'
+import { hasAlarm } from '../core/alertMode'
 import { store } from './store'
 import { tr } from '../core/appWords'
 import { ramadanWord } from '../core/ramadanWords'
@@ -111,9 +116,11 @@ export function nextJumuahLeave(now: number): { leave: number; start: number; se
 export function upcomingAlerts(now: number): Alert[] {
   const place = store.activePlace
   const prefs = store.prefs
-  const early = prefs.reminderMinutesBefore
+  const atHome = prefs.reminderMinutesBefore
   const onTime = prefs.notificationsEnabled
   if (!place) return []
+  const away = isAway(prefs.home, prefs.homeConfirmed, place)
+  const anyEarly = atHome > 0 || (away && prefs.awayReminder && Object.values(prefs.awayMinutes).some((m) => m > 0))
   const wake = wakeUps(now, 2).map((w) => ({ id: w.id, title: w.title, body: w.body, at: w.at }))
   const nudges = prefs.trackerEnabled && prefs.windowNudge && !store.trackerPaused
   const jumuah = prefs.jumuahReminderMinutes
@@ -151,19 +158,28 @@ export function upcomingAlerts(now: number): Alert[] {
         at, silent: isSilent(at, 'dhuhr', tz),
       })
     }
-    if (!onTime && early <= 0) continue
+    for (const [b, at] of store.blessed(day)) {
+      if (!(EXTRA_TIMES as readonly string[]).includes(b) || extraMode(prefs, b as 'dhuha') !== 'notify') continue
+      // The last ten nights already have their own qiyam alert at this time: one alert, not two.
+      if (b === 'lastThird' && prefs.qiyamAlert && store.season(day.times.dhuhr).lastTen) continue
+      const name = BLESSED_NAME[b]
+      out.push({ id: `${day.year}-${day.month}-${day.day}-${b}`, title: `${name} · ${store.formatted(at)}`, body: blessedNote(b), at, silent: isSilent(at, b === 'dhuha' ? 'dhuhr' : 'isha', tz) })
+    }
+    if (!onTime && !anyEarly) continue
     for (const prayer of PRAYERS) {
       if (!prefs.notifyPrayers.includes(prayer)) continue
       const time = day.times[prayer]
       const name = store.name(prayer, time)
       const id = `${day.year}-${day.month}-${day.day}-${prayer}`
       const silent = isSilent(time, prayer, tz)
+      // One early reminder per prayer: the away choice when away from home, else the at-home choice.
+      const early = earlyMinutes(prayer, away, prefs.awayReminder, prefs.awayMinutes, atHome, hasAlarm(prefs, prayer))
       if (early > 0) {
         // The heads-up before the prayer, on its own switch: for when a meeting
         // or work would otherwise run past the time.
         out.push({
-          id: `${id}-early`, title: prayer === 'sunrise' ? tr('notify.endsIn', { name: store.name('fajr'), n: early }) : tr('notify.nameIn', { name, n: early }),
-          body: tr('notify.nameAt', { name, time: store.formatted(time) }), at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
+          id: `${id}-early`, title: prayer === 'sunrise' ? tr('notify.endsIn', { name: store.name('fajr'), n: early }) : early === 60 ? tr('notify.nameInHour', { name }) : tr('notify.nameIn', { name, n: early }),
+          body: tr(away && prayer !== 'sunrise' ? 'notify.nameAtAway' : 'notify.nameAt', { name, time: store.formatted(time) }), at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
         })
       }
       if (!onTime) continue
@@ -193,7 +209,7 @@ export interface WakeUp { id: string; title: string; body: string; at: number; s
 
 /** Is any alarm on: Subuh, sahur or one of the other prayers? */
 export function anyAlarm(p = store.prefs): boolean {
-  return !!(p.wakeUp || p.sahurAlarm || ALARM_PRAYERS.some((x) => p[ALARM_KEY[x]]) || (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0))
+  return !!(p.wakeUp || p.sahurAlarm || EXTRA_TIMES.some((b) => extraMode(p, b) === 'alarm') || ALARM_PRAYERS.some((x) => p[ALARM_KEY[x]]) || (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0))
 }
 
 /** Does this prayer have an alarm at the very start, which stands in for its alert? */
@@ -237,6 +253,12 @@ export function wakeUps(now: number, days: number, start = 0): WakeUp[] {
         body: prayer === 'isha' ? tr('notify.beganAt', { name, time: store.formatted(begins), place: place.name }) : tr('notify.openUntil', { name, time: store.formatted(end), place: place.name }),
         at: prayerAlarmTime(t, begins, end), sahur: false, prayer,
       })
+    }
+    // Dhuha, the middle of the night and the last third, when set to Alarm.
+    for (const [b, at] of store.blessed(day)) {
+      if (!(EXTRA_TIMES as readonly string[]).includes(b) || extraMode(p, b as 'dhuha') !== 'alarm') continue
+      const name = BLESSED_NAME[b]
+      out.push({ id: `${key}-${b}-alarm`, title: tr('notify.timeFor', { name }), body: `${blessedNote(b)} · ${store.formatted(at)} · ${place.name}`, at, sahur: false })
     }
     // Leave for Jumaat, when it rings as an alarm.
     if (p.jumuahLeaveAlarm && p.jumuahReminderMinutes > 0 && store.isFriday(day.times.dhuhr)) {
@@ -325,11 +347,21 @@ export async function show(title: string, body: string, tag: string, silent = fa
   try { new Notification(title, options) } catch { /* not allowed here */ }
 }
 
-export function testAlert(): void {
+/** The test alert arrives a few seconds after the tap, so the person can lock the screen first. */
+export const TEST_ALERT_DELAY_MS = 3000
+
+/** Sends a sample alert in a few seconds, the way a real one arrives. Says 'blocked' when the browser will not show alerts. */
+export async function testAlert(): Promise<'sent' | 'blocked'> {
+  if (alertSupport() !== 'supported' || !(await requestPermission())) return 'blocked'
   const now = store.now()
   const cur = store.current(now)
   const name = cur ? store.name(cur.prayer, cur.time) : 'Prayer'
-  void show(tr('notify.testTitle', { name }), tr('notify.testBody'), 'test')
+  setTimeout(() => {
+    const quiet = store.prefs.buzzOnly
+    void show(tr('notify.testTitle', { name }), tr('notify.testBody'), 'test', quiet)
+    if (store.prefs.azanSound && !quiet) playAzan(false)
+  }, TEST_ALERT_DELAY_MS)
+  return 'sent'
 }
 
 /** Local times "HH:mm" for a calendar description. */

@@ -8,7 +8,8 @@ import { ChevronsLeft, ChevronsRight, Compass, Globe2, Plane } from 'lucide-prea
 import { scheduleAlerts } from '../services/notifications'
 import { store, TABS, useNow, useStore, type Tab } from '../services/store'
 import { closeSheet, openSheet, useSheet } from './common'
-import { TabFalak, TabMasjid, TabPrayer, TabQibla, TabSettings } from './icons'
+import { TabMasjid } from './icons'
+import { Clock, SlidersHorizontal, Sun } from 'lucide-preact'
 import { LivingSky } from './LivingSky'
 import { takeMoveFromLink } from './moveLink'
 import { AlertsHelpSheet, CalendarSheet, CreditsSheet, InstallSheet, JourneySheet, MakersSheet, PlacesSheet, SanadSheet } from './Sheets'
@@ -30,6 +31,8 @@ const FalakExpertSheet = later(() => import('./Falak').then((m) => m.FalakExpert
 const ShadowStepsSheet = later(() => import('./FalakShadow').then((m) => m.ShadowStepsSheet))
 const ShadowCamera = later(() => import('./FalakShadow').then((m) => m.ShadowCamera))
 const TrackerSheet = later(() => import('./Tracker').then((m) => m.TrackerSheet))
+const LogPrayerSheet = later(() => import('./LogSheets').then((m) => m.LogPrayerSheet))
+const CatchUpSheet = later(() => import('./LogSheets').then((m) => m.CatchUpSheet))
 const MasjidLinkSheet = later(() => import('./MyMasjid').then((m) => m.MasjidLinkSheet))
 const MoveInSheet = later(() => import('./Move').then((m) => m.MoveInSheet))
 const MoveOutSheet = later(() => import('./Move').then((m) => m.MoveOutSheet))
@@ -72,7 +75,8 @@ function warmUpScreens(): ReturnType<typeof setTimeout> {
 
 const tabLabel = (tab: Tab): string => ({ today: tr('tab.prayer'), qibla: tr('tab.qibla'), falak: tr('tab.falak'), masjid: tr('tab.masjid'), settings: tr('tab.settings') })[tab]
 const TAB_ICON: Record<Tab, (p: { size?: number }) => preact.JSX.Element> = {
-  today: TabPrayer, qibla: TabQibla, falak: TabFalak, masjid: TabMasjid, settings: TabSettings,
+  today: (p) => <Clock size={p.size} strokeWidth={1.75} />, qibla: (p) => <Compass size={p.size} strokeWidth={1.75} />,
+  falak: (p) => <Sun size={p.size} strokeWidth={1.75} />, masjid: TabMasjid, settings: (p) => <SlidersHorizontal size={p.size} strokeWidth={1.75} />,
 }
 
 function prefersLight(): boolean {
@@ -89,24 +93,27 @@ function useAppearance(now: number) {
   const isNight = day ? now < day.times.sunrise || now >= day.times.maghrib : null
   const a = store.prefs.appearance
   const scheme: 'light' | 'dark' = a === 'light' ? 'light' : a === 'dark' ? 'dark' : isNight == null ? (prefersLight() ? 'light' : 'dark') : isNight ? 'dark' : 'light'
-  const bands = store.tab === 'today' && store.prefs.todayStyle === 'bands'
-  return { sky, scheme, soft: a === 'system', bands }
+  // Colour Bands' flat page: every tab.
+  const bands = (store.tab === 'today' || store.tab === 'qibla' || store.tab === 'falak' || store.tab === 'masjid' || store.tab === 'settings') && store.prefs.todayStyle === 'bands'
+  const gold = store.prefs.todayStyle === 'gold'
+  return { sky, scheme, soft: a === 'system', bands, gold }
 }
 
 export function App() {
   const s = useStore()
   const now = useNow(30_000)
   const sheet = useSheet()
-  const { sky, scheme, soft, bands } = useAppearance(now)
+  const { sky, scheme, soft, bands, gold } = useAppearance(now)
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = scheme
     document.documentElement.toggleAttribute('data-large-text', s.prefs.largeText)
     document.documentElement.dataset.menu = s.prefs.menuSide
+    document.documentElement.dataset.look = s.prefs.todayStyle
     document.documentElement.lang = s.appLang
     const meta = document.querySelector('meta[name="theme-color"]')
-    meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
-  }, [scheme, bands, s.prefs.largeText, s.prefs.menuSide, s.appLang])
+    meta?.setAttribute('content', bands ? (scheme === 'light' ? '#F2F0EB' : '#232326') : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
+  }, [scheme, bands, s.prefs.todayStyle, s.prefs.largeText, s.prefs.menuSide, s.appLang])
 
   useEffect(() => {
     const moved = takeMoveFromLink()
@@ -171,8 +178,9 @@ export function App() {
 
   return (
     <>
-      <LivingSky colors={sky} scheme={scheme} soft={soft} />
+      {!gold && <LivingSky colors={sky} scheme={scheme} soft={soft} />}
       {bands && <div class="bands-backdrop" />}
+      {gold && <div class="gold-backdrop" />}
       <div class="shell">
         <main class={`screen tab-${s.tab}`} id="main">
           {/* Prayer and Masjid place the home button in their own top bars. */}
@@ -212,6 +220,8 @@ export function App() {
       {sheet?.kind === 'makers' && <MakersSheet placement={sheet.placement} />}
       {sheet?.kind === 'journey' && <JourneySheet />}
       {sheet?.kind === 'tracker' && <TrackerSheet />}
+      {sheet?.kind === 'log-prayer' && <LogPrayerSheet prayer={sheet.prayer} t={sheet.t} />}
+      {sheet?.kind === 'log-catchup' && <CatchUpSheet />}
       {sheet?.kind === 'ramadan' && <RamadanSheet />}
       {sheet?.kind === 'wakeup' && <WakeUpSheet start={sheet.prayer} view={sheet.view} />}
       {sheet?.kind === 'level' && <LevelSheet />}

@@ -159,7 +159,7 @@ fun SeasonCard(state: AppState, now: Instant) {
     val today = r.civil(now)
     val t = words(state)
     GlassCard(Modifier.clickable { state.showRamadan = true }) {
-        if (r.isSeasonPreview) PreviewTag(t)
+        if (r.isSeasonPreview && !state.demoMode) PreviewTag(t)
         when (s.phase) {
             Season.Phase.RAMADAN -> {
                 val key = today.toString()

@@ -7,8 +7,41 @@ import org.junit.Test
 
 /** Alerts and alarms: one Off, Notify or Alarm per prayer. Same cases as web tests/alertMode.test.ts. */
 class AlertModeTest {
+    /** Someone who has not turned alerts on (before the new-install default). */
+    private val OLD = Preferences(notificationsEnabled = false)
+
+    @Test fun newInstallIsNotifyForFivePrayersAndOffForSunrise() {
+        val p = Preferences()
+        Prayer.obligatory.forEach { assertEquals(AlertMode.NOTIFY, p.alertMode(it)) }
+        assertEquals(AlertMode.OFF, p.alertMode(Prayer.SUNRISE))
+        assertTrue(p.allFiveNotify())
+    }
+
+    @Test fun allFiveButtonDropsAnOldLeftoverList() {
+        val p = OLD.copy(notifyPrayers = setOf(Prayer.SUNRISE, Prayer.ASR)).withNotifyAllFive()
+        assertEquals(AlertMode.OFF, p.alertMode(Prayer.SUNRISE))
+        assertTrue(p.allFiveNotify())
+    }
+
+    @Test fun savedChoicesAreKept() {
+        assertFalse(Preferences.decode("{\"notificationsEnabled\":false}").notificationsEnabled)
+        assertFalse(Preferences.decode("{}").notificationsEnabled)
+        assertTrue(Preferences.decode("{\"notificationsEnabled\":true}").notificationsEnabled)
+        assertTrue(Preferences.decode(null).notificationsEnabled)
+    }
+
+    @Test fun allFiveButtonLeavesAlarmAndSunriseAlone() {
+        val p = OLD.withAlertMode(AlertMode.ALARM, Prayer.FAJR).withNotifyAllFive()
+        assertEquals(AlertMode.ALARM, p.alertMode(Prayer.FAJR))
+        assertEquals(WakeUpTiming.AT_FAJR, p.wakeUp)
+        listOf(Prayer.DHUHR, Prayer.ASR, Prayer.MAGHRIB, Prayer.ISHA).forEach { assertEquals(AlertMode.NOTIFY, p.alertMode(it)) }
+        assertEquals(AlertMode.OFF, p.alertMode(Prayer.SUNRISE))
+        assertFalse(p.allFiveNotify())
+        assertTrue(OLD.withNotifyAllFive().allFiveNotify())
+    }
+
     @Test fun startsOffAndNotifyTurnsOnOnlyThatPrayer() {
-        var p = Preferences()
+        var p = OLD
         Prayer.entries.forEach { assertEquals(AlertMode.OFF, p.alertMode(it)) }
         p = p.withAlertMode(AlertMode.NOTIFY, Prayer.DHUHR)
         assertTrue(p.notificationsEnabled)
@@ -17,7 +50,7 @@ class AlertModeTest {
     }
 
     @Test fun alarmKeepsNotificationAndOffClearsBoth() {
-        var p = Preferences().withAlertMode(AlertMode.NOTIFY, Prayer.FAJR).withAlertMode(AlertMode.ALARM, Prayer.FAJR)
+        var p = OLD.withAlertMode(AlertMode.NOTIFY, Prayer.FAJR).withAlertMode(AlertMode.ALARM, Prayer.FAJR)
         assertEquals(WakeUpTiming.AT_FAJR, p.wakeUp)
         assertEquals(AlertMode.ALARM, p.alertMode(Prayer.FAJR))
         assertTrue(p.notifies(Prayer.FAJR))
@@ -28,18 +61,18 @@ class AlertModeTest {
     }
 
     @Test fun bellCycleAndSunrise() {
-        var p = Preferences()
+        var p = OLD
         val seen = mutableListOf<AlertMode>()
         repeat(4) { val m = p.nextAlertMode(Prayer.MAGHRIB); p = p.withAlertMode(m, Prayer.MAGHRIB); seen += m }
         assertEquals(listOf(AlertMode.NOTIFY, AlertMode.ALARM, AlertMode.OFF, AlertMode.NOTIFY), seen)
-        var q = Preferences()
+        var q = OLD
         q = q.withAlertMode(q.nextAlertMode(Prayer.SUNRISE), Prayer.SUNRISE)
         assertEquals(AlertMode.NOTIFY, q.alertMode(Prayer.SUNRISE))
         assertEquals(AlertMode.OFF, q.nextAlertMode(Prayer.SUNRISE))
     }
 
     @Test fun friday() {
-        var p = Preferences()
+        var p = OLD
         assertEquals(AlertMode.OFF, p.fridayMode)
         p = p.withFridayMode(AlertMode.ALARM)
         assertEquals(30, p.jumuahReminderMinutes)
@@ -55,5 +88,46 @@ class AlertModeTest {
         assertEquals(AlertMode.NOTIFY, old.alertMode(Prayer.ASR))
         assertEquals(AlertMode.OFF, old.alertMode(Prayer.DHUHR))
         assertFalse(Preferences.decode("""{"notificationsEnabled":false}""").notificationsEnabled)
+    }
+
+    @Test fun setForAllEarlyReminderAlsoSetsAwayMinutes() {
+        val p = OLD.copy(awayMinutes = mapOf("fajr" to 0, "dhuhr" to 60, "asr" to 60, "maghrib" to 60, "isha" to 60))
+        assertEquals(30, p.withAllFive(AllLevel.NOTIFY, 30).awayMinutes["dhuhr"])
+        assertEquals(15, p.withAllFive(AllLevel.NOTIFY, 20).awayMinutes["asr"])
+        assertEquals(0, p.withAllFive(AllLevel.NOTIFY, 0).awayMinutes["maghrib"])
+        val alarm = p.copy(wakeUp = WakeUpTiming.AT_FAJR).withAllFive(AllLevel.ALARM, 30)
+        assertEquals(0, alarm.awayMinutes["fajr"])
+    }
+
+    // Set for all prayers. Same cases as the web tests.
+    @Test fun setForAllNotificationTurnsAzanOffAndShortAzanTurnsItOn() {
+        val n = OLD.copy(azanSound = true).withAllFive(AllLevel.NOTIFY, null)
+        Prayer.obligatory.forEach { assertEquals(AlertMode.NOTIFY, n.alertMode(it)) }
+        assertFalse(n.azanSound)
+        assertEquals(AlertMode.OFF, n.alertMode(Prayer.SUNRISE))
+        val a = OLD.withAllFive(AllLevel.AZAN, null)
+        Prayer.obligatory.forEach { assertEquals(AlertMode.NOTIFY, a.alertMode(it)) }
+        assertTrue(a.azanSound)
+    }
+
+    @Test fun setForAllAlarmAndOff() {
+        val alarm = OLD.withAllFive(AllLevel.ALARM, null)
+        Prayer.obligatory.forEach { assertEquals(AlertMode.ALARM, alarm.alertMode(it)) }
+        val off = alarm.withAllFive(AllLevel.OFF, null)
+        Prayer.obligatory.forEach { assertEquals(AlertMode.OFF, off.alertMode(it)) }
+        assertEquals(null, off.wakeUp)
+    }
+
+    @Test fun setForAllLeavesFajrAloneWhenNotIncluded() {
+        val p = OLD.copy(wakeUp = WakeUpTiming.FAJR_MINUS_30).withAllFive(AllLevel.NOTIFY, null, includeFajr = false)
+        assertEquals(WakeUpTiming.FAJR_MINUS_30, p.wakeUp)
+        assertEquals(AlertMode.NOTIFY, p.alertMode(Prayer.DHUHR))
+    }
+
+    @Test fun setForAllEarlyReminderOnlyWhenAsked() {
+        val p = OLD.copy(reminderMinutesBefore = 20)
+        assertEquals(20, p.withAllFive(AllLevel.NOTIFY, null).reminderMinutesBefore)
+        assertEquals(30, p.withAllFive(AllLevel.NOTIFY, 30).reminderMinutesBefore)
+        assertEquals(0, p.withAllFive(AllLevel.NOTIFY, 0).reminderMinutesBefore)
     }
 }
