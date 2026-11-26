@@ -880,6 +880,9 @@
     <string name="qibla_turnLeftWord" formatted="false">Putar ke kiri</string>
     <string name="qibla_turnRightWord" formatted="false">Putar ke kanan</string>
     <string name="qibla_kmToMakkah" formatted="false">{km} km ke Makkah</string>
+    <string name="qibla_sunStep2" formatted="false">Putar seluruh badan perlahan sampai matahari mencapai Kakbah.</string>
+    <string name="qibla_sunStep3" formatted="false">Saat tulisan berubah hijau dan ponsel Anda bergetar, Anda menghadap kiblat.</string>
+    <string name="qibla_sunStep3NoTap" formatted="false">Saat tulisan berubah hijau, Anda menghadap kiblat.</string>
     <string name="journey_homeTitle" formatted="false">Anda berada di rumah</string>
     <string name="journey_homeBody" formatted="false">Salatlah secara penuh. Keringanan musafir berlaku setelah Anda bepergian sedikitnya {km} km.</string>
     <string name="journey_nearbyTitle" formatted="false">Dalam radius {km} km dari rumah</string>

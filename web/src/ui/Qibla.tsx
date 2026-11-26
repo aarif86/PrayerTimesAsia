@@ -51,7 +51,7 @@ export function QiblaScreen() {
 
   const look = s.prefs.todayStyle
   const rel = bearing - (heading != null ? dial.current.heading : 0)
-  const statFacing = heading != null ? `${Math.round(fix(heading, 360))}°` : '-'
+  const statFacing = heading != null ? `${Math.round(fix(heading, 360))}°` : '…'
   const statQibla = `${Math.round(bearing)}° ${compassPoint(bearing)}`
   const km = Math.round(distanceKm(place.coordinates, KAABA)).toLocaleString(appLocale())
   const toSun = () => s.setTab('falak')
@@ -144,7 +144,7 @@ export function QiblaScreen() {
             {trWith('qibla.browserAsksHow', { button: <b>{tr('qibla.compassOn')}</b>, allow: <b>{tr('qibla.allow')}</b> })}
           </Step>
         )}
-        {(compass.state === 'unavailable' || compass.state === 'denied') && !demoAligned && !demoHeading && (
+        {(compass.state === 'unavailable' || compass.state === 'denied') && !demoAligned && demoHeading == null && (
           <>
             <Step icon={<MapIcon size={20} class="q-ac" />}>
               {compass.state === 'denied' ? tr('qibla.notAllowed') : tr('qibla.noCompass')} {tr('qibla.noCompassHelp', { deg: Math.round(bearing), point: compassPoint(bearing) })}
@@ -155,8 +155,10 @@ export function QiblaScreen() {
         {(hasCompass || askFirst || compass.state === 'starting') && (
           <>
             <Step icon={<Num n={1} />}>{tr('qibla.step1')}</Step>
-            <Step icon={<Num n={2} />}>{tr('qibla.step2')}</Step>
-            <Step icon={<Num n={3} />}>{('vibrate' in navigator) ? tr('qibla.step3') : tr('qibla.step3NoTap')}</Step>
+            <Step icon={<Num n={2} />}>{look === 'sunPath' ? tr('qibla.sunStep2') : tr('qibla.step2')}</Step>
+            <Step icon={<Num n={3} />}>{look === 'sunPath'
+              ? (('vibrate' in navigator) ? tr('qibla.sunStep3') : tr('qibla.sunStep3NoTap'))
+              : (('vibrate' in navigator) ? tr('qibla.step3') : tr('qibla.step3NoTap'))}</Step>
             {!demoAligned && compass.state === 'active' && (compass.accuracy == null ? false : compass.accuracy < 0 || compass.accuracy > 25) && (
               <Step icon={<TriangleAlert size={20} style={{ color: 'var(--warning)' }} />}>
                 {tr('qibla.calibrate')}
@@ -368,7 +370,9 @@ function GoldCompass({ H, rel, aligned }: DialProps) {
 function SunCurve({ rel, aligned, hasHeading }: { rel: number; aligned: boolean; hasHeading: boolean }) {
   const y = (x: number) => 164 - 40 * Math.cos(Math.PI * (x - 208) / 196)
   const kx = 195
-  const sx = Math.max(14, Math.min(376, kx - rel * 2.5))
+  // Steep near the Ka'bah, and still moving all the way out to half a turn, so the sun never looks stuck.
+  const off = Math.min(180, Math.abs(rel)) / 180
+  const sx = kx - Math.sign(rel) * 181 * (1 - (1 - off) ** 2)
   let d = ''
   for (let x = -10; x <= 400; x += 5) d += `${x === -10 ? 'M' : 'L'}${x} ${y(x).toFixed(1)}`
   let seg = ''
