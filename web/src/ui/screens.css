@@ -1040,3 +1040,105 @@ html[data-large-text] .pname { font-size: 20px; }
 :root[data-look="bands"][data-theme="light"] .tabbar { background: rgba(255, 255, 255, 0.85); border-color: rgba(0, 0, 0, 0.08); }
 .bands-page.v12 .now-pill { background: #fff; color: #1d1d20; }
 .bands-page.v12 .bands-credit { color: var(--fg2); }
+
+/* ---------- Qibla and Falak rebuilt to the looks mockup (v10 layout, v12 sizes) ---------- */
+/* One set of colours per look and mode, read by both screens. */
+.v12s { --s-tx: #151A45; --s-tx2: #4A5080; --s-tx3: #6E7499; --s-card: rgba(255, 255, 255, 0.62); --s-strk: rgba(255, 255, 255, 0.75); --s-sep: rgba(21, 26, 69, 0.09);
+  --s-ac: #C9622A; --s-actx: #B2541F; --s-btn: #B2541F; --s-ong: #fff; --s-tint: rgba(178, 84, 31, 0.12); --s-r: 20px;
+  --s-fk1: #8EB9E8; --s-fk2: #EAF1F8; --s-gr: #E5CE98; --s-st: #3a3a3a; color: var(--s-tx); }
+:root[data-theme="dark"] .v12s { --s-tx: #EEF0FA; --s-tx2: #B9C0E2; --s-tx3: #8E97C4; --s-card: rgba(255, 255, 255, 0.09); --s-strk: rgba(255, 255, 255, 0.14); --s-sep: rgba(255, 255, 255, 0.1);
+  --s-ac: #F7BD8F; --s-actx: #F7BD8F; --s-btn: #F7BD8F; --s-ong: #2a1500; --s-tint: rgba(247, 189, 143, 0.16);
+  --s-fk1: #241f66; --s-fk2: #4d4b9c; --s-gr: #2d2c66; --s-st: #EEF0FA; }
+:root[data-look="simple"] .v12s { --s-tx: #0E1236; --s-tx2: #2E345E; --s-tx3: #4B5078; --s-card: rgba(255, 255, 255, 0.8); }
+:root[data-look="simple"][data-theme="dark"] .v12s { --s-tx: #fff; --s-tx2: #DDE0F2; --s-tx3: #BEC4E2; --s-card: rgba(255, 255, 255, 0.12); }
+:root[data-look="bands"] .v12s { --s-tx: #F4F2EE; --s-tx2: #C7C7CC; --s-tx3: #98989E; --s-card: #2c2c30; --s-strk: rgba(255, 255, 255, 0.08); --s-sep: rgba(255, 255, 255, 0.1);
+  --s-ac: #F2A65A; --s-actx: #F2A65A; --s-btn: #F2A65A; --s-ong: #1a1000; --s-tint: rgba(242, 166, 90, 0.16); --s-r: 0px;
+  --s-fk1: #3a6f63; --s-fk2: #3a6f63; --s-gr: #ab8d3a; --s-st: #fff; }
+:root[data-look="bands"][data-theme="light"] .v12s { --s-tx: #1d1d20; --s-tx2: #55555c; --s-tx3: #80808a; --s-card: #fff; --s-strk: rgba(0, 0, 0, 0.08); --s-sep: rgba(0, 0, 0, 0.09);
+  --s-ac: #C4691C; --s-actx: #A9560F; --s-btn: #A9560F; --s-ong: #fff; --s-tint: rgba(196, 105, 28, 0.12); }
+:root[data-look="gold"] .v12s { --s-tx: #EEF0FA; --s-tx2: #A9B2D6; --s-tx3: #7E88B3; --s-card: rgba(255, 255, 255, 0.07); --s-strk: rgba(255, 255, 255, 0.09); --s-sep: rgba(255, 255, 255, 0.08);
+  --s-ac: #E2B65A; --s-actx: #E2B65A; --s-btn: #E2B65A; --s-ong: #151100; --s-tint: rgba(226, 182, 90, 0.14);
+  --s-fk1: #0B0F2A; --s-fk2: #1c2258; --s-gr: #151A45; --s-st: #EEF0FA; }
+:root[data-look="gold"][data-theme="light"] .v12s { --s-tx: #151A45; --s-tx2: #5B6188; --s-tx3: #8B90AE; --s-card: #fff; --s-strk: rgba(21, 26, 69, 0.07); --s-sep: rgba(21, 26, 69, 0.08);
+  --s-actx: #8A6410; --s-tint: rgba(226, 182, 90, 0.2); --s-fk1: #F6F2E8; --s-fk2: #FBFAF7; --s-gr: #EADFC0; --s-st: #151A45; }
+.v12s .q-ac { color: var(--s-actx); }
+
+/* Qibla */
+.v12q { gap: 0; padding-bottom: 24px; }
+.v12q .q-title { font: 700 34px/1.1 var(--font-display); letter-spacing: -0.02em; margin: 0; padding: 8px 0 4px; text-align: center; }
+.v12q .q-say { text-align: center; font-weight: 600; font-size: 19px; margin-bottom: 8px; color: var(--s-tx); }
+.v12q .q-say.ok { color: var(--green); }
+.v12q .q-say-gold { font-size: 17px; color: var(--s-actx); margin-bottom: 6px; }
+.v12q .compass-on { margin: 4px 0 14px; background: var(--s-btn); color: var(--s-ong); box-shadow: 0 8px 24px color-mix(in srgb, var(--s-btn) 40%, transparent); border-radius: calc(var(--s-r) + 2px); }
+.v12q .compass-on::after { box-shadow: 0 0 0 10px color-mix(in srgb, var(--s-btn) 45%, transparent); }
+.v12q .q-dial { position: relative; flex: none; margin: 18px 0 0; }
+.v12q .q-dial > svg { display: block; overflow: visible; }
+.v12q .q-spin { transition: transform .35s cubic-bezier(.2, .8, .3, 1.05); }
+@media (prefers-reduced-motion: reduce) { .v12q .q-spin, .v12q .q-sun { transition: none; } }
+.v12q .q-top { position: absolute; left: 50%; top: -12px; width: 4px; height: 16px; border-radius: 2px; transform: translateX(-50%); background: var(--s-tx); z-index: 2; }
+.v12q .q-dial.aligned .q-top { background: var(--green); }
+.v12q .q-ok { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--green);
+  background: var(--glass); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-radius: 50%; width: 34%; aspect-ratio: 1; justify-content: center; box-shadow: 0 0 0 4px color-mix(in srgb, var(--green) 55%, transparent); }
+.v12q .q-ok span { color: var(--s-tx); font-size: 15px; font-weight: 600; }
+.v12q .q-dial.aligned svg { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--green) 60%, transparent)); }
+/* Centre Dial bezel colours */
+.v12q .q-bez { fill: #2d3573; stroke: #fff; }
+.v12q .q-face { fill: #e9f0f8; }
+.v12q .q-glow0 { stop-color: #FFD6A8; stop-opacity: .6; } .v12q .q-glow1 { stop-color: #FFD6A8; stop-opacity: 0; }
+.v12q .q-arrow { stroke: #E8924A; } .v12q .q-arrow-fill { fill: #E8924A; }
+:root[data-theme="dark"] .v12q .q-bez { fill: #262B5E; }
+:root[data-theme="dark"] .v12q .q-face { fill: #1b1f4a; }
+:root[data-theme="dark"] .v12q .q-glow0 { stop-color: #F7BD8F; } :root[data-theme="dark"] .v12q .q-glow1 { stop-color: #F7BD8F; }
+:root[data-theme="dark"] .v12q .q-arrow { stroke: #F7BD8F; } :root[data-theme="dark"] .v12q .q-arrow-fill { fill: #F7BD8F; }
+.v12q .q-dial.aligned .q-arrow { stroke: var(--green); } .v12q .q-dial.aligned .q-arrow-fill { fill: var(--green); }
+.v12q .q-tick-w { stroke: #fff; stroke-opacity: .7; stroke-width: 2; }
+.v12q .q-tick-g { stroke: var(--s-tx3); stroke-width: 2; }
+.v12q .q-n { fill: #FF8F7A; } .v12q .q-w { fill: #fff; }
+.v12q .q-n-bands { fill: #d3705c; font-weight: 800; } .v12q .q-tx { fill: var(--s-tx); font-weight: 800; } .v12q .q-tx2 { fill: var(--s-tx2); }
+.v12q .q-tx-stroke { stroke: var(--s-tx); }
+.v12q .q-card-fill { fill: var(--s-card); }
+.v12q .q-ac-fill { fill: var(--s-ac); } .v12q .q-ac-stroke { stroke: var(--s-ac); }
+.v12q .q-gold-band { stroke: #151100; }
+.v12q .q-simple-ring { fill: var(--s-card); stroke: color-mix(in srgb, var(--s-tx3) 50%, transparent); }
+.q-simple .q-n { fill: #E0634F; }
+:root[data-theme="dark"] .q-simple .q-n { fill: #FF8F7A; }
+/* Stats card and the big button */
+.v12q .q-stats { display: flex; width: 100%; margin-top: 12px; background: var(--s-card); border: 1px solid var(--s-strk); border-radius: var(--s-r); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); text-align: center; padding: 12px 4px; }
+.v12q .q-stat { flex: 1; min-width: 0; }
+.v12q .q-stat small { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s-tx2); font-weight: 500; }
+.v12q .q-stat b { display: block; font-size: 17px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.v12q .q-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; margin-top: 12px; padding: 10px 20px; border-radius: calc(var(--s-r) + 8px);
+  background: var(--s-btn); color: var(--s-ong); font-weight: 700; font-size: 17px; }
+.v12q .q-btn:active { transform: scale(.98); }
+.v12q .q-card { width: 100%; margin-top: 22px; padding: 16px; background: var(--s-card); border: 1px solid var(--s-strk); border-radius: var(--s-r); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.v12q .q-card .num-badge { background: var(--s-ac); color: var(--s-ong); }
+.v12q .q-card .subhead { color: var(--s-tx2); }
+/* Sun Path: the curve runs edge to edge */
+.v12q .q-suncurve { width: calc(100% + 2 * var(--gutter)); margin: 18px calc(-1 * var(--gutter)) 6px; }
+.v12q .q-horizon { stroke: var(--s-tx3); stroke-opacity: .5; }
+.v12q .q-curve { stroke: var(--s-tx3); stroke-opacity: .7; }
+.v12q .q-sun { transition: transform .35s ease; }
+.v12q .q-sun-say { text-align: center; margin-top: 4px; }
+.v12q .q-say-sun { font: 700 38px/1.05 var(--font-display); margin: 0; }
+.v12q .q-say-sun.wide { font-size: 28px; }
+.v12q .q-hint { color: var(--s-tx2); font-size: 15px; margin: 6px 0 4px; }
+/* Big and Simple: big words, one big arrow */
+.v12q .q-simple-say { text-align: center; line-height: 1; font-family: var(--font-display); }
+.v12q .q-simple-say .w { font-weight: 700; font-size: 26px; }
+.v12q .q-simple-say .d { font-weight: 800; font-size: 60px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.v12q .q-say-simple { font: 700 28px/1.15 var(--font-display); }
+.q-simple .q-title { font-size: 38px; }
+.q-simple .q-dial { margin-top: 28px; }
+.v12q .q-km { text-align: center; font: 600 23px var(--font-display); margin-top: 12px; color: var(--s-tx2); }
+.q-simple .q-btn { font-size: 23px; min-height: 60px; margin-top: 14px; }
+/* Colour Bands: full width bands, square corners */
+.v12q.q-bands { padding-left: 0; padding-right: 0; }
+.v12q .q-band { display: flex; align-items: center; width: 100%; padding: 0 24px; color: #fff; font-weight: 700; margin: 0; }
+.v12q .q-band-title { min-height: 80px; font: 700 34px/1 var(--font-display); }
+.v12q .q-say-bands { align-self: stretch; text-align: left; padding: 14px 24px 4px; font-size: 20px; font-weight: 700; margin: 0; }
+.q-bands .compass-on { margin: 6px 24px 10px; }
+.v12q .q-bandstats { display: flex; flex-direction: column; width: 100%; margin-top: 14px; }
+.v12q .q-bandstats .q-band { min-height: 54px; font-size: 19px; text-shadow: 0 1px 2px rgba(0, 0, 0, .25); }
+.v12q .q-bandstats .nm { flex: 1; }
+.v12q .q-bandstats .rd { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+.q-bands .q-card { margin: 22px 24px 0; width: auto; align-self: stretch; }

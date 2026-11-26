@@ -873,6 +873,16 @@
     <string name="qibla_turnLeft" formatted="false">Turn left {deg}°</string>
     <string name="qibla_turnRightAbout" formatted="false">Turn right, about {deg}°</string>
     <string name="qibla_turnLeftAbout" formatted="false">Turn left, about {deg}°</string>
+    <string name="qibla_facingShort" formatted="false">Facing</string>
+    <string name="qibla_youFaceHere" formatted="false">You face here</string>
+    <string name="qibla_northHere" formatted="false">North</string>
+    <string name="qibla_sunHint" formatted="false">Turn until the sun reaches the Ka\'bah.</string>
+    <string name="qibla_turnLeftWord" formatted="false">Turn left</string>
+    <string name="qibla_turnRightWord" formatted="false">Turn right</string>
+    <string name="qibla_kmToMakkah" formatted="false">{km} km to Makkah</string>
+    <string name="qibla_sunStep2" formatted="false">Turn your whole body slowly until the sun reaches the Ka\'bah.</string>
+    <string name="qibla_sunStep3" formatted="false">When the words turn green and your phone taps, you\'re facing the qibla.</string>
+    <string name="qibla_sunStep3NoTap" formatted="false">When the words turn green, you\'re facing the qibla.</string>
     <string name="journey_homeTitle" formatted="false">You\'re home</string>
     <string name="journey_homeBody" formatted="false">Pray in full. Travel concessions apply once you journey at least {km} km.</string>
     <string name="journey_nearbyTitle" formatted="false">Within {km} km of home</string>

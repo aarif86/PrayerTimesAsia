@@ -93,7 +93,8 @@ function useAppearance(now: number) {
   const isNight = day ? now < day.times.sunrise || now >= day.times.maghrib : null
   const a = store.prefs.appearance
   const scheme: 'light' | 'dark' = a === 'light' ? 'light' : a === 'dark' ? 'dark' : isNight == null ? (prefersLight() ? 'light' : 'dark') : isNight ? 'dark' : 'light'
-  const bands = store.tab === 'today' && store.prefs.todayStyle === 'bands'
+  // Colour Bands' flat page: Prayer and Qibla so far (the other tabs follow).
+  const bands = (store.tab === 'today' || store.tab === 'qibla') && store.prefs.todayStyle === 'bands'
   const gold = store.prefs.todayStyle === 'gold'
   return { sky, scheme, soft: a === 'system', bands, gold }
 }
@@ -111,7 +112,7 @@ export function App() {
     document.documentElement.dataset.look = s.prefs.todayStyle
     document.documentElement.lang = s.appLang
     const meta = document.querySelector('meta[name="theme-color"]')
-    meta?.setAttribute('content', bands ? '#2b2b2b' : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
+    meta?.setAttribute('content', bands ? (scheme === 'light' ? '#F2F0EB' : '#232326') : scheme === 'light' ? '#e9ecf6' : '#0b0f2a')
   }, [scheme, bands, s.prefs.todayStyle, s.prefs.largeText, s.prefs.menuSide, s.appLang])
 
   useEffect(() => {
