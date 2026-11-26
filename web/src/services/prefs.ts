@@ -65,6 +65,8 @@ export interface Preferences {
   azanSound: boolean
   /** Full azan instead of the short call (opening takbir only). Fajr always uses the short call. */
   azanFull: boolean
+  /** Which azan voice plays (services/azan.ts). Falls back to the first voice in the app. */
+  azanVoice: string
   musafirThresholdKm: number
   jakimZoneOverride: string | null
   lastCountryCode: string | null
@@ -193,6 +195,7 @@ export const DEFAULT_PREFS: Preferences = {
   awayMinutes: { ...DEFAULT_AWAY_MINUTES },
   azanSound: true,
   azanFull: false,
+  azanVoice: 'asim',
   musafirThresholdKm: 81,
   jakimZoneOverride: null,
   lastCountryCode: null,

@@ -31,10 +31,6 @@ object Notifications {
     /** "before-prayer" replaced the quieter "reminder" channel: Android never lets an app raise a channel's importance afterwards. */
     const val REMINDER = "before-prayer"
     const val WAKE = "wakeup"
-    /** Prayer time alerts with the azan. Android fixes a channel's sound when it is created, so each recording has its own. */
-    const val AZAN = "prayer-azan"
-    const val AZAN_SHORT = "prayer-azan-short"
-    const val AZAN_SUBUH = "prayer-azan-subuh"
     /** Buzz only: quiet hours and "Buzz only". A channel's sound can't change, so silence has its own. */
     const val QUIET = "prayer-quiet"
 
@@ -48,21 +44,12 @@ object Notifications {
         nm.createNotificationChannel(NotificationChannel(REMINDER, "Reminder before prayer", NotificationManager.IMPORTANCE_HIGH).apply {
             description = "A heads-up a few minutes before each prayer, so a meeting doesn't run past it."
         })
-        Azan.shortUri(context)?.let { uri ->
-            nm.createNotificationChannel(NotificationChannel(AZAN_SHORT, "Prayer times with azan (short call)", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "The opening of the azan at the time each prayer begins."
-                setSound(uri, Azan.attributes)
-            })
-        }
-        Azan.fullUri(context)?.let { uri ->
-            nm.createNotificationChannel(NotificationChannel(AZAN, "Prayer times with azan (full)", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "The full azan at the time each prayer begins."
-                setSound(uri, Azan.attributes)
-            })
-        }
-        Azan.subuhUri(context)?.let { uri ->
-            nm.createNotificationChannel(NotificationChannel(AZAN_SUBUH, "Fajr with azan", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "The Fajr azan at the time Fajr begins."
+        // One channel per azan sound (voice and length), since a channel's sound can't change.
+        for (voice in Azan.voices(context)) for (kind in Azan.Kind.entries) {
+            val uri = Azan.uri(context, voice, kind) ?: continue
+            val what = when (kind) { Azan.Kind.SHORT -> "short call"; Azan.Kind.FULL -> "full azan"; Azan.Kind.FAJR -> "Fajr azan" }
+            nm.createNotificationChannel(NotificationChannel(Azan.channelId(voice, kind), "Prayer times with azan ($voice, $what)", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "The azan at the time each prayer begins."
                 setSound(uri, Azan.attributes)
             })
         }
@@ -178,10 +165,6 @@ object Notifications {
         }
     }
 
-    /** Short call or full azan, as chosen in Alerts and alarms. Short when unsure. */
-    private fun azanFull(context: Context): Boolean =
-        (context.applicationContext as? PrayerApp)?.state?.prefs?.azanFull ?: false
-
     private fun channelFor(kind: AlarmScheduler.Kind, sound: AlarmScheduler.Sound, context: Context): String =
         when (kind) {
             AlarmScheduler.Kind.EARLY, AlarmScheduler.Kind.NUDGE, AlarmScheduler.Kind.JUMUAH -> REMINDER
@@ -190,11 +173,12 @@ object Notifications {
                 sound == AlarmScheduler.Sound.STANDARD || !Azan.isAvailable(context) -> PRAYER
                 // Their own azan (one file for every prayer, Fajr too) comes before the app's.
                 OwnAzan.channel(context) != null -> OwnAzan.channel(context)!!
-                // Fajr: its own recording if the app has one, otherwise the short call
-                // (the full recording is the ordinary azan, without the Fajr line).
-                sound == AlarmScheduler.Sound.AZAN_SUBUH -> if (Azan.subuhUri(context) != null) AZAN_SUBUH else AZAN_SHORT
-                azanFull(context) && Azan.fullUri(context) != null -> AZAN
-                else -> AZAN_SHORT
+                else -> {
+                    val prefs = (context.applicationContext as? PrayerApp)?.state?.prefs
+                    val voice = Azan.voiceOrDefault(context, prefs?.azanVoice)
+                    if (voice == null) PRAYER
+                    else Azan.channelId(voice, Azan.kindFor(context, voice, prefs?.azanFull ?: false, sound == AlarmScheduler.Sound.AZAN_SUBUH))
+                }
             }
         }
 }

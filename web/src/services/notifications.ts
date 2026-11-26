@@ -7,7 +7,7 @@ import { fridayMosqueAt, inSingapore } from '../core/friday'
 import { leaveWords, SECOND_SESSION_FROM } from '../core/jumuahLeave'
 import { ALARM_KEY, ALARM_PRAYERS, prayerAlarmTime, sahurRings, sahurTime, wakeUpTime, type AlarmPrayer } from '../core/wakeup'
 import { inQuietHours, nudgeAt, windowsOf } from '../core/window'
-import { playAzan } from './azan'
+import { azanUrl, playAzan } from './azan'
 import { playAlarm } from './alarmSound'
 import { hadithAlertLine, type HadithId } from '../core/hadith'
 import { alertLine } from '../core/alertLines'
@@ -331,7 +331,7 @@ export function scheduleAlerts(): void {
       if (!done) {
         void show(next.title, next.body, next.id, next.silent)
         if (isAlarm(next.id)) playAlarm(store.prefs.alarmSound)
-        else if (next.prayer && store.prefs.azanSound && !next.silent) playAzan(next.prayer === 'fajr', store.prefs.azanFull)
+        else if (next.prayer && store.prefs.azanSound && !next.silent) playAzan(azanUrl(store.prefs.azanVoice, store.prefs.azanFull, next.prayer === 'fajr'))
       }
     }
     scheduleAlerts()
@@ -359,7 +359,7 @@ export async function testAlert(): Promise<'sent' | 'blocked'> {
   setTimeout(() => {
     const quiet = store.prefs.buzzOnly
     void show(tr('notify.testTitle', { name }), tr('notify.testBody'), 'test', quiet)
-    if (store.prefs.azanSound && !quiet) playAzan(false, store.prefs.azanFull)
+    if (store.prefs.azanSound && !quiet) playAzan(azanUrl(store.prefs.azanVoice, store.prefs.azanFull))
   }, TEST_ALERT_DELAY_MS)
   return 'sent'
 }

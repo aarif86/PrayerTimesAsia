@@ -5,19 +5,23 @@ Our own clips are made by `tools/make_azan.sh`. "Your own azan" files are shaped
 on the phone by `AudioClip` (iOS `Core/AudioClip.swift`, Android core
 `AudioClip.kt`) with the same numbers.
 
-## Two lengths
+## Voices and lengths
 
-Every app has a **Short call** (the default) and a **Full azan**, chosen in
-Alerts and alarms, Sound. Fajr always plays the short call, because the full
-recording is the ordinary azan without the Fajr line (an `azan-subuh` file, if
-one is ever added, is used for Fajr instead). Made with:
+Every app has a list of azan voices and, for each voice that has one, a choice
+of **Short call** (the default) or **Full azan**, in Alerts and alarms, Sound.
+At Fajr, Full plays the voice's own Fajr azan when it has one; otherwise Fajr
+plays the short call (an ordinary full azan has no Fajr line).
 
-    tools/make_azan.sh RECORDING SHORT_END [IOS_END]
+A voice shows only when its files are in the app. Slots for voices waiting for
+permission (sudais, aqsa, egypt, madinah) are in the code and stay hidden; their
+prepared files are kept privately, never in this repo. Made with
+`tools/make_azan.sh` (the commands for today's voices are at its top):
 
-Today's azan: Asim Javed, ICR Friday 2nd adhan (CC0),
-`tools/make_azan.sh asim-javed-2nd-adhan.flac 11.9 24.3`. Short call 11.9 s; full
-74.9 s on Android and the web, 24.3 s on iPhone (the last phrase that ends before
-iOS's 30 second limit).
+| Voice | Short call | Full (Android, web) | iPhone full | Fajr |
+|---|---|---|---|---|
+| asim (Asim Javed, CC0) | 11.9 s | 74.9 s | 24.3 s | short call |
+| khalaf (Ahmed Khalaf, CC BY 4.0) | 26.9 s | 143 s | same as short | own Fajr azan, 99 s (iPhone 28 s) |
+| makkah (Seyfula Islam recording, CC BY 3.0) | 25 s | none (recording is cut short) | none | short call |
 
 ## Short call (the default alert)
 

@@ -77,7 +77,6 @@ import com.prayertimesasia.app.ui.components.AppWords
 import com.prayertimesasia.app.ui.components.HadithView
 import com.prayertimesasia.app.ui.components.tr
 import com.prayertimesasia.app.alarms.OwnAzan
-import com.prayertimesasia.app.ui.settings.LinkRow
 import com.prayertimesasia.app.ui.settings.PickerRow
 import com.prayertimesasia.app.ui.settings.Section
 import com.prayertimesasia.app.ui.settings.SwitchRow
@@ -518,8 +517,8 @@ private fun SoundSection(state: AppState) {
         if (Azan.isAvailable(context)) {
             SwitchRow(tr(R.string.settings_azan), p.azanSound, sub = tr(R.string.phone_alerts_azanSub)) { on -> state.update { it.copy(azanSound = on) } }
             // Short call or full azan. Their own azan (Settings, Your own azan) replaces both, so the choice hides then.
-            if (p.azanSound && Azan.hasBothLengths(context) && !OwnAzan.isSet(context)) {
-                AzanLengthRows(state)
+            if (p.azanSound && Azan.voices(context).isNotEmpty() && !OwnAzan.isSet(context)) {
+                AzanChoiceRows(state)
             }
         }
         SwitchRow(tr(R.string.settings_buzzOnly), p.buzzOnly, sub = tr(R.string.alerts_buzzSub)) { on -> state.update { it.copy(buzzOnly = on) } }
@@ -532,33 +531,71 @@ private fun SoundSection(state: AppState) {
     }
 }
 
-/** Short call or full azan, with a Listen button that plays the chosen one. */
+/** Which voice and how long. Tapping a choice picks it and plays it; tapping again stops it. */
 @Composable
-private fun AzanLengthRows(state: AppState) {
+private fun AzanChoiceRows(state: AppState) {
     val context = LocalContext.current
     val p = state.prefs
-    val short = tr(R.string.alerts_azanShort)
-    val full = tr(R.string.alerts_azanFull)
+    val voice = Azan.voiceOrDefault(context, p.azanVoice) ?: return
+    val voices = Azan.voices(context)
     var player by remember { mutableStateOf<MediaPlayer?>(null) }
-    fun stop() { player?.run { stop(); release() }; player = null }
-    DisposableEffect(Unit) { onDispose { stop() } }
-    PickerRow(tr(R.string.alerts_azanLength), if (p.azanFull) full else short, listOf(short to false, full to true), p.azanFull) { on ->
+    var playing by remember { mutableStateOf<String?>(null) }
+    fun stop() { player?.run { stop(); release() }; player = null; playing = null }
+    fun play(key: String, v: String, full: Boolean) {
+        if (playing == key) { stop(); return }
         stop()
-        state.update { it.copy(azanFull = on) }
+        val uri = Azan.uri(context, v, Azan.kindFor(context, v, full, fajr = false)) ?: return
+        player = MediaPlayer().apply {
+            setAudioAttributes(Azan.attributes)
+            setDataSource(context, uri)
+            setOnCompletionListener { stop() }
+            prepare()
+            start()
+        }
+        playing = key
     }
-    Text(tr(R.string.alerts_azanLengthSub, "name" to Prayer.FAJR.name(state.resolver.naming)), style = Txt.footnote, color = Palette.secondary,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
-    LinkRow(if (player != null) tr(R.string.alerts_azanStop) else tr(R.string.alerts_azanListen), null) {
-        if (player != null) stop() else (if (p.azanFull) Azan.fullUri(context) else Azan.shortUri(context))?.let { uri ->
-            player = MediaPlayer().apply {
-                setAudioAttributes(Azan.attributes)
-                setDataSource(context, uri)
-                setOnCompletionListener { stop() }
-                prepare()
-                start()
+    DisposableEffect(Unit) { onDispose { stop() } }
+    if (voices.size > 1) {
+        Text(tr(R.string.alerts_azanVoice), style = Txt.footnote, color = Palette.secondary,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp))
+        for (v in voices) {
+            val note = when {
+                !Azan.has(context, v, Azan.Kind.FULL) -> tr(R.string.voice_shortOnly)
+                Azan.has(context, v, Azan.Kind.FAJR) -> tr(R.string.voice_fajrToo)
+                else -> null
+            }
+            ChoiceRow(voiceName(v), note, v == voice) {
+                state.update { it.copy(azanVoice = v) }
+                play(v, v, full = false)
             }
         }
+        Text(tr(R.string.alerts_azanVoiceSub), style = Txt.footnote, color = Palette.secondary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
     }
+    if (Azan.has(context, voice, Azan.Kind.FULL)) {
+        Text(tr(R.string.alerts_azanLength), style = Txt.footnote, color = Palette.secondary,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp))
+        for (full in listOf(false, true)) {
+            ChoiceRow(if (full) tr(R.string.alerts_azanFull) else tr(R.string.alerts_azanShort), null, p.azanFull == full) {
+                state.update { it.copy(azanFull = full) }
+                play(if (full) "full" else "short", voice, full)
+            }
+        }
+        Text(tr(R.string.alerts_azanLengthSub, "name" to Prayer.FAJR.name(state.resolver.naming)), style = Txt.footnote, color = Palette.secondary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+    }
+}
+
+@Composable
+private fun voiceName(v: String): String = when (v) {
+    "asim" -> tr(R.string.voice_asim)
+    "makkah" -> tr(R.string.voice_makkah)
+    "khalaf" -> tr(R.string.voice_khalaf)
+    "sudais" -> tr(R.string.voice_sudais)
+    "aqsa" -> tr(R.string.voice_aqsa)
+    "egypt" -> tr(R.string.voice_egypt)
+    "madinah" -> tr(R.string.voice_madinah)
+    else -> v
 }
 
 @Composable

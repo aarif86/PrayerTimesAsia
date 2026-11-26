@@ -45,7 +45,7 @@ struct CreditsView: View {
                detail: "Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.",
                url: "https://prayertimes.asia/verify.html"),
         Credit(title: "Azan",
-               detail: "The azan is recited by Asim Javed, from the ICR masjid's own collection on the Internet Archive, shared as public domain (CC0). We credit him with thanks.",
+               detail: "The azan voices are Asim Javed, from the ICR masjid's own collection on the Internet Archive (public domain, CC0), Ahmed Khalaf, his own recordings (CC BY 4.0), and the Makkah azan as recorded at Masjid al-Haram by Seyfula Islam (CC BY 3.0, Wikimedia Commons). With thanks to them all.",
                url: "https://archive.org/details/icr-friday-prayer-2nd-adhan-17th-may-2024-9th-dhul-qadah-1445-by-asim-javed"),
         Credit(title: "Design",
                detail: "The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my by Awsam Tech LLP, the Singapore and Malaysia app. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.",

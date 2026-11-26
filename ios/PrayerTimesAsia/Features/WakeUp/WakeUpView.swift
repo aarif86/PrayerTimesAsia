@@ -235,7 +235,7 @@ private struct TestAlertSection: View {
         let now = Date.now
         let name = model.current(at: now).map { $0.prayer.name(model.naming) } ?? "Prayer"
         let quiet = model.prefs.buzzOnly
-        let sound: Azan.Sound = model.prefs.azanSound && Azan.isAvailable ? (model.prefs.azanFull ? .azanFull : .azan) : .standard
+        let sound: Azan.Sound = model.prefs.azanSound && Azan.isAvailable ? .azan(voice: model.prefs.azanVoice, full: model.prefs.azanFull, fajr: false) : .standard
         return await NotificationScheduler.sendTest(title: "\(name) · test alert", body: "This is how prayer alerts will look on this device.", sound: sound, silent: quiet)
     }
 }
@@ -619,44 +619,93 @@ private struct ExtrasSection: View {
     }
 }
 
-/// Short call or full azan, with a Listen button that plays the chosen one.
-private struct AzanLengthRows: View {
+/// Which voice and how long. Tapping a choice picks it and plays it; tapping again stops it.
+private struct AzanChoiceRows: View {
     @Environment(AppModel.self) private var model
     @State private var player: AVAudioPlayer?
-    @State private var playing = false
+    @State private var playing: String?
+
+    private static let names = [
+        "asim": "Asim Javed", "makkah": "Makkah, recorded at Masjid al-Haram", "khalaf": "Ahmed Khalaf",
+        "sudais": "Makkah, Sheikh Sudais", "aqsa": "Al-Aqsa", "egypt": "Egyptian style", "madinah": "Madinah",
+    ]
 
     var body: some View {
-        Picker(selection: Binding(get: { model.prefs.azanFull }, set: { stop(); model.prefs.azanFull = $0 })) {
-            Text("Short call").tag(false)
-            Text("Full azan").tag(true)
-        } label: {
-            VStack(alignment: .leading, spacing: 2) {
+        let voices = Azan.voices
+        let voice = Azan.voiceOrDefault(model.prefs.azanVoice) ?? "asim"
+        if voices.count > 1 {
+            Section {
+                ForEach(voices, id: \.self) { v in
+                    Button {
+                        model.prefs.azanVoice = v
+                        play(v, voice: v, full: false)
+                    } label: {
+                        HStack {
+                            Image(systemName: playing == v ? "stop.fill" : "play.fill").font(.footnote).foregroundStyle(.secondary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(Self.names[v] ?? v).foregroundStyle(.primary)
+                                if let note = note(v) { Text(note).font(.footnote).foregroundStyle(.secondary) }
+                            }
+                            Spacer()
+                            if v == voice { Image(systemName: "checkmark").foregroundStyle(.tint) }
+                        }
+                    }
+                }
+            } header: {
+                Text("Azan voice")
+            } footer: {
+                Text("Tap a voice to hear it. More voices are added as their owners give permission.")
+            }
+        }
+        if Azan.has(voice, .full) {
+            Section {
+                ForEach([false, true], id: \.self) { full in
+                    Button {
+                        model.prefs.azanFull = full
+                        play(full ? "full" : "short", voice: voice, full: full)
+                    } label: {
+                        HStack {
+                            Image(systemName: playing == (full ? "full" : "short") ? "stop.fill" : "play.fill").font(.footnote).foregroundStyle(.secondary)
+                            Text(full ? "Full azan" : "Short call").foregroundStyle(.primary)
+                            Spacer()
+                            if model.prefs.azanFull == full { Image(systemName: "checkmark").foregroundStyle(.tint) }
+                        }
+                    }
+                }
+            } header: {
                 Text("Azan length")
-                Text("The short call is the opening Allahu akbar. iPhone plays up to 30 seconds of the full azan. \(Prayer.fajr.name(model.naming)) always plays the short call.")
-                    .font(.footnote).foregroundStyle(.secondary)
+            } footer: {
+                Text("The short call is the opening Allahu akbar. iPhone plays up to 30 seconds of the full azan. With Full, \(Prayer.fajr.name(model.naming)) plays the voice's own Fajr azan when it has one, otherwise the short call.")
             }
         }
-        Button(playing ? "Stop" : "Listen") {
-            if playing { stop(); return }
-            guard let url = Azan.fileURL(full: model.prefs.azanFull),
-                  let p = try? AVAudioPlayer(contentsOf: url) else { return }
-            try? AVAudioSession.sharedInstance().setCategory(.playback)
-            player = p
-            p.play()
-            playing = true
-            let seconds = p.duration
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(seconds + 0.2))
-                if player === p { stop() }
-            }
+    }
+
+    private func note(_ v: String) -> String? {
+        if !Azan.has(v, .full) { return "Short call only" }
+        if Azan.has(v, .fajr) { return "With its own Fajr azan" }
+        return nil
+    }
+
+    private func play(_ key: String, voice: String, full: Bool) {
+        if playing == key { stop(); return }
+        stop()
+        guard let url = Azan.url(voice, Azan.kind(for: voice, full: full, fajr: false)),
+              let p = try? AVAudioPlayer(contentsOf: url) else { return }
+        try? AVAudioSession.sharedInstance().setCategory(.playback)
+        player = p
+        p.play()
+        playing = key
+        let seconds = p.duration
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(seconds + 0.2))
+            if player === p { stop() }
         }
-        .onDisappear { stop() }
     }
 
     private func stop() {
         player?.stop()
         player = nil
-        playing = false
+        playing = nil
     }
 }
 
@@ -673,10 +722,6 @@ private struct SoundSection: View {
                         Text("Play the azan")
                         Text("Prayer notifications play the azan instead of a short tone").font(.footnote).foregroundStyle(.secondary)
                     }
-                }
-                // Short call or full azan. Their own azan (Settings, Your own azan) replaces both, so the choice hides then.
-                if model.prefs.azanSound && Azan.hasBothLengths && !OwnAzan.isSet {
-                    AzanLengthRows()
                 }
             }
             Toggle(isOn: Binding(get: { model.prefs.buzzOnly }, set: { model.prefs.buzzOnly = $0 })) {
@@ -703,6 +748,10 @@ private struct SoundSection: View {
             Text("Sound")
         } footer: {
             Text("Buzz only and Quiet hours are for shift workers sleeping in the day, a baby asleep in the room, or a calm night. Notifications only buzz then. Alarms keep their sound.")
+        }
+        // Voice and length. Their own azan (Settings, Your own azan) replaces these, so they hide then.
+        if Azan.isAvailable && model.prefs.azanSound && !Azan.voices.isEmpty && !OwnAzan.isSet {
+            AzanChoiceRows()
         }
     }
 }

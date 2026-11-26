@@ -1072,12 +1072,12 @@ final class AppModel {
                 if prayer == .maghrib && isRamadanDay(time) {
                     alerts.append(.init(id: id, title: "Time for iftar · \(name) \(formatted(time))",
                                         body: "Time to break your fast", fireDate: time,
-                                        sound: prefs.azanSound ? (prefs.azanFull ? .azanFull : .azan) : .standard, silent: silent))
+                                        sound: prefs.azanSound ? .azan(voice: prefs.azanVoice, full: prefs.azanFull, fajr: false) : .standard, silent: silent))
                     continue
                 }
                 alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
                                     body: AlertLines.line(lineLang, prayer: prayer, friday: isFriday(time), year: pd.year, month: pd.month, day: pd.day, name: name), fireDate: time,
-                                    sound: prefs.azanSound ? (prayer == .fajr ? .azanSubuh : (prefs.azanFull ? .azanFull : .azan)) : .standard, silent: silent))
+                                    sound: prefs.azanSound ? .azan(voice: prefs.azanVoice, full: prefs.azanFull, fajr: prayer == .fajr) : .standard, silent: silent))
             }
         }
         // Subuh wake-up: a real alarm (AlarmKit, iOS 26+) where possible,
