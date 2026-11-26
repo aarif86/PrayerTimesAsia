@@ -68,6 +68,35 @@ fun Preferences.withNotifyAllFive(): Preferences =
     // Alerts were never turned on: an old saved list is only a leftover, so start clean (same as withNotify).
     copy(notificationsEnabled = true, notifyPrayers = (if (notificationsEnabled) notifyPrayers else emptySet()) + Prayer.obligatory)
 
+/** What "Set for all prayers" can do: Off, Notification, Short azan (a notification that plays it) or Alarm. */
+enum class AllLevel { OFF, NOTIFY, AZAN, ALARM }
+
+/**
+ * "Set for all prayers": one choice for the five main prayers at once. Sunrise and
+ * Jumu'ah are not touched. Short azan is a notification, and the azan sound is one
+ * setting for the whole app, so Notification turns it off and Short azan turns it on.
+ * Fajr is left alone when [includeFajr] is false, so a Fajr alarm someone set up
+ * carefully is never replaced by accident. [early] is the early reminder in minutes,
+ * or null to leave it as it is. Same rule as the web applyToAllFive.
+ */
+fun Preferences.withAllFive(level: AllLevel, early: Int?, includeFajr: Boolean = true): Preferences {
+    val mode = when (level) { AllLevel.OFF -> AlertMode.OFF; AllLevel.ALARM -> AlertMode.ALARM; else -> AlertMode.NOTIFY }
+    var p = this
+    for (x in Prayer.obligatory) if (x != Prayer.FAJR || includeFajr) p = p.withAlertMode(mode, x)
+    if (level == AllLevel.NOTIFY) p = p.copy(azanSound = false)
+    if (level == AllLevel.AZAN) p = p.copy(azanSound = true)
+    if (early == null) return p
+    // Away from home the app uses its own minutes for each prayer, so they follow the same choice.
+    // A Fajr that has an alarm keeps its own (Off), so the two never ring together.
+    val away = if (early == 0) 0 else AwayReminder.CHOICES.minByOrNull { kotlin.math.abs(it - early) } ?: 0
+    val minutes = p.awayMinutes.toMutableMap()
+    for (x in Prayer.obligatory) {
+        if (x == Prayer.FAJR && (!includeFajr || p.hasAlarm(Prayer.FAJR))) continue
+        minutes[x.raw] = away
+    }
+    return p.copy(reminderMinutesBefore = early, awayMinutes = minutes)
+}
+
 /** The bell on the Prayer screen: Off, then Notify, then Alarm, then Off again. */
 fun Preferences.nextAlertMode(prayer: Prayer): AlertMode {
     val modes = AlertMode.modes(prayer)
