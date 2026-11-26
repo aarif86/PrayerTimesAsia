@@ -425,7 +425,7 @@ function PrayerList({ c, fill, slim, footer }: { c: Ctx; fill: boolean; slim?: b
   const syurukOpen = syuruk && store.prefs.showHadith && !store.prefs.hiddenHadith.includes('syuruk')
   return (
     <div class={`list-wrap ${fill ? 'fill' : ''}`} {...swipe}>
-      <div class={`prayer-list glass ${slim ? 'slim' : ''}`} style={fill && !slim ? { maxHeight: `${prayerRows * 92 + (list.length - 1) * 6 + 16 + (list.length - prayerRows) * 66 + (syurukOpen ? 200 : 0)}px` } : undefined}>
+      <div class={`prayer-list glass ${slim ? 'slim' : ''}`} style={fill && !slim ? { maxHeight: `${prayerRows * 92 + (list.length - 1) * 6 + 16 + (list.length - prayerRows) * 66 + (syurukOpen ? 200 : 0)}px` } : slim ? { '--rows': list.length, '--extra': syurukOpen ? '240px' : '0px' } : undefined}>
         {list.map((e) => e.kind === 'prayer'
           ? <>
               <PrayerRow slim={slim} lit={slim ? e.p === (current ?? next?.prayer) && c.offset === 0 : false} p={e.p} t={e.t} now={c.now} day={day} isCurrent={e.p === current && e.t <= c.now} next={next?.prayer === e.p && next.time === e.t ? next : null}
