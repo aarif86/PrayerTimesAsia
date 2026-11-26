@@ -179,7 +179,8 @@ export const DEFAULT_PREFS: Preferences = {
   appLanguageOverride: null,
   use24Hour: false,
   hijriAdjustment: 0,
-  notificationsEnabled: false,
+  // New installs are told when each prayer begins. Alerts only go out once the browser or phone allows them.
+  notificationsEnabled: true,
   notifyPrayers: [...OBLIGATORY],
   reminderMinutesBefore: 0,
   azanSound: true,
@@ -280,6 +281,8 @@ export function decodePreferences(raw: unknown): Preferences {
   const out: Preferences = structuredClone(DEFAULT_PREFS)
   if (!raw || typeof raw !== 'object') return out
   const r = { ...(raw as Record<string, unknown>) }
+  // Saved settings without this choice come from before the default changed: keep them Off.
+  if (!('notificationsEnabled' in r)) r.notificationsEnabled = false
   // Side Dial and Day Dial are retired: anyone on them moves to Centre Dial.
   if (r.todayStyle === 'list' || r.todayStyle === 'dial') r.todayStyle = 'centre'
   for (const key of Object.keys(DEFAULT_PREFS) as (keyof Preferences)[]) {

@@ -1,4 +1,4 @@
-import type { Prayer } from './prayer'
+import { OBLIGATORY, type Prayer } from './prayer'
 import type { PrayerAlarmTiming, WakeUpTiming } from './wakeup'
 
 /**
@@ -84,6 +84,20 @@ export function setAlertMode(p: AlertPrefs, prayer: Prayer, mode: AlertMode): vo
   if (mode === 'notify') { setAlarm(p, prayer, false); setNotify(p, prayer, true); return }
   if (prayer === 'sunrise') { setNotify(p, prayer, true); return }
   setAlarm(p, prayer, true)
+}
+
+/** All five main prayers are on Notify (no Off, no Alarm). Sunrise does not count. */
+export function allFiveNotify(p: AlertPrefs): boolean {
+  return OBLIGATORY.every((x) => alertMode(p, x) === 'notify')
+}
+
+/**
+ * "Notify me for all 5 prayers": every main prayer that is Off goes to Notify.
+ * A prayer on Alarm stays on Alarm. Sunrise is not touched.
+ */
+export function notifyAllFive(p: AlertPrefs): void {
+  p.notificationsEnabled = true
+  for (const x of OBLIGATORY) if (!p.notifyPrayers.includes(x)) p.notifyPrayers = [...p.notifyPrayers, x]
 }
 
 /** The bell on the Prayer screen: Off, then Notify, then Alarm, then Off again. */

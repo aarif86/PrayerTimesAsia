@@ -15,12 +15,12 @@ import { LONG_DAYS_WORDS } from '../core/longDays'
 import { flag } from '../core/regions'
 import { noonDaysAfter } from '../core/tz'
 import { nudgeAt } from '../core/window'
-import { alertSupport, requestPermission } from '../services/notifications'
+import { alertSupport, permission, requestPermission } from '../services/notifications'
 import { TODAY_STYLES } from '../services/prefs'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { cycleAlert, ModeIcon, modeWord, WakeChip } from './WakeUp'
-import { alertMode } from '../core/alertMode'
+import { alertMode, allFiveNotify } from '../core/alertMode'
 import { fmtDate, openSheet, Segmented, useDayRequests, short, SourceLine, Switch, TimeText } from './common'
 import { HomeQuestion } from './Sheets'
 import { DayDial, GoldDial, SunPath, tint } from './Dials'
@@ -297,7 +297,8 @@ function NotePrompt({ c }: { c: Ctx }) {
 
 /** One tap to be told when each prayer begins. */
 function AlertsPrompt() {
-  if (store.prefs.notificationsEnabled || store.prefs.alertsPromptDismissed) return null
+  // Alerts are on by default, but still ask once if the browser has not been asked yet.
+  if ((store.prefs.notificationsEnabled && permission() !== 'default') || store.prefs.alertsPromptDismissed) return null
   return (
     <div class="alerts-prompt">
       <BellRing size={19} class="accent" fill="currentColor" style={{ flex: 'none' }} />
@@ -435,7 +436,20 @@ function PrayerList({ c, fill, slim, footer }: { c: Ctx; fill: boolean; slim?: b
           : <BlessedRow b={e.b} t={e.t} now={c.now} />)}
         {footer}
       </div>
+      <AllFiveLine />
     </div>
+  )
+}
+
+/** Shown instead of five identical bells: every main prayer is on Notify. */
+function AllFiveLine() {
+  if (!allFiveNotify(store.prefs)) return null
+  return (
+    <button class="all-five-line" onClick={() => openSheet({ kind: 'wakeup' })}>
+      <BellRing size={14} />
+      <span>{tr('today.allFiveOn')}</span>
+      <b>{tr('today.allFiveChange')}</b>
+    </button>
   )
 }
 
@@ -450,6 +464,8 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap, slim, lit }: { p: P
   const prefs = store.prefs
   const passed = t <= now && !isCurrent
   const mode = alertMode(prefs, p)
+  // All five on Notify: no repeating bells, one line under the list says so.
+  const hideBell = isObligatory(p) && allFiveNotify(prefs)
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const local = store.localName(p, t)
@@ -472,11 +488,13 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap, slim, lit }: { p: P
         {other != null && day.alternateSource && <div class="extra alt">{day.alternateSource} {store.formatted(other)}</div>}
       </div>
       <TimeText ms={t} size={slim ? 20 : 29} />
-      <button class={`bell bell-${mode}`} aria-label={tr('today.bellAria', { name: store.name(p, t), mode: modeWord(mode) })}
-        onClick={(e) => { e.stopPropagation(); toggleNotify(p) }}
-        onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); openSheet({ kind: 'wakeup', prayer: p }) }}>
-        <ModeIcon mode={mode} />
-      </button>
+      {hideBell ? <span class="bell bell-none" aria-hidden="true" /> : (
+        <button class={`bell bell-${mode}`} aria-label={tr('today.bellAria', { name: store.name(p, t), mode: modeWord(mode) })}
+          onClick={(e) => { e.stopPropagation(); toggleNotify(p) }}
+          onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); openSheet({ kind: 'wakeup', prayer: p }) }}>
+          <ModeIcon mode={mode} />
+        </button>
+      )}
     </div>
   )
 }
@@ -730,6 +748,7 @@ function BandsPage({ c }: { c: Ctx }) {
         <div class="row foot-row"><SourceLine day={shown} /><span class="spacer" /><ShowMoreLink c={c} /></div>
         <NotePrompt c={c} />
       <Offer c={c} />
+        <AllFiveLine />
         <p class="bands-credit">{tr('bands.credit')}</p>
       </div>
     </div>
@@ -739,6 +758,7 @@ function BandsPage({ c }: { c: Ctx }) {
 function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: number; jamaah?: number; now: number; isCurrent: boolean; next: Moment }) {
   const prefs = store.prefs
   const mode = alertMode(prefs, p)
+  const hideBell = isObligatory(p) && allFiveNotify(prefs)
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const parts = store.timeParts(t)
@@ -746,7 +766,7 @@ function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: numb
   return (
     <button class={`band ${isCurrent ? 'current' : ''}`} style={{ background: BAND[p] }}
       aria-label={`${store.name(p, t)}, ${store.formatted(t)}${isCurrent ? tr('today.isNow') : ''}${prayed ? tr('today.prayed') : ''}, ${modeWord(mode)}`}
-      onClick={() => (trackable ? openSheet({ kind: 'log-prayer', prayer: p, t }) : toggleNotify(p))}>
+      onClick={() => (trackable ? openSheet({ kind: 'log-prayer', prayer: p, t }) : hideBell ? openSheet({ kind: 'wakeup' }) : toggleNotify(p))}>
       <span class="band-names">
         <span class="row" style={{ gap: '8px', alignItems: 'baseline' }}>
           <span class="band-name">{store.name(p, t)}</span>
@@ -760,7 +780,7 @@ function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: numb
       </span>
       <span class="spacer" />
       <span class="band-time"><span>{parts.time}</span>{parts.suffix && <span class="sfx">{parts.suffix}</span>}</span>
-      <span class={`band-bell band-bell-${mode}`} aria-hidden="true">{mode === 'alarm' ? <AlarmClock size={22} /> : mode === 'notify' ? <BellRing size={22} /> : <BellOff size={22} />}</span>
+      <span class={`band-bell band-bell-${mode}`} aria-hidden="true" style={hideBell ? { visibility: 'hidden' } : undefined}>{mode === 'alarm' ? <AlarmClock size={22} /> : mode === 'notify' ? <BellRing size={22} /> : <BellOff size={22} />}</span>
     </button>
   )
 }

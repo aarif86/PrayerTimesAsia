@@ -1,6 +1,6 @@
 import { AlarmClock, AlarmClockCheck, Bell, BellOff, BellRing, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, Download, Play, Smartphone } from 'lucide-preact'
 import { useEffect, useState } from 'preact/hooks'
-import { alertMode, fridayMode, modesFor, notifies, setAlertMode, setFridayMode, setNotify, type AlertMode } from '../core/alertMode'
+import { alertMode, allFiveNotify, notifyAllFive, fridayMode, modesFor, notifies, setAlertMode, setFridayMode, setNotify, type AlertMode } from '../core/alertMode'
 import type { PrayerDay } from '../core/engine'
 import { inSingapore } from '../core/friday'
 import { JUMUAH_LEAVE_CHOICES, leaveChoiceLabel, SECOND_SESSION_FROM, type JumuahSession } from '../core/jumuahLeave'
@@ -285,6 +285,11 @@ function MainPage({ open }: { open: (v: View) => void }) {
       <section>
         <h2 class="group-title">{tr('alerts.eachPrayer')}</h2>
         <div class="group">
+          <button class="item all-five-btn" disabled={allFiveNotify(p)}
+            onClick={() => { store.update((x) => notifyAllFive(x)); void ask() }}>
+            {allFiveNotify(p) ? <CircleCheck size={20} /> : <BellRing size={20} />}
+            <span class="label">{allFiveNotify(p) ? tr('alerts.allFiveOn') : tr('alerts.allFive')}<span class="sub">{tr('alerts.allFiveSub')}</span></span>
+          </button>
           {PRAYERS.map((prayer) => (
             <ModeBlock name={s.name(prayer)} mode={alertMode(p, prayer)} modes={modesFor(prayer)} words={chipWords(now, prayer)}
               open={() => open({ kind: 'prayer', prayer })} pick={(m) => pick(prayer, m)} />

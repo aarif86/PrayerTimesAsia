@@ -1221,5 +1221,10 @@
   "log.prayed": "Sudah salat",
   "log.from": "dari {time}",
   "log.allDone": "Semua salat sejauh ini hari ini sudah dicentang.",
-  "log.timeLabel": "Jam Anda salat"
+  "log.timeLabel": "Jam Anda salat",
+  "alerts.allFive": "Beri tahu saya untuk kelima salat",
+  "alerts.allFiveSub": "Salat yang sudah memakai Alarm tetap memakai Alarm.",
+  "alerts.allFiveOn": "Kelima salat sudah aktif",
+  "today.allFiveOn": "Pemberitahuan aktif untuk kelima salat",
+  "today.allFiveChange": "Ubah"
 }
