@@ -187,7 +187,8 @@ private fun ListPageV12(
                     simple -> SimpleNow(f, col)
                     look.sunPath -> SunStatus(f, col, width)
                     else -> Box(Modifier.fillMaxWidth().padding(top = 2.dp), contentAlignment = Alignment.Center) {
-                        val size = if (look.gold) (width.value * 0.52f).coerceIn(160f, 204f) else (width.value * 0.485f).coerceIn(150f, 190f)
+                        // The web sizes the dial from the screen width (clamp with vw), not the padded column.
+                        val size = if (look.gold) (maxWidth.value * 0.52f).coerceIn(160f, 204f) else (maxWidth.value * 0.485f).coerceIn(150f, 190f)
                         SmallDial(f, size.dp, gold = look.gold, col = col)
                     }
                 }
@@ -474,7 +475,7 @@ private fun SunStatus(f: TodayFrame, col: PageColors, width: Dp) {
                     .padding(horizontal = 16.dp, vertical = 8.dp))
         }
     }
-    SunPathV12(f, col, Modifier.fillMaxWidth().height(120.dp).offset(y = (-4).dp))
+    SunPathV12(f, col, Modifier.bleed(20.dp).fillMaxWidth().height(120.dp).offset(y = (-4).dp))
 }
 
 /** The day as one arc, midnight to midnight, as the web's v12 Sun Path. */
@@ -952,7 +953,7 @@ private fun BandV12(
     ) {
         Column(Modifier.weight(1f).clearAndSetSemantics {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             FlowLine {
-                Text(name, fontFamily = Rounded, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1, modifier = Modifier.align(Alignment.CenterVertically))
+                Text(name, fontFamily = Body, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1, modifier = Modifier.align(Alignment.CenterVertically))
                 r.localName(prayer, time)?.let { Text(it, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.8f), modifier = Modifier.align(Alignment.CenterVertically)) }
                 if (isCurrent) Text(tr(R.string.today_now), fontFamily = Body, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1D1D20),
                     modifier = Modifier.align(Alignment.CenterVertically).clip(CircleShape).background(Color.White).padding(horizontal = 7.dp, vertical = 3.dp))
