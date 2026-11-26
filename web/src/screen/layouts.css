@@ -286,6 +286,6 @@
    A lighter mix keeps every current-prayer label readable whatever the time of day. */
 .scr:not(.scr-light) .scr-next-name,
 .scr:not(.scr-light) .scr-tag,
-.scr:not(.scr-light) .scr-cell.on .scr-name,
+.scr:not(.scr-light):not(.scr-look-surau) .scr-cell.on .scr-name,
 .scr:not(.scr-light) .scr-dm.on .scr-dm-name,
-.scr:not(.scr-light) .lay-row.on .scr-name { color: color-mix(in srgb, var(--tint) 60%, #fff); }
+.scr:not(.scr-light):not(.scr-look-surau) .lay-row.on .scr-name { color: color-mix(in srgb, var(--tint) 60%, #fff); }
