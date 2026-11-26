@@ -51,6 +51,8 @@ data class DemoConfig(
         }
         var p = Preferences(
             hasOnboarded = true, guideShown = true, useGPS = false, home = pasirRis, homeConfirmed = true, manualPlace = pasirRis, lastCountryCode = "SG",
+            // The demo and the screen checks keep the old look with the "Get an alert" card, so they stay comparable.
+            notificationsEnabled = false,
             trackerEnabled = true, prayedLog = log, appearance = appearance, todayStyle = style, showMore = showMore,
         )
         if (review) p = p.copy(openDayCount = 10)

@@ -27,6 +27,16 @@ final class MoveSettingsTests: XCTestCase {
         XCTAssertNil(MovedSettings(code: "hello"))
     }
 
+    func testAlertsOffTravelWithTheCode() {
+        var off = Preferences(); off.notificationsEnabled = false
+        let code = MovedSettings(off)
+        XCTAssertEqual(code.notificationsEnabled, false)
+        XCTAssertFalse(code.applied(to: Preferences()).notificationsEnabled)
+        // A code that says nothing leaves this phone's choice as it is.
+        XCTAssertFalse(MovedSettings().applied(to: off).notificationsEnabled)
+        XCTAssertTrue(MovedSettings().applied(to: Preferences()).notificationsEnabled)
+    }
+
     func testRoundTrip() throws {
         let moved = try fixture().cases[1].settings
         let prefs = moved.applied(to: Preferences())

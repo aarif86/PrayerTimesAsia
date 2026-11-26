@@ -258,7 +258,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var use24Hour = Preferences.phoneUses24Hour
     var hijriAdjustment = 0
 
-    var notificationsEnabled = false
+    // New installs are told when each prayer begins; alerts only go out once the phone allows them.
+    var notificationsEnabled = true
     var notifyPrayers: Set<Prayer> = Set(Prayer.obligatory)
     /// Minutes before each chosen prayer for the "Reminder before prayer"
     /// heads-up; 0 = off. Separate from the alert at the prayer time itself.
@@ -455,7 +456,8 @@ struct Preferences: Codable, Equatable, Sendable {
         namingOverride = v(.namingOverride, d.namingOverride)
         use24Hour = v(.use24Hour, d.use24Hour)
         hijriAdjustment = v(.hijriAdjustment, d.hijriAdjustment)
-        notificationsEnabled = v(.notificationsEnabled, d.notificationsEnabled)
+        // Saved settings without this choice come from before it defaulted to on: keep them Off.
+        notificationsEnabled = v(.notificationsEnabled, false)
         notifyPrayers = v(.notifyPrayers, d.notifyPrayers)
         reminderMinutesBefore = v(.reminderMinutesBefore, d.reminderMinutesBefore)
         azanSound = v(.azanSound, d.azanSound)

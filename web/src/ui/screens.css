@@ -1385,3 +1385,8 @@ html[data-large-text] .pname { font-size: 20px; }
 .m-simple .space-name { white-space: normal; }
 @media (min-width: 1100px) and (min-height: 500px) { .v12m .masjid-map-wrap { height: calc(100vh - 32px); } }
 .st-bands .group-title, .st-bands .group-foot { margin-left: 4px; margin-right: 4px; }
+
+/* One line instead of five bells when every main prayer is on Notify */
+.all-five-line { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px auto 0; padding: 8px 12px; min-height: 44px; font-size: 14px; color: var(--fg2, inherit); }
+.all-five-line b { color: var(--accent); font-weight: 700; }
+.prayer-row .bell-none { pointer-events: none; }

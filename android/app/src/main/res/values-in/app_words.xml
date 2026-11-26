@@ -1224,4 +1224,9 @@
     <string name="log_from" formatted="false">dari {time}</string>
     <string name="log_allDone" formatted="false">Semua salat sejauh ini hari ini sudah dicentang.</string>
     <string name="log_timeLabel" formatted="false">Jam Anda salat</string>
+    <string name="alerts_allFive" formatted="false">Beri tahu saya untuk kelima salat</string>
+    <string name="alerts_allFiveSub" formatted="false">Salat yang sudah memakai Alarm tetap memakai Alarm.</string>
+    <string name="alerts_allFiveOn" formatted="false">Kelima salat sudah aktif</string>
+    <string name="today_allFiveOn" formatted="false">Pemberitahuan aktif untuk kelima salat</string>
+    <string name="today_allFiveChange" formatted="false">Ubah</string>
 </resources>

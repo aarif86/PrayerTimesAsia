@@ -35,6 +35,8 @@ data class MovedSettings(
     val namingOverride: NamingStyle? = null,
     val use24Hour: Boolean? = null,
     val hijriAdjustment: Int? = null,
+    /** Written only when alerts are Off. A code without it leaves this phone's choice as it is. */
+    val notificationsEnabled: Boolean? = null,
     /** Prayer raw values; an unknown one is skipped. */
     val notifyPrayers: List<String>? = null,
     val reminderMinutesBefore: Int? = null,
@@ -125,6 +127,7 @@ data class MovedSettings(
             namingOverride = namingOverride,
             use24Hour = use24Hour ?: d.use24Hour,
             hijriAdjustment = (hijriAdjustment ?: d.hijriAdjustment).coerceIn(-2, 2),
+            notificationsEnabled = notificationsEnabled ?: p.notificationsEnabled,
             notifyPrayers = notifyPrayers?.let { prayers(it) } ?: d.notifyPrayers,
             reminderMinutesBefore = reminderMinutesBefore ?: d.reminderMinutesBefore,
             musafirEnabled = musafirEnabled ?: d.musafirEnabled,
@@ -284,6 +287,7 @@ data class MovedSettings(
                 namingOverride = p.namingOverride,
                 use24Hour = changed(p.use24Hour, d.use24Hour),
                 hijriAdjustment = changed(p.hijriAdjustment, d.hijriAdjustment),
+                notificationsEnabled = if (p.notificationsEnabled) null else false,
                 notifyPrayers = changed(p.notifyPrayers, d.notifyPrayers)?.let(::ordered),
                 reminderMinutesBefore = changed(p.reminderMinutesBefore, d.reminderMinutesBefore),
                 musafirEnabled = changed(p.musafirEnabled, d.musafirEnabled),

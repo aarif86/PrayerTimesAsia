@@ -51,7 +51,7 @@ class AlarmEdgeCasesTest {
     }
 
     @Test fun jumaatReminderOnFridaysOnly() {
-        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, jumuahReminderMinutes = 30)
+        val prefs = Preferences(useGPS = false, notificationsEnabled = false, manualPlace = place, home = place, jumuahReminderMinutes = 30)
         val r = resolver(prefs)
         // Friday 20 November 2026.
         val friday = AlarmScheduler.plan(r, sgAt(2026, 11, 20, 6, 0)).single { it.kind == AlarmScheduler.Kind.JUMUAH }
@@ -62,7 +62,7 @@ class AlarmEdgeCasesTest {
     }
 
     @Test fun leavesTwoHoursBeforeTheSecondJumaatInSingapore() {
-        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, jumuahReminderMinutes = 120,
+        val prefs = Preferences(useGPS = false, notificationsEnabled = false, manualPlace = place, home = place, jumuahReminderMinutes = 120,
             jumuahSession = JumuahSession.SECOND)
         val j = AlarmScheduler.plan(resolver(prefs), sgAt(2026, 11, 20, 6, 0)).single { it.kind == AlarmScheduler.Kind.JUMUAH }
         assertEquals(sgAt(2026, 11, 20, 12, 0), j.at)
@@ -71,7 +71,7 @@ class AlarmEdgeCasesTest {
     }
 
     @Test fun leaveReminderRingsAsAnAlarmInsteadOfANotification() {
-        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, jumuahReminderMinutes = 45, jumuahLeaveAlarm = true)
+        val prefs = Preferences(useGPS = false, notificationsEnabled = false, manualPlace = place, home = place, jumuahReminderMinutes = 45, jumuahLeaveAlarm = true)
         val r = resolver(prefs)
         assertTrue(prefs.anyAlarm)
         val plan = AlarmScheduler.plan(r, sgAt(2026, 11, 20, 6, 0))

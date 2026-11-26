@@ -50,7 +50,7 @@ struct TodayView: View {
                 ScrollView {
                     VStack(spacing: 12) {
                         topBar(now)
-                        if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+                        if model.showAlertsPrompt { alertsPrompt }
                         SimpleTimes(now: now, day: day, current: current, next: next)
                     }
                     .padding(.horizontal, Theme.gutter)
@@ -125,7 +125,7 @@ struct TodayView: View {
                       current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
         VStack(alignment: .leading, spacing: fill ? 12 : 12) {
             header(now: now, day: day, shown: shown, current: current, next: next)
-            if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+            if model.showAlertsPrompt { alertsPrompt }
             prayerHadith(next)
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             if dayOffset == 0 { TodayNotes(now: now) }
@@ -284,7 +284,7 @@ struct TodayView: View {
                       current: (prayer: Prayer, time: Date)?, next: (prayer: Prayer, time: Date)?, fill: Bool) -> some View {
         VStack(spacing: fill ? 14 : 12) {
             topBar(now)
-            if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+            if model.showAlertsPrompt { alertsPrompt }
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             if dayOffset == 0 { TodayNotes(now: now) }
             dateHeader(shown)
@@ -506,7 +506,7 @@ struct TodayView: View {
                         .foregroundStyle(.white.opacity(0.75))
                         .contentTransition(.numericText(countsDown: true))
                 }
-                if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+                if model.showAlertsPrompt { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
                 if dayOffset == 0 { TodayNotes(now: now) }
             }
@@ -611,7 +611,7 @@ struct TodayView: View {
             // Room for the now-dot, which sits on the ring's edge.
             .padding(.bottom, 10)
             sunPlaceChip()
-            if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+            if model.showAlertsPrompt { alertsPrompt }
             prayerHadith(next)
             if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
             if dayOffset == 0 { TodayNotes(now: now) }
@@ -657,7 +657,7 @@ struct TodayView: View {
                         .padding(.horizontal, -Theme.gutter)
                 }
                 sunPlaceChip()
-                if !model.prefs.notificationsEnabled && !model.prefs.alertsPromptDismissed { alertsPrompt }
+                if model.showAlertsPrompt { alertsPrompt }
                 prayerHadith(next)
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
                 if dayOffset == 0 { TodayNotes(now: now) }
@@ -976,6 +976,7 @@ struct TodayView: View {
                     guard await NotificationScheduler.requestPermission() else { return }
                     model.prefs.notifyPrayers = Set(Prayer.obligatory)
                     model.prefs.notificationsEnabled = true
+                    await model.refreshNotificationStatus()
                 }
             }
             .font(.subheadline.weight(.bold))
@@ -1053,6 +1054,25 @@ private struct PrayerList: View {
 
     var body: some View {
         VStack(spacing: 6) {
+            list
+            if model.allFiveOnAndAllowed {
+                Button { model.showWakeUp = true } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "bell.fill").font(.caption)
+                        Text("Alerts on for all 5 prayers").font(.footnote)
+                        Text("Change").font(.footnote.weight(.bold)).foregroundStyle(Theme.accentText)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Alerts on for all 5 prayers. Change")
+            }
+        }
+    }
+
+    private var list: some View {
+        VStack(spacing: 6) {
             ForEach(entries) { entry in
                 switch entry {
                 case .prayer(let p, let t):
@@ -1117,6 +1137,10 @@ private struct PrayerList: View {
             .layoutPriority(-1)
             Spacer(minLength: 6)
             TimeText(parts: model.timeParts(time), size: 27)
+            // All five on Notify: no repeating bells, one line under the list says so.
+            if prayer.isObligatory && model.allFiveOnAndAllowed {
+                Color.clear.frame(width: 30, height: 34).accessibilityHidden(true)
+            } else {
             Group {
                 Button { cycleAlert(prayer, model: model) } label: {
                     Image(systemName: mode.symbol)
@@ -1132,6 +1156,7 @@ private struct PrayerList: View {
                 .accessibilityLabel("\(prayer.name(model.naming)) \(mode.word)")
                 .accessibilityHint("Tap to change. Hold for more.")
                 .contextMenu { AlertMenuItems(prayer: prayer) }
+            }
             }
         }
         .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, fill ? 8 : 12)
