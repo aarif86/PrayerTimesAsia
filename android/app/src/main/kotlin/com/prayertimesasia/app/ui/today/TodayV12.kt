@@ -212,8 +212,8 @@ private fun ListPageV12(
 private fun TopBarV12(f: TodayFrame, openPlaces: () -> Unit) {
     val state = f.state
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        PlaceChipV12(state, openPlaces, Modifier.weight(1f, fill = false))
-        Spacer(Modifier.weight(1f))
+        // The chip takes the room the buttons leave, and shrinks only when the name is long.
+        Box(Modifier.weight(1f)) { PlaceChipV12(state, openPlaces) }
         if (state.prefs.musafirEnabled && state.resolver.musafirStatus(f.now)?.isTraveller == true) {
             RoundButton(AppIcons.journey, tr(R.string.today_musafirButton), iconSize = 18.dp,
                 background = pageColors().accent.copy(alpha = 0.25f)) { state.showJourney = true }

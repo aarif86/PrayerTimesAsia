@@ -432,7 +432,7 @@ fun ArrivalCard(state: AppState) {
                 .clickable { state.update { it.copy(arrivalBannerDismissed = true) } }.padding(16.dp), tint = Palette.primary)
         }
         HorizontalDivider(Modifier.padding(vertical = 8.dp), color = Palette.primary.copy(alpha = 0.25f))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(tr(R.string.today_switchAuto), style = Txt.subheadlineSemibold, color = Palette.primary)
                 Text(tr(R.string.today_switchAutoSub), style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
@@ -444,7 +444,7 @@ fun ArrivalCard(state: AppState) {
         }
         val home = state.prefs.home?.countryCode
         if (home != null && home != profile.code) {
-            Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.padding(top = 6.dp).heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(tr(R.string.settings_musafir), style = Txt.subheadlineSemibold, color = Palette.primary)
                     Text(tr(R.string.today_musafirSub), style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
@@ -455,7 +455,7 @@ fun ArrivalCard(state: AppState) {
                 Box(Modifier.padding(top = 6.dp)) { com.prayertimesasia.app.ui.journey.HomeQuestionCard(state) }
             }
         }
-        Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.padding(top = 6.dp).heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(tr(R.string.settings_asr), style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f))
             Box {
                 Text(
