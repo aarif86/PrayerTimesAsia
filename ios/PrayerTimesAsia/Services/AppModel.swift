@@ -1089,7 +1089,7 @@ final class AppModel {
         let wakeUps = plan.filter { $0.prayer == nil || $0.date < soon }.map { ($0.date, $0.title) }
         let sound = prefs.alarmSound
         let notificationAlerts = ramadan + alerts
-        let notificationsOn = onTime || early > 0 || nudges || (jumuah > 0 && !prefs.jumuahLeaveAlarm) || !ramadan.isEmpty
+        let notificationsOn = onTime || anyEarly || nudges || (jumuah > 0 && !prefs.jumuahLeaveAlarm) || !ramadan.isEmpty
         // Demo screenshots never ask for alarm permission.
         let isDemo = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") }
         Task {
