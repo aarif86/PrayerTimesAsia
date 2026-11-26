@@ -683,8 +683,8 @@ private struct AzanChoiceRows: View {
                         .buttonStyle(.borderless)
                     }
                 }
-                ownRow
             }
+            ownRow
             if Azan.has(voice, .full) {
                 HStack {
                     Text("Length")

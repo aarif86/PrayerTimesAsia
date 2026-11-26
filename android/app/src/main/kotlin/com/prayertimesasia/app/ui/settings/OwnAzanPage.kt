@@ -45,7 +45,7 @@ fun ColumnScope.OwnAzanPage(state: AppState) {
     var note by remember { mutableStateOf<String?>(null) }
     var player by remember { mutableStateOf<MediaPlayer?>(null) }
 
-    fun stop() { player?.runCatching { stop(); release() }; player = null }
+    fun stop() { player?.let { mp -> runCatching { mp.stop() }; mp.release() }; player = null }
     DisposableEffect(Unit) { onDispose { stop() } }
 
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->

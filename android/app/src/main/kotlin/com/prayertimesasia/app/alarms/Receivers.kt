@@ -41,6 +41,9 @@ object Notifications {
             description = "An alert at the exact time each prayer begins."
         })
         nm.deleteNotificationChannel("reminder")
+        // The single azan channels from before azan voices.
+        nm.deleteNotificationChannel("prayer-azan")
+        nm.deleteNotificationChannel("prayer-azan-subuh")
         nm.createNotificationChannel(NotificationChannel(REMINDER, "Reminder before prayer", NotificationManager.IMPORTANCE_HIGH).apply {
             description = "A heads-up a few minutes before each prayer, so a meeting doesn't run past it."
         })

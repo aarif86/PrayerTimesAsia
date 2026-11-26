@@ -546,7 +546,7 @@ private fun AzanChoiceRows(state: AppState, go: (String?) -> Unit) {
     val voices = Azan.voices(context)
     var player by remember { mutableStateOf<MediaPlayer?>(null) }
     var playing by remember { mutableStateOf<String?>(null) }
-    fun stop() { player?.run { stop(); release() }; player = null; playing = null }
+    fun stop() { player?.let { mp -> runCatching { mp.stop() }; mp.release() }; player = null; playing = null }
     fun play(key: String, v: String, full: Boolean) {
         if (playing == key) { stop(); return }
         stop()
