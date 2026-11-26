@@ -549,7 +549,7 @@ private fun DayNavigatorV12(f: TodayFrame, setOffset: (Int) -> Unit, openCalenda
     val nextL = tr(R.string.today_nextDay)
     val midL = if (f.offset == 0) tr(R.string.today_datesSources) else tr(R.string.today_backToToday)
     Row(Modifier.fillMaxWidth().padding(start = 2.dp, end = 6.dp, top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(44.dp).clip(CircleShape).clickable(onClickLabel = tr(R.string.today_prevDay)) { setOffset(f.offset - 1) }
+        Box(Modifier.size(48.dp).clip(CircleShape).clickable(onClickLabel = tr(R.string.today_prevDay)) { setOffset(f.offset - 1) }
             .semantics { contentDescription = prevL }, contentAlignment = Alignment.Center) {
             Icon(Lucide.chevronLeft(), null, Modifier.size(26.dp), tint = col.fg2)
         }
@@ -566,7 +566,7 @@ private fun DayNavigatorV12(f: TodayFrame, setOffset: (Int) -> Unit, openCalenda
                 else Icon(Lucide.undo2(), null, Modifier.size(18.dp), tint = col.fg2)
             }
         }
-        Box(Modifier.size(44.dp).clip(CircleShape).clickable(onClickLabel = tr(R.string.today_nextDay)) { setOffset(f.offset + 1) }
+        Box(Modifier.size(48.dp).clip(CircleShape).clickable(onClickLabel = tr(R.string.today_nextDay)) { setOffset(f.offset + 1) }
             .semantics { contentDescription = nextL }, contentAlignment = Alignment.Center) {
             Icon(Lucide.chevronRight(), null, Modifier.size(26.dp), tint = col.fg2)
         }
@@ -750,7 +750,7 @@ private fun ShowMoreLink(state: AppState, col: PageColors, big: Boolean) {
     val more = state.prefs.showMore
     val label = if (more) tr(R.string.common_showLess) else tr(R.string.common_showMore)
     Row(
-        Modifier.fillMaxWidth().heightIn(min = if (big) 48.dp else 44.dp).clickable(onClickLabel = label) { state.update { it.copy(showMore = !it.showMore) } }
+        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClickLabel = label) { state.update { it.copy(showMore = !it.showMore) } }
             .semantics { stateDescription = if (more) "Expanded" else "Collapsed" },
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
@@ -765,7 +765,7 @@ private fun ShowMoreLink(state: AppState, col: PageColors, big: Boolean) {
 private fun ColumnScope.AllFiveLine(state: AppState, col: PageColors) {
     if (!allFiveOn(state)) return
     Row(
-        Modifier.align(Alignment.CenterHorizontally).heightIn(min = 44.dp).clip(RoundedCornerShape(12.dp)).clickable { state.openAlerts() }
+        Modifier.align(Alignment.CenterHorizontally).heightIn(min = 48.dp).clip(RoundedCornerShape(12.dp)).clickable { state.openAlerts() }
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -792,7 +792,7 @@ private fun SourceLine(f: TodayFrame, col: PageColors, modifier: Modifier = Modi
         if (authority != null) append(" · $authority")
         append(" · ${tr(R.string.source_grade)} ${d.grade.code}")
     }
-    Box(modifier.heightIn(min = 44.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onClick)
+    Box(modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onClick)
         .semantics { contentDescription = "Source: grade ${d.grade.code}, ${d.grade.title}, ${d.officialSource ?: r.method.shortName}" }
         .padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
         Text(text, fontFamily = Body, fontSize = size, color = color, textAlign = TextAlign.Center, maxLines = 2)
@@ -836,7 +836,7 @@ private fun BandsV12(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> 
     val blessed = state.resolver.blessedTimes(f.shown).filter { state.prefs.showMore || it.first == BlessedTime.IMSAK }
     val hideBells = allFiveOn(state)
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val bandsSpace = maxHeight - topH - footH - 44.dp - 52.dp * blessed.size
+        val bandsSpace = maxHeight - topH - footH - 48.dp - 52.dp * blessed.size
         val bandH = (bandsSpace / 6).coerceAtLeast(60.dp)
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             Column(Modifier.onSizeChanged { topH = with(density) { it.height.toDp() } }.padding(horizontal = 20.dp).padding(top = 4.dp, bottom = 10.dp),
@@ -868,19 +868,19 @@ private fun BandsV12(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> 
                 }.padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.size(44.dp).clickable(onClickLabel = tr(R.string.today_prevDay)) { setOffset(f.offset - 1) }
+                Box(Modifier.size(48.dp).clickable(onClickLabel = tr(R.string.today_prevDay)) { setOffset(f.offset - 1) }
                     .semantics { contentDescription = prevL }, contentAlignment = Alignment.Center) {
                     Icon(Lucide.chevronLeft(2.6f), null, Modifier.size(20.dp), tint = col.fg2)
                 }
                 Row(Modifier.weight(1f).clickable { if (f.offset == 0) openCalendar() else setOffset(0) }
                     .semantics(mergeDescendants = true) { contentDescription = midL }
-                    .padding(vertical = 4.dp),
+                    .heightIn(min = 48.dp).padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
                     if (f.offset != 0) Icon(Lucide.undo2(), null, Modifier.size(13.dp), tint = col.fg)
                     Text("${dateText(state, f.shown, "d MMM")} · ${state.resolver.hijri(f.shown.time(Prayer.DHUHR))}", fontFamily = Body, fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold, color = col.fg, textAlign = TextAlign.Center, maxLines = 2)
                 }
-                Box(Modifier.size(44.dp).clickable(onClickLabel = tr(R.string.today_nextDay)) { setOffset(f.offset + 1) }
+                Box(Modifier.size(48.dp).clickable(onClickLabel = tr(R.string.today_nextDay)) { setOffset(f.offset + 1) }
                     .semantics { contentDescription = nextL }, contentAlignment = Alignment.Center) {
                     Icon(Lucide.chevronRight(2.6f), null, Modifier.size(20.dp), tint = col.fg2)
                 }
@@ -900,7 +900,7 @@ private fun BandsV12(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> 
                     SourceLine(f, col, size = 13.sp, color = col.fg2) { openSanad(f.shown) }
                     Spacer(Modifier.weight(1f))
                     val more = state.prefs.showMore
-                    Row(Modifier.heightIn(min = 44.dp).clickable { state.update { it.copy(showMore = !it.showMore) } }.padding(horizontal = 4.dp),
+                    Row(Modifier.heightIn(min = 48.dp).clickable { state.update { it.copy(showMore = !it.showMore) } }.padding(horizontal = 4.dp),
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(if (more) tr(R.string.common_showLess) else tr(R.string.common_showMore), fontFamily = Body, fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold, color = col.accent)
