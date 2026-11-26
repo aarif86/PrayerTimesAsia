@@ -14,6 +14,7 @@ import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
 import com.prayertimesasia.core.withNotifyAllFive
+import com.prayertimesasia.core.withAllFive
 import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.Coordinates
@@ -452,6 +453,35 @@ class AppState(
         scope.launch {
             permissions?.notifications()
             update { it.withAlertMode(mode, prayer) }
+        }
+    }
+
+    /**
+     * "Send a test alert": a sample alert about 3 seconds later, the way a real one arrives, with the
+     * azan when that sound is on. False when the phone will not show alerts (the page says so).
+     */
+    suspend fun sendTestAlert(title: String, body: String): Boolean {
+        if (permissions?.notifications() == false) return false
+        if (!com.prayertimesasia.app.alarms.Notifications.canPost(context)) return false
+        scope.launch {
+            delay(3000)
+            val quiet = prefs.buzzOnly
+            val sound = if (prefs.azanSound && !quiet && com.prayertimesasia.app.alarms.Azan.isAvailable(context)) AlarmScheduler.Sound.AZAN else AlarmScheduler.Sound.STANDARD
+            com.prayertimesasia.app.alarms.Notifications.post(context, "test", title, body, AlarmScheduler.Kind.PRAYER, sound, silent = quiet)
+        }
+        return true
+    }
+
+    /** "Set for all prayers": one level for the five prayers, and an optional early reminder. Asks for permission when something turns on. */
+    fun setAllFive(level: com.prayertimesasia.core.AllLevel, early: Int?, includeFajr: Boolean) {
+        if (level == com.prayertimesasia.core.AllLevel.OFF) {
+            stopRinging()
+            update { it.withAllFive(level, early, includeFajr) }
+            return
+        }
+        scope.launch {
+            permissions?.notifications()
+            update { it.withAllFive(level, early, includeFajr) }
         }
     }
 
