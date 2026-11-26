@@ -18,12 +18,25 @@ cd "$(dirname "$0")/.."
 
 clean="silenceremove=start_periods=1:start_threshold=-45dB,loudnorm=I=-16:TP=-1.5:LRA=11"
 
+# AZAN_SECONDS=9.4 makes a short call (for example the first two "Allahu akbar")
+# for every platform, with a short fade at the end. Without it, iPhone gets the
+# first 29.5 s and Android and web the full azan.
+secs="${AZAN_SECONDS:-}"
+if [ -n "$secs" ]; then
+  ios_cut="-t $secs"; ios_fade="afade=t=out:st=$(echo "$secs - 0.6" | bc -l):d=0.6"
+  all_cut="-t $secs"; all_fade="$ios_fade"
+else
+  ios_cut="-t 29.5"; ios_fade="afade=t=out:st=27.5:d=2"
+  all_cut=""; all_fade=""
+fi
+all_af="$clean"; [ -n "$all_fade" ] && all_af="$clean,$all_fade"
+
 make() { # source, ios name, android name, web name
-  ffmpeg -loglevel error -y -i "$1" -af "$clean,afade=t=out:st=27.5:d=2" -t 29.5 -ac 1 -ar 22050 \
+  ffmpeg -loglevel error -y -i "$1" -af "$clean,$ios_fade" $ios_cut -ac 1 -ar 22050 \
     -c:a adpcm_ima_qt -f caf "ios/PrayerTimesAsia/Resources/$2.caf"
-  ffmpeg -loglevel error -y -i "$1" -af "$clean" -ac 1 -ar 44100 -c:a libvorbis -q:a 4 \
+  ffmpeg -loglevel error -y -i "$1" -af "$all_af" $all_cut -ac 1 -ar 44100 -c:a libvorbis -q:a 4 \
     "android/app/src/main/res/raw/$3.ogg"
-  ffmpeg -loglevel error -y -i "$1" -af "$clean" -ac 1 -ar 44100 -c:a libmp3lame -b:a 96k \
+  ffmpeg -loglevel error -y -i "$1" -af "$all_af" $all_cut -ac 1 -ar 44100 -c:a libmp3lame -b:a 96k \
     "web/src/assets/azan/$4.mp3"
   echo "Made $2 for iPhone, Android and web."
 }
