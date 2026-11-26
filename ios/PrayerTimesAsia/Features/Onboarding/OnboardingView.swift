@@ -32,6 +32,7 @@ struct OnboardingView: View {
                     Button {
                         model.useGPS()
                         model.prefs.hasOnboarded = true
+                        model.askForAlertsAfterWelcome()
                     } label: {
                         Text("Use my location").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 16)
                             .background(.white, in: Capsule())
@@ -57,7 +58,7 @@ struct OnboardingView: View {
             withAnimation(.easeOut(duration: 0.7)) { appeared = true }
         }
         .sheet(isPresented: $showPlaces, onDismiss: {
-            if model.activePlace != nil { model.prefs.hasOnboarded = true }
+            if model.activePlace != nil { model.prefs.hasOnboarded = true; model.askForAlertsAfterWelcome() }
         }) { PlacesView() }
         .sheet(isPresented: $showMoveIn) {
             NavigationStack { MoveInView(isSheet: true) }

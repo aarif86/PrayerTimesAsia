@@ -1053,6 +1053,25 @@ private struct PrayerList: View {
 
     var body: some View {
         VStack(spacing: 6) {
+            list
+            if model.prefs.allFiveNotify {
+                Button { model.showWakeUp = true } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "bell.fill").font(.caption)
+                        Text("Alerts on for all 5 prayers").font(.footnote)
+                        Text("Change").font(.footnote.weight(.bold)).foregroundStyle(Theme.accentText)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Alerts on for all 5 prayers. Change")
+            }
+        }
+    }
+
+    private var list: some View {
+        VStack(spacing: 6) {
             ForEach(entries) { entry in
                 switch entry {
                 case .prayer(let p, let t):
@@ -1117,6 +1136,10 @@ private struct PrayerList: View {
             .layoutPriority(-1)
             Spacer(minLength: 6)
             TimeText(parts: model.timeParts(time), size: 27)
+            // All five on Notify: no repeating bells, one line under the list says so.
+            if prayer.isObligatory && model.prefs.allFiveNotify {
+                Color.clear.frame(width: 30, height: 34).accessibilityHidden(true)
+            } else {
             Group {
                 Button { cycleAlert(prayer, model: model) } label: {
                     Image(systemName: mode.symbol)
@@ -1132,6 +1155,7 @@ private struct PrayerList: View {
                 .accessibilityLabel("\(prayer.name(model.naming)) \(mode.word)")
                 .accessibilityHint("Tap to change. Hold for more.")
                 .contextMenu { AlertMenuItems(prayer: prayer) }
+            }
             }
         }
         .padding(.leading, 14).padding(.trailing, 6).padding(.vertical, fill ? 8 : 12)

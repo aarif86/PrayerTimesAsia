@@ -13,6 +13,7 @@ import com.prayertimesasia.app.data.PrefsStore
 import com.prayertimesasia.app.data.UsageCounter
 import com.prayertimesasia.app.ui.theme.SkyColors
 import com.prayertimesasia.app.widget.WidgetUpdater
+import com.prayertimesasia.core.withNotifyAllFive
 import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Appearance
 import com.prayertimesasia.core.Coordinates
@@ -331,6 +332,24 @@ class AppState(
         }
     }
 
+    /** "Notify me for all 5 prayers": every prayer that is Off goes to Notify; one on Alarm stays on Alarm. */
+    fun notifyAllFive() {
+        update { it.withNotifyAllFive() }
+        scope.launch { permissions?.notifications() }
+    }
+
+    /**
+     * New installs have alerts on, so ask the phone once, after the welcome screen, if it may show them.
+     * The answer is the phone's; the choice stays and "Check my phone" explains how to change it.
+     */
+    private fun askNotificationsOnce() {
+        if (!sideEffects || !prefs.hasOnboarded || !prefs.notificationsEnabled) return
+        val install = context.getSharedPreferences("install", Context.MODE_PRIVATE)
+        if (install.getBoolean("notificationsAsked", false)) return
+        install.edit().putBoolean("notificationsAsked", true).apply()
+        scope.launch { if (permissions?.notifications() == true) rescheduleAlerts() }
+    }
+
     /** "Reminder before prayer": asks for notification permission, then rings [minutes] before each chosen prayer. */
     fun enableReminder(minutes: Int = AlarmScheduler.DEFAULT_REMINDER_MINUTES) {
         scope.launch {
@@ -472,6 +491,7 @@ class AppState(
             rescheduleAlerts()
         }
         rescheduleAlerts()
+        askNotificationsOnce()
         countOpen()
         countOpenDay()
     }

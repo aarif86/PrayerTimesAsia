@@ -975,6 +975,15 @@ final class AppModel {
         return nil
     }
 
+    /// New installs have alerts on, so ask the phone once, right after the welcome screen, if it may show them.
+    /// Alerts are only scheduled once the answer is Allow; if not, "Check my phone" explains how to change it.
+    func askForAlertsAfterWelcome() {
+        guard prefs.notificationsEnabled else { return }
+        Task {
+            if await NotificationScheduler.requestPermission() { scheduleNotifications() }
+        }
+    }
+
     func scheduleNotifications() {
         guard let place = activePlace else { return }
         var alerts: [NotificationScheduler.Alert] = []

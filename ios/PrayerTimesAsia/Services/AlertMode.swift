@@ -91,6 +91,18 @@ extension Preferences {
         }
     }
 
+    /// All five main prayers are on Notify (no Off, no Alarm). Sunrise does not count.
+    var allFiveNotify: Bool {
+        Prayer.obligatory.allSatisfy { alertMode($0) == .notify }
+    }
+
+    /// "Notify me for all 5 prayers": every main prayer that is Off goes to Notify.
+    /// A prayer on Alarm stays on Alarm. Sunrise is not touched.
+    mutating func notifyAllFive() {
+        notificationsEnabled = true
+        for prayer in Prayer.obligatory { notifyPrayers.insert(prayer) }
+    }
+
     /// The bell on the Prayer screen: Off, then Notify, then Alarm, then Off again.
     func nextAlertMode(_ prayer: Prayer) -> AlertMode {
         let modes = AlertMode.modes(for: prayer)

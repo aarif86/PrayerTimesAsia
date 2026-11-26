@@ -57,6 +57,15 @@ fun Preferences.withAlertMode(mode: AlertMode, prayer: Prayer): Preferences = wh
     AlertMode.ALARM -> if (prayer == Prayer.SUNRISE) withNotify(true, prayer) else withHasAlarm(true, prayer)
 }
 
+/** All five main prayers are on Notify (no Off, no Alarm). Sunrise does not count. */
+fun Preferences.allFiveNotify(): Boolean = Prayer.obligatory.all { alertMode(it) == AlertMode.NOTIFY }
+
+/**
+ * "Notify me for all 5 prayers": every main prayer that is Off goes to Notify.
+ * A prayer on Alarm stays on Alarm. Sunrise is not touched.
+ */
+fun Preferences.withNotifyAllFive(): Preferences = copy(notificationsEnabled = true, notifyPrayers = notifyPrayers + Prayer.obligatory)
+
 /** The bell on the Prayer screen: Off, then Notify, then Alarm, then Off again. */
 fun Preferences.nextAlertMode(prayer: Prayer): AlertMode {
     val modes = AlertMode.modes(prayer)

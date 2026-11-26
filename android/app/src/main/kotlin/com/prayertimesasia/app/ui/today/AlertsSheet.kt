@@ -86,6 +86,7 @@ import com.prayertimesasia.core.SahurDay
 import com.prayertimesasia.core.SahurTiming
 import com.prayertimesasia.core.WakeUpTiming
 import com.prayertimesasia.core.alertMode
+import com.prayertimesasia.core.allFiveNotify
 import com.prayertimesasia.core.fridayMode
 import com.prayertimesasia.core.notifies
 import com.prayertimesasia.core.withNotify
@@ -237,6 +238,19 @@ private fun EachPrayerSection(state: AppState, go: (String?) -> Unit, alarmSet: 
     val offWord = tr(R.string.common_off)
     val minBefore = AlarmScheduler.REMINDER_CHOICES.map { tr(R.string.common_minBefore, "n" to it) to it }
     Section(tr(R.string.alerts_eachPrayer), tr(R.string.phone_alerts_eachFoot)) {
+        val allOn = p.allFiveNotify()
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(enabled = !allOn) { state.notifyAllFive() }
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(if (allOn) Icons.Filled.CheckCircle else Icons.Filled.NotificationsActive, null, Modifier.size(22.dp), tint = Palette.sunArc)
+            Column(Modifier.weight(1f)) {
+                Text(tr(if (allOn) R.string.alerts_allFiveOn else R.string.alerts_allFive), style = Txt.subheadlineSemibold, color = Palette.primary)
+                Text(tr(R.string.alerts_allFiveSub), style = Txt.footnote, color = Palette.secondary)
+            }
+        }
         Prayer.all.forEach { prayer ->
             val (lead, rest) = alertChip(state, prayer, azanOn)
             ModeRow(prayer.name(r.naming), lead, rest, AlertMode.modes(prayer), p.alertMode(prayer),
