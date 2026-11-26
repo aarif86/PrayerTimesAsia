@@ -4,8 +4,10 @@ import { NATIVE_APPS } from '../src/core/nativeApps'
 
 describe('reviews', () => {
   it('shows a store only once the app is live there, and only that phone\'s store', () => {
-    expect(reviewLinks(null).map((l) => l.id)).toEqual(['play', 'google'])
-    expect(reviewLinks('ios').map((l) => l.id)).toEqual(['google'])
+    const noApple = { ...NATIVE_APPS, ios: { ...NATIVE_APPS.ios, appStoreId: '' } }
+    expect(reviewLinks(null, noApple).map((l) => l.id)).toEqual(['play', 'google'])
+    expect(reviewLinks('ios', noApple).map((l) => l.id)).toEqual(['google'])
+    expect(reviewLinks(null).map((l) => l.id)).toEqual(['appstore', 'play', 'google'])
     expect(reviewLinks(null, NATIVE_APPS, true).map((l) => l.id)).toEqual(['appstore', 'play', 'google'])
     expect(reviewLinks('ios', NATIVE_APPS, true).map((l) => l.id)).toEqual(['appstore', 'google'])
     expect(reviewLinks('android', NATIVE_APPS, true).map((l) => l.id)).toEqual(['play', 'google'])
