@@ -94,23 +94,26 @@ class ScreenshotTest {
                   variant: String = "home", tab: Tab = Tab.PRAYER, aligned: Boolean = false) =
         DemoConfig(variant, style, appearance, tab, now, more, aligned)
 
-    // The Prayer screen in each style, night and day.
-    @Test fun today_list_night() = shoot("01-today-list-night", d(TodayStyle.LIST))
-    @Test fun today_list_auto_night() = shoot("01b-today-list-auto-night", d(TodayStyle.LIST, Appearance.SYSTEM))
-    @Test fun today_list_day() = shoot("01c-today-list-light-day", d(TodayStyle.LIST, Appearance.LIGHT, morning))
-    @Test fun today_list_more() = shoot("01d-today-list-show-more", d(TodayStyle.LIST, more = true))
+    // The Prayer screen in each of the five looks, night and day (as the web app's v12 looks).
     @Test fun today_centre_night() = shoot("02-today-centre-night", d(TodayStyle.CENTRE))
     @Test fun today_centre_day() = shoot("02b-today-centre-light-day", d(TodayStyle.CENTRE, Appearance.LIGHT, morning))
-    @Test fun today_dial_night() = shoot("03-today-dial-night", d(TodayStyle.DIAL))
-    @Test fun today_dial_day() = shoot("03b-today-dial-light-day", d(TodayStyle.DIAL, Appearance.LIGHT, morning))
-    @Test fun today_dial_more() = shoot("03c-today-dial-show-more", d(TodayStyle.DIAL, more = true))
+    @Test fun today_centre_more() = shoot("02d-today-centre-show-more", d(TodayStyle.CENTRE, more = true))
+    @Test fun today_centre_auto_night() = shoot("02e-today-centre-auto-night", d(TodayStyle.CENTRE, Appearance.SYSTEM))
+    @Test fun today_gold_night() = shoot("03-today-dial-night", d(TodayStyle.GOLD))
+    @Test fun today_gold_day() = shoot("03b-today-gold-light-day", d(TodayStyle.GOLD, Appearance.LIGHT, morning))
     @Test fun today_sunpath_night() = shoot("04-today-sunpath-night", d(TodayStyle.SUN_PATH))
     @Test fun today_sunpath_day() = shoot("04b-today-sunpath-light-day", d(TodayStyle.SUN_PATH, Appearance.LIGHT, morning))
     @Test fun today_bands_night() = shoot("05-today-bands-night", d(TodayStyle.BANDS))
     @Test fun today_bands_more() = shoot("05b-today-bands-show-more", d(TodayStyle.BANDS, more = true))
     @Test fun today_bands_day() = shoot("05c-today-bands-day", d(TodayStyle.BANDS, Appearance.LIGHT, morning))
-    @Test fun today_travel() = shoot("06-today-travel-hanoi", d(TodayStyle.LIST, variant = "travel"))
-    @Test fun today_visitor() = shoot("06b-today-visitor-kl", d(TodayStyle.LIST, variant = "visitor"))
+    @Test fun today_simple_night() = shoot("05d-today-simple-night", d(TodayStyle.SIMPLE))
+    @Test fun today_simple_day() = shoot("05e-today-simple-light-day", d(TodayStyle.SIMPLE, Appearance.LIGHT, morning))
+    @Test fun today_old_side_dial() = shoot("05f-today-old-side-dial-opens-centre", d(TodayStyle.LIST, Appearance.LIGHT, morning))
+    @Test fun today_alerts_off() = shoot("05g-today-alerts-mixed", d(TodayStyle.CENTRE, Appearance.LIGHT, morning)) { s ->
+        s.setAlertMode(com.prayertimesasia.core.Prayer.ASR, com.prayertimesasia.core.AlertMode.ALARM)
+    }
+    @Test fun today_travel() = shoot("06-today-travel-hanoi", d(TodayStyle.CENTRE, variant = "travel"))
+    @Test fun today_visitor() = shoot("06b-today-visitor-kl", d(TodayStyle.CENTRE, variant = "visitor"))
 
     // The other tabs.
     @Test fun qibla() = shoot("07-qibla", d(TodayStyle.LIST, tab = Tab.QIBLA))

@@ -50,8 +50,8 @@ class AccessibilityTest {
     )
 
     private fun d(style: TodayStyle, appearance: Appearance = Appearance.DARK, now: Instant = night,
-                  variant: String = "home", tab: Tab = Tab.PRAYER) =
-        DemoConfig(variant, style, appearance, tab, now, false, false)
+                  variant: String = "home", tab: Tab = Tab.PRAYER, more: Boolean = false) =
+        DemoConfig(variant, style, appearance, tab, now, more, false)
 
     private fun check(demo: DemoConfig, fontScale: Float = 1f, setup: (AppState) -> Unit = {}) {
         if (fontScale != 1f) RuntimeEnvironment.setFontScale(fontScale)
@@ -68,22 +68,22 @@ class AccessibilityTest {
     }
 
     // The Prayer screen in each style, Dark at night and Light by day.
-    @Test fun prayer_list_dark() = check(d(TodayStyle.LIST))
-    @Test fun prayer_list_light() = check(d(TodayStyle.LIST, Appearance.LIGHT, morning))
     @Test fun prayer_centre_dark() = check(d(TodayStyle.CENTRE))
     @Test fun prayer_centre_light() = check(d(TodayStyle.CENTRE, Appearance.LIGHT, morning))
-    @Test fun prayer_dial_dark() = check(d(TodayStyle.DIAL))
-    @Test fun prayer_dial_light() = check(d(TodayStyle.DIAL, Appearance.LIGHT, morning))
+    @Test fun prayer_gold_dark() = check(d(TodayStyle.GOLD))
+    @Test fun prayer_gold_light() = check(d(TodayStyle.GOLD, Appearance.LIGHT, morning))
     @Test fun prayer_sunpath_dark() = check(d(TodayStyle.SUN_PATH))
     @Test fun prayer_sunpath_light() = check(d(TodayStyle.SUN_PATH, Appearance.LIGHT, morning))
     @Test fun prayer_bands_dark() = check(d(TodayStyle.BANDS))
     @Test fun prayer_bands_light() = check(d(TodayStyle.BANDS, Appearance.LIGHT, morning))
     @Test fun prayer_simple_dark() = check(d(TodayStyle.SIMPLE))
-    @Test fun prayer_travel() = check(d(TodayStyle.LIST, variant = "travel"))
+    @Test fun prayer_simple_light() = check(d(TodayStyle.SIMPLE, Appearance.LIGHT, morning))
+    @Test fun prayer_centre_more() = check(d(TodayStyle.CENTRE, more = true))
+    @Test fun prayer_travel() = check(d(TodayStyle.CENTRE, variant = "travel"))
     @Test fun prayer_wake_chip() = check(d(TodayStyle.CENTRE)) { s -> s.update { it.copy(wakeUp = WakeUpTiming.AT_FAJR) } }
 
     // The largest font size.
-    @Test fun prayer_list_big_font() = check(d(TodayStyle.LIST), fontScale = 2f)
+    @Test fun prayer_centre_big_font() = check(d(TodayStyle.CENTRE), fontScale = 2f)
     @Test fun settings_big_font() = check(d(TodayStyle.LIST, tab = Tab.SETTINGS), fontScale = 2f)
 
     // The other tabs and the first open.
