@@ -201,7 +201,7 @@ private fun QiblaContent(state: AppState, place: Place) {
                 SunCurve(if (delta != null) delta.toFloat() else Geo.angleDelta(bearing, 0.0).toFloat(), aligned, heading != null,
                     Modifier.padding(top = 18.dp, bottom = 6.dp).fillMaxWidth().wideBy(Dims.gutter))
                 Column(Modifier.padding(top = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Say(if (heading == null || aligned) 28 else 38, FontWeight.Bold, lineHeight = 1.05f, modifier = Modifier.padding(bottom = 8.dp))
+                    Say(if (heading == null || aligned) 28 else 38, FontWeight.Bold, lineHeight = 1.05f)
                     if (heading != null && !aligned) {
                         Text(tr(R.string.qibla_sunHint), style = lookText(15.sp), color = look.c.tx2, textAlign = TextAlign.Center,
                             modifier = Modifier.padding(top = 6.dp, bottom = 4.dp))

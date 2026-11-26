@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -302,7 +303,7 @@ fun SunCurve(rel: Float, aligned: Boolean, hasHeading: Boolean, modifier: Modifi
     val off = min(180f, abs(rel)) / 180f
     val sx = smooth(kx - sign(rel) * 181f * (1 - (1 - off).pow(2)), "sun")
     Box(modifier.fillMaxWidth().aspectRatio(390f / 150f).semantics { contentDescription = label }) {
-        Canvas(Modifier.fillMaxSize()) {
+        Canvas(Modifier.fillMaxSize().clipToBounds()) {
             inUnits(390f) {
                 withTransform({ translate(0f, -70f) }) {
                     drawLine(look.c.tx3.copy(alpha = look.c.tx3.alpha * 0.5f), Offset(0f, 164f), Offset(390f, 164f), 1f)

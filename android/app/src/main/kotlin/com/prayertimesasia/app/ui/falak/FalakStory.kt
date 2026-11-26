@@ -120,10 +120,10 @@ fun SkySliderCard(state: AppState, place: Place, now: Instant) {
         if (look.bands) Box(Modifier.fillMaxWidth().height(1.dp).background(look.c.sep))
         SkyPicture(look, day, plan, t, place, r.asrSchool, words,
             Modifier.fillMaxWidth().aspectRatio(SKY_W / SKY_H).semantics { contentDescription = "$title. $say" })
-        Column(Modifier.padding(start = if (look.bands) 24.dp else 18.dp, end = if (look.bands) 24.dp else 18.dp, top = 12.dp, bottom = 16.dp)) {
+        Column(Modifier.padding(start = if (look.bands) 24.dp else 18.dp, end = if (look.bands) 24.dp else 18.dp, top = 12.dp, bottom = 8.dp)) {
             Text(r.formatted(t), style = lookText(13.sp, FontWeight.Medium), color = look.c.tx2)
             Text(title, style = display(if (look.simple) 34.sp else 28.sp, FontWeight.Bold), color = look.c.tx)
-            Text(say, style = lookText(15.sp), color = look.c.tx2, modifier = Modifier.padding(top = 2.dp, bottom = 4.dp))
+            Text(say, style = lookText(15.sp), color = look.c.tx2, modifier = Modifier.padding(top = 2.dp))
             val label = tr(R.string.falak_slideSun)
             Slider(
                 value = picked ?: clock, onValueChange = { picked = it }, valueRange = 0f..span,

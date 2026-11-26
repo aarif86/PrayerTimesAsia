@@ -152,7 +152,7 @@ fun FalakScreen(state: AppState, open: (FalakTool) -> Unit) {
                 FalakPart.WHY -> WhyItHelps()
             }
             Text(tr(R.string.falak_footer), style = lookText(12.sp), color = look.c.tx2, textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp))
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp))
         }
     }
 }
