@@ -23,13 +23,11 @@ import './setup.css'
 const EDITOR_KEY = 'ptasia.screen.editor'
 
 const LOOK_CHOICES: { id: ScreenLook; label: string; hint: string }[] = [
-  { id: 'night', label: 'Sky', hint: 'The sky outside, changing with the hour, like the app' },
-  { id: 'board', label: 'Board', hint: 'The times as a list, easy to read from far' },
-  { id: 'bands', label: 'Bands', hint: 'Each prayer in its own colour, like the app' },
-  { id: 'dial', label: 'Day Dial', hint: 'The whole day as a ring, like the app' },
+  { id: 'dial', label: 'Centre Dial', hint: 'The whole day as a ring on the sky, like the app' },
   { id: 'sunpath', label: 'Sun Path', hint: 'The sun moving across the day, like the app' },
-  { id: 'simple', label: 'Simple', hint: 'Plain and calm, with no moving sky' },
-  { id: 'surau', label: 'Surau', hint: 'Navy and gold with a faint pattern, calm and clear' },
+  { id: 'bands', label: 'Colour Bands', hint: 'Each prayer in its own colour, like the app' },
+  { id: 'simple', label: 'Big and Simple', hint: 'Plain, big and calm, with no moving sky' },
+  { id: 'surau', label: 'Calm Gold', hint: 'Navy and gold with a faint pattern, calm and clear' },
 ]
 
 const LAYOUT_CHOICES: { id: ScreenLayout; label: string; hint: string }[] = [

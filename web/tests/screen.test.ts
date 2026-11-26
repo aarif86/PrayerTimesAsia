@@ -39,18 +39,22 @@ describe('screen config', () => {
     expect(c.iqamah).toEqual({ asr: { fixed: '16:20' } })
   })
 
-  it('defaults to English and the Night look, and keeps a chosen look', () => {
+  it('defaults to English and the Big and Simple look, and keeps a chosen look', () => {
     expect(DEFAULT_CONFIG.lang).toBe('en')
-    expect(DEFAULT_CONFIG.look).toBe('night')
+    expect(DEFAULT_CONFIG.look).toBe('simple')
     expect(DEFAULT_CONFIG.mode).toBe('dark')
-    expect(sanitize({ look: 'day' })).toMatchObject({ look: 'night', mode: 'light' })
+    expect(sanitize({ look: 'day' })).toMatchObject({ look: 'simple', mode: 'light' })
+    // Retired looks open as Big and Simple and keep their saved Light or Dark
+    expect(sanitize({ look: 'night', mode: 'dark' })).toMatchObject({ look: 'simple', mode: 'dark' })
+    expect(sanitize({ look: 'night', mode: 'light' })).toMatchObject({ look: 'simple', mode: 'light' })
+    expect(sanitize({ look: 'constructor' }).look).toBe('simple')
     expect(sanitize({ look: 'bands', mode: 'light' })).toMatchObject({ look: 'bands', mode: 'light' })
     expect(sanitize({ look: 'simple' }).look).toBe('simple')
     expect(DEFAULT_CONFIG.showIqamah).toBe(false)
     expect(sanitize({ showIqamah: true }).showIqamah).toBe(true)
-    expect(sanitize({ look: 'board' }).look).toBe('board')
+    expect(sanitize({ look: 'board' }).look).toBe('simple')
     expect(sanitize({ look: 'dial' }).look).toBe('dial')
-    expect(sanitize({ look: 'disco' }).look).toBe('night')
+    expect(sanitize({ look: 'disco' }).look).toBe('simple')
   })
 
   it('reads iqamah as minutes or a time', () => {

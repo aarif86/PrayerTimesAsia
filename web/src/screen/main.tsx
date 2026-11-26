@@ -82,8 +82,8 @@ function initialConfig(): ScreenConfig | null {
 let clockFix = fixedNow == null && !query.has('demo') ? savedClockFix() : 0
 const screenNow = () => Date.now() + clockFix
 
-/** The look the dashboard counts: Sky in Light keeps its old name, Day. */
-const reportLook = (c: ScreenConfig): string => (c.look === 'night' && c.mode === 'light' ? 'day' : c.look)
+/** The look the dashboard counts. */
+const reportLook = (c: ScreenConfig): string => c.look
 
 function useClock(): number {
   const [now, setNow] = useState(fixedNow ?? screenNow())

@@ -65,7 +65,7 @@ export function LayoutDisplay({ config: c, now, arabicTurn = false }: { config: 
   const tint = phase.kind === 'waiting' ? phase.next : phase.prayer
   const hide = c.hide
   const hijriStyle = c.names === 'malay' || c.names === 'indonesian' ? c.names : 'arabic'
-  const sky = c.look === 'night' || c.look === 'board' || c.look === 'dial' || c.look === 'sunpath'
+  const sky = c.look === 'dial' || c.look === 'sunpath'
   const hasBar = LAYOUTS_WITH_NOTICE_BAR.includes(layout)
   const takbir = today.raya && (today.eid == null || now < today.eid) ? w.takbir : null
   const items = stageItems(c, layout, layout === 'big' ? takbir : null)
