@@ -346,6 +346,7 @@
     <string name="falakTools_tilt" formatted="false">Kemiringan 1° menggeser ujung bayangan tongkat 1 m sekitar 1,7 cm, cukup untuk menggeser pembacaan satu menit.</string>
     <string name="masjid_title" formatted="false">Masjid dan Musala</string>
     <string name="masjid_about" formatted="false">Tentang aplikasi ini</string>
+    <string name="masjid_refresh" formatted="false">Muat ulang daftar masjid</string>
     <string name="masjid_all" formatted="false">Semua</string>
     <string name="masjid_masjid" formatted="false">Masjid</string>
     <string name="masjid_musollah" formatted="false">Musala</string>
@@ -1089,6 +1090,25 @@
     <string name="settings_facebook" formatted="false">Ikuti kami di Facebook</string>
     <string name="settings_freeLine" formatted="false">Gratis untuk semua. Tanpa versi berbayar.</string>
     <string name="settings_back" formatted="false">Kembali ke Pengaturan</string>
+    <string name="settings_homeScreen" formatted="false">Layar utama</string>
+    <string name="settings_widgets" formatted="false">Widget</string>
+    <string name="settings_widgetsFoot" formatted="false">Untuk menambahkan widget, sentuh dan tahan ruang kosong di layar utama Anda, ketuk Widget, lalu cari Prayer Times Asia.</string>
+    <string name="settings_seeWidgets" formatted="false">Lihat widget</string>
+    <string name="settings_accuracyPhone" formatted="false">Setiap hari menampilkan tingkat sumbernya. A resmi, B dikonfirmasi masjid, C diperiksa komunitas, D dihitung di ponsel Anda. F (falak) menandai pembacaan dari tongkat bayangan Anda sendiri, yang hanya memeriksa waktu. Di Singapura, Malaysia dan Indonesia, aplikasi mengunduh jadwal resmi MUIS, JAKIM atau Kemenag untuk tahun itu dan menyimpannya di ponsel Anda untuk dipakai tanpa internet. Hanya tahun, kode zona atau nama daerah yang dikirim. Di tempat lain, dan sebelum unduhan itu, waktu dihitung di ponsel Anda dengan metode negara itu sendiri. Perhitungan ini diperiksa terhadap setiap hari jadwal MUIS, JAKIM dan Kemenag 2026. Untuk Singapura, tidak pernah lebih awal dari waktu resmi dan paling lambat 2 menit. Untuk Malaysia dan Indonesia, selisihnya sekitar 2 menit.</string>
+    <string name="settings_followsPhone" formatted="false">Aplikasi mengikuti bahasa ponsel Anda.</string>
+    <string name="settings_samePhone" formatted="false">Sama seperti ponsel Anda</string>
+    <string name="settings_namesFootPhone" formatted="false">Pilih bahasa Indonesia untuk Subuh dan Isya. Saat Anda bepergian, nama setempat tampil kecil di sampingnya, agar papan masjid mudah dipahami.</string>
+    <string name="settings_pretendFoot" formatted="false">Menampilkan tanggal Ramadan atau Idulfitri sebagai contoh agar Anda bisa mencobanya lebih awal.</string>
+    <string name="settings_pretendOnFoot" formatted="false">Mode uji coba sedang aktif. Aplikasi menampilkan tanggal contoh, bukan tanggal hari ini. Matikan sebelum Anda mengandalkan waktu salat.</string>
+    <string name="settings_trackerFootPhone" formatted="false">Centang setiap salat di layar Salat setelah waktunya lewat, dan jaga rangkaian beruntun. Ketuk rangkaian beruntun untuk menandai hari uzur, seperti haid atau sakit, agar tetap berlanjut. Hanya disimpan di ponsel ini.</string>
+    <string name="settings_trackerNudgeNote" formatted="false">Pengingat sebelum waktu habis ada di Pemberitahuan dan alarm.</string>
+    <string name="settings_movingFootPhone" formatted="false">Kode QR atau tautan membawa tempat, pilihan dan pencatat Anda. Tanpa akun dan tanpa unggahan. Berfungsi di Android, iPhone dan web. Menyiapkan ponsel Android baru dari cadangan Google Anda juga ikut membawanya.</string>
+    <string name="settings_privacyPhone" formatted="false">Lokasi tepat Anda tetap di ponsel Anda</string>
+    <string name="settings_privacyMasjid" formatted="false">Pencarian masjid hanya mengirim area Anda</string>
+    <string name="settings_phonePermissions" formatted="false">Izin ponsel</string>
+    <string name="settings_phonePermissionsFoot" formatted="false">Jika waktu atau pemberitahuan tampak salah, periksa ini dulu.</string>
+    <string name="settings_notAllowed" formatted="false">Tidak diizinkan</string>
+    <string name="settings_openPhoneSettings" formatted="false">Buka pengaturan ponsel</string>
     <string name="suggestRoom_button" formatted="false">Usulkan musala</string>
     <string name="suggestRoom_title" formatted="false">Usulkan musala</string>
     <string name="suggestRoom_intro" formatted="false">Tahu musala atau ruang salat yang belum ada di peta kami? Beri tahu kami. Kami memeriksa setiap usulan, lalu menambahkannya untuk semua.</string>
