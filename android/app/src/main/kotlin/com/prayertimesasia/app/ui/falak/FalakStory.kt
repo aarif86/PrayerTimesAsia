@@ -4,6 +4,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.TextButton
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -90,8 +92,7 @@ fun SkySliderCard(state: AppState, place: Place, now: Instant) {
     val look = LocalLook.current
     val r = state.resolver
     val day = r.day(now) ?: return
-    val start = day.time(Prayer.FAJR).minusSeconds(2700L)
-    val end = day.time(Prayer.ISHA).plusSeconds(2700L)
+    val (start, end) = skyRange(day.time(Prayer.FAJR), day.time(Prayer.ISHA), now)
     val span = end.secondsSince(start).toFloat() / 60f
     val clock = (now.secondsSince(start).toFloat() / 60f).coerceIn(0f, span)
     var picked by remember { mutableStateOf<Float?>(null) }
@@ -132,9 +133,27 @@ fun SkySliderCard(state: AppState, place: Place, now: Instant) {
                 track = { Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).background(look.c.sep)) },
                 modifier = Modifier.semantics { contentDescription = label },
             )
+            // After sliding, one tap brings the sun back to the time now.
+            if (picked != null) {
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    TextButton(onClick = { picked = null }, modifier = Modifier.heightIn(min = 48.dp)) {
+                        Text(tr(R.string.common_now), style = lookText(15.sp, FontWeight.SemiBold), color = look.c.accentText)
+                    }
+                }
+            }
         }
         if (look.bands) Box(Modifier.fillMaxWidth().height(1.dp).background(look.c.sep))
     }
+}
+
+/**
+ * The slider's day: 45 minutes before Fajr to 45 minutes after Isha, stretched to
+ * include the time now, so the slider always opens on now (late at night too).
+ */
+internal fun skyRange(fajr: Instant, isha: Instant, now: Instant): Pair<Instant, Instant> {
+    val start = fajr.minusSeconds(2700L).let { if (now < it) now else it }
+    val end = isha.plusSeconds(2700L).let { if (now > it) now else it }
+    return start to end
 }
 
 private const val SKY_W = 343f
