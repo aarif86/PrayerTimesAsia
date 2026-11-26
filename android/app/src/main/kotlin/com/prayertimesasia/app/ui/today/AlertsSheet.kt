@@ -280,11 +280,12 @@ private fun EachPrayerSection(state: AppState, go: (String?) -> Unit, alarmSet: 
             Box(Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) { com.prayertimesasia.app.ui.journey.HomeQuestionCard(state) }
         }
         if (p.awayReminder) {
+            val hourWord = tr(R.string.early_hour)
+            val awayChoices = AwayReminder.CHOICES.map { (if (it == 60) hourWord else tr(R.string.early_min, "n" to it)) to it }
             AwayReminder.PRAYERS.forEach { prayer ->
                 val mins = p.awayMinutes[prayer.raw] ?: 0
-                val label = { m: Int -> if (m == 60) tr(R.string.early_hour) else tr(R.string.early_min, "n" to m) }
-                PickerRow(prayer.name(r.naming), if (mins > 0) label(mins) else offWord,
-                    listOf(offWord to 0) + AwayReminder.CHOICES.map { label(it) to it }, mins) { m -> state.setAwayMinutes(prayer, m) }
+                PickerRow(prayer.name(r.naming), awayChoices.firstOrNull { it.second == mins }?.first ?: offWord,
+                    listOf(offWord to 0) + awayChoices, mins) { m -> state.setAwayMinutes(prayer, m) }
             }
             Text(tr(R.string.early_howEarlyFoot), style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
         }
