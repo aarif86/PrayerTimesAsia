@@ -44,6 +44,8 @@ for (const appearance of ['light', 'dark']) {
   for (const style of STYLES) pages.push([`prayer-${style}-${appearance}`, { style, appearance, now: appearance === 'light' ? DAY : NIGHT }])
   pages.push([`prayer-more-${appearance}`, { style: 'centre', appearance, now: NIGHT, more: '1' }])
   for (const tab of ['qibla', 'falak', 'masjid', 'settings']) pages.push([`${tab}-${appearance}`, { tab, appearance, now: appearance === 'light' ? DAY : NIGHT }])
+  // Qibla and Falak follow the look, so check each look (with a compass heading, as on a phone).
+  for (const tab of ['qibla', 'falak']) for (const style of ['sunPath', 'bands', 'simple', 'gold']) pages.push([`${tab}-${style}-${appearance}`, { tab, style, appearance, now: appearance === 'light' ? DAY : NIGHT, heading: '118' }])
   pages.push([`source-sheet-${appearance}`, { style: 'centre', appearance, now: NIGHT }, click('.source-line')])
   pages.push([`calendar-sheet-${appearance}`, { style: 'centre', appearance, now: NIGHT }, click('.day-nav-main')])
   pages.push([`places-sheet-${appearance}`, { style: 'centre', appearance, now: NIGHT }, async (p) => { await p.click('.place-chip'); await p.fill('input[type=search]', 'ku') }])

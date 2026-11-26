@@ -873,6 +873,13 @@
     <string name="qibla_turnLeft" formatted="false">Putar ke kiri {deg}°</string>
     <string name="qibla_turnRightAbout" formatted="false">Putar ke kanan, sekitar {deg}°</string>
     <string name="qibla_turnLeftAbout" formatted="false">Putar ke kiri, sekitar {deg}°</string>
+    <string name="qibla_facingShort" formatted="false">Menghadap</string>
+    <string name="qibla_youFaceHere" formatted="false">Arah Anda</string>
+    <string name="qibla_northHere" formatted="false">Utara</string>
+    <string name="qibla_sunHint" formatted="false">Putar sampai matahari mencapai Kakbah.</string>
+    <string name="qibla_turnLeftWord" formatted="false">Putar ke kiri</string>
+    <string name="qibla_turnRightWord" formatted="false">Putar ke kanan</string>
+    <string name="qibla_kmToMakkah" formatted="false">{km} km ke Makkah</string>
     <string name="journey_homeTitle" formatted="false">Anda berada di rumah</string>
     <string name="journey_homeBody" formatted="false">Salatlah secara penuh. Keringanan musafir berlaku setelah Anda bepergian sedikitnya {km} km.</string>
     <string name="journey_nearbyTitle" formatted="false">Dalam radius {km} km dari rumah</string>

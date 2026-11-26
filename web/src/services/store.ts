@@ -42,6 +42,8 @@ export interface Demo {
   variant: 'home' | 'travel' | 'visitor' | 'makkah'
   more: boolean
   aligned: boolean
+  /** Screenshots only: pretend the compass points this way (?heading=118). */
+  heading: number | null
   tab: Tab | null
 }
 
@@ -862,6 +864,7 @@ function parseDemo(): Demo | null {
     variant: variant === 'travel' || variant === 'visitor' || variant === 'makkah' ? variant : 'home',
     more: q.get('more') === '1',
     aligned: q.get('aligned') === '1',
+    heading: q.has('heading') && Number.isFinite(Number(q.get('heading'))) ? Number(q.get('heading')) : null,
     tab: tab && ['today', 'qibla', 'falak', 'masjid', 'settings'].includes(tab) ? tab : null,
   }
 }
