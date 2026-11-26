@@ -3,15 +3,15 @@
  *
  * To switch a store on, fill in its line below and merge: the web app starts
  * pointing there on the next deploy. Android is live on Google Play (21 Nov
- * 2026). Until the App Store listing exists, iPhone visitors ask for a TestFlight
- * invite, or get the public TestFlight link once testFlightUrl is filled in.
+ * 2026) and iPhone is live on the App Store (26 Nov 2026). The TestFlight and
+ * email fallbacks below only apply if a store line is ever emptied again.
  */
 export const NATIVE_APPS = {
   ios: {
     /** The number in the App Store link (apps.apple.com/app/id1234567890). Also turns on Safari's own App Store banner. */
-    appStoreId: '',
+    appStoreId: '6825604927',
     /** A public TestFlight link (testflight.apple.com/join/...), used until the App Store listing exists. */
-    testFlightUrl: 'https://testflight.apple.com/join/DjXmrnNF',
+    testFlightUrl: '',
   },
   android: {
     /** Set to true once the app is live on Google Play. */
