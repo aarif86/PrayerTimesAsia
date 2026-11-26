@@ -139,13 +139,15 @@ jobs:
           gh release upload android-test "$RUNNER_TEMP/prayer-times-asia.apk" --clobber
 
       - name: Publish screenshots to the screenshots-android branch
-        if: success() && (github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+        # On a pull request the pictures are published even when a test fails, so the failure can be seen.
+        if: (success() && github.ref == 'refs/heads/main') || (!cancelled() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TARGET: ${{ github.event_name == 'pull_request' && format('screenshots-{0}', github.head_ref) || 'screenshots-android' }}
         run: |
           set -e
           mkdir -p /tmp/shots
+          ls app/build/outputs/roborazzi/*.png >/dev/null 2>&1 || { echo "No screenshots"; exit 0; }
           cp app/build/outputs/roborazzi/*.png /tmp/shots/
           cd /tmp/shots
           git init -q -b "$TARGET"
