@@ -926,6 +926,8 @@
     <string name="masjid_savedPlace" formatted="false">tempat yang anda simpan</string>
     <string name="masjid_nearestYou" formatted="false">Paling dekat dengan anda</string>
     <string name="masjid_nearestTo" formatted="false">Paling dekat dengan {place}</string>
+    <string name="masjid_nearestMasjid" formatted="false">Masjid terdekat</string>
+    <string name="masjid_showWay" formatted="false">Tunjukkan arah</string>
     <string name="masjid_howGoing" formatted="false">Cara anda ke sana</string>
     <string name="masjid_walk" formatted="false">Berjalan</string>
     <string name="masjid_drive" formatted="false">Memandu</string>
