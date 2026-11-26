@@ -513,7 +513,9 @@ private fun SunPathV12(f: TodayFrame, col: PageColors, modifier: Modifier) {
             val s = pt(nowF)
             sunAt = s
             // A soft glow (the web blurs it), then the sun or the moon.
-            for (i in 6 downTo 1) drawCircle(Color(0xFFF7BD8F).copy(alpha = 0.1f), (22 + i * 2).dp.toPx() * (i / 6f + 0.4f), s)
+            val glowR = (if (isDay) 24 else 15).dp.toPx()
+            drawCircle(androidx.compose.ui.graphics.Brush.radialGradient(
+                listOf(Color(0xFFF7BD8F).copy(alpha = if (isDay) 0.55f else 0.45f), Color(0xFFF7BD8F).copy(alpha = 0f)), center = s, radius = glowR), glowR, s)
             if (isDay) drawCircle(Color(0xFFFFD98A), 9.dp.toPx(), s)
         }
         if (!isDay) {
