@@ -78,7 +78,7 @@ struct RootView: View {
                     .tabItem { Label("Prayer", systemImage: "clock") }
                     .tag(AppModel.Tab.today)
                 QiblaView()
-                    .tabItem { Label("Qibla", systemImage: "safari") }
+                    .tabItem { Label("Qibla", systemImage: "location.north.circle") }
                     .tag(AppModel.Tab.qibla)
                 FalakView(isTab: true)
                     .tabItem { Label("Falak", systemImage: "sun.max") }

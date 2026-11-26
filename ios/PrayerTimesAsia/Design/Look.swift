@@ -160,3 +160,22 @@ struct LookCard: ViewModifier {
 extension View {
     func lookCard(padding: CGFloat = 16) -> some View { modifier(LookCard(padding: padding)) }
 }
+
+/// A fixed point size from the web look that still grows with the phone's text size
+/// (the same scale the Prayer screen uses).
+private struct LookFont: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var typeSize
+    var size: CGFloat
+    var weight: Font.Weight
+    var design: Font.Design
+
+    func body(content: Content) -> some View {
+        content.font(.system(size: size * V12Type.scale(typeSize), weight: weight, design: design))
+    }
+}
+
+extension View {
+    func lookFont(_ size: CGFloat, _ weight: Font.Weight = .regular, design: Font.Design = .default) -> some View {
+        modifier(LookFont(size: size, weight: weight, design: design))
+    }
+}

@@ -1794,7 +1794,7 @@ extension TodayView {
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: model.prefs.todayStyle)
-        .accessibilityLabel("Menu. Look: \(model.prefs.todayStyle.label)")
+        .accessibilityLabel("Menu, look \(model.prefs.todayStyle.label)")
         .accessibilityHint("Light or dark, the five looks and the prayer tracker.")
     }
 
@@ -1868,6 +1868,7 @@ extension TodayView {
                 }
                 if model.showAlertsPrompt { alertsPrompt }
                 if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+                if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
                 if dayOffset == 0 { TodayNotes(now: now) }
             }
             .padding(.horizontal, Theme.gutter)
@@ -2373,7 +2374,6 @@ private struct V12List: View {
         .foregroundStyle(passed ? pal.tx2 : pal.tx)
         .padding(.leading, bars ? 28 : 18).padding(.trailing, 2)
         .frame(minHeight: simple ? 62 : 54)
-        .frame(maxHeight: simple ? 76 : nil)
         .background((isCurrent || lit) ? pal.tint : Color.clear)
         .overlay(alignment: .leading) {
             if bars {
@@ -2524,7 +2524,7 @@ private struct V12SourceLine: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Source: grade \(day.grade.rawValue), \(day.grade.title)")
+        .accessibilityLabel("Source grade \(day.grade.rawValue), \(day.grade.title)")
         .accessibilityHint("Shows where these times come from")
         .sheet(isPresented: $showSanad) { SanadSheet(day: day) }
     }

@@ -208,7 +208,7 @@ struct NearbyView: View {
             }
         }
         }
-        .frame(height: look == .simple ? 300 : 340)
+        .containerRelativeFrame(.vertical) { length, _ in min(look == .simple ? 300 : 340, length * 0.42) }
         .overlay(alignment: .bottom) {
             if let s = selected { pinCard(s).padding(.bottom, overlap) }
         }
@@ -340,7 +340,7 @@ struct NearbyView: View {
                 HStack(spacing: 8) {
                     if locating { ProgressView().tint(p.actx) } else { Image(systemName: "location.viewfinder") }
                     Text(locating ? "Finding where you are…" : nearMe != nil ? "Search again from here" : "Find prayer places near me")
-                        .font(.system(size: look == .simple ? 19 : 16, weight: .semibold))
+                        .lookFont(look == .simple ? 19 : 16, .semibold)
                 }
                 .foregroundStyle(p.actx)
                 .frame(maxWidth: .infinity, minHeight: look == .simple ? 56 : 48)
@@ -555,12 +555,12 @@ private struct SpaceRow: View {
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(spacing: 4) {
                             if mine { Image(systemName: "star.fill").font(.caption).foregroundStyle(p.actx) }
-                            Text(space.name).font(.system(size: look == .simple ? 19 : 17, weight: look == .bands ? .bold : .semibold))
+                            Text(space.name).lookFont(look == .simple ? 19 : 17, look == .bands ? .bold : .semibold)
                                 .foregroundStyle(p.tx)
                                 .multilineTextAlignment(.leading)
                         }
                         if !space.address.isEmpty {
-                            Text(space.address).font(.system(size: 13)).foregroundStyle(p.tx2).lineLimit(1)
+                            Text(space.address).lookFont(13).foregroundStyle(p.tx2).lineLimit(1)
                         }
                         if fri != nil || hours != nil {
                             HStack(spacing: 6) {
@@ -575,7 +575,7 @@ private struct SpaceRow: View {
                     Spacer(minLength: 6)
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(MasjidExtras.distanceText(space.distanceKm))
-                            .font(.system(size: 15).monospacedDigit()).foregroundStyle(p.tx2)
+                            .lookFont(15).monospacedDigit().foregroundStyle(p.tx2)
                         if let trip { Text(trip).font(.caption).foregroundStyle(p.tx2) }
                     }
                 }
@@ -1096,7 +1096,7 @@ private struct LookSegmented<Value: Hashable>: View {
                 let on = options[i].1 == selection
                 Button { selection = options[i].1 } label: {
                     Text(options[i].0)
-                        .font(.system(size: 15, weight: .semibold))
+                        .lookFont(15, .semibold)
                         .foregroundStyle(on ? p.tx : p.tx2)
                         .frame(maxWidth: .infinity, minHeight: 40)
                         .background {

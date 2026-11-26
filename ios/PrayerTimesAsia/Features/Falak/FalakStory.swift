@@ -31,12 +31,12 @@ struct SkySliderCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: look == .bands ? 0 : 18, style: .continuous))
                     .accessibilityHidden(true)
                 HStack(alignment: .firstTextBaseline) {
-                    Text(title(stage)).font(.system(size: look == .simple ? 34 : 28, weight: .bold, design: .rounded))
+                    Text(title(stage)).lookFont(look == .simple ? 34 : 28, .bold, design: .rounded)
                     Spacer()
-                    Text(model.formatted(t)).font(.system(size: 13, weight: .medium)).monospacedDigit()
+                    Text(model.formatted(t)).lookFont(13, .medium).monospacedDigit()
                         .foregroundStyle(look.palette.tx2)
                 }
-                Text(say(stage)).font(.system(size: 15)).foregroundStyle(look.palette.tx2)
+                Text(say(stage)).lookFont(15).foregroundStyle(look.palette.tx2)
                     .fixedSize(horizontal: false, vertical: true)
                 Slider(value: Binding(get: { picked ?? clock }, set: { picked = $0 }), in: 0...span)
                     .tint(look.palette.actx)

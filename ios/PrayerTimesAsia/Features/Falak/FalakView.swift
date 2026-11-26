@@ -44,7 +44,7 @@ struct FalakView: View {
                                 case .why: WhyItHelps()
                                 }
                                 Text("For learning. Always follow your local religious authority.")
-                                    .font(.system(size: 12))
+                                    .lookFont(12)
                                     .foregroundStyle(look.palette.tx2)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, 18)
@@ -79,7 +79,7 @@ struct FalakView: View {
                 .foregroundStyle(look.palette.tx)
                 .accessibilityAddTraits(.isHeader)
             Text("The sun and the sky set the prayer times. Slide to see how.")
-                .font(.system(size: 15)).foregroundStyle(look.palette.tx2)
+                .lookFont(15).foregroundStyle(look.palette.tx2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 4)
@@ -94,7 +94,7 @@ struct FalakView: View {
                 let on = part == tab
                 Button { tab = part } label: {
                     Text(part.rawValue)
-                        .font(.system(size: 14, weight: .semibold))
+                        .lookFont(14, .semibold)
                         .foregroundStyle(on ? p.tx : p.tx2)
                         .frame(maxWidth: .infinity, minHeight: 40)
                         .background(on ? Color.dyn(Color.white, p.card) : Color.clear,
@@ -223,14 +223,14 @@ private struct ToolRow: View {
             HStack(spacing: 14) {
                 icon(p)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.system(size: bands ? 19 : (look == .simple ? 21 : 17), weight: bands ? .bold : .semibold))
+                    Text(title).lookFont(bands ? 19 : (look == .simple ? 21 : 17), bands ? .bold : .semibold)
                         .foregroundStyle(main)
-                    Text(subtitle).font(.system(size: bands ? 15 : 13, weight: bands ? .semibold : .regular))
+                    Text(subtitle).lookFont(bands ? 15 : 13, bands ? .semibold : .regular)
                         .foregroundStyle(second).lineLimit(2)
                 }
                 Spacer(minLength: 8)
                 if let trailing {
-                    Text(trailing).font(.system(size: 15, weight: bands ? .semibold : .regular)).monospacedDigit()
+                    Text(trailing).lookFont(15, bands ? .semibold : .regular).monospacedDigit()
                         .foregroundStyle(second)
                 }
                 Image(systemName: "chevron.right").font(.footnote.weight(.semibold))

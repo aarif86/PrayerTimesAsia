@@ -13,7 +13,7 @@ struct WidgetPreviewView: View {
                 .ignoresSafeArea()
             VStack(spacing: 20) {
                 Picker("Style", selection: Binding(get: { style }, set: { self.style = $0 })) {
-                    ForEach(TodayStyle.allCases) { Text($0.label).tag($0) }
+                    ForEach(TodayStyle.looks) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 20)

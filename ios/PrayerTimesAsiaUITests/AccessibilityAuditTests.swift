@@ -16,8 +16,8 @@ final class AccessibilityAuditTests: XCTestCase {
 
     private let screens: [Screen] = [
         Screen(name: "Prayer, centre", arguments: ["-demo", "-tab", "today", "-centre"]),
-        Screen(name: "Prayer, list", arguments: ["-demo", "-tab", "today", "-sidedial"]),
-        Screen(name: "Prayer, dial", arguments: ["-demo", "-tab", "today", "-dial"]),
+        Screen(name: "Prayer, Big and Simple", arguments: ["-demo", "-tab", "today", "-simple"]),
+        Screen(name: "Prayer, Calm Gold", arguments: ["-demo", "-tab", "today", "-gold"]),
         Screen(name: "Prayer, sun path, light", arguments: ["-demo", "-tab", "today", "-sunpath", "-light"]),
         Screen(name: "Prayer, bands", arguments: ["-demo", "-tab", "today", "-bands"]),
         Screen(name: "Prayer, travelling", arguments: ["-demo-travel", "-tab", "today"]),
