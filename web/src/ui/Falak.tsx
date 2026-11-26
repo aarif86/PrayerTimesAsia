@@ -34,10 +34,10 @@ export function FalakScreen() {
   const place = s.activePlace
   if (!place) return <div class="page"><p class="headline" style={{ textAlign: 'center', marginTop: '40vh' }}>{tr('falak.choosePlace')}</p></div>
   return (
-    <div class="page falak falak2">
+    <div class={`page falak falak2 v12s v12f f-${s.prefs.todayStyle}`}>
       <div class="falak-head">
-        <h1 class="h-title">{tr('falak.title')}</h1>
-        <p class="subhead secondary">{tr('falak.lede')}</p>
+        <h1 class="f-title">{tr('falak.title')}</h1>
+        <p class="f-lede">{tr('falak.lede')}</p>
       </div>
       <Segmented value={tab} onChange={setTab} options={[
         { value: 'sky', label: tr('falak.tabSky') }, { value: 'then', label: tr('falak.tabThen') },
@@ -123,30 +123,43 @@ function SkySlider({ place, now }: { place: Place; now: number }) {
     dhuhr: tr('falak.stageDhuhrSay'), asr: tr('falak.stageAsrSay'), maghrib: tr('falak.stageMaghribSay'), isha: tr('falak.stageIshaSay'),
   }[stage]
   const dark = sun.altitude <= 0 && stage !== 'fajr'
+  // In daylight the sky takes the look's own colours, as in the mockup. Dawn, dusk and night keep their real colours.
+  const lit = sun.altitude > 0 && stage !== 'fajr' && stage !== 'maghrib'
+  const ink = lit ? 'var(--s-st)' : '#fff'
   const stars = dark ? Array.from({ length: 14 }, (_, i) => <circle cx={(i * 73) % W} cy={(i * 37) % 100 + 8} r="1.2" fill="#fff" opacity=".7" />) : null
   const minutes = Math.round((t1 - t0) / 60_000)
+  const shadowEnd = STICK_X + (morning ? 1 : -1) * shadow
   return (
     <div class="sky-card">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${title}. ${say}`}>
         <defs>
-          <linearGradient id="falak-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color={top} /><stop offset="1" stop-color={bottom} /></linearGradient>
+          <linearGradient id="falak-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style={{ stopColor: lit ? 'var(--s-fk1)' : top }} /><stop offset="1" style={{ stopColor: lit ? 'var(--s-fk2)' : bottom }} /></linearGradient>
           <radialGradient id="falak-sun"><stop offset="0" stop-color="#fff7d6" /><stop offset=".45" stop-color="#ffd66b" /><stop offset="1" stop-color="#ffd66b" stop-opacity="0" /></radialGradient>
         </defs>
         <rect width={W} height={H} fill="url(#falak-sky)" />
         {stars}
         {stage === 'fajr' && <ellipse cx="50" cy={GY} rx={110 + 60 * k} ry={8 + 8 * k} fill="#fff" opacity={0.5 + 0.35 * k} />}
         {stage === 'maghrib' && <ellipse cx={W - 50} cy={GY} rx="150" ry={22 * (1 - k)} fill="#ff5a2a" opacity={0.75 * (1 - k)} />}
-        <path d={`M16 ${GY} Q${W / 2} -20 ${W - 16} ${GY}`} fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="1.2" stroke-dasharray="2 5" />
-        {sun.altitude > -1 && <><circle cx={sx} cy={sy} r="26" fill="url(#falak-sun)" /><circle cx={sx} cy={sy} r="10" fill="#fff4c4" /></>}
-        <rect y={GY} width={W} height={H - GY} fill={dark ? '#2b281f' : '#e8d6ae'} />
-        {shadow > 0 && <path d={`M${STICK_X} ${GY} L${STICK_X + (morning ? 1 : -1) * shadow} ${GY + 3} L${STICK_X + (morning ? 1 : -1) * shadow} ${GY + 5} L${STICK_X} ${GY + 3}Z`} fill="#000" opacity=".38" />}
+        <path d={`M16 ${GY} Q${W / 2} -20 ${W - 16} ${GY}`} fill="none" style={{ stroke: ink }} stroke-opacity={lit ? 0.6 : 0.3} stroke-width="1.2" stroke-dasharray="3 5" />
+        {lit
+          ? <><circle cx={sx} cy={sy} r="26" class="sky-sun" opacity=".28" /><circle cx={sx} cy={sy} r="15" class="sky-sun" /></>
+          : sun.altitude > -1 && <><circle cx={sx} cy={sy} r="26" fill="url(#falak-sun)" /><circle cx={sx} cy={sy} r="10" fill="#fff4c4" /></>}
+        <rect y={GY} width={W} height={H - GY} style={{ fill: lit ? 'var(--s-gr)' : dark ? '#2b281f' : '#e8d6ae' }} />
+        {shadow > 0 && (lit
+          ? <>
+              <line x1={STICK_X} y1={GY} x2={shadowEnd} y2={GY} class="sky-shadow" stroke-width="3" />
+              {/* The word steps aside for the Asr mark late in the day, so the two never cross. */}
+              {(morning || Math.abs((STICK_X + shadowEnd) / 2 - asrX) > 34) &&
+                <text x={(STICK_X + shadowEnd) / 2} y={GY + 15} class="sky-ground-ink" font-size="11" font-weight="700" text-anchor="middle">{tr('falak.shadowLabel')}</text>}
+            </>
+          : <path d={`M${STICK_X} ${GY} L${shadowEnd} ${GY + 3} L${shadowEnd} ${GY + 5} L${STICK_X} ${GY + 3}Z`} fill="#000" opacity=".38" />)}
         {!morning && sun.altitude > 0 && <>
-          <line x1={asrX} y1={GY - 4} x2={asrX} y2={GY + 12} stroke="#fff" stroke-width="2" />
-          <text x={asrX} y={GY + 26} fill="#3a3a3c" font-size="10" font-weight="600" text-anchor="middle">{names.asr}</text>
+          <line x1={asrX} y1={GY - 4} x2={asrX} y2={GY + 12} style={{ stroke: lit ? ink : '#fff' }} stroke-width="2" />
+          <text x={asrX} y={GY + 31} class={lit ? 'sky-ground-ink' : undefined} style={lit ? undefined : { fill: '#3a3a3c' }} font-size="10" font-weight="600" text-anchor="middle">{names.asr}</text>
         </>}
-        <rect x={STICK_X - 1.5} y={GY - STICK} width="3" height={STICK} rx="1.5" fill={dark ? '#bbb' : '#3a3a3c'} />
-        <text x="12" y={GY - 7} fill="#fff" font-size="10" font-weight="600" opacity=".8">{tr('falak.east').toUpperCase()}</text>
-        <text x={W - 12} y={GY - 7} fill="#fff" font-size="10" font-weight="600" opacity=".8" text-anchor="end">{tr('falak.west').toUpperCase()}</text>
+        <rect x={STICK_X - 1.5} y={GY - STICK} width="3" height={STICK} rx="1.5" style={{ fill: lit ? 'var(--s-st)' : dark ? '#bbb' : '#3a3a3c' }} />
+        <text x="12" y={GY - 7} style={{ fill: ink }} font-size="10" font-weight="700" opacity={lit ? 1 : 0.8}>{tr('falak.east').toUpperCase()}</text>
+        <text x={W - 12} y={GY - 7} style={{ fill: ink }} font-size="10" font-weight="700" opacity={lit ? 1 : 0.8} text-anchor="end">{tr('falak.west').toUpperCase()}</text>
       </svg>
       <div class="sky-info">
         <div class="sky-time">{store.formatted(t)}</div>

@@ -1,6 +1,6 @@
 import { AlarmClock, AlarmClockCheck, Bell, BellOff, BellRing, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, Download, Play, Smartphone } from 'lucide-preact'
 import { useEffect, useState } from 'preact/hooks'
-import { alertMode, fridayMode, modesFor, notifies, setAlertMode, setFridayMode, setNotify, type AlertMode } from '../core/alertMode'
+import { alertMode, ALL_LEVELS, applyToAllFive, fridayMode, type AllLevel, modesFor, notifies, setAlertMode, setFridayMode, setNotify, type AlertMode } from '../core/alertMode'
 import type { PrayerDay } from '../core/engine'
 import { inSingapore } from '../core/friday'
 import { JUMUAH_LEAVE_CHOICES, leaveChoiceLabel, SECOND_SESSION_FROM, type JumuahSession } from '../core/jumuahLeave'
@@ -14,7 +14,9 @@ import {
 import { previewAlarm, stopAlarm } from '../services/alarmSound'
 import { azanAvailable } from '../services/azan'
 import { alertSupport, anyAlarm, downloadWakeICS, nextJumuahLeave, nextWakeUp, permission, requestPermission, testAlert } from '../services/notifications'
-import { REMINDER_CHOICES } from '../services/prefs'
+import { REMINDER_CHOICES, type Preferences } from '../services/prefs'
+import { AWAY_CHOICES, AWAY_PRAYERS, isAway } from '../core/away'
+import { HomeQuestion } from './Sheets'
 import { store, useNow, useStore } from '../services/store'
 import { openSheet, Sheet, ToggleItem } from './common'
 import { appLocale, tr, type AppWordKey } from '../core/appWords'
@@ -191,7 +193,7 @@ function ModeCards({ modes, value, pick, alarmHelp = tr(MODE_HELP.alarm) }: { mo
   )
 }
 
-type View = { kind: 'main' } | { kind: 'prayer'; prayer: Prayer } | { kind: 'friday' } | { kind: 'check' }
+type View = { kind: 'main' } | { kind: 'prayer'; prayer: Prayer } | { kind: 'friday' } | { kind: 'check' } | { kind: 'early' } | { kind: 'all' }
 
 /**
  * Alerts and alarms: one screen for every sound the app makes. Each prayer is
@@ -205,6 +207,8 @@ export function WakeUpSheet({ start, view: startView }: { start?: Prayer | 'frid
   if (view.kind === 'prayer') return <PrayerPage prayer={view.prayer} back={back} />
   if (view.kind === 'friday') return <FridayPage back={back} />
   if (view.kind === 'check') return <CheckPage back={back} />
+  if (view.kind === 'early') return <EarlyPage back={back} />
+  if (view.kind === 'all') return <AllPage back={back} />
   return <MainPage open={setView} />
 }
 
@@ -234,7 +238,7 @@ function MainPage({ open }: { open: (v: View) => void }) {
   const app = phoneAppOffer()
   const friday = prayerName('dhuhr', s.naming, true)
   const issues = problems()
-  
+  const [testMsg, setTestMsg] = useState<'sent' | 'blocked' | null>(null)
   const setSahur = (t: SahurTiming | null) => { store.update((x) => { x.sahurAlarm = t }); if (t) void ask(); else stopAlarm() }
   const [justSet, setJustSet] = useState<Prayer | null>(null)
   useEffect(() => {
@@ -282,9 +286,21 @@ function MainPage({ open }: { open: (v: View) => void }) {
         <span class="check-card-btn">{tr('alerts.checkPhone')}</span>
       </button>
 
+      <div class="glass card test-card">
+        <b>{tr('test.title')}</b>
+        <span class="sub">{tr('test.sub')}</span>
+        <button class="check-card-btn test-card-btn" onClick={() => void testAlert().then(setTestMsg)}>{tr('settings.testAlert')}</button>
+        {testMsg && <span class="sub test-card-msg" role="status">{testMsg === 'sent' ? tr('test.sent') : tr('test.blocked')}</span>}
+      </div>
+
       <section>
         <h2 class="group-title">{tr('alerts.eachPrayer')}</h2>
         <div class="group">
+          <button class="item" onClick={() => open({ kind: 'all' })}>
+            <BellRing size={20} />
+            <span class="label">{tr('all.row')}<span class="sub">{tr('all.rowSub')}</span></span>
+            <ChevronRight size={18} />
+          </button>
           {PRAYERS.map((prayer) => (
             <ModeBlock name={s.name(prayer)} mode={alertMode(p, prayer)} modes={modesFor(prayer)} words={chipWords(now, prayer)}
               open={() => open({ kind: 'prayer', prayer })} pick={(m) => pick(prayer, m)} />
@@ -292,14 +308,10 @@ function MainPage({ open }: { open: (v: View) => void }) {
           <ModeBlock name={tr('alerts.fridayLeave', { friday })} mode={fridayMode(p)} modes={['off', 'notify', 'alarm']}
             words={[modeWord(fridayMode(p)), tr('alerts.fridayStarts', { when: leaveChoiceLabel(p.jumuahReminderMinutes).toLocaleLowerCase(appLocale()) })]}
             open={() => open({ kind: 'friday' })} pick={pickFriday} />
-          <label class="item">
-            <span class="label">{tr('alerts.headsUp')}<span class="sub">{tr('alerts.headsUpSub')}</span></span>
-            <select class="inline-select" value={String(p.reminderMinutesBefore)} aria-label={tr('alerts.headsUp')}
-              onChange={(e) => { const v = parseInt((e.target as HTMLSelectElement).value, 10); store.update((x) => { x.reminderMinutesBefore = v }); if (v > 0) void ask() }}>
-              <option value="0">{tr('common.off')}</option>
-              {REMINDER_CHOICES.map((m) => <option value={String(m)}>{tr('common.minBefore', { n: m })}</option>)}
-            </select>
-          </label>
+          <button class="item" onClick={() => open({ kind: 'early' })}>
+            <span class="label">{tr('early.row')}<span class="sub">{earlySummary(p)}</span></span>
+            <ChevronRight size={18} />
+          </button>
         </div>
         <p class="group-foot">{tr('alerts.eachFoot')}</p>
       </section>
@@ -408,7 +420,6 @@ function MainPage({ open }: { open: (v: View) => void }) {
 
       <section>
         <div class="group">
-          <button class="item" onClick={testAlert}><BellRing size={20} /><span class="label">{tr('settings.testAlert')}</span></button>
           {anyAlarm(p) && (
             <button class="item" onClick={downloadWakeICS}>
               <Download size={20} /><span class="label">{tr('alerts.add30')}<span class="sub">{tr('wake.calendarRings')}</span></span>
@@ -621,6 +632,168 @@ function CheckPage({ back }: { back: () => void }) {
           </div>
         </section>
       )}
+    </Sheet>
+  )
+}
+
+const ALL_WORDS: Record<AllLevel, { name: () => string; desc: () => string }> = {
+  off: { name: () => tr('alerts.modeOff'), desc: () => tr('all.offDesc') },
+  notify: { name: () => tr('all.notifyName'), desc: () => tr('all.notifyDesc') },
+  azan: { name: () => tr('all.azanName'), desc: () => tr('all.azanDesc') },
+  alarm: { name: () => tr('alerts.modeAlarm'), desc: () => tr('all.alarmDesc') },
+}
+
+/** Set for all prayers: one level and an optional early reminder, applied to the five prayers. */
+function AllPage({ back }: { back: () => void }) {
+  const s = useStore()
+  const p = s.prefs
+  const levels = ALL_LEVELS.filter((l) => l !== 'azan' || azanAvailable())
+  const [level, setLevel] = useState<AllLevel>(alertMode(p, 'dhuhr') === 'alarm' ? 'alarm' : alertMode(p, 'dhuhr') === 'notify' ? (p.azanSound && azanAvailable() ? 'azan' : 'notify') : 'off')
+  const [early, setEarly] = useState<string>('keep')
+  const fajrOwn = p.wakeUp != null
+  const [fajrToo, setFajrToo] = useState(!fajrOwn)
+  const [done, setDone] = useState(false)
+  const apply = async () => {
+    // The early reminder choice is only shown for Notification and Short azan, so it only counts there.
+    const mins = (level === 'notify' || level === 'azan') && early !== 'keep' ? parseInt(early, 10) : null
+    store.update((x) => applyToAllFive(x, level, mins, fajrToo))
+    if (level === 'off') { stopAlarm(); setDone(true); return }
+    if (alertSupport() === 'supported' && !(await requestPermission())) { openSheet({ kind: 'alerts-help' }); return }
+    setDone(true)
+  }
+  return (
+    <Sheet title={tr('all.row')} full>
+      <BackBar back={back} />
+      <section>
+        <h2 class="group-title">{tr('all.step1')}</h2>
+        <div class="group">
+          {levels.map((l) => (
+            <button class="item choice" aria-pressed={level === l} onClick={() => { setLevel(l); setDone(false) }}>
+              <span class="label">{ALL_WORDS[l].name()}<span class="sub">{ALL_WORDS[l].desc()}</span></span>
+              <Check size={18} class="choice-tick" style={{ opacity: level === l ? 1 : 0 }} />
+            </button>
+          ))}
+        </div>
+        <p class="group-foot">{tr('all.iphoneNote')}</p>
+        {(level === 'azan' || level === 'notify') && <p class="group-foot">{tr('all.azanFoot')}</p>}
+      </section>
+      {level !== 'off' && level !== 'alarm' && (
+        <section>
+          <h2 class="group-title">{tr('all.step2')}</h2>
+          <div class="group">
+            <label class="item">
+              <span class="label">{tr('early.row')}</span>
+              <select class="inline-select" value={early} aria-label={tr('all.step2')} onChange={(e) => { setEarly((e.target as HTMLSelectElement).value); setDone(false) }}>
+                <option value="keep">{tr('all.keep')}</option>
+                <option value="0">{tr('alerts.modeOff')}</option>
+                {REMINDER_CHOICES.map((m) => <option value={String(m)}>{tr('common.minBefore', { n: m })}</option>)}
+              </select>
+            </label>
+          </div>
+        </section>
+      )}
+      {fajrOwn && (
+        <section>
+          <div class="group">
+            <ToggleItem label={tr('all.fajrToo', { name: s.name('fajr') })} sub={tr('all.fajrTooSub')} on={fajrToo} onChange={(v) => { setFajrToo(v); setDone(false) }} />
+          </div>
+        </section>
+      )}
+      <section>
+        <div class="group">
+          <button class="item all-five-btn" onClick={() => void apply()}>
+            {done ? <CircleCheck size={20} /> : <BellRing size={20} />}
+            <span class="label">{done ? tr('all.applied') : tr('all.apply')}</span>
+          </button>
+        </div>
+      </section>
+    </Sheet>
+  )
+}
+
+function awayWord(n: number): string {
+  return n === 60 ? tr('early.hour') : tr('early.min', { n })
+}
+
+/** One line under "Remind me earlier" on the main page. */
+function earlySummary(p: Preferences): string {
+  const parts: string[] = []
+  const mins = AWAY_PRAYERS.map((x) => p.awayMinutes[x] ?? 0).filter((m) => m > 0)
+  if (p.awayReminder && mins.length) parts.push(tr('early.rowAway', { when: awayWord(Math.max(...mins)) }))
+  if (p.reminderMinutesBefore > 0) parts.push(tr('alerts.headsUpN', { n: p.reminderMinutesBefore }))
+  return parts.length ? parts.join(' · ') : tr('early.rowOff')
+}
+
+/** Early reminders: how early each prayer reminds you when you are away from home, and at home. */
+function EarlyPage({ back }: { back: () => void }) {
+  const s = useStore()
+  const p = s.prefs
+  const away = isAway(p.home, p.homeConfirmed, s.activePlace)
+  const on = p.awayReminder || p.reminderMinutesBefore > 0
+  const num = (e: Event) => parseInt((e.target as HTMLSelectElement).value, 10)
+  return (
+    <Sheet title={tr('early.title')} full>
+      <BackBar back={back} />
+      <section>
+        <div class="group">
+          <ToggleItem label={tr('early.master')} sub={tr('early.masterSub')} on={on}
+            onChange={(v) => { store.update((x) => { x.awayReminder = v; if (!v) x.reminderMinutesBefore = 0 }); if (v) void ask() }} />
+        </div>
+      </section>
+      {on && (
+        <>
+          <h2 class="group-title">{tr('early.awayHead')}</h2>
+          <section>
+            <div class="group">
+              <ToggleItem label={tr('early.awaySwitch')} sub={tr('early.awaySwitchSub')} on={p.awayReminder}
+                onChange={(v) => { store.update((x) => { x.awayReminder = v }); if (v) void ask() }} />
+              {p.home && p.homeConfirmed && (
+                <button class="item" onClick={() => openSheet({ kind: 'places', forHome: true })}>
+                  <span class="label">{tr('early.home')}<span class="sub">{p.home.name}</span></span>
+                  <ChevronRight size={18} />
+                </button>
+              )}
+            </div>
+            {!p.home && <p class="group-foot">{tr('early.noHome')}</p>}
+            <HomeQuestion />
+            {p.awayReminder && p.homeConfirmed && <p class="group-foot">{away ? tr('early.openAway') : tr('early.openHome')}</p>}
+          </section>
+          {p.awayReminder && (
+            <>
+              <h2 class="group-title">{tr('early.howEarly')}</h2>
+              <section>
+                <div class="group">
+                  {AWAY_PRAYERS.map((prayer) => (
+                    <label class="item">
+                      <span class="label">{s.name(prayer)}</span>
+                      <select class="inline-select" value={String(p.awayMinutes[prayer] ?? 0)} aria-label={s.name(prayer)}
+                        onChange={(e) => { const v = num(e); store.update((x) => { x.awayMinutes = { ...x.awayMinutes, [prayer]: v } }) }}>
+                        <option value="0">{tr('common.off')}</option>
+                        {AWAY_CHOICES.map((m) => <option value={String(m)}>{awayWord(m)}</option>)}
+                      </select>
+                    </label>
+                  ))}
+                </div>
+                <p class="group-foot">{tr('early.howEarlyFoot')}</p>
+              </section>
+            </>
+          )}
+          <h2 class="group-title">{tr('early.atHomeHead')}</h2>
+          <section>
+            <div class="group">
+              <label class="item">
+                <span class="label">{tr('alerts.headsUp')}<span class="sub">{tr('early.atHomeSub')}</span></span>
+                <select class="inline-select" value={String(p.reminderMinutesBefore)} aria-label={tr('alerts.headsUp')}
+                  onChange={(e) => { const v = num(e); store.update((x) => { x.reminderMinutesBefore = v }); if (v > 0) void ask() }}>
+                  <option value="0">{tr('common.off')}</option>
+                  {REMINDER_CHOICES.map((m) => <option value={String(m)}>{tr('common.minBefore', { n: m })}</option>)}
+                </select>
+              </label>
+            </div>
+          </section>
+        </>
+      )}
+      <p class="group-foot">{tr('early.privacy')}</p>
     </Sheet>
   )
 }

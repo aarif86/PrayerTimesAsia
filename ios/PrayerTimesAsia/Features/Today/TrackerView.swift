@@ -16,7 +16,7 @@ struct TrackerView: View {
                 Section { HadithView(id: .river).hadithRow() }
                 Section {
                     HStack(spacing: 8) {
-                        Image(systemName: model.trackerPaused ? "pause.fill" : "flame.fill").foregroundStyle(.orange)
+                        Image(systemName: model.trackerPaused ? "pause.fill" : "checkmark.circle").foregroundStyle(Theme.accent)
                         Text("\(model.streak)").font(.largeTitle.bold()).monospacedDigit()
                         Text("day streak").foregroundStyle(.secondary)
                     }

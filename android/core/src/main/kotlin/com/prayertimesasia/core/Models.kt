@@ -247,10 +247,14 @@ data class Preferences(
     val use24Hour: Boolean = false,
     val hijriAdjustment: Int = 0,
 
-    val notificationsEnabled: Boolean = false,
+    // New installs are told when each prayer begins; alerts only go out once the phone allows them.
+    val notificationsEnabled: Boolean = true,
     val notifyPrayers: Set<Prayer> = Prayer.obligatory.toSet(),
     /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
     val reminderMinutesBefore: Int = 0,
+    /** Early reminder when the phone is away from the confirmed home (AwayReminder.kt). On by default, 1 hour, Fajr off. */
+    val awayReminder: Boolean = true,
+    val awayMinutes: Map<String, Int> = AwayReminder.DEFAULT_MINUTES,
     /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings. */
     val azanSound: Boolean = true,
 
@@ -408,7 +412,12 @@ data class Preferences(
 
     companion object {
         fun decode(text: String?): Preferences =
-            (text?.let { runCatching { CoreJson.decodeFromString(serializer(), it) }.getOrNull() } ?: Preferences()).sane().unifyAlerts()
+            (text?.let { runCatching { CoreJson.decodeFromString(serializer(), it).keepOldAlertChoice(it) }.getOrNull() } ?: Preferences()).sane().unifyAlerts()
+
+        /** Saved settings without the alerts choice come from before it defaulted to on: keep them Off. */
+        private fun Preferences.keepOldAlertChoice(text: String): Preferences =
+            if (runCatching { (CoreJson.parseToJsonElement(text) as kotlinx.serialization.json.JsonObject).containsKey("notificationsEnabled") }.getOrDefault(true)) this
+            else copy(notificationsEnabled = false)
 
         /** Times of day must be real ones and the Jumaat reminder one of the choices. */
         private fun Preferences.sane(): Preferences = copy(
@@ -418,6 +427,7 @@ data class Preferences(
             // Isyak is open until Subuh: it has no "before it ends" alarm.
             ishaAlarm = ishaAlarm.takeIf { it != PrayerAlarmTiming.END_MINUS_30 },
             tarawihRakaat = tarawihRakaat?.takeIf { it in Tarawih.CHOICES },
+            awayMinutes = AwayReminder.clean(awayMinutes),
         )
     }
 }

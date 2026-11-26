@@ -11,6 +11,7 @@ enum AlertsPage: Hashable {
     case prayer(Prayer)
     case friday
     case check
+    case all
 }
 
 /// Alerts and alarms: one screen for every sound the app makes. Each prayer is
@@ -50,6 +51,7 @@ private struct AlertsPageView: View {
         case .prayer(let prayer): AnyView(PrayerAlertPage(prayer: prayer))
         case .friday: AnyView(FridayAlertPage())
         case .check: AnyView(CheckPhonePage())
+        case .all: AnyView(AllFivePage())
         }
     }
 }
@@ -141,7 +143,9 @@ private struct AlertsMainList: View {
     var body: some View {
         Form {
             CheckCardSection(path: $path)
+            TestAlertSection()
             EachPrayerSection(path: $path, justSet: $justSet)
+            AwayReminderSection()
             NextAlarmSection()
             ExtrasSection()
             SoundSection()
@@ -197,6 +201,151 @@ private struct CheckCardSection: View {
     }
 }
 
+/// "Check that it works": one tap sends a sample alert about 3 seconds later.
+private struct TestAlertSection: View {
+    @Environment(AppModel.self) private var model
+    @State private var result: Bool?
+
+    var body: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Check that it works").font(.subheadline.weight(.semibold))
+                Text("We send a sample alert in a few seconds, the same way your real ones arrive. Lock your screen to see how it looks.")
+                    .font(.footnote).foregroundStyle(.secondary)
+                Button {
+                    Task { result = await send() }
+                } label: {
+                    Text("Send a test alert")
+                        .font(.footnote.weight(.bold))
+                        .padding(.horizontal, 14).padding(.vertical, 12)
+                        .frame(minHeight: 44)
+                        .background(Capsule().fill(Theme.sunArc))
+                        .foregroundStyle(.black)
+                }
+                .buttonStyle(.plain)
+                if let result {
+                    Text(result ? "Test alert coming in a few seconds." : "Alerts are not allowed on this iPhone yet.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private func send() async -> Bool {
+        let now = Date.now
+        let name = model.current(at: now).map { $0.prayer.name(model.naming) } ?? "Prayer"
+        let quiet = model.prefs.buzzOnly
+        let sound: Azan.Sound = model.prefs.azanSound && Azan.isAvailable ? .azan : .standard
+        return await NotificationScheduler.sendTest(title: "\(name) · test alert", body: "This is how prayer alerts will look on this device.", sound: sound, silent: quiet)
+    }
+}
+
+/// Set for all prayers: one level and an optional early reminder, applied to the five prayers.
+private struct AllFivePage: View {
+    @Environment(AppModel.self) private var model
+    @State private var level: AllLevel = .notify
+    @State private var early: Int?
+    @State private var fajrToo = true
+    @State private var done = false
+    @State private var started = false
+
+    private var levels: [AllLevel] { AllLevel.allCases.filter { $0 != .azan || Azan.isAvailable } }
+
+    var body: some View {
+        let fajrOwn = model.prefs.wakeUp != nil
+        Form {
+            Section {
+                ForEach(levels) { l in
+                    Button { level = l; done = false } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(name(l)).foregroundStyle(.primary)
+                                Text(detail(l)).font(.footnote).foregroundStyle(.secondary)
+                            }
+                            Spacer(minLength: 0)
+                            if level == l { Image(systemName: "checkmark").foregroundStyle(Theme.sunArc) }
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            } header: {
+                Text("What should happen at prayer time?")
+            } footer: {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("An iPhone notification can only play a short sound, up to 30 seconds, so a full azan is not possible here. For a long call, use Alarm.")
+                    if level == .azan || level == .notify {
+                        Text("The azan sound is one setting for the whole app, so it changes for every prayer.")
+                    }
+                }
+            }
+            if level == .notify || level == .azan {
+                Section("A reminder before each prayer") {
+                    Picker("Remind me earlier", selection: Binding(get: { early ?? -1 }, set: { early = $0 < 0 ? nil : $0; done = false })) {
+                        Text("Leave as it is").tag(-1)
+                        Text("Off").tag(0)
+                        ForEach(Preferences.reminderChoices, id: \.self) { Text("\($0) min before").tag($0) }
+                    }
+                    .pickerStyle(.menu)
+                }
+            }
+            if fajrOwn {
+                Section {
+                    Toggle("Also change \(Prayer.fajr.name(model.naming))", isOn: Binding(get: { fajrToo }, set: { fajrToo = $0; done = false }))
+                } footer: {
+                    Text("It has its own alarm settings, so it stays as it is unless you tick this.")
+                }
+            }
+            Section {
+                Button {
+                    apply()
+                } label: {
+                    Label(done ? "Done. All five prayers are set." : "Apply to all five", systemImage: done ? "checkmark.circle.fill" : "bell.badge.fill")
+                }
+            }
+        }
+        .navigationTitle("Set for all prayers")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            guard !started else { return }
+            started = true
+            fajrToo = model.prefs.wakeUp == nil
+            switch model.prefs.alertMode(.dhuhr) {
+            case .alarm: level = .alarm
+            case .notify: level = model.prefs.azanSound && Azan.isAvailable ? .azan : .notify
+            case .off: level = .off
+            }
+        }
+    }
+
+    private func apply() {
+        let mins = (level == .notify || level == .azan) ? early : nil
+        withAnimation { model.prefs.applyToAllFive(level, early: mins, includeFajr: fajrToo) }
+        Task {
+            if level == .off { await WakeUpAlarm.stopRinging() } else { await askForAlerts(); await model.refreshNotificationStatus() }
+            done = true
+        }
+    }
+
+    private func name(_ l: AllLevel) -> String {
+        switch l {
+        case .off: "Off"
+        case .notify: "Notification"
+        case .azan: "Short azan"
+        case .alarm: "Alarm"
+        }
+    }
+
+    private func detail(_ l: AllLevel) -> String {
+        switch l {
+        case .off: "Nothing for these prayers."
+        case .notify: "A message on your screen with a normal alert sound."
+        case .azan: "A message that plays a short azan, about 9 seconds."
+        case .alarm: "Rings like a clock until you stop it. Works on silent."
+        }
+    }
+}
+
 private struct EachPrayerSection: View {
     @Environment(AppModel.self) private var model
     @Binding var path: [AlertsPage]
@@ -205,6 +354,19 @@ private struct EachPrayerSection: View {
     var body: some View {
         let friday = Prayer.dhuhr.name(model.naming, isFriday: true)
         Section {
+            Button { path.append(.all) } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "bell.badge.fill").foregroundStyle(Theme.sunArc)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Set for all prayers").font(.headline).foregroundStyle(.primary)
+                        Text("Choose once and all five follow.").font(.footnote).foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
             ForEach(Prayer.allCases) { prayer in
                 let mode = model.prefs.alertMode(prayer)
                 let chip = alertChipWords(prayer, model: model)
@@ -907,5 +1069,49 @@ enum AlarmPreview {
         player?.stop()
         player = nil
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+}
+
+/// Early reminders when away from home: one choice per prayer. Home and the check stay on the phone.
+private struct AwayReminderSection: View {
+    @Environment(AppModel.self) private var model
+
+    private func word(_ m: Int) -> String { m == 60 ? "1 hour" : "\(m) min" }
+
+    var body: some View {
+        Section {
+            Toggle(isOn: Binding(
+                get: { model.prefs.awayReminder },
+                set: { on in
+                    model.prefs.awayReminder = on
+                    if on { Task { await askForAlerts() } }
+                })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Remind me when I am out")
+                    Text("So you have time to find a place to pray").font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            if model.prefs.home == nil {
+                Text("Set your home place so we know when you are away.").font(.footnote).foregroundStyle(.secondary)
+            } else if !model.prefs.homeConfirmed {
+                HomeQuestionCard()
+            }
+            if model.prefs.awayReminder {
+                ForEach(AwayReminder.prayers) { prayer in
+                    Picker(prayer.name(model.naming), selection: Binding(
+                        get: { model.prefs.awayMinutes[prayer.rawValue] ?? 0 },
+                        set: { model.prefs.awayMinutes[prayer.rawValue] = $0 })) {
+                        Text("Off").tag(0)
+                        ForEach(AwayReminder.choices, id: \.self) { Text(word($0)).tag($0) }
+                    }
+                    .pickerStyle(.menu)
+                }
+            }
+        } header: {
+            Text("When I am away from home")
+        } footer: {
+            Text(model.prefs.awayReminder ? Device.words("Fajr starts Off because most people are asleep. Use a Fajr alarm instead. Your home and where you are stay on your phone. We never send them anywhere.")
+                 : Device.words("Your home and where you are stay on your phone. We never send them anywhere."))
+        }
     }
 }

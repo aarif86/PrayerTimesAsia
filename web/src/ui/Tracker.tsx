@@ -1,9 +1,9 @@
 import { useState } from 'preact/hooks'
-import { ChevronLeft, ChevronRight, Droplet, Flame, Pause, Play } from 'lucide-preact'
+import { ChevronLeft, ChevronRight, CircleCheck, Droplet, Flame, Pause, Play } from 'lucide-preact'
 import { OBLIGATORY } from '../core/prayer'
 import { ymdKey } from '../core/tz'
 import { useNow, useStore } from '../services/store'
-import { Sheet } from './common'
+import { openSheet, Sheet } from './common'
 import { Hadith } from './Hadith'
 import { appLocale, tr, trWith } from '../core/appWords'
 
@@ -58,6 +58,10 @@ export function TrackerSheet() {
           </>
         )}
       </div>
+
+      <button class="glass card log-open" onClick={() => openSheet({ kind: 'log-catchup' })}>
+        <CircleCheck size={20} class="accent" /><span>{tr('log.catchTitle')}</span><ChevronRight size={18} />
+      </button>
 
       <div class="glass card">
         <div class="tracker-month-head">

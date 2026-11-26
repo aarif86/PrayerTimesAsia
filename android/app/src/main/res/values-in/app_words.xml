@@ -57,6 +57,7 @@
     <string name="style_sunPath" formatted="false">Lintasan Matahari</string>
     <string name="style_bands" formatted="false">Pita Warna</string>
     <string name="style_simple" formatted="false">Besar dan Sederhana</string>
+    <string name="style_gold" formatted="false">Emas Tenang</string>
     <string name="preview_off" formatted="false">Nonaktif (tanggal sebenarnya)</string>
     <string name="preview_sighting" formatted="false">Malam rukyat (29 Syakban)</string>
     <string name="preview_ramadan" formatted="false">Ramadan (hari 12)</string>
@@ -90,6 +91,7 @@
     <string name="today_calledHere" formatted="false">disebut {name} di sini</string>
     <string name="today_now" formatted="false">SEKARANG</string>
     <string name="today_next" formatted="false">BERIKUTNYA</string>
+    <string name="today_nextPrayer" formatted="false">Salat berikutnya</string>
     <string name="today_nextIn" formatted="false">{name} dalam {time}</string>
     <string name="today_in" formatted="false">dalam {time}</string>
     <string name="today_alertOff" formatted="false">Matikan pemberitahuan</string>
@@ -111,9 +113,9 @@
     <string name="today_midnightShort" formatted="false">Tengah malam</string>
     <string name="today_lastThirdShort" formatted="false">Sepertiga akhir</string>
     <string name="today_imsakNote" formatted="false">10 menit sebelum Subuh. Selesaikan sahur sebelum ini</string>
-    <string name="today_dhuhaNote" formatted="false">Matahari naik setinggi tombak (sekitar 4½°)</string>
-    <string name="today_midnightNote" formatted="false">Separuh waktu dari Magrib ke Subuh</string>
-    <string name="today_lastThirdNote" formatted="false">Waktu terbaik untuk tahajud dan doa</string>
+    <string name="today_dhuhaNote" formatted="false">Salat sunah, dua rakaat atau lebih</string>
+    <string name="today_midnightNote" formatted="false">Sebaiknya salat Isya sebelum ini</string>
+    <string name="today_lastThirdNote" formatted="false">Waktu untuk tahajud</string>
     <string name="today_prayed" formatted="false">, sudah salat</string>
     <string name="today_moreTimes" formatted="false">Lihat waktu lainnya</string>
     <string name="today_nowNext" formatted="false">Sekarang {now}. {next} pukul {time}.</string>
@@ -235,6 +237,7 @@
     <string name="falak_slideSun" formatted="false">Geser matahari</string>
     <string name="falak_east" formatted="false">Timur</string>
     <string name="falak_west" formatted="false">Barat</string>
+    <string name="falak_shadowLabel" formatted="false">Bayangan</string>
     <string name="falak_stageNight" formatted="false">Malam</string>
     <string name="falak_stageNightSay" formatted="false">Langit masih gelap. Waktu {name} belum masuk.</string>
     <string name="falak_stageFajrSay" formatted="false">Cahaya putih melebar di ufuk timur. Waktu {name} sudah masuk.</string>
@@ -500,6 +503,8 @@
     <string name="settings_tracker" formatted="false">Pencatat</string>
     <string name="settings_trackerFoot" formatted="false">Ketuk salat di layar Salat setelah waktunya lewat untuk mencentangnya, dan jaga rangkaian beruntun. Ketuk rangkaian beruntun untuk menandai hari uzur (haid, sakit) agar tetap berlanjut. Hanya disimpan di peramban ini.</string>
     <string name="settings_trackerOn" formatted="false">Pencatat salat</string>
+    <string name="settings_trackerShowTime" formatted="false">Tampilkan jam saya salat</string>
+    <string name="settings_trackerShowTimeSub" formatted="false">Jam kecil setelah centang. Matikan untuk centang saja.</string>
     <string name="settings_nudge" formatted="false">Pengingat sebelum waktu habis</string>
     <string name="settings_nudgeSub" formatted="false">Satu pemberitahuan lembut sekitar 30 menit sebelum waktu salat habis, hanya jika belum dicentang. Tidak untuk {name}, yang waktunya berlanjut sampai {until}. Tidak berbunyi saat dijeda.</string>
     <string name="settings_display" formatted="false">Tampilan</string>
@@ -869,6 +874,16 @@
     <string name="qibla_turnLeft" formatted="false">Putar ke kiri {deg}°</string>
     <string name="qibla_turnRightAbout" formatted="false">Putar ke kanan, sekitar {deg}°</string>
     <string name="qibla_turnLeftAbout" formatted="false">Putar ke kiri, sekitar {deg}°</string>
+    <string name="qibla_facingShort" formatted="false">Menghadap</string>
+    <string name="qibla_youFaceHere" formatted="false">Arah Anda</string>
+    <string name="qibla_northHere" formatted="false">Utara</string>
+    <string name="qibla_sunHint" formatted="false">Putar sampai matahari mencapai Kakbah.</string>
+    <string name="qibla_turnLeftWord" formatted="false">Putar ke kiri</string>
+    <string name="qibla_turnRightWord" formatted="false">Putar ke kanan</string>
+    <string name="qibla_kmToMakkah" formatted="false">{km} km ke Makkah</string>
+    <string name="qibla_sunStep2" formatted="false">Putar seluruh badan perlahan sampai matahari mencapai Kakbah.</string>
+    <string name="qibla_sunStep3" formatted="false">Saat tulisan berubah hijau dan ponsel Anda bergetar, Anda menghadap kiblat.</string>
+    <string name="qibla_sunStep3NoTap" formatted="false">Saat tulisan berubah hijau, Anda menghadap kiblat.</string>
     <string name="journey_homeTitle" formatted="false">Anda berada di rumah</string>
     <string name="journey_homeBody" formatted="false">Salatlah secara penuh. Keringanan musafir berlaku setelah Anda bepergian sedikitnya {km} km.</string>
     <string name="journey_nearbyTitle" formatted="false">Dalam radius {km} km dari rumah</string>
@@ -911,6 +926,8 @@
     <string name="masjid_savedPlace" formatted="false">tempat yang Anda simpan</string>
     <string name="masjid_nearestYou" formatted="false">Paling dekat dengan Anda</string>
     <string name="masjid_nearestTo" formatted="false">Paling dekat dengan {place}</string>
+    <string name="masjid_nearestMasjid" formatted="false">Masjid terdekat</string>
+    <string name="masjid_showWay" formatted="false">Tunjukkan arahnya</string>
     <string name="masjid_howGoing" formatted="false">Cara Anda ke sana</string>
     <string name="masjid_walk" formatted="false">Jalan kaki</string>
     <string name="masjid_drive" formatted="false">Berkendara</string>
@@ -1183,4 +1200,78 @@
     <string name="method_note_tunisia" formatted="false">Metode Kementerian Urusan Agama Tunisia.</string>
     <string name="method_note_morocco" formatted="false">Metode Kementerian Wakaf dan Urusan Islam Maroko.</string>
     <string name="method_note_jordan" formatted="false">Metode Kementerian Wakaf dan Urusan Islam Yordania. Juga dipakai di Palestina.</string>
+    <string name="menu_appearance" formatted="false">Tampilan</string>
+    <string name="menu_auto" formatted="false">Otomatis</string>
+    <string name="menu_light" formatted="false">Terang</string>
+    <string name="menu_dark" formatted="false">Gelap</string>
+    <string name="menu_lookAndFeel" formatted="false">Gaya tampilan</string>
+    <string name="menu_streak" formatted="false">Rentetan salat</string>
+    <string name="menu_days" formatted="false">{n} hari</string>
+    <string name="menu_days_one" formatted="false">{n} hari</string>
+    <string name="menu_back" formatted="false">Gaya tampilan</string>
+    <string name="log_ask" formatted="false">Kapan Anda salat? Awal atau lambat, kami hanya mencatat jamnya.</string>
+    <string name="log_justNow" formatted="false">Baru saja, {time}</string>
+    <string name="log_atTime" formatted="false">Pada waktunya, {time}</string>
+    <string name="log_pick" formatted="false">Pilih jam</string>
+    <string name="log_save" formatted="false">Simpan</string>
+    <string name="log_remove" formatted="false">Hapus centang</string>
+    <string name="log_catchTitle" formatted="false">Catat salat saya</string>
+    <string name="bands_credit" formatted="false">Penghormatan untuk prayertimes.sg &amp; my oleh Awsam Tech LLP. Digunakan dengan izin.</string>
+    <string name="log_catchIntro" formatted="false">Lupa mencentang? Tambahkan jam Anda salat. Awal atau lambat, kami hanya mencatat yang Anda katakan.</string>
+    <string name="log_tickAll" formatted="false">Centang semua tepat waktu</string>
+    <string name="log_prayedAt" formatted="false">Salat {time}</string>
+    <string name="log_prayed" formatted="false">Sudah salat</string>
+    <string name="log_from" formatted="false">dari {time}</string>
+    <string name="log_allDone" formatted="false">Semua salat sejauh ini hari ini sudah dicentang.</string>
+    <string name="log_timeLabel" formatted="false">Jam Anda salat</string>
+    <string name="alerts_allFive" formatted="false">Beri tahu saya untuk kelima salat</string>
+    <string name="alerts_allFiveSub" formatted="false">Salat yang sudah memakai Alarm tetap memakai Alarm.</string>
+    <string name="alerts_allFiveOn" formatted="false">Kelima salat sudah aktif</string>
+    <string name="today_allFiveOn" formatted="false">Pemberitahuan aktif untuk kelima salat</string>
+    <string name="today_allFiveChange" formatted="false">Ubah</string>
+    <string name="early_title" formatted="false">Pengingat awal</string>
+    <string name="early_row" formatted="false">Ingatkan saya lebih awal</string>
+    <string name="early_rowAway" formatted="false">Jauh dari rumah, {when} sebelum</string>
+    <string name="early_rowOff" formatted="false">Mati</string>
+    <string name="early_master" formatted="false">Ingatkan saya lebih awal</string>
+    <string name="early_masterSub" formatted="false">Matikan semua pengingat awal di sini</string>
+    <string name="early_awayHead" formatted="false">Saat saya jauh dari rumah</string>
+    <string name="early_awaySwitch" formatted="false">Ingatkan saya saat saya di luar</string>
+    <string name="early_awaySwitchSub" formatted="false">Agar Anda sempat mencari tempat untuk salat</string>
+    <string name="early_home" formatted="false">Rumah</string>
+    <string name="early_howEarly" formatted="false">Seberapa awal, untuk setiap salat</string>
+    <string name="early_howEarlyFoot" formatted="false">Subuh dimulai Mati karena kebanyakan orang masih tidur. Gunakan alarm Subuh.</string>
+    <string name="early_fajrAlarm" formatted="false">Anda punya alarm Subuh, jadi tidak ada pengingat awal Subuh.</string>
+    <string name="early_atHomeHead" formatted="false">Saat saya di rumah</string>
+    <string name="early_atHomeSub" formatted="false">Mati kecuali Anda pilih</string>
+    <string name="early_privacy" formatted="false">Rumah Anda dan lokasi Anda tetap di ponsel. Kami tidak mengirimnya ke mana pun.</string>
+    <string name="early_noHome" formatted="false">Tetapkan tempat rumah Anda agar kami tahu saat Anda jauh.</string>
+    <string name="early_setHome" formatted="false">Tetapkan rumah</string>
+    <string name="early_openAway" formatted="false">Anda sedang jauh dari rumah.</string>
+    <string name="early_openHome" formatted="false">Anda sedang di rumah.</string>
+    <string name="early_hour" formatted="false">1 jam</string>
+    <string name="early_min" formatted="false">{n} menit</string>
+    <string name="notify_nameInHour" formatted="false">{name} dalam 1 jam</string>
+    <string name="notify_nameAtAway" formatted="false">{name} dimulai pukul {time}. Waktu yang baik untuk mencari tempat salat.</string>
+    <string name="all_row" formatted="false">Atur untuk semua salat</string>
+    <string name="all_rowSub" formatted="false">Pilih sekali dan kelima salat mengikutinya.</string>
+    <string name="all_step1" formatted="false">Apa yang terjadi saat waktu salat tiba?</string>
+    <string name="all_offDesc" formatted="false">Tidak ada apa-apa untuk salat ini.</string>
+    <string name="all_notifyName" formatted="false">Pemberitahuan</string>
+    <string name="all_notifyDesc" formatted="false">Pesan di layar Anda dengan bunyi pemberitahuan biasa.</string>
+    <string name="all_azanName" formatted="false">Azan singkat</string>
+    <string name="all_azanDesc" formatted="false">Pesan yang memutar azan singkat, sekitar 9 detik.</string>
+    <string name="all_alarmDesc" formatted="false">Berbunyi seperti jam sampai Anda menghentikannya. Tetap berbunyi saat senyap.</string>
+    <string name="all_step2" formatted="false">Pengingat sebelum setiap salat</string>
+    <string name="all_keep" formatted="false">Biarkan seperti sekarang</string>
+    <string name="all_fajrToo" formatted="false">Ubah {name} juga</string>
+    <string name="all_fajrTooSub" formatted="false">Salat ini punya pengaturan alarm sendiri, jadi tidak berubah kecuali Anda mencentangnya.</string>
+    <string name="all_apply" formatted="false">Terapkan ke kelima salat</string>
+    <string name="all_applied" formatted="false">Selesai. Kelima salat sudah diatur.</string>
+    <string name="all_azanFoot" formatted="false">Bunyi azan adalah satu pengaturan untuk seluruh aplikasi, jadi berubah untuk setiap salat.</string>
+    <string name="all_iphoneNote" formatted="false">Di iPhone, pemberitahuan hanya dapat memutar bunyi pendek, hingga 30 detik, sehingga azan penuh tidak bisa diputar di sana. Untuk panggilan yang panjang, gunakan Alarm.</string>
+    <string name="test_title" formatted="false">Periksa apakah berfungsi</string>
+    <string name="test_sub" formatted="false">Kami mengirim pemberitahuan contoh dalam beberapa detik, seperti pemberitahuan asli Anda.</string>
+    <string name="test_sent" formatted="false">Pemberitahuan uji akan tiba dalam beberapa detik. Tetap di layar ini untuk melihat dan mendengarnya.</string>
+    <string name="test_blocked" formatted="false">Pemberitahuan belum diizinkan di perangkat ini.</string>
 </resources>

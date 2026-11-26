@@ -1,5 +1,8 @@
-import type { ComponentChildren } from 'preact'
+import { createContext, type ComponentChildren } from 'preact'
 import { useEffect, useRef, useState } from 'preact/hooks'
+
+/** Whether the screen is taller than it is wide, for layouts that change with it. */
+export const FrameShape = createContext<{ portrait: boolean }>({ portrait: false })
 
 /**
  * Gives its children `--h` and `--w` (1% of its own height and width, in px),
@@ -28,7 +31,7 @@ export function Frame({ children, class: cls = '' }: { children: ComponentChildr
   return (
     <div ref={ref} class={`frame ${portrait ? 'portrait' : 'landscape'} ${cls}`}
       style={{ '--h': `${size.h / 100}px`, '--w': `${size.w / 100}px`, '--k': String(Math.min(size.h, size.w * 0.5625) / 450) }}>
-      {size.w > 0 && children}
+      {size.w > 0 && <FrameShape.Provider value={{ portrait }}>{children}</FrameShape.Provider>}
     </div>
   )
 }

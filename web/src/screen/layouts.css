@@ -1,0 +1,287 @@
+/* Masjid screen layouts: the times share the screen with slides and notices (every layout but Full clock).
+   Looks: Sky, Board, Bands, Day Dial and Sun Path keep their character; Simple and Surau are flat.
+   Sizes use --u, as in screen.css. */
+
+/* MARK: Surau, the seventh look (navy and gold, a faint kawung pattern). Works in Full clock too. */
+
+.scr-look-surau, .lay-look-surau {
+  --bg: #0b0f2a; --panel: #151a45; --glass: rgba(21, 26, 69, 0.86); --glass-strong: rgba(21, 26, 69, 0.95);
+  --accent: #e2b65a; --gold: #e2b65a; --fill: rgba(226, 182, 90, 0.1); --stroke: rgba(226, 182, 90, 0.2);
+  --t-fajr: #e2b65a; --t-sunrise: #e2b65a; --t-dhuhr: #e2b65a; --t-asr: #e2b65a; --t-maghrib: #e2b65a; --t-isha: #e2b65a;
+}
+.scr-look-surau.scr-light, .lay-look-surau.scr-light {
+  --bg: #fbf6ea; --panel: #fffdf7; --glass: rgba(255, 253, 247, 0.95); --glass-strong: #fffdf7; --fg: #151a45; --fg2: rgba(21, 26, 69, 0.7); --fg3: rgba(21, 26, 69, 0.4);
+  --accent: #a87b1c; --gold: #a87b1c; --fill: rgba(21, 26, 69, 0.06); --stroke: rgba(21, 26, 69, 0.12);
+  --t-fajr: #8a620d; --t-sunrise: #8a620d; --t-dhuhr: #8a620d; --t-asr: #8a620d; --t-maghrib: #8a620d; --t-isha: #8a620d;
+}
+.scr-look-surau::before, .lay-look-surau::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72' fill='none' stroke='%23e2b65a' stroke-width='1.4'%3E%3Cellipse cx='36' cy='18' rx='8' ry='18'/%3E%3Cellipse cx='36' cy='54' rx='8' ry='18'/%3E%3Cellipse cx='18' cy='36' rx='18' ry='8'/%3E%3Cellipse cx='54' cy='36' rx='18' ry='8'/%3E%3C/svg%3E");
+  background-size: calc(var(--u) * 9) calc(var(--u) * 9);
+}
+.scr-look-surau.scr-light::before, .lay-look-surau.scr-light::before { opacity: 0.1; filter: brightness(0.7); }
+.scr-look-surau .scr-cell.on { background: var(--gold); border-color: var(--gold); color: #151a45; }
+.scr-look-surau .scr-cell.on .scr-name, .scr-look-surau .scr-cell.on .scr-iq, .scr-look-surau .scr-cell.on .scr-iq .scr-t, .scr-look-surau .scr-cell.on .scr-t { color: #151a45; }
+/* Light: the next prayer is a navy block with a gold name and a white time, the strongest thing on the screen. */
+.scr-look-surau.scr-light .scr-cell.on { background: #151a45; border-color: #151a45; color: #fff; }
+.scr-look-surau.scr-light .scr-cell.on .scr-name { color: #f0cd7e; }
+.scr-look-surau.scr-light .scr-cell.on .scr-t, .scr-look-surau.scr-light .scr-cell.on .scr-iq, .scr-look-surau.scr-light .scr-cell.on .scr-iq .scr-t { color: #fff; }
+
+/* MARK: The maker line, in every layout */
+.scr-maker { font-weight: 500; }
+.scr-brand > span + span::before { content: ''; }
+
+/* MARK: Common */
+
+.lay {
+  grid-template-rows: auto minmax(0, 1fr) auto auto; gap: calc(var(--u) * 2.2);
+  padding: calc(var(--u) * 3.2) calc(var(--u) * 4.2) calc(var(--u) * 2.6);
+}
+.lay-head { grid-area: head; display: flex; justify-content: space-between; align-items: flex-start; gap: calc(var(--u) * 3); min-width: 0; }
+.lay-title { min-width: 0; }
+.lay-title h1 { margin: 0; font-family: var(--font-display); font-size: calc(var(--u) * 4.8); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lay-title h1.long, .lay-title h1.xlong { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.1; overflow-wrap: anywhere; font-size: calc(var(--u) * 3.8); }
+.lay-title p { margin: calc(var(--u) * 0.6) 0 0; font-size: calc(var(--u) * 2.6); color: var(--fg2); }
+.lay-date { margin: 0; text-align: right; font-size: calc(var(--u) * 2.5); line-height: 1.35; color: var(--fg2); white-space: nowrap; font-variant-numeric: normal; }
+.lay-date::first-line { color: var(--fg); font-weight: 600; }
+.lay-date.only-hijri { color: var(--fg); font-weight: 600; }
+.lay-left { grid-area: left; display: flex; flex-direction: column; gap: calc(var(--u) * 1.6); min-height: 0; min-width: 0; }
+.lay-right { grid-area: right; min-height: 0; min-width: 0; display: grid; }
+.lay-bar { grid-area: bar; }
+.lay-foot { grid-area: foot; display: flex; align-items: center; justify-content: space-between; gap: calc(var(--u) * 3); min-width: 0; }
+.lay-foot .scr-brand { font-size: calc(var(--u) * 2); }
+.lay-foot .scr-qr-code { width: calc(var(--u) * 8); height: calc(var(--u) * 8); }
+.lay-foot .scr-qr figcaption { font-size: calc(var(--u) * 1.9); }
+
+/* The one hero: a clock, the next prayer, and a thin line to it. */
+.lay-hero { display: flex; align-items: center; gap: calc(var(--u) * 3); flex: none; min-width: 0; }
+.lay .scr-hero { justify-items: start; text-align: left; align-content: start; gap: calc(var(--u) * 1); min-width: 0; flex: 1; }
+.lay .scr-big { font-size: calc(var(--u) * 15); letter-spacing: -0.02em; }
+.lay .scr-kicker { font-size: calc(var(--u) * 2.6); }
+.lay .scr-line { font-size: calc(var(--u) * 2.6); }
+.lay .scr-next { margin: 0; padding: 0; background: transparent; border: 0; -webkit-backdrop-filter: none; backdrop-filter: none; font-size: calc(var(--u) * 3.6); justify-content: flex-start; gap: calc(var(--u) * 0.6) calc(var(--u) * 1.6); }
+.scr-progress { display: block; width: 100%; height: calc(var(--u) * 0.55); border-radius: 99px; background: var(--fill); overflow: hidden; margin-top: calc(var(--u) * 0.4); }
+.scr-progress b { display: block; height: 100%; border-radius: 99px; background: var(--gold); transition: width 1s linear; }
+.lay .scr-ramadan { justify-content: flex-start; margin: 0; font-size: calc(var(--u) * 2.2); }
+
+/* The times, a plain list. */
+.lay-times { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-rows: minmax(0, 1fr); gap: calc(var(--u) * 0.3); flex: 1; min-height: 0; align-content: stretch; }
+.lay-row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; column-gap: calc(var(--u) * 2); padding: 0 calc(var(--u) * 2.2); border-radius: calc(var(--u) * 1.6); min-height: 0; }
+.lay-row .scr-name { font-size: calc(var(--u) * 3.6); font-weight: 600; }
+.lay-row .scr-name em { font-size: 0.7em; }
+.lay-row .scr-t { font-size: min(calc(var(--u) * 5.4), var(--tcap)); font-weight: 700; justify-self: end; white-space: nowrap; }
+.lay-row .scr-iq { font-size: calc(var(--u) * 2.4); color: var(--fg2); white-space: nowrap; }
+.lay-row .scr-iq .scr-t { font-size: 1em; }
+.lay-row.on { background: color-mix(in srgb, var(--tint) 18%, transparent); box-shadow: inset 0 0 0 calc(var(--u) * 0.18) color-mix(in srgb, var(--tint) 55%, transparent); }
+.lay-row.on .scr-name { color: var(--tint); font-weight: 800; }
+.scr-light .lay-row.on { background: color-mix(in srgb, var(--tint) 16%, rgba(255, 255, 255, 0.6)); }
+.lay-row.passed { opacity: 0.72; }
+.lay-syuruk .scr-t, .lay-imsak .scr-t { font-size: min(calc(var(--u) * 4.4), var(--tcap)); font-weight: 600; }
+.lay-imsak .scr-name { color: var(--fg2); }
+
+/* Notice bar, slim and rounded. */
+.lay-bar { display: flex; align-items: center; min-height: calc(var(--u) * 6); padding: calc(var(--u) * 0.9) calc(var(--u) * 3.2); border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--stroke); min-width: 0; overflow: hidden; }
+.lay-bar.empty { display: none; }
+.lay-bar .scr-notice { font-size: calc(var(--u) * 3); width: 100%; }
+.lay-bar .scr-notice.long { font-size: calc(var(--u) * 2.7); }
+.lay-bar .scr-notice.xlong { font-size: calc(var(--u) * 2.3); }
+
+/* MARK: The slide area */
+
+.lay-stage { position: relative; min-height: 0; min-width: 0; display: grid; }
+.lay-stage .slide { min-height: 0; border-radius: calc(var(--u) * 2.6); overflow: hidden; box-shadow: var(--shadow); animation: scr-in 0.8s ease both; }
+.slide-card { display: grid; align-content: center; justify-items: start; gap: calc(var(--u) * 1.6); padding: calc(var(--u) * 4.4); text-align: left; background: #151a45; color: #fff; }
+.slide-card h2 { margin: 0; font-family: var(--font-display); font-size: calc(var(--u) * 7); line-height: 1.05; font-weight: 800; overflow-wrap: anywhere; }
+.slide-card h2.long { font-size: calc(var(--u) * 5.6); }
+.slide-card h2.xlong { font-size: calc(var(--u) * 4.6); }
+.slide-card p { margin: 0; font-size: calc(var(--u) * 4); line-height: 1.25; font-weight: 600; opacity: 0.92; overflow-wrap: anywhere; }
+.slide-card p.long { font-size: calc(var(--u) * 3.4); }
+.slide-card p.xlong { font-size: calc(var(--u) * 2.9); }
+.slide-card.tone-gold { background: #e2b65a; color: #151a45; }
+.slide-card.tone-green { background: #1f6f5c; color: #fff; }
+.slide-card.tone-light { background: #f6f1e6; color: #151a45; }
+.slide-notice { justify-items: start; }
+.slide-notice p { font-size: calc(var(--u) * 5); font-weight: 700; opacity: 1; font-family: var(--font-display); }
+.slide-notice p.long { font-size: calc(var(--u) * 4.2); }
+.slide-notice p.xlong { font-size: calc(var(--u) * 3.4); }
+.slide-notice.big p { font-size: calc(var(--u) * 7.4); }
+.slide-notice.big p.long { font-size: calc(var(--u) * 6); }
+.slide-notice.big p.xlong { font-size: calc(var(--u) * 4.6); }
+.slide-pic { margin: 0; position: relative; background: #0b0f2a; display: grid; }
+.slide-pic img { width: 100%; height: 100%; object-fit: contain; min-height: 0; }
+.slide-pic figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: calc(var(--u) * 5) calc(var(--u) * 3) calc(var(--u) * 2.6); display: grid; gap: calc(var(--u) * 0.4);
+  background: linear-gradient(0deg, rgba(5, 8, 24, 0.85), transparent); color: #fff; }
+.slide-pic figcaption b { font-size: calc(var(--u) * 3.6); }
+.slide-pic figcaption span { font-size: calc(var(--u) * 2.6); opacity: 0.9; }
+.slide-qr { justify-items: center; }
+.slide-qr .scr-qr { flex-direction: column; gap: calc(var(--u) * 2); }
+.slide-qr .scr-qr-code { width: calc(var(--u) * 24); height: calc(var(--u) * 24); background: #fff; }
+.slide-qr .scr-qr figcaption { max-width: none; text-align: center; font-size: calc(var(--u) * 3.4); color: #151a45; }
+.slide-welcome { justify-items: center; text-align: center; }
+.slide-welcome .scr-qr { flex-direction: column; gap: calc(var(--u) * 1.4); }
+.slide-welcome .scr-qr figcaption { text-align: center; max-width: none; font-size: calc(var(--u) * 2.4); color: inherit; opacity: 0.8; }
+.slide-welcome .scr-qr-code { width: calc(var(--u) * 14); height: calc(var(--u) * 14); }
+.lay-dots { position: absolute; left: 0; right: 0; bottom: calc(var(--u) * 1.2); display: flex; justify-content: center; gap: calc(var(--u) * 0.7); pointer-events: none; }
+.lay-dots i { width: calc(var(--u) * 0.9); height: calc(var(--u) * 0.9); border-radius: 50%; background: rgba(255, 255, 255, 0.4); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15); }
+.lay-dots i.on { background: #fff; }
+
+/* MARK: Layouts (landscape) */
+
+.lay-splitN, .lay-split, .lay-mirror { grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr); column-gap: calc(var(--u) * 3.2); }
+.lay-splitN { grid-template-rows: auto minmax(0, 1fr) auto auto; grid-template-areas: "head head" "left right" "bar bar" "foot foot"; }
+.lay-split { grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "head head" "left right" "foot foot"; }
+.lay-mirror { grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); grid-template-rows: auto minmax(0, 1fr) auto auto; grid-template-areas: "head head" "right left" "bar bar" "foot foot"; }
+
+/* Slide with a strip of times: the slide fills the screen, the clock and the times run along the bottom. */
+.lay-strip { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto auto; grid-template-areas: "head" "right" "bar" "left" "foot"; }
+.lay-strip .lay-left { flex-direction: row; align-items: center; gap: calc(var(--u) * 3); }
+.lay-strip .lay-hero { flex: none; width: 30%; }
+.lay-strip .scr-big { font-size: calc(var(--u) * 10); }
+.lay-strip .scr-next { font-size: calc(var(--u) * 2.8); }
+.lay-strip .scr-progress { display: none; }
+.lay-strip .lay-times { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); grid-auto-rows: auto; flex: 1; gap: calc(var(--u) * 0.6); }
+.lay-strip .lay-row { grid-template-columns: 1fr; justify-items: center; row-gap: calc(var(--u) * 0.2); padding: calc(var(--u) * 1.2) calc(var(--u) * 0.6); text-align: center; }
+.lay-strip .lay-row .scr-name { font-size: calc(var(--u) * 2.6); }
+.lay-strip .lay-row .scr-t { font-size: min(calc(var(--u) * 4.4), var(--tcap)); justify-self: center; }
+.lay-strip .lay-row .scr-iq { font-size: calc(var(--u) * 1.9); }
+.lay-strip .lay-syuruk .scr-t, .lay-strip .lay-imsak .scr-t { font-size: min(calc(var(--u) * 3.6), var(--tcap)); }
+.lay-strip .scr-ramadan { display: none; }
+
+/* A big notice with the time below. */
+.lay-big { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto; grid-template-areas: "head" "right" "left" "foot"; }
+.lay-big .lay-left { flex-direction: row; align-items: center; gap: calc(var(--u) * 3); }
+.lay-big .lay-hero { flex: none; width: 30%; }
+.lay-big .scr-big { font-size: calc(var(--u) * 10); }
+.lay-big .scr-next { font-size: calc(var(--u) * 2.8); }
+.lay-big .scr-progress { display: none; }
+.lay-big .lay-times { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); grid-auto-rows: auto; flex: 1; gap: calc(var(--u) * 0.6); }
+.lay-big .lay-row { grid-template-columns: 1fr; justify-items: center; padding: calc(var(--u) * 1.2) calc(var(--u) * 0.6); text-align: center; }
+.lay-big .lay-row .scr-name { font-size: calc(var(--u) * 2.6); }
+.lay-big .lay-row .scr-t { font-size: min(calc(var(--u) * 4.4), var(--tcap)); justify-self: center; }
+.lay-big .lay-row .scr-iq { font-size: calc(var(--u) * 1.9); }
+.lay-big .lay-syuruk .scr-t, .lay-big .lay-imsak .scr-t { font-size: min(calc(var(--u) * 3.6), var(--tcap)); }
+.lay-big .scr-ramadan { display: none; }
+
+/* MARK: Layouts (portrait): the screen turned on its side */
+
+.portrait .scr.lay { padding: calc(var(--u) * 4) calc(var(--u) * 4.4) calc(var(--u) * 3); gap: calc(var(--u) * 2.6); }
+.lay-port { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto auto; grid-template-areas: "head" "left" "right" "bar" "foot"; }
+.lay-portT { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto; grid-template-areas: "head" "left" "bar" "foot"; }
+.lay-portT .lay-right { display: none; }
+.portrait .lay-head { flex-direction: column; gap: calc(var(--u) * 1); }
+.portrait .lay-date { text-align: left; }
+.portrait .lay-title h1 { white-space: normal; font-size: calc(var(--u) * 5.2); }
+.portrait .lay-hero { flex-direction: column; align-items: flex-start; }
+.portrait .scr-hero { width: 100%; }
+.portrait .scr-big { font-size: calc(var(--u) * 17); }
+.lay-port .lay-times { grid-template-columns: 1fr 1fr; grid-auto-flow: row; grid-auto-rows: auto; column-gap: calc(var(--u) * 1.4); }
+.lay-port .lay-row { grid-template-columns: 1fr; row-gap: 0; padding: calc(var(--u) * 1.2) calc(var(--u) * 1.8); }
+.lay-port .lay-row .scr-name { font-size: calc(var(--u) * 3.4); }
+.lay-port .lay-row .scr-t { font-size: min(calc(var(--u) * 6.2), var(--tcap)); justify-self: start; }
+.lay-port .lay-row .scr-iq { font-size: calc(var(--u) * 2.4); }
+.lay-portT .lay-row .scr-name { font-size: calc(var(--u) * 4.6); }
+.lay-portT .lay-row .scr-t { font-size: min(calc(var(--u) * 8), var(--tcap)); }
+.lay-portT .lay-row .scr-iq { font-size: calc(var(--u) * 3); }
+.portrait .lay-bar .scr-notice { font-size: calc(var(--u) * 3.4); }
+.portrait .lay-bar { border-radius: calc(var(--u) * 3); }
+.portrait .slide-card h2 { font-size: calc(var(--u) * 7.6); }
+.portrait .slide-card p { font-size: calc(var(--u) * 4.2); }
+
+/* MARK: Looks, fitted to the layouts */
+
+/* Sky: glass panels over the sky outside. */
+.lay-look-night .lay-times, .lay-look-dial .lay-times { background: var(--glass); border: 1px solid var(--stroke); border-radius: calc(var(--u) * 2.4); padding: calc(var(--u) * 0.8);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); }
+.lay-look-night .lay-bar, .lay-look-board .lay-bar, .lay-look-dial .lay-bar, .lay-look-sunpath .lay-bar { -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); background: var(--glass); }
+
+/* Board: the list on a bordered board, a departure board. */
+.lay-look-board .lay-times { background: var(--glass); border: 1px solid var(--stroke); border-radius: calc(var(--u) * 2.4); padding: calc(var(--u) * 1); gap: 0;
+  -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); }
+.lay-look-board .lay-row { border-bottom: 1px solid var(--stroke); border-radius: 0; }
+.lay-look-board .lay-row:last-child { border-bottom: 0; }
+.lay-look-board .lay-row.on { border-radius: calc(var(--u) * 1.4); box-shadow: inset 0 0 0 calc(var(--u) * 0.18) color-mix(in srgb, var(--tint) 55%, transparent); }
+.lay-look-board .lay-row::before { content: ''; position: absolute; left: 0; top: 24%; bottom: 24%; width: calc(var(--u) * 0.45); border-radius: 99px; background: var(--tint); }
+
+/* Bands: every prayer a band in its own colour, on the app's charcoal. */
+.lay-look-bands { --bg: rgb(43, 43, 43); --glass: rgb(61, 61, 61); --glass-strong: rgb(61, 61, 61); --fill: rgba(255, 255, 255, 0.12); --stroke: rgba(255, 255, 255, 0.1); }
+.lay-look-bands.scr-light { --bg: #efeae3; --glass: #ffffff; --glass-strong: #ffffff; --fill: rgba(0, 0, 0, 0.07); }
+.lay-look-bands .lay-times { gap: calc(var(--u) * 0.4); }
+.lay-look-bands .lay-row { color: #fff; background: var(--band); border-radius: calc(var(--u) * 1.2); }
+.lay-look-bands .lay-row .scr-iq, .lay-look-bands .lay-row .scr-iq .scr-t { color: rgba(255, 255, 255, 0.9); }
+.lay-look-bands .lay-row .scr-t { font-weight: 400; font-family: var(--font); }
+.lay-look-bands .lay-row.on { box-shadow: inset calc(var(--u) * 0.9) 0 0 #fff; background: var(--band); }
+.lay-look-bands .lay-row.on .scr-name { color: #fff; }
+.lay-look-bands .lay-row.on .scr-t { font-weight: 800; }
+.lay-look-bands .lay-row.passed { opacity: 1; filter: saturate(0.7) brightness(0.8); }
+.lay-look-bands .p-fajr { --band: rgb(33, 110, 92); }
+.lay-look-bands .p-sunrise { --band: rgb(100, 124, 44); }
+.lay-look-bands .p-dhuhr { --band: rgb(140, 106, 10); }
+.lay-look-bands .p-asr { --band: rgb(178, 88, 18); }
+.lay-look-bands .p-maghrib { --band: rgb(196, 74, 56); }
+.lay-look-bands .p-isha { --band: rgb(192, 52, 64); }
+.lay-look-bands .lay-imsak { --band: rgb(75, 75, 82); color: #fff; background: var(--band); }
+.lay-look-bands .lay-imsak .scr-name { color: #fff; }
+.lay-look-bands .scr-next-name { color: var(--fg); }
+.lay-look-bands.scr-light .lay-bar { background: #fff; }
+
+/* Day Dial: the day as a ring beside the clock. */
+.lay-ring { flex: none; width: calc(var(--u) * 15); height: calc(var(--u) * 15); }
+.ring-track { fill: none; stroke: var(--stroke); stroke-width: 3; }
+.ring-mark { stroke: var(--bg); stroke-width: 1.5; }
+.ring-mark.on { stroke: var(--fg); stroke-width: 2; }
+.ring-now { fill: var(--fg); }
+.lay-strip .lay-ring, .lay-big .lay-ring { width: calc(var(--u) * 9); height: calc(var(--u) * 9); }
+.portrait .lay-ring { width: calc(var(--u) * 17); height: calc(var(--u) * 17); }
+.lay-look-dial .lay-hero { flex-direction: row; }
+.portrait .lay-look-dial .lay-hero { flex-direction: column; }
+
+/* Sun Path: the sun's arc between the clock and the times. */
+.lay-sun { flex: none; height: calc(var(--u) * 9); margin-inline: calc(var(--u) * -1); }
+.lay-sun svg { width: 100%; height: 100%; }
+.lay-sun svg path { stroke-width: 4px; }
+.lay-sun svg circle[r="3.8"] { r: 8px; stroke-width: 3px; }
+.lay-sun svg circle[r="7"] { r: 14px; }
+.lay-sun svg circle[r="17"] { r: 32px; }
+
+/* Simple and Surau: flat, no moving sky. */
+.lay-look-simple { --bg: #0b0f2a; --glass: var(--fill); --glass-strong: var(--fill); }
+.lay-look-simple.scr-light { --bg: #f6f3ee; }
+.lay-look-simple .lay-row { background: var(--fill); }
+.lay-look-simple .lay-row.on { background: color-mix(in srgb, var(--tint) 20%, transparent); box-shadow: inset 0 0 0 2px var(--tint); }
+/* Dark Simple look: a lighter tint keeps the current prayer name readable (Maghrib red was 4.16:1). */
+.lay-look-simple .lay-row.on .scr-name { color: color-mix(in srgb, var(--tint) 60%, #fff); }
+.scr-light .lay-look-simple .lay-row.on .scr-name { color: var(--tint); }
+.lay-look-simple .lay-times { gap: calc(var(--u) * 0.5); }
+.lay-look-surau .lay-times { gap: calc(var(--u) * 0.3); }
+.lay-look-surau .lay-row.on { background: var(--gold); box-shadow: none; color: #151a45; }
+.lay-look-surau .lay-row.on .scr-name, .lay-look-surau .lay-row.on .scr-t, .lay-look-surau .lay-row.on .scr-iq, .lay-look-surau .lay-row.on .scr-iq .scr-t { color: #151a45; }
+.lay-look-surau.scr-light .lay-row.on { background: #151a45; color: #fff; }
+.lay-look-surau.scr-light .lay-row.on .scr-name { color: #f0cd7e; }
+.lay-look-surau.scr-light .lay-row.on .scr-t, .lay-look-surau.scr-light .lay-row.on .scr-iq, .lay-look-surau.scr-light .lay-row.on .scr-iq .scr-t { color: #fff; }
+.lay-look-surau .lay-row { border-bottom: 1px solid var(--stroke); border-radius: 0; }
+.lay-look-surau .lay-row.on { border-radius: calc(var(--u) * 1.4); border-bottom-color: transparent; }
+.lay-look-surau .lay-bar { background: var(--panel); border-color: var(--stroke); }
+.lay-look-surau .scr-progress b { background: var(--gold); }
+.lay-look-surau .lay-row .scr-name { font-weight: 700; }
+.lay-look-surau .slide-card { box-shadow: 0 calc(var(--u) * 1) calc(var(--u) * 3) rgba(0, 0, 0, 0.35); }
+.lay-look-surau.scr-light .slide-card:not(.tone-gold):not(.tone-green):not(.tone-light) { background: #151a45; }
+
+/* Light for the layouts: the app's light appearance (variables set in screen.css). */
+.scr-light .lay-bar { background: var(--glass-strong); }
+
+/* Portrait fixes: the wide strips turn into a stack, and the two-column list keeps its rows tight. */
+.portrait .lay-big .lay-left, .portrait .lay-strip .lay-left { flex-direction: column; align-items: stretch; }
+.portrait .lay-big .lay-hero, .portrait .lay-strip .lay-hero { width: 100%; }
+.portrait .lay-big .lay-times { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-columns: auto; }
+.portrait .lay-big .lay-row .scr-t { font-size: min(calc(var(--u) * 5.4), var(--tcap)); }
+.portrait .lay-big .lay-row .scr-name { font-size: calc(var(--u) * 3.2); }
+.lay-port .lay-times { align-content: start; }
+.lay-port .lay-row { align-content: center; row-gap: calc(var(--u) * 0.2); }
+.lay-portT .lay-row { align-content: center; }
+
+.lay .scr-sec { color: var(--fg2); }
+.lay-look-bands .lay-row .scr-name { font-weight: 700; }
+
+/* Dark mode: the "next prayer" name in the pill fell under 4.5:1 for Isha purple on dark blue and grey.
+   A lighter mix keeps it readable whatever the time of day. */
+.scr:not(.scr-light) .scr-next-name { color: color-mix(in srgb, var(--tint) 40%, #fff); }

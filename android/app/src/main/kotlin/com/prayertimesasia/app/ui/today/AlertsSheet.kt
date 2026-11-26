@@ -70,6 +70,7 @@ import com.prayertimesasia.app.AppState
 import com.prayertimesasia.app.R
 import com.prayertimesasia.app.alarms.AlarmScheduler
 import com.prayertimesasia.app.alarms.Azan
+import kotlinx.coroutines.launch
 import com.prayertimesasia.app.ui.components.AppWords
 import com.prayertimesasia.app.ui.components.HadithView
 import com.prayertimesasia.app.ui.components.tr
@@ -79,6 +80,7 @@ import com.prayertimesasia.app.ui.settings.SwitchRow
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.core.AlertMode
+import com.prayertimesasia.core.AwayReminder
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerAlarmTiming
@@ -86,6 +88,7 @@ import com.prayertimesasia.core.SahurDay
 import com.prayertimesasia.core.SahurTiming
 import com.prayertimesasia.core.WakeUpTiming
 import com.prayertimesasia.core.alertMode
+import com.prayertimesasia.core.AllLevel
 import com.prayertimesasia.core.fridayMode
 import com.prayertimesasia.core.notifies
 import com.prayertimesasia.core.withNotify
@@ -102,6 +105,7 @@ fun WakeUpSheetContent(state: AppState) {
     BackHandler(enabled = page != null) { go(null) }
     when (val now = page) {
         null -> AlertsMainList(state, go)
+        "all" -> SubPage(tr(R.string.all_row), go) { AllFivePage(state) }
         "check" -> SubPage(tr(R.string.alerts_checkPhone), go) { CheckPhonePage(state) }
         "friday" -> SubPage(tr(R.string.jumuah_leaveFor, "friday" to Prayer.DHUHR.name(state.resolver.naming, true)), go) { FridayAlertPage(state) }
         else -> {
@@ -142,6 +146,7 @@ private fun AlertsMainList(state: AppState, go: (String?) -> Unit) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
             Text(tr(R.string.alerts_title), style = Txt.title3, color = Palette.primary, modifier = Modifier.padding(horizontal = 32.dp, vertical = 4.dp))
             CheckCard { go("check") }
+            TestCard(state)
             EachPrayerSection(state, go) { justSet = it }
             NextAlarmSection(state)
             ExtrasSection(state)
@@ -165,6 +170,91 @@ private fun AlertsMainList(state: AppState, go: (String?) -> Unit) {
                 Text(tr(R.string.alerts_changeTime), style = Txt.footnoteSemibold, color = Palette.sunArc,
                     modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { justSet = null; go(prayer.raw) }.padding(8.dp))
             }
+        }
+    }
+}
+
+/** "Check that it works": one tap sends a sample alert a few seconds later. */
+@Composable
+private fun TestCard(state: AppState) {
+    val context = LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var sent by remember { mutableStateOf<Boolean?>(null) }
+    val current = state.resolver.current(java.time.Instant.now())
+    val name = current?.let { state.resolver.prayerName(it.first, it.second) } ?: Prayer.FAJR.name(state.resolver.naming)
+    val title = tr(R.string.notify_testTitle, "name" to name)
+    val body = tr(R.string.notify_testBody)
+    Column(
+        Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp)).background(Palette.sunArc.copy(alpha = 0.14f)).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(tr(R.string.test_title), style = Txt.subheadlineSemibold, color = Palette.primary)
+        Text(tr(R.string.test_sub), style = Txt.footnote, color = Palette.secondary)
+        Text(tr(R.string.settings_testAlert), style = Txt.footnoteSemibold, color = Color.Black,
+            modifier = Modifier.heightIn(min = 44.dp).clip(CircleShape).background(Palette.sunArc)
+                .clickable { scope.launch { sent = state.sendTestAlert(title, body) } }
+                .padding(horizontal = 14.dp, vertical = 12.dp))
+        sent?.let { ok ->
+            Text(tr(if (ok) R.string.test_sent else R.string.test_blocked), style = Txt.footnote, color = Palette.secondary)
+        }
+    }
+}
+
+/** Set for all prayers: one level and an optional early reminder, applied to the five prayers. */
+@Composable
+private fun AllFivePage(state: AppState) {
+    val context = LocalContext.current
+    val p = state.prefs
+    val azanOn = Azan.isAvailable(context)
+    val levels = AllLevel.entries.filter { it != AllLevel.AZAN || azanOn }
+    var level by remember {
+        mutableStateOf(when (p.alertMode(Prayer.DHUHR)) {
+            AlertMode.ALARM -> AllLevel.ALARM
+            AlertMode.NOTIFY -> if (p.azanSound && azanOn) AllLevel.AZAN else AllLevel.NOTIFY
+            AlertMode.OFF -> AllLevel.OFF
+        })
+    }
+    var early by remember { mutableStateOf<Int?>(null) }
+    val fajrOwn = p.wakeUp != null
+    var fajrToo by remember { mutableStateOf(!fajrOwn) }
+    var done by remember { mutableStateOf(false) }
+    val naming = state.resolver.naming
+    Section(tr(R.string.all_step1), tr(R.string.all_iphoneNote)) {
+        levels.forEach { l ->
+            val (name, desc) = when (l) {
+                AllLevel.OFF -> tr(R.string.alerts_modeOff) to tr(R.string.all_offDesc)
+                AllLevel.NOTIFY -> tr(R.string.all_notifyName) to tr(R.string.all_notifyDesc)
+                AllLevel.AZAN -> tr(R.string.all_azanName) to tr(R.string.all_azanDesc)
+                AllLevel.ALARM -> tr(R.string.alerts_modeAlarm) to tr(R.string.all_alarmDesc)
+            }
+            ChoiceRow(name, desc, level == l) { level = l; done = false }
+        }
+    }
+    if (level == AllLevel.AZAN || level == AllLevel.NOTIFY) {
+        Text(tr(R.string.all_azanFoot), style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 32.dp, vertical = 4.dp))
+    }
+    if (level == AllLevel.NOTIFY || level == AllLevel.AZAN) {
+        val minBefore = AlarmScheduler.REMINDER_CHOICES.map { tr(R.string.common_minBefore, "n" to it) to it }
+        val keep = tr(R.string.all_keep)
+        val offWord = tr(R.string.alerts_modeOff)
+        // -1 stands for "leave as it is".
+        val options = listOf(keep to -1, offWord to 0) + minBefore
+        Section(tr(R.string.all_step2)) {
+            PickerRow(tr(R.string.early_row), options.firstOrNull { it.second == (early ?: -1) }?.first ?: keep, options, early ?: -1) { m ->
+                early = if (m < 0) null else m; done = false
+            }
+        }
+    }
+    if (fajrOwn) {
+        Section(null, tr(R.string.all_fajrTooSub)) {
+            SwitchRow(tr(R.string.all_fajrToo, "name" to Prayer.FAJR.name(naming)), fajrToo) { fajrToo = it; done = false }
+        }
+    }
+    Section(null) {
+        ChoiceRow(tr(if (done) R.string.all_applied else R.string.all_apply), null, done) {
+            state.setAllFive(level, if (level == AllLevel.NOTIFY || level == AllLevel.AZAN) early else null, fajrToo)
+            done = true
         }
     }
 }
@@ -237,6 +327,18 @@ private fun EachPrayerSection(state: AppState, go: (String?) -> Unit, alarmSet: 
     val offWord = tr(R.string.common_off)
     val minBefore = AlarmScheduler.REMINDER_CHOICES.map { tr(R.string.common_minBefore, "n" to it) to it }
     Section(tr(R.string.alerts_eachPrayer), tr(R.string.phone_alerts_eachFoot)) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable { go("all") }
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(Icons.Filled.NotificationsActive, null, Modifier.size(22.dp), tint = Palette.sunArc)
+            Column(Modifier.weight(1f)) {
+                Text(tr(R.string.all_row), style = Txt.subheadlineSemibold, color = Palette.primary)
+                Text(tr(R.string.all_rowSub), style = Txt.footnote, color = Palette.secondary)
+            }
+        }
         Prayer.all.forEach { prayer ->
             val (lead, rest) = alertChip(state, prayer, azanOn)
             ModeRow(prayer.name(r.naming), lead, rest, AlertMode.modes(prayer), p.alertMode(prayer),
@@ -254,6 +356,25 @@ private fun EachPrayerSection(state: AppState, go: (String?) -> Unit, alarmSet: 
         PickerRow(tr(R.string.alerts_headsUp), if (p.reminderMinutesBefore > 0) tr(R.string.phone_alerts_minShort, "n" to p.reminderMinutesBefore) else offWord,
             listOf(offWord to 0) + minBefore, p.reminderMinutesBefore) { m ->
             if (m > 0) state.enableReminder(m) else state.update { it.copy(reminderMinutesBefore = 0) }
+        }
+    }
+    // Early reminders when away from home: one choice per prayer. Home and the check stay on the phone.
+    Section(tr(R.string.early_awayHead), tr(R.string.early_privacy)) {
+        SwitchRow(tr(R.string.early_awaySwitch), p.awayReminder, sub = tr(R.string.early_awaySwitchSub)) { state.setAwayReminder(it) }
+        if (p.home == null) {
+            Text(tr(R.string.early_noHome), style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+        } else if (!p.homeConfirmed) {
+            Box(Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) { com.prayertimesasia.app.ui.journey.HomeQuestionCard(state) }
+        }
+        if (p.awayReminder) {
+            val hourWord = tr(R.string.early_hour)
+            val awayChoices = AwayReminder.CHOICES.map { (if (it == 60) hourWord else tr(R.string.early_min, "n" to it)) to it }
+            AwayReminder.PRAYERS.forEach { prayer ->
+                val mins = p.awayMinutes[prayer.raw] ?: 0
+                PickerRow(prayer.name(r.naming), awayChoices.firstOrNull { it.second == mins }?.first ?: offWord,
+                    listOf(offWord to 0) + awayChoices, mins) { m -> state.setAwayMinutes(prayer, m) }
+            }
+            Text(tr(R.string.early_howEarlyFoot), style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
         }
     }
 }

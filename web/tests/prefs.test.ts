@@ -33,4 +33,11 @@ describe('Leave for Jumaat', () => {
     expect(decodePreferences({ jumuahSession: 'third' }).jumuahSession).toBe('first')
     expect(decodePreferences({ jumuahSession: 'second' }).jumuahSession).toBe('second')
   })
+
+  it('moves retired looks to Centre Dial and accepts Calm Gold', () => {
+    expect(decodePreferences({ todayStyle: 'list' }).todayStyle).toBe('centre')
+    expect(decodePreferences({ todayStyle: 'dial' }).todayStyle).toBe('centre')
+    expect(decodePreferences({ todayStyle: 'gold' }).todayStyle).toBe('gold')
+    expect(decodePreferences({ todayStyle: 'nonsense' }).todayStyle).toBe('centre')
+  })
 })

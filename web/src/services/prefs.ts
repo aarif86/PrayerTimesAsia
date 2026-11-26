@@ -1,4 +1,5 @@
 import { unifyAlerts } from '../core/alertMode'
+import type { ExtraAlerts } from '../core/extraAlerts'
 import { JUMUAH_LEAVE_CHOICES, snapLeaveMinutes, type JumuahSession } from '../core/jumuahLeave'
 import { TARAWIH_RAKAAT } from '../core/tarawih'
 import type { MasjidLink } from '../core/masjidLink'
@@ -6,6 +7,7 @@ import type { Place } from '../core/place'
 import type { FastMark } from '../core/ramadanContent'
 import { SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { NAMING_STYLES, OBLIGATORY, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
+import { cleanAwayMinutes, DEFAULT_AWAY_MINUTES } from '../core/away'
 import {
   ALARM_SOUNDS, DEFAULT_SAHUR_DAYS, PRAYER_ALARM_TIMINGS, SAHUR_DAYS, SAHUR_TIMINGS, WAKE_UP_TIMINGS,
   type AlarmSound, type PrayerAlarmTiming, type SahurDay, type SahurTiming, type WakeUpTiming,
@@ -25,10 +27,10 @@ export const APPEARANCE_LABEL: Record<Appearance, string> = {
 }
 
 /** How the Prayer screen shows the day (same order as the iOS TodayStyle). */
-export type TodayStyle = 'list' | 'centre' | 'dial' | 'sunPath' | 'bands' | 'simple'
-export const TODAY_STYLES: TodayStyle[] = ['centre', 'list', 'dial', 'sunPath', 'bands', 'simple']
+export type TodayStyle = 'centre' | 'sunPath' | 'bands' | 'simple' | 'gold'
+export const TODAY_STYLES: TodayStyle[] = ['centre', 'sunPath', 'bands', 'simple', 'gold']
 export const TODAY_STYLE_LABEL: Record<TodayStyle, string> = {
-  list: 'Side Dial', centre: 'Centre Dial', dial: 'Day Dial', sunPath: 'Sun Path', bands: 'Colour Bands', simple: 'Big and Simple',
+  centre: 'Centre Dial', sunPath: 'Sun Path', bands: 'Colour Bands', simple: 'Big and Simple', gold: 'Calm Gold',
 }
 
 export interface TripStop { countryCode: string; countryName: string; placeName: string; arrived: number }
@@ -56,6 +58,9 @@ export interface Preferences {
   notifyPrayers: Prayer[]
   /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
   reminderMinutesBefore: number
+  /** Early reminder when the phone is away from the confirmed home (core/away.ts). On by default, 1 hour, Fajr off. */
+  awayReminder: boolean
+  awayMinutes: Record<string, number>
   /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings - see services/azan.ts. */
   azanSound: boolean
   musafirThresholdKm: number
@@ -73,6 +78,10 @@ export interface Preferences {
   excusedDays: string[]
   /** "yyyy-MM-dd" the tracker was paused (haid, nifas, illness); every day from then until it is ended counts as excused. */
   trackerPausedSince: string | null
+  /** When each prayer was ticked (ms), by day. Only used to show the small "6:15 AM" after the tick. */
+  prayedAt: Record<string, Partial<Record<Prayer, number>>>
+  /** Show that time after the tick. Off keeps just the tick. */
+  trackerShowTime: boolean
   /** The Subuh alarm; null = off. On the web it rings only while the app is open (or through the calendar file). */
   wakeUp: WakeUpTiming | null
   /** The earlier sahur alarm; null = off. Rings only on `sahurDays`. */
@@ -105,6 +114,8 @@ export interface Preferences {
   berbukaAlert: boolean
   /** The last ten nights: a gentle alert at the last third of the night. */
   qiyamAlert: boolean
+  /** Off, Notify or Alarm for Dhuha, the middle of the night and the last third (core/extraAlerts.ts). */
+  extraAlerts: ExtraAlerts
   /** Ramadan screen: a juz a day to finish the Quran in the month. */
   khatamPlan: boolean
   /** "yyyy-MM-dd" to how that day's fast went (fasted, a reason it was missed, a replaced or Syawal fast). */
@@ -172,9 +183,12 @@ export const DEFAULT_PREFS: Preferences = {
   appLanguageOverride: null,
   use24Hour: false,
   hijriAdjustment: 0,
-  notificationsEnabled: false,
+  // New installs are told when each prayer begins. Alerts only go out once the browser or phone allows them.
+  notificationsEnabled: true,
   notifyPrayers: [...OBLIGATORY],
   reminderMinutesBefore: 0,
+  awayReminder: true,
+  awayMinutes: { ...DEFAULT_AWAY_MINUTES },
   azanSound: true,
   musafirThresholdKm: 81,
   jakimZoneOverride: null,
@@ -188,6 +202,8 @@ export const DEFAULT_PREFS: Preferences = {
   prayedLog: {},
   excusedDays: [],
   trackerPausedSince: null,
+  prayedAt: {},
+  trackerShowTime: true,
   wakeUp: null,
   sahurAlarm: null,
   sahurDays: [...DEFAULT_SAHUR_DAYS],
@@ -210,6 +226,7 @@ export const DEFAULT_PREFS: Preferences = {
   imsakAlert: true,
   berbukaAlert: true,
   qiyamAlert: false,
+  extraAlerts: {},
   khatamPlan: false,
   fastLog: {},
   tarawihLog: [],
@@ -248,7 +265,7 @@ const NULLABLE = new Set<keyof Preferences>(['tarawihRakaat',
 const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
   appearance: ['system', 'light', 'dark'],
   menuSide: MENU_SIDES,
-  todayStyle: ['list', 'centre', 'dial', 'sunPath', 'bands', 'simple'],
+  todayStyle: ['centre', 'sunPath', 'bands', 'simple', 'gold'],
   asrOverride: ['standard', 'hanafi'],
   namingOverride: NAMING_STYLES,
   appLanguageOverride: APP_LANGUAGES,
@@ -269,7 +286,11 @@ const ENUMS: Partial<Record<keyof Preferences, readonly string[]>> = {
 export function decodePreferences(raw: unknown): Preferences {
   const out: Preferences = structuredClone(DEFAULT_PREFS)
   if (!raw || typeof raw !== 'object') return out
-  const r = raw as Record<string, unknown>
+  const r = { ...(raw as Record<string, unknown>) }
+  // Saved settings without this choice come from before the default changed: keep them Off.
+  if (!('notificationsEnabled' in r)) r.notificationsEnabled = false
+  // Side Dial and Day Dial are retired: anyone on them moves to Centre Dial.
+  if (r.todayStyle === 'list' || r.todayStyle === 'dial') r.todayStyle = 'centre'
   for (const key of Object.keys(DEFAULT_PREFS) as (keyof Preferences)[]) {
     if (!(key in r)) continue
     const v = r[key]
@@ -307,6 +328,11 @@ export function decodePreferences(raw: unknown): Preferences {
   if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
   // One Off, Notify or Alarm per prayer in Alerts and alarms (core/alertMode.ts).
   unifyAlerts(out)
+  out.awayMinutes = cleanAwayMinutes(out.awayMinutes)
+  // Dhuha and night time alerts: keep only the three known times with Notify or Alarm.
+  const extra: ExtraAlerts = {}
+  for (const b of ['dhuha', 'midnight', 'lastThird'] as const) { const m = out.extraAlerts?.[b]; if (m === 'notify' || m === 'alarm') extra[b] = m }
+  out.extraAlerts = extra
   return out
 }
 

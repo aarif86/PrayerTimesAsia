@@ -8,6 +8,7 @@ import SwiftUI
 struct FalakView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.look) private var look
     /// A main tab (no Done button) or a sheet.
     var isTab = false
     @State private var tab: Part = .sky
@@ -31,10 +32,7 @@ struct FalakView: View {
                         ScrollView {
                             VStack(spacing: 16) {
                                 header
-                                Picker("Part", selection: $tab) {
-                                    ForEach(Part.allCases) { Text($0.rawValue).tag($0) }
-                                }
-                                .pickerStyle(.segmented)
+                                partPicker
                                 switch tab {
                                 case .sky:
                                     SkySliderCard(place: place, now: context.date)
@@ -46,9 +44,10 @@ struct FalakView: View {
                                 case .why: WhyItHelps()
                                 }
                                 Text("For learning. Always follow your local religious authority.")
-                                    .font(.footnote).opacity(0.75)
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                                    .multilineTextAlignment(.center)
+                                    .lookFont(12)
+                                    .foregroundStyle(look.palette.tx2)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 18)
                             }
                             .padding(.horizontal, Theme.gutter)
                             .padding(.bottom, 32)
@@ -62,7 +61,7 @@ struct FalakView: View {
                     Text("Choose a place first.").font(.headline)
                 }
             }
-            .foregroundStyle(.primary)
+            .foregroundStyle(look.palette.tx)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
@@ -78,52 +77,113 @@ struct FalakView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Falak").font(Theme.screenTitle).accessibilityAddTraits(.isHeader)
+            Text("Falak")
+                .font(Theme.display(look == .simple ? 38 : 34, .bold))
+                .foregroundStyle(look.palette.tx)
+                .accessibilityAddTraits(.isHeader)
             Text("The sun and the sky set the prayer times. Slide to see how.")
-                .font(.subheadline).opacity(0.85)
+                .lookFont(15).foregroundStyle(look.palette.tx2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 4)
     }
 
-    @ViewBuilder
+    /// Sky, Then, Now, Why: the web's segmented control (square in Colour Bands).
+    private var partPicker: some View {
+        let p = look.palette
+        let r: CGFloat = look == .bands ? 0 : 10
+        return HStack(spacing: 0) {
+            ForEach(Part.allCases) { part in
+                let on = part == tab
+                Button { tab = part } label: {
+                    Text(part.rawValue)
+                        .lookFont(14, .semibold)
+                        .foregroundStyle(on ? p.tx : p.tx2)
+                        .frame(maxWidth: .infinity, minHeight: 40)
+                        .background(on ? Color.dyn(Color.white, p.card) : Color.clear,
+                                    in: RoundedRectangle(cornerRadius: look == .bands ? 0 : 8, style: .continuous))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(part.rawValue)
+                .accessibilityAddTraits(on ? AccessibilityTraits.isSelected : AccessibilityTraits())
+            }
+        }
+        .padding(2)
+        .frame(minHeight: 44)
+        .background(p.sep, in: RoundedRectangle(cornerRadius: r, style: .continuous))
+    }
+
     private func toolRows(place: Place, now: Date, full: Bool) -> some View {
         let ymd = model.ymd(now)
         let plan = Falak.shadowDay(year: ymd.0, month: ymd.1, day: ymd.2, coordinates: place.coordinates)
         let asr = Prayer.asr.name(model.naming)
         let today = Falak.rashdulQiblat(year: ymd.0, month: ymd.1, day: ymd.2, timeZone: model.timeZone, coordinates: place.coordinates)
         let qiblaLine = qiblaSub(place: place, now: now, today: today)
-        VStack(spacing: 0) {
-            ToolRow(symbol: "figure.walk", tint: Theme.gold, title: "Shadow steps",
-                    subtitle: "Find \(asr) with your own shadow",
-                    trailing: Falak.stepsText(Falak.asrSteps(plan, school: model.asrSchool))) { showSteps = true }
-            // The camera tools and the spirit level need a phone in the hand, so a Mac leaves them out.
-            if !Device.isMac {
-                Divider().padding(.leading, 60)
-                ToolRow(symbol: "camera.viewfinder", tint: .green, title: "Shadow camera",
-                        subtitle: "Point, tap, done") { showCamera = true }
-            }
-            Divider().padding(.leading, 60)
-            ToolRow(symbol: "location.north.line.fill", tint: Theme.accentText, title: "Qibla from the sun",
-                    subtitle: qiblaLine) { showExpert = true }
-            if full {
-                Divider().padding(.leading, 60)
-                ToolRow(symbol: "sun.max.circle.fill", tint: Theme.warning, title: "Sun over the Kaaba",
-                        subtitle: model.longDate(Falak.nextQiblaDay(after: now))) { showExpert = true }
-                if !Device.isMac {
-                    Divider().padding(.leading, 60)
-                    ToolRow(symbol: "arkit", tint: .purple, title: "Camera",
-                            subtitle: "Qibla and shadow on the camera") { showAR = true }
-                    Divider().padding(.leading, 60)
-                    ToolRow(symbol: "level", tint: .teal, title: "Level",
-                            subtitle: "Ground and stick") { showLevel = true }
+        // The camera tools and the spirit level need a phone in the hand, so a Mac leaves them out.
+        let phoneOnly: Set<String> = ["Shadow camera", "Camera", "Level"]
+        let rows: [ToolItem] = toolItems(asr: asr, plan: plan, qiblaLine: qiblaLine, now: now, full: full)
+            .filter { !(Device.isMac && phoneOnly.contains($0.title)) }
+        return VStack(spacing: 0) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
+                if index > 0 && look != .bands {
+                    Rectangle().fill(look.palette.sep).frame(height: 1).padding(.leading, 66)
                 }
-                Divider().padding(.leading, 60)
-                ToolRow(symbol: "slider.horizontal.3", tint: .gray, title: "Expert tools",
-                        subtitle: "Shadow stick, Qibla Day and sky signs in detail") { showExpert = true }
+                ToolRow(index: index, symbol: row.symbol, title: row.title, subtitle: row.subtitle,
+                        trailing: row.trailing, action: row.action)
             }
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+        .modifier(ToolGroupStyle())
+    }
+
+    private func toolItems(asr: String, plan: Falak.ShadowDay, qiblaLine: String, now: Date, full: Bool) -> [ToolItem] {
+        var rows: [ToolItem] = [
+            ToolItem(symbol: "figure.walk", title: "Shadow steps", subtitle: "Find \(asr) with your own shadow",
+                     trailing: Falak.stepsText(Falak.asrSteps(plan, school: model.asrSchool)), action: { showSteps = true }),
+            ToolItem(symbol: "camera.viewfinder", title: "Shadow camera", subtitle: "Point, tap, done", trailing: nil,
+                     action: { showCamera = true }),
+            ToolItem(symbol: "location.north.line.fill", title: "Qibla from the sun", subtitle: qiblaLine, trailing: nil,
+                     action: { showExpert = true })
+        ]
+        if full {
+            rows.append(ToolItem(symbol: "sun.max.circle.fill", title: "Sun over the Kaaba",
+                                 subtitle: model.longDate(Falak.nextQiblaDay(after: now)), trailing: nil, action: { showExpert = true }))
+            rows.append(ToolItem(symbol: "arkit", title: "Camera", subtitle: "Qibla and shadow on the camera", trailing: nil,
+                                 action: { showAR = true }))
+            rows.append(ToolItem(symbol: "level", title: "Level", subtitle: "Ground and stick", trailing: nil,
+                                 action: { showLevel = true }))
+            rows.append(ToolItem(symbol: "slider.horizontal.3", title: "Expert tools",
+                                 subtitle: "Shadow stick, Qibla Day and sky signs in detail", trailing: nil, action: { showExpert = true }))
+        }
+        return rows
+    }
+}
+
+private struct ToolItem {
+    let symbol: String
+    let title: String
+    let subtitle: String
+    let trailing: String?
+    let action: () -> Void
+}
+
+/// The card around the tool rows. In Colour Bands the rows are full width colour bands, no card.
+private struct ToolGroupStyle: ViewModifier {
+    @Environment(\.look) private var look
+
+    func body(content: Content) -> some View {
+        let p = look.palette
+        if look == .bands {
+            content.padding(.horizontal, -Theme.gutter)
+        } else {
+            content
+                .background {
+                    let shape = RoundedRectangle(cornerRadius: p.radius, style: .continuous)
+                    if look == .gold { shape.fill(p.card) } else { ZStack { shape.fill(.ultraThinMaterial); shape.fill(p.card) } }
+                }
+                .overlay(RoundedRectangle(cornerRadius: p.radius, style: .continuous).strokeBorder(p.stroke, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: p.radius, style: .continuous))
+        }
     }
 }
 
@@ -144,39 +204,64 @@ extension FalakView {
     }
 }
 
-/// One row in the tools list, like a row in Settings.
+/// One row in the tools list: a tonal icon in the look's accent, or a full colour band in Colour Bands.
 private struct ToolRow: View {
+    @Environment(\.look) private var look
+    let index: Int
     let symbol: String
-    let tint: Color
     let title: String
     let subtitle: String
     var trailing: String? = nil
     let action: () -> Void
 
+    private static let bandColors: [Color] = [
+        Color(hex: 0x3A6F63), Color(hex: 0xCD7D38), Color(hex: 0xC9565D),
+        Color(hex: 0x8A9A52), Color(hex: 0xAB8D3A), Color(hex: 0xD3705C)
+    ]
+
+    private var bands: Bool { look == .bands }
+
     var body: some View {
-        Button(action: action) {
+        let p = look.palette
+        let main: Color = bands ? .white : p.tx
+        let second: Color = bands ? .white : p.tx2
+        return Button(action: action) {
             HStack(spacing: 14) {
-                Image(systemName: symbol)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 34, height: 34)
-                    .background(tint.gradient, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                    .accessibilityHidden(true)
+                icon(p)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.body.weight(.semibold))
-                    Text(subtitle).font(.footnote).opacity(0.7).lineLimit(2)
+                    Text(title).lookFont(bands ? 19 : (look == .simple ? 21 : 17), bands ? .bold : .semibold)
+                        .foregroundStyle(main)
+                    Text(subtitle).lookFont(bands ? 15 : 13, bands ? .semibold : .regular)
+                        .foregroundStyle(second).lineLimit(2)
                 }
                 Spacer(minLength: 8)
                 if let trailing {
-                    Text(trailing).font(Theme.display(22, .bold)).monospacedDigit().foregroundStyle(Theme.gold)
+                    Text(trailing).lookFont(15, bands ? .semibold : .regular).monospacedDigit()
+                        .foregroundStyle(second)
                 }
-                Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).opacity(0.4)
+                Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
+                    .foregroundStyle(bands ? Color.white : p.tx3)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.horizontal, bands ? 24 : 18)
+            .padding(.vertical, 8)
+            .frame(minHeight: bands ? 64 : (look == .simple ? 72 : 58))
+            .background(bands ? ToolRow.bandColors[index % 6] : Color.clear)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func icon(_ p: LookPalette) -> some View {
+        if bands {
+            Image(systemName: symbol).font(.system(size: 17, weight: .semibold)).foregroundStyle(.white)
+                .frame(width: 24, height: 34).accessibilityHidden(true)
+        } else {
+            Image(systemName: symbol).font(.system(size: 17, weight: .semibold)).foregroundStyle(p.actx)
+                .frame(width: 34, height: 34)
+                .background(p.tint, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                .accessibilityHidden(true)
+        }
     }
 }
 

@@ -94,7 +94,7 @@ struct SuggestRoomView: View {
                 } footer: {
                     Text(live != nil
                          ? "Only if you are standing at the room. Your location is added to this email once and is not kept anywhere else."
-                         : "Standing at the room? Close this, tap Near me, then come back to add a pin. Otherwise an address is enough.")
+                         : Device.words("Standing at the room? Close this, tap Near me, then come back to add a pin. Otherwise an address is enough."))
                 }
                 Section("What is there") {
                     ForEach(RoomSuggestion.Has.allCases) { h in

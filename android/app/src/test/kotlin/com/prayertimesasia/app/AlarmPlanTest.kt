@@ -18,7 +18,7 @@ class AlarmPlanTest {
     private val now = DemoConfig.night // 4:49 am, before Subuh
 
     @Test fun nothingWhenAlertsAreOff() {
-        val r = Resolver(Preferences(useGPS = false, manualPlace = place, home = place), locale = Locale("en", "SG"))
+        val r = Resolver(Preferences(useGPS = false, notificationsEnabled = false, manualPlace = place, home = place), locale = Locale("en", "SG"))
         val plan = AlarmScheduler.plan(r, now)
         assertTrue(plan.all { it.kind == AlarmScheduler.Kind.REFRESH })
     }
@@ -47,7 +47,7 @@ class AlarmPlanTest {
 
     @Test fun tahajjudAndSahurAlarms() {
         // Demo night is Sunday 25 October 2026, 4:49 am: the sahur alarm (Mondays and Thursdays) rings before Monday's Subuh.
-        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, wakeUp = WakeUpTiming.FAJR_MINUS_30,
+        val prefs = Preferences(useGPS = false, notificationsEnabled = false, manualPlace = place, home = place, wakeUp = WakeUpTiming.FAJR_MINUS_30,
             sahurAlarm = SahurTiming.FAJR_MINUS_120, sahurDays = setOf(SahurDay.MON_THU))
         val r = Resolver(prefs, locale = Locale("en", "SG"))
         val plan = AlarmScheduler.plan(r, now)

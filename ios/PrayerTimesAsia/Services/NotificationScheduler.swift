@@ -18,6 +18,21 @@ enum NotificationScheduler {
         (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])) ?? false
     }
 
+    /// A sample alert about 3 seconds from now, the way a real one arrives. The person locks the
+    /// screen (iOS shows no banner while the app is open). False when alerts are not allowed.
+    static func sendTest(title: String, body: String, sound: Azan.Sound, silent: Bool) async -> Bool {
+        let center = UNUserNotificationCenter.current()
+        guard await requestPermission() else { return false }
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = silent ? nil : Azan.notificationSound(sound)
+        content.interruptionLevel = .timeSensitive
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false)
+        do { try await center.add(UNNotificationRequest(identifier: "test", content: content, trigger: trigger)) } catch { return false }
+        return true
+    }
+
     static func reschedule(enabled: Bool, alerts: [Alert]) {
         let center = UNUserNotificationCenter.current()
         center.removeAllPendingNotificationRequests()

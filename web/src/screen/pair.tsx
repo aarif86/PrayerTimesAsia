@@ -73,7 +73,8 @@ export function PairScreen({ onPaired }: { onPaired: (c: ScreenConfig, pair: TvP
         </div>
       </div>
       <p class="pair-hint">{offline ? 'This TV cannot reach the internet yet. Trying again.' : 'Pick what shows on your phone, tap Show on my TV, and this screen turns into your masjid screen.'}</p>
-      <p class="pair-foot">prayertimes.asia · <a href="#setup" onClick={() => setTimeout(() => location.reload())}>Not a TV? Set up from this device</a></p>
+      <p class="pair-foot">prayertimes.asia</p>
+      <a class="pair-phone" href="#setup" onClick={() => setTimeout(() => location.reload())}>Setting up from your phone? Tap here</a>
     </main>
   )
 }

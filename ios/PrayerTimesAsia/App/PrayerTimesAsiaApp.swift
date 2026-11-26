@@ -10,6 +10,7 @@ struct PrayerTimesAsiaApp: App {
             RootView()
                 .environment(model)
                 .preferredColorScheme(model.colorScheme)
+                .environment(\.look, model.prefs.todayStyle)
                 // Grey notes a step stronger than the system's, so footnotes, place
                 // names and distances stay easy to read on the sky in every look.
                 .foregroundStyle(Color.primary, Color.primary.opacity(0.82), Color.primary.opacity(0.62))
@@ -90,27 +91,28 @@ struct RootView: View {
         if model.prefs.hasOnboarded {
             TabView(selection: $model.selectedTab) {
                 TodayView()
-                    .tabItem { Label { Text("Prayer") } icon: { Image("Tab-prayer") } }
+                    .tabItem { Label("Prayer", systemImage: "clock") }
                     .tag(AppModel.Tab.today)
                 // A Mac has no compass, so the Qibla tab is left out there.
                 #if !targetEnvironment(macCatalyst)
                 QiblaView()
-                    .tabItem { Label { Text("Qibla") } icon: { Image("Tab-qibla") } }
+                    .tabItem { Label("Qibla", systemImage: "location.north.circle") }
                     .tag(AppModel.Tab.qibla)
                 #endif
                 FalakView(isTab: true)
-                    .tabItem { Label { Text("Falak") } icon: { Image("Tab-falak") } }
+                    .tabItem { Label("Falak", systemImage: "sun.max") }
                     .tag(AppModel.Tab.falak)
                 NearbyView()
                     .tabItem { Label { Text("Masjid") } icon: { Image("Tab-masjid") } }
                     .tag(AppModel.Tab.nearby)
                 SettingsView(isTab: true)
-                    .tabItem { Label("Settings", systemImage: "gearshape") }
+                    .tabItem { Label("Settings", systemImage: "slider.horizontal.3") }
                     .tag(AppModel.Tab.settings)
             }
             .modifier(MacSidebar())
+            // The web app's tab bar: outline icons, the look's accent on the open tab.
             // On a Mac the tint also fills the chosen row in the side bar, where white on white cannot be read.
-            .tint(Device.isMac ? Theme.accentText : .primary)
+            .tint(Device.isMac ? Theme.accentText : model.prefs.todayStyle.palette.accent)
             .onAppear { model.applyDemoTab() }
             #if targetEnvironment(macCatalyst)
             .onAppear { MacWindow.fit(); MacMenuBar.refresh(model) }

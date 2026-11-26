@@ -44,6 +44,8 @@ export interface MovedSettings {
   namingOverride?: string
   use24Hour?: boolean
   hijriAdjustment?: number
+  /** Written only when alerts are Off. A code without it leaves this device's choice as it is. */
+  notificationsEnabled?: boolean
   notifyPrayers?: Prayer[]
   reminderMinutesBefore?: number
   musafirEnabled?: boolean
@@ -120,9 +122,12 @@ export function movedFrom(p: Preferences): MovedSettings {
   const out: MovedSettings = { v: MOVE_VERSION }
   const o = out as unknown as Record<string, unknown>
   for (const k of SIMPLE_KEYS) if (p[k] !== DEFAULT_PREFS[k] && p[k] != null) o[k] = p[k]
+  // The phone apps do not have Calm Gold yet: send Centre Dial so their decode never meets an unknown look.
+  if (out.todayStyle === 'gold') out.todayStyle = 'centre'
   if (p.home) out.home = movedPlace(p.home)
   if (p.manualPlace) out.manualPlace = movedPlace(p.manualPlace)
   if (p.savedPlaces.length) out.savedPlaces = p.savedPlaces.map(movedPlace)
+  if (!p.notificationsEnabled) out.notificationsEnabled = false
   const notify = PRAYERS.filter((x) => p.notifyPrayers.includes(x))
   if (notify.join() !== PRAYERS.filter((x) => DEFAULT_PREFS.notifyPrayers.includes(x)).join()) out.notifyPrayers = notify
   const log = Object.fromEntries(Object.entries(p.prayedLog).filter(([, v]) => v.length).sort(([a], [b]) => a.localeCompare(b)))
@@ -155,6 +160,7 @@ export function applyMoved(p: Preferences, m: MovedSettings): Preferences {
   raw.manualPlace = okPlace(m.manualPlace) ? place(m.manualPlace) : null
   raw.savedPlaces = Array.isArray(m.savedPlaces) ? m.savedPlaces.filter(okPlace).map(place) : []
   raw.sahurDays = Array.isArray(m.sahurDays) ? SAHUR_DAYS.filter((d) => m.sahurDays!.includes(d)) : [...DEFAULT_PREFS.sahurDays]
+  if (typeof m.notificationsEnabled === 'boolean') raw.notificationsEnabled = m.notificationsEnabled
   raw.notifyPrayers = Array.isArray(m.notifyPrayers) ? PRAYERS.filter((x) => m.notifyPrayers!.includes(x)) : [...DEFAULT_PREFS.notifyPrayers]
   const log: Record<string, Prayer[]> = structuredClone(p.prayedLog)
   if (m.prayedLog && typeof m.prayedLog === 'object') {

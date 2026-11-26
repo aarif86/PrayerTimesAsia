@@ -34,7 +34,7 @@ with `style` = `list | centre | dial | sunPath | bands`, `appearance` = `system 
 ## Masjid screen (`screen/`)
 
 A second page for masjid TVs: the next prayer's countdown, the six times with iqamah, Jumu'ah, Ramadan Imsak and
-notices, with the same official tables and engine as the app. Live at **https://prayertimes.asia/app/screen/**. Setup happens on a phone at `screen/#setup`; it gives
+notices, with the same official tables and engine as the app. Live at **https://prayertimes.asia/tv** (also /app/screen/). Setup happens on a phone at `screen/#setup`; it gives
 one link (the settings ride in the `#hash`, never sent anywhere) that the TV opens once and remembers. The screen
 dims during prayer, keeps the TV awake, drifts a few pixels against burn-in and reloads at 3 am.
 Why it works this way: [docs/masjid-screen.md](../docs/masjid-screen.md). Screenshots: [`docs/screenshots/screen/`](docs/screenshots/screen/).

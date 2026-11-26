@@ -1,6 +1,6 @@
 import type { ComponentChildren, JSX } from 'preact'
 import { useEffect, useRef, useState } from 'preact/hooks'
-import { Info, X } from 'lucide-preact'
+import { ChevronLeft, Info, X } from 'lucide-preact'
 import type { Coordinates, PrayerDay } from '../core/engine'
 import type { Prayer } from '../core/prayer'
 import { sourceAuthority } from '../core/official'
@@ -48,7 +48,7 @@ export const GRADE_TINT: Record<SourceGrade, string> = {
 export type SheetKind =
   | { kind: 'places'; forHome?: boolean } | { kind: 'sanad'; day: PrayerDay } | { kind: 'calendar' } | { kind: 'makers'; placement: string }
   | { kind: 'journey' } | { kind: 'level' } | { kind: 'ar' } | { kind: 'falak-expert' } | { kind: 'shadow-steps' } | { kind: 'shadow-camera' } | { kind: 'alerts-help' } | { kind: 'credits' } | { kind: 'install' }
-  | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'ramadan' } | { kind: 'wakeup'; prayer?: Prayer | 'friday'; view?: 'check' }
+  | { kind: 'move-out' } | { kind: 'move-in'; code?: string } | { kind: 'tracker' } | { kind: 'log-prayer'; prayer: Prayer; t: number } | { kind: 'log-catchup' } | { kind: 'ramadan' } | { kind: 'wakeup'; prayer?: Prayer | 'friday'; view?: 'check' }
   | { kind: 'guide' } | { kind: 'feedback' } | { kind: 'review' } | { kind: 'suggest-room'; near?: Coordinates }
 
 let current: SheetKind | null = null
@@ -69,7 +69,7 @@ export function useSheet(): SheetKind | null {
 }
 
 /** `label` names the sheet for screen readers when it has no visible title. */
-export function Sheet({ title, label, children, full, onDone }: { title?: string; label?: string; children: ComponentChildren; full?: boolean; onDone?: () => void }) {
+export function Sheet({ title, label, children, full, onDone, back }: { title?: string; label?: string; children: ComponentChildren; full?: boolean; onDone?: () => void; back?: string }) {
   const done = onDone ?? closeSheet
   const box = useRef<HTMLDivElement>(null)
   // Keyboard and screen reader users land in the sheet, and go back where they were when it closes.
@@ -96,12 +96,21 @@ export function Sheet({ title, label, children, full, onDone }: { title?: string
   return (
     <div class="sheet-backdrop" onClick={(e) => { if (e.target === e.currentTarget) done() }}>
       <div ref={box} tabIndex={-1} class={`sheet ${full ? 'full' : ''}`} role="dialog" aria-modal="true" aria-label={title || label}>
-        <div class="grabber" />
-        <div class="sheet-head">
-          <span style={{ width: '64px' }} />
-          {title ? <h2>{title}</h2> : <span />}
-          <button class="done" onClick={done}>{tr('common.done')}</button>
-        </div>
+        {back ? (
+          <>
+            <div class="sheet-back"><button onClick={done}><ChevronLeft size={24} />{back}</button></div>
+            {title && <h1 class="sheet-pagetitle">{title}</h1>}
+          </>
+        ) : (
+          <>
+            <div class="grabber" />
+            <div class="sheet-head">
+              <span style={{ width: '64px' }} />
+              {title ? <h2>{title}</h2> : <span />}
+              <button class="done" onClick={done}>{tr('common.done')}</button>
+            </div>
+          </>
+        )}
         {children}
       </div>
     </div>
@@ -158,6 +167,21 @@ export function SourceBadge({ day, compact }: { day: PrayerDay; compact?: boolea
       <span class="src">{compact ? shortSource : `${gradeTitle(grade)} · ${sourceName}`}</span>
       {!compact && <span class="spacer" />}
       <Info size={compact ? 12 : 15} style={{ opacity: 0.7, flex: 'none' }} />
+    </button>
+  )
+}
+
+/** The quiet source line under the Centre Dial list: "Official · MUIS · Grade A". Tap for the full story. */
+export function SourceLine({ day }: { day: PrayerDay }) {
+  const grade = day.grade
+  const authority = grade === 'A'
+    ? (store.officialSource && day.officialSource ? sourceAuthority(store.officialSource) : store.method.shortName)
+    : grade === 'B' || grade === 'C' ? day.mosqueName : store.method.shortName
+  const sourceName = day.officialSource ?? methodName(store.method)
+  return (
+    <button class="source-line" onClick={() => openSheet({ kind: 'sanad', day })}
+      aria-label={tr('common.sourceBadge', { grade, name: gradeTitle(grade), detail: sourceName })}>
+      <b>{gradeTitle(grade)}</b>{authority ? ` · ${authority}` : ''} · {tr('source.grade')} {grade}
     </button>
   )
 }

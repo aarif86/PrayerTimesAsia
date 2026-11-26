@@ -19,7 +19,7 @@ const TZ_OFFSET_MS = 8 * 3_600_000;        // Singapore time, no daylight saving
 const RANGES = [7, 30, 92, 183, 274, 366, 731, 1097];
 
 const ID_RE = /^[A-Za-z0-9_-]{22,40}$/;
-const LOOKS = ['night', 'day', 'board', 'bands', 'dial', 'sunpath', 'simple'];
+const LOOKS = ['night', 'day', 'board', 'bands', 'dial', 'sunpath', 'simple', 'surau'];
 const LANGS = ['en', 'ms', 'id'];
 
 /** The country, look and language a screen sent, each only if it is one we know; anything else is left out. */

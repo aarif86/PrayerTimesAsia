@@ -57,6 +57,7 @@
     <string name="style_sunPath" formatted="false">Sun Path</string>
     <string name="style_bands" formatted="false">Colour Bands</string>
     <string name="style_simple" formatted="false">Big and Simple</string>
+    <string name="style_gold" formatted="false">Calm Gold</string>
     <string name="preview_off" formatted="false">Off (real dates)</string>
     <string name="preview_sighting" formatted="false">Moon sighting night (29 Sha\'ban)</string>
     <string name="preview_ramadan" formatted="false">Ramadan (day 12)</string>
@@ -90,6 +91,7 @@
     <string name="today_calledHere" formatted="false">called {name} here</string>
     <string name="today_now" formatted="false">NOW</string>
     <string name="today_next" formatted="false">NEXT</string>
+    <string name="today_nextPrayer" formatted="false">Next prayer</string>
     <string name="today_nextIn" formatted="false">{name} in {time}</string>
     <string name="today_in" formatted="false">in {time}</string>
     <string name="today_alertOff" formatted="false">Turn off alert</string>
@@ -111,9 +113,9 @@
     <string name="today_midnightShort" formatted="false">Midnight</string>
     <string name="today_lastThirdShort" formatted="false">Last third</string>
     <string name="today_imsakNote" formatted="false">10 minutes before Fajr. Finish sahur by now</string>
-    <string name="today_dhuhaNote" formatted="false">Sun a spear\'s length up (about 4½°)</string>
-    <string name="today_midnightNote" formatted="false">Halfway from Maghrib to Fajr</string>
-    <string name="today_lastThirdNote" formatted="false">Best time for tahajjud and dua</string>
+    <string name="today_dhuhaNote" formatted="false">Optional prayer, 2 rakaat or more</string>
+    <string name="today_midnightNote" formatted="false">Best to pray Isha before this</string>
+    <string name="today_lastThirdNote" formatted="false">Time for tahajjud</string>
     <string name="today_prayed" formatted="false">, prayed</string>
     <string name="today_moreTimes" formatted="false">Show more times</string>
     <string name="today_nowNext" formatted="false">Now {now}. {next} at {time}.</string>
@@ -235,6 +237,7 @@
     <string name="falak_slideSun" formatted="false">Slide the sun</string>
     <string name="falak_east" formatted="false">East</string>
     <string name="falak_west" formatted="false">West</string>
+    <string name="falak_shadowLabel" formatted="false">Shadow</string>
     <string name="falak_stageNight" formatted="false">Night</string>
     <string name="falak_stageNightSay" formatted="false">The sky is dark. {name} has not come yet.</string>
     <string name="falak_stageFajrSay" formatted="false">A white line spreads along the eastern sky. {name} has begun.</string>
@@ -500,6 +503,8 @@
     <string name="settings_tracker" formatted="false">Tracker</string>
     <string name="settings_trackerFoot" formatted="false">Tap a prayer on the Prayer screen once it has passed to tick it off, and keep a streak. Tap the streak to mark a day as excused (haid, illness) so it carries on. Kept only in this browser.</string>
     <string name="settings_trackerOn" formatted="false">Prayer tracker</string>
+    <string name="settings_trackerShowTime" formatted="false">Show the time I prayed</string>
+    <string name="settings_trackerShowTimeSub" formatted="false">A tiny time after the tick. Off keeps just the tick.</string>
     <string name="settings_nudge" formatted="false">Nudge before time runs out</string>
     <string name="settings_nudgeSub" formatted="false">One gentle alert about 30 minutes before a prayer\'s time ends, only if you haven\'t ticked it. Not for {name}, which stays open until {until}. Never while paused.</string>
     <string name="settings_display" formatted="false">Display</string>
@@ -869,6 +874,16 @@
     <string name="qibla_turnLeft" formatted="false">Turn left {deg}°</string>
     <string name="qibla_turnRightAbout" formatted="false">Turn right, about {deg}°</string>
     <string name="qibla_turnLeftAbout" formatted="false">Turn left, about {deg}°</string>
+    <string name="qibla_facingShort" formatted="false">Facing</string>
+    <string name="qibla_youFaceHere" formatted="false">You face here</string>
+    <string name="qibla_northHere" formatted="false">North</string>
+    <string name="qibla_sunHint" formatted="false">Turn until the sun reaches the Ka\'bah.</string>
+    <string name="qibla_turnLeftWord" formatted="false">Turn left</string>
+    <string name="qibla_turnRightWord" formatted="false">Turn right</string>
+    <string name="qibla_kmToMakkah" formatted="false">{km} km to Makkah</string>
+    <string name="qibla_sunStep2" formatted="false">Turn your whole body slowly until the sun reaches the Ka\'bah.</string>
+    <string name="qibla_sunStep3" formatted="false">When the words turn green and your phone taps, you\'re facing the qibla.</string>
+    <string name="qibla_sunStep3NoTap" formatted="false">When the words turn green, you\'re facing the qibla.</string>
     <string name="journey_homeTitle" formatted="false">You\'re home</string>
     <string name="journey_homeBody" formatted="false">Pray in full. Travel concessions apply once you journey at least {km} km.</string>
     <string name="journey_nearbyTitle" formatted="false">Within {km} km of home</string>
@@ -911,6 +926,8 @@
     <string name="masjid_savedPlace" formatted="false">your saved place</string>
     <string name="masjid_nearestYou" formatted="false">Nearest to you</string>
     <string name="masjid_nearestTo" formatted="false">Nearest to {place}</string>
+    <string name="masjid_nearestMasjid" formatted="false">Nearest masjid</string>
+    <string name="masjid_showWay" formatted="false">Show me the way</string>
     <string name="masjid_howGoing" formatted="false">How you\'re going</string>
     <string name="masjid_walk" formatted="false">Walk</string>
     <string name="masjid_drive" formatted="false">Drive</string>
@@ -1183,4 +1200,78 @@
     <string name="method_note_tunisia" formatted="false">The method of Tunisia\'s Ministry of Religious Affairs.</string>
     <string name="method_note_morocco" formatted="false">The method of Morocco\'s Ministry of Habous and Islamic Affairs.</string>
     <string name="method_note_jordan" formatted="false">The method of Jordan\'s Ministry of Awqaf and Islamic Affairs. Also used in Palestine.</string>
+    <string name="menu_appearance" formatted="false">Appearance</string>
+    <string name="menu_auto" formatted="false">Auto</string>
+    <string name="menu_light" formatted="false">Light</string>
+    <string name="menu_dark" formatted="false">Dark</string>
+    <string name="menu_lookAndFeel" formatted="false">Look and feel</string>
+    <string name="menu_streak" formatted="false">Prayer streak</string>
+    <string name="menu_days" formatted="false">{n} days</string>
+    <string name="menu_days_one" formatted="false">{n} day</string>
+    <string name="menu_back" formatted="false">Look and feel</string>
+    <string name="log_ask" formatted="false">When did you pray it? Early or late, we only note the time.</string>
+    <string name="log_justNow" formatted="false">Just now, {time}</string>
+    <string name="log_atTime" formatted="false">At its time, {time}</string>
+    <string name="log_pick" formatted="false">Pick a time</string>
+    <string name="log_save" formatted="false">Save</string>
+    <string name="log_remove" formatted="false">Remove tick</string>
+    <string name="log_catchTitle" formatted="false">Log my prayers</string>
+    <string name="bands_credit" formatted="false">A tribute to prayertimes.sg &amp; my by Awsam Tech LLP. Used with permission.</string>
+    <string name="log_catchIntro" formatted="false">Forgot to tick? Add the time you prayed. Early or late, we only note what you tell us.</string>
+    <string name="log_tickAll" formatted="false">Tick all as on time</string>
+    <string name="log_prayedAt" formatted="false">Prayed {time}</string>
+    <string name="log_prayed" formatted="false">Prayed</string>
+    <string name="log_from" formatted="false">from {time}</string>
+    <string name="log_allDone" formatted="false">Every prayer so far today is ticked.</string>
+    <string name="log_timeLabel" formatted="false">Time you prayed</string>
+    <string name="alerts_allFive" formatted="false">Notify me for all 5 prayers</string>
+    <string name="alerts_allFiveSub" formatted="false">Anything already on Alarm stays on Alarm.</string>
+    <string name="alerts_allFiveOn" formatted="false">All 5 prayers on</string>
+    <string name="today_allFiveOn" formatted="false">Alerts on for all 5 prayers</string>
+    <string name="today_allFiveChange" formatted="false">Change</string>
+    <string name="early_title" formatted="false">Early reminders</string>
+    <string name="early_row" formatted="false">Remind me earlier</string>
+    <string name="early_rowAway" formatted="false">Away from home, {when} before</string>
+    <string name="early_rowOff" formatted="false">Off</string>
+    <string name="early_master" formatted="false">Remind me earlier</string>
+    <string name="early_masterSub" formatted="false">Turn all early reminders off here</string>
+    <string name="early_awayHead" formatted="false">When I am away from home</string>
+    <string name="early_awaySwitch" formatted="false">Remind me when I am out</string>
+    <string name="early_awaySwitchSub" formatted="false">So you have time to find a place to pray</string>
+    <string name="early_home" formatted="false">Home</string>
+    <string name="early_howEarly" formatted="false">How early, for each prayer</string>
+    <string name="early_howEarlyFoot" formatted="false">Fajr starts Off because most people are asleep. Use a Fajr alarm instead.</string>
+    <string name="early_fajrAlarm" formatted="false">You have a Fajr alarm, so there is no early Fajr reminder.</string>
+    <string name="early_atHomeHead" formatted="false">When I am at home</string>
+    <string name="early_atHomeSub" formatted="false">Off unless you choose</string>
+    <string name="early_privacy" formatted="false">Your home and where you are stay on your phone. We never send them anywhere.</string>
+    <string name="early_noHome" formatted="false">Set your home place so we know when you are away.</string>
+    <string name="early_setHome" formatted="false">Set home</string>
+    <string name="early_openAway" formatted="false">You are away from home now.</string>
+    <string name="early_openHome" formatted="false">You are at home now.</string>
+    <string name="early_hour" formatted="false">1 hour</string>
+    <string name="early_min" formatted="false">{n} min</string>
+    <string name="notify_nameInHour" formatted="false">{name} in 1 hour</string>
+    <string name="notify_nameAtAway" formatted="false">{name} begins at {time}. A good time to find a place to pray.</string>
+    <string name="all_row" formatted="false">Set for all prayers</string>
+    <string name="all_rowSub" formatted="false">Choose once and all five follow.</string>
+    <string name="all_step1" formatted="false">What should happen at prayer time?</string>
+    <string name="all_offDesc" formatted="false">Nothing for these prayers.</string>
+    <string name="all_notifyName" formatted="false">Notification</string>
+    <string name="all_notifyDesc" formatted="false">A message on your screen with a normal alert sound.</string>
+    <string name="all_azanName" formatted="false">Short azan</string>
+    <string name="all_azanDesc" formatted="false">A message that plays a short azan, about 9 seconds.</string>
+    <string name="all_alarmDesc" formatted="false">Rings like a clock until you stop it. Works on silent.</string>
+    <string name="all_step2" formatted="false">A reminder before each prayer</string>
+    <string name="all_keep" formatted="false">Leave as it is</string>
+    <string name="all_fajrToo" formatted="false">Also change {name}</string>
+    <string name="all_fajrTooSub" formatted="false">It has its own alarm settings, so it stays as it is unless you tick this.</string>
+    <string name="all_apply" formatted="false">Apply to all five</string>
+    <string name="all_applied" formatted="false">Done. All five prayers are set.</string>
+    <string name="all_azanFoot" formatted="false">The azan sound is one setting for the whole app, so it changes for every prayer.</string>
+    <string name="all_iphoneNote" formatted="false">On iPhone, a notification can only play a short sound, up to 30 seconds, so a full azan is not possible there. For a long call, use Alarm.</string>
+    <string name="test_title" formatted="false">Check that it works</string>
+    <string name="test_sub" formatted="false">We send a sample alert in a few seconds, the same way your real ones arrive.</string>
+    <string name="test_sent" formatted="false">Test alert coming in a few seconds. Stay on this screen to see and hear it.</string>
+    <string name="test_blocked" formatted="false">Alerts are not allowed on this device yet.</string>
 </resources>
