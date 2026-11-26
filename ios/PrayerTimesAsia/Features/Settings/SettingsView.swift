@@ -376,7 +376,7 @@ private struct LookPage: View {
         Form {
             Section {
                 Picker("Prayer screen", selection: $model.prefs.todayStyle) {
-                    ForEach(TodayStyle.allCases) { Text($0.label).tag($0) }
+                    ForEach(TodayStyle.looks) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.inline)
                 .labelsHidden()

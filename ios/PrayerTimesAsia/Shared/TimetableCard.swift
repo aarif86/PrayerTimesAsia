@@ -22,7 +22,7 @@ struct TimetableCard: View {
         }
         switch style {
         case .list, .simple: return AnyView(list(s, day: day))
-        case .dial, .centre: return AnyView(dial(s, day: day))
+        case .dial, .centre, .gold: return AnyView(dial(s, day: day))
         case .sunPath: return AnyView(sunPath(s, day: day))
         case .bands: return AnyView(bands(s, day: day))
         }
