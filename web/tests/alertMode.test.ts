@@ -1,8 +1,52 @@
 import { describe, expect, it } from 'vitest'
-import { alertMode, fridayMode, nextAlertMode, notifies, setAlertMode, setFridayMode, setNotify, unifyAlerts, type AlertPrefs } from '../src/core/alertMode'
+import { alertMode, allFiveNotify, notifyAllFive, fridayMode, nextAlertMode, notifies, setAlertMode, setFridayMode, setNotify, unifyAlerts, type AlertPrefs } from '../src/core/alertMode'
 import { DEFAULT_PREFS, decodePreferences } from '../src/services/prefs'
 
-const fresh = (): AlertPrefs => structuredClone(DEFAULT_PREFS)
+/** A person who has not turned alerts on (before the new-install default). */
+const fresh = (): AlertPrefs => ({ ...structuredClone(DEFAULT_PREFS), notificationsEnabled: false })
+
+describe('New installs and the all five button', () => {
+  it('a new install is on Notify for the five prayers and Off for Sunrise', () => {
+    const p: AlertPrefs = structuredClone(DEFAULT_PREFS)
+    for (const x of ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const) expect(alertMode(p, x)).toBe('notify')
+    expect(alertMode(p, 'sunrise')).toBe('off')
+    expect(allFiveNotify(p)).toBe(true)
+  })
+
+  it('saved settings keep their choice, including Off on purpose and a missing choice', () => {
+    expect(decodePreferences({ notificationsEnabled: false }).notificationsEnabled).toBe(false)
+    expect(decodePreferences({ lang: 'en' }).notificationsEnabled).toBe(false)
+    expect(decodePreferences({ notificationsEnabled: true }).notificationsEnabled).toBe(true)
+  })
+
+  it('the button turns Off prayers to Notify, leaves Alarm and Sunrise alone', () => {
+    const p = fresh()
+    setAlertMode(p, 'fajr', 'alarm')
+    notifyAllFive(p)
+    expect(alertMode(p, 'fajr')).toBe('alarm')
+    expect(p.wakeUp).toBe('atFajr')
+    for (const x of ['dhuhr', 'asr', 'maghrib', 'isha'] as const) expect(alertMode(p, x)).toBe('notify')
+    expect(alertMode(p, 'sunrise')).toBe('off')
+    expect(allFiveNotify(p)).toBe(false)
+  })
+
+  it('the button drops an old leftover list, so Sunrise stays off', () => {
+    const p = fresh()
+    p.notifyPrayers = ['sunrise', 'asr']
+    notifyAllFive(p)
+    expect(alertMode(p, 'sunrise')).toBe('off')
+    expect(allFiveNotify(p)).toBe(true)
+  })
+
+  it('a prayer set Off after the button can be switched back individually', () => {
+    const p = fresh()
+    notifyAllFive(p)
+    expect(allFiveNotify(p)).toBe(true)
+    setAlertMode(p, 'asr', 'off')
+    expect(alertMode(p, 'asr')).toBe('off')
+    expect(allFiveNotify(p)).toBe(false)
+  })
+})
 
 describe('Alerts and alarms, one choice per prayer', () => {
   it('starts with every prayer Off, even though the old list held all five', () => {

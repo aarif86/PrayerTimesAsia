@@ -390,3 +390,8 @@ input, select, textarea { font: inherit; color: inherit; }
 
 /* The tiny time a prayer was ticked, after the tick. */
 .prayed-time { font-size: 12px; font-weight: 600; opacity: 0.75; margin-left: 4px; white-space: nowrap; align-self: center; }
+
+.all-five-btn { width: 100%; text-align: start; display: flex; align-items: center; gap: 12px; }
+.all-five-btn .label { flex: 1; font-weight: 700; }
+.all-five-btn:disabled { opacity: 1; cursor: default; }
+.all-five-btn:disabled .label { font-weight: 600; }

@@ -1224,4 +1224,9 @@
     <string name="log_from" formatted="false">from {time}</string>
     <string name="log_allDone" formatted="false">Every prayer so far today is ticked.</string>
     <string name="log_timeLabel" formatted="false">Time you prayed</string>
+    <string name="alerts_allFive" formatted="false">Notify me for all 5 prayers</string>
+    <string name="alerts_allFiveSub" formatted="false">Anything already on Alarm stays on Alarm.</string>
+    <string name="alerts_allFiveOn" formatted="false">All 5 prayers on</string>
+    <string name="today_allFiveOn" formatted="false">Alerts on for all 5 prayers</string>
+    <string name="today_allFiveChange" formatted="false">Change</string>
 </resources>

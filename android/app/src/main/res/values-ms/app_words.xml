@@ -1224,4 +1224,9 @@
     <string name="log_from" formatted="false">dari {time}</string>
     <string name="log_allDone" formatted="false">Semua solat setakat ini hari ini sudah ditanda.</string>
     <string name="log_timeLabel" formatted="false">Masa anda solat</string>
+    <string name="alerts_allFive" formatted="false">Maklumkan saya untuk kelima-lima solat</string>
+    <string name="alerts_allFiveSub" formatted="false">Solat yang sudah menggunakan Penggera kekal dengan Penggera.</string>
+    <string name="alerts_allFiveOn" formatted="false">Kelima-lima solat dihidupkan</string>
+    <string name="today_allFiveOn" formatted="false">Makluman dihidupkan untuk kelima-lima solat</string>
+    <string name="today_allFiveChange" formatted="false">Tukar</string>
 </resources>

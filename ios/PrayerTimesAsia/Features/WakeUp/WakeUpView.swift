@@ -205,6 +205,24 @@ private struct EachPrayerSection: View {
     var body: some View {
         let friday = Prayer.dhuhr.name(model.naming, isFriday: true)
         Section {
+            Button {
+                model.prefs.notifyAllFive()
+                Task { await askForAlerts(); await model.refreshNotificationStatus() }
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: model.prefs.allFiveNotify ? "checkmark.circle.fill" : "bell.badge.fill")
+                        .foregroundStyle(Theme.sunArc)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(model.prefs.allFiveNotify ? "All 5 prayers on" : "Notify me for all 5 prayers")
+                            .font(.headline).foregroundStyle(.primary)
+                        Text("Anything already on Alarm stays on Alarm.").font(.footnote).foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(model.prefs.allFiveNotify)
             ForEach(Prayer.allCases) { prayer in
                 let mode = model.prefs.alertMode(prayer)
                 let chip = alertChipWords(prayer, model: model)

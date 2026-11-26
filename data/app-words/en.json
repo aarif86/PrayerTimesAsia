@@ -1221,5 +1221,10 @@
   "log.prayed": "Prayed",
   "log.from": "from {time}",
   "log.allDone": "Every prayer so far today is ticked.",
-  "log.timeLabel": "Time you prayed"
+  "log.timeLabel": "Time you prayed",
+  "alerts.allFive": "Notify me for all 5 prayers",
+  "alerts.allFiveSub": "Anything already on Alarm stays on Alarm.",
+  "alerts.allFiveOn": "All 5 prayers on",
+  "today.allFiveOn": "Alerts on for all 5 prayers",
+  "today.allFiveChange": "Change"
 }

@@ -1221,5 +1221,10 @@
   "log.prayed": "Sudah solat",
   "log.from": "dari {time}",
   "log.allDone": "Semua solat setakat ini hari ini sudah ditanda.",
-  "log.timeLabel": "Masa anda solat"
+  "log.timeLabel": "Masa anda solat",
+  "alerts.allFive": "Maklumkan saya untuk kelima-lima solat",
+  "alerts.allFiveSub": "Solat yang sudah menggunakan Penggera kekal dengan Penggera.",
+  "alerts.allFiveOn": "Kelima-lima solat dihidupkan",
+  "today.allFiveOn": "Makluman dihidupkan untuk kelima-lima solat",
+  "today.allFiveChange": "Tukar"
 }
