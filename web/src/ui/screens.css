@@ -971,7 +971,8 @@ html[data-large-text] .pname { font-size: 20px; }
 .simple-page.v12 .more-link { min-height: 48px; font-size: 17px; }
 /* The big list fills the screen like the mockup, rows grow from 62 up to 76 point */
 .simple-page.v12 .list-wrap.fill { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
-.simple-page.v12 .list-wrap.fill .prayer-list.slim { flex: 1 1 auto; display: flex; flex-direction: column; }
+/* On a tall window the card stops growing once every row is 76 point, so no empty space sits under Show more. */
+.simple-page.v12 .list-wrap.fill .prayer-list.slim { flex: 1 1 auto; display: flex; flex-direction: column; max-height: calc(var(--rows, 6) * 76px + 50px + var(--extra, 0px)); }
 .simple-page.v12 .list-wrap.fill .prayer-list.slim .prayer-row { flex: 1 1 62px; max-height: 76px; }
 
 /* ---------- Calm Gold rebuilt to the v12 mockup (Prayer screen) ---------- */
