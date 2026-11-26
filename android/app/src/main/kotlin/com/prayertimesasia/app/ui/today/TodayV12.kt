@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package com.prayertimesasia.app.ui.today
 
 import androidx.compose.foundation.Canvas
@@ -543,14 +545,17 @@ private fun SimpleNow(f: TodayFrame, col: PageColors) {
 @Composable
 private fun DayNavigatorV12(f: TodayFrame, setOffset: (Int) -> Unit, openCalendar: () -> Unit, col: PageColors) {
     val state = f.state
+    val prevL = tr(R.string.today_prevDay)
+    val nextL = tr(R.string.today_nextDay)
+    val midL = if (f.offset == 0) tr(R.string.today_datesSources) else tr(R.string.today_backToToday)
     Row(Modifier.fillMaxWidth().padding(start = 2.dp, end = 6.dp, top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(44.dp).clip(CircleShape).clickable(onClickLabel = tr(R.string.today_prevDay)) { setOffset(f.offset - 1) }
-            .semantics { contentDescription = tr(R.string.today_prevDay) }, contentAlignment = Alignment.Center) {
+            .semantics { contentDescription = prevL }, contentAlignment = Alignment.Center) {
             Icon(Lucide.chevronLeft(), null, Modifier.size(26.dp), tint = col.fg2)
         }
         Column(
             Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).clickable { if (f.offset == 0) openCalendar() else setOffset(0) }
-                .semantics { contentDescription = if (f.offset == 0) tr(R.string.today_datesSources) else tr(R.string.today_backToToday) },
+                .semantics { contentDescription = midL },
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(dateText(state, f.shown, "EEE d MMM"), fontFamily = Body, fontSize = 18.sp, lineHeight = 21.6.sp, fontWeight = FontWeight.Bold,
@@ -562,7 +567,7 @@ private fun DayNavigatorV12(f: TodayFrame, setOffset: (Int) -> Unit, openCalenda
             }
         }
         Box(Modifier.size(44.dp).clip(CircleShape).clickable(onClickLabel = tr(R.string.today_nextDay)) { setOffset(f.offset + 1) }
-            .semantics { contentDescription = tr(R.string.today_nextDay) }, contentAlignment = Alignment.Center) {
+            .semantics { contentDescription = nextL }, contentAlignment = Alignment.Center) {
             Icon(Lucide.chevronRight(), null, Modifier.size(26.dp), tint = col.fg2)
         }
     }
@@ -853,6 +858,9 @@ private fun BandsV12(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> 
             }
             // One line date between two hairlines.
             val hair = col.hair
+            val prevL = tr(R.string.today_prevDay)
+            val nextL = tr(R.string.today_nextDay)
+            val midL = if (f.offset == 0) tr(R.string.today_datesSources) else tr(R.string.today_backToToday)
             Row(
                 Modifier.fillMaxWidth().drawBehind {
                     drawLine(hair, Offset(0f, 0f), Offset(size.width, 0f), 1.dp.toPx())
@@ -861,11 +869,11 @@ private fun BandsV12(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> 
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.size(44.dp).clickable(onClickLabel = tr(R.string.today_prevDay)) { setOffset(f.offset - 1) }
-                    .semantics { contentDescription = tr(R.string.today_prevDay) }, contentAlignment = Alignment.Center) {
+                    .semantics { contentDescription = prevL }, contentAlignment = Alignment.Center) {
                     Icon(Lucide.chevronLeft(2.6f), null, Modifier.size(20.dp), tint = col.fg2)
                 }
                 Row(Modifier.weight(1f).clickable { if (f.offset == 0) openCalendar() else setOffset(0) }
-                    .semantics(mergeDescendants = true) { contentDescription = if (f.offset == 0) "" else "" }
+                    .semantics(mergeDescendants = true) { contentDescription = midL }
                     .padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
                     if (f.offset != 0) Icon(Lucide.undo2(), null, Modifier.size(13.dp), tint = col.fg)
@@ -873,7 +881,7 @@ private fun BandsV12(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> 
                         fontWeight = FontWeight.SemiBold, color = col.fg, textAlign = TextAlign.Center, maxLines = 2)
                 }
                 Box(Modifier.size(44.dp).clickable(onClickLabel = tr(R.string.today_nextDay)) { setOffset(f.offset + 1) }
-                    .semantics { contentDescription = tr(R.string.today_nextDay) }, contentAlignment = Alignment.Center) {
+                    .semantics { contentDescription = nextL }, contentAlignment = Alignment.Center) {
                     Icon(Lucide.chevronRight(2.6f), null, Modifier.size(20.dp), tint = col.fg2)
                 }
             }
