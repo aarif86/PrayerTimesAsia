@@ -1229,4 +1229,28 @@
     <string name="alerts_allFiveOn" formatted="false">Kelima-lima solat dihidupkan</string>
     <string name="today_allFiveOn" formatted="false">Makluman dihidupkan untuk kelima-lima solat</string>
     <string name="today_allFiveChange" formatted="false">Tukar</string>
+    <string name="early_title" formatted="false">Peringatan awal</string>
+    <string name="early_row" formatted="false">Ingatkan saya lebih awal</string>
+    <string name="early_rowAway" formatted="false">Jauh dari rumah, {when} sebelum</string>
+    <string name="early_rowOff" formatted="false">Mati</string>
+    <string name="early_master" formatted="false">Ingatkan saya lebih awal</string>
+    <string name="early_masterSub" formatted="false">Matikan semua peringatan awal di sini</string>
+    <string name="early_awayHead" formatted="false">Apabila saya jauh dari rumah</string>
+    <string name="early_awaySwitch" formatted="false">Ingatkan saya apabila saya di luar</string>
+    <string name="early_awaySwitchSub" formatted="false">Supaya anda sempat mencari tempat untuk solat</string>
+    <string name="early_home" formatted="false">Rumah</string>
+    <string name="early_howEarly" formatted="false">Berapa awal, bagi setiap solat</string>
+    <string name="early_howEarlyFoot" formatted="false">Subuh bermula Mati kerana kebanyakan orang masih tidur. Gunakan penggera Subuh.</string>
+    <string name="early_fajrAlarm" formatted="false">Anda ada penggera Subuh, maka tiada peringatan awal Subuh.</string>
+    <string name="early_atHomeHead" formatted="false">Apabila saya di rumah</string>
+    <string name="early_atHomeSub" formatted="false">Mati melainkan anda pilih</string>
+    <string name="early_privacy" formatted="false">Rumah anda dan lokasi anda kekal dalam telefon. Kami tidak menghantarnya ke mana-mana.</string>
+    <string name="early_noHome" formatted="false">Tetapkan tempat rumah anda supaya kami tahu apabila anda berada jauh.</string>
+    <string name="early_setHome" formatted="false">Tetapkan rumah</string>
+    <string name="early_openAway" formatted="false">Anda berada jauh dari rumah sekarang.</string>
+    <string name="early_openHome" formatted="false">Anda berada di rumah sekarang.</string>
+    <string name="early_hour" formatted="false">1 jam</string>
+    <string name="early_min" formatted="false">{n} minit</string>
+    <string name="notify_nameInHour" formatted="false">{name} dalam 1 jam</string>
+    <string name="notify_nameAtAway" formatted="false">{name} bermula pada {time}. Waktu yang sesuai untuk mencari tempat solat.</string>
 </resources>

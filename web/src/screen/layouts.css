@@ -248,6 +248,9 @@
 .lay-look-simple.scr-light { --bg: #f6f3ee; }
 .lay-look-simple .lay-row { background: var(--fill); }
 .lay-look-simple .lay-row.on { background: color-mix(in srgb, var(--tint) 20%, transparent); box-shadow: inset 0 0 0 2px var(--tint); }
+/* Dark Simple look: a lighter tint keeps the current prayer name readable (Maghrib red was 4.16:1). */
+.lay-look-simple .lay-row.on .scr-name { color: color-mix(in srgb, var(--tint) 60%, #fff); }
+.scr-light .lay-look-simple .lay-row.on .scr-name { color: var(--tint); }
 .lay-look-simple .lay-times { gap: calc(var(--u) * 0.5); }
 .lay-look-surau .lay-times { gap: calc(var(--u) * 0.3); }
 .lay-look-surau .lay-row.on { background: var(--gold); box-shadow: none; color: #151a45; }
@@ -278,3 +281,7 @@
 
 .lay .scr-sec { color: var(--fg2); }
 .lay-look-bands .lay-row .scr-name { font-weight: 700; }
+
+/* Dark mode: the "next prayer" name in the pill fell under 4.5:1 for Isha purple on dark blue and grey.
+   A lighter mix keeps it readable whatever the time of day. */
+.scr:not(.scr-light) .scr-next-name { color: color-mix(in srgb, var(--tint) 40%, #fff); }

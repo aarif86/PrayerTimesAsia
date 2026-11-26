@@ -14,6 +14,8 @@ import { alertLine } from '../core/alertLines'
 import { BLESSED_NAME } from '../core/blessed'
 import { EXTRA_TIMES, extraMode } from '../core/extraAlerts'
 import { blessedNote } from '../core/appWords'
+import { earlyMinutes, isAway } from '../core/away'
+import { hasAlarm } from '../core/alertMode'
 import { store } from './store'
 import { tr } from '../core/appWords'
 import { ramadanWord } from '../core/ramadanWords'
@@ -114,9 +116,11 @@ export function nextJumuahLeave(now: number): { leave: number; start: number; se
 export function upcomingAlerts(now: number): Alert[] {
   const place = store.activePlace
   const prefs = store.prefs
-  const early = prefs.reminderMinutesBefore
+  const atHome = prefs.reminderMinutesBefore
   const onTime = prefs.notificationsEnabled
   if (!place) return []
+  const away = isAway(prefs.home, prefs.homeConfirmed, place)
+  const anyEarly = atHome > 0 || (away && prefs.awayReminder && Object.values(prefs.awayMinutes).some((m) => m > 0))
   const wake = wakeUps(now, 2).map((w) => ({ id: w.id, title: w.title, body: w.body, at: w.at }))
   const nudges = prefs.trackerEnabled && prefs.windowNudge && !store.trackerPaused
   const jumuah = prefs.jumuahReminderMinutes
@@ -161,19 +165,21 @@ export function upcomingAlerts(now: number): Alert[] {
       const name = BLESSED_NAME[b]
       out.push({ id: `${day.year}-${day.month}-${day.day}-${b}`, title: `${name} · ${store.formatted(at)}`, body: blessedNote(b), at, silent: isSilent(at, b === 'dhuha' ? 'dhuhr' : 'isha', tz) })
     }
-    if (!onTime && early <= 0) continue
+    if (!onTime && !anyEarly) continue
     for (const prayer of PRAYERS) {
       if (!prefs.notifyPrayers.includes(prayer)) continue
       const time = day.times[prayer]
       const name = store.name(prayer, time)
       const id = `${day.year}-${day.month}-${day.day}-${prayer}`
       const silent = isSilent(time, prayer, tz)
+      // One early reminder per prayer: the away choice when away from home, else the at-home choice.
+      const early = earlyMinutes(prayer, away, prefs.awayReminder, prefs.awayMinutes, atHome, hasAlarm(prefs, prayer))
       if (early > 0) {
         // The heads-up before the prayer, on its own switch: for when a meeting
         // or work would otherwise run past the time.
         out.push({
-          id: `${id}-early`, title: prayer === 'sunrise' ? tr('notify.endsIn', { name: store.name('fajr'), n: early }) : tr('notify.nameIn', { name, n: early }),
-          body: tr('notify.nameAt', { name, time: store.formatted(time) }), at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
+          id: `${id}-early`, title: prayer === 'sunrise' ? tr('notify.endsIn', { name: store.name('fajr'), n: early }) : early === 60 ? tr('notify.nameInHour', { name }) : tr('notify.nameIn', { name, n: early }),
+          body: tr(away && prayer !== 'sunrise' ? 'notify.nameAtAway' : 'notify.nameAt', { name, time: store.formatted(time) }), at: time - early * 60_000, silent: isSilent(time - early * 60_000, prayer, tz),
         })
       }
       if (!onTime) continue

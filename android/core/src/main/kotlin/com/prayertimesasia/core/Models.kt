@@ -252,6 +252,9 @@ data class Preferences(
     val notifyPrayers: Set<Prayer> = Prayer.obligatory.toSet(),
     /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
     val reminderMinutesBefore: Int = 0,
+    /** Early reminder when the phone is away from the confirmed home (AwayReminder.kt). On by default, 1 hour, Fajr off. */
+    val awayReminder: Boolean = true,
+    val awayMinutes: Map<String, Int> = AwayReminder.DEFAULT_MINUTES,
     /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings. */
     val azanSound: Boolean = true,
 
@@ -424,6 +427,7 @@ data class Preferences(
             // Isyak is open until Subuh: it has no "before it ends" alarm.
             ishaAlarm = ishaAlarm.takeIf { it != PrayerAlarmTiming.END_MINUS_30 },
             tarawihRakaat = tarawihRakaat?.takeIf { it in Tarawih.CHOICES },
+            awayMinutes = AwayReminder.clean(awayMinutes),
         )
     }
 }

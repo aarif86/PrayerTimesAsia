@@ -361,6 +361,17 @@ class AppState(
         }
     }
 
+    /** "Remind me when I am out": asks for notification permission first, then turns it on or off. */
+    fun setAwayReminder(on: Boolean) {
+        scope.launch {
+            if (on && permissions?.notifications() == false) return@launch
+            update { it.copy(awayReminder = on) }
+        }
+    }
+
+    fun setAwayMinutes(prayer: com.prayertimesasia.core.Prayer, minutes: Int) =
+        update { it.copy(awayMinutes = it.awayMinutes + (prayer.raw to minutes)) }
+
     /** The Subuh alarm: asks for notification permission first (the alarm rings as one). */
     fun setWakeUp(timing: com.prayertimesasia.core.WakeUpTiming) {
         scope.launch {

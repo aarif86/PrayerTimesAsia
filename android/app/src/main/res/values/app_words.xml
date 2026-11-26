@@ -1229,4 +1229,28 @@
     <string name="alerts_allFiveOn" formatted="false">All 5 prayers on</string>
     <string name="today_allFiveOn" formatted="false">Alerts on for all 5 prayers</string>
     <string name="today_allFiveChange" formatted="false">Change</string>
+    <string name="early_title" formatted="false">Early reminders</string>
+    <string name="early_row" formatted="false">Remind me earlier</string>
+    <string name="early_rowAway" formatted="false">Away from home, {when} before</string>
+    <string name="early_rowOff" formatted="false">Off</string>
+    <string name="early_master" formatted="false">Remind me earlier</string>
+    <string name="early_masterSub" formatted="false">Turn all early reminders off here</string>
+    <string name="early_awayHead" formatted="false">When I am away from home</string>
+    <string name="early_awaySwitch" formatted="false">Remind me when I am out</string>
+    <string name="early_awaySwitchSub" formatted="false">So you have time to find a place to pray</string>
+    <string name="early_home" formatted="false">Home</string>
+    <string name="early_howEarly" formatted="false">How early, for each prayer</string>
+    <string name="early_howEarlyFoot" formatted="false">Fajr starts Off because most people are asleep. Use a Fajr alarm instead.</string>
+    <string name="early_fajrAlarm" formatted="false">You have a Fajr alarm, so there is no early Fajr reminder.</string>
+    <string name="early_atHomeHead" formatted="false">When I am at home</string>
+    <string name="early_atHomeSub" formatted="false">Off unless you choose</string>
+    <string name="early_privacy" formatted="false">Your home and where you are stay on your phone. We never send them anywhere.</string>
+    <string name="early_noHome" formatted="false">Set your home place so we know when you are away.</string>
+    <string name="early_setHome" formatted="false">Set home</string>
+    <string name="early_openAway" formatted="false">You are away from home now.</string>
+    <string name="early_openHome" formatted="false">You are at home now.</string>
+    <string name="early_hour" formatted="false">1 hour</string>
+    <string name="early_min" formatted="false">{n} min</string>
+    <string name="notify_nameInHour" formatted="false">{name} in 1 hour</string>
+    <string name="notify_nameAtAway" formatted="false">{name} begins at {time}. A good time to find a place to pray.</string>
 </resources>

@@ -1002,7 +1002,9 @@ final class AppModel {
     func scheduleNotifications() {
         guard let place = activePlace else { return }
         var alerts: [NotificationScheduler.Alert] = []
-        let early = prefs.reminderMinutesBefore
+        let atHome = prefs.reminderMinutesBefore
+        let away = AwayReminder.isAway(home: prefs.home, homeConfirmed: prefs.homeConfirmed, here: place)
+        let anyEarly = atHome > 0 || (away && prefs.awayReminder && prefs.awayMinutes.values.contains { $0 > 0 })
         let onTime = prefs.notificationsEnabled
         let nudges = prefs.trackerEnabled && prefs.windowNudge && !trackerPaused
         let jumuah = prefs.jumuahReminderMinutes
@@ -1011,7 +1013,7 @@ final class AppModel {
         let lineLang = RamadanContent.lang(naming)
         var ramadan: [NotificationScheduler.Alert] = []
         // iOS keeps at most 64 pending, so fewer days when there are more alerts a day.
-        let perDay = (onTime ? 6 : 0) + (early > 0 ? 6 : 0) + (nudges ? 4 : 0) + (jumuah > 0 ? 1 : 0)
+        let perDay = (onTime ? 6 : 0) + (anyEarly ? 6 : 0) + (nudges ? 4 : 0) + (jumuah > 0 ? 1 : 0)
         let days = max(2, min(12, 60 / max(perDay, 1)))
         for offset in -1..<days {
             guard let pd = day(containing: noon(.now, plus: offset)) else { continue }
@@ -1047,13 +1049,16 @@ final class AppModel {
                 let name = prayer.name(naming, isFriday: isFriday(time))
                 let id = "\(pd.year)-\(pd.month)-\(pd.day)-\(prayer.rawValue)"
                 let silent = isSilent(time, prayer: prayer)
+                // One early reminder per prayer: the away choice when away from home, else the at-home choice.
+                let early = AwayReminder.minutes(prayer, away: away, awayOn: prefs.awayReminder, awayMinutes: prefs.awayMinutes, atHome: atHome, hasAlarm: prefs.hasAlarm(prayer))
                 if early > 0 {
                     // The heads-up before the prayer, on its own switch: for when a
                     // meeting or work would otherwise run past the time.
-                    let title = prayer == .sunrise ? "\(Prayer.fajr.name(naming)) ends in \(early) min" : "\(name) in \(early) min"
+                    let title = prayer == .sunrise ? "\(Prayer.fajr.name(naming)) ends in \(early) min" : (early == 60 ? "\(name) in 1 hour" : "\(name) in \(early) min")
                     let at = time.addingTimeInterval(Double(-early) * 60)
+                    let awayWords = away && prefs.awayReminder && prayer != .sunrise
                     alerts.append(.init(id: id + "-early", title: title,
-                                        body: "\(name) at \(formatted(time))",
+                                        body: awayWords ? "\(name) begins at \(formatted(time)). A good time to find a place to pray." : "\(name) at \(formatted(time))",
                                         fireDate: at, silent: isSilent(at, prayer: prayer)))
                 }
                 guard onTime else { continue }
@@ -1084,7 +1089,7 @@ final class AppModel {
         let wakeUps = plan.filter { $0.prayer == nil || $0.date < soon }.map { ($0.date, $0.title) }
         let sound = prefs.alarmSound
         let notificationAlerts = ramadan + alerts
-        let notificationsOn = onTime || early > 0 || nudges || (jumuah > 0 && !prefs.jumuahLeaveAlarm) || !ramadan.isEmpty
+        let notificationsOn = onTime || anyEarly || nudges || (jumuah > 0 && !prefs.jumuahLeaveAlarm) || !ramadan.isEmpty
         // Demo screenshots never ask for alarm permission.
         let isDemo = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-demo") }
         Task {

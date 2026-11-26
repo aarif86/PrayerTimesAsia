@@ -7,6 +7,7 @@ import type { Place } from '../core/place'
 import type { FastMark } from '../core/ramadanContent'
 import { SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { NAMING_STYLES, OBLIGATORY, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
+import { cleanAwayMinutes, DEFAULT_AWAY_MINUTES } from '../core/away'
 import {
   ALARM_SOUNDS, DEFAULT_SAHUR_DAYS, PRAYER_ALARM_TIMINGS, SAHUR_DAYS, SAHUR_TIMINGS, WAKE_UP_TIMINGS,
   type AlarmSound, type PrayerAlarmTiming, type SahurDay, type SahurTiming, type WakeUpTiming,
@@ -57,6 +58,9 @@ export interface Preferences {
   notifyPrayers: Prayer[]
   /** Minutes before each chosen prayer for "Reminder before prayer"; 0 = off. Separate from the alert at the time itself. */
   reminderMinutesBefore: number
+  /** Early reminder when the phone is away from the confirmed home (core/away.ts). On by default, 1 hour, Fajr off. */
+  awayReminder: boolean
+  awayMinutes: Record<string, number>
   /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings - see services/azan.ts. */
   azanSound: boolean
   musafirThresholdKm: number
@@ -183,6 +187,8 @@ export const DEFAULT_PREFS: Preferences = {
   notificationsEnabled: true,
   notifyPrayers: [...OBLIGATORY],
   reminderMinutesBefore: 0,
+  awayReminder: true,
+  awayMinutes: { ...DEFAULT_AWAY_MINUTES },
   azanSound: true,
   musafirThresholdKm: 81,
   jakimZoneOverride: null,
@@ -322,6 +328,7 @@ export function decodePreferences(raw: unknown): Preferences {
   if (out.ishaAlarm === 'endMinus30') out.ishaAlarm = null
   // One Off, Notify or Alarm per prayer in Alerts and alarms (core/alertMode.ts).
   unifyAlerts(out)
+  out.awayMinutes = cleanAwayMinutes(out.awayMinutes)
   // Dhuha and night time alerts: keep only the three known times with Notify or Alarm.
   const extra: ExtraAlerts = {}
   for (const b of ['dhuha', 'midnight', 'lastThird'] as const) { const m = out.extraAlerts?.[b]; if (m === 'notify' || m === 'alarm') extra[b] = m }
