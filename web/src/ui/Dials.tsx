@@ -141,6 +141,36 @@ export function DayDial(props: {
   )
 }
 
+/** Calm Gold's dial: one thin ring, the hours since midnight drawn in gold, a white dot at now. */
+export function GoldDial(props: { size: number; now: number; day: PrayerDay; tz: string; kicker: string; countdown: string; label: string; ariaLabel: string; urgent?: boolean }) {
+  const { size, now, day, tz } = props
+  const midnight = useMemo(() => startOfDay(day.times.dhuhr, tz), [day, tz])
+  const k = size / 214
+  const c = size / 2
+  const r = 98 * k
+  const w = 3 * k
+  // Clockwise from midnight at the bottom; a full day never closes the ring.
+  const a1 = 180 + Math.min(359.5, Math.max(0.5, ((now - midnight) / 86_400_000) * 360))
+  const [dx, dy] = pt(c, c, a1, r)
+  const glyph = 16 * k
+  return (
+    <div class="daydial golddial" style={{ width: `${size}px`, height: `${size}px` }} role="img" aria-label={props.ariaLabel}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+        <circle cx={c} cy={c} r={r} fill="none" stroke="var(--gold-track)" stroke-width={w} />
+        <path d={arcPath(c, c, r, 180, a1)} fill="none" stroke="var(--accent)" stroke-width={w} stroke-linecap="round" />
+        <circle cx={dx} cy={dy} r={7 * k} fill="#fff" stroke="var(--accent)" stroke-width={w} />
+      </svg>
+      <span class="dial-sun" style={{ top: `${20 * k}px`, width: `${glyph}px`, height: `${glyph}px` }}><Sun size={glyph} strokeWidth={1.75} /></span>
+      <span class="dial-moon" style={{ top: `${size - 20 * k}px`, width: `${glyph}px`, height: `${glyph}px` }}><Moon size={glyph} strokeWidth={1.75} /></span>
+      <div class="daydial-centre">
+        <div class="dial-kicker" style={{ fontSize: `${14 * k}px` }}>{props.kicker}</div>
+        <div class={`display mono dial-count ${props.urgent ? 'accent' : ''}`} style={{ fontSize: `${40 * k}px` }}>{props.countdown}</div>
+        {props.label && <div class="dial-label-line" style={{ fontSize: `${14 * k}px` }}>{props.label}</div>}
+      </div>
+    </div>
+  )
+}
+
 export interface DialMark { id: string; date: number; minor?: boolean; extraLine?: boolean; tint?: string }
 
 const labelSize = (m: DialMark, size: number) =>
@@ -233,13 +263,15 @@ export function HeroDial(props: {
  * The day as one smooth arc, local midnight to midnight: highest at solar noon,
  * crossing the horizon at sunrise and Maghrib, every prayer marked (SunPath.swift).
  */
-export function SunPath({ width, height, now, day, tz }: { width: number; height: number; now: number; day: PrayerDay; tz: string }) {
+export function SunPath({ width, height, now, day, tz, v12 }: { width: number; height: number; now: number; day: PrayerDay; tz: string
+  /** The phone's Sun Path look (v12 mockup): hollow prayer rings, a thicker day arc, a bigger warm sun. */
+  v12?: boolean }) {
   const start = startOfDay(day.times.dhuhr, tz)
   const fraction = (ms: number) => Math.min(1, Math.max(0, (ms - start) / 86_400_000))
   const noon = fraction(day.times.dhuhr)
   const halfDay = (fraction(day.times.maghrib) - fraction(day.times.sunrise)) / 2
   const horizonValue = Math.cos(2 * Math.PI * halfDay)
-  const top = 10, bottom = height - 6
+  const top = v12 ? 22 : 10, bottom = height - (v12 ? 14 : 6)
   const y = (v: number) => bottom - ((v + 1) / 2) * (bottom - top)
   const horizon = y(horizonValue)
   const point = (f: number): [number, number] => [f * width, y(Math.cos(2 * Math.PI * (f - noon)))]
@@ -254,17 +286,19 @@ export function SunPath({ width, height, now, day, tz }: { width: number; height
         <clipPath id={id}><rect x="0" y="-20" width={width} height={Math.max(0, horizon + 20)} /></clipPath>
         <filter id={`${id}-blur`} x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="6" /></filter>
       </defs>
-      <line x1="0" y1={horizon} x2={width} y2={horizon} stroke="var(--fg)" stroke-opacity="0.14" />
-      <path d={d} fill="none" stroke="var(--fg)" stroke-opacity="0.22" stroke-width="2" stroke-linecap="round" />
-      <path d={d} fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" clip-path={`url(#${id})`} />
+      <line x1="0" y1={horizon} x2={width} y2={horizon} stroke={v12 ? 'var(--fg3)' : 'var(--fg)'} stroke-opacity={v12 ? 0.5 : 0.14} />
+      <path d={d} fill="none" stroke={v12 ? 'var(--fg3)' : 'var(--fg)'} stroke-opacity={v12 ? 0.7 : 0.22} stroke-width={v12 ? 2.5 : 2} stroke-linecap="round" />
+      <path d={d} fill="none" stroke="var(--accent)" stroke-width={v12 ? 3.5 : 2.5} stroke-linecap="round" clip-path={`url(#${id})`} />
       {PRAYERS.map((p) => {
         const [x, yy] = point(fraction(day.times[p]))
         const passed = day.times[p] <= now
-        return <circle cx={x} cy={yy} r="3.8" fill={passed ? 'var(--fg)' : 'none'} fill-opacity="0.9" stroke="var(--fg)" stroke-opacity="0.85" stroke-width="1.5" />
+        return v12
+          ? <circle cx={x} cy={yy} r="5.5" fill="none" stroke="var(--fg)" stroke-width="2" />
+          : <circle cx={x} cy={yy} r="3.8" fill={passed ? 'var(--fg)' : 'none'} fill-opacity="0.9" stroke="var(--fg)" stroke-opacity="0.85" stroke-width="1.5" />
       })}
-      <circle cx={sx} cy={sy} r="17" fill="var(--accent)" fill-opacity="0.45" filter={`url(#${id}-blur)`} />
+      <circle cx={sx} cy={sy} r={v12 ? 22 : 17} fill={v12 ? '#F7BD8F' : 'var(--accent)'} fill-opacity={v12 ? 0.6 : 0.45} filter={`url(#${id}-blur)`} />
       {isDay
-        ? <circle cx={sx} cy={sy} r="7" fill="var(--accent)" />
+        ? <circle cx={sx} cy={sy} r={v12 ? 9 : 7} fill={v12 ? '#FFD98A' : 'var(--accent)'} />
         : <g transform={`translate(${sx - 7} ${sy - 7})`}><MoonGlyph size={14} color="var(--accent)" /></g>}
     </svg>
   )
