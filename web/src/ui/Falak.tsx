@@ -94,10 +94,12 @@ function skyColours(alt: number, stage: Falak.SkyStage, k: number): [string, str
 
 function SkySlider({ place, now }: { place: Place; now: number }) {
   const day = store.day(now)
-  const t0 = day ? day.times.fajr - 45 * 60_000 : now - 12 * 3_600_000
-  const t1 = day ? day.times.isha + 45 * 60_000 : now + 12 * 3_600_000
+  // The slider always starts at the current time and follows it until you drag it.
+  // It lives only while the Sky tab is open, so coming back later starts at now again.
+  const range = day ? Falak.skyRange(day.times.fajr, day.times.isha, now) : { from: now - 12 * 3_600_000, to: now + 12 * 3_600_000 }
+  const t0 = range.from, t1 = range.to
   const [picked, setPicked] = useState<number | null>(null)
-  const t = picked ?? Math.min(t1, Math.max(t0, now))
+  const t = picked ?? now
   if (!day) return null
   const times = day.times
   const stage = Falak.skyStage(t, times)
@@ -167,6 +169,7 @@ function SkySlider({ place, now }: { place: Place; now: number }) {
         <p class="secondary">{say}</p>
         <input type="range" min="0" max={minutes} step="1" value={Math.round((t - t0) / 60_000)} aria-label={tr('falak.slideSun')}
           onInput={(e) => setPicked(t0 + Number((e.target as HTMLInputElement).value) * 60_000)} />
+        {picked !== null && <button type="button" class="sky-now" onClick={() => setPicked(null)}>{tr('common.now')}</button>}
       </div>
     </div>
   )

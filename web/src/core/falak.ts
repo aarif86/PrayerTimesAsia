@@ -232,6 +232,14 @@ export function cameraReading(depression: number, clock: number, c: Coordinates,
   return { steps, target, asrBegun: clock < d.noon ? null : steps >= target }
 }
 
+/**
+ * The span the sky slider covers: from 45 minutes before Fajr to 45 minutes after Isha,
+ * stretched if needed so that "now" is always on the slider (for example at 1:20 AM).
+ */
+export function skyRange(fajr: number, isha: number, now: number): { from: number; to: number } {
+  return { from: Math.min(fajr - 45 * 60_000, now), to: Math.max(isha + 45 * 60_000, now) }
+}
+
 export type SkyStage = 'night' | 'fajr' | 'sunrise' | 'morning' | 'dhuhr' | 'asr' | 'maghrib' | 'isha'
 
 /** What the sky shows at `t`, judged against the day's timetable. */

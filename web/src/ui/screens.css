@@ -734,6 +734,7 @@ html[data-large-text] .today.style-simple { zoom: 0.9167; }
 .sky-time { font-size: 13px; font-weight: 600; letter-spacing: 0.3px; color: var(--fg2); text-transform: uppercase; font-variant-numeric: tabular-nums; }
 .sky-name { font-size: 28px; font-weight: 700; margin-top: 2px; }
 .sky-info p { margin: 4px 0 14px; font-size: 15px; min-height: 40px; }
+.sky-now { display: block; margin: 12px auto 0; padding: 7px 22px; border: 0; border-radius: 999px; background: var(--fill2); color: inherit; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 .sky-info input[type=range] { width: 100%; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: var(--fill2); outline-offset: 6px; }
 .sky-info input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); border: 0; }
 .sky-info input[type=range]::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); border: 0; }
