@@ -1,3 +1,4 @@
+import { AWAY_CHOICES } from './away'
 import { OBLIGATORY, type Prayer } from './prayer'
 import type { PrayerAlarmTiming, WakeUpTiming } from './wakeup'
 
@@ -25,6 +26,8 @@ export interface AlertPrefs {
   ishaAlarm: PrayerAlarmTiming | null
   jumuahReminderMinutes: number
   jumuahLeaveAlarm: boolean
+  azanSound?: boolean
+  awayMinutes?: Record<string, number>
 }
 
 /** Syuruk is only a note that Subuh has ended: no alarm for it. */
@@ -99,6 +102,39 @@ export function notifyAllFive(p: AlertPrefs): void {
   // Alerts were never turned on: an old saved list is only a leftover, so start clean (same as setNotify).
   if (!p.notificationsEnabled) { p.notificationsEnabled = true; p.notifyPrayers = [] }
   for (const x of OBLIGATORY) if (!p.notifyPrayers.includes(x)) p.notifyPrayers = [...p.notifyPrayers, x]
+}
+
+/** What "Set for all prayers" can do: Off, Notification, Short azan (a notification that plays it) or Alarm. */
+export type AllLevel = 'off' | 'notify' | 'azan' | 'alarm'
+export const ALL_LEVELS: readonly AllLevel[] = ['off', 'notify', 'azan', 'alarm']
+
+/**
+ * "Set for all prayers": one choice for the five main prayers at once.
+ * Sunrise and Jumu'ah are not touched. Short azan is a notification, and the
+ * azan sound is one setting for the whole app, so Notification turns it off and
+ * Short azan turns it on. Fajr (Subuh) is left alone when includeFajr is false,
+ * so a Fajr alarm someone set up carefully is never replaced by accident.
+ * early: minutes for the single early reminder, or null to leave it as it is.
+ */
+export function applyToAllFive(p: AlertPrefs, level: AllLevel, early: number | null, includeFajr = true): void {
+  for (const x of OBLIGATORY) {
+    if (x === 'fajr' && !includeFajr) continue
+    setAlertMode(p, x, level === 'azan' ? 'notify' : level)
+  }
+  if (level === 'notify') p.azanSound = false
+  if (level === 'azan') p.azanSound = true
+  if (early !== null) {
+    p.reminderMinutesBefore = early
+    // Away from home the app uses its own minutes for each prayer, so they follow the same choice.
+    // A Fajr that has an alarm keeps its own (Off), so the two never ring together.
+    const away = early === 0 ? 0 : AWAY_CHOICES.reduce((best, c) => (Math.abs(c - early) < Math.abs(best - early) ? c : best), AWAY_CHOICES[0] as number)
+    const next = { ...(p.awayMinutes ?? {}) }
+    for (const x of OBLIGATORY) {
+      if (x === 'fajr' && (!includeFajr || hasAlarm(p, 'fajr'))) continue
+      next[x] = away
+    }
+    p.awayMinutes = next
+  }
 }
 
 /** The bell on the Prayer screen: Off, then Notify, then Alarm, then Off again. */

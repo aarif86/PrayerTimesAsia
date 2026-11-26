@@ -1253,4 +1253,25 @@
     <string name="early_min" formatted="false">{n} minit</string>
     <string name="notify_nameInHour" formatted="false">{name} dalam 1 jam</string>
     <string name="notify_nameAtAway" formatted="false">{name} bermula pada {time}. Waktu yang sesuai untuk mencari tempat solat.</string>
+    <string name="all_row" formatted="false">Tetapkan untuk semua solat</string>
+    <string name="all_rowSub" formatted="false">Pilih sekali dan kelima-lima solat mengikutinya.</string>
+    <string name="all_step1" formatted="false">Apakah yang perlu berlaku pada waktu solat?</string>
+    <string name="all_offDesc" formatted="false">Tiada apa-apa untuk solat ini.</string>
+    <string name="all_notifyName" formatted="false">Makluman</string>
+    <string name="all_notifyDesc" formatted="false">Mesej pada skrin anda dengan bunyi makluman biasa.</string>
+    <string name="all_azanName" formatted="false">Azan pendek</string>
+    <string name="all_azanDesc" formatted="false">Mesej yang memainkan azan pendek, kira-kira 9 saat.</string>
+    <string name="all_alarmDesc" formatted="false">Berbunyi seperti jam sehingga anda menghentikannya. Berfungsi walaupun telefon senyap.</string>
+    <string name="all_step2" formatted="false">Peringatan sebelum setiap solat</string>
+    <string name="all_keep" formatted="false">Biarkan seperti sedia ada</string>
+    <string name="all_fajrToo" formatted="false">Ubah {name} juga</string>
+    <string name="all_fajrTooSub" formatted="false">Ia mempunyai tetapan penggera sendiri, jadi ia kekal seperti sedia ada melainkan anda menandakannya.</string>
+    <string name="all_apply" formatted="false">Laksanakan untuk kelima-lima</string>
+    <string name="all_applied" formatted="false">Selesai. Kelima-lima solat telah ditetapkan.</string>
+    <string name="all_azanFoot" formatted="false">Bunyi azan ialah satu tetapan untuk seluruh aplikasi, jadi ia berubah untuk setiap solat.</string>
+    <string name="all_iphoneNote" formatted="false">Pada iPhone, makluman hanya boleh memainkan bunyi pendek, sehingga 30 saat, jadi azan penuh tidak dapat dimainkan di sana. Untuk laungan yang panjang, gunakan Penggera.</string>
+    <string name="test_title" formatted="false">Semak bahawa ia berfungsi</string>
+    <string name="test_sub" formatted="false">Kami menghantar makluman contoh dalam beberapa saat, sama seperti makluman sebenar anda.</string>
+    <string name="test_sent" formatted="false">Makluman ujian akan tiba dalam beberapa saat. Kekal pada skrin ini untuk melihat dan mendengarnya.</string>
+    <string name="test_blocked" formatted="false">Makluman belum dibenarkan pada peranti ini.</string>
 </resources>

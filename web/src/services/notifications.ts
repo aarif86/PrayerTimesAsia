@@ -347,11 +347,21 @@ export async function show(title: string, body: string, tag: string, silent = fa
   try { new Notification(title, options) } catch { /* not allowed here */ }
 }
 
-export function testAlert(): void {
+/** The test alert arrives a few seconds after the tap, so the person can lock the screen first. */
+export const TEST_ALERT_DELAY_MS = 3000
+
+/** Sends a sample alert in a few seconds, the way a real one arrives. Says 'blocked' when the browser will not show alerts. */
+export async function testAlert(): Promise<'sent' | 'blocked'> {
+  if (alertSupport() !== 'supported' || !(await requestPermission())) return 'blocked'
   const now = store.now()
   const cur = store.current(now)
   const name = cur ? store.name(cur.prayer, cur.time) : 'Prayer'
-  void show(tr('notify.testTitle', { name }), tr('notify.testBody'), 'test')
+  setTimeout(() => {
+    const quiet = store.prefs.buzzOnly
+    void show(tr('notify.testTitle', { name }), tr('notify.testBody'), 'test', quiet)
+    if (store.prefs.azanSound && !quiet) playAzan(false)
+  }, TEST_ALERT_DELAY_MS)
+  return 'sent'
 }
 
 /** Local times "HH:mm" for a calendar description. */

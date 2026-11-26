@@ -1253,4 +1253,25 @@
     <string name="early_min" formatted="false">{n} menit</string>
     <string name="notify_nameInHour" formatted="false">{name} dalam 1 jam</string>
     <string name="notify_nameAtAway" formatted="false">{name} dimulai pukul {time}. Waktu yang baik untuk mencari tempat salat.</string>
+    <string name="all_row" formatted="false">Atur untuk semua salat</string>
+    <string name="all_rowSub" formatted="false">Pilih sekali dan kelima salat mengikutinya.</string>
+    <string name="all_step1" formatted="false">Apa yang terjadi saat waktu salat tiba?</string>
+    <string name="all_offDesc" formatted="false">Tidak ada apa-apa untuk salat ini.</string>
+    <string name="all_notifyName" formatted="false">Pemberitahuan</string>
+    <string name="all_notifyDesc" formatted="false">Pesan di layar Anda dengan bunyi pemberitahuan biasa.</string>
+    <string name="all_azanName" formatted="false">Azan singkat</string>
+    <string name="all_azanDesc" formatted="false">Pesan yang memutar azan singkat, sekitar 9 detik.</string>
+    <string name="all_alarmDesc" formatted="false">Berbunyi seperti jam sampai Anda menghentikannya. Tetap berbunyi saat senyap.</string>
+    <string name="all_step2" formatted="false">Pengingat sebelum setiap salat</string>
+    <string name="all_keep" formatted="false">Biarkan seperti sekarang</string>
+    <string name="all_fajrToo" formatted="false">Ubah {name} juga</string>
+    <string name="all_fajrTooSub" formatted="false">Salat ini punya pengaturan alarm sendiri, jadi tidak berubah kecuali Anda mencentangnya.</string>
+    <string name="all_apply" formatted="false">Terapkan ke kelima salat</string>
+    <string name="all_applied" formatted="false">Selesai. Kelima salat sudah diatur.</string>
+    <string name="all_azanFoot" formatted="false">Bunyi azan adalah satu pengaturan untuk seluruh aplikasi, jadi berubah untuk setiap salat.</string>
+    <string name="all_iphoneNote" formatted="false">Di iPhone, pemberitahuan hanya dapat memutar bunyi pendek, hingga 30 detik, sehingga azan penuh tidak bisa diputar di sana. Untuk panggilan yang panjang, gunakan Alarm.</string>
+    <string name="test_title" formatted="false">Periksa apakah berfungsi</string>
+    <string name="test_sub" formatted="false">Kami mengirim pemberitahuan contoh dalam beberapa detik, seperti pemberitahuan asli Anda.</string>
+    <string name="test_sent" formatted="false">Pemberitahuan uji akan tiba dalam beberapa detik. Tetap di layar ini untuk melihat dan mendengarnya.</string>
+    <string name="test_blocked" formatted="false">Pemberitahuan belum diizinkan di perangkat ini.</string>
 </resources>
