@@ -272,6 +272,10 @@ struct Preferences: Codable, Equatable, Sendable {
     /// Prayer time alerts play the azan (a Subuh azan at Subuh) instead of the
     /// phone's alert sound, when the app has the recordings (see Azan.swift).
     var azanSound = true
+    /// Full azan instead of the short call (opening takbir only). Fajr always uses the short call.
+    var azanFull = false
+    /// Which azan voice plays (Azan.swift). Falls back to the first voice in the app.
+    var azanVoice = "asim"
 
     var musafirThresholdKm: Double = 81
     /// Pinned JAKIM zone; nil = nearest to where you are.
@@ -466,6 +470,8 @@ struct Preferences: Codable, Equatable, Sendable {
         awayReminder = v(.awayReminder, d.awayReminder)
         awayMinutes = AwayReminder.clean(v(.awayMinutes, d.awayMinutes))
         azanSound = v(.azanSound, d.azanSound)
+        azanFull = v(.azanFull, d.azanFull)
+        azanVoice = v(.azanVoice, d.azanVoice)
         musafirThresholdKm = v(.musafirThresholdKm, d.musafirThresholdKm)
         jakimZoneOverride = v(.jakimZoneOverride, d.jakimZoneOverride)
         lastCountryCode = v(.lastCountryCode, d.lastCountryCode)

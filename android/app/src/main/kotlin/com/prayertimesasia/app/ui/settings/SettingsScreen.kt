@@ -167,6 +167,7 @@ fun SettingsScreen(
                 "help" -> SettingsPage(tr(R.string.settings_help), settingsWord, { page = null }) { HelpPage(openGuide) }
                 "picks" -> SettingsPage(PICKS_NAME, settingsWord, { page = null }) { PicksPage(state) }
                 "about" -> SettingsPage(tr(R.string.settings_aboutCredits), settingsWord, { page = null }) { AboutPage(openCredits) }
+                "ownAzan" -> SettingsPage("Your own azan", settingsWord, { page = null }) { OwnAzanPage(state) }
                 else -> SettingsMain(state, listState, { page = it }, openReview, openNote)
             }
         }
@@ -225,6 +226,8 @@ private fun SettingsMain(state: AppState, listState: LazyListState, go: (String)
                     NavRow(tr(R.string.settings_location), "map-pin", bandIcon(1, 0), r.activePlace?.name ?: tr(R.string.settings_notSet)) { go("location") }
                     NavRow(tr(R.string.settings_prayerTimes), "clock", bandIcon(1, 1), r.method.shortName) { go("times") }
                     NavRow(tr(R.string.settings_alertsAlarms), "alarm-clock", bandIcon(1, 2), alerts) { state.openAlerts() }
+                    NavRow("Your own azan", "music", bandIcon(1, 3),
+                        if (com.prayertimesasia.app.alarms.OwnAzan.isSet(context)) tr(R.string.common_on) else tr(R.string.common_off)) { go("ownAzan") }
                 }
             }
             item {

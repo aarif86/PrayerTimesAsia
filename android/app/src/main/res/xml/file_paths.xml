@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <cache-path name="calendar" path="calendar/" />
+    <!-- "Your own azan" on Android 8 and 9, shared with the system sound player only. -->
+    <files-path name="own_azan" path="own-azan/" />
 </paths>

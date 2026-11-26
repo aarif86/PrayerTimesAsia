@@ -235,7 +235,7 @@ private struct TestAlertSection: View {
         let now = Date.now
         let name = model.current(at: now).map { $0.prayer.name(model.naming) } ?? "Prayer"
         let quiet = model.prefs.buzzOnly
-        let sound: Azan.Sound = model.prefs.azanSound && Azan.isAvailable ? .azan : .standard
+        let sound: Azan.Sound = model.prefs.azanSound && Azan.isAvailable ? .azan(voice: model.prefs.azanVoice, full: model.prefs.azanFull, fajr: false) : .standard
         return await NotificationScheduler.sendTest(title: "\(name) · test alert", body: "This is how prayer alerts will look on this device.", sound: sound, silent: quiet)
     }
 }
@@ -331,7 +331,7 @@ private struct AllFivePage: View {
         switch l {
         case .off: "Off"
         case .notify: "Notification"
-        case .azan: "Short azan"
+        case .azan: "Azan"
         case .alarm: "Alarm"
         }
     }
@@ -340,7 +340,7 @@ private struct AllFivePage: View {
         switch l {
         case .off: "Nothing for these prayers."
         case .notify: "A message on your screen with a normal alert sound."
-        case .azan: "A message that plays a short azan, about 9 seconds."
+        case .azan: "A message that plays the azan. Choose the short call or the full azan under Sound."
         case .alarm: "Rings like a clock until you stop it. Works on silent."
         }
     }
@@ -619,6 +619,143 @@ private struct ExtrasSection: View {
     }
 }
 
+/// Which voice and how long. Tapping a choice picks it and plays it; tapping again stops it.
+private struct AzanChoiceRows: View {
+    @Environment(AppModel.self) private var model
+    @State private var player: AVAudioPlayer?
+    @State private var playing: String?
+
+    private static let names = [
+        "asim": "Asim Javed", "makkah": "Makkah, a visitor's recording", "khalaf": "Ahmed Khalaf",
+        "sudais": "Makkah, Sheikh Sudais", "aqsa": "Al-Aqsa", "egypt": "Egyptian style", "madinah": "Madinah",
+    ]
+
+    @State private var ownSet = OwnAzan.isSet
+
+    private var ownRow: some View {
+        NavigationLink {
+            OwnAzanView()
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Your own azan")
+                    Text(ownSet ? "Your file plays for every prayer" : "Pick an audio file on this iPhone").font(.footnote).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Text(ownSet ? "On" : "Off").foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    var body: some View {
+        let voices = Azan.voices
+        let voice = Azan.voiceOrDefault(model.prefs.azanVoice) ?? "asim"
+        if ownSet {
+            Section { ownRow }
+                .onAppear { ownSet = OwnAzan.isSet }
+        } else {
+        Section {
+            if voices.count > 1 {
+                ForEach(voices, id: \.self) { v in
+                    HStack(spacing: 12) {
+                        Button {
+                            play(v, voice: v, full: false)
+                        } label: {
+                            Image(systemName: playing == v ? "stop.circle.fill" : "play.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(.tint)
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel("\(playing == v ? "Stop" : "Listen"), \(Self.names[v] ?? v)")
+                        Button {
+                            model.prefs.azanVoice = v
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(Self.names[v] ?? v).foregroundStyle(.primary)
+                                    if let note = note(v) { Text(note).font(.footnote).foregroundStyle(.secondary) }
+                                }
+                                Spacer()
+                                if v == voice { Image(systemName: "checkmark").foregroundStyle(.tint) }
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
+            }
+            ownRow
+            if Azan.has(voice, .full) {
+                HStack {
+                    Text("Length")
+                    Spacer()
+                    HStack(spacing: 2) {
+                        ForEach([false, true], id: \.self) { full in
+                            let on = model.prefs.azanFull == full
+                            Button {
+                                model.prefs.azanFull = full
+                                play(full ? "full" : "short", voice: voice, full: full)
+                            } label: {
+                                Text(full ? "Full azan" : "Short call")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(on ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
+                                    .frame(maxWidth: .infinity, minHeight: 32)
+                                    .background(on ? AnyShapeStyle(.tint) : AnyShapeStyle(.clear), in: RoundedRectangle(cornerRadius: 8))
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityAddTraits(on ? .isSelected : [])
+                        }
+                    }
+                    .padding(2)
+                    .background(Color.secondary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10))
+                    .frame(maxWidth: 210)
+                }
+            }
+        } header: {
+            Text("Voice")
+        } footer: {
+            VStack(alignment: .leading, spacing: 8) {
+                if Azan.has(voice, .full) {
+                    Text("Short is the opening Allahu akbar. Full is the whole azan, with a Fajr azan at \(Prayer.fajr.name(model.naming)) when the voice has one. iPhone plays up to 30 seconds of it.")
+                }
+                Text("Tap play to hear a voice. Free for everyone, with no ads. We only use recordings their owners let anyone share, so paid or non commercial recordings cannot be included. More voices will come as owners say yes.")
+                    .font(.caption)
+            }
+        }
+        .onAppear { ownSet = OwnAzan.isSet }
+        }
+    }
+
+    private func note(_ v: String) -> String? {
+        if !Azan.has(v, .full) { return "Short call only" }
+        if Azan.has(v, .fajr) { return "Has a Fajr azan" }
+        return nil
+    }
+
+    private func play(_ key: String, voice: String, full: Bool) {
+        if playing == key { stop(); return }
+        stop()
+        guard let url = Azan.url(voice, Azan.kind(for: voice, full: full, fajr: false)),
+              let p = try? AVAudioPlayer(contentsOf: url) else { return }
+        try? AVAudioSession.sharedInstance().setCategory(.playback)
+        player = p
+        p.play()
+        playing = key
+        let seconds = p.duration
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(seconds + 0.2))
+            if player === p { stop() }
+        }
+    }
+
+    private func stop() {
+        player?.stop()
+        player = nil
+        playing = nil
+    }
+}
+
 private struct SoundSection: View {
     @Environment(AppModel.self) private var model
     /// Every half hour of the day, in minutes past midnight.
@@ -658,6 +795,10 @@ private struct SoundSection: View {
             Text("Sound")
         } footer: {
             Text("Buzz only and Quiet hours are for shift workers sleeping in the day, a baby asleep in the room, or a calm night. Notifications only buzz then. Alarms keep their sound.")
+        }
+        // Voice and length. Their own azan (Settings, Your own azan) replaces these, so they hide then.
+        if Azan.isAvailable && model.prefs.azanSound && !Azan.voices.isEmpty {
+            AzanChoiceRows()
         }
     }
 }
