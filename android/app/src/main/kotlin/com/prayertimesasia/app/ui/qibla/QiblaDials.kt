@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -302,7 +301,7 @@ fun SunCurve(rel: Float, aligned: Boolean, hasHeading: Boolean, modifier: Modifi
     // Steep near the Ka'bah, and still moving all the way out to half a turn, so the sun never looks stuck.
     val off = min(180f, abs(rel)) / 180f
     val sx = smooth(kx - sign(rel) * 181f * (1 - (1 - off).pow(2)), "sun")
-    BoxWithConstraints(modifier.fillMaxWidth().aspectRatio(390f / 150f).semantics { contentDescription = label }) {
+    Box(modifier.fillMaxWidth().aspectRatio(390f / 150f).semantics { contentDescription = label }) {
         Canvas(Modifier.fillMaxSize()) {
             inUnits(390f) {
                 withTransform({ translate(0f, -70f) }) {

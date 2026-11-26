@@ -29,10 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.layout
+import com.prayertimesasia.app.ui.falak.wideBy
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading as markHeading
 import androidx.compose.ui.semantics.liveRegion
@@ -143,7 +144,7 @@ private fun QiblaContent(state: AppState, place: Place) {
     @Composable
     fun Say(size: Int, weight: FontWeight, color: Color = sayColor, modifier: Modifier = Modifier, align: TextAlign = TextAlign.Center, lineHeight: Float = 1.25f) =
         Text(instruction, style = lookText(size.sp, weight, lineHeight), color = color, textAlign = align,
-            modifier = modifier.semantics { contentDescription = spoken; liveRegion = LiveRegionMode.Polite })
+            modifier = modifier.clearAndSetSemantics { contentDescription = spoken; liveRegion = LiveRegionMode.Polite })
 
     @Composable
     fun Stats() = Row(Modifier.fillMaxWidth().padding(top = 12.dp).lookCard(look).padding(horizontal = 4.dp, vertical = 12.dp)) {
@@ -181,7 +182,7 @@ private fun QiblaContent(state: AppState, place: Place) {
             look.simple -> {
                 Title(38)
                 if (delta != null && !aligned) {
-                    Column(Modifier.semantics(mergeDescendants = true) { contentDescription = spoken; liveRegion = LiveRegionMode.Polite },
+                    Column(Modifier.clearAndSetSemantics { contentDescription = spoken; liveRegion = LiveRegionMode.Polite },
                         horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(tr(if (delta > 0) R.string.qibla_turnRightWord else R.string.qibla_turnLeftWord), style = lookText(26.sp, FontWeight.Bold, 1f), color = look.c.tx)
                         Text("${abs(delta).roundToInt()}°", style = lookText(60.sp, FontWeight.ExtraBold, 1f).copy(fontFeatureSettings = "tnum"), color = look.c.tx,
@@ -218,7 +219,7 @@ private fun QiblaContent(state: AppState, place: Place) {
                 LookButton(tr(R.string.qibla_checkSun), LookIcons.get("sun"), Modifier.padding(top = 12.dp), onClickLabel = sunLabel, onClick = toSun)
             }
         }
-        Steps(compass || state.demoAligned || fixedHeading != null, live, sunPath = look.sunPath,
+        Steps(compass || state.demoAligned || fixedHeading != null, live, sunPath = look.sunPath, bearing = bearing,
             modifier = Modifier.padding(top = 22.dp).padding(horizontal = if (look.bands) 24.dp else 0.dp))
     }
 }
@@ -226,24 +227,16 @@ private fun QiblaContent(state: AppState, place: Place) {
 /** The heading added up without wrapping (the web keeps this in a ref, not in state). */
 private class HeadingSum { var heading = 0.0; var last: Double? = null }
 
-/** Lets a full width picture run past the page's side margins, as the web's Sun Path curve does. */
-private fun Modifier.wideBy(gutter: androidx.compose.ui.unit.Dp): Modifier = this.layout { measurable, constraints ->
-    val extra = (gutter * 2).roundToPx()
-    val wide = constraints.copy(minWidth = constraints.maxWidth + extra, maxWidth = constraints.maxWidth + extra)
-    val p = measurable.measure(wide)
-    layout(constraints.maxWidth, p.height) { p.place(-extra / 2, 0) }
-}
-
 /** How to use it, step by step, plus a calibration note only when needed. */
 @Composable
-private fun Steps(hasCompass: Boolean, heading: Heading?, sunPath: Boolean, modifier: Modifier) {
+private fun Steps(hasCompass: Boolean, heading: Heading?, sunPath: Boolean, bearing: Double, modifier: Modifier) {
     val look = LocalLook.current
     Column(modifier.fillMaxWidth().lookCard(look).padding(16.dp)) {
         Text(tr(R.string.qibla_howTo), style = lookText(17.sp, FontWeight.SemiBold), color = look.c.tx,
             modifier = Modifier.padding(bottom = 12.dp).semantics { markHeading() })
         if (!hasCompass) {
             Step(icon = LookIcons.get("map"), tint = look.c.accentText,
-                text = "This phone has no compass. Use the qibla bearing above with a map, or the sun in Falak.")
+                text = tr(R.string.qibla_noCompass) + " " + tr(R.string.qibla_noCompassHelp, "deg" to bearing.roundToInt(), "point" to Geo.compassPoint(bearing)))
         } else {
             Step(1, text = tr(R.string.qibla_step1))
             Step(2, text = tr(if (sunPath) R.string.qibla_sunStep2 else R.string.qibla_step2))

@@ -296,13 +296,14 @@ private fun CardTitle(title: String, icon: ImageVector) {
 
 @Composable
 fun SunSafetyCard() {
+    val look = LocalLook.current
+    val shape = RoundedCornerShape(look.c.radius)
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(Dims.corner)).background(Palette.warning.copy(alpha = 0.22f)).padding(14.dp),
+        Modifier.fillMaxWidth().clip(shape).background(Palette.warning.copy(alpha = 0.22f), shape).padding(14.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Icon(Icons.Filled.Visibility, null, Modifier.size(26.dp), tint = Palette.warning)
-        Text(tr(R.string.falak_neverLook),
-            style = Txt.footnoteSemibold, color = Palette.primary)
+        Icon(LookIcons.get("warn"), null, Modifier.size(26.dp), tint = Palette.warning)
+        Text(tr(R.string.falak_neverLook), style = lookText(13.sp, FontWeight.SemiBold), color = look.c.tx)
     }
 }
 
