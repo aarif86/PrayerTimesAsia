@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { alertMode, allFiveNotify, notifyAllFive, fridayMode, nextAlertMode, notifies, setAlertMode, setFridayMode, setNotify, unifyAlerts, type AlertPrefs } from '../src/core/alertMode'
+import { alertMode, allFiveNotify, applyToAllFive, notifyAllFive, fridayMode, nextAlertMode, notifies, setAlertMode, setFridayMode, setNotify, unifyAlerts, type AlertPrefs } from '../src/core/alertMode'
 import { DEFAULT_PREFS, decodePreferences } from '../src/services/prefs'
 
 /** A person who has not turned alerts on (before the new-install default). */
@@ -131,5 +131,53 @@ describe('Alerts and alarms, one choice per prayer', () => {
     expect(alertMode(saved, 'dhuhr')).toBe('off')
     const untouched = decodePreferences({ notificationsEnabled: false, reminderMinutesBefore: 0 })
     expect(untouched.notificationsEnabled).toBe(false)
+  })
+})
+
+describe('Set for all prayers', () => {
+  const five = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
+
+  it('Notification turns all five on and the azan sound off', () => {
+    const p = fresh()
+    p.azanSound = true
+    applyToAllFive(p, 'notify', null)
+    for (const x of five) expect(alertMode(p, x)).toBe('notify')
+    expect(p.azanSound).toBe(false)
+    expect(alertMode(p, 'sunrise')).toBe('off')
+  })
+
+  it('Short azan is a notification with the azan sound on', () => {
+    const p = fresh()
+    applyToAllFive(p, 'azan', null)
+    for (const x of five) expect(alertMode(p, x)).toBe('notify')
+    expect(p.azanSound).toBe(true)
+  })
+
+  it('Alarm puts an alarm on all five and Off clears them', () => {
+    const p = fresh()
+    applyToAllFive(p, 'alarm', null)
+    for (const x of five) expect(alertMode(p, x)).toBe('alarm')
+    applyToAllFive(p, 'off', null)
+    for (const x of five) expect(alertMode(p, x)).toBe('off')
+    expect(p.wakeUp).toBeNull()
+  })
+
+  it('leaves Fajr and its alarm time alone when not included', () => {
+    const p = fresh()
+    p.wakeUp = 'fajrMinus30'
+    applyToAllFive(p, 'notify', null, false)
+    expect(p.wakeUp).toBe('fajrMinus30')
+    expect(alertMode(p, 'dhuhr')).toBe('notify')
+  })
+
+  it('sets the early reminder only when asked, and 0 turns it off', () => {
+    const p = fresh()
+    p.reminderMinutesBefore = 20
+    applyToAllFive(p, 'notify', null)
+    expect(p.reminderMinutesBefore).toBe(20)
+    applyToAllFive(p, 'notify', 30)
+    expect(p.reminderMinutesBefore).toBe(30)
+    applyToAllFive(p, 'notify', 0)
+    expect(p.reminderMinutesBefore).toBe(0)
   })
 })
