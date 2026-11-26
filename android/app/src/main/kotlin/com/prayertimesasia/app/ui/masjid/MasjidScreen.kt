@@ -399,7 +399,7 @@ fun MasjidScreen(state: AppState, openAbout: () -> Unit, preset: List<PrayerSpac
                     Row(Modifier.padding(top = 8.dp).clip(chipShape)
                         .background(if (openOnly) c.accent.copy(alpha = 0.28f) else c.sep)
                         .clickable(onClickLabel = tr(R.string.masjid_openOnly)) { openOnly = !openOnly }
-                        .semantics { selected = openOnly }
+                        .semantics { this.selected = openOnly }
                         .heightIn(min = 36.dp).padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Icon(LineIcons.of("clock"), null, Modifier.size(14.dp), tint = c.tx)
