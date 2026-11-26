@@ -142,6 +142,7 @@ private struct AlertsMainList: View {
         Form {
             CheckCardSection(path: $path)
             EachPrayerSection(path: $path, justSet: $justSet)
+            AwayReminderSection()
             NextAlarmSection()
             ExtrasSection()
             SoundSection()
@@ -925,5 +926,49 @@ enum AlarmPreview {
         player?.stop()
         player = nil
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+}
+
+/// Early reminders when away from home: one choice per prayer. Home and the check stay on the phone.
+private struct AwayReminderSection: View {
+    @Environment(AppModel.self) private var model
+
+    private func word(_ m: Int) -> String { m == 60 ? "1 hour" : "\(m) min" }
+
+    var body: some View {
+        Section {
+            Toggle(isOn: Binding(
+                get: { model.prefs.awayReminder },
+                set: { on in
+                    model.prefs.awayReminder = on
+                    if on { Task { await askForAlerts() } }
+                })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Remind me when I am out")
+                    Text("So you have time to find a place to pray").font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            if model.prefs.home == nil {
+                Text("Set your home place so we know when you are away.").font(.footnote).foregroundStyle(.secondary)
+            } else if !model.prefs.homeConfirmed {
+                HomeQuestionCard()
+            }
+            if model.prefs.awayReminder {
+                ForEach(AwayReminder.prayers) { prayer in
+                    Picker(prayer.name(model.naming), selection: Binding(
+                        get: { model.prefs.awayMinutes[prayer.rawValue] ?? 0 },
+                        set: { model.prefs.awayMinutes[prayer.rawValue] = $0 })) {
+                        Text("Off").tag(0)
+                        ForEach(AwayReminder.choices, id: \.self) { Text(word($0)).tag($0) }
+                    }
+                    .pickerStyle(.menu)
+                }
+            }
+        } header: {
+            Text("When I am away from home")
+        } footer: {
+            Text(model.prefs.awayReminder ? "Fajr starts Off because most people are asleep. Use a Fajr alarm instead. Your home and where you are stay on your phone. We never send them anywhere."
+                 : "Your home and where you are stay on your phone. We never send them anywhere.")
+        }
     }
 }

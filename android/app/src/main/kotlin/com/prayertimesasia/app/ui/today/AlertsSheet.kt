@@ -79,6 +79,7 @@ import com.prayertimesasia.app.ui.settings.SwitchRow
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Txt
 import com.prayertimesasia.core.AlertMode
+import com.prayertimesasia.core.AwayReminder
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerAlarmTiming
@@ -268,6 +269,24 @@ private fun EachPrayerSection(state: AppState, go: (String?) -> Unit, alarmSet: 
         PickerRow(tr(R.string.alerts_headsUp), if (p.reminderMinutesBefore > 0) tr(R.string.phone_alerts_minShort, "n" to p.reminderMinutesBefore) else offWord,
             listOf(offWord to 0) + minBefore, p.reminderMinutesBefore) { m ->
             if (m > 0) state.enableReminder(m) else state.update { it.copy(reminderMinutesBefore = 0) }
+        }
+    }
+    // Early reminders when away from home: one choice per prayer. Home and the check stay on the phone.
+    Section(tr(R.string.early_awayHead), tr(R.string.early_privacy)) {
+        SwitchRow(tr(R.string.early_awaySwitch), p.awayReminder, sub = tr(R.string.early_awaySwitchSub)) { state.setAwayReminder(it) }
+        if (p.home == null) {
+            Text(tr(R.string.early_noHome), style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+        } else if (!p.homeConfirmed) {
+            Box(Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) { com.prayertimesasia.app.ui.journey.HomeQuestionCard(state) }
+        }
+        if (p.awayReminder) {
+            AwayReminder.PRAYERS.forEach { prayer ->
+                val mins = p.awayMinutes[prayer.raw] ?: 0
+                val label = { m: Int -> if (m == 60) tr(R.string.early_hour) else tr(R.string.early_min, "n" to m) }
+                PickerRow(prayer.name(r.naming), if (mins > 0) label(mins) else offWord,
+                    listOf(offWord to 0) + AwayReminder.CHOICES.map { label(it) to it }, mins) { m -> state.setAwayMinutes(prayer, m) }
+            }
+            Text(tr(R.string.early_howEarlyFoot), style = Txt.footnote, color = Palette.secondary, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
         }
     }
 }
