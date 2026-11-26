@@ -653,9 +653,12 @@ function AllPage({ back }: { back: () => void }) {
   const fajrOwn = p.wakeUp != null
   const [fajrToo, setFajrToo] = useState(!fajrOwn)
   const [done, setDone] = useState(false)
-  const apply = () => {
-    store.update((x) => applyToAllFive(x, level, early === 'keep' ? null : parseInt(early, 10), fajrToo))
-    if (level === 'off') stopAlarm(); else void ask()
+  const apply = async () => {
+    // The early reminder choice is only shown for Notification and Short azan, so it only counts there.
+    const mins = (level === 'notify' || level === 'azan') && early !== 'keep' ? parseInt(early, 10) : null
+    store.update((x) => applyToAllFive(x, level, mins, fajrToo))
+    if (level === 'off') { stopAlarm(); setDone(true); return }
+    if (alertSupport() === 'supported' && !(await requestPermission())) { openSheet({ kind: 'alerts-help' }); return }
     setDone(true)
   }
   return (
@@ -672,7 +675,7 @@ function AllPage({ back }: { back: () => void }) {
           ))}
         </div>
         <p class="group-foot">{tr('all.iphoneNote')}</p>
-        {level === 'azan' && <p class="group-foot">{tr('all.azanFoot')}</p>}
+        {(level === 'azan' || level === 'notify') && <p class="group-foot">{tr('all.azanFoot')}</p>}
       </section>
       {level !== 'off' && level !== 'alarm' && (
         <section>
@@ -698,7 +701,7 @@ function AllPage({ back }: { back: () => void }) {
       )}
       <section>
         <div class="group">
-          <button class="item all-five-btn" onClick={apply}>
+          <button class="item all-five-btn" onClick={() => void apply()}>
             {done ? <CircleCheck size={20} /> : <BellRing size={20} />}
             <span class="label">{done ? tr('all.applied') : tr('all.apply')}</span>
           </button>

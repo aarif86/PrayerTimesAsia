@@ -181,3 +181,25 @@ describe('Set for all prayers', () => {
     expect(p.reminderMinutesBefore).toBe(0)
   })
 })
+
+describe('Set for all prayers, away from home', () => {
+  it('the early reminder also sets the away minutes, nearest allowed choice, 0 for Off', () => {
+    const p = fresh()
+    p.awayMinutes = { fajr: 0, dhuhr: 60, asr: 60, maghrib: 60, isha: 60 }
+    applyToAllFive(p, 'notify', 30)
+    expect(p.awayMinutes).toMatchObject({ fajr: 30, dhuhr: 30, isha: 30 })
+    applyToAllFive(p, 'notify', 20)
+    expect(p.awayMinutes?.asr).toBe(15)
+    applyToAllFive(p, 'notify', 0)
+    expect(p.awayMinutes?.maghrib).toBe(0)
+  })
+
+  it('a Fajr with an alarm keeps its own away minutes', () => {
+    const p = fresh()
+    p.awayMinutes = { fajr: 0, dhuhr: 60, asr: 60, maghrib: 60, isha: 60 }
+    p.wakeUp = 'atFajr'
+    applyToAllFive(p, 'alarm', 30, true)
+    expect(p.awayMinutes?.fajr).toBe(0)
+    expect(p.awayMinutes?.dhuhr).toBe(30)
+  })
+})

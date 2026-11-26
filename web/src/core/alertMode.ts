@@ -1,3 +1,4 @@
+import { AWAY_CHOICES } from './away'
 import { OBLIGATORY, type Prayer } from './prayer'
 import type { PrayerAlarmTiming, WakeUpTiming } from './wakeup'
 
@@ -26,6 +27,7 @@ export interface AlertPrefs {
   jumuahReminderMinutes: number
   jumuahLeaveAlarm: boolean
   azanSound?: boolean
+  awayMinutes?: Record<string, number>
 }
 
 /** Syuruk is only a note that Subuh has ended: no alarm for it. */
@@ -121,7 +123,18 @@ export function applyToAllFive(p: AlertPrefs, level: AllLevel, early: number | n
   }
   if (level === 'notify') p.azanSound = false
   if (level === 'azan') p.azanSound = true
-  if (early !== null) p.reminderMinutesBefore = early
+  if (early !== null) {
+    p.reminderMinutesBefore = early
+    // Away from home the app uses its own minutes for each prayer, so they follow the same choice.
+    // A Fajr that has an alarm keeps its own (Off), so the two never ring together.
+    const away = early === 0 ? 0 : AWAY_CHOICES.reduce((best, c) => (Math.abs(c - early) < Math.abs(best - early) ? c : best), AWAY_CHOICES[0] as number)
+    const next = { ...(p.awayMinutes ?? {}) }
+    for (const x of OBLIGATORY) {
+      if (x === 'fajr' && (!includeFajr || hasAlarm(p, 'fajr'))) continue
+      next[x] = away
+    }
+    p.awayMinutes = next
+  }
 }
 
 /** The bell on the Prayer screen: Off, then Notify, then Alarm, then Off again. */

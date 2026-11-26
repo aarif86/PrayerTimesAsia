@@ -1272,6 +1272,6 @@
     <string name="all_iphoneNote" formatted="false">Pada iPhone, makluman hanya boleh memainkan bunyi pendek, sehingga 30 saat, jadi azan penuh tidak dapat dimainkan di sana. Untuk laungan yang panjang, gunakan Penggera.</string>
     <string name="test_title" formatted="false">Semak bahawa ia berfungsi</string>
     <string name="test_sub" formatted="false">Kami menghantar makluman contoh dalam beberapa saat, sama seperti makluman sebenar anda.</string>
-    <string name="test_sent" formatted="false">Makluman ujian akan tiba dalam beberapa saat. Kunci skrin untuk melihat rupanya.</string>
+    <string name="test_sent" formatted="false">Makluman ujian akan tiba dalam beberapa saat. Kekal pada skrin ini untuk melihat dan mendengarnya.</string>
     <string name="test_blocked" formatted="false">Makluman belum dibenarkan pada peranti ini.</string>
 </resources>

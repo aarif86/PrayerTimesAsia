@@ -1272,6 +1272,6 @@
     <string name="all_iphoneNote" formatted="false">On iPhone, a notification can only play a short sound, up to 30 seconds, so a full azan is not possible there. For a long call, use Alarm.</string>
     <string name="test_title" formatted="false">Check that it works</string>
     <string name="test_sub" formatted="false">We send a sample alert in a few seconds, the same way your real ones arrive.</string>
-    <string name="test_sent" formatted="false">Test alert coming in a few seconds. Lock your screen to see how it looks.</string>
+    <string name="test_sent" formatted="false">Test alert coming in a few seconds. Stay on this screen to see and hear it.</string>
     <string name="test_blocked" formatted="false">Alerts are not allowed on this device yet.</string>
 </resources>

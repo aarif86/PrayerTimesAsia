@@ -1272,6 +1272,6 @@
     <string name="all_iphoneNote" formatted="false">Di iPhone, pemberitahuan hanya dapat memutar bunyi pendek, hingga 30 detik, sehingga azan penuh tidak bisa diputar di sana. Untuk panggilan yang panjang, gunakan Alarm.</string>
     <string name="test_title" formatted="false">Periksa apakah berfungsi</string>
     <string name="test_sub" formatted="false">Kami mengirim pemberitahuan contoh dalam beberapa detik, seperti pemberitahuan asli Anda.</string>
-    <string name="test_sent" formatted="false">Pemberitahuan uji akan tiba dalam beberapa detik. Kunci layar untuk melihat tampilannya.</string>
+    <string name="test_sent" formatted="false">Pemberitahuan uji akan tiba dalam beberapa detik. Tetap di layar ini untuk melihat dan mendengarnya.</string>
     <string name="test_blocked" formatted="false">Pemberitahuan belum diizinkan di perangkat ini.</string>
 </resources>
