@@ -1,4 +1,4 @@
-import { AlarmClock, AlarmClockCheck, Bell, BellOff, BellRing, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, Download, Play, Smartphone } from 'lucide-preact'
+import { AlarmClock, AlarmClockCheck, Bell, BellOff, BellRing, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, Download, Play, Smartphone, Square } from 'lucide-preact'
 import { useEffect, useState } from 'preact/hooks'
 import { alertMode, ALL_LEVELS, applyToAllFive, fridayMode, type AllLevel, modesFor, notifies, setAlertMode, setFridayMode, setNotify, type AlertMode } from '../core/alertMode'
 import type { PrayerDay } from '../core/engine'
@@ -12,7 +12,7 @@ import {
   type AlarmPrayer, type AlarmSound, type PrayerAlarmTiming, type SahurTiming, type WakeUpTiming,
 } from '../core/wakeup'
 import { previewAlarm, stopAlarm } from '../services/alarmSound'
-import { azanAvailable } from '../services/azan'
+import { availableVoices, azanAvailable, azanUrl, type AzanVoice, hasFajr, hasFull, playAzan, stopAzan, voiceOrDefault } from '../services/azan'
 import { alertSupport, anyAlarm, downloadWakeICS, nextJumuahLeave, nextWakeUp, permission, requestPermission, testAlert } from '../services/notifications'
 import { REMINDER_CHOICES, type Preferences } from '../services/prefs'
 import { AWAY_CHOICES, AWAY_PRAYERS, isAway } from '../core/away'
@@ -70,6 +70,64 @@ export function cycleAlert(prayer: Prayer): string {
 }
 
 /** When this choice would next ring: today if it is still ahead, else tomorrow. */
+/** Which voice and how long. Tapping a choice picks it and plays it, tapping it again stops it. */
+function AzanChoice({ voice, full, fajr }: { voice: AzanVoice; full: boolean; fajr: string }) {
+  const [playing, setPlaying] = useState<string | null>(null)
+  useEffect(() => () => stopAzan(), [])
+  const play = (key: string, src: string | undefined) => {
+    if (playing === key) { stopAzan(); setPlaying(null); return }
+    setPlaying(key)
+    playAzan(src, () => setPlaying((cur) => (cur === key ? null : cur)))
+  }
+  const voices = availableVoices()
+  const note = (v: AzanVoice) => (!hasFull(v) ? tr('voice.shortOnly') : hasFajr(v) ? tr('voice.fajrToo') : null)
+  const pickLength = (v: boolean) => { store.update((x) => { x.azanFull = v }); play(v ? 'full' : 'short', azanUrl(voice, v)) }
+  return (
+    <>
+      {voices.length > 1 && (
+        <>
+          <div class="item azan-head"><span class="label">{tr('alerts.azanVoice')}</span></div>
+          {voices.map((v) => (
+            <div class="item choice azan-voice">
+              <button class="azan-play" onClick={() => play(v, azanUrl(v, false))}
+                aria-label={`${playing === v ? tr('alerts.azanStop') : tr('alerts.azanListen')}, ${voiceName(v)}`}>
+                {playing === v ? <Square size={14} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
+              </button>
+              <button class="azan-pick" onClick={() => store.update((x) => { x.azanVoice = v })} aria-pressed={voice === v}>
+                <span class="label">{voiceName(v)}{note(v) && <span class="sub">{note(v)}</span>}</span>
+                <Check size={18} class="choice-tick" style={{ opacity: voice === v ? 1 : 0 }} />
+              </button>
+            </div>
+          ))}
+        </>
+      )}
+      {hasFull(voice) && (
+        <div class="item azan-length">
+          <span class="label">{tr('alerts.azanLength')}</span>
+          <div class="segmented" role="group">
+            <button aria-pressed={!full} onClick={() => pickLength(false)}>{tr('alerts.azanShort')}</button>
+            <button aria-pressed={full} onClick={() => pickLength(true)}>{tr('alerts.azanFull')}</button>
+          </div>
+        </div>
+      )}
+      {hasFull(voice) && <p class="group-foot azan-foot">{tr('alerts.azanLengthSub', { name: fajr })}</p>}
+      <p class="group-foot azan-foot azan-free">{tr('alerts.azanVoiceSub')}</p>
+    </>
+  )
+}
+
+function voiceName(v: AzanVoice): string {
+  switch (v) {
+    case 'asim': return tr('voice.asim')
+    case 'makkah': return tr('voice.makkah')
+    case 'khalaf': return tr('voice.khalaf')
+    case 'sudais': return tr('voice.sudais')
+    case 'aqsa': return tr('voice.aqsa')
+    case 'egypt': return tr('voice.egypt')
+    case 'madinah': return tr('voice.madinah')
+  }
+}
+
 function soon(now: number, at: (d: PrayerDay) => number): string | null {
   const t = soonAt(now, at)
   return t === null ? null : store.formatted(t)
@@ -381,6 +439,7 @@ function MainPage({ open }: { open: (v: View) => void }) {
         <h2 class="group-title" id="demo-sound">{tr('alerts.sound')}</h2>
         <div class="group">
           {azanAvailable() && <ToggleItem label={tr('settings.azan')} sub={tr('alerts.azanSub', { name: s.name('fajr') })} on={p.azanSound} onChange={(v) => store.update((x) => { x.azanSound = v })} />}
+          {azanAvailable() && p.azanSound && <AzanChoice voice={voiceOrDefault(p.azanVoice)!} full={p.azanFull} fajr={s.name('fajr')} />}
           <ToggleItem label={tr('settings.buzzOnly')} sub={tr('alerts.buzzSub')} on={p.buzzOnly} onChange={(v) => store.update((x) => { x.buzzOnly = v })} />
           <ToggleItem label={tr('settings.quietHours')} sub={tr('alerts.quietSub', { name: s.name('fajr') })} on={p.quietHours} onChange={(v) => store.update((x) => { x.quietHours = v })} />
           {p.quietHours && (

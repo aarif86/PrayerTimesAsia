@@ -257,6 +257,10 @@ data class Preferences(
     val awayMinutes: Map<String, Int> = AwayReminder.DEFAULT_MINUTES,
     /** Prayer time alerts play the azan (a Subuh azan at Subuh) when the app has the recordings. */
     val azanSound: Boolean = true,
+    /** Full azan instead of the short call (opening takbir only). Fajr always uses the short call. */
+    val azanFull: Boolean = false,
+    /** Which azan voice plays (app Azan.kt). Falls back to the first voice in the app. */
+    val azanVoice: String = "asim",
 
     val musafirThresholdKm: Double = 81.0,
     /** Pinned JAKIM zone; null = nearest to where you are. */

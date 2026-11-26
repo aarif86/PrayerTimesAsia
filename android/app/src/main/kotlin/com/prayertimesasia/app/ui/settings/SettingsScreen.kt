@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Schedule
@@ -155,6 +156,7 @@ fun SettingsScreen(
             "help" -> SettingsPage(tr(R.string.settings_help), { page = null }) { HelpPage(openGuide) }
             "picks" -> SettingsPage(PICKS_NAME, { page = null }) { PicksPage(state) }
             "about" -> SettingsPage(tr(R.string.settings_aboutCredits), { page = null }) { AboutPage(openCredits) }
+            "ownAzan" -> SettingsPage("Your own azan", { page = null }) { OwnAzanPage(state) }
             else -> SettingsMain(state, listState, { page = it }, openCredits, openReview, openNote)
         }
     }
@@ -203,6 +205,8 @@ private fun SettingsMain(
                 NavRow(tr(R.string.settings_location), Icons.Filled.LocationOn, Color(0xFF0A84FF), r.activePlace?.name ?: tr(R.string.settings_notSet)) { go("location") }
                 NavRow(tr(R.string.settings_prayerTimes), Icons.Filled.Schedule, Color(0xFF2F9E8F), r.method.shortName) { go("times") }
                 NavRow(tr(R.string.settings_alertsAlarms), Icons.Filled.Alarm, Color(0xFFFF453A), alerts) { state.openAlerts() }
+                NavRow("Your own azan", Icons.Filled.MusicNote, Color(0xFF2F9E8F),
+                    if (com.prayertimesasia.app.alarms.OwnAzan.isSet(context)) tr(R.string.common_on) else tr(R.string.common_off)) { go("ownAzan") }
             }
         }
         item {

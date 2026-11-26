@@ -795,7 +795,24 @@
     <string name="alerts_extras" formatted="false">Tambahan</string>
     <string name="alerts_nudgeSub" formatted="false">Makluman kira-kira 30 minit sebelum waktu solat tamat, hanya jika anda belum menandanya dalam penjejak. Tidak untuk {name}.</string>
     <string name="alerts_sound" formatted="false">Bunyi</string>
-    <string name="alerts_azanSub" formatted="false">Makluman dimulakan dengan azan, dan azan {name} pada waktu {name}</string>
+    <string name="alerts_azanSub" formatted="false">Makluman solat dimulakan dengan azan</string>
+    <string name="alerts_azanLength" formatted="false">Panjang</string>
+    <string name="alerts_azanShort" formatted="false">Seruan pendek</string>
+    <string name="alerts_azanFull" formatted="false">Azan penuh</string>
+    <string name="alerts_azanLengthSub" formatted="false">Pendek ialah Allahu akbar pada permulaan azan. Penuh ialah azan sepenuhnya, dengan azan Subuh pada waktu {name} jika suara itu ada.</string>
+    <string name="alerts_azanListen" formatted="false">Dengar</string>
+    <string name="alerts_azanStop" formatted="false">Henti</string>
+    <string name="alerts_azanVoice" formatted="false">Suara</string>
+    <string name="alerts_azanVoiceSub" formatted="false">Ketik butang main untuk mendengar suara. Percuma untuk semua, tanpa iklan. Kami hanya menggunakan rakaman yang pemiliknya benarkan untuk dikongsi oleh sesiapa sahaja, jadi rakaman berbayar atau bukan komersial tidak boleh dimasukkan. Suara lain akan ditambah apabila pemiliknya bersetuju.</string>
+    <string name="voice_asim" formatted="false">Asim Javed</string>
+    <string name="voice_khalaf" formatted="false">Ahmed Khalaf</string>
+    <string name="voice_makkah" formatted="false">Makkah, rakaman seorang pengunjung</string>
+    <string name="voice_sudais" formatted="false">Makkah, Syeikh Sudais</string>
+    <string name="voice_aqsa" formatted="false">Al-Aqsa</string>
+    <string name="voice_egypt" formatted="false">Gaya Mesir</string>
+    <string name="voice_madinah" formatted="false">Madinah</string>
+    <string name="voice_shortOnly" formatted="false">Seruan pendek sahaja</string>
+    <string name="voice_fajrToo" formatted="false">Ada azan Subuh</string>
     <string name="alerts_buzzSub" formatted="false">Makluman bergetar tanpa bunyi sepanjang hari. Penggera tetap berbunyi.</string>
     <string name="alerts_quietSub" formatted="false">Antara waktu yang anda pilih, makluman hanya bergetar. {name} dan penggera kekal berbunyi.</string>
     <string name="alerts_soundFoot" formatted="false">Getar sahaja dan Waktu senyap sesuai untuk pekerja syif yang tidur pada siang hari, bayi yang tidur dalam bilik, atau malam yang tenang. Penggera kekal berbunyi.</string>
@@ -1259,8 +1276,8 @@
     <string name="all_offDesc" formatted="false">Tiada apa-apa untuk solat ini.</string>
     <string name="all_notifyName" formatted="false">Makluman</string>
     <string name="all_notifyDesc" formatted="false">Mesej pada skrin anda dengan bunyi makluman biasa.</string>
-    <string name="all_azanName" formatted="false">Azan pendek</string>
-    <string name="all_azanDesc" formatted="false">Mesej yang memainkan azan pendek, kira-kira 9 saat.</string>
+    <string name="all_azanName" formatted="false">Azan</string>
+    <string name="all_azanDesc" formatted="false">Mesej yang memainkan azan. Pilih seruan pendek atau azan penuh di bahagian Bunyi.</string>
     <string name="all_alarmDesc" formatted="false">Berbunyi seperti jam sehingga anda menghentikannya. Berfungsi walaupun telefon senyap.</string>
     <string name="all_step2" formatted="false">Peringatan sebelum setiap solat</string>
     <string name="all_keep" formatted="false">Biarkan seperti sedia ada</string>
