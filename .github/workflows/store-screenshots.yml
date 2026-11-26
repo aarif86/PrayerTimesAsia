@@ -62,13 +62,14 @@ jobs:
               sleep "${WAIT:-8}"
               xcrun simctl io "$UDID" screenshot "shots/$prefix-$name.png"
             }
-            shot 1-today      -demo -tab today -sidedial
+            shot 1-today      -demo -tab today -centre
             shot 2-landed     -demo-travel -tab today
             shot 3-journey    -demo-travel -tab journey
             shot 4-qibla      -demo -tab qibla -aligned
-            WAIT=25 shot 5-masjid -demo -tab nearby   # map and search need longer
-            shot 6-falak      -demo -tab falak
-            shot 7-today-day  -demo-makkah -tab today -light
+            shot 5-ramadan    -demo -season ramadan -tab today -centre
+            shot 6-wakeup     -demo -wake -tab wakeup
+            shot 7-masjid     -demo -masjid -tab today -sidedial
+            shot 8-looks      -demo -tab today -dial
             xcrun simctl shutdown "$UDID" || true
           }
           capture 'iPhone.*Pro Max' iphone

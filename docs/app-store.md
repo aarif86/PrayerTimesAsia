@@ -1,6 +1,8 @@
 # App Store listing - Prayer Times Asia
 
-Copy-paste ready. Character limits checked.
+The text to paste (English, Malay, Indonesian) is in
+[store-listings/](store-listings/README.md). This page keeps the App Store
+settings, privacy answers, screenshots and the App Review note.
 
 | Field | Value | Limit |
 |---|---|---|
@@ -137,8 +139,12 @@ salat,shalat,adzan,kemenag,imsak,sahur,buka puasa,ramadhan,tarawih,lebaran,masji
 The Malay and Indonesian lines should be read once by a native speaker
 before they go live.
 
-## Promotional text (125 / 170)
+## Promotional text and description
 
+<<<<<<< HEAD
+Moved to [store-listings/en.md](store-listings/en.md),
+[ms.md](store-listings/ms.md) and [id.md](store-listings/id.md).
+=======
 Land anywhere in Asia and know when to pray and which way to face. Official MUIS and JAKIM timetables, works offline, no ads.
 
 ## Description
@@ -182,6 +188,7 @@ WHO MAKES IT
 Built fisabilillah in Singapore by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with Nasar Digital (Nasar Pte Ltd). It started on a family trip to Vietnam, when none of our prayer apps worked and everyone turned to Ustaz Aarif to ask when to pray. Back home, our parents had the same trouble with apps full of ads that play the azan out loud on the train. So we built one for the people we love, and for you.
 
 Musafir guidance is general information, not a fatwa - when unsure, follow your local religious authority.
+>>>>>>> origin/main
 
 ## App Privacy (nutrition label)
 
@@ -207,22 +214,16 @@ https://prayertimes.asia/privacy.html
 ## Screenshots
 
 Apple needs two sets because the app also runs on iPad: 6.9" iPhone
-(1320 × 2868) and 13" iPad (2064 × 2752). Captioned, ready to drag in:
-`design/store/app-store/iphone-*.png` and `ipad-*.png`.
+(1320 × 2868) and 13" iPad (2064 × 2752). Captioned in each listing language,
+ready to drag in: `design/store/app-store/<en|ms|id>/iphone-*.png` and
+`ipad-*.png`.
 
 To redo them: Actions → **Store screenshots** → Run workflow (takes the raw
 shots on a Pro Max and an iPad Pro 13" simulator and puts them on the
 `store-screenshots-raw` branch), then
 `python3 tools/store_frames.py iphone RAW_DIR design/store/app-store` (and `ipad`).
-
-Captions, in order:
-1. "Know when to pray, wherever you land"
-2. "Switches the moment you arrive"
-3. "Jamak & qasar, worked out for you"
-4. "Face the Kaaba in one glance"
-5. "Find a masjid or musollah nearby"
-6. "Qibla Day and the shadow stick"
-7. "A sky that follows the sun"
+The captions live in `tools/store_frames.py` and match
+[store-listings/README.md](store-listings/README.md).
 
 ## App Review Information
 
