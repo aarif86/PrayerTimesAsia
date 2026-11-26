@@ -278,6 +278,12 @@ extension Falak {
 
     enum SkyStage: String { case night, fajr, sunrise, morning, dhuhr, asr, maghrib, isha }
 
+    /// The Sky slider's range: 45 minutes before Fajr to 45 minutes after Isha,
+    /// stretched so it always holds `now` (so after midnight it starts at now).
+    static func skyRange(now: Date, fajr: Date, isha: Date) -> (start: Date, end: Date) {
+        (min(fajr.addingTimeInterval(-45 * 60), now), max(isha.addingTimeInterval(45 * 60), now))
+    }
+
     /// What the sky shows at `t`, judged against the day's timetable.
     static func skyStage(_ t: Date, times: [Prayer: Date]) -> SkyStage {
         guard let fajr = times[.fajr], let sunrise = times[.sunrise], let dhuhr = times[.dhuhr],
