@@ -803,7 +803,7 @@
     <string name="alerts_azanListen" formatted="false">Listen</string>
     <string name="alerts_azanStop" formatted="false">Stop</string>
     <string name="alerts_azanVoice" formatted="false">Voice</string>
-    <string name="alerts_azanVoiceSub" formatted="false">Tap a voice to hear it. Free for everyone, with no ads. We only use recordings their owners let anyone share, so paid or non commercial recordings cannot be included. More voices will come as owners say yes.</string>
+    <string name="alerts_azanVoiceSub" formatted="false">Tap play to hear a voice. Free for everyone, with no ads. We only use recordings their owners let anyone share, so paid or non commercial recordings cannot be included. More voices will come as owners say yes.</string>
     <string name="voice_asim" formatted="false">Asim Javed</string>
     <string name="voice_khalaf" formatted="false">Ahmed Khalaf</string>
     <string name="voice_makkah" formatted="false">Makkah, a visitor\'s recording</string>

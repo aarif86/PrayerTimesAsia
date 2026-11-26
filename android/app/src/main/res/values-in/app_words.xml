@@ -803,7 +803,7 @@
     <string name="alerts_azanListen" formatted="false">Dengarkan</string>
     <string name="alerts_azanStop" formatted="false">Berhenti</string>
     <string name="alerts_azanVoice" formatted="false">Suara</string>
-    <string name="alerts_azanVoiceSub" formatted="false">Ketuk satu suara untuk mendengarnya. Gratis untuk semua, tanpa iklan. Kami hanya memakai rekaman yang pemiliknya izinkan untuk dibagikan siapa saja, jadi rekaman berbayar atau nonkomersial tidak bisa dimasukkan. Suara lain akan ditambahkan setelah pemiliknya setuju.</string>
+    <string name="alerts_azanVoiceSub" formatted="false">Ketuk tombol putar untuk mendengar suara. Gratis untuk semua, tanpa iklan. Kami hanya memakai rekaman yang pemiliknya izinkan untuk dibagikan siapa saja, jadi rekaman berbayar atau nonkomersial tidak bisa dimasukkan. Suara lain akan ditambahkan setelah pemiliknya setuju.</string>
     <string name="voice_asim" formatted="false">Asim Javed</string>
     <string name="voice_khalaf" formatted="false">Ahmed Khalaf</string>
     <string name="voice_makkah" formatted="false">Makkah, rekaman seorang pengunjung</string>

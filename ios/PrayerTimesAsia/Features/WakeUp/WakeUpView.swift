@@ -636,19 +636,30 @@ private struct AzanChoiceRows: View {
         Section {
             if voices.count > 1 {
                 ForEach(voices, id: \.self) { v in
-                    Button {
-                        model.prefs.azanVoice = v
-                        play(v, voice: v, full: false)
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(Self.names[v] ?? v).foregroundStyle(.primary)
-                                if let note = note(v) { Text(note).font(.footnote).foregroundStyle(.secondary) }
-                            }
-                            Spacer()
-                            if playing == v { Image(systemName: "speaker.wave.2.fill").font(.footnote).foregroundStyle(.secondary) }
-                            if v == voice { Image(systemName: "checkmark").foregroundStyle(.tint) }
+                    HStack(spacing: 12) {
+                        Button {
+                            play(v, voice: v, full: false)
+                        } label: {
+                            Image(systemName: playing == v ? "stop.circle.fill" : "play.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(.tint)
                         }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel("\(playing == v ? "Stop" : "Listen"), \(Self.names[v] ?? v)")
+                        Button {
+                            model.prefs.azanVoice = v
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(Self.names[v] ?? v).foregroundStyle(.primary)
+                                    if let note = note(v) { Text(note).font(.footnote).foregroundStyle(.secondary) }
+                                }
+                                Spacer()
+                                if v == voice { Image(systemName: "checkmark").foregroundStyle(.tint) }
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.borderless)
                     }
                 }
             }
@@ -678,7 +689,7 @@ private struct AzanChoiceRows: View {
                 if Azan.has(voice, .full) {
                     Text("Short is the opening Allahu akbar. Full is the whole azan, with a Fajr azan at \(Prayer.fajr.name(model.naming)) when the voice has one. iPhone plays up to 30 seconds of it.")
                 }
-                Text("Tap a voice to hear it. Free for everyone, with no ads. We only use recordings their owners let anyone share, so paid or non commercial recordings cannot be included. More voices will come as owners say yes.")
+                Text("Tap play to hear a voice. Free for everyone, with no ads. We only use recordings their owners let anyone share, so paid or non commercial recordings cannot be included. More voices will come as owners say yes.")
                     .font(.caption)
             }
         }

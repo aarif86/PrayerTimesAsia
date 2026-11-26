@@ -1,4 +1,4 @@
-import { AlarmClock, AlarmClockCheck, Bell, BellOff, BellRing, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, Download, Play, Smartphone } from 'lucide-preact'
+import { AlarmClock, AlarmClockCheck, Bell, BellOff, BellRing, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, Download, Play, Smartphone, Square } from 'lucide-preact'
 import { useEffect, useState } from 'preact/hooks'
 import { alertMode, ALL_LEVELS, applyToAllFive, fridayMode, type AllLevel, modesFor, notifies, setAlertMode, setFridayMode, setNotify, type AlertMode } from '../core/alertMode'
 import type { PrayerDay } from '../core/engine'
@@ -88,11 +88,16 @@ function AzanChoice({ voice, full, fajr }: { voice: AzanVoice; full: boolean; fa
         <>
           <div class="item azan-head"><span class="label">{tr('alerts.azanVoice')}</span></div>
           {voices.map((v) => (
-            <button class="item choice azan-voice" onClick={() => { store.update((x) => { x.azanVoice = v }); play(v, azanUrl(v, false)) }} aria-pressed={voice === v}>
-              <span class="label">{voiceName(v)}{note(v) && <span class="sub">{note(v)}</span>}</span>
-              {playing === v && <Play size={14} class="secondary" />}
-              <Check size={18} class="choice-tick" style={{ opacity: voice === v ? 1 : 0 }} />
-            </button>
+            <div class="item choice azan-voice">
+              <button class="azan-play" onClick={() => play(v, azanUrl(v, false))}
+                aria-label={`${playing === v ? tr('alerts.azanStop') : tr('alerts.azanListen')}, ${voiceName(v)}`}>
+                {playing === v ? <Square size={14} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
+              </button>
+              <button class="azan-pick" onClick={() => store.update((x) => { x.azanVoice = v })} aria-pressed={voice === v}>
+                <span class="label">{voiceName(v)}{note(v) && <span class="sub">{note(v)}</span>}</span>
+                <Check size={18} class="choice-tick" style={{ opacity: voice === v ? 1 : 0 }} />
+              </button>
+            </div>
           ))}
         </>
       )}

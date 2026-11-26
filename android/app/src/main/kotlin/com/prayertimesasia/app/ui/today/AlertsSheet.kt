@@ -36,7 +36,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.outlined.NotificationsOff
@@ -564,9 +567,26 @@ private fun AzanChoiceRows(state: AppState) {
                 Azan.has(context, v, Azan.Kind.FAJR) -> tr(R.string.voice_fajrToo)
                 else -> null
             }
-            ChoiceRow(voiceName(v), note, v == voice) {
-                state.update { it.copy(azanVoice = v) }
-                play(v, v, full = false)
+            val name = voiceName(v)
+            val selected = v == voice
+            val described = tr(R.string.phone_alerts_selected, "label" to name)
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable { state.update { it.copy(azanVoice = v) } }
+                    .padding(start = 6.dp, end = 16.dp, top = 6.dp, bottom = 6.dp)
+                    .semantics { if (selected) contentDescription = described },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Box(Modifier.size(44.dp).clip(CircleShape).clickable { play(v, v, full = false) }
+                    .semantics { contentDescription = "${tr(if (playing == v) R.string.alerts_azanStop else R.string.alerts_azanListen)}, $name" },
+                    contentAlignment = Alignment.Center) {
+                    Icon(if (playing == v) Icons.Filled.StopCircle else Icons.Filled.PlayCircle, null, Modifier.size(30.dp), tint = Palette.sunArc)
+                }
+                Column(Modifier.weight(1f)) {
+                    Text(name, style = Txt.body, color = Palette.primary)
+                    if (note != null) Text(note, style = Txt.footnote, color = Palette.secondary)
+                }
+                Icon(Icons.Filled.Check, null, Modifier.size(20.dp), tint = if (selected) Palette.sunArc else Color.Transparent)
             }
         }
     }
