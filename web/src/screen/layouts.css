@@ -281,3 +281,11 @@
 
 .lay .scr-sec { color: var(--fg2); }
 .lay-look-bands .lay-row .scr-name { font-weight: 700; }
+
+/* Dark mode: the prayer colours sit on very dark blue, and Isha purple or Maghrib red fell under 4.5:1 as small text.
+   A lighter mix keeps every current-prayer label readable whatever the time of day. */
+.scr:not(.scr-light) .scr-next-name,
+.scr:not(.scr-light) .scr-tag,
+.scr:not(.scr-light) .scr-cell.on .scr-name,
+.scr:not(.scr-light) .scr-dm.on .scr-dm-name,
+.scr:not(.scr-light) .lay-row.on .scr-name { color: color-mix(in srgb, var(--tint) 60%, #fff); }
