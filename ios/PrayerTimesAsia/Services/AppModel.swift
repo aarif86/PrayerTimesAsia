@@ -165,7 +165,7 @@ final class AppModel {
             p.prayedLog[String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)] = Set(Prayer.obligatory)
         }
         p.appearance = args.contains("-light") ? .light : args.contains("-auto") ? .system : .dark
-        p.todayStyle = args.contains("-dial") ? .dial : args.contains("-sunpath") ? .sunPath : args.contains("-centre") ? .centre : args.contains("-bands") ? .bands : args.contains("-sidedial") ? .list : .centre
+        p.todayStyle = args.contains("-sunpath") ? .sunPath : args.contains("-bands") ? .bands : args.contains("-simple") ? .simple : args.contains("-gold") ? .gold : .centre
         if args.contains("-masjid") { p.myMasjid = demoMasjid }
         // -arrival: the Welcome card at home too (as after a reinstall).
         if args.contains("-arrival") { p.arrivalBannerDismissed = false }

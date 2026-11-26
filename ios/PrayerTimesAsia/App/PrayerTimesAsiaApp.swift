@@ -10,6 +10,7 @@ struct PrayerTimesAsiaApp: App {
             RootView()
                 .environment(model)
                 .preferredColorScheme(model.colorScheme)
+                .environment(\.look, model.prefs.todayStyle)
                 // Grey notes a step stronger than the system's, so footnotes, place
                 // names and distances stay easy to read on the sky in every look.
                 .foregroundStyle(Color.primary, Color.primary.opacity(0.82), Color.primary.opacity(0.62))
@@ -74,22 +75,23 @@ struct RootView: View {
         if model.prefs.hasOnboarded {
             TabView(selection: $model.selectedTab) {
                 TodayView()
-                    .tabItem { Label { Text("Prayer") } icon: { Image("Tab-prayer") } }
+                    .tabItem { Label("Prayer", systemImage: "clock") }
                     .tag(AppModel.Tab.today)
                 QiblaView()
-                    .tabItem { Label { Text("Qibla") } icon: { Image("Tab-qibla") } }
+                    .tabItem { Label("Qibla", systemImage: "location.north.circle") }
                     .tag(AppModel.Tab.qibla)
                 FalakView(isTab: true)
-                    .tabItem { Label { Text("Falak") } icon: { Image("Tab-falak") } }
+                    .tabItem { Label("Falak", systemImage: "sun.max") }
                     .tag(AppModel.Tab.falak)
                 NearbyView()
                     .tabItem { Label { Text("Masjid") } icon: { Image("Tab-masjid") } }
                     .tag(AppModel.Tab.nearby)
                 SettingsView(isTab: true)
-                    .tabItem { Label("Settings", systemImage: "gearshape") }
+                    .tabItem { Label("Settings", systemImage: "slider.horizontal.3") }
                     .tag(AppModel.Tab.settings)
             }
-            .tint(.primary)
+            // The web app's tab bar: outline icons, the look's accent on the open tab.
+            .tint(model.prefs.todayStyle.palette.accent)
             .onAppear { model.applyDemoTab() }
             .sheet(isPresented: $model.showJourney) { JourneyView() }
             .sheet(isPresented: $model.showWakeUp) { WakeUpView() }

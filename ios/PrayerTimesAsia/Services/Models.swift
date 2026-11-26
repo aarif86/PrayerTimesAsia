@@ -357,7 +357,7 @@ struct Preferences: Codable, Equatable, Sendable {
     /// everyone starts on Centre Dial.
     var stylePick: TodayStyle?
     var todayStyle: TodayStyle {
-        get { stylePick ?? .centre }
+        get { (stylePick ?? .centre).look }
         set { stylePick = newValue }
     }
     /// The small community card under Show more (docs/community-cards.md).
