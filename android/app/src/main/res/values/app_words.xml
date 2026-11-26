@@ -1253,4 +1253,25 @@
     <string name="early_min" formatted="false">{n} min</string>
     <string name="notify_nameInHour" formatted="false">{name} in 1 hour</string>
     <string name="notify_nameAtAway" formatted="false">{name} begins at {time}. A good time to find a place to pray.</string>
+    <string name="all_row" formatted="false">Set for all prayers</string>
+    <string name="all_rowSub" formatted="false">Choose once and all five follow.</string>
+    <string name="all_step1" formatted="false">What should happen at prayer time?</string>
+    <string name="all_offDesc" formatted="false">Nothing for these prayers.</string>
+    <string name="all_notifyName" formatted="false">Notification</string>
+    <string name="all_notifyDesc" formatted="false">A message on your screen with a normal alert sound.</string>
+    <string name="all_azanName" formatted="false">Short azan</string>
+    <string name="all_azanDesc" formatted="false">A message that plays a short azan, about 9 seconds.</string>
+    <string name="all_alarmDesc" formatted="false">Rings like a clock until you stop it. Works on silent.</string>
+    <string name="all_step2" formatted="false">A reminder before each prayer</string>
+    <string name="all_keep" formatted="false">Leave as it is</string>
+    <string name="all_fajrToo" formatted="false">Also change {name}</string>
+    <string name="all_fajrTooSub" formatted="false">It has its own alarm settings, so it stays as it is unless you tick this.</string>
+    <string name="all_apply" formatted="false">Apply to all five</string>
+    <string name="all_applied" formatted="false">Done. All five prayers are set.</string>
+    <string name="all_azanFoot" formatted="false">The azan sound is one setting for the whole app, so it changes for every prayer.</string>
+    <string name="all_iphoneNote" formatted="false">On iPhone, a notification can only play a short sound, up to 30 seconds, so a full azan is not possible there. For a long call, use Alarm.</string>
+    <string name="test_title" formatted="false">Check that it works</string>
+    <string name="test_sub" formatted="false">We send a sample alert in a few seconds, the same way your real ones arrive.</string>
+    <string name="test_sent" formatted="false">Test alert coming in a few seconds. Lock your screen to see how it looks.</string>
+    <string name="test_blocked" formatted="false">Alerts are not allowed on this device yet.</string>
 </resources>
