@@ -122,4 +122,18 @@ describe('Falak for everyone', () => {
     expect(Falak.skyStage(sg(19, 30), times)).toBe('maghrib')
     expect(Falak.skyStage(sg(21, 0), times)).toBe('isha')
   })
+
+  it('keeps the sky slider range around now, even in the small hours', () => {
+    const fajr = sg(5, 29), isha = sg(19, 40), min = 60_000
+    // 1:20 AM is before Fajr minus 45 minutes, so the range reaches back to now.
+    const night = Falak.skyRange(fajr, isha, sg(1, 20))
+    expect(night.from).toBe(sg(1, 20))
+    expect(night.to).toBe(isha + 45 * min)
+    // Midday leaves the usual span alone.
+    const noon = Falak.skyRange(fajr, isha, sg(13, 0))
+    expect(noon.from).toBe(fajr - 45 * min)
+    expect(noon.to).toBe(isha + 45 * min)
+    // Late night after Isha plus 45 minutes also reaches to now.
+    expect(Falak.skyRange(fajr, isha, sg(23, 50)).to).toBe(sg(23, 50))
+  })
 })
