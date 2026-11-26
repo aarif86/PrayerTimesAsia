@@ -284,4 +284,4 @@
 
 /* Dark mode: the "next prayer" name in the pill fell under 4.5:1 for Isha purple on dark blue and grey.
    A lighter mix keeps it readable whatever the time of day. */
-.scr:not(.scr-light) .scr-next-name { color: color-mix(in srgb, var(--tint) 60%, #fff); }
+.scr:not(.scr-light) .scr-next-name { color: color-mix(in srgb, var(--tint) 40%, #fff); }
