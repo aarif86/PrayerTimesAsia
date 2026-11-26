@@ -89,4 +89,13 @@ class AlertModeTest {
         assertEquals(AlertMode.OFF, old.alertMode(Prayer.DHUHR))
         assertFalse(Preferences.decode("""{"notificationsEnabled":false}""").notificationsEnabled)
     }
+
+    @Test fun setForAllEarlyReminderAlsoSetsAwayMinutes() {
+        val p = OLD.copy(awayMinutes = mapOf("fajr" to 0, "dhuhr" to 60, "asr" to 60, "maghrib" to 60, "isha" to 60))
+        assertEquals(30, p.withAllFive(AllLevel.NOTIFY, 30).awayMinutes["dhuhr"])
+        assertEquals(15, p.withAllFive(AllLevel.NOTIFY, 20).awayMinutes["asr"])
+        assertEquals(0, p.withAllFive(AllLevel.NOTIFY, 0).awayMinutes["maghrib"])
+        val alarm = p.copy(wakeUp = WakeUpTiming.AT_FAJR).withAllFive(AllLevel.ALARM, 30)
+        assertEquals(0, alarm.awayMinutes["fajr"])
+    }
 }
