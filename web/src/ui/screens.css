@@ -1142,3 +1142,65 @@ html[data-large-text] .pname { font-size: 20px; }
 .v12q .q-bandstats .nm { flex: 1; }
 .v12q .q-bandstats .rd { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
 .q-bands .q-card { margin: 22px 24px 0; width: auto; align-self: stretch; }
+
+/* Falak */
+.v12f { gap: 12px; padding-bottom: 24px; }
+.v12f .falak-head { padding-top: 6px; }
+.v12f .f-title { font: 700 34px/1.1 var(--font-display); letter-spacing: -0.02em; margin: 0; }
+.f-simple .f-title { font-size: 38px; }
+.v12f .f-lede { margin: 4px 0 0; font-size: 15px; color: var(--s-tx2); }
+.v12f .segmented { background: var(--s-sep); border-radius: 10px; padding: 2px; }
+.v12f .segmented button { font-size: 14px; font-weight: 600; color: var(--s-tx2); border-radius: 8px; min-height: 36px; }
+.v12f .segmented button[aria-pressed="true"] { background: var(--s-card); color: var(--s-tx); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18); }
+:root[data-theme="light"] .v12f .segmented button[aria-pressed="true"] { background: #fff; }
+.f-bands .segmented, .f-bands .segmented button { border-radius: 0; }
+/* The sky card */
+.v12f .sky-card { background: var(--s-card); border: 1px solid var(--s-strk); border-radius: var(--s-r); }
+.v12f .sky-sun { fill: var(--s-ac); }
+.v12f .sky-shadow { stroke: var(--s-ac); }
+.f-bands .sky-shadow { stroke: #fff; }
+.v12f .sky-ground-ink { fill: var(--s-st); }
+.f-bands .sky-ground-ink { fill: #1d1d20; }
+:root[data-theme="light"] .f-gold .sky-shadow { stroke: var(--s-actx); }
+.v12f .sky-info { padding: 12px 18px 16px; }
+.v12f .sky-time { font-size: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--s-tx2); }
+.v12f .sky-name { font: 700 28px/1.15 var(--font-display); margin-top: 0; }
+.f-simple .sky-name { font-size: 34px; }
+.v12f .sky-info p { margin: 2px 0 12px; font-size: 15px; color: var(--s-tx2); min-height: 0; }
+.v12f .sky-info input[type=range] { height: 6px; border-radius: 3px; background: var(--s-sep); margin: 8px 0; }
+.v12f .sky-info input[type=range]::-webkit-slider-thumb { width: 24px; height: 24px; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35); }
+.v12f .sky-info input[type=range]::-moz-range-thumb { width: 24px; height: 24px; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35); }
+/* Tool rows: one tinted icon in the look's accent */
+.v12f .group { background: var(--s-card); border: 1px solid var(--s-strk); border-radius: var(--s-r); }
+.v12f .group > .item + .item { border-top: 1px solid var(--s-sep); }
+.v12f .falak-tools .item { min-height: 58px; gap: 14px; padding: 8px 18px; color: var(--s-tx); }
+.v12f .falak-tools .label { font-weight: 600; }
+.v12f .falak-tools .sub { font-size: 13px; font-weight: 400; color: var(--s-tx2); }
+.v12f .falak-tools .value { font-size: 15px; font-weight: 400; color: var(--s-tx2); }
+.v12f .falak-tools .item > svg:last-child { color: var(--s-tx3); }
+.v12f .falak-ico { background: var(--s-tint) !important; }
+.v12f .falak-ico svg { stroke: var(--s-actx); }
+.v12f .falak-ico svg [fill="#fff"] { fill: var(--s-actx); }
+.f-simple .falak-tools .item { min-height: 72px; font-size: 21px; }
+.v12f .falak-foot { font-size: 12px; color: var(--s-tx2); padding: 0 18px; }
+/* Then and Why cards */
+.v12f .story, .v12f .glass.card { background: var(--s-card); border: 1px solid var(--s-strk); border-radius: var(--s-r); }
+.v12f .story .secondary, .v12f .why-row .sub { color: var(--s-tx2); }
+.v12f .story .story-word { color: var(--s-actx); }
+/* Colour Bands: flat full width sky, tools as colour bands */
+.f-bands .sky-card { margin: 0 calc(-1 * var(--gutter)); border-left: 0; border-right: 0; border-color: var(--s-sep); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.f-bands .sky-info { padding: 12px 24px 16px; }
+.f-bands .group { margin: 0 calc(-1 * var(--gutter)); border: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.f-bands .group > .item + .item { border-top: 0; }
+.f-bands .falak-tools .item { min-height: 64px; padding: 8px 24px; color: #fff; font-size: 19px; text-shadow: 0 1px 2px rgba(0, 0, 0, .3); }
+.f-bands .falak-tools .label { font-weight: 700; }
+.f-bands .falak-tools .sub, .f-bands .falak-tools .value { color: #fff; font-size: 15px; font-weight: 600; opacity: 0.95; }
+.f-bands .falak-tools .item > svg:last-child { color: #fff; }
+.f-bands .falak-ico { background: none !important; width: 24px; }
+.f-bands .falak-ico svg { stroke: #fff; }
+.f-bands .falak-tools .item:nth-child(6n+1) { background: #3a6f63; }
+.f-bands .falak-tools .item:nth-child(6n+2) { background: #cd7d38; }
+.f-bands .falak-tools .item:nth-child(6n+3) { background: #c9565d; }
+.f-bands .falak-tools .item:nth-child(6n+4) { background: #8a9a52; }
+.f-bands .falak-tools .item:nth-child(6n+5) { background: #ab8d3a; }
+.f-bands .falak-tools .item:nth-child(6n+6) { background: #d3705c; }

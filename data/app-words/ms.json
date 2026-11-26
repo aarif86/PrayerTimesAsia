@@ -235,6 +235,7 @@
   "falak.slideSun": "Luncurkan matahari",
   "falak.east": "Timur",
   "falak.west": "Barat",
+  "falak.shadowLabel": "Bayang",
   "falak.stageNight": "Malam",
   "falak.stageNightSay": "Langit masih gelap. Waktu {name} belum masuk.",
   "falak.stageFajrSay": "Cahaya putih melebar di ufuk timur. Waktu {name} sudah masuk.",

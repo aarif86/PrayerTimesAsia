@@ -237,6 +237,7 @@
     <string name="falak_slideSun" formatted="false">Slide the sun</string>
     <string name="falak_east" formatted="false">East</string>
     <string name="falak_west" formatted="false">West</string>
+    <string name="falak_shadowLabel" formatted="false">Shadow</string>
     <string name="falak_stageNight" formatted="false">Night</string>
     <string name="falak_stageNightSay" formatted="false">The sky is dark. {name} has not come yet.</string>
     <string name="falak_stageFajrSay" formatted="false">A white line spreads along the eastern sky. {name} has begun.</string>
