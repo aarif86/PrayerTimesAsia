@@ -580,7 +580,7 @@ private fun AzanChoiceRows(state: AppState) {
                 Box(Modifier.size(44.dp).clip(CircleShape).clickable { play(v, v, full = false) }
                     .semantics { contentDescription = "${tr(if (playing == v) R.string.alerts_azanStop else R.string.alerts_azanListen)}, $name" },
                     contentAlignment = Alignment.Center) {
-                    Icon(if (playing == v) Icons.Filled.StopCircle else Icons.Filled.PlayCircle, null, Modifier.size(30.dp), tint = Palette.sunArc)
+                    Icon(if (playing == v) Icons.Filled.StopCircle else Icons.Filled.PlayCircle, null, Modifier.size(30.dp), tint = Palette.accent)
                 }
                 Column(Modifier.weight(1f)) {
                     Text(name, style = Txt.body, color = Palette.primary)
@@ -602,9 +602,9 @@ private fun AzanChoiceRows(state: AppState) {
                         play(if (full) "full" else "short", voice, full)
                     }, SegmentedButtonDefaults.itemShape(i, lengths.size),
                         colors = SegmentedButtonDefaults.colors(
-                            activeContainerColor = Palette.primary.copy(alpha = 0.18f), activeContentColor = Palette.primary,
+                            activeContainerColor = Palette.accent.copy(alpha = 0.35f), activeContentColor = Palette.primary,
                             inactiveContainerColor = Color.Transparent, inactiveContentColor = Palette.primary,
-                            activeBorderColor = Palette.primary.copy(alpha = 0.2f), inactiveBorderColor = Palette.primary.copy(alpha = 0.2f)),
+                            activeBorderColor = Palette.accent, inactiveBorderColor = Palette.accent),
                         icon = {}) { Text(word, style = Txt.footnoteSemibold, maxLines = 1) }
                 }
             }

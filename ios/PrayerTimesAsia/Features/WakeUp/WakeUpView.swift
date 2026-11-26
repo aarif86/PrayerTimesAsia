@@ -667,18 +667,26 @@ private struct AzanChoiceRows: View {
                 HStack {
                     Text("Length")
                     Spacer()
-                    Picker("Length", selection: Binding(
-                        get: { model.prefs.azanFull },
-                        set: { full in
-                            model.prefs.azanFull = full
-                            play(full ? "full" : "short", voice: voice, full: full)
+                    HStack(spacing: 2) {
+                        ForEach([false, true], id: \.self) { full in
+                            let on = model.prefs.azanFull == full
+                            Button {
+                                model.prefs.azanFull = full
+                                play(full ? "full" : "short", voice: voice, full: full)
+                            } label: {
+                                Text(full ? "Full azan" : "Short call")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(on ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
+                                    .frame(maxWidth: .infinity, minHeight: 32)
+                                    .background(on ? AnyShapeStyle(.tint) : AnyShapeStyle(.clear), in: RoundedRectangle(cornerRadius: 8))
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityAddTraits(on ? .isSelected : [])
                         }
-                    )) {
-                        Text("Short call").tag(false)
-                        Text("Full azan").tag(true)
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
+                    .padding(2)
+                    .background(Color.secondary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10))
                     .frame(maxWidth: 210)
                 }
             }
