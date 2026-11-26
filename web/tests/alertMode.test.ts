@@ -30,6 +30,14 @@ describe('New installs and the all five button', () => {
     expect(allFiveNotify(p)).toBe(false)
   })
 
+  it('the button drops an old leftover list, so Sunrise stays off', () => {
+    const p = fresh()
+    p.notifyPrayers = ['sunrise', 'asr']
+    notifyAllFive(p)
+    expect(alertMode(p, 'sunrise')).toBe('off')
+    expect(allFiveNotify(p)).toBe(true)
+  })
+
   it('a prayer set Off after the button can be switched back individually', () => {
     const p = fresh()
     notifyAllFive(p)

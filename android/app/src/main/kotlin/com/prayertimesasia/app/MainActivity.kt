@@ -75,6 +75,8 @@ class MainActivity : ComponentActivity(), Permissions {
         install.edit().putBoolean("seen", true).apply()
         val p = state.prefs
         if (!p.hasOnboarded) return
+        // Asked below, so the first-run alerts question must not ask again.
+        install.edit().putBoolean("notificationsAsked", true).apply()
         android.widget.Toast.makeText(this, "Welcome back. Your settings are back.", android.widget.Toast.LENGTH_LONG).show()
         lifecycleScope.launch {
             if (p.useGPS && !state.location.hasPermission) { location(); state.useGPS() }

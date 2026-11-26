@@ -207,7 +207,7 @@ private struct EachPrayerSection: View {
         Section {
             Button {
                 model.prefs.notifyAllFive()
-                Task { await askForAlerts() }
+                Task { await askForAlerts(); await model.refreshNotificationStatus() }
             } label: {
                 HStack(spacing: 12) {
                     Image(systemName: model.prefs.allFiveNotify ? "checkmark.circle.fill" : "bell.badge.fill")

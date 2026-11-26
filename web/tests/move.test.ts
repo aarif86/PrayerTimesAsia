@@ -29,6 +29,20 @@ describe('Move my settings', () => {
     expect(await decodeMove(await encodeMove(back))).toEqual(m)
   })
 
+  it('alerts Off travel with the code, and a code without the choice leaves this device as it is', () => {
+    const off = structuredClone(DEFAULT_PREFS)
+    off.notificationsEnabled = false
+    const code = movedFrom(off)
+    expect(code.notificationsEnabled).toBe(false)
+    // A fresh device (alerts on by default) receiving it ends up Off.
+    expect(applyMoved(structuredClone(DEFAULT_PREFS), code).notificationsEnabled).toBe(false)
+    // An older or fresh code says nothing: the device keeps its own choice.
+    const quiet = structuredClone(DEFAULT_PREFS)
+    quiet.notificationsEnabled = false
+    expect(applyMoved(quiet, { v: 1 }).notificationsEnabled).toBe(false)
+    expect(applyMoved(structuredClone(DEFAULT_PREFS), { v: 1 }).notificationsEnabled).toBe(true)
+  })
+
   it('a fresh install moves as an empty code', () => {
     expect(movedFrom(DEFAULT_PREFS)).toEqual({ v: 1 })
   })

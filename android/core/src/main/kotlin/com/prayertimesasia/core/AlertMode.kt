@@ -64,7 +64,9 @@ fun Preferences.allFiveNotify(): Boolean = Prayer.obligatory.all { alertMode(it)
  * "Notify me for all 5 prayers": every main prayer that is Off goes to Notify.
  * A prayer on Alarm stays on Alarm. Sunrise is not touched.
  */
-fun Preferences.withNotifyAllFive(): Preferences = copy(notificationsEnabled = true, notifyPrayers = notifyPrayers + Prayer.obligatory)
+fun Preferences.withNotifyAllFive(): Preferences =
+    // Alerts were never turned on: an old saved list is only a leftover, so start clean (same as withNotify).
+    copy(notificationsEnabled = true, notifyPrayers = (if (notificationsEnabled) notifyPrayers else emptySet()) + Prayer.obligatory)
 
 /** The bell on the Prayer screen: Off, then Notify, then Alarm, then Off again. */
 fun Preferences.nextAlertMode(prayer: Prayer): AlertMode {

@@ -1,5 +1,6 @@
 import CoreLocation
 import Foundation
+import UserNotifications
 import Observation
 import SwiftUI
 
@@ -25,6 +26,17 @@ final class AppModel {
     var showJourney = false
     /// Alerts and alarms (the alarm chip on the Prayer screen, Settings, or holding a bell).
     var showWakeUp = false
+    /// The phone lets this app show notifications. Alerts that are on but not allowed must not look as if they work.
+    var notificationsAllowed = false
+    /// Show the "Get an alert" card: alerts are off, or on but the phone has not allowed them.
+    var showAlertsPrompt: Bool { (!prefs.notificationsEnabled || !notificationsAllowed) && !prefs.alertsPromptDismissed }
+    /// "All five on" is only true when the phone allows it (bells and the line under the list depend on this).
+    var allFiveOnAndAllowed: Bool { prefs.allFiveNotify && notificationsAllowed }
+
+    func refreshNotificationStatus() async {
+        let s = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        notificationsAllowed = s == .authorized || s == .provisional || s == .ephemeral
+    }
     /// The page Alerts and alarms opens on: a prayer's page when a bell was held.
     var alertsStart: AlertsPage?
 
@@ -596,6 +608,7 @@ final class AppModel {
     }
 
     func appBecameActive() {
+        Task { await refreshNotificationStatus() }
         location.refresh()
         refreshOfficialTimetable()
         Task { await mosques.refreshIfStale() }
@@ -980,7 +993,9 @@ final class AppModel {
     func askForAlertsAfterWelcome() {
         guard prefs.notificationsEnabled else { return }
         Task {
-            if await NotificationScheduler.requestPermission() { scheduleNotifications() }
+            let ok = await NotificationScheduler.requestPermission()
+            await refreshNotificationStatus()
+            if ok { scheduleNotifications() }
         }
     }
 

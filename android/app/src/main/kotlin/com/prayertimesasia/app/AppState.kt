@@ -139,6 +139,8 @@ class AppState(
         if (new == old) return
         prefs = new
         preferencesChanged(old)
+        // Picked a city by hand: no location question is waiting, so ask about alerts right away. GPS users are asked when the app comes back from that question.
+        if (!old.hasOnboarded && new.hasOnboarded && !new.useGPS) askNotificationsOnce()
     }
 
     private fun preferencesChanged(old: Preferences) {

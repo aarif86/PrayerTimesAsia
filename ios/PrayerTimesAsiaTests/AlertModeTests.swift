@@ -13,6 +13,14 @@ final class AlertModeTests: XCTestCase {
         XCTAssertTrue(p.allFiveNotify)
     }
 
+    func testAllFiveButtonDropsAnOldLeftoverList() {
+        var p = OLD()
+        p.notifyPrayers = [.sunrise, .asr]
+        p.notifyAllFive()
+        XCTAssertEqual(p.alertMode(.sunrise), .off)
+        XCTAssertTrue(p.allFiveNotify)
+    }
+
     func testSavedChoicesAreKept() throws {
         let off = try JSONDecoder().decode(Preferences.self, from: Data(#"{"notificationsEnabled":false}"#.utf8))
         XCTAssertFalse(off.notificationsEnabled)

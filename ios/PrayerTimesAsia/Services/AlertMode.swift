@@ -99,7 +99,8 @@ extension Preferences {
     /// "Notify me for all 5 prayers": every main prayer that is Off goes to Notify.
     /// A prayer on Alarm stays on Alarm. Sunrise is not touched.
     mutating func notifyAllFive() {
-        notificationsEnabled = true
+        // Alerts were never turned on: an old saved list is only a leftover, so start clean (same as setNotify).
+        if !notificationsEnabled { notificationsEnabled = true; notifyPrayers = [] }
         for prayer in Prayer.obligatory { notifyPrayers.insert(prayer) }
     }
 

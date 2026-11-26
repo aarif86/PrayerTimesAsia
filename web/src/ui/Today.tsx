@@ -441,9 +441,14 @@ function PrayerList({ c, fill, slim, footer }: { c: Ctx; fill: boolean; slim?: b
   )
 }
 
+/** All five on Notify and the browser lets us show them: only then is it true to say so. */
+function allFiveOn(): boolean {
+  return allFiveNotify(store.prefs) && permission() === 'granted'
+}
+
 /** Shown instead of five identical bells: every main prayer is on Notify. */
 function AllFiveLine() {
-  if (!allFiveNotify(store.prefs)) return null
+  if (!allFiveOn()) return null
   return (
     <button class="all-five-line" onClick={() => openSheet({ kind: 'wakeup' })}>
       <BellRing size={14} />
@@ -465,7 +470,7 @@ function PrayerRow({ p, t, now, day, isCurrent, next, onTap, slim, lit }: { p: P
   const passed = t <= now && !isCurrent
   const mode = alertMode(prefs, p)
   // All five on Notify: no repeating bells, one line under the list says so.
-  const hideBell = isObligatory(p) && allFiveNotify(prefs)
+  const hideBell = isObligatory(p) && allFiveOn()
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const local = store.localName(p, t)
@@ -758,7 +763,7 @@ function BandsPage({ c }: { c: Ctx }) {
 function PrayerBand({ p, t, jamaah, now, isCurrent, next }: { p: Prayer; t: number; jamaah?: number; now: number; isCurrent: boolean; next: Moment }) {
   const prefs = store.prefs
   const mode = alertMode(prefs, p)
-  const hideBell = isObligatory(p) && allFiveNotify(prefs)
+  const hideBell = isObligatory(p) && allFiveOn()
   const trackable = prefs.trackerEnabled && isObligatory(p) && t <= now
   const prayed = trackable && store.isPrayed(p, t)
   const parts = store.timeParts(t)

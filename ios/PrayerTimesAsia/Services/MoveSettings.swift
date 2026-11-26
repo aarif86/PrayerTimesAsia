@@ -33,6 +33,8 @@ struct MovedSettings: Codable, Equatable {
     var namingOverride: NamingStyle?
     var use24Hour: Bool?
     var hijriAdjustment: Int?
+    /// Written only when alerts are Off. A code without it leaves this phone's choice as it is.
+    var notificationsEnabled: Bool?
     var notifyPrayers: [Prayer]?
     var reminderMinutesBefore: Int?
     var musafirEnabled: Bool?
@@ -96,6 +98,7 @@ struct MovedSettings: Codable, Equatable {
         namingOverride = field(.namingOverride)
         use24Hour = field(.use24Hour)
         hijriAdjustment = field(.hijriAdjustment)
+        notificationsEnabled = field(.notificationsEnabled)
         notifyPrayers = (try? c.decodeIfPresent([Lenient<Prayer>].self, forKey: .notifyPrayers))?.map { $0.compactMap { $0.value } }
         reminderMinutesBefore = field(.reminderMinutesBefore)
         musafirEnabled = field(.musafirEnabled)
@@ -170,6 +173,7 @@ extension MovedSettings {
         namingOverride = p.namingOverride
         use24Hour = changed(p.use24Hour, false)  // always against 12 hour, since a fresh iPhone now copies the phone clock
         hijriAdjustment = changed(p.hijriAdjustment, d.hijriAdjustment)
+        notificationsEnabled = p.notificationsEnabled ? nil : false
         notifyPrayers = changed(p.notifyPrayers, d.notifyPrayers).map { set in Prayer.allCases.filter { set.contains($0) } }
         reminderMinutesBefore = changed(p.reminderMinutesBefore, d.reminderMinutesBefore)
         musafirEnabled = changed(p.musafirEnabled, d.musafirEnabled)
@@ -226,6 +230,7 @@ extension MovedSettings {
         out.namingOverride = namingOverride
         out.use24Hour = use24Hour ?? d.use24Hour
         out.hijriAdjustment = max(-2, min(2, hijriAdjustment ?? d.hijriAdjustment))
+        if let on = notificationsEnabled { out.notificationsEnabled = on }
         out.notifyPrayers = notifyPrayers.map(Set.init) ?? d.notifyPrayers
         out.reminderMinutesBefore = reminderMinutesBefore ?? d.reminderMinutesBefore
         out.musafirEnabled = musafirEnabled ?? d.musafirEnabled

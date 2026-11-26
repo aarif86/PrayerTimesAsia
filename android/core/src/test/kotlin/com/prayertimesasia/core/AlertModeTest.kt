@@ -17,6 +17,12 @@ class AlertModeTest {
         assertTrue(p.allFiveNotify())
     }
 
+    @Test fun allFiveButtonDropsAnOldLeftoverList() {
+        val p = OLD.copy(notifyPrayers = setOf(Prayer.SUNRISE, Prayer.ASR)).withNotifyAllFive()
+        assertEquals(AlertMode.OFF, p.alertMode(Prayer.SUNRISE))
+        assertTrue(p.allFiveNotify())
+    }
+
     @Test fun savedChoicesAreKept() {
         assertFalse(Preferences.decode("{\"notificationsEnabled\":false}").notificationsEnabled)
         assertFalse(Preferences.decode("{}").notificationsEnabled)

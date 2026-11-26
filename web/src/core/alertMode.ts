@@ -96,7 +96,8 @@ export function allFiveNotify(p: AlertPrefs): boolean {
  * A prayer on Alarm stays on Alarm. Sunrise is not touched.
  */
 export function notifyAllFive(p: AlertPrefs): void {
-  p.notificationsEnabled = true
+  // Alerts were never turned on: an old saved list is only a leftover, so start clean (same as setNotify).
+  if (!p.notificationsEnabled) { p.notificationsEnabled = true; p.notifyPrayers = [] }
   for (const x of OBLIGATORY) if (!p.notifyPrayers.includes(x)) p.notifyPrayers = [...p.notifyPrayers, x]
 }
 
