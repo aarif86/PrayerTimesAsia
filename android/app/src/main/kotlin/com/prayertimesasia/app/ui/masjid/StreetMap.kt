@@ -266,7 +266,8 @@ internal class MapCamera {
         val pts = near + listOf(Coordinates(c.latitude - d, c.longitude - dl), Coordinates(c.latitude + d, c.longitude + dl))
         val minLat = pts.minOf { it.latitude }; val maxLat = pts.maxOf { it.latitude }
         val minLng = pts.minOf { it.longitude }; val maxLng = pts.maxOf { it.longitude }
-        val usableH = max(80.0, heightDp - bottomDp)
+        val topDp = 56.0 // the title bar over the map
+        val usableH = max(80.0, heightDp - bottomDp - topDp)
         var z = 16.0
         while (z > 3) {
             val w = Mercator.x(maxLng, z) - Mercator.x(minLng, z)
@@ -274,8 +275,8 @@ internal class MapCamera {
             if (w <= widthDp - 72 && h <= usableH - 72) break
             z -= 0.125
         }
-        // Centre the framed area in the open part of the map, above the sheet.
-        val cy = (Mercator.y(minLat, z) + Mercator.y(maxLat, z)) / 2 + bottomDp / 2
+        // Centre the framed area in the open part of the map, between the title bar and the sheet.
+        val cy = (Mercator.y(minLat, z) + Mercator.y(maxLat, z)) / 2 + (bottomDp - topDp) / 2
         val cx = (Mercator.x(minLng, z) + Mercator.x(maxLng, z)) / 2
         lat = Mercator.lat(cy, z); lng = Mercator.lng(cx, z); zoom = z; target = null
     }
