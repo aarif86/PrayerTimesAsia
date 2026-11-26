@@ -148,12 +148,14 @@ function SkySlider({ place, now }: { place: Place; now: number }) {
         {shadow > 0 && (lit
           ? <>
               <line x1={STICK_X} y1={GY} x2={shadowEnd} y2={GY} class="sky-shadow" stroke-width="3" />
-              <text x={(STICK_X + shadowEnd) / 2} y={GY + 15} style={{ fill: ink }} font-size="11" font-weight="700" text-anchor="middle">{tr('falak.shadowLabel')}</text>
+              {/* The word steps aside for the Asr mark late in the day, so the two never cross. */}
+              {(morning || Math.abs((STICK_X + shadowEnd) / 2 - asrX) > 34) &&
+                <text x={(STICK_X + shadowEnd) / 2} y={GY + 15} class="sky-ground-ink" font-size="11" font-weight="700" text-anchor="middle">{tr('falak.shadowLabel')}</text>}
             </>
           : <path d={`M${STICK_X} ${GY} L${shadowEnd} ${GY + 3} L${shadowEnd} ${GY + 5} L${STICK_X} ${GY + 3}Z`} fill="#000" opacity=".38" />)}
         {!morning && sun.altitude > 0 && <>
           <line x1={asrX} y1={GY - 4} x2={asrX} y2={GY + 12} style={{ stroke: lit ? ink : '#fff' }} stroke-width="2" />
-          <text x={asrX} y={GY + 31} style={{ fill: lit ? ink : '#3a3a3c' }} font-size="10" font-weight="600" text-anchor="middle">{names.asr}</text>
+          <text x={asrX} y={GY + 31} class={lit ? 'sky-ground-ink' : undefined} style={lit ? undefined : { fill: '#3a3a3c' }} font-size="10" font-weight="600" text-anchor="middle">{names.asr}</text>
         </>}
         <rect x={STICK_X - 1.5} y={GY - STICK} width="3" height={STICK} rx="1.5" style={{ fill: lit ? 'var(--s-st)' : dark ? '#bbb' : '#3a3a3c' }} />
         <text x="12" y={GY - 7} style={{ fill: ink }} font-size="10" font-weight="700" opacity={lit ? 1 : 0.8}>{tr('falak.east').toUpperCase()}</text>
