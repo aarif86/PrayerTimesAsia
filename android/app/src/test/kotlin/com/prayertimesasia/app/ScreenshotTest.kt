@@ -118,6 +118,34 @@ class ScreenshotTest {
     @Test fun qibla_aligned_light() = shoot("07c-qibla-aligned-light", d(TodayStyle.LIST, Appearance.LIGHT, morning, tab = Tab.QIBLA, aligned = true))
     @Test fun falak() = shoot("08-falak", d(TodayStyle.LIST, tab = Tab.FALAK))
     @Test fun falak_day() = shoot("08b-falak-light-day", d(TodayStyle.LIST, Appearance.LIGHT, morning, tab = Tab.FALAK))
+
+    // Qibla and Falak in the five looks, light and dark, as on the web app's demo pictures
+    // (25 October 2026, 9:01 am, phone facing 118°), so the two can be laid side by side.
+    private val nineAm: Instant = java.time.ZonedDateTime.of(2026, 10, 25, 9, 1, 0, 0, java.time.ZoneId.of("Asia/Singapore")).toInstant()
+    private fun look(tab: Tab, style: TodayStyle, appearance: Appearance, tag: String) =
+        shoot("20-${tab.name.lowercase()}-$tag-${appearance.name.lowercase()}", d(style, appearance, nineAm, tab = tab)) { it.demoHeading = 118.0 }
+    @Test fun qibla_centre_light() = look(Tab.QIBLA, TodayStyle.CENTRE, Appearance.LIGHT, "centre")
+    @Test fun qibla_centre_dark() = look(Tab.QIBLA, TodayStyle.CENTRE, Appearance.DARK, "centre")
+    @Test fun qibla_sunpath_light() = look(Tab.QIBLA, TodayStyle.SUN_PATH, Appearance.LIGHT, "sunpath")
+    @Test fun qibla_sunpath_dark() = look(Tab.QIBLA, TodayStyle.SUN_PATH, Appearance.DARK, "sunpath")
+    @Test fun qibla_bands_light() = look(Tab.QIBLA, TodayStyle.BANDS, Appearance.LIGHT, "bands")
+    @Test fun qibla_bands_dark() = look(Tab.QIBLA, TodayStyle.BANDS, Appearance.DARK, "bands")
+    @Test fun qibla_simple_light() = look(Tab.QIBLA, TodayStyle.SIMPLE, Appearance.LIGHT, "simple")
+    @Test fun qibla_simple_dark() = look(Tab.QIBLA, TodayStyle.SIMPLE, Appearance.DARK, "simple")
+    @Test fun qibla_gold_light() = look(Tab.QIBLA, TodayStyle.GOLD, Appearance.LIGHT, "gold")
+    @Test fun qibla_gold_dark() = look(Tab.QIBLA, TodayStyle.GOLD, Appearance.DARK, "gold")
+    @Test fun qibla_sunpath_aligned() = shoot("20-qibla-sunpath-aligned", d(TodayStyle.SUN_PATH, Appearance.LIGHT, nineAm, tab = Tab.QIBLA, aligned = true))
+    @Test fun qibla_simple_aligned() = shoot("20-qibla-simple-aligned", d(TodayStyle.SIMPLE, Appearance.DARK, nineAm, tab = Tab.QIBLA, aligned = true))
+    @Test fun falak_centre_light() = look(Tab.FALAK, TodayStyle.CENTRE, Appearance.LIGHT, "centre")
+    @Test fun falak_centre_dark() = look(Tab.FALAK, TodayStyle.CENTRE, Appearance.DARK, "centre")
+    @Test fun falak_sunpath_light() = look(Tab.FALAK, TodayStyle.SUN_PATH, Appearance.LIGHT, "sunpath")
+    @Test fun falak_sunpath_dark() = look(Tab.FALAK, TodayStyle.SUN_PATH, Appearance.DARK, "sunpath")
+    @Test fun falak_bands_light() = look(Tab.FALAK, TodayStyle.BANDS, Appearance.LIGHT, "bands")
+    @Test fun falak_bands_dark() = look(Tab.FALAK, TodayStyle.BANDS, Appearance.DARK, "bands")
+    @Test fun falak_simple_light() = look(Tab.FALAK, TodayStyle.SIMPLE, Appearance.LIGHT, "simple")
+    @Test fun falak_simple_dark() = look(Tab.FALAK, TodayStyle.SIMPLE, Appearance.DARK, "simple")
+    @Test fun falak_gold_light() = look(Tab.FALAK, TodayStyle.GOLD, Appearance.LIGHT, "gold")
+    @Test fun falak_gold_dark() = look(Tab.FALAK, TodayStyle.GOLD, Appearance.DARK, "gold")
     @Test fun masjid() {
         OsmTiles.blocking = true
         val home = Coordinates(1.3721, 103.9474)
