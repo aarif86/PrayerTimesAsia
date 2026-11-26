@@ -67,6 +67,7 @@
   "today.appearanceButton": "Appearance is {name}. Switches between Automatic, Light and Dark.",
   "today.followsSky": "Automatic follows the sky",
   "today.styleButton": "Prayer screen style is {name}. Switches to the next style. Touch and hold to choose one.",
+  "today.menuButton": "More options",
   "today.trackerButton": "Prayer tracker, streak {n} days{extra}",
   "today.trackerPaused": ", paused",
   "today.trackerExcused": ", excused today",

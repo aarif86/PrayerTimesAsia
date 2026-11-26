@@ -69,6 +69,7 @@
     <string name="today_appearanceButton" formatted="false">Appearance is {name}. Switches between Automatic, Light and Dark.</string>
     <string name="today_followsSky" formatted="false">Automatic follows the sky</string>
     <string name="today_styleButton" formatted="false">Prayer screen style is {name}. Switches to the next style. Touch and hold to choose one.</string>
+    <string name="today_menuButton" formatted="false">More options</string>
     <string name="today_trackerButton" formatted="false">Prayer tracker, streak {n} days{extra}</string>
     <string name="today_trackerPaused" formatted="false">, paused</string>
     <string name="today_trackerExcused" formatted="false">, excused today</string>

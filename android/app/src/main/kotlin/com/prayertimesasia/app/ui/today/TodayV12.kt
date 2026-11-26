@@ -81,6 +81,8 @@ import com.prayertimesasia.app.alarms.AlarmScheduler
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.app.ui.components.HadithView
 import com.prayertimesasia.app.ui.components.tr
+import com.prayertimesasia.app.ui.components.trCount
+import androidx.lifecycle.compose.currentStateAsState
 import com.prayertimesasia.app.ui.theme.AppIcons
 import com.prayertimesasia.app.ui.theme.Body
 import com.prayertimesasia.app.ui.theme.LocalLook
@@ -140,7 +142,9 @@ internal fun pageColors(): PageColors {
 @Composable
 internal fun allFiveOn(state: AppState): Boolean {
     val context = LocalContext.current
-    val allowed = remember(state.prefs.notificationsEnabled) {
+    // Read again whenever the app comes back, as the phone's settings can change while away.
+    val resumed = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle.currentStateAsState().value.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+    val allowed = remember(state.prefs.notificationsEnabled, resumed) {
         runCatching { NotificationManagerCompat.from(context).areNotificationsEnabled() }.getOrDefault(true)
     }
     return state.prefs.notificationsEnabled && state.prefs.allFiveNotify() && allowed
@@ -216,7 +220,7 @@ private fun TopBarV12(f: TodayFrame, openPlaces: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         // The chip takes the room the buttons leave, and shrinks only when the name is long.
         Box(Modifier.weight(1f)) { PlaceChipV12(state, openPlaces) }
-        if (state.prefs.musafirEnabled && state.resolver.musafirStatus(f.now)?.isTraveller == true) {
+        if (state.prefs.musafirEnabled && state.prefs.musafirChipDismissed && state.resolver.musafirStatus(f.now)?.isTraveller == true) {
             RoundButton(AppIcons.journey, tr(R.string.today_musafirButton), iconSize = 18.dp,
                 background = pageColors().accent.copy(alpha = 0.25f)) { state.showJourney = true }
         }
@@ -298,7 +302,7 @@ private fun MenuButtonV12(f: TodayFrame) {
     var open by remember { mutableStateOf(false) }
     var looks by remember { mutableStateOf(false) }
     Box {
-        RoundButton(Lucide.ellipsis(), tr(R.string.today_styleButton, "name" to state.prefs.todayStyle.look.label), iconSize = 18.dp) { open = true }
+        RoundButton(Lucide.ellipsis(), tr(R.string.today_menuButton), iconSize = 18.dp) { open = true }
         if (open) {
             val close = { open = false; looks = false }
             Popup(
@@ -332,7 +336,7 @@ private fun MenuButtonV12(f: TodayFrame) {
                             !state.prefs.trackerEnabled -> tr(R.string.common_off)
                             state.prefs.trackerPausedSince != null -> tr(R.string.today_trackerPaused).removePrefix(",").trim()
                             r.isExcused(f.now) -> tr(R.string.today_trackerExcused).removePrefix(",").trim()
-                            else -> tr(R.string.menu_days, "n" to r.streak(f.now))
+                            else -> r.streak(f.now).let { n -> trCount(R.string.menu_days, R.string.menu_days_one, n, "n" to n) }
                         }
                         MenuItem(Lucide.circleCheck(), tr(R.string.menu_streak), streak, null) { close(); state.showTracker = true }
                     }
@@ -558,8 +562,7 @@ private fun DayNavigatorV12(f: TodayFrame, setOffset: (Int) -> Unit, openCalenda
             Icon(Lucide.chevronLeft(), null, Modifier.size(26.dp), tint = col.fg2)
         }
         Column(
-            Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).clickable { if (f.offset == 0) openCalendar() else setOffset(0) }
-                .semantics { contentDescription = midL },
+            Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).clickable(onClickLabel = midL) { if (f.offset == 0) openCalendar() else setOffset(0) },
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(dateText(state, f.shown, "EEE d MMM"), fontFamily = Body, fontSize = 18.sp, lineHeight = 21.6.sp, fontWeight = FontWeight.Bold,
@@ -643,7 +646,6 @@ private fun PrayerRowV12(
     Row(
         Modifier.fillMaxWidth()
             .heightIn(min = rowHeight ?: if (simple) 62.dp else 54.dp)
-            .then(if (rowHeight != null) Modifier.height(rowHeight) else Modifier)
             .background(rowBg)
             .drawBehind {
                 drawLine(hair, Offset(0f, size.height - 0.5.dp.toPx()), Offset(size.width, size.height - 0.5.dp.toPx()), 1.dp.toPx())
@@ -876,8 +878,7 @@ private fun BandsV12(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -> 
                     .semantics { contentDescription = prevL }, contentAlignment = Alignment.Center) {
                     Icon(Lucide.chevronLeft(2.6f), null, Modifier.size(20.dp), tint = col.fg2)
                 }
-                Row(Modifier.weight(1f).clickable { if (f.offset == 0) openCalendar() else setOffset(0) }
-                    .semantics(mergeDescendants = true) { contentDescription = midL }
+                Row(Modifier.weight(1f).clickable(onClickLabel = midL) { if (f.offset == 0) openCalendar() else setOffset(0) }
                     .heightIn(min = 48.dp).padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
                     if (f.offset != 0) Icon(Lucide.undo2(), null, Modifier.size(13.dp), tint = col.fg)
@@ -940,9 +941,9 @@ private fun BandV12(
     val parts = r.timeParts(time)
     val name = r.prayerName(prayer, time)
     Row(
-        Modifier.fillMaxWidth().height(height).background(bandColor(prayer))
+        Modifier.fillMaxWidth().heightIn(min = height).background(bandColor(prayer))
             .combinedClickable(
-                onClickLabel = if (trackable) (if (prayed) "Mark as not prayed" else "Mark as prayed") else "Change to ${p.nextAlertMode(prayer).word}",
+                onClickLabel = if (trackable) (if (prayed) "Mark as not prayed" else "Mark as prayed") else if (hideBell) "Open Alerts and alarms" else "Change to ${p.nextAlertMode(prayer).word}",
                 onLongClickLabel = "Open $name in Alerts and alarms",
                 onLongClick = { state.openAlerts(prayer.raw) },
                 onClick = { if (trackable) state.togglePrayed(prayer, time) else if (hideBell) state.openAlerts() else state.cycleAlert(prayer) },

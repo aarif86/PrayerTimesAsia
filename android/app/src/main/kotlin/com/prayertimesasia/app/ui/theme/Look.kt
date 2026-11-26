@@ -115,7 +115,7 @@ data class Look(val style: TodayStyle, val dark: Boolean, val c: LookColors) {
                     tint = Color(0xFFE2B65A).copy(alpha = 0.14f), radius = 20.dp,
                     sky1 = Color(0xFF0B0F2A), sky2 = Color(0xFF1C2258), ground = Color(0xFF151A45), stick = Color(0xFFEEF0FA),
                 ) else LookColors(
-                    tx = Color(0xFF151A45), tx2 = Color(0xFF5B6188), tx3 = Color(0xFF8B90AE),
+                    tx = Color(0xFF151A45), tx2 = Color(0xFF5B6188), tx3 = Color(0xFF62688C), // tx3 deeper than the web (#8B90AE) so small words pass 4.5 to 1
                     card = Color.White, stroke = Color(0xFF151A45).copy(alpha = 0.07f), sep = Color(0xFF151A45).copy(alpha = 0.08f),
                     accent = Color(0xFFE2B65A), accentText = Color(0xFF8A6410), button = Color(0xFFE2B65A), onButton = Color(0xFF151100),
                     tint = Color(0xFFE2B65A).copy(alpha = 0.2f), radius = 20.dp,

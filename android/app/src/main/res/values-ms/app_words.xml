@@ -69,6 +69,7 @@
     <string name="today_appearanceButton" formatted="false">Paparan ialah {name}. Bertukar antara Automatik, Cerah dan Gelap.</string>
     <string name="today_followsSky" formatted="false">Automatik mengikut langit</string>
     <string name="today_styleButton" formatted="false">Gaya skrin solat ialah {name}. Bertukar ke gaya seterusnya. Sentuh dan tahan untuk memilih.</string>
+    <string name="today_menuButton" formatted="false">Pilihan lain</string>
     <string name="today_trackerButton" formatted="false">Penjejak solat, berturut {n} hari{extra}</string>
     <string name="today_trackerPaused" formatted="false">, dijeda</string>
     <string name="today_trackerExcused" formatted="false">, uzur hari ini</string>

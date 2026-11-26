@@ -67,6 +67,7 @@
   "today.appearanceButton": "Tampilan saat ini {name}. Berganti antara Otomatis, Terang dan Gelap.",
   "today.followsSky": "Otomatis mengikuti langit",
   "today.styleButton": "Gaya layar salat saat ini {name}. Berganti ke gaya berikutnya. Sentuh dan tahan untuk memilih.",
+  "today.menuButton": "Opsi lainnya",
   "today.trackerButton": "Pencatat salat, beruntun {n} hari{extra}",
   "today.trackerPaused": ", dijeda",
   "today.trackerExcused": ", uzur hari ini",

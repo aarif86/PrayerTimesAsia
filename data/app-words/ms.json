@@ -67,6 +67,7 @@
   "today.appearanceButton": "Paparan ialah {name}. Bertukar antara Automatik, Cerah dan Gelap.",
   "today.followsSky": "Automatik mengikut langit",
   "today.styleButton": "Gaya skrin solat ialah {name}. Bertukar ke gaya seterusnya. Sentuh dan tahan untuk memilih.",
+  "today.menuButton": "Pilihan lain",
   "today.trackerButton": "Penjejak solat, berturut {n} hari{extra}",
   "today.trackerPaused": ", dijeda",
   "today.trackerExcused": ", uzur hari ini",

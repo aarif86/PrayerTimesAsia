@@ -69,6 +69,7 @@
     <string name="today_appearanceButton" formatted="false">Tampilan saat ini {name}. Berganti antara Otomatis, Terang dan Gelap.</string>
     <string name="today_followsSky" formatted="false">Otomatis mengikuti langit</string>
     <string name="today_styleButton" formatted="false">Gaya layar salat saat ini {name}. Berganti ke gaya berikutnya. Sentuh dan tahan untuk memilih.</string>
+    <string name="today_menuButton" formatted="false">Opsi lainnya</string>
     <string name="today_trackerButton" formatted="false">Pencatat salat, beruntun {n} hari{extra}</string>
     <string name="today_trackerPaused" formatted="false">, dijeda</string>
     <string name="today_trackerExcused" formatted="false">, uzur hari ini</string>
