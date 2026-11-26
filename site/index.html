@@ -165,6 +165,14 @@
       border-radius: 38px; padding: 8px; background: #05071a;
       box-shadow: 0 0 0 1.5px #ffffff22, 0 30px 60px -20px #000c, 0 0 80px -20px #f39a4a44;
     }
+    .looks { margin: 72px 0 24px; }
+    .looks-row { display: flex; gap: 16px; justify-content: safe center; margin: 28px 0 14px; overflow-x: auto; padding: 6px 4px 14px; scroll-snap-type: x proximity; }
+    .looks-row figure { margin: 0; flex: 0 0 168px; text-align: center; scroll-snap-align: center; }
+    .looks-row .phone { border-radius: 26px; padding: 5px; }
+    .looks-row .phone img { border-radius: 21px; aspect-ratio: 603 / 1307; }
+    .looks-row figcaption { margin-top: 10px; font-weight: 700; font-size: 0.92rem; color: var(--muted); }
+    .looks-note { font-size: 0.9rem; }
+    @media (min-width: 1000px) { .looks-row { overflow: visible; } }
     .phone img { display: block; border-radius: 31px; width: 100%; height: auto; aspect-ratio: 603 / 1311; }
     /* Android: squarer corners, thin even bezel and a punch hole camera. */
     .phone.android { border-radius: 28px; padding: 6px; background: #0a0b12; }
@@ -649,8 +657,8 @@
         <p class="note"><a href="#story">Read the story</a> · With <a href="https://nasardigital.com/" target="_blank" rel="noopener">Nasar Digital</a> (Nasar Pte Ltd)</p>
       </div>
       <div class="hero-phones" aria-hidden="true">
-        <div class="phone android back"><img src="img/android-dial.webp" srcset="img/android-dial-400.webp 400w, img/android-dial.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1307" fetchpriority="high" /></div>
-        <div class="phone front"><img src="img/today.webp" srcset="img/today-400.webp 400w, img/today.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1311" fetchpriority="high" /></div>
+        <div class="phone back"><img src="img/look-gold-day.webp" srcset="img/look-gold-day-400.webp 400w, img/look-gold-day.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1307" fetchpriority="high" /></div>
+        <div class="phone front"><img src="img/look-centre-night.webp" srcset="img/look-centre-night-400.webp 400w, img/look-centre-night.webp 603w" sizes="(max-width: 900px) 205px, 260px" alt="" width="603" height="1307" fetchpriority="high" /></div>
       </div>
     </div>
   </section>
@@ -810,7 +818,7 @@
         <div class="copy">
           <span class="tag live">Prayer times</span>
           <h3>The times you trust, at a glance</h3>
-          <p class="muted">A clock counts down to the next prayer, with all of today's times below it. Choose the look you like, in light or dark.</p>
+          <p class="muted">A clock counts down to the next prayer, with all of today's times below it. Pick from five looks, in light or dark.</p>
           <ul>
             <li>Singapore uses the official MUIS times, Malaysia uses JAKIM for your zone, and Indonesia uses Kemenag for your area</li>
             <li>Prayer names in the way you say them, Subuh or Fajr, Zohor or Dhuhr</li>
@@ -822,8 +830,41 @@
           <p class="tribute">The Colour Bands look is our tribute to prayertime.sg &amp; my, the Singapore app many of us grew up with.</p>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/today.webp" alt="The Prayer screen, with how long is left to pray and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone android"><img src="img/android-bands.webp" alt="The Colour Bands style, each prayer time on its own bright band" loading="lazy" width="603" height="1307" /></div>
+          <div class="phone"><img src="img/look-centre-day.webp" alt="The Prayer screen, with how long is left to pray and today's times in Pasir Ris, Singapore" loading="lazy" width="603" height="1307" /></div>
+          <div class="phone"><img src="img/look-bands-night.webp" alt="The Colour Bands style, each prayer time on its own bright band" loading="lazy" width="603" height="1307" /></div>
+        </div>
+      </div>
+
+      <div class="looks reveal">
+        <div class="center">
+          <span class="tag live">Looks</span>
+          <h3>Five looks to pick from</h3>
+          <p class="muted">Light or dark, whichever feels like you. Big and Simple is made for easy reading, for the whole family.</p>
+        </div>
+        <div class="looks-row">
+          <figure><div class="phone"><img src="img/look-centre-night.webp" alt="The Centre Dial look" loading="lazy" width="603" height="1307" /></div><figcaption>Centre Dial</figcaption></figure>
+          <figure><div class="phone"><img src="img/look-sunpath-day.webp" alt="The Sun Path look" loading="lazy" width="603" height="1307" /></div><figcaption>Sun Path</figcaption></figure>
+          <figure><div class="phone"><img src="img/look-bands-night.webp" alt="The Colour Bands style, each prayer time on its own bright band" loading="lazy" width="603" height="1307" /></div><figcaption>Colour Bands</figcaption></figure>
+          <figure><div class="phone"><img src="img/look-simple-day.webp" alt="The Big and Simple look" loading="lazy" width="603" height="1307" /></div><figcaption>Big and Simple</figcaption></figure>
+          <figure><div class="phone"><img src="img/look-gold-day.webp" alt="The Calm Gold look" loading="lazy" width="603" height="1307" /></div><figcaption>Calm Gold</figcaption></figure>
+        </div>
+        <p class="muted center looks-note">Live in the web app now. Coming to the iPhone and Android apps in the next update.</p>
+      </div>
+
+      <div class="feature flip">
+        <div class="copy">
+          <span class="tag live">Alerts and alarms</span>
+          <h3>Rings when you want, quiet when you need</h3>
+          <p class="muted">Pick Alarm, Notify or Off for each prayer, or set all five in one tap. It rings when you want it to, and stays quiet when you need it to.</p>
+          <ul>
+            <li>A reminder before each prayer begins</li>
+            <li>An early reminder when you are away from home</li>
+            <li>Send yourself a test alert, so you know it will ring</li>
+          </ul>
+          <p class="muted">Live in the web app now. Coming to the iPhone and Android apps in the next update.</p>
+        </div>
+        <div class="shot">
+          <div class="phone"><img src="img/alerts-list.webp" alt="Alerts and alarms, with set for all prayers, send a test alert, and Off, Notify or Alarm for each prayer" loading="lazy" width="603" height="1307" /></div>
         </div>
       </div>
 
@@ -840,8 +881,8 @@
           </ul>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/travel.webp" alt="Arriving in Hanoi, a welcome card explains the app switched to the Southeast Asia method" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone android"><img src="img/android-journey.webp" alt="Journey, 2,195 km from home, you may shorten and combine prayers" loading="lazy" width="603" height="1307" /></div>
+          <div class="phone"><img src="img/travel-hanoi.webp" alt="Arriving in Hanoi, a welcome card explains the app switched to the Southeast Asia method" loading="lazy" width="603" height="1307" /></div>
+          <div class="phone"><img src="img/journey-new.webp" alt="Journey, 2,195 km from home, you may shorten and combine prayers" loading="lazy" width="603" height="1307" /></div>
         </div>
       </div>
 
@@ -857,8 +898,8 @@
           </ul>
         </div>
         <div class="shot">
-          <div class="phone"><img src="img/qibla.webp" alt="The qibla compass showing Aligned, facing 293 degrees" loading="lazy" width="603" height="1311" /></div>
-          <div class="phone android"><img src="img/android-falak.webp" alt="Falak, the shadow right now and the days to the next Qibla Day" loading="lazy" width="603" height="1307" /></div>
+          <div class="phone"><img src="img/qibla-aligned.webp" alt="The qibla compass showing Aligned, facing 293 degrees" loading="lazy" width="603" height="1307" /></div>
+          <div class="phone"><img src="img/falak-day.webp" alt="Falak, the shadow right now and the days to the next Qibla Day" loading="lazy" width="603" height="1307" /></div>
         </div>
       </div>
 
@@ -937,7 +978,7 @@
           <div class="also-card"><b>Your masjid's jamaah times</b><span>Pick your masjid and its jamaah time shows under each prayer, with a countdown.</span><button class="also-show" type="button" data-app="?demo&amp;masjid=on">Show me</button></div>
           <div class="also-card"><b>More at the masjid</b><span>Facilities and opening hours, Open now, the Singapore masjids with two Friday sessions, an Eid prayer card, and a button to report a wrong pin.</span><button class="also-show" type="button" data-app="?demo&amp;tab=masjid">Show me</button></div>
           <div class="also-card"><b>Easy for everyone</b><span>Works with screen readers on iPhone and Android, Bigger text for every word, and Big and Simple for our parents.</span><button class="also-show" type="button" data-app="?demo&amp;large=1">Show me</button></div>
-          <div class="also-card"><b>More for Ramadan</b><span>A Tarawih counter, the last ten nights, zakat al-Fitr links to your official body, and duas for sahur and iftar.</span><button class="also-show" type="button" data-app="?demo&amp;season=ramadan&amp;open=ramadan">Show me</button></div>
+          <div class="also-card"><b>More for Ramadan</b><span>A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.</span><button class="also-show" type="button" data-app="?demo&amp;season=ramadan&amp;open=ramadan">Show me</button></div>
           <div class="also-card"><b>Where you've prayed</b><span>A travel log of each country you prayed in, and the combined prayer windows while you're on the road.</span><button class="also-show" type="button" data-app="?demo=travel&amp;open=journey">Show me</button></div>
           <div class="also-card"><b>A grade on every day</b><span>Each day shows where its times come from. A is official, B is confirmed by a masjid, C is checked by the community, D is calculated.</span><button class="also-show" type="button" data-app="?demo">Show me</button></div>
           <div class="also-card"><b>Dhuha and the night times</b><span>Tap Show more for Dhuha, the last third of the night and more. The white days are marked in the Hijri calendar.</span><button class="also-show" type="button" data-app="?demo&amp;more=1">Show me</button></div>
