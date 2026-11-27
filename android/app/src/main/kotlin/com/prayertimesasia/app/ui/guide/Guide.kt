@@ -83,7 +83,6 @@ import com.prayertimesasia.core.GuideWords
 import com.prayertimesasia.core.RamadanContent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 private val Navy = Color(0xFF151A45)
 private val Gold = Color(0xFFF7BD8F)
@@ -122,7 +121,7 @@ fun GuideDialog(state: AppState, onClose: () -> Unit) {
 
 @Composable
 private fun GuideContent(state: AppState, finish: () -> Unit) {
-    var lang by remember { mutableStateOf(GuideWords.startLanguage(state.resolver.naming, Locale.getDefault().language)) }
+    var lang by remember { mutableStateOf(state.resolver.appLang) }
     val cards = GuideWords.cards
     val pager = rememberPagerState { cards.size }
     val scope = rememberCoroutineScope()

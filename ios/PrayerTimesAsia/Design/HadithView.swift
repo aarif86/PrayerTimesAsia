@@ -23,7 +23,7 @@ struct HadithView: View {
 
     private var content: some View {
         let h = Hadith.of(id)
-        let lang = RamadanContent.lang(model.naming)
+        let lang = model.appLang
         let words = VStack(alignment: .leading, spacing: style == .card ? 8 : 6) {
             Text(h.arabic)
                 .font(.system(size: style == .card ? 22 : 19))

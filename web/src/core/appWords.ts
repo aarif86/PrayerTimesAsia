@@ -38,6 +38,14 @@ export function appLangFromLocales(locales: readonly string[]): Lang3 {
   return 'en'
 }
 
+/**
+ * The language of the app's words: the pick in Settings, else the browser's language. The prayer
+ * names setting is never part of it, so Subuh and Zohor can sit on an English Ramadan page.
+ */
+export function resolveAppLang(pick: Lang3 | null, locales: readonly string[]): Lang3 {
+  return pick ?? appLangFromLocales(locales)
+}
+
 /** Each language in its own words, the same in every app language. */
 export const APP_LANGUAGE_LABEL: Record<Lang3, string> = { en: 'English', ms: 'Bahasa Melayu', id: 'Bahasa Indonesia' }
 

@@ -77,7 +77,7 @@ object AlarmScheduler {
             if (jumuah > 0 && !p.jumuahLeaveAlarm && r.isFriday(day.time(Prayer.DHUHR))) {
                 val j = r.jumuahStart(day)
                 val at = j.at.minusSeconds(jumuah * 60L)
-                val (title, body) = JumuahLeave.words(RamadanContent.lang(r.naming), jumuah, Prayer.DHUHR.name(r.naming, true),
+                val (title, body) = JumuahLeave.words(r.appLang, jumuah, Prayer.DHUHR.name(r.naming, true),
                     j.second, r.formatted(j.at), j.where)
                 out += Alert("$key-jumuah", title, body, at, Kind.JUMUAH, silent = r.isSilent(at, Prayer.DHUHR))
             }
@@ -117,7 +117,7 @@ object AlarmScheduler {
                             silent = r.isSilent(time, prayer))
                         continue
                     }
-                    out += Alert(id, "$name · ${r.formatted(time)}", AlertLines.line(RamadanContent.lang(r.naming), prayer, r.isFriday(time), day.year, day.month, day.day, name), time, Kind.PRAYER, sound,
+                    out += Alert(id, "$name · ${r.formatted(time)}", AlertLines.line(r.appLang, prayer, r.isFriday(time), day.year, day.month, day.day, name), time, Kind.PRAYER, sound,
                         silent = r.isSilent(time, prayer))
                 }
             }
@@ -162,7 +162,7 @@ object AlarmScheduler {
 
     /** Settings, Hadith: one line under a wake-up alert, or nothing when it is off. */
     private fun hadithLine(r: Resolver, id: HadithId): String =
-        if (r.prefs.hadithInAlerts) "\n" + Hadith.of(id).alertLine(RamadanContent.lang(r.naming)) else ""
+        if (r.prefs.hadithInAlerts) "\n" + Hadith.of(id).alertLine(r.appLang) else ""
 
     /** Every alarm on one day (Subuh, sahur and the other prayers), as they ring. */
     private fun wakeUps(r: Resolver, day: com.prayertimesasia.core.PrayerDay, key: String, placeName: String): List<Alert> {
@@ -194,7 +194,7 @@ object AlarmScheduler {
         val leave = p.jumuahReminderMinutes
         if (p.jumuahLeaveAlarm && leave > 0 && r.isFriday(day.time(Prayer.DHUHR))) {
             val j = r.jumuahStart(day)
-            val (title, body) = JumuahLeave.words(RamadanContent.lang(r.naming), leave, Prayer.DHUHR.name(r.naming, true),
+            val (title, body) = JumuahLeave.words(r.appLang, leave, Prayer.DHUHR.name(r.naming, true),
                 j.second, r.formatted(j.at), j.where)
             out += Alert("$key-jumuah-alarm", title, body, j.at.minusSeconds(leave * 60L), Kind.WAKE)
         }

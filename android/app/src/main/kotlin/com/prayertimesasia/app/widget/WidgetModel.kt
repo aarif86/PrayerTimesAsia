@@ -69,7 +69,7 @@ data class WidgetModel(
                 nextTime = next?.let { r.formatted(it.second) },
                 zone = r.zone,
                 fast = r.fastingMoment(now)?.let { (kind, at) ->
-                    val t = RamadanWords.In(RamadanContent.lang(r.naming))
+                    val t = RamadanWords.In(r.appLang)
                     FastMoment(kind, at, t(if (kind == Resolver.FastingKind.IMSAK) RamadanWordKey.imsak else RamadanWordKey.berbuka), r.formatted(at))
                 },
             )

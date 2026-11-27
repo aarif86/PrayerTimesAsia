@@ -36,7 +36,7 @@ struct GuideView: View {
         .foregroundStyle(.white)
         .environment(\.colorScheme, .dark)
         .onAppear {
-            if !started { lang = GuideWords.startLanguage(naming: model.naming); started = true }
+            if !started { lang = model.appLang; started = true }
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(t("label"))
