@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -159,6 +160,9 @@ fun SkyTheme(state: AppState, forceDark: Boolean = false, content: @Composable (
     }
 }
 
+/** The widest the app's page grows: a phone column. Wider screens centre it. */
+private val MaxColumn = 560.dp
+
 @Composable
 fun PrayerTimesRoot(state: AppState) {
     // "Bigger text" in Settings: everything a fifth larger, on top of the phone's own text size.
@@ -193,10 +197,12 @@ private fun RootContent(state: AppState) {
             // Colour Bands and Calm Gold: a flat page on every tab, as on the web. The others: the Living Sky.
             val backdrop = LocalLook.current.backdrop
             if (backdrop != null) Box(Modifier.fillMaxSize().background(backdrop)) else LivingSkyBackground(state.skyNow)
-            Box(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(bottom = 78.dp)) {
+            // Tablets, an unfolded Fold and a Duo spread over both screens: the page stays one phone-width column in the
+            // middle (like the web app), with the sky or flat page running edge to edge behind it.
+            Box(Modifier.align(Alignment.TopCenter).widthIn(max = MaxColumn).fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(bottom = 78.dp)) {
                 TabContent(state) { overlay = it }
             }
-            TabBar(state, Modifier.align(Alignment.BottomCenter))
+            TabBar(state, Modifier.align(Alignment.BottomCenter).widthIn(max = MaxColumn))
             if (state.showJourney) {
                 Dialog(onDismissRequest = { state.showJourney = false },
                     properties = DialogProperties(usePlatformDefaultWidth = false)) {
