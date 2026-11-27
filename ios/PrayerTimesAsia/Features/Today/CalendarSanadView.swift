@@ -48,7 +48,7 @@ struct CalendarSanadView: View {
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
                     } header: {
-                        Text("\(item.event.title(model.naming)) \(String(item.hijriYear)) AH")
+                        Text("\(item.event.title(lang: model.appLang)) \(String(item.hijriYear)) AH")
                     }
                 }
 

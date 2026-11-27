@@ -241,7 +241,7 @@ fun CalendarSheetContent(state: AppState, onShowDay: ((Int) -> Unit)? = null) {
                 style = Txt.footnote, color = Palette.secondary)
         }
         items(CalendarSanad.upcoming(state.now, r.zone)) { item ->
-            SectionHeader("${item.event.title(r.naming)} ${item.hijriYear} AH")
+            SectionHeader("${item.event.title(r.appLang)} ${item.hijriYear} AH")
             CalendarSanad.expected(item.event, item.hijriYear)?.let {
                 CalendarRow("Expected", it.format(fmt), "Astronomical estimate (Umm al-Qura calendar). Local dates may differ by a day.", null, false)
             }

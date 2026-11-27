@@ -396,7 +396,7 @@ fun MusafirChip(state: AppState) {
 fun LongDaysNote(state: AppState, now: Instant) {
     val r = state.resolver
     val key = r.longDaysNote(now) ?: return
-    val w = LongDays.words(RamadanContent.lang(r.naming))
+    val w = LongDays.words(r.appLang)
     GlassCard {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(Icons.Filled.LightMode, null, Modifier.size(26.dp), tint = Palette.accent)

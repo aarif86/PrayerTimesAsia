@@ -103,7 +103,7 @@ private fun whenWords(from: LocalDate, d: LocalDate, t: RamadanWords.In): String
 }
 
 /** The Ramadan words in the language of the prayer names. */
-private fun words(state: AppState): RamadanWords.In = RamadanWords.In(RamadanContent.lang(state.resolver.naming))
+private fun words(state: AppState): RamadanWords.In = RamadanWords.In(state.resolver.appLang)
 
 private fun countdown(from: Instant, to: Instant): String {
     val s = Duration.between(from, to).seconds.coerceAtLeast(0)
@@ -491,7 +491,7 @@ private fun LastTen(state: AppState, year: Int) {
 
 @Composable
 private fun DoaList(state: AppState, ids: List<DoaId>) {
-    val lang = RamadanContent.lang(state.resolver.naming)
+    val lang = state.resolver.appLang
     var open by remember { mutableStateOf<DoaId?>(null) }
     SectionHeader(RamadanWords.text(RamadanWordKey.doaAndNiat, lang))
     ids.forEach { id ->
@@ -517,7 +517,7 @@ private fun DoaList(state: AppState, ids: List<DoaId>) {
 private fun Zakat(state: AppState, year: Int) {
     val r = state.resolver
     val uri = LocalUriHandler.current
-    val lang = RamadanContent.lang(r.naming)
+    val lang = r.appLang
     val code = state.prefs.home?.countryCode ?: r.profile.code
     val bodies = RamadanContent.zakat[code].orEmpty()
     val t = RamadanWords.In(lang)

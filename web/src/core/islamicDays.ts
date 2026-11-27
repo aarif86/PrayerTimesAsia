@@ -69,7 +69,8 @@ const NAMES: Record<IslamicDayKind, Record<Lang, string>> = {
   whiteDay: { en: 'White days', ms: 'Hari putih', id: 'Ayyamul bidh' },
 }
 
-export const islamicDayName = (k: IslamicDayKind, s: NamingStyle): string => NAMES[k][lang(s)]
+export const islamicDayNameIn = (k: IslamicDayKind, l: Lang): string => NAMES[k][l]
+export const islamicDayName = (k: IslamicDayKind, s: NamingStyle): string => islamicDayNameIn(k, lang(s))
 
 /** Short names that fit inside a calendar day. */
 const SHORT: Partial<Record<IslamicDayKind, Record<Lang, string>>> = {
@@ -89,7 +90,8 @@ const SHORT: Partial<Record<IslamicDayKind, Record<Lang, string>>> = {
   arafah: { en: 'Arafah', ms: 'Arafah', id: 'Arafah' },
   aidiladha: { en: 'Eid al-Adha', ms: 'Aidiladha', id: 'Iduladha' },
 }
-export const islamicDayShort = (k: IslamicDayKind, s: NamingStyle): string => SHORT[k]?.[lang(s)] ?? NAMES[k][lang(s)]
+export const islamicDayShortIn = (k: IslamicDayKind, l: Lang): string => SHORT[k]?.[l] ?? NAMES[k][l]
+export const islamicDayShort = (k: IslamicDayKind, s: NamingStyle): string => islamicDayShortIn(k, lang(s))
 
 /** Words for the calendar sheet, in the user's language. No colons or dashes. */
 export const HIJRI_CAL_WORDS: Record<Lang, {
@@ -129,7 +131,8 @@ export const HIJRI_CAL_WORDS: Record<Lang, {
   },
 }
 
-export const hijriCalWords = (s: NamingStyle) => HIJRI_CAL_WORDS[lang(s)]
+export const hijriCalWordsIn = (l: Lang) => HIJRI_CAL_WORDS[l]
+export const hijriCalWords = (s: NamingStyle) => hijriCalWordsIn(lang(s))
 
 /** Hijri month names short enough for a calendar day (English and Malay/Indonesian; others use the full name). */
 export function hijriMonthShort(month: number, s: NamingStyle, full: string): string {

@@ -3,7 +3,7 @@ import {
   BadgeCheck, Building2, Check, Globe, House, Navigation, CircleCheck, CircleX, Search, Share, SquarePlus, Trash2, Users, Sigma, SunDim,
 } from 'lucide-preact'
 import {
-  announcementDate, AUTHORITIES, authorityName, basisLabel, eventTitle, expectedDate, upcomingEvents,
+  announcementDate, AUTHORITIES, authorityName, basisLabel, eventTitleIn, expectedDate, upcomingEvents,
 } from '../core/calendarSanad'
 import type { PrayerDay } from '../core/engine'
 import { musafirDistanceCheck, musafirGuidance, musafirPlan } from '../core/musafir'
@@ -251,7 +251,7 @@ export function CalendarSheet() {
         const announcedMine = entries.some((a) => a.authority === mine && a.status === 'announced')
         return (
           <section>
-            <h3 class="group-title" style={{ fontSize: '15px' }}>{eventTitle(u.event, s.naming)} {u.hijriYear} {tr('calendar.ah')}</h3>
+            <h3 class="group-title" style={{ fontSize: '15px' }}>{eventTitleIn(u.event, s.appLang)} {u.hijriYear} {tr('calendar.ah')}</h3>
             <div class="group">
               <div class="item" style={{ alignItems: 'flex-start' }}>
                 <div class="label"><div class="subhead" style={{ fontWeight: 600 }}>{tr('calendar.expected')}</div><div class="caption secondary">{tr('calendar.estimateExplain')}</div></div>

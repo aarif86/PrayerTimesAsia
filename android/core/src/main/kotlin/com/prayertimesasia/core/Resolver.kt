@@ -29,6 +29,14 @@ class Resolver(
     /** The authority's published Islamic calendar (month starts) from data/calendar.json. */
     val monthStarts: List<MonthStart> = emptyList(),
 ) {
+    /**
+     * The language of the app's own words (Ramadan page, alert lines, hadith cards, widgets): the app's
+     * language, Malay or Indonesian only when the phone or the app language setting says so, else English.
+     * Never the prayer names setting, which only changes how Fajr or Subuh is written.
+     */
+    val appLang: RamadanContent.Lang
+        get() = when (locale.language.lowercase()) { "ms" -> RamadanContent.Lang.MS; "in", "id" -> RamadanContent.Lang.ID; else -> RamadanContent.Lang.EN }
+
     val activePlace: Place? get() = if (prefs.useGPS) gpsPlace ?: prefs.manualPlace else prefs.manualPlace
 
     val profile: CountryProfile get() = activePlace?.profile ?: AsiaRegions.fallback

@@ -51,6 +51,7 @@ import com.prayertimesasia.core.Hijri
 import com.prayertimesasia.core.IslamicDayKind
 import com.prayertimesasia.core.IslamicDays
 import com.prayertimesasia.core.NamingStyle
+import com.prayertimesasia.core.RamadanContent
 import com.prayertimesasia.core.Season
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -71,7 +72,8 @@ private class Cell(val g: LocalDate, val h: Hijri.HijriDate)
 fun HijriMonthCard(state: AppState, onShowDay: ((Int) -> Unit)?) {
     val r = state.resolver
     val style = r.naming
-    val w = IslamicDays.words(style)
+    val lang = r.appLang
+    val w = IslamicDays.words(r.appLang)
     val today = LocalDate.now(r.zone)
     var shownIndex by rememberSaveable { mutableStateOf(today.year * 12 + today.monthValue - 1) }
     var picked by remember { mutableStateOf<LocalDate?>(null) }
@@ -112,7 +114,7 @@ fun HijriMonthCard(state: AppState, onShowDay: ((Int) -> Unit)?) {
                 (0 until 7).forEach { i ->
                     val c = week.getOrNull(i)
                     Box(Modifier.weight(1f)) {
-                        if (c != null) DayCell(c, first = c.g.dayOfMonth == 1, isToday = c.g == today, isPicked = sel?.g == c.g, style = style) {
+                        if (c != null) DayCell(c, first = c.g.dayOfMonth == 1, isToday = c.g == today, isPicked = sel?.g == c.g, style = style, lang = lang) {
                             picked = if (sel?.g == c.g) null else c.g
                         }
                     }
@@ -125,7 +127,7 @@ fun HijriMonthCard(state: AppState, onShowDay: ((Int) -> Unit)?) {
                 Column(Modifier.weight(1f)) {
                     Text("${sel.h.day} ${style.hijriMonths[sel.h.month - 1]} ${sel.h.year}", style = Txt.subheadlineSemibold, color = Palette.primary)
                     Text(longDate(sel.g), style = Txt.caption, color = Palette.secondary)
-                    IslamicDays.of(sel.h).forEach { Text(IslamicDays.name(it.kind, style), style = Txt.captionSemibold, color = Palette.accentText) }
+                    IslamicDays.of(sel.h).forEach { Text(IslamicDays.name(it.kind, lang), style = Txt.captionSemibold, color = Palette.accentText) }
                 }
                 if (onShowDay != null) {
                     Text(w.prayerTimes, style = Txt.subheadlineSemibold, color = Palette.accentText,
@@ -141,10 +143,10 @@ fun HijriMonthCard(state: AppState, onShowDay: ((Int) -> Unit)?) {
             }
             when {
                 keyDays.isNotEmpty() -> keyDays.forEach { (c, k) ->
-                    KeyRow(c.g.dayOfMonth, IslamicDays.name(k.kind, style), "${c.h.day} ${style.hijriMonths[c.h.month - 1]}") { picked = c.g }
+                    KeyRow(c.g.dayOfMonth, IslamicDays.name(k.kind, lang), "${c.h.day} ${style.hijriMonths[c.h.month - 1]}") { picked = c.g }
                 }
                 whiteRuns.isNotEmpty() -> whiteRuns.forEach { c ->
-                    KeyRow(c.g.dayOfMonth, IslamicDays.name(IslamicDayKind.WHITE_DAY, style), "13, 14, 15 ${IslamicDays.monthShort(c.h.month, style)}") { picked = c.g }
+                    KeyRow(c.g.dayOfMonth, IslamicDays.name(IslamicDayKind.WHITE_DAY, lang), "13, 14, 15 ${IslamicDays.monthShort(c.h.month, style)}") { picked = c.g }
                 }
                 else -> Text(w.none, style = Txt.footnote, color = Palette.secondary)
             }
@@ -152,7 +154,7 @@ fun HijriMonthCard(state: AppState, onShowDay: ((Int) -> Unit)?) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 6.dp)) {
                     Box(Modifier.size(5.dp).clip(CircleShape).background(Palette.secondary))
                     Spacer(Modifier.width(6.dp))
-                    Text("${IslamicDays.name(IslamicDayKind.WHITE_DAY, style)} 13, 14, 15", style = Txt.footnote, color = Palette.secondary)
+                    Text("${IslamicDays.name(IslamicDayKind.WHITE_DAY, lang)} 13, 14, 15", style = Txt.footnote, color = Palette.secondary)
                 }
             }
         }
@@ -179,7 +181,7 @@ fun HijriMonthCard(state: AppState, onShowDay: ((Int) -> Unit)?) {
 }
 
 @Composable
-private fun DayCell(c: Cell, first: Boolean, isToday: Boolean, isPicked: Boolean, style: NamingStyle, onClick: () -> Unit) {
+private fun DayCell(c: Cell, first: Boolean, isToday: Boolean, isPicked: Boolean, style: NamingStyle, lang: RamadanContent.Lang, onClick: () -> Unit) {
     val marks = IslamicDays.of(c.h)
     val major = marks.firstOrNull { it.major }
     val quiet = major == null && marks.any { it.kind == IslamicDayKind.LAST_TEN || it.kind == IslamicDayKind.TASYRIK || it.kind == IslamicDayKind.ZULHIJJAH_TEN }
@@ -197,9 +199,9 @@ private fun DayCell(c: Cell, first: Boolean, isToday: Boolean, isPicked: Boolean
         else -> Palette.primary.copy(alpha = 0.06f)
     }
     val fg: Color? = if (isPicked) Color.Black else null
-    val small = major?.let { IslamicDays.shortName(it.kind, style) } ?: if (newMonth || first) IslamicDays.monthShort(c.h.month, style) else null
+    val small = major?.let { IslamicDays.shortName(it.kind, lang) } ?: if (newMonth || first) IslamicDays.monthShort(c.h.month, style) else null
     val label = "${longDate(c.g)}, ${c.h.day} ${style.hijriMonths[c.h.month - 1]} ${c.h.year}" +
-        if (marks.isEmpty()) "" else ", " + marks.joinToString(", ") { IslamicDays.name(it.kind, style) }
+        if (marks.isEmpty()) "" else ", " + marks.joinToString(", ") { IslamicDays.name(it.kind, lang) }
     val shape = RoundedCornerShape(10.dp)
     Column(
         Modifier.fillMaxWidth().heightIn(min = 62.dp).clip(shape).background(bg)

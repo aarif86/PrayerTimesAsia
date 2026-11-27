@@ -16,6 +16,12 @@ enum AppWords {
         return line
     }
 
+    /// The language of the app's own words (the Ramadan page, alert lines, hadith
+    /// cards, widgets). English until the App words choice ships in Settings.
+    /// The prayer names setting must never change this: it only picks how
+    /// Fajr, Subuh and the others are written.
+    static func appLanguage(naming: NamingStyle) -> RamadanContent.Lang { .en }
+
     /// The app language from the phone's language list. Bahasa Melayu and Bahasa
     /// Indonesia when the phone is set to them, English for everything else.
     static func deviceLang(_ preferred: [String] = Locale.preferredLanguages) -> RamadanContent.Lang {

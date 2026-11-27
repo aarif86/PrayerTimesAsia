@@ -75,7 +75,7 @@ fun HadithView(state: AppState, id: HadithId, modifier: Modifier = Modifier, tag
         return
     }
     val h = Hadith.of(id)
-    val lang = RamadanContent.lang(state.resolver.naming)
+    val lang = state.resolver.appLang
     val close = {
         state.update { if (id.key in it.hiddenHadith) it else it.copy(hiddenHadith = it.hiddenHadith + id.key) }
         justHidden = true

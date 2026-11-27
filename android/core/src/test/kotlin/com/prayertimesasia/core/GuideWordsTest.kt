@@ -25,10 +25,13 @@ class GuideWordsTest {
         }
     }
 
-    @Test fun startsInMalayOrIndonesianWhenThePhoneOrNamesAre() {
-        assertEquals(RamadanContent.Lang.MS, GuideWords.startLanguage(NamingStyle.MALAY, "en"))
-        assertEquals(RamadanContent.Lang.ID, GuideWords.startLanguage(NamingStyle.INTERNATIONAL, "in"))
-        assertEquals(RamadanContent.Lang.EN, GuideWords.startLanguage(NamingStyle.INTERNATIONAL, "fr"))
+    @Test fun theCalendarAndGuideFollowTheAppLanguageNotThePrayerNames() {
+        val malayNames = Resolver(Preferences(namingOverride = NamingStyle.MALAY), locale = java.util.Locale("en", "SG"))
+        assertEquals(RamadanContent.Lang.EN, malayNames.appLang)
+        assertEquals("Eid al-Fitr", HijriEvent.SYAWAL.title(malayNames.appLang))
+        assertEquals("Hari Raya Aidilfitri", HijriEvent.SYAWAL.title(RamadanContent.Lang.MS))
+        assertEquals("Eid al-Fitr", IslamicDays.name(IslamicDayKind.AIDILFITRI, malayNames.appLang))
+        assertEquals("Today", IslamicDays.words(malayNames.appLang).today)
     }
 
     @Test fun everyoneSeesTheGuideOnceEvenIfSetUpBeforeItCame() {

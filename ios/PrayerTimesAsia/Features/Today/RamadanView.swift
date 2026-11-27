@@ -43,7 +43,7 @@ struct SeasonCard: View {
     let now: Date
     @State private var showPage = false
 
-    private var lang: RamadanContent.Lang { RamadanContent.lang(model.naming) }
+    private var lang: RamadanContent.Lang { model.appLang }
     private var t: RamadanWords.In { RamadanWords.In(lang) }
 
     var body: some View {
@@ -232,7 +232,7 @@ struct RamadanView: View {
     @State private var tarawihDone = 0
     @State private var choosingRakaat = false
 
-    private var lang: RamadanContent.Lang { RamadanContent.lang(model.naming) }
+    private var lang: RamadanContent.Lang { model.appLang }
     private var t: RamadanWords.In { RamadanWords.In(lang) }
 
     var body: some View {
@@ -484,7 +484,7 @@ struct RamadanView: View {
     }
 
     private func doaSection(_ ids: [Doa.ID]) -> some View {
-        let lang = RamadanContent.lang(model.naming)
+        let lang = model.appLang
         return Section(t(.doaAndNiat)) {
             ForEach(ids, id: \.self) { id in
                 let d = RamadanContent.doa(id)
@@ -506,7 +506,7 @@ struct RamadanView: View {
     }
 
     @ViewBuilder private func zakatSection(_ year: Int) -> some View {
-        let lang = RamadanContent.lang(model.naming)
+        let lang = model.appLang
         let code = model.prefs.home?.countryCode ?? model.profile.code
         let bodies = RamadanContent.zakat[code] ?? []
         Section {

@@ -72,7 +72,7 @@ data class WidgetModel(
                 zone = r.zone,
                 dark = dark,
                 fast = r.fastingMoment(now)?.let { (kind, at) ->
-                    val t = RamadanWords.In(RamadanContent.lang(r.naming))
+                    val t = RamadanWords.In(r.appLang)
                     FastMoment(kind, at, t(if (kind == Resolver.FastingKind.IMSAK) RamadanWordKey.imsak else RamadanWordKey.berbuka), r.formatted(at))
                 },
             )

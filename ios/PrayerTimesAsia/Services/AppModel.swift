@@ -275,6 +275,8 @@ final class AppModel {
     /// Your prayer names, from your phone's language (English unless it has
     /// names in it), not from where you are, so they stay the same as you travel.
     var naming: NamingStyle { prefs.namingOverride ?? personalNaming }
+    /// The language of the app's words. Not the prayer names: those follow `naming`.
+    var appLang: RamadanContent.Lang { AppWords.appLanguage(naming: naming) }
     var personalNaming: NamingStyle { NamingStyle.personal() }
     /// The words used where you are (the masjid's signs, the azan app locals use).
     var localNaming: NamingStyle { profile.naming }
@@ -1010,7 +1012,7 @@ final class AppModel {
         let jumuah = prefs.jumuahReminderMinutes
         let here = place.isInAsia ? "\(place.name) \(place.profile.flag)" : place.name
         let maghribAlertOn = onTime && prefs.notifyPrayers.contains(.maghrib)
-        let lineLang = RamadanContent.lang(naming)
+        let lineLang = appLang
         var ramadan: [NotificationScheduler.Alert] = []
         // iOS keeps at most 64 pending, so fewer days when there are more alerts a day.
         let perDay = (onTime ? 6 : 0) + (anyEarly ? 6 : 0) + (nudges ? 4 : 0) + (jumuah > 0 ? 1 : 0)
@@ -1184,7 +1186,7 @@ final class AppModel {
             let leaveMinutes = prefs.jumuahReminderMinutes
             if prefs.jumuahLeaveAlarm && leaveMinutes > 0 && isFriday(pd.time(.dhuhr)) {
                 let j = jumuahStart(pd)
-                let w = JumuahLeave.words(RamadanContent.lang(naming), minutes: leaveMinutes, name: Prayer.dhuhr.name(naming, isFriday: true),
+                let w = JumuahLeave.words(appLang, minutes: leaveMinutes, name: Prayer.dhuhr.name(naming, isFriday: true),
                                           second: j.second, at: formatted(j.at), where: j.where_)
                 out.append(WakeUp(date: j.at.addingTimeInterval(Double(-leaveMinutes) * 60), title: "\(w.title) · \(formatted(j.at))", isSahur: false))
             }

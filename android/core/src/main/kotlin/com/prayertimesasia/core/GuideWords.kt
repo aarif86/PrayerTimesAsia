@@ -21,15 +21,4 @@ object GuideWords {
         args.forEach { (name, value) -> line = line.replace("{$name}", value) }
         return line
     }
-
-    /** The prayer names' language if it is Malay or Indonesian, else the phone's. */
-    fun startLanguage(naming: NamingStyle, localeLanguage: String): RamadanContent.Lang {
-        val fromNames = RamadanContent.lang(naming)
-        if (fromNames != RamadanContent.Lang.EN) return fromNames
-        return when (localeLanguage.lowercase()) {
-            "ms" -> RamadanContent.Lang.MS
-            "id", "in" -> RamadanContent.Lang.ID
-            else -> RamadanContent.Lang.EN
-        }
-    }
 }

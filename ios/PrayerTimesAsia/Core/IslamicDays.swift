@@ -51,7 +51,7 @@ enum IslamicDays {
         k.major || (k.kind == .lastTen && h.day == 21) || (k.kind == .tasyrik && h.day == 11) || (k.kind == .zulhijjahTen && h.day == 1)
     }
 
-    enum Lang { case en, ms, id }
+    typealias Lang = RamadanContent.Lang
     static func lang(_ s: NamingStyle) -> Lang { s == .malay ? .ms : s == .indonesian ? .id : .en }
 
     private static let names: [IslamicDayKind: (String, String, String)] = [
@@ -95,12 +95,15 @@ enum IslamicDays {
         .aidiladha: ("Eid al-Adha", "Aidiladha", "Iduladha"),
     ]
 
-    private static func pick(_ t: (String, String, String), _ s: NamingStyle) -> String {
-        switch lang(s) { case .en: t.0; case .ms: t.1; case .id: t.2 }
+    private static func pick(_ t: (String, String, String), _ l: Lang) -> String {
+        switch l { case .en: t.0; case .ms: t.1; case .id: t.2 }
     }
 
-    static func name(_ k: IslamicDayKind, _ s: NamingStyle) -> String { pick(names[k]!, s) }
-    static func shortName(_ k: IslamicDayKind, _ s: NamingStyle) -> String { pick(short[k] ?? names[k]!, s) }
+    /// The day's name in the app language (not the prayer names setting).
+    static func name(_ k: IslamicDayKind, lang l: Lang) -> String { pick(names[k]!, l) }
+    static func shortName(_ k: IslamicDayKind, lang l: Lang) -> String { pick(short[k] ?? names[k]!, l) }
+    static func name(_ k: IslamicDayKind, _ s: NamingStyle) -> String { name(k, lang: lang(s)) }
+    static func shortName(_ k: IslamicDayKind, _ s: NamingStyle) -> String { shortName(k, lang: lang(s)) }
 
     /// Hijri month names short enough for a calendar day (English and Malay/Indonesian; others use the full name).
     static func monthShort(_ month: Int, _ s: NamingStyle) -> String {
@@ -127,8 +130,10 @@ enum IslamicDays {
         let notePublished: (String) -> String
     }
 
-    static func words(_ s: NamingStyle) -> Words {
-        switch lang(s) {
+    static func words(_ s: NamingStyle) -> Words { words(lang: lang(s)) }
+
+    static func words(lang l: Lang) -> Words {
+        switch l {
         case .en:
             Words(today: "Today", and: "and", none: "No special days this month.", print: "Print the whole year",
                   adjust: "Move the Hijri date", adjustNone: "Not moved", earlier: "One day earlier", later: "One day later", dayOff: "day",

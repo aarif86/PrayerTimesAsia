@@ -24,7 +24,7 @@ import { dayKey, daysBetween, deviceTimeZone, noonDaysAfter, ymdKey, zoned, zone
 export { parseCivil, civilKey }
 import { CITIES, nearestCity } from './cities'
 import { ensureTable, rowFor, tableFor } from './officialTables'
-import { appLang, appLangFromLocales, setAppLang } from '../core/appWords'
+import { appLang, resolveAppLang, setAppLang } from '../core/appWords'
 import type { Lang3 } from '../core/ramadanContent'
 import { DEFAULT_PREFS, loadPreferences, savePreferences, TODAY_STYLES, type Preferences, type TodayStyle } from './prefs'
 import { fetchOK, readJSON, readString, writeJSON, writeString } from './storage'
@@ -236,13 +236,9 @@ class AppStore {
   /** The short source line in one language (Feedback always sends it in English). */
   sourceShortIn(lang: Lang3): string { return officialSummary(this.officialSource, true, lang) ?? sourceSummary(this.profile, this.method, !this.isMethodAutomatic, true, lang) }
   get asrSchool(): AsrSchool { return this.prefs.asrOverride ?? this.profile.asr }
-  /** The language of the app's words: the user's pick in Settings, else Malay or Indonesian prayer names if picked, else the browser's language (English unless Malay or Indonesian). */
+  /** The language of the app's words: the user's pick in Settings, else the browser's language, never the prayer names (English unless Malay or Indonesian). */
   get appLang(): Lang3 {
-    if (this.prefs.appLanguageOverride) return this.prefs.appLanguageOverride
-    // Someone who already picked Malay or Indonesian prayer names keeps the Ramadan page and alerts in that language.
-    if (this.prefs.namingOverride === 'malay') return 'ms'
-    if (this.prefs.namingOverride === 'indonesian') return 'id'
-    return appLangFromLocales(browserLocales())
+    return resolveAppLang(this.prefs.appLanguageOverride, browserLocales())
   }
   get personalNaming(): NamingStyle { return personalNaming(navigatorLocale()) }
   /** Your names, from your browser's language (English unless it has names in it), not from where you are. */

@@ -24,7 +24,7 @@ struct HijriMonthCard: View {
         let today = model.civil(.now)
         let ym = shown ?? (today.year, today.month)
         let style = model.naming
-        let w = IslamicDays.words(style)
+        let w = IslamicDays.words(lang: model.appLang)
         let cells = days(ym.y, ym.m)
         let lead = weekday(CivilDay(year: ym.y, month: ym.m, day: 1))
         let keyDays = cells.flatMap { c in IslamicDays.of(c.h).filter { IslamicDays.listed(c.h, $0) }.map { (c, $0) } }
@@ -70,7 +70,7 @@ struct HijriMonthCard: View {
                         Text("\(sel.h.day) \(style.hijriMonths[sel.h.month - 1]) \(String(sel.h.year))").font(.subheadline.weight(.semibold))
                         Text(longDate(sel.g)).font(.caption).foregroundStyle(.secondary)
                         ForEach(IslamicDays.of(sel.h), id: \.self) { k in
-                            Text(IslamicDays.name(k.kind, style)).font(.caption.weight(.semibold)).foregroundStyle(Theme.accentText)
+                            Text(IslamicDays.name(k.kind, lang: model.appLang)).font(.caption.weight(.semibold)).foregroundStyle(Theme.accentText)
                         }
                     }
                     Spacer()
@@ -86,17 +86,17 @@ struct HijriMonthCard: View {
                     }
                     if !keyDays.isEmpty {
                         ForEach(Array(keyDays.enumerated()), id: \.offset) { _, item in
-                            row(item.0, IslamicDays.name(item.1.kind, style), "\(item.0.h.day) \(style.hijriMonths[item.0.h.month - 1])")
+                            row(item.0, IslamicDays.name(item.1.kind, lang: model.appLang), "\(item.0.h.day) \(style.hijriMonths[item.0.h.month - 1])")
                         }
                     } else if !whiteRuns.isEmpty {
-                        ForEach(whiteRuns) { c in row(c, IslamicDays.name(.whiteDay, style), "13, 14, 15 \(IslamicDays.monthShort(c.h.month, style))") }
+                        ForEach(whiteRuns) { c in row(c, IslamicDays.name(.whiteDay, lang: model.appLang), "13, 14, 15 \(IslamicDays.monthShort(c.h.month, style))") }
                     } else {
                         Text(w.none).font(.footnote).foregroundStyle(.secondary)
                     }
                     if whiteRuns.isEmpty {
                         HStack(spacing: 6) {
                             Circle().fill(.secondary).frame(width: 5, height: 5)
-                            Text("\(IslamicDays.name(.whiteDay, style)) 13, 14, 15").font(.footnote).foregroundStyle(.secondary)
+                            Text("\(IslamicDays.name(.whiteDay, lang: model.appLang)) 13, 14, 15").font(.footnote).foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -155,10 +155,10 @@ struct HijriMonthCard: View {
             : quiet ? Theme.accent.opacity(0.10)
             : Color.primary.opacity(0.06)
         let fg: Color? = picked ? .black : nil
-        let small: String? = major.map { IslamicDays.shortName($0.kind, style) }
+        let small: String? = major.map { IslamicDays.shortName($0.kind, lang: model.appLang) }
             ?? ((newMonth || first) ? IslamicDays.monthShort(c.h.month, style) : nil)
         let label = "\(longDate(c.g)), \(c.h.day) \(style.hijriMonths[c.h.month - 1]) \(String(c.h.year))"
-            + (marks.isEmpty ? "" : ", " + marks.map { IslamicDays.name($0.kind, style) }.joined(separator: ", "))
+            + (marks.isEmpty ? "" : ", " + marks.map { IslamicDays.name($0.kind, lang: model.appLang) }.joined(separator: ", "))
 
         return Button { self.picked = picked ? nil : c.g } label: {
             VStack(spacing: 1) {
