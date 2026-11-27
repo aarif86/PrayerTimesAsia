@@ -65,6 +65,8 @@
 .lay-row .scr-iq .scr-t { font-size: 1em; }
 .lay-row.on { background: color-mix(in srgb, var(--tint) 18%, transparent); box-shadow: inset 0 0 0 calc(var(--u) * 0.18) color-mix(in srgb, var(--tint) 55%, transparent); }
 .lay-row.on .scr-name { color: var(--tint); font-weight: 800; }
+/* Dark screens: lighten the current prayer name so Maghrib red passes 4.5:1. */
+.scr:not(.scr-light) .lay-row.on .scr-name { color: color-mix(in srgb, var(--tint) 60%, #fff); }
 .scr-light .lay-row.on { background: color-mix(in srgb, var(--tint) 16%, rgba(255, 255, 255, 0.6)); }
 .lay-row.passed { opacity: 0.72; }
 .lay-syuruk .scr-t, .lay-imsak .scr-t { font-size: min(calc(var(--u) * 4.4), var(--tcap)); font-weight: 600; }
@@ -201,7 +203,7 @@
 .lay-look-bands .lay-row .scr-iq, .lay-look-bands .lay-row .scr-iq .scr-t { color: rgba(255, 255, 255, 0.9); }
 .lay-look-bands .lay-row .scr-t { font-weight: 400; font-family: var(--font); }
 .lay-look-bands .lay-row.on { box-shadow: inset calc(var(--u) * 0.9) 0 0 #fff; background: var(--band); }
-.lay-look-bands .lay-row.on .scr-name { color: #fff; }
+.lay-look-bands .lay-row.on .scr-name, .scr.lay-look-bands:not(.scr-light) .lay-row.on .scr-name { color: #fff; }
 .lay-look-bands .lay-row.on .scr-t { font-weight: 800; }
 .lay-look-bands .lay-row.passed { opacity: 1; filter: saturate(0.7) brightness(0.8); }
 .lay-look-bands .p-fajr { --band: rgb(33, 110, 92); }

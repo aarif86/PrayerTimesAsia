@@ -1,5 +1,7 @@
 package com.prayertimesasia.app.ui.theme
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -57,4 +59,16 @@ object Txt {
     val captionSemibold = s(12, FontWeight.SemiBold)
     val caption2 = s(11)
     val caption2Heavy = s(11, FontWeight.ExtraBold)
+}
+
+/**
+ * A text size that follows the phone's text setting only up to [cap] times (default 1.5).
+ * For text inside a fixed-size shape (the dial, the tab bar, the place chip) where the biggest
+ * setting (2x) would otherwise be cut off or spill over the ring. Reading text (hadith, rows)
+ * keeps growing with the setting.
+ */
+@Composable
+fun cappedSp(base: Float, cap: Float = 1.5f): TextUnit {
+    val scale = LocalDensity.current.fontScale
+    return (if (scale > cap) base * cap / scale else base).sp
 }
