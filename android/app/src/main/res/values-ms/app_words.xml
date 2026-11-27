@@ -1312,4 +1312,272 @@
     <string name="test_sub" formatted="false">Kami menghantar makluman contoh dalam beberapa saat, sama seperti makluman sebenar anda.</string>
     <string name="test_sent" formatted="false">Makluman ujian akan tiba dalam beberapa saat. Kekal pada skrin ini untuk melihat dan mendengarnya.</string>
     <string name="test_blocked" formatted="false">Makluman belum dibenarkan pada peranti ini.</string>
+    <string name="phone_submit_sending" formatted="false">Menghantar</string>
+    <string name="phone_submit_place" formatted="false">Bandar, kawasan, negara</string>
+    <string name="phone_submit_other" formatted="false">Apa-apa lagi (pilihan)</string>
+    <string name="phone_submit_checked" formatted="false">Disemak oleh seseorang sebelum mengubah waktu sesiapa pun. Hanya apa yang anda taip atau pilih di sini dihantar, bukan lokasi anda. Gambar disimpan sebagai bukti dan tidak diterbitkan semula tanpa kebenaran masjid.</string>
+    <string name="phone_submit_mosqueOrMusolla" formatted="false">Nama masjid atau musolla</string>
+    <string name="phone_submit_mapLink" formatted="false">Pautan peta atau alamat (pilihan)</string>
+    <string name="phone_submit_jamaahTimes" formatted="false">Waktu jemaah atau Jumaat jika ada (pilihan)</string>
+    <string name="phone_submit_timetable" formatted="false">Jadual waktu masjid</string>
+    <string name="phone_submit_oneMonth" formatted="false">Satu bulan sudah mencukupi. Kami mengenal pasti kaedah masjid supaya waktu untuk setahun dapat dijana.</string>
+    <string name="phone_submit_mosquesFollow" formatted="false">Masjid di sini mengikut</string>
+    <string name="phone_submit_howKnow" formatted="false">Bagaimana anda tahu?</string>
+    <string name="phone_submit_mosqueName" formatted="false">Nama masjid</string>
+    <string name="phone_submit_adhanAt" formatted="false">Azan dilaungkan pada</string>
+    <string name="phone_falak_goldLine" formatted="false">Garisan emas, kiblat</string>
+    <string name="phone_falak_darkBar" formatted="false">Palang gelap, tempat bayang tongkat jatuh sekarang</string>
+    <string name="phone_falak_arHelp" formatted="false">Di luar rumah dalam cahaya matahari, bayang sebenar akan sejajar dengan palang gelap. Jika tidak, jauhi logam dan lambai telefon dalam bentuk angka 8 untuk menentukur kompas. Jangan sekali-kali memandang matahari.</string>
+    <string name="phone_falak_estimate" formatted="false">Anggaran daripada kecondongan telefon, untuk pembelajaran. Sentiasa ikut pihak berkuasa agama tempatan anda.</string>
+    <string name="phone_falak_sunBack" formatted="false">Mengembalikan matahari ke waktu sekarang</string>
+    <string name="phone_falak_noAlignment" formatted="false">Tiada penjajaran dengan matahari yang cukup tinggi hari ini. Seterusnya {date} pada {time}.</string>
+    <string name="phone_falak_sunUp" formatted="false">matahari {deg}° tinggi</string>
+    <string name="phone_falak_yourTimetable" formatted="false">Jadual anda {name} {time}, Asar {asr}. Jadual menambah beberapa minit ihtiyat (langkah berjaga-jaga) di atas geometri matahari.</string>
+    <string name="phone_falak_putsSun" formatted="false">Itu meletakkan waktu matahari pada {time} (±{n} min), yang {side}.</string>
+    <string name="phone_falak_usualCauses" formatted="false">Punca biasa ialah tongkat tidak tegak, tanah tidak rata, atau hujung bayang sukar dilihat. Cuba lagi dengan unting-unting.</string>
+    <string name="phone_falak_tooLow" formatted="false">Matahari tidak pernah serendah itu pada sebelah tengah hari ini. Ukur semula, atau semak waktu.</string>
+    <string name="phone_falak_signsHelp" formatted="false">Apa yang diterangkan oleh waktu solat, supaya anda dapat melihatnya sendiri. Ini untuk makluman. Lampu bandar, jerebu dan bangunan menyembunyikan tanda ini, dan ulama berbeza pendapat cara membaca fajar dan senja. Solatlah mengikut jadual anda.</string>
+    <string name="phone_falak_check" formatted="false">Semak</string>
+    <string name="phone_journey_fromHome" formatted="false">dari rumah</string>
+    <string name="phone_journey_dayIn" formatted="false">Hari {n} di {place}</string>
+    <string name="phone_journey_jamakExplain" formatted="false">Jamak taqdim bermaksud solat kedua-duanya dalam waktu solat pertama. Jamak takhir bermaksud solat kedua-duanya dalam waktu solat kedua. {name} tidak pernah dijamak.</string>
+    <string name="phone_journey_distanceShort" formatted="false">Jarak</string>
+    <string name="phone_makers_opensSafari" formatted="false">Membuka {name} dalam Safari</string>
+    <string name="phone_review_about" formatted="false">Perihal</string>
+    <string name="phone_review_send" formatted="false">Hantar nota anda</string>
+    <string name="phone_review_opensNote" formatted="false">Ini membuka halaman nota kami dengan kata-kata anda sudah diisi. Tambah e-mel anda di sana supaya kami dapat mengucapkan terima kasih.</string>
+    <string name="phone_masjid_placesFrom" formatted="false">Tempat daripada Apple Maps, OpenStreetMap dan senarai musolla terbuka yang dikemas kini oleh sukarelawan. Ada yang tiada, atau pin tersalah tempat? Beritahu peta, tidak perlu mendaftar.</string>
+    <string name="phone_masjid_scanQr" formatted="false">Masjid dengan skrin Prayer Times Asia? Imbas kod QR dengan aplikasi Kamera untuk melihat waktu iqamah pada skrin Solat anda.</string>
+    <string name="phone_masjid_locationOff" formatted="false">Lokasi dimatikan untuk aplikasi ini dalam Tetapan. Menunjukkan tempat berhampiran {place}.</string>
+    <string name="phone_masjid_secondFriday" formatted="false">Solat Jumaat kedua dari {time}{women}.</string>
+    <string name="phone_masjid_prayerAt" formatted="false">Solat {name} pada {time}.</string>
+    <string name="phone_masjid_away" formatted="false">{distance} dari sini{extra}</string>
+    <string name="phone_masjid_muisUpdated" formatted="false">Daripada Majlis Ugama Islam Singapura (MUIS), dikemas kini {date}. Tidak perlu menempah, kecuali pada cuti umum.</string>
+    <string name="phone_masjid_prayerName" formatted="false">Solat {name}</string>
+    <string name="phone_masjid_muis" formatted="false">Daripada Majlis Ugama Islam Singapura (MUIS).</string>
+    <string name="phone_suggest_send" formatted="false">Hantar cadangan anda</string>
+    <string name="phone_onboard_title" formatted="false">Prayer Times\nAsia</string>
+    <string name="phone_credits_also" formatted="false">Juga</string>
+    <string name="phone_move_otherPhone" formatted="false">Pada telefon lain, buka Prayer Times Asia › Tetapan › Bawa masuk tetapan dan imbas kod ini. Tiada aplikasi di sana? Halakan kamera ke kod itu dan ia membuka aplikasi web dengan tetapan anda.</string>
+    <string name="phone_azan_yours" formatted="false">Azan anda</string>
+    <string name="phone_azan_goBack" formatted="false">Kembali kepada azan aplikasi</string>
+    <string name="phone_azan_pick" formatted="false">Pilih rakaman azan yang disimpan pada iPhone ini atau dalam Fail. Kami menggunakan bahagian awalnya, sehingga {n} saat, dengan pudar lembut di hujung, dan menyamakan kelantangan. iPhone tidak memainkan bunyi makluman lebih daripada 30 saat. Fail kekal pada telefon ini. Kami tidak pernah memuat naik atau berkongsinya.</string>
+    <string name="phone_azan_rights" formatted="false">Gunakan hanya rakaman yang anda berhak menggunakannya, seperti yang anda atau masjid anda rakamkan. Ia dimainkan untuk setiap solat, Subuh juga, apabila Mainkan azan dihidupkan dalam Makluman dan penggera.</string>
+    <string name="phone_azan_own" formatted="false">Azan anda sendiri</string>
+    <string name="phone_settings_homeLock" formatted="false">Skrin Utama dan Skrin Kunci</string>
+    <string name="phone_settings_followAuthority" formatted="false">{source} Sentiasa ikut pihak berkuasa agama tempatan anda.</string>
+    <string name="phone_settings_add30" formatted="false">Tambah 30 hari seterusnya</string>
+    <string name="phone_settings_workOnly" formatted="false">{a} dan {b} sahaja, untuk bekerja</string>
+    <string name="phone_settings_officialDownload" formatted="false">Di Singapura, Malaysia dan Indonesia aplikasi memuat turun jadual rasmi MUIS, JAKIM atau Kemenag untuk setahun dan menyimpannya untuk kegunaan luar talian. Hanya tahun, kod zon atau nama kawasan dihantar.</string>
+    <string name="phone_settings_elsewhere" formatted="false">Di tempat lain, dan sebelum muat turun itu, waktu dikira pada telefon anda dengan kaedah negara itu sendiri.</string>
+    <string name="phone_settings_checkedAgainst" formatted="false">Pengiraan itu disemak dengan setiap hari jadual MUIS, JAKIM dan Kemenag 2026. Untuk Singapura ia tidak pernah lebih awal daripada waktu rasmi, dan paling lewat 2 minit. Untuk Malaysia dan Indonesia ia dalam lingkungan 2 minit.</string>
+    <string name="phone_settings_letterBeside" formatted="false">Huruf di sebelah setiap hari</string>
+    <string name="phone_settings_falakOnlyChecks" formatted="false">Bacaan falak daripada tongkat bayang anda sendiri hanya menyemak waktu.</string>
+    <string name="phone_settings_appWords" formatted="false">Bahasa aplikasi</string>
+    <string name="phone_settings_changeInSettings" formatted="false">Tukar dalam Tetapan iPhone</string>
+    <string name="phone_settings_appWordsFoot" formatted="false">Perkataan pada setiap skrin dan dalam makluman. Nama waktu solat mempunyai tetapan sendiri.</string>
+    <string name="phone_settings_localNames" formatted="false">Nama tempatan semasa bermusafir</string>
+    <string name="phone_settings_namesFoot" formatted="false">Pilih Melayu untuk Subuh dan Isyak. Semasa bermusafir, nama tempatan ditunjukkan kecil di bawah supaya papan tanda masjid mudah difahami.</string>
+    <string name="phone_settings_lockDynamic" formatted="false">Solat seterusnya pada Skrin Kunci dan Dynamic Island</string>
+    <string name="phone_settings_addWidget" formatted="false">Untuk menambah widget, sentuh dan tahan Skrin Utama, kemudian ketik Edit.</string>
+    <string name="phone_settings_openRamadan" formatted="false">Buka halaman Ramadan</string>
+    <string name="phone_settings_pretend" formatted="false">Anggap ia ialah</string>
+    <string name="phone_settings_oneShort" formatted="false">Satu baris pendek di bawah makluman Subuh dan tahajud</string>
+    <string name="phone_settings_hideHadith" formatted="false">Ketik ✕ pada mana-mana hadis untuk menyembunyikan yang itu sahaja.</string>
+    <string name="phone_settings_sendMine" formatted="false">Hantar tetapan saya</string>
+    <string name="phone_settings_moveBody" formatted="false">Kod QR atau pautan membawa tempat, pilihan dan penjejak anda. Tanpa akaun dan tiada apa-apa dimuat naik. Berfungsi dengan iPhone, Android dan web. Memulihkan iPhone baharu daripada sandaran iCloud turut membawanya.</string>
+    <string name="phone_settings_noAds" formatted="false">Tiada iklan luar dan tiada akaun</string>
+    <string name="phone_settings_shareCounts" formatted="false">Kongsi kiraan tanpa nama</string>
+    <string name="phone_settings_countsFoot" formatted="false">Memberitahu kami bandar mana yang menggunakan aplikasi, supaya kami tahu di mana hendak menambah jadual rasmi. Nombor rawak mewakili anda. Tidak pernah nama, lokasi tepat atau alamat IP anda.</string>
+    <string name="phone_settings_openIphone" formatted="false">Buka Tetapan iPhone</string>
+    <string name="phone_settings_helpCheck" formatted="false">Bantu semak waktu di tempat anda tinggal</string>
+    <string name="phone_settings_quickGuide" formatted="false">Panduan pantas ialah lawatan ringkas yang menekan butang sebenar untuk anda.</string>
+    <string name="phone_settings_show" formatted="false">Tunjukkan {name}</string>
+    <string name="phone_settings_ourRules" formatted="false">Peraturan kami untuk {name}</string>
+    <string name="phone_settings_picksBody" formatted="false">Perniagaan dan tujuan Muslim yang halal yang kami semak sendiri, selamat untuk seluruh keluarga. Kebanyakannya perkhidmatan kami sendiri, dan yang berbayar ditandakan Ditaja. Kami hanya mengira berapa kerap kad dilihat dan diketik, tidak pernah siapa anda.</string>
+    <string name="phone_settings_builtAsia" formatted="false">Dibina di Asia, dibuat untuk Muslim di mana-mana.</string>
+    <string name="phone_widget_style" formatted="false">Gaya</string>
+    <string name="phone_widget_howTo" formatted="false">Sentuh dan tahan Skrin Utama, ketik Edit, kemudian Tambah Widget dan cari Prayer Times Asia. Pilih Jadual hari ini. Ia mengikut gaya skrin Solat anda. Sentuh dan tahan padanya, kemudian Edit Widget, untuk memilih yang lain.</string>
+    <string name="phone_calendar_yearAh" formatted="false">{name} {year} H</string>
+    <string name="phone_calendar_send" formatted="false">Hantar pengumuman</string>
+    <string name="phone_calendar_everyDate" formatted="false">Setiap tarikh menunjukkan siapa yang menetapkannya dan caranya, pencerapan anak bulan, pengiraan, atau mengikut pihak berkuasa lain. Tarikh dikongsi secara terbuka di bawah CC-BY 4.0.</string>
+    <string name="phone_ramadan_kareem" formatted="false">Ramadan Kareem</string>
+    <string name="phone_ramadan_taqabbal" formatted="false">Taqabbalallahu minna wa minkum</string>
+    <string name="phone_source_gradeLabel" formatted="false">Sumber gred {grade}, {a}, {b}</string>
+    <string name="phone_source_showsWhere" formatted="false">Menunjukkan dari mana waktu ini datang</string>
+    <string name="phone_source_beginsToday" formatted="false">Waktu solat bermula pada waktu di skrin Hari Ini. Ini ialah waktu jemaah bersolat.</string>
+    <string name="phone_source_sendTimetable" formatted="false">Hantar jadual waktu masjid dari sini</string>
+    <string name="phone_source_tellMethod" formatted="false">Beritahu kami kaedah yang digunakan masjid di sini</string>
+    <string name="phone_source_reportAdhan" formatted="false">Laporkan waktu azan yang anda dengar</string>
+    <string name="phone_a11y_appearance" formatted="false">Rupa {name}</string>
+    <string name="phone_a11y_appearanceHint" formatted="false">Bertukar antara Automatik, Cerah dan Gelap.</string>
+    <string name="phone_a11y_styleLabel" formatted="false">Gaya skrin solat {name}</string>
+    <string name="phone_a11y_styleHint" formatted="false">Bertukar kepada gaya seterusnya. Sentuh dan tahan untuk memilih.</string>
+    <string name="phone_a11y_alertsHint" formatted="false">Mati, Makluman atau Penggera untuk {name} dan setiap solat, sahur, serta bunyinya.</string>
+    <string name="phone_a11y_trackerHint" formatted="false">Membuka penjejak. Jedakannya untuk haid atau sakit, dan lihat setiap bulan.</string>
+    <string name="phone_a11y_moreTimes" formatted="false">Dhuha dan waktu-waktu mulia pada malam hari</string>
+    <string name="phone_a11y_allFive" formatted="false">Makluman hidup untuk kelima-lima solat. Tukar</string>
+    <string name="phone_a11y_gives" formatted="false">{a} memberi {b}</string>
+    <string name="phone_a11y_tapChange" formatted="false">Ketik untuk menukar. Tahan untuk lebih banyak.</string>
+    <string name="phone_a11y_changeLocation" formatted="false">{place}. Tukar lokasi</string>
+    <string name="phone_a11y_menuLook" formatted="false">Menu, rupa {name}</string>
+    <string name="phone_a11y_menuHint" formatted="false">Cerah atau gelap, lima rupa dan penjejak solat.</string>
+    <string name="phone_a11y_sourceGrade" formatted="false">Sumber gred {grade}, {a}</string>
+    <string name="phone_tracker_howTo" formatted="false">Ketik solat pada skrin Solat apabila waktunya tiba untuk menandakannya. Penjejak anda disimpan pada telefon ini sahaja, tidak pernah dimuat naik, dan hanya berpindah ke telefon baharu melalui Pindahkan tetapan saya.</string>
+    <string name="phone_tracker_markNot" formatted="false">Tandakan belum bersolat</string>
+    <string name="phone_tracker_mark" formatted="false">Tandakan telah bersolat</string>
+    <string name="phone_tracker_excusedUndo" formatted="false">Dimaafkan hari ini (ketik untuk batal)</string>
+    <string name="phone_tracker_excuseToday" formatted="false">Maafkan hari ini sahaja</string>
+    <string name="phone_today_oneDay" formatted="false">1 hari</string>
+    <string name="phone_today_nextAt" formatted="false">Seterusnya {name} pada {time}, dalam {left}</string>
+    <string name="phone_today_nowThen" formatted="false">Sekarang {name}. {next} pada {time}, dalam {left}</string>
+    <string name="phone_today_nowLeft" formatted="false">Sekarang {name}. {left} lagi untuk bersolat.</string>
+    <string name="phone_today_nextIn" formatted="false">Seterusnya {name}, dalam {left}.</string>
+    <string name="phone_today_jamaah" formatted="false">Jemaah {time}</string>
+    <string name="phone_today_nextAlarm" formatted="false">Penggera seterusnya pada {time}</string>
+    <string name="phone_today_dayShow" formatted="false">Tunjuk lebih banyak waktu Dhuha dan waktu-waktu mulia pada malam hari</string>
+    <string name="phone_alerts_silentFocus" formatted="false">Dalam senyap atau Fokus, hanya penggera yang berbunyi</string>
+    <string name="phone_alerts_sampleSoon" formatted="false">Kami menghantar makluman contoh dalam beberapa saat, dengan cara yang sama seperti makluman sebenar anda. Kunci skrin anda untuk melihat rupanya.</string>
+    <string name="phone_alerts_noFullAzan" formatted="false">Notifikasi iPhone hanya boleh memainkan bunyi pendek, sehingga 30 saat, jadi azan penuh tidak dapat dimainkan di sini. Untuk laungan panjang, gunakan Penggera.</string>
+    <string name="phone_alerts_pickOff" formatted="false">Pilih Mati, Makluman atau Penggera. Ketik Tukar untuk memilih waktu tepat. Makluman ialah notifikasi, senyap apabila telefon anda dalam senyap atau Fokus. Penggera berbunyi sehingga anda menghentikannya, walaupun dalam senyap.</string>
+    <string name="phone_alerts_changeTime" formatted="false">Tukar waktu</string>
+    <string name="phone_alerts_shortFull" formatted="false">Pendek ialah takbir pembukaan. Penuh ialah azan sepenuhnya, dengan azan Subuh pada {name} apabila suara itu mempunyainya. iPhone memainkan sehingga 30 saat daripadanya.</string>
+    <string name="phone_alerts_playsSound" formatted="false">Memainkan bunyi</string>
+    <string name="phone_alerts_tapSound" formatted="false">Ketik bunyi untuk mendengarnya. Setiap penggera memainkan bunyi ini. Klasik ialah penggera iPhone anda sendiri.</string>
+    <string name="phone_alerts_yourAt" formatted="false">{a} {b} {c} anda pada waktu ini</string>
+    <string name="phone_alerts_inAlerts" formatted="false">{name} dalam Makluman dan penggera</string>
+    <string name="phone_alerts_testComing" formatted="false">Makluman ujian akan tiba dalam beberapa saat.</string>
+    <string name="phone_alerts_notAllowedIphone" formatted="false">Makluman belum dibenarkan pada iPhone ini.</string>
+    <string name="phone_alerts_alarmRingsSilent" formatted="false">Penggera berbunyi walaupun dalam mod Senyap dan Fokus, seperti aplikasi Jam. Ketik Henti untuk menamatkannya. Tunda 5 min membunyikannya sekali lagi.</string>
+    <string name="phone_alerts_alarmAsNotification" formatted="false">Pada iPhone ini penggera datang sebagai notifikasi. Mulai iOS 26 ia berbunyi seperti penggera sebenar, walaupun dalam mod Senyap.</string>
+    <string name="phone_alerts_imsakBody" formatted="false">Notifikasi 10 minit sebelum Imsak, supaya anda sempat selesai makan.{extra}</string>
+    <string name="phone_alerts_berbukaBody" formatted="false">Notifikasi pada {time} apabila tiba waktu berbuka puasa.{extra}</string>
+    <string name="phone_alerts_qiyamBody" formatted="false">Pada sepuluh malam terakhir Ramadan, notifikasi apabila sepertiga malam terakhir bermula, waktu terbaik untuk qiyam dan doa.{extra}</string>
+    <string name="phone_alerts_yourFile" formatted="false">Fail anda dimainkan untuk setiap solat</string>
+    <string name="phone_alerts_pickAudio" formatted="false">Pilih fail audio pada iPhone ini</string>
+    <string name="phone_alerts_notificationsOff" formatted="false">Notifikasi dimatikan</string>
+    <string name="phone_alerts_turnOnIn" formatted="false">Hidupkannya dalam Tetapan, Notifikasi, Prayer Times Asia.</string>
+    <string name="phone_alerts_openSettings" formatted="false">Buka Tetapan</string>
+    <string name="phone_alerts_alarmsAllowed" formatted="false">Penggera dibenarkan</string>
+    <string name="phone_alerts_alarmsRing" formatted="false">Penggera anda berbunyi walaupun dalam senyap dan Fokus.</string>
+    <string name="phone_alerts_alarmsOff" formatted="false">Penggera dimatikan</string>
+    <string name="phone_alerts_withoutThem" formatted="false">Tanpanya, penggera datang sebagai notifikasi senyap.</string>
+    <string name="phone_alerts_alarmsNotYet" formatted="false">Penggera belum dibenarkan</string>
+    <string name="phone_alerts_allowAlarms" formatted="false">Benarkan penggera</string>
+    <string name="phone_alerts_alarmsAsNotif" formatted="false">Penggera datang sebagai notifikasi pada iPhone ini</string>
+    <string name="phone_alerts_fromIos26" formatted="false">Mulai iOS 26 ia berbunyi seperti aplikasi Jam, walaupun dalam senyap.</string>
+    <string name="phone_alerts_timeSensitive" formatted="false">Time Sensitive dihidupkan</string>
+    <string name="phone_alerts_throughFocus" formatted="false">Notifikasi sampai walaupun dalam Fokus.</string>
+    <string name="phone_alerts_focusHolds" formatted="false">Fokus boleh menahan notifikasi</string>
+    <string name="phone_alerts_focusHow" formatted="false">Dalam Tetapan, Fokus, pilih setiap Fokus yang anda gunakan (Kerja, Tidur) dan tambah Prayer Times Asia di bawah Aplikasi. Penggera sentiasa sampai.</string>
+    <string name="phone_alerts_silentMutes" formatted="false">Suis senyap membisukan notifikasi</string>
+    <string name="phone_alerts_noAppSilent" formatted="false">Tiada aplikasi yang boleh membunyikan notifikasi dalam senyap. Penggera tetap berbunyi. Jika anda perlu mendengar waktu solat, tetapkan kepada Penggera.</string>
+    <string name="phone_alerts_makeAlarmSilent" formatted="false">Jadikan penggera supaya ia berbunyi walaupun dalam senyap dan Fokus.</string>
+    <string name="phone_alerts_onePrayerNotify" formatted="false">1 solat ditetapkan kepada Makluman</string>
+    <string name="phone_alerts_nPrayersNotify" formatted="false">{n} solat ditetapkan kepada Makluman</string>
+    <string name="phone_alerts_quietSilent" formatted="false">Ia kekal senyap dalam senyap. Tukar mana-mana daripadanya kepada Penggera pada senarai.</string>
+    <string name="phone_alerts_onNow" formatted="false">{name}, sedang hidup</string>
+    <string name="phone_alerts_fajrOff" formatted="false">Subuh bermula Mati kerana kebanyakan orang sedang tidur. Gunakan penggera Subuh sebagai ganti. Rumah anda dan tempat anda berada kekal hidup</string>
+    <string name="phone_alerts_friday" formatted="false">Jumaat</string>
+    <string name="phone_alerts_fridaySummary" formatted="false">{a} {b}, untuk {c} pada {d}</string>
+    <string name="phone_alerts_snooze5" formatted="false">Tunda 5 min</string>
+    <string name="phone_alerts_snoozed" formatted="false">Ditunda. Berbunyi semula dalam 5 min</string>
+    <string name="phone_alerts_stopAlarm" formatted="false">Henti penggera</string>
+    <string name="phone_alerts_alarmRings" formatted="false">Berbunyi sehingga anda menghentikannya, walaupun dalam senyap dan Fokus. Tunda 5 min.</string>
+    <string name="phone_notify_imsakIn" formatted="false">Imsak pada {time}</string>
+    <string name="phone_notify_wakeSahur" formatted="false">Bangun untuk sahur · {a} pada {b}</string>
+    <string name="phone_notify_wakeTahajjud" formatted="false">Bangun untuk tahajud · {a} pada {b}</string>
+    <string name="phone_notify_wakeFor" formatted="false">Bangun untuk {a} · tamat {b}</string>
+    <string name="phone_notify_endsIn30" formatted="false">{a} tamat dalam 30 min · {b}</string>
+    <string name="phone_notify_timeFor" formatted="false">Masa untuk {a} · {b}</string>
+    <string name="phone_notify_timeForOpen" formatted="false">Masa untuk {a} · dibuka hingga {b}</string>
+    <string name="phone_notify_breakFast" formatted="false">Masa untuk berbuka puasa. Hari Ramadan {n} · {name}</string>
+    <string name="phone_common_play" formatted="false">Main</string>
+    <string name="phone_common_chosenFile" formatted="false">Fail dipilih</string>
+    <string name="phone_azan_seconds" formatted="false">{n} saat</string>
+    <string name="phone_azan_preparing" formatted="false">Menyediakan azan anda…</string>
+    <string name="phone_azan_chooseOther" formatted="false">Pilih fail lain</string>
+    <string name="phone_azan_chooseFile" formatted="false">Pilih fail audio</string>
+    <string name="phone_azan_removed" formatted="false">Dialih keluar. Makluman menggunakan azan aplikasi semula.</string>
+    <string name="phone_azan_savedFirst" formatted="false">Disimpan. iPhone anda memainkan {n} saat pertama, dengan pudar lembut di hujung.</string>
+    <string name="phone_azan_savedLong" formatted="false">Disimpan. Panjangnya {n} saat.</string>
+    <string name="phone_azan_noSound" formatted="false">Fail itu tiada bunyi yang boleh kami gunakan. Cuba yang lain.</string>
+    <string name="phone_azan_cannotOpen" formatted="false">iPhone ini tidak dapat membuka fail itu. Cuba MP3, M4A atau WAV.</string>
+    <string name="phone_settings_oneAlarm" formatted="false">1 penggera</string>
+    <string name="phone_settings_countdown" formatted="false">Kiraan detik hidup</string>
+    <string name="phone_settings_countdownOff" formatted="false">Kiraan detik mati</string>
+    <string name="phone_settings_downloading" formatted="false">Memuat turun</string>
+    <string name="phone_settings_workedOut" formatted="false">Dikira pada telefon anda</string>
+    <string name="phone_settings_savedOffline" formatted="false">Disimpan untuk luar talian</string>
+    <string name="phone_settings_downloadsOnline" formatted="false">Dimuat turun apabila dalam talian</string>
+    <string name="phone_settings_confirmedMasjid" formatted="false">Disahkan oleh masjid</string>
+    <string name="phone_settings_checkedCommunity" formatted="false">Disemak oleh komuniti</string>
+    <string name="phone_settings_ownShadow" formatted="false">Bacaan bayang anda sendiri</string>
+    <string name="phone_source_downloadedYearly" formatted="false">Dimuat turun sekali setahun daripada pihak berkuasa dan disimpan pada telefon anda, jadi ia berfungsi luar talian.</string>
+    <string name="phone_falak_stepsMore" formatted="false">{n} langkah lagi bermakna {name} telah bermula.</string>
+    <string name="phone_falak_dayToGo" formatted="false">hari lagi</string>
+    <string name="phone_falak_daysToGo" formatted="false">hari lagi</string>
+    <string name="phone_falak_maghribSign" formatted="false">Seluruh cakera matahari telah di bawah ufuk dan tepi atasnya telah hilang. Paling jelas dilihat di laut atau tanah lapang.</string>
+    <string name="phone_falak_ishaSign" formatted="false">Cahaya merah (syafak ahmar) telah hilang dari langit barat, pandangan mazhab Syafie, Maliki dan Hanbali.</string>
+    <string name="phone_falak_fajrSign" formatted="false">Fajar sadik ialah warna putih nipis yang menyebar mendatar di ufuk timur, semakin jelas. Ia bukan fajar kazib yang naik menegak.</string>
+    <string name="phone_masjid_youAreHere" formatted="false">Anda di sini</string>
+    <string name="phone_masjid_searchingFrom" formatted="false">Mencari dari sini</string>
+    <string name="phone_masjid_stillLooking" formatted="false">Masih mencari</string>
+    <string name="phone_masjid_slow" formatted="false">Sambungan perlahan. Tempat akan muncul di sini sebaik sahaja tiba.</string>
+    <string name="phone_masjid_needInternet" formatted="false">Pencarian memerlukan sambungan internet.</string>
+    <string name="phone_masjid_noneWithin" formatted="false">Apple Maps mahupun OpenStreetMap tidak menyenaraikan {name} dalam lingkungan 15 km. Gunakan tab Kiblat untuk bersolat di tempat anda berada.</string>
+    <string name="phone_masjid_hidesDetails" formatted="false">Menyembunyikan butiran</string>
+    <string name="phone_masjid_showsFacilities" formatted="false">Menunjukkan kemudahan, arah dan banyak lagi</string>
+    <string name="phone_masjid_type" formatted="false">Jenis</string>
+    <string name="phone_qibla_noCompass" formatted="false">Telefon ini tiada kompas. Gunakan bearing kiblat di atas dengan peta, atau matahari dalam Falak.</string>
+    <string name="phone_submit_adhanHeard" formatted="false">Azan didengar</string>
+    <string name="phone_submit_couldNotSend" formatted="false">Tidak dapat dihantar</string>
+    <string name="phone_submit_thankYou" formatted="false">Terima kasih</string>
+    <string name="phone_submit_choosePhoto" formatted="false">Pilih gambar jadual waktu</string>
+    <string name="phone_submit_changePhoto" formatted="false">Tukar gambar</string>
+    <string name="phone_submit_inQueue" formatted="false">Penghantaran anda ({id}) berada dalam barisan semakan. Jazakallahu khairan.</string>
+    <string name="phone_submit_couldNotPrepare" formatted="false">Tidak dapat menyediakan penghantaran.</string>
+    <string name="phone_submit_serverNo" formatted="false">Pelayan tidak dapat menerimanya. Sila cuba lagi kemudian.</string>
+    <string name="phone_submit_noConnection" formatted="false">Tiada sambungan. Sila cuba lagi apabila anda dalam talian.</string>
+    <string name="phone_settings_moveCarries" formatted="false">Kod QR membawa {what}. Untuk membawa semuanya, kongsi pautan sebagai ganti.</string>
+    <string name="phone_settings_worldwide" formatted="false">Seluruh dunia</string>
+    <string name="phone_sanad_timetable" formatted="false">Jadual waktu {name}</string>
+    <string name="phone_today_welcomeBack" formatted="false">Selamat kembali</string>
+    <string name="phone_journey_youAreMusafir" formatted="false">Anda seorang musafir</string>
+    <string name="phone_journey_hanafiNote" formatted="false">Anda boleh memendekkan (qasar) solat anda. Dalam mazhab Hanafi solat tidak dijamak di luar Haji. Inilah perubahan bagi setiap satu.</string>
+    <string name="phone_journey_rakaat2" formatted="false">2 rakaat</string>
+    <string name="phone_journey_rakaat3" formatted="false">3 rakaat</string>
+    <string name="phone_source_astro" formatted="false">Pengiraan astronomi pada telefon anda. Kaedahnya ditunjukkan. Masjid tempatan mungkin berbeza beberapa minit.</string>
+    <string name="phone_blessed_middle" formatted="false">Pertengahan malam</string>
+    <string name="phone_blessed_lastThird" formatted="false">Sepertiga malam terakhir</string>
+    <string name="phone_blessed_spear" formatted="false">Matahari setinggi sebatang tombak (kira-kira 4½°)</string>
+    <string name="phone_blessed_halfway" formatted="false">Separuh jalan dari Maghrib ke Subuh</string>
+    <string name="phone_blessed_best" formatted="false">Waktu terbaik untuk tahajud dan doa</string>
+    <string name="phone_falak_pending" formatted="false">Menunggu semakan oleh panel falak dan syariah. Untuk pembelajaran dan semakan. Ikut waktu pihak berkuasa anda.</string>
+    <string name="phone_falak_shadowAway" formatted="false">Bayang menunjuk lurus menjauhi kiblat. Menghadap sepanjang bayang, dari hujungnya ke pangkal tongkat.</string>
+    <string name="phone_falak_shadowToward" formatted="false">Bayang menunjuk lurus ke arah kiblat. Menghadap sepanjang bayang, dari pangkal tongkat ke hujungnya.</string>
+    <string name="phone_method_isha" formatted="false">Isyak {n}°</string>
+    <string name="phone_method_ishaMin" formatted="false">Isyak +{n} min</string>
+    <string name="phone_method_fajrIsha" formatted="false">Subuh {n}° · {rest}</string>
+    <string name="phone_sources_ownTimetable" formatted="false">Jadual waktu {name} sendiri (Subuh {n}° · {rest}), daripada {source}.</string>
+    <string name="phone_time_timeLeft" formatted="false">{time} lagi</string>
+    <string name="phone_alerts_alarmRingsWord" formatted="false">penggera berbunyi</string>
+    <string name="phone_alerts_notifComesWord" formatted="false">notifikasi tiba</string>
+    <string name="phone_alerts_forSahurWord" formatted="false">untuk sahur</string>
+    <string name="phone_alerts_forNameWord" formatted="false">untuk {name}</string>
+    <string name="phone_move_sumPlace" formatted="false">Tempat {name}</string>
+    <string name="phone_move_sumSaved" formatted="false">{n} tempat disimpan</string>
+    <string name="phone_move_sumSaved_one" formatted="false">{n} tempat disimpan</string>
+    <string name="phone_move_sumHistory" formatted="false">sejarah {n} hari</string>
+    <string name="phone_move_sumHistory_one" formatted="false">sejarah {n} hari</string>
+    <string name="phone_move_sumCalc" formatted="false">Pilihan pengiraan anda</string>
+    <string name="phone_move_sumLook" formatted="false">Rupa dan nama waktu solat anda</string>
+    <string name="phone_move_sumAlerts" formatted="false">Solat mana yang dimaklumkan, dan caranya</string>
+    <string name="phone_move_sumAlarms" formatted="false">Penggera solat anda</string>
+    <string name="phone_move_sumRamadan" formatted="false">Rekod Ramadan anda tentang puasa, Tarawih dan juzuk</string>
+    <string name="phone_move_sumStandard" formatted="false">Tetapan piawai</string>
+    <string name="phone_today_nowThen2" formatted="false">Sekarang {name}. {count} {label}.</string>
+    <string name="phone_widget_openApp" formatted="false">Buka aplikasi</string>
+    <string name="phone_alarm_snoozed" formatted="false">Ditunda</string>
+    <string name="phone_alarm_prayerAlarm" formatted="false">Penggera solat</string>
 </resources>

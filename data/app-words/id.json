@@ -1574,5 +1574,8 @@
   "phone.move.sumAlarms": "Alarm salat Anda",
   "phone.move.sumRamadan": "Catatan Ramadan Anda tentang puasa, Tarawih, dan juz",
   "phone.move.sumStandard": "Pengaturan standar",
-  "phone.today.nowThen2": "Sekarang {name}. {count} {label}."
+  "phone.today.nowThen2": "Sekarang {name}. {count} {label}.",
+  "phone.widget.openApp": "Buka aplikasi",
+  "phone.alarm.snoozed": "Ditunda",
+  "phone.alarm.prayerAlarm": "Alarm salat"
 }

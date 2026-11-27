@@ -1574,5 +1574,8 @@
   "phone.move.sumAlarms": "Penggera solat anda",
   "phone.move.sumRamadan": "Rekod Ramadan anda tentang puasa, Tarawih dan juzuk",
   "phone.move.sumStandard": "Tetapan piawai",
-  "phone.today.nowThen2": "Sekarang {name}. {count} {label}."
+  "phone.today.nowThen2": "Sekarang {name}. {count} {label}.",
+  "phone.widget.openApp": "Buka aplikasi",
+  "phone.alarm.snoozed": "Ditunda",
+  "phone.alarm.prayerAlarm": "Penggera solat"
 }

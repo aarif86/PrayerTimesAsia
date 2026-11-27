@@ -1574,5 +1574,8 @@
   "phone.move.sumAlarms": "Your prayer alarms",
   "phone.move.sumRamadan": "Your Ramadan record of fasts, Tarawih and juz",
   "phone.move.sumStandard": "The standard settings",
-  "phone.today.nowThen2": "Now {name}. {count} {label}."
+  "phone.today.nowThen2": "Now {name}. {count} {label}.",
+  "phone.widget.openApp": "Open the app",
+  "phone.alarm.snoozed": "Snoozed",
+  "phone.alarm.prayerAlarm": "Prayer alarm"
 }

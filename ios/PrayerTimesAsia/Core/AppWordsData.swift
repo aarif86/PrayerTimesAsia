@@ -1578,6 +1578,9 @@ extension AppWords {
         "phone.move.sumRamadan": "Your Ramadan record of fasts, Tarawih and juz",
         "phone.move.sumStandard": "The standard settings",
         "phone.today.nowThen2": "Now {name}. {count} {label}.",
+        "phone.widget.openApp": "Open the app",
+        "phone.alarm.snoozed": "Snoozed",
+        "phone.alarm.prayerAlarm": "Prayer alarm",
     ]
 
     static let msLines: [String: String] = [
@@ -3157,6 +3160,9 @@ extension AppWords {
         "phone.move.sumRamadan": "Rekod Ramadan anda tentang puasa, Tarawih dan juzuk",
         "phone.move.sumStandard": "Tetapan piawai",
         "phone.today.nowThen2": "Sekarang {name}. {count} {label}.",
+        "phone.widget.openApp": "Buka aplikasi",
+        "phone.alarm.snoozed": "Ditunda",
+        "phone.alarm.prayerAlarm": "Penggera solat",
     ]
 
     static let idLines: [String: String] = [
@@ -4736,5 +4742,8 @@ extension AppWords {
         "phone.move.sumRamadan": "Catatan Ramadan Anda tentang puasa, Tarawih, dan juz",
         "phone.move.sumStandard": "Pengaturan standar",
         "phone.today.nowThen2": "Sekarang {name}. {count} {label}.",
+        "phone.widget.openApp": "Buka aplikasi",
+        "phone.alarm.snoozed": "Ditunda",
+        "phone.alarm.prayerAlarm": "Alarm salat",
     ]
 }

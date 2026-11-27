@@ -10,13 +10,13 @@ enum RoomSuggestion {
         var id: String { rawValue }
         var label: String {
             switch self {
-            case .women: "Women's space"
-            case .shared: "One space for men and women"
-            case .aircon: "Air conditioned"
-            case .mats: "Prayer mats"
-            case .garments: "Telekung and sarong"
-            case .ablution: "Place for wudhu"
-            case .slippers: "Slippers"
+            case .women: W("masjid.women")
+            case .shared: W("suggestRoom.shared")
+            case .aircon: W("suggestRoom.aircon")
+            case .mats: W("suggestRoom.mats")
+            case .garments: W("suggestRoom.garments")
+            case .ablution: W("suggestRoom.ablution")
+            case .slippers: W("suggestRoom.slippers")
             }
         }
     }
@@ -76,49 +76,49 @@ struct SuggestRoomView: View {
         NavigationStack {
             Form {
                 Section {
-                    Text("Know a musollah or prayer room that is not on our map? Tell us about it. We check every one and then add it for everyone.")
+                    Text(W("suggestRoom.intro"))
                         .font(.subheadline)
                 }
-                Section("Place name") { TextField("For example Pasir Ris Mall", text: $name) }
-                Section("Floor or level") { TextField("For example Level 3 or B1", text: $level) }
-                Section("Address") { TextField("Address", text: $address, axis: .vertical).lineLimit(1...3) }
-                Section("How to find it") {
-                    TextField("For example next to the toilets near the car park lift", text: $directions, axis: .vertical).lineLimit(2...5)
+                Section(W("suggestRoom.name")) { TextField(W("suggestRoom.nameHint"), text: $name) }
+                Section(W("suggestRoom.level")) { TextField(W("suggestRoom.levelHint"), text: $level) }
+                Section(W("suggestRoom.address")) { TextField(W("suggestRoom.address"), text: $address, axis: .vertical).lineLimit(1...3) }
+                Section(W("masjid.findIt")) {
+                    TextField(W("suggestRoom.directionsHint"), text: $directions, axis: .vertical).lineLimit(2...5)
                 }
                 Section {
                     if live != nil {
-                        Toggle("I am at the prayer room now", isOn: $usePin)
+                        Toggle(W("suggestRoom.pinHere"), isOn: $usePin)
                     }
                 } header: {
-                    Text("Where it is on the map")
+                    Text(W("suggestRoom.pin"))
                 } footer: {
                     Text(live != nil
-                         ? "Only if you are standing at the room. Your location is added to this email once and is not kept anywhere else."
+                         ? W("suggestRoom.pinNote")
                          : "Standing at the room? Close this, tap Near me, then come back to add a pin. Otherwise an address is enough.")
                 }
-                Section("What is there") {
+                Section(W("suggestRoom.has")) {
                     ForEach(RoomSuggestion.Has.allCases) { h in
                         Toggle(h.label, isOn: Binding(get: { has.contains(h) }, set: { if $0 { has.insert(h) } else { has.remove(h) } }))
                     }
                 }
-                Section("Anything else") {
-                    TextField("Opening hours, or who may use it", text: $remarks, axis: .vertical).lineLimit(2...5)
+                Section(W("suggestRoom.remarks")) {
+                    TextField(W("suggestRoom.remarksHint"), text: $remarks, axis: .vertical).lineLimit(2...5)
                 }
                 Section {
-                    Button { send() } label: { Label("Send your suggestion", systemImage: "paperplane.fill").bold() }
+                    Button { send() } label: { Label(W("phone.suggest.send"), systemImage: "paperplane.fill").bold() }
                         .disabled(!ready)
                     if ready {
-                        Button { copyNote() } label: { Label(copied ? "Copied" : "No email app? Copy the note", systemImage: "doc.on.doc") }
+                        Button { copyNote() } label: { Label(copied ? W("common.copied") : W("feedback.copy"), systemImage: "doc.on.doc") }
                     }
                 } footer: {
                     Text(ready ? "It opens our note page with your words filled in. Add your email there so we can thank you. JazakAllahu khairan for helping others find a place to pray."
-                               : "Add the place name and either the address or a pin.")
+                               : W("suggestRoom.needs"))
                 }
             }
             .onChange(of: mail.body) { _, _ in copied = false }
-            .navigationTitle("Suggest a prayer room")
+            .navigationTitle(W("suggestRoom.button"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button(W("common.close")) { dismiss() } } }
         }
     }
 
