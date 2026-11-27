@@ -1581,6 +1581,8 @@ extension AppWords {
         "phone.widget.openApp": "Open the app",
         "phone.alarm.snoozed": "Snoozed",
         "phone.alarm.prayerAlarm": "Prayer alarm",
+        "phone.a11y.prayed": "prayed",
+        "phone.source.methodName": "{name} method",
     ]
 
     static let msLines: [String: String] = [
@@ -3163,6 +3165,8 @@ extension AppWords {
         "phone.widget.openApp": "Buka aplikasi",
         "phone.alarm.snoozed": "Ditunda",
         "phone.alarm.prayerAlarm": "Penggera solat",
+        "phone.a11y.prayed": "sudah bersolat",
+        "phone.source.methodName": "Kaedah {name}",
     ]
 
     static let idLines: [String: String] = [
@@ -4745,5 +4749,7 @@ extension AppWords {
         "phone.widget.openApp": "Buka aplikasi",
         "phone.alarm.snoozed": "Ditunda",
         "phone.alarm.prayerAlarm": "Alarm salat",
+        "phone.a11y.prayed": "sudah salat",
+        "phone.source.methodName": "Metode {name}",
     ]
 }

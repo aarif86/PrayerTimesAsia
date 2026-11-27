@@ -1577,5 +1577,7 @@
   "phone.today.nowThen2": "Sekarang {name}. {count} {label}.",
   "phone.widget.openApp": "Buka aplikasi",
   "phone.alarm.snoozed": "Ditunda",
-  "phone.alarm.prayerAlarm": "Penggera solat"
+  "phone.alarm.prayerAlarm": "Penggera solat",
+  "phone.a11y.prayed": "sudah bersolat",
+  "phone.source.methodName": "Kaedah {name}"
 }

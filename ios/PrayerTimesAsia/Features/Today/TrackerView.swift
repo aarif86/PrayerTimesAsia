@@ -138,7 +138,7 @@ struct TrackerView: View {
         .font(.footnote.monospacedDigit())
         .frame(width: 38, height: 38)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(n): \(future ? W("phone.tracker.sourceNone") : d.excused ? W("phone.tracker.excusedWord") : W("phone.tracker.ofFive", ["n": d.prayed]))")
+        .accessibilityLabel("\(n): \(future ? W("tracker.notYet") : d.excused ? W("tracker.excusedDay") : W("tracker.ofFive", ["n": d.prayed]))")
     }
 
     private static func label(_ key: String) -> String {

@@ -1577,5 +1577,7 @@
   "phone.today.nowThen2": "Now {name}. {count} {label}.",
   "phone.widget.openApp": "Open the app",
   "phone.alarm.snoozed": "Snoozed",
-  "phone.alarm.prayerAlarm": "Prayer alarm"
+  "phone.alarm.prayerAlarm": "Prayer alarm",
+  "phone.a11y.prayed": "prayed",
+  "phone.source.methodName": "{name} method"
 }

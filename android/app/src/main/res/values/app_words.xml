@@ -1580,4 +1580,6 @@
     <string name="phone_widget_openApp" formatted="false">Open the app</string>
     <string name="phone_alarm_snoozed" formatted="false">Snoozed</string>
     <string name="phone_alarm_prayerAlarm" formatted="false">Prayer alarm</string>
+    <string name="phone_a11y_prayed" formatted="false">prayed</string>
+    <string name="phone_source_methodName" formatted="false">{name} method</string>
 </resources>

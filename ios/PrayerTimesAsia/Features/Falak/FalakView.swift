@@ -457,7 +457,7 @@ private struct QiblaDayCard: View {
                 }
                 Text(W("falak.dateAtYourTime", ["date": model.longDate(day), "time": model.formatted(day)]))
                     .font(.subheadline.weight(.semibold))
-                Text(W("phone.falak.rashdul"))
+                Text(W("falak.qiblaDayExplain"))
                     .font(.footnote).opacity(0.85)
                 if sun.altitude > 3 {
                     Label(W("falak.qiblaDayVisible", ["deg": Int(sun.altitude.rounded())]), systemImage: "checkmark.circle.fill")

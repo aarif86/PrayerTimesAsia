@@ -60,7 +60,7 @@ struct CreditsView: View {
             Section(W("phone.officialTimetables")) { ForEach(timetables) { row($0) } }
             Section(W("phone.credits.also")) { ForEach(other) { row($0) } }
         }
-        .navigationTitle(W("phone.credits.title"))
+        .navigationTitle(W("settings.sources"))
     }
 
     @ViewBuilder

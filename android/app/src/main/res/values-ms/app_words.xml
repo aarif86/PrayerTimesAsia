@@ -1580,4 +1580,6 @@
     <string name="phone_widget_openApp" formatted="false">Buka aplikasi</string>
     <string name="phone_alarm_snoozed" formatted="false">Ditunda</string>
     <string name="phone_alarm_prayerAlarm" formatted="false">Penggera solat</string>
+    <string name="phone_a11y_prayed" formatted="false">sudah bersolat</string>
+    <string name="phone_source_methodName" formatted="false">Kaedah {name}</string>
 </resources>
