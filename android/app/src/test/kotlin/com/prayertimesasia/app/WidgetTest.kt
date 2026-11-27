@@ -100,27 +100,27 @@ class WidgetTest {
         DemoConfig("home", style, appearance, Tab.PRAYER, now)
 
     // Next prayer: small, wide and large (the large one is the whole day in the app's look).
-    @Test fun next_small_night() = shoot("next-small-night", d(TodayStyle.LIST, night), 110, 110) { NextPrayerContent(it) }
-    @Test fun next_small_day() = shoot("next-small-day", d(TodayStyle.LIST, morning), 110, 110) { NextPrayerContent(it) }
-    @Test fun next_wide_night() = shoot("next-wide-night", d(TodayStyle.LIST, night), 250, 110) { NextPrayerContent(it) }
-    @Test fun next_wide_day() = shoot("next-wide-day", d(TodayStyle.LIST, morning), 250, 110) { NextPrayerContent(it) }
+    @Test fun next_small_night() = shoot("next-small-night", d(TodayStyle.CENTRE, night), 110, 110) { NextPrayerContent(it) }
+    @Test fun next_small_day() = shoot("next-small-day", d(TodayStyle.CENTRE, morning), 110, 110) { NextPrayerContent(it) }
+    @Test fun next_wide_night() = shoot("next-wide-night", d(TodayStyle.CENTRE, night), 250, 110) { NextPrayerContent(it) }
+    @Test fun next_wide_day() = shoot("next-wide-day", d(TodayStyle.CENTRE, morning), 250, 110) { NextPrayerContent(it) }
     @Test fun next_large_bands_night() = shoot("next-large-bands-night", d(TodayStyle.BANDS, night), 250, 300) { NextPrayerContent(it) }
     @Test fun next_large_bands_day() = shoot("next-large-bands-day", d(TodayStyle.BANDS, morning), 250, 300) { NextPrayerContent(it) }
-    @Test fun next_large_dial_night() = shoot("next-large-dial-night", d(TodayStyle.DIAL, night), 250, 300) { NextPrayerContent(it) }
+    @Test fun next_large_dial_night() = shoot("next-large-gold-night", d(TodayStyle.GOLD, night), 250, 300) { NextPrayerContent(it) }
     @Test fun next_wide_bands_night() = shoot("next-wide-bands-night", d(TodayStyle.BANDS, night), 250, 110) { NextPrayerContent(it) }
     @Test fun next_small_bands_day() = shoot("next-small-bands-day", d(TodayStyle.BANDS, morning), 110, 110) { NextPrayerContent(it) }
-    @Test fun next_large_list_day() = shoot("next-large-list-day", d(TodayStyle.LIST, morning), 250, 300) { NextPrayerContent(it) }
+    @Test fun next_large_list_day() = shoot("next-large-list-day", d(TodayStyle.CENTRE, morning), 250, 300) { NextPrayerContent(it) }
 
     // The pictures the launcher's widget picker shows (copied into res/drawable-nodpi).
     @Test fun picker_previews() {
-        shoot("preview-next", d(TodayStyle.LIST, night), 160, 160) { NextPrayerContent(it) }
+        shoot("preview-next", d(TodayStyle.CENTRE, night), 160, 160) { NextPrayerContent(it) }
         shoot("preview-timetable", d(TodayStyle.BANDS, night), 300, 300) { TimetableContent(it) }
     }
 
-    // Today's timetable in all six looks, night and day, at a normal, a tall and a short size.
+    // Today's timetable in all five looks, night and day, at a normal, a tall and a short size.
     private fun looks(size: String, w: Int, h: Int) {
-        listOf(TodayStyle.CENTRE to "centre", TodayStyle.LIST to "sidedial", TodayStyle.DIAL to "dial",
-            TodayStyle.SUN_PATH to "sunpath", TodayStyle.BANDS to "bands", TodayStyle.SIMPLE to "simple").forEach { (st, n) ->
+        listOf(TodayStyle.CENTRE to "centre", TodayStyle.SUN_PATH to "sunpath", TodayStyle.BANDS to "bands",
+            TodayStyle.SIMPLE to "simple", TodayStyle.GOLD to "gold").forEach { (st, n) ->
             shoot("timetable-$n-$size-night", d(st, night), w, h) { TimetableContent(it) }
             shoot("timetable-$n-$size-day", d(st, morning, Appearance.LIGHT), w, h) { TimetableContent(it) }
         }

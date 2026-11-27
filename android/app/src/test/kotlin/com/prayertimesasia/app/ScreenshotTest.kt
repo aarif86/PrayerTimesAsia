@@ -225,7 +225,7 @@ class ScreenshotTest {
         compose.setContent {
             SkyTheme(s) {
                 Box(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color(0xFF5B6E86)), contentAlignment = Alignment.Center) {
-                    WidgetModel.from(s.resolver, s.now)?.let { TimetableCardPreview(it) }
+                    WidgetModel.from(s.resolver, s.now, style, appearance == Appearance.DARK)?.let { TimetableCardPreview(it) }
                 }
             }
         }
@@ -233,9 +233,14 @@ class ScreenshotTest {
         compose.onRoot().captureRoboImage("build/outputs/roborazzi/$name.png")
     }
 
-    @Test fun widget_list() = widget("12-widget-list", TodayStyle.LIST)
+    @Test fun widget_list() = widget("12-widget-list", TodayStyle.CENTRE)
     @Test fun widget_bands() = widget("12b-widget-bands", TodayStyle.BANDS)
-    @Test fun widget_dial() = widget("12c-widget-dial", TodayStyle.DIAL)
+    @Test fun widget_dial() = widget("12c-widget-dial", TodayStyle.GOLD)
+    @Test fun widget_sunpath() = widget("12d-widget-sunpath", TodayStyle.SUN_PATH)
+    @Test fun widget_simple() = widget("12e-widget-simple", TodayStyle.SIMPLE)
+    @Test fun widget_centre_light() = widget("12f-widget-centre-light", TodayStyle.CENTRE, Appearance.LIGHT)
+    @Test fun widget_bands_light() = widget("12g-widget-bands-light", TodayStyle.BANDS, Appearance.LIGHT)
+    @Test fun widget_gold_light() = widget("12h-widget-gold-light", TodayStyle.GOLD, Appearance.LIGHT)
 
     // Ramadan day 12, half an hour before Maghrib: the Berbuka countdown (store screenshot).
     @Test fun ramadan() = shoot("14-ramadan-berbuka", DemoConfig(style = TodayStyle.CENTRE,
