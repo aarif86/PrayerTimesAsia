@@ -203,7 +203,7 @@
 .lay-look-bands .lay-row .scr-iq, .lay-look-bands .lay-row .scr-iq .scr-t { color: rgba(255, 255, 255, 0.9); }
 .lay-look-bands .lay-row .scr-t { font-weight: 400; font-family: var(--font); }
 .lay-look-bands .lay-row.on { box-shadow: inset calc(var(--u) * 0.9) 0 0 #fff; background: var(--band); }
-.lay-look-bands .lay-row.on .scr-name { color: #fff; }
+.lay-look-bands .lay-row.on .scr-name, .scr.lay-look-bands:not(.scr-light) .lay-row.on .scr-name { color: #fff; }
 .lay-look-bands .lay-row.on .scr-t { font-weight: 800; }
 .lay-look-bands .lay-row.passed { opacity: 1; filter: saturate(0.7) brightness(0.8); }
 .lay-look-bands .p-fajr { --band: rgb(33, 110, 92); }
