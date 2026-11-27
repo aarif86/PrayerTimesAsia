@@ -30,6 +30,8 @@ data class WidgetModel(
     val zone: java.time.ZoneId,
     /** In Ramadan, the fast's next moment (Imsak or Berbuka), as the Ramadan card shows it; null otherwise. */
     val fast: FastMoment? = null,
+    /** Dark or light, from the app's Appearance (or the phone's, on Automatic): the widgets follow it as the Prayer screen does. */
+    val dark: Boolean = true,
 ) {
     /** The prayer marked NOW: null between Syuruk and Zohor, when no prayer is open. */
     val open: Prayer? get() = com.prayertimesasia.core.PrayerLead.open(current)?.first
@@ -52,7 +54,7 @@ data class WidgetModel(
     }
 
     companion object {
-        fun from(r: Resolver, now: Instant, style: TodayStyle = r.prefs.todayStyle): WidgetModel? {
+        fun from(r: Resolver, now: Instant, style: TodayStyle = r.prefs.todayStyle, dark: Boolean = true): WidgetModel? {
             val place = r.activePlace ?: return null
             val day = r.day(now) ?: return null
             val next = r.next(now)
@@ -62,14 +64,15 @@ data class WidgetModel(
                 hijri = r.hijri(now),
                 dateLine = DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.ENGLISH).format(day.date),
                 sourceLabel = day.officialSource ?: "${r.method.shortName} · calculated",
-                day = day, now = now, current = r.current(now), next = next, style = style,
+                day = day, now = now, current = r.current(now), next = next, style = if (style == TodayStyle.LIST || style == TodayStyle.DIAL) TodayStyle.CENTRE else style,
                 names = Prayer.all.associateWith { r.prayerName(it, day.time(it)) },
                 times = Prayer.all.associateWith { r.timeParts(day.time(it)) },
                 nextName = next?.let { r.prayerName(it.first, it.second) },
                 nextTime = next?.let { r.formatted(it.second) },
                 zone = r.zone,
+                dark = dark,
                 fast = r.fastingMoment(now)?.let { (kind, at) ->
-                    val t = RamadanWords.In(RamadanContent.lang(r.naming))
+                    val t = RamadanWords.In(r.appLang)
                     FastMoment(kind, at, t(if (kind == Resolver.FastingKind.IMSAK) RamadanWordKey.imsak else RamadanWordKey.berbuka), r.formatted(at))
                 },
             )

@@ -3,7 +3,7 @@ import {
   BadgeCheck, Building2, Check, Globe, House, Navigation, CircleCheck, CircleX, Search, Share, SquarePlus, Trash2, Users, Sigma, SunDim,
 } from 'lucide-preact'
 import {
-  announcementDate, AUTHORITIES, authorityName, basisLabel, eventTitle, expectedDate, upcomingEvents,
+  announcementDate, AUTHORITIES, authorityName, basisLabel, eventTitleIn, expectedDate, upcomingEvents,
 } from '../core/calendarSanad'
 import type { PrayerDay } from '../core/engine'
 import { musafirDistanceCheck, musafirGuidance, musafirPlan } from '../core/musafir'
@@ -251,7 +251,7 @@ export function CalendarSheet() {
         const announcedMine = entries.some((a) => a.authority === mine && a.status === 'announced')
         return (
           <section>
-            <h3 class="group-title" style={{ fontSize: '15px' }}>{eventTitle(u.event, s.naming)} {u.hijriYear} {tr('calendar.ah')}</h3>
+            <h3 class="group-title" style={{ fontSize: '15px' }}>{eventTitleIn(u.event, s.appLang)} {u.hijriYear} {tr('calendar.ah')}</h3>
             <div class="group">
               <div class="item" style={{ alignItems: 'flex-start' }}>
                 <div class="label"><div class="subhead" style={{ fontWeight: 600 }}>{tr('calendar.expected')}</div><div class="caption secondary">{tr('calendar.estimateExplain')}</div></div>
@@ -435,6 +435,7 @@ const CREDITS: [string, string, string | null][] = [
   ['Prayer rooms', 'The musolla database on GitHub (LGPL 3.0), started by the KalamApps and PrayerTime.SG teams and kept by volunteers, for prayer rooms in malls, schools and sports centres. Our copy and fixes are shared back in the open.', 'https://github.com/aarif86/musolla-database'],
   ['Icons and fonts', 'Lucide icons (ISC); Inter and Nunito (SIL Open Font Licence).', 'https://lucide.dev'],
   ['Community data', 'Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.', 'https://prayertimes.asia/verify.html'],
+  ['Azan', "The azan voices are Asim Javed, from the ICR masjid's own collection on the Internet Archive (public domain, CC0), Ahmed Khalaf, his own recordings (CC BY 4.0), and the Makkah azan as recorded at Masjid al-Haram by Seyfula Islam (CC BY 3.0, Wikimedia Commons). The Al-Aqsa azan is \"Masjidul Aqsa Athan, Pt. 1\" from Athans from the Holy Lands (2018), courtesy of SIMTECHCDS (Simtech Productions, Durban), used with their kind permission. With thanks to them all.", 'https://archive.org/details/icr-friday-prayer-2nd-adhan-17th-may-2024-9th-dhul-qadah-1445-by-asim-javed'],
   ['Design', 'The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my by Awsam Tech LLP, the Singapore and Malaysia app. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.', 'https://www.awsamtech.com/'],
   ['This app', 'Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.', 'https://github.com/aarif86/PrayerTimesAsia'],
 ]

@@ -37,7 +37,7 @@ struct GuideView: View {
         .foregroundStyle(.white)
         .environment(\.colorScheme, .dark)
         .onAppear {
-            if !started { lang = GuideWords.startLanguage(naming: model.naming); started = true }
+            if !started { lang = model.appLang; started = true }
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(t("label"))
@@ -146,8 +146,8 @@ private struct FeatureIcon: View {
 
     var body: some View {
         switch id {
-        case "prayer": Image(systemName: "clock").resizable().scaledToFit()
-        case "qibla": Image(systemName: "location.north.circle").resizable().scaledToFit()
+        case "prayer": Image("Tab-prayer").resizable().scaledToFit()
+        case "qibla": Image("Tab-qibla").resizable().scaledToFit()
         case "masjid": Image("Tab-masjid").resizable().scaledToFit()
         case "falak": Image(systemName: "sun.max").resizable().scaledToFit()
         case "travel": Image("Tab-journey").resizable().scaledToFit()

@@ -177,7 +177,7 @@ function App() {
   )
 }
 
-const LOOK_NAMES: Record<string, string> = { night: 'Sky dark', day: 'Sky light', board: 'Board', bands: 'Bands', dial: 'Day Dial', sunpath: 'Sun Path', simple: 'Simple', surau: 'Surau' }
+const LOOK_NAMES: Record<string, string> = { dial: 'Centre Dial', sunpath: 'Sun Path', bands: 'Colour Bands', simple: 'Big and Simple', surau: 'Calm Gold', night: 'Sky (old)', day: 'Sky light (old)', board: 'Board (old)' }
 const LANG_NAMES: Record<string, string> = { en: 'English', ms: 'Bahasa Melayu', id: 'Bahasa Indonesia' }
 const regionNames = typeof Intl !== 'undefined' && 'DisplayNames' in Intl ? new Intl.DisplayNames(['en'], { type: 'region' }) : null
 const countryName = (cc: string) => (cc === '?' ? 'Not known' : regionNames?.of(cc) ?? cc)
@@ -391,7 +391,7 @@ function demoStats(days: number): Stats {
     const split = (shares: Record<string, number>): MixPart => Object.fromEntries(Object.entries(shares).map(([k, f]) => [k, { avg: Math.round(avg * f * 10) / 10, peak: Math.round(peak * f) }]))
     const mix: Mix = {
       cc: split({ SG: 0.42, MY: 0.3, ID: 0.15, BN: 0.04, GB: 0.03, AU: 0.02, PH: 0.02, TH: 0.01, US: 0.01 }),
-      look: split({ night: 0.45, board: 0.2, bands: 0.15, day: 0.1, dial: 0.06, sunpath: 0.04 }),
+      look: split({ simple: 0.55, bands: 0.2, dial: 0.1, surau: 0.1, sunpath: 0.05 }),
       lang: split({ ms: 0.5, en: 0.3, id: 0.2 }),
     }
     out.push({ date, peak, peakAt, avg, seen: Math.round(base * 1.08), screenHours: Math.round(sum / 4), hours: hours.map((h) => Math.round(h * 10) / 10), mix })

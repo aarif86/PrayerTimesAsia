@@ -19,9 +19,8 @@ export function guideWord(lang: Lang3, key: GuideWordKey, args: Record<string, s
   return line.replace(/\{([a-z]+)\}/g, (all, name: string) => (name in args ? String(args[name]) : all))
 }
 
-/** The guide's first language: the prayer names' language if it is Malay or Indonesian, else the device's. */
-export function guideLang(naming: Lang3, locale: string): Lang3 {
-  if (naming !== 'en') return naming
+/** The guide's first language: the device's (Malay or Indonesian only if the device says so). Never the prayer names. */
+export function guideLang(locale: string): Lang3 {
   const l = locale.toLowerCase()
   if (l.startsWith('ms')) return 'ms'
   if (l.startsWith('id') || l.startsWith('in')) return 'id'

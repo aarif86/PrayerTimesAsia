@@ -3,6 +3,8 @@
 
   MODE=read   python3 tools/asc_submit.py   # show the waiting version, its build, text and screenshots
   MODE=submit python3 tools/asc_submit.py   # pick the build, manual release, phased release, Add for Review
+  MODE=release python3 tools/asc_submit.py  # owner said release: release the approved version now (phased),
+                                            # or, if Apple is still reviewing it, release it as soon as approved
 
 Run only after the owner says go. It never touches the store text or the
 screenshots already saved in App Store Connect, apart from filling an empty
@@ -49,6 +51,25 @@ def main():
     for v in versions:
         a = v["attributes"]
         print("Version", a["versionString"], a["appStoreState"], "release:", a.get("releaseType"), v["id"])
+    if MODE == "release":
+        ready = [v for v in versions if v["attributes"]["appStoreState"] == "PENDING_DEVELOPER_RELEASE"]
+        if not ready:
+            review = [v for v in versions if v["attributes"]["appStoreState"] in ("WAITING_FOR_REVIEW", "IN_REVIEW")]
+            if not review:
+                sys.exit("Nothing approved or in review. Not released.")
+            v = review[0]
+            call("PATCH", f"/v1/appStoreVersions/{v['id']}", {"data": {
+                "type": "appStoreVersions", "id": v["id"], "attributes": {"releaseType": "AFTER_APPROVAL"}}})
+            print(f"\nDone. Version {v['attributes']['versionString']} is still with App Review "
+                  f"({v['attributes']['appStoreState']}). It will be released as soon as Apple approves it, phased over 7 days.")
+            return
+        v = ready[0]
+        call("POST", "/v1/appStoreVersionReleaseRequests", {"data": {
+            "type": "appStoreVersionReleaseRequests",
+            "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": v["id"]}}}}})
+        print(f"\nDone. Version {v['attributes']['versionString']} released. Phased release starts now.")
+        return
+
     waiting = [v for v in versions if v["attributes"]["appStoreState"] in
                ("PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED")]
     if not waiting:

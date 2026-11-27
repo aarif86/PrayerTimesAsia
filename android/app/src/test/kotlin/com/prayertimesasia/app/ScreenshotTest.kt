@@ -94,23 +94,26 @@ class ScreenshotTest {
                   variant: String = "home", tab: Tab = Tab.PRAYER, aligned: Boolean = false) =
         DemoConfig(variant, style, appearance, tab, now, more, aligned)
 
-    // The Prayer screen in each style, night and day.
-    @Test fun today_list_night() = shoot("01-today-list-night", d(TodayStyle.LIST))
-    @Test fun today_list_auto_night() = shoot("01b-today-list-auto-night", d(TodayStyle.LIST, Appearance.SYSTEM))
-    @Test fun today_list_day() = shoot("01c-today-list-light-day", d(TodayStyle.LIST, Appearance.LIGHT, morning))
-    @Test fun today_list_more() = shoot("01d-today-list-show-more", d(TodayStyle.LIST, more = true))
+    // The Prayer screen in each of the five looks, night and day (as the web app's v12 looks).
     @Test fun today_centre_night() = shoot("02-today-centre-night", d(TodayStyle.CENTRE))
     @Test fun today_centre_day() = shoot("02b-today-centre-light-day", d(TodayStyle.CENTRE, Appearance.LIGHT, morning))
-    @Test fun today_dial_night() = shoot("03-today-dial-night", d(TodayStyle.DIAL))
-    @Test fun today_dial_day() = shoot("03b-today-dial-light-day", d(TodayStyle.DIAL, Appearance.LIGHT, morning))
-    @Test fun today_dial_more() = shoot("03c-today-dial-show-more", d(TodayStyle.DIAL, more = true))
+    @Test fun today_centre_more() = shoot("02d-today-centre-show-more", d(TodayStyle.CENTRE, more = true))
+    @Test fun today_centre_auto_night() = shoot("02e-today-centre-auto-night", d(TodayStyle.CENTRE, Appearance.SYSTEM))
+    @Test fun today_gold_night() = shoot("03-today-dial-night", d(TodayStyle.GOLD))
+    @Test fun today_gold_day() = shoot("03b-today-gold-light-day", d(TodayStyle.GOLD, Appearance.LIGHT, morning))
     @Test fun today_sunpath_night() = shoot("04-today-sunpath-night", d(TodayStyle.SUN_PATH))
     @Test fun today_sunpath_day() = shoot("04b-today-sunpath-light-day", d(TodayStyle.SUN_PATH, Appearance.LIGHT, morning))
     @Test fun today_bands_night() = shoot("05-today-bands-night", d(TodayStyle.BANDS))
     @Test fun today_bands_more() = shoot("05b-today-bands-show-more", d(TodayStyle.BANDS, more = true))
     @Test fun today_bands_day() = shoot("05c-today-bands-day", d(TodayStyle.BANDS, Appearance.LIGHT, morning))
-    @Test fun today_travel() = shoot("06-today-travel-hanoi", d(TodayStyle.LIST, variant = "travel"))
-    @Test fun today_visitor() = shoot("06b-today-visitor-kl", d(TodayStyle.LIST, variant = "visitor"))
+    @Test fun today_simple_night() = shoot("05d-today-simple-night", d(TodayStyle.SIMPLE))
+    @Test fun today_simple_day() = shoot("05e-today-simple-light-day", d(TodayStyle.SIMPLE, Appearance.LIGHT, morning))
+    @Test fun today_old_side_dial() = shoot("05f-today-old-side-dial-opens-centre", d(TodayStyle.LIST, Appearance.LIGHT, morning))
+    @Test fun today_alerts_off() = shoot("05g-today-alerts-mixed", d(TodayStyle.CENTRE, Appearance.LIGHT, morning)) { s ->
+        s.setAlertMode(com.prayertimesasia.core.Prayer.ASR, com.prayertimesasia.core.AlertMode.ALARM)
+    }
+    @Test fun today_travel() = shoot("06-today-travel-hanoi", d(TodayStyle.CENTRE, variant = "travel"))
+    @Test fun today_visitor() = shoot("06b-today-visitor-kl", d(TodayStyle.CENTRE, variant = "visitor"))
 
     // The other tabs.
     @Test fun qibla() = shoot("07-qibla", d(TodayStyle.LIST, tab = Tab.QIBLA))
@@ -118,6 +121,34 @@ class ScreenshotTest {
     @Test fun qibla_aligned_light() = shoot("07c-qibla-aligned-light", d(TodayStyle.LIST, Appearance.LIGHT, morning, tab = Tab.QIBLA, aligned = true))
     @Test fun falak() = shoot("08-falak", d(TodayStyle.LIST, tab = Tab.FALAK))
     @Test fun falak_day() = shoot("08b-falak-light-day", d(TodayStyle.LIST, Appearance.LIGHT, morning, tab = Tab.FALAK))
+
+    // Qibla and Falak in the five looks, light and dark, as on the web app's demo pictures
+    // (25 October 2026, 9:01 am, phone facing 118°), so the two can be laid side by side.
+    private val nineAm: Instant = java.time.ZonedDateTime.of(2026, 10, 25, 9, 1, 0, 0, java.time.ZoneId.of("Asia/Singapore")).toInstant()
+    private fun look(tab: Tab, style: TodayStyle, appearance: Appearance, tag: String) =
+        shoot("20-${tab.name.lowercase()}-$tag-${appearance.name.lowercase()}", d(style, appearance, nineAm, tab = tab)) { it.demoHeading = 118.0 }
+    @Test fun qibla_centre_light() = look(Tab.QIBLA, TodayStyle.CENTRE, Appearance.LIGHT, "centre")
+    @Test fun qibla_centre_dark() = look(Tab.QIBLA, TodayStyle.CENTRE, Appearance.DARK, "centre")
+    @Test fun qibla_sunpath_light() = look(Tab.QIBLA, TodayStyle.SUN_PATH, Appearance.LIGHT, "sunpath")
+    @Test fun qibla_sunpath_dark() = look(Tab.QIBLA, TodayStyle.SUN_PATH, Appearance.DARK, "sunpath")
+    @Test fun qibla_bands_light() = look(Tab.QIBLA, TodayStyle.BANDS, Appearance.LIGHT, "bands")
+    @Test fun qibla_bands_dark() = look(Tab.QIBLA, TodayStyle.BANDS, Appearance.DARK, "bands")
+    @Test fun qibla_simple_light() = look(Tab.QIBLA, TodayStyle.SIMPLE, Appearance.LIGHT, "simple")
+    @Test fun qibla_simple_dark() = look(Tab.QIBLA, TodayStyle.SIMPLE, Appearance.DARK, "simple")
+    @Test fun qibla_gold_light() = look(Tab.QIBLA, TodayStyle.GOLD, Appearance.LIGHT, "gold")
+    @Test fun qibla_gold_dark() = look(Tab.QIBLA, TodayStyle.GOLD, Appearance.DARK, "gold")
+    @Test fun qibla_sunpath_aligned() = shoot("20-qibla-sunpath-aligned", d(TodayStyle.SUN_PATH, Appearance.LIGHT, nineAm, tab = Tab.QIBLA, aligned = true))
+    @Test fun qibla_simple_aligned() = shoot("20-qibla-simple-aligned", d(TodayStyle.SIMPLE, Appearance.DARK, nineAm, tab = Tab.QIBLA, aligned = true))
+    @Test fun falak_centre_light() = look(Tab.FALAK, TodayStyle.CENTRE, Appearance.LIGHT, "centre")
+    @Test fun falak_centre_dark() = look(Tab.FALAK, TodayStyle.CENTRE, Appearance.DARK, "centre")
+    @Test fun falak_sunpath_light() = look(Tab.FALAK, TodayStyle.SUN_PATH, Appearance.LIGHT, "sunpath")
+    @Test fun falak_sunpath_dark() = look(Tab.FALAK, TodayStyle.SUN_PATH, Appearance.DARK, "sunpath")
+    @Test fun falak_bands_light() = look(Tab.FALAK, TodayStyle.BANDS, Appearance.LIGHT, "bands")
+    @Test fun falak_bands_dark() = look(Tab.FALAK, TodayStyle.BANDS, Appearance.DARK, "bands")
+    @Test fun falak_simple_light() = look(Tab.FALAK, TodayStyle.SIMPLE, Appearance.LIGHT, "simple")
+    @Test fun falak_simple_dark() = look(Tab.FALAK, TodayStyle.SIMPLE, Appearance.DARK, "simple")
+    @Test fun falak_gold_light() = look(Tab.FALAK, TodayStyle.GOLD, Appearance.LIGHT, "gold")
+    @Test fun falak_gold_dark() = look(Tab.FALAK, TodayStyle.GOLD, Appearance.DARK, "gold")
     @Test fun masjid() {
         OsmTiles.blocking = true
         val home = Coordinates(1.3721, 103.9474)
@@ -194,7 +225,7 @@ class ScreenshotTest {
         compose.setContent {
             SkyTheme(s) {
                 Box(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color(0xFF5B6E86)), contentAlignment = Alignment.Center) {
-                    WidgetModel.from(s.resolver, s.now)?.let { TimetableCardPreview(it) }
+                    WidgetModel.from(s.resolver, s.now, style, appearance == Appearance.DARK)?.let { TimetableCardPreview(it) }
                 }
             }
         }
@@ -202,9 +233,14 @@ class ScreenshotTest {
         compose.onRoot().captureRoboImage("build/outputs/roborazzi/$name.png")
     }
 
-    @Test fun widget_list() = widget("12-widget-list", TodayStyle.LIST)
+    @Test fun widget_list() = widget("12-widget-list", TodayStyle.CENTRE)
     @Test fun widget_bands() = widget("12b-widget-bands", TodayStyle.BANDS)
-    @Test fun widget_dial() = widget("12c-widget-dial", TodayStyle.DIAL)
+    @Test fun widget_dial() = widget("12c-widget-dial", TodayStyle.GOLD)
+    @Test fun widget_sunpath() = widget("12d-widget-sunpath", TodayStyle.SUN_PATH)
+    @Test fun widget_simple() = widget("12e-widget-simple", TodayStyle.SIMPLE)
+    @Test fun widget_centre_light() = widget("12f-widget-centre-light", TodayStyle.CENTRE, Appearance.LIGHT)
+    @Test fun widget_bands_light() = widget("12g-widget-bands-light", TodayStyle.BANDS, Appearance.LIGHT)
+    @Test fun widget_gold_light() = widget("12h-widget-gold-light", TodayStyle.GOLD, Appearance.LIGHT)
 
     // Ramadan day 12, half an hour before Maghrib: the Berbuka countdown (store screenshot).
     @Test fun ramadan() = shoot("14-ramadan-berbuka", DemoConfig(style = TodayStyle.CENTRE,

@@ -65,7 +65,7 @@ export function LayoutDisplay({ config: c, now, arabicTurn = false }: { config: 
   const tint = phase.kind === 'waiting' ? phase.next : phase.prayer
   const hide = c.hide
   const hijriStyle = c.names === 'malay' || c.names === 'indonesian' ? c.names : 'arabic'
-  const sky = c.look === 'night' || c.look === 'board' || c.look === 'dial' || c.look === 'sunpath'
+  const sky = c.look === 'dial' || c.look === 'sunpath'
   const hasBar = LAYOUTS_WITH_NOTICE_BAR.includes(layout)
   const takbir = today.raya && (today.eid == null || now < today.eid) ? w.takbir : null
   const items = stageItems(c, layout, layout === 'big' ? takbir : null)
@@ -88,7 +88,7 @@ export function LayoutDisplay({ config: c, now, arabicTurn = false }: { config: 
   )
   const hero = (
     <div class="lay-hero">
-      {c.look === 'dial' && showTimes && <DayRing sd={sd} now={now} focus={focus} tz={tz} />}
+      {(c.look === 'dial' || c.look === 'surau') && showTimes && <DayRing sd={sd} now={now} tz={tz} gold={c.look === 'surau'} />}
       <Hero phase={phase} now={now} config={c} label={label} progress />
     </div>
   )
@@ -157,19 +157,28 @@ function TimesList({ sd, now, config: c, label, focus, isToday, variant }: {
 }
 
 /** The Day Dial look, fitted: the day as a ring (midnight at the top) with each prayer at its hour and a dot for now. */
-function DayRing({ sd, now, focus, tz }: { sd: ScreenDay; now: number; focus: Prayer; tz: string }) {
+function DayRing({ sd, now, tz, gold }: { sd: ScreenDay; now: number; tz: string; gold: boolean }) {
+  // The app's dial, small: noon at the top, midnight at the bottom, a white dot for now.
   const midnight = startOfDay(sd.day.times.dhuhr, tz)
-  const angle = (ms: number) => Math.min(1, Math.max(0, (ms - midnight) / 86_400_000)) * 360
+  const angle = Math.min(359.5, Math.max(0.5, ((now - midnight) / 86_400_000) * 360)) + 180
   const pt = (deg: number): [number, number] => [60 + 50 * Math.sin((deg * Math.PI) / 180), 60 - 50 * Math.cos((deg * Math.PI) / 180)]
-  const [nx, ny] = pt(angle(now))
+  const [nx, ny] = pt(angle)
+  const [bx, by] = pt(180)
   return (
-    <svg class="lay-ring" viewBox="0 0 120 120" aria-hidden="true">
-      <circle cx="60" cy="60" r="50" class="ring-track" />
-      {PRAYERS.map((p) => {
-        const [x, y] = pt(angle(sd.day.times[p]))
-        return <circle key={p} cx={x} cy={y} r={p === focus ? 8 : 5.5} class={`ring-mark${p === focus ? ' on' : ''}`} style={{ fill: `var(--t-${p})` }} />
-      })}
-      <circle cx={nx} cy={ny} r="3.4" class="ring-now" />
+    <svg class={`lay-ring${gold ? ' gold' : ''}`} viewBox="0 0 120 120" aria-hidden="true">
+      <defs><linearGradient id="lay-ring-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7b64a" /><stop offset="0.5" stop-color="#e8743c" /><stop offset="1" stop-color="#6a4fb8" /></linearGradient></defs>
+      {gold ? (
+        <>
+          <circle cx="60" cy="60" r="50" class="ring-track" />
+          <path d={`M${bx} ${by}A50 50 0 ${angle - 180 > 180 ? 1 : 0} 1 ${nx.toFixed(2)} ${ny.toFixed(2)}`} class="ring-gold" />
+          <circle cx={nx} cy={ny} r="4.2" class="ring-now gold" />
+        </>
+      ) : (
+        <>
+          <circle cx="60" cy="60" r="50" class="ring-sky" />
+          <circle cx={nx} cy={ny} r="5" class="ring-now" />
+        </>
+      )}
     </svg>
   )
 }

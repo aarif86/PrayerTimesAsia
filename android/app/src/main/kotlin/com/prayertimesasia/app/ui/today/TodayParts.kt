@@ -137,9 +137,9 @@ fun StyleButton(state: AppState, background: Color = Palette.primary.copy(alpha 
                     onLongClickLabel = "Choose a style",
                     onLongClick = { menu = true },
                     onClick = {
-                        val all = TodayStyle.entries
+                        val all = TodayStyle.looks
                         haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        state.update { it.copy(todayStyle = all[(all.indexOf(it.todayStyle) + 1) % all.size]) }
+                        state.update { it.copy(todayStyle = all[(all.indexOf(it.todayStyle.look) + 1) % all.size]) }
                     },
                 )
                 .semantics { contentDescription = "Prayer screen style: ${state.prefs.todayStyle.label}" },
@@ -150,10 +150,10 @@ fun StyleButton(state: AppState, background: Color = Palette.primary.copy(alpha 
             }
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            TodayStyle.entries.forEach { style ->
+            TodayStyle.looks.forEach { style ->
                 DropdownMenuItem(
                     text = { Text(style.label) },
-                    trailingIcon = { if (style == state.prefs.todayStyle) Icon(Icons.Filled.Check, null) },
+                    trailingIcon = { if (style == state.prefs.todayStyle.look) Icon(Icons.Filled.Check, null) },
                     onClick = { menu = false; state.update { it.copy(todayStyle = style) } },
                 )
             }
@@ -396,7 +396,7 @@ fun MusafirChip(state: AppState) {
 fun LongDaysNote(state: AppState, now: Instant) {
     val r = state.resolver
     val key = r.longDaysNote(now) ?: return
-    val w = LongDays.words(RamadanContent.lang(r.naming))
+    val w = LongDays.words(r.appLang)
     GlassCard {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(Icons.Filled.LightMode, null, Modifier.size(26.dp), tint = Palette.accent)
@@ -432,7 +432,7 @@ fun ArrivalCard(state: AppState) {
                 .clickable { state.update { it.copy(arrivalBannerDismissed = true) } }.padding(16.dp), tint = Palette.primary)
         }
         HorizontalDivider(Modifier.padding(vertical = 8.dp), color = Palette.primary.copy(alpha = 0.25f))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(tr(R.string.today_switchAuto), style = Txt.subheadlineSemibold, color = Palette.primary)
                 Text(tr(R.string.today_switchAutoSub), style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
@@ -444,7 +444,7 @@ fun ArrivalCard(state: AppState) {
         }
         val home = state.prefs.home?.countryCode
         if (home != null && home != profile.code) {
-            Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.padding(top = 6.dp).heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(tr(R.string.settings_musafir), style = Txt.subheadlineSemibold, color = Palette.primary)
                     Text(tr(R.string.today_musafirSub), style = Txt.caption, color = Palette.primary.copy(alpha = 0.75f))
@@ -455,7 +455,7 @@ fun ArrivalCard(state: AppState) {
                 Box(Modifier.padding(top = 6.dp)) { com.prayertimesasia.app.ui.journey.HomeQuestionCard(state) }
             }
         }
-        Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.padding(top = 6.dp).heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(tr(R.string.settings_asr), style = Txt.subheadlineSemibold, color = Palette.primary, modifier = Modifier.weight(1f))
             Box {
                 Text(

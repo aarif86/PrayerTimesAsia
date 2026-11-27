@@ -1,5 +1,7 @@
 package com.prayertimesasia.app.ui.today
 
+import com.prayertimesasia.app.ui.theme.LocalLook
+
 import com.prayertimesasia.core.HadithId
 import com.prayertimesasia.app.ui.components.HadithView
 import androidx.compose.animation.AnimatedVisibility
@@ -136,22 +138,16 @@ fun TodayScreen(state: AppState, openPlaces: () -> Unit, openCalendar: () -> Uni
     )
     val setOffset: (Int) -> Unit = { offset = it }
     StarBoxAsker(state, f.current?.second, f.next?.second)
-    val style = state.prefs.todayStyle
+    val style = state.prefs.todayStyle.look
+    val backdrop = LocalLook.current.backdrop
 
     Box(Modifier.fillMaxSize()) {
-        if (style == TodayStyle.BANDS) {
-            Box(Modifier.fillMaxSize().background(BandsPalette.header))
+        if (backdrop != null) {
+            Box(Modifier.fillMaxSize().background(backdrop))
         } else {
             LivingSkyBackground(SkyColors.at(now, day))
         }
-        when (style) {
-            TodayStyle.LIST -> ClassicPage(f, setOffset, openPlaces, openCalendar, openSanad)
-            TodayStyle.CENTRE -> CentrePage(f, setOffset, openPlaces, openCalendar, openSanad)
-            TodayStyle.DIAL -> DialPage(f, setOffset, openPlaces, openCalendar, openSanad)
-            TodayStyle.SUN_PATH -> SunPathPage(f, setOffset, openPlaces, openCalendar, openSanad)
-            TodayStyle.BANDS -> BandsPage(f, setOffset, openPlaces, openCalendar, openSanad)
-            TodayStyle.SIMPLE -> SimplePage(state, day, f.current, f.next, openPlaces)
-        }
+        V12Page(f, setOffset, openPlaces, openCalendar, openSanad)
         StyleToast(state)
     }
 }
@@ -194,7 +190,7 @@ fun Modifier.daySwipe(offset: Int, onOffset: (Int) -> Unit): Modifier = pointerI
 }
 
 @Composable
-private fun ColumnScope.Prompts(f: TodayFrame, hadith: Boolean = false) {
+internal fun ColumnScope.Prompts(f: TodayFrame, hadith: Boolean = false) {
     val p = f.state.prefs
     if (!p.notificationsEnabled && !p.alertsPromptDismissed) AlertsPrompt(f.state)
     // Before Subuh and before Asar: the hadith of the two cool prayers. Today only, and only on the list pages.
@@ -209,7 +205,7 @@ private fun ColumnScope.Prompts(f: TodayFrame, hadith: Boolean = false) {
 
 /** Today's one community card, below the times and only with Show more open (docs/community-cards.md). */
 @Composable
-private fun Makers(f: TodayFrame) {
+internal fun Makers(f: TodayFrame) {
     if (f.offset == 0) ReviewLine(f.state, f.now, f.current?.second, f.next?.second)
     if (!f.state.prefs.showOffers || !f.state.prefs.showMore) return
     val r = f.state.resolver

@@ -31,7 +31,7 @@ enum WidgetBridge {
             // Announced dates when there are, the estimate otherwise, and "Try Ramadan" for testers.
             if model.isRamadanDay(d.time(.dhuhr)) { fasts.append(.init(imsak: model.imsak(d), berbuka: d.time(.maghrib))) }
         }
-        let words = RamadanWords.In(RamadanContent.lang(model.naming))
+        let words = RamadanWords.In(model.appLang)
         let today = model.day(containing: .now)
         let snapshot = WidgetSnapshot(
             placeName: place.name,
@@ -72,7 +72,7 @@ enum LiveCountdown {
             timeText: model.formatted(next.time))
         // Ramadan: Berbuka through the fasting day, Imsak at night, as on the Ramadan card.
         if let fast = model.fastingMoment(.now) {
-            let words = RamadanWords.In(RamadanContent.lang(model.naming))
+            let words = RamadanWords.In(model.appLang)
             state = .init(prayerName: fast.kind == .imsak ? words(.imsak) : words(.berbuka),
                           symbol: fast.kind == .imsak ? Prayer.fajr.symbol : Prayer.maghrib.symbol,
                           time: fast.time,

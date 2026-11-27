@@ -139,4 +139,20 @@ final class FalakTests: XCTestCase {
         XCTAssertEqual(Falak.skyStage(sg(19, 30), times: times), .maghrib)
         XCTAssertEqual(Falak.skyStage(sg(21, 0), times: times), .isha)
     }
+
+    func testSkyRangeAlwaysHoldsNow() {
+        let fajr = sg(5, 44), isha = sg(20, 8)
+        // 1:20 AM: the slider starts at now, not at Fajr minus 45 minutes.
+        let early = Falak.skyRange(now: sg(1, 20), fajr: fajr, isha: isha)
+        XCTAssertEqual(early.start, sg(1, 20))
+        XCTAssertEqual(early.end, sg(20, 53))
+        // Midday: the usual range.
+        let noon = Falak.skyRange(now: sg(12, 0), fajr: fajr, isha: isha)
+        XCTAssertEqual(noon.start, sg(4, 59))
+        XCTAssertEqual(noon.end, sg(20, 53))
+        // After Isha plus 45 minutes: the range ends at now.
+        let late = Falak.skyRange(now: sg(22, 30), fajr: fajr, isha: isha)
+        XCTAssertEqual(late.start, sg(4, 59))
+        XCTAssertEqual(late.end, sg(22, 30))
+    }
 }

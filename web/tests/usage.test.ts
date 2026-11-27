@@ -29,8 +29,8 @@ describe('anonymous usage counts', () => {
   })
 
   it('names the masjid on a screen check-in', () => {
-    const p = screenPayload('1.0.0', { masjid: ' Masjid Al-Istiqamah ', city: 'Serangoon', countryCode: 'SG', look: 'night', language: 'ms' }, false)
-    expect(p).toMatchObject({ 'App.platform': 'screen', 'Masjid.name': 'Masjid Al-Istiqamah', 'Screen.look': 'night', 'Screen.orientation': 'landscape', 'Place.country': 'SG' })
+    const p = screenPayload('1.0.0', { masjid: ' Masjid Al-Istiqamah ', city: 'Serangoon', countryCode: 'SG', look: 'simple', language: 'ms' }, false)
+    expect(p).toMatchObject({ 'App.platform': 'screen', 'Masjid.name': 'Masjid Al-Istiqamah', 'Screen.look': 'simple', 'Screen.orientation': 'landscape', 'Place.country': 'SG' })
     expect(screenPayload('1', { masjid: '', city: null, countryCode: null, look: 'day', language: 'en' }, true)['Masjid.name']).toBe('(no name)')
   })
 

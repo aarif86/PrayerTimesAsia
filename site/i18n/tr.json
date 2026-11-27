@@ -424,15 +424,10 @@
   "In Singapore it uses the official timetable from the Islamic Religious Council of Singapore (MUIS)": "Singapur'da Singapur İslam Din Konseyi'nin (MUIS) resmi takvimini kullanır",
   "Try the free masjid screen": "Ücretsiz cami ekranını deneyin",
   "Compare our times with yours": "Vakitlerimizi sizinkilerle karşılaştırın",
-  "Sky": "Sky",
-  "Bands": "Bands",
-  "Simple": "Simple",
   "Dark": "Koyu",
   "Light": "Açık",
-  "Six looks, each in dark or light.": "Altı görünüm, her biri koyu veya açık.",
   "Pick yours": "Görünümünüzü seçin",
   "No Google, Facebook or Instagram ads, and no tracking. Never on the masjid screen, in reminders, alarms or the azan.": "Google, Facebook veya Instagram reklamı yok, izleme de yok. Cami ekranında, hatırlatmalarda, alarmlarda veya ezanda asla yok.",
-  "The free masjid screen in the Sky look, dark": "Ücretsiz cami ekranı, Sky görünümü, koyu",
   "Choose a look": "Bir görünüm seçin",
   "The Sun Path look": "Sun Path görünümü",
   "The Centre Dial look": "Centre Dial görünümü",
@@ -453,5 +448,7 @@
   "Alerts and alarms": "Uyarılar ve alarmlar",
   "A reminder before each prayer begins": "Her namaz başlamadan önce hatırlatma",
   "A clock counts down to the next prayer, with all of today's times below it. Pick from five looks, in light or dark.": "Bir saat sıradaki namaza geri sayar, altında bugünün tüm vakitleri durur. Beş görünümden seçin, açık ya da koyu.",
-  "A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.": "Teravih sayacı, son on gece ve resmî kurumunuzun fitre bağlantıları."
+  "A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.": "Teravih sayacı, son on gece ve resmî kurumunuzun fitre bağlantıları.",
+  "Five looks, each in dark or light.": "Beş görünüm, her biri koyu veya açık.",
+  "The free masjid screen in the Big and Simple look, dark": "Ücretsiz cami ekranı, Big and Simple görünümü, koyu"
 }

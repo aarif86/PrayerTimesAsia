@@ -56,7 +56,13 @@ import java.time.Instant
  * Syuruk and Zohor the next prayer's name already leads, so it only says
  * "in 53m". Same wording as the web and iPhone.
  */
-class Countdown(val count: String, val label: String, val urgent: Boolean, val done: Boolean) {
+class Countdown(
+    val count: String, val label: String, val urgent: Boolean, val done: Boolean,
+    /** Counting to the next prayer (not the time left to pray this one). */
+    val toNext: Boolean = true,
+    /** The count alone, "3h 52m", without "in". */
+    val bare: String = count,
+) {
     val text: String get() = if (label.isEmpty()) count else "$count $label"
 
     companion object {
@@ -65,9 +71,9 @@ class Countdown(val count: String, val label: String, val urgent: Boolean, val d
             val w = r.window(now)
             val done = w != null && state.prefs.trackerEnabled && r.isPrayed(w.prayer, w.start)
             return if (w != null && !done) {
-                Countdown(TimeFormat.short(w.end.secondsSince(now)), "left to pray", w.prayer != Prayer.ISHA && now >= w.nudgeAt, false)
+                Countdown(TimeFormat.short(w.end.secondsSince(now)), "left to pray", w.prayer != Prayer.ISHA && now >= w.nudgeAt, false, toNext = false)
             } else if (w == null && r.current(now)?.first == Prayer.SUNRISE) {
-                Countdown("in ${TimeFormat.short(next.second.secondsSince(now))}", "", false, done)
+                Countdown("in ${TimeFormat.short(next.second.secondsSince(now))}", "", false, done, bare = TimeFormat.short(next.second.secondsSince(now)))
             } else {
                 Countdown(TimeFormat.short(next.second.secondsSince(now)), "until ${r.prayerName(next.first, next.second)}", false, done)
             }

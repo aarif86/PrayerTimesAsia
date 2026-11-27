@@ -75,7 +75,7 @@ fun HadithView(state: AppState, id: HadithId, modifier: Modifier = Modifier, tag
         return
     }
     val h = Hadith.of(id)
-    val lang = RamadanContent.lang(state.resolver.naming)
+    val lang = state.resolver.appLang
     val close = {
         state.update { if (id.key in it.hiddenHadith) it else it.copy(hiddenHadith = it.hiddenHadith + id.key) }
         justHidden = true
@@ -89,9 +89,10 @@ fun HadithView(state: AppState, id: HadithId, modifier: Modifier = Modifier, tag
     }
     val words = @Composable {
         Text(h.arabic, style = Txt.title3.copy(textDirection = TextDirection.Rtl, fontSize = if (line) 19.sp else 22.sp, lineHeight = if (line) 34.sp else 40.sp),
-            color = Palette.primary, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth().padding(start = if (line) 30.dp else 0.dp))
-        Text("“${h.meaning(lang)}”", style = if (line) Txt.subheadline else Txt.body.copy(fontStyle = FontStyle.Italic), color = Palette.primary)
-        Text(h.source(lang), style = Txt.caption, color = Palette.secondary)
+            color = Palette.primary, textAlign = TextAlign.Right, modifier = Modifier.fillMaxWidth().padding(start = if (line) 30.dp else 0.dp))
+        // As the web's .hadith-card: quote 15 italic, caption 12.
+        Text("“${h.meaning(lang)}”", style = if (line) Txt.subheadline else Txt.body.copy(fontStyle = FontStyle.Italic, fontSize = 15.sp, lineHeight = 22.5.sp), color = Palette.primary)
+        Text(h.source(lang), style = Txt.caption.copy(fontSize = 12.sp, lineHeight = 17.sp), color = Palette.secondary)
     }
     if (line) {
         Box(modifier.fillMaxWidth().padding(vertical = 6.dp)) {
@@ -102,13 +103,13 @@ fun HadithView(state: AppState, id: HadithId, modifier: Modifier = Modifier, tag
             Box(Modifier.padding(8.dp)) { closeButton() }
         }
     } else {
-        GlassCard(modifier.fillMaxWidth().padding(vertical = 6.dp), padding = 18.dp) {
+        GlassCard(modifier.fillMaxWidth().padding(top = 6.dp, bottom = 12.dp), padding = 18.dp) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text((tag ?: "Hadith").uppercase(), style = Txt.caption2Heavy.copy(letterSpacing = 1.2.sp), color = Palette.accentText)
                 Spacer(Modifier.weight(1f))
                 closeButton()
             }
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) { words() }
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) { words() }
         }
     }
 }

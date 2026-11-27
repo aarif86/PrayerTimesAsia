@@ -55,16 +55,30 @@ for (const appearance of ['light', 'dark']) {
   pages.push([`journey-sheet-${appearance}`, { demo: 'travel', style: 'centre', appearance, now: NIGHT }, click('button[aria-label^="Musafir"]')])
   pages.push([`masjid-about-${appearance}`, { tab: 'masjid', appearance, now: NIGHT }, click('button[aria-label="About this app"]')])
 }
+// Ramadan: the card on the Prayer screen and the Ramadan sheet, in the phases that look different, Light and Dark, and at 200% text.
+const BIG_TEXT = (p) => p.addStyleTag({ content: 'html { font-size: 200% !important }' })
+for (const appearance of ['light', 'dark']) {
+  const now = appearance === 'light' ? DAY : NIGHT
+  for (const season of ['sighting', 'ramadan', 'lastTen', 'raya', 'syawal']) {
+    pages.push([`ramadan-card-${season}-${appearance}`, { style: 'centre', appearance, now, season, preview: 'on' }])
+    pages.push([`ramadan-sheet-${season}-${appearance}`, { style: 'centre', appearance, now, season, preview: 'on', open: 'ramadan' }])
+  }
+  pages.push([`ramadan-sheet-text-200-${appearance}`, { style: 'centre', appearance, now, season: 'lastTen', preview: 'on', open: 'ramadan' }, BIG_TEXT])
+  // The app's own Large text setting, which makes every size bigger.
+  pages.push([`ramadan-card-large-${appearance}`, { style: 'centre', appearance, now, season: 'ramadan', preview: 'on', large: '1' }])
+  pages.push([`ramadan-sheet-large-${appearance}`, { style: 'centre', appearance, now, season: 'lastTen', preview: 'on', open: 'ramadan', large: '1' }])
+  pages.push([`ramadan-card-text-200-${appearance}`, { style: 'centre', appearance, now, season: 'ramadan', preview: 'on' }, BIG_TEXT])
+}
 pages.push(['prayer-simple-large', { style: 'simple', appearance: 'dark', now: NIGHT, large: '1' }])
 pages.push(['prayer-text-200', { style: 'centre', appearance: 'dark', now: NIGHT }, (p) => p.addStyleTag({ content: 'html { font-size: 200% !important }' })])
 pages.push(['settings-text-200', { tab: 'settings', appearance: 'light', now: DAY }, (p) => p.addStyleTag({ content: 'html { font-size: 200% !important }' })])
-for (const look of ['night', 'day', 'board', 'bands', 'dial', 'sunpath']) pages.push([`screen-${look}`, { path: 'screen/', look }])
+for (const look of ['simple', 'bands', 'dial', 'sunpath']) pages.push([`screen-${look}`, { path: 'screen/', look }])
 pages.push(['screen-surau', { path: 'screen/', look: 'surau' }], ['screen-surau-light', { path: 'screen/', look: 'surau', mode: 'light' }])
 // The layouts with slides and notices, in a few looks, Light and Dark.
 for (const layout of ['splitN', 'split', 'mirror', 'strip', 'big', 'port', 'portT']) {
-  pages.push([`screen-layout-${layout}`, { path: 'screen/', look: 'surau', layout }], [`screen-layout-${layout}-light`, { path: 'screen/', look: 'night', mode: 'light', layout }])
+  pages.push([`screen-layout-${layout}`, { path: 'screen/', look: 'surau', layout }], [`screen-layout-${layout}-light`, { path: 'screen/', look: 'simple', mode: 'light', layout }])
 }
-for (const look of ['board', 'bands', 'dial', 'sunpath', 'simple']) pages.push([`screen-layout-splitN-${look}`, { path: 'screen/', look, layout: 'splitN' }])
+for (const look of ['bands', 'dial', 'sunpath', 'simple']) pages.push([`screen-layout-splitN-${look}`, { path: 'screen/', look, layout: 'splitN' }])
 pages.push(['screen-setup', { path: 'screen/', hash: 'setup' }])
 
 const IMPACT = { minor: 0, moderate: 1, serious: 2, critical: 3 }

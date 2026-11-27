@@ -2,7 +2,7 @@ import { useMemo, useState } from 'preact/hooks'
 import { ChevronLeft, ChevronRight, Printer } from 'lucide-preact'
 import { authorityName } from '../core/calendarSanad'
 import type { HijriDate } from '../core/hijri'
-import { hijriCalWords, islamicDayName, islamicDayShort, islamicDaysOf, hijriMonthShort } from '../core/islamicDays'
+import { hijriCalWordsIn, islamicDayNameIn, islamicDayShortIn, islamicDaysOf, hijriMonthShort } from '../core/islamicDays'
 import { hijriMonths } from '../core/prayer'
 import { daysApart, publishedHijri, type CivilDay } from '../core/season'
 import { store, useNow, useStore } from '../services/store'
@@ -31,7 +31,7 @@ function fmtCivil(g: CivilDay, style: 'long' | 'short' = 'long'): string {
 export function HijriMonthCard() {
   const s = useStore()
   const now = useNow(60_000)
-  const words = hijriCalWords(s.naming)
+  const words = hijriCalWordsIn(s.appLang)
   const today = s.civil(now)
   const [shown, setShown] = useState({ y: today.year, m: today.month })
   const [picked, setPicked] = useState<CivilDay | null>(null)
@@ -83,13 +83,13 @@ export function HijriMonthCard() {
           const showMonth = newMonth || i === 0
           const sunday = (lead + i) % 7 === 0
           const ramadan = h.month === 9
-          const label = `${fmtCivil(g)}, ${h.day} ${hMonths[h.month - 1]} ${h.year}${marks.length ? `, ${marks.map((k) => islamicDayName(k.kind, s.naming)).join(', ')}` : ''}`
+          const label = `${fmtCivil(g)}, ${h.day} ${hMonths[h.month - 1]} ${h.year}${marks.length ? `, ${marks.map((k) => islamicDayNameIn(k.kind, s.appLang)).join(', ')}` : ''}`
           return (
             <button class={`hcal-day${isToday ? ' is-today' : ''}${major ? ' major' : ''}${quiet ? ' quiet' : ''}${isPicked ? ' picked' : ''}${sunday ? ' sun' : ''}${ramadan ? ' ramadan' : ''}${newMonth ? ' new-month' : ''}`}
               aria-label={label} aria-current={isToday ? 'date' : undefined} onClick={() => setPicked(isPicked ? null : g)}>
               <span class="gd">{g.day}</span>
               <span class="hd mono">{h.day}{white && <i class="white-dot" aria-hidden="true" />}</span>
-              {major ? <span class="ev">{islamicDayShort(major.kind, s.naming)}</span>
+              {major ? <span class="ev">{islamicDayShortIn(major.kind, s.appLang)}</span>
                 : showMonth ? <span class="hm">{hijriMonthShort(h.month, s.naming, hMonths[h.month - 1])}</span> : null}
             </button>
           )
@@ -100,7 +100,7 @@ export function HijriMonthCard() {
           <div>
             <div class="subhead" style={{ fontWeight: 600 }}>{sel.h.day} {hMonths[sel.h.month - 1]} {sel.h.year}</div>
             <div class="caption secondary">{fmtCivil(sel.g)}</div>
-            {islamicDaysOf(sel.h).map((k) => <div class="caption accent" style={{ fontWeight: 600 }}>{islamicDayName(k.kind, s.naming)}</div>)}
+            {islamicDaysOf(sel.h).map((k) => <div class="caption accent" style={{ fontWeight: 600 }}>{islamicDayNameIn(k.kind, s.appLang)}</div>)}
           </div>
           <button class="pill-btn quiet" onClick={() => goTo(sel.g)}>{tr('today.title')}</button>
         </div>
@@ -110,17 +110,17 @@ export function HijriMonthCard() {
           {keyDays.length ? keyDays.map(({ g, h, k }) => (
             <button class="hcal-row" onClick={() => setPicked(g)}>
               <span class="mono hcal-row-h">{g.day}</span>
-              <span class="hcal-row-name">{islamicDayName(k.kind, s.naming)}</span>
+              <span class="hcal-row-name">{islamicDayNameIn(k.kind, s.appLang)}</span>
               <span class="caption secondary mono">{h.day} {hMonths[h.month - 1]}</span>
             </button>
           )) : whiteRuns.length ? whiteRuns.map(({ g, h }) => (
             <button class="hcal-row" onClick={() => setPicked(g)}>
               <span class="mono hcal-row-h">{g.day}</span>
-              <span class="hcal-row-name">{islamicDayName('whiteDay', s.naming)}</span>
+              <span class="hcal-row-name">{islamicDayNameIn('whiteDay', s.appLang)}</span>
               <span class="caption secondary mono">13, 14, 15 {hijriMonthShort(h.month, s.naming, hMonths[h.month - 1])}</span>
             </button>
           )) : <p class="caption secondary" style={{ margin: '4px 0' }}>{words.none}</p>}
-          {!whiteRuns.length && <div class="caption secondary hcal-legend"><i class="white-dot" aria-hidden="true" />{islamicDayName('whiteDay', s.naming)} 13, 14, 15</div>}
+          {!whiteRuns.length && <div class="caption secondary hcal-legend"><i class="white-dot" aria-hidden="true" />{islamicDayNameIn('whiteDay', s.appLang)} 13, 14, 15</div>}
         </div>
       )}
       <a class="hcal-print caption accent" href={`print/#sheet=year&m=${shown.y}-01`}><Printer size={14} />{words.print} {shown.y}</a>

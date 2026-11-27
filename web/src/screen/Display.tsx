@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'preact/hooks'
 import { rowFor } from '../services/officialTables'
 import { PRAYERS, type Prayer } from '../core/prayer'
 import { formatHijriDate } from '../core/hijri'
-import { HeroDial, SunPath, type DialMark } from '../ui/Dials'
+import { DayDial, GoldDial, SunPath } from '../ui/Dials'
 import { LivingSky } from '../ui/LivingSky'
 import { skyAt } from '../ui/sky'
 import type { ScreenConfig } from './config'
-import { clockParts, gregorianDate, name, phaseAt, screenDay, WORDS } from './model'
+import { clockParts, countdown, gregorianDate, name, phaseAt, screenDay, shortLeft, WORDS, type Phase } from './model'
 import { LayoutDisplay } from './Layouts'
 import { Brand, FridayLine, Hero, lengthClass, Notice, QrCard, RamadanRibbon, Time } from './parts'
 
@@ -35,6 +35,7 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
   const hide = c.hide
   // Everything but the name and the prayertimes.asia line turned off: the footer tucks in under the name.
   const tucked = hide.date && hide.hijri && hide.clock && hide.times && hide.countdown
+  const appDial = (c.look === 'dial' || c.look === 'surau') && !hide.times
   const extra = `${hide.times ? ' scr-no-times' : ''}${hide.clock ? ' scr-no-clock' : ''}${tucked ? ' scr-tucked' : ''}`
 
   return (
@@ -53,15 +54,15 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
         )}
       </header>
 
-      {c.look === 'dial' && !hide.times && <Dial sd={sd} now={now} config={c} label={label} focus={focus} isToday={isToday} />}
+      {appDial && <AppDial phase={phase} now={now} config={c} label={label} day={sd} focus={focus} isToday={isToday} />}
 
-      <Hero phase={phase} now={now} config={c} label={label} />
-
-      {c.look === 'sunpath' && !hide.times && (
-        <section class="scr-sun" aria-hidden="true"><SunPath width={1600} height={240} now={now} day={sd.day} tz={tz} /></section>
-      )}
-
-      {!hide.times && <ol class={`scr-grid${c.showIqamah ? '' : ' no-iq'}`}>
+      {(() => {
+        const hero = <Hero phase={phase} now={now} config={c} label={label} />
+        const sun = c.look === 'sunpath' && !hide.times && (
+          <section class="scr-sun" aria-hidden="true"><SunPath width={1600} height={240} now={now} day={sd.day} tz={tz} /></section>
+        )
+        const grid = (
+      !hide.times && (<ol class={`scr-grid${c.showIqamah ? '' : ' no-iq'}`}>
         {sd.imsak != null && (
           <li class={`scr-cell scr-imsak${isToday && sd.imsak <= now ? ' passed' : ''}`}>
             <span class="scr-name">{w.imsak}</span>
@@ -82,7 +83,10 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
             </li>
           )
         })}
-      </ol>}
+      </ol>)
+        )
+        return appDial ? <div class="scr-side">{hero}{grid}</div> : <>{hero}{sun}{grid}</>
+      })()}
 
       <RamadanRibbon sd={today} now={now} config={c} />
       <FridayLine now={now} config={c} />
@@ -105,18 +109,16 @@ export function Display({ config: c, now, arabicTurn = false }: { config: Screen
 }
 
 /**
- * The app's Day Dial: the day as a ring in the sky's colours, each azan and iqamah at its hour.
- * Drawn at 600 px and scaled to the screen (--ds), since the dial lays its labels out in pixels.
+ * The app's own dial: Centre Dial's sky ring, or Calm Gold's thin gold ring, with the countdown inside.
+ * Drawn at 600 px and scaled to the screen (--ds), since the dial lays its text out in pixels.
  */
-function Dial({ sd, now, config: c, label, focus, isToday }: {
-  sd: NonNullable<ReturnType<typeof screenDay>>; now: number; config: ScreenConfig; label: (p: Prayer) => string
-  focus: Prayer; isToday: boolean
+function AppDial({ phase, now, config: c, label, day: sd }: {
+  phase: Phase; now: number; config: ScreenConfig; label: (p: Prayer) => string
+  day: NonNullable<ReturnType<typeof screenDay>>; focus: Prayer; isToday: boolean
 }) {
   const w = WORDS[c.lang]
   const tz = c.place!.tz
   const nextFajr = screenDay(sd.day.times.dhuhr + 86_400_000, c, rowFor)?.day.times.fajr ?? sd.day.times.fajr + 86_400_000
-  const marks: DialMark[] = PRAYERS.map((p) => ({ id: p, date: sd.day.times[p], extraLine: c.showIqamah && p !== 'sunrise' && sd.iqamah[p] != null, tint: `var(--t-${p})` }))
-  if (sd.imsak != null) marks.push({ id: 'imsak', date: sd.imsak, minor: true })
   // The dial is drawn at a fixed size: shrink it to the room left by a long name, notice or the Ramadan line.
   const slot = useRef<HTMLElement>(null)
   const [fit, setFit] = useState(0)
@@ -127,27 +129,23 @@ function Dial({ sd, now, config: c, label, focus, isToday }: {
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
+  let kicker = '', count = '', line = ''
+  if (phase.kind === 'azan') {
+    kicker = `${w.azan} ${label(phase.prayer)}`
+    count = phase.iqamah != null ? countdown(phase.iqamah - now) : ''
+    const jumuah = phase.prayer === 'dhuhr' && phase.day.friday && !!c.jumuah
+    line = phase.iqamah != null ? (jumuah ? w.khutbahIn : w.iqamahIn) : ''
+  } else if (phase.kind === 'waiting') {
+    kicker = w.next
+    count = c.hide.countdown ? '' : shortLeft(phase.at - now)
+    line = label(phase.next)
+  }
+  const common = { size: 600, now, day: sd.day, tz, kicker, countdown: count, label: line, ariaLabel: `${kicker} ${count} ${line}`.trim() }
   return (
     <section class="scr-dialslot" ref={slot}>
-    <div class="scr-dialbox" style={fit > 0 ? { '--fit': String(fit) } : undefined}>
-      <HeroDial size={600} now={now} day={sd.day} nextFajr={nextFajr} tz={tz} currentPrayer={isToday ? focus : null} marks={marks}
-        label={(m) => {
-          if (m.id === 'imsak') return <div class="scr-dm minor"><span class="scr-dm-name">{w.imsak}</span><Time ms={m.date} tz={tz} h24={c.h24} small /></div>
-          const p = m.id as Prayer
-          const on = p === focus
-          const iq = p === 'sunrise' || !c.showIqamah ? undefined : sd.iqamah[p]
-          const passed = isToday && !on && m.date <= now
-          return (
-            <div class={`scr-dm${on ? ' on' : ''}${passed ? ' passed' : ''}`} style={{ '--tint': `var(--t-${p})` }}>
-              <span class="scr-dm-name">{label(p)}</span>
-              <Time ms={m.date} tz={tz} h24={c.h24} />
-              {iq != null && <span class="scr-dm-iq">{p === 'dhuhr' && sd.friday && c.jumuah ? w.khutbah : w.iqamah} <Time ms={iq} tz={tz} h24={c.h24} small /></span>}
-            </div>
-          )
-        }}
-        centre={() => <div class="scr-dial-centre" style={{ '--tint': `var(--t-${focus})` }}><span>{w.next}</span><b>{label(focus)}</b></div>} />
-    </div>
+      <div class="scr-dialbox" style={fit > 0 ? { '--fit': String(fit) } : undefined}>
+        {c.look === 'surau' ? <GoldDial {...common} /> : <DayDial {...common} nextFajr={nextFajr} />}
+      </div>
     </section>
   )
 }
-

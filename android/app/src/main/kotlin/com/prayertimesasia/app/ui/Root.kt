@@ -5,6 +5,8 @@ import com.prayertimesasia.app.ui.makers.ReviewContent
 import android.app.Activity
 import android.provider.Settings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -76,6 +78,13 @@ import com.prayertimesasia.app.ui.theme.AppIcons
 import com.prayertimesasia.app.ui.theme.BandsPalette
 import com.prayertimesasia.app.ui.theme.LivingSkyBackground
 import com.prayertimesasia.app.ui.theme.LocalSkyScheme
+import com.prayertimesasia.app.ui.theme.LocalLook
+import com.prayertimesasia.app.ui.theme.Look
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.lerp
 import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Rounded
 import com.prayertimesasia.app.ui.theme.SkyScheme
@@ -141,7 +150,10 @@ fun SkyTheme(state: AppState, forceDark: Boolean = false, content: @Composable (
         }
     }
     MaterialTheme(colorScheme = scheme) {
-        CompositionLocalProvider(LocalSkyScheme provides SkyScheme(dark, soft, reduceMotion = state.fixedNow != null || animationsOff)) {
+        CompositionLocalProvider(
+            LocalSkyScheme provides SkyScheme(dark, soft, reduceMotion = state.fixedNow != null || animationsOff),
+            LocalLook provides Look.of(state.prefs.todayStyle, dark),
+        ) {
             content()
         }
     }
@@ -178,9 +190,10 @@ private fun RootContent(state: AppState) {
     }
     SkyTheme(state) {
         Box(Modifier.fillMaxSize()) {
-            val bands = state.selectedTab == Tab.PRAYER && state.prefs.todayStyle == TodayStyle.BANDS
-            if (bands) Box(Modifier.fillMaxSize().background(BandsPalette.header)) else LivingSkyBackground(state.skyNow)
-            Box(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(bottom = 74.dp)) {
+            // Colour Bands and Calm Gold: a flat page on every tab, as on the web. The others: the Living Sky.
+            val backdrop = LocalLook.current.backdrop
+            if (backdrop != null) Box(Modifier.fillMaxSize().background(backdrop)) else LivingSkyBackground(state.skyNow)
+            Box(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(bottom = 78.dp)) {
                 TabContent(state) { overlay = it }
             }
             TabBar(state, Modifier.align(Alignment.BottomCenter))
@@ -260,35 +273,52 @@ private fun Overlays(state: AppState, overlay: Overlay?, set: (Overlay?) -> Unit
     }
 }
 
-/** The floating tab bar: Prayer, Qibla, Falak, Masjid, Settings. */
+/**
+ * The floating tab bar, as on the web app: line icons, the current tab in the accent colour
+ * with a soft fill, no pill. Colour Bands has square corners and its own glass.
+ */
 @Composable
 fun TabBar(state: AppState, modifier: Modifier = Modifier) {
-    val dark = LocalSkyScheme.current.dark
-    val shape = RoundedCornerShape(32.dp)
+    val look = LocalLook.current
+    val dark = look.dark
+    val shape = RoundedCornerShape(if (look.bands) 14.dp else 32.dp)
+    val glass = when {
+        look.bands -> if (dark) Color(32, 32, 36).copy(alpha = 0.82f) else Color.White.copy(alpha = 0.85f)
+        else -> if (dark) Color(30, 32, 60).copy(alpha = 0.72f) else Color.White.copy(alpha = 0.78f)
+    }
+    val stroke = when {
+        look.bands -> if (dark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.08f)
+        else -> if (dark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f)
+    }
+    // The current tab: the accent, made deeper on light pages so it reads (the web's 68% mix with black).
+    val on = if (dark) look.appAccent else lerp(look.appAccent, Color.Black, 0.32f)
     Row(
-        modifier.navigationBarsPadding().padding(horizontal = 20.dp, vertical = 6.dp).fillMaxWidth().height(62.dp).clip(shape)
-            .background(if (dark) Color(0xFF23263F).copy(alpha = 0.88f) else Color.White.copy(alpha = 0.88f))
-            .border(1.dp, Palette.primary.copy(alpha = 0.1f), shape).padding(4.dp),
+        modifier.navigationBarsPadding().padding(horizontal = 14.dp).padding(bottom = 8.dp).fillMaxWidth().height(64.dp)
+            .shadow(if (dark) 18.dp else 14.dp, shape, ambientColor = Color.Black.copy(alpha = 0.35f), spotColor = Color.Black.copy(alpha = if (dark) 0.35f else 0.15f))
+            .clip(shape).background(glass).border(1.dp, stroke, shape)
+            .selectableGroup().padding(4.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        val items: List<Triple<Tab, String, ImageVector>> = listOf(
-            Triple(Tab.PRAYER, "Prayer", AppIcons.prayer),
-            Triple(Tab.QIBLA, "Qibla", AppIcons.qibla),
-            Triple(Tab.FALAK, "Falak", AppIcons.falak),
-            Triple(Tab.MASJID, "Masjid", AppIcons.masjid),
-            Triple(Tab.SETTINGS, "Settings", Icons.Filled.Settings),
+        val items: List<Triple<Tab, String, String>> = listOf(
+            Triple(Tab.PRAYER, tr(R.string.tab_prayer), "prayer"),
+            Triple(Tab.QIBLA, tr(R.string.tab_qibla), "qibla"),
+            Triple(Tab.FALAK, tr(R.string.tab_falak), "falak"),
+            Triple(Tab.MASJID, tr(R.string.tab_masjid), "masjid"),
+            Triple(Tab.SETTINGS, tr(R.string.tab_settings), "settings"),
         )
-        items.forEach { (tab, label, icon) ->
+        items.forEach { (tab, label, key) ->
             val selected = state.selectedTab == tab
+            val color = if (selected) on else look.fg2
             Column(
-                Modifier.weight(1f).fillMaxSize().clip(RoundedCornerShape(28.dp))
-                    .background(if (selected) Palette.primary.copy(alpha = 0.2f) else Color.Transparent)
-                    .clickable(onClickLabel = label) { state.selectedTab = tab },
+                Modifier.weight(1f).fillMaxSize().clip(RoundedCornerShape(if (look.bands) 10.dp else 28.dp))
+                    .selectable(selected = selected, role = Role.Tab, onClick = { state.selectedTab = tab }),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
             ) {
-                Icon(icon, label, Modifier.size(24.dp), tint = Palette.primary)
-                Text(label, fontFamily = Rounded, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Palette.primary)
+                Icon(AppIcons.tab(key, selected), null, Modifier.size(25.dp), tint = color)
+                Text(label, fontSize = 10.5.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                    letterSpacing = 0.1.sp, color = color, maxLines = 1)
             }
         }
     }
@@ -296,11 +326,21 @@ fun TabBar(state: AppState, modifier: Modifier = Modifier) {
 
 @Composable
 private fun WidgetPreviewContent(state: AppState) {
+    var look by remember { mutableStateOf(state.resolver.prefs.todayStyle.look) }
+    val dark = LocalSkyScheme.current.dark
     Column(Modifier.fillMaxWidth().padding(Dims.gutter), horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(tr(R.string.widget_big), style = Txt.headline, color = Palette.primary)
-        WidgetModel.from(state.resolver, state.now)?.let { TimetableCardPreview(it) }
-        Text("Touch and hold your home screen, tap Widgets and find Prayer Times Asia. Choose \"Today's timetable\". It follows your Prayer screen style.",
+        // The five looks by their full names, so none is cut short.
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TodayStyle.looks.forEach { l ->
+                Text(com.prayertimesasia.app.ui.settings.lookName(l), style = Txt.footnote, color = Palette.primary,
+                    modifier = Modifier.clip(RoundedCornerShape(50)).background(Palette.primary.copy(alpha = if (l == look) 0.16f else 0.06f))
+                        .selectable(selected = l == look, onClick = { look = l }).padding(horizontal = 14.dp, vertical = 8.dp))
+            }
+        }
+        WidgetModel.from(state.resolver, state.now, look, dark)?.let { TimetableCardPreview(it) }
+        Text("Touch and hold your home screen, tap Widgets and find Prayer Times Asia. Choose \"Next prayer\" (small, wide or large) or \"Today's timetable\". They follow your Prayer screen look.",
             style = Txt.footnote, color = Palette.secondary)
     }
 }
@@ -320,6 +360,7 @@ private fun CreditsContent() {
         Triple("Prayer rooms", "The musolla database on GitHub (LGPL 3.0), started by the KalamApps and PrayerTime.SG teams and kept by volunteers, for prayer rooms in malls, schools and sports centres. Our copy and fixes are shared back in the open.", "https://github.com/aarif86/musolla-database"),
         Triple("Font", "Nunito by the Nunito Project Authors, under the SIL Open Font License 1.1.", "https://github.com/googlefonts/nunito"),
         Triple("Community data", "Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.", "https://prayertimes.asia/verify.html"),
+        Triple("Azan", "The azan voices are Asim Javed, from the ICR masjid's own collection on the Internet Archive (public domain, CC0), Ahmed Khalaf, his own recordings (CC BY 4.0), and the Makkah azan as recorded at Masjid al-Haram by Seyfula Islam (CC BY 3.0, Wikimedia Commons). The Al-Aqsa azan is \"Masjidul Aqsa Athan, Pt. 1\" from Athans from the Holy Lands (2018), courtesy of SIMTECHCDS (Simtech Productions, Durban), used with their kind permission. With thanks to them all.", "https://archive.org/details/icr-friday-prayer-2nd-adhan-17th-may-2024-9th-dhul-qadah-1445-by-asim-javed"),
         Triple("Design", "The Colour Bands look and the prayer colours are inspired by prayertimes.sg & my by Awsam Tech LLP, the Singapore and Malaysia app. It was built by a team at Awsam Tech LLP and redesigned by Ustaz Shahib Amin Syukran, with thanks to them both.", "https://www.awsamtech.com/"),
         Triple("This app", "Open source under the GNU AGPL 3.0 licence. Made by Aarif Raziff.", "https://github.com/aarif86/PrayerTimesAsia"),
     )

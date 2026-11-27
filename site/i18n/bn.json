@@ -424,15 +424,10 @@
   "In Singapore it uses the official timetable from the Islamic Religious Council of Singapore (MUIS)": "সিঙ্গাপুরে এটি ইসলামিক রিলিজিয়াস কাউন্সিল অব সিঙ্গাপুর (MUIS) এর সরকারি সময়সূচি ব্যবহার করে",
   "Try the free masjid screen": "বিনামূল্যের মসজিদ স্ক্রিন চালিয়ে দেখুন",
   "Compare our times with yours": "আমাদের সময় আপনার সময়ের সঙ্গে মিলিয়ে দেখুন",
-  "Sky": "Sky",
-  "Bands": "Bands",
-  "Simple": "Simple",
   "Dark": "গাঢ়",
   "Light": "হালকা",
-  "Six looks, each in dark or light.": "ছয়টি রূপ, প্রতিটি গাঢ় বা হালকা রঙে।",
   "Pick yours": "আপনার রূপ বেছে নিন",
   "No Google, Facebook or Instagram ads, and no tracking. Never on the masjid screen, in reminders, alarms or the azan.": "Google, Facebook বা Instagram এর কোনো বিজ্ঞাপন নেই, কোনো ট্র্যাকিংও নেই। মসজিদ স্ক্রিন, স্মরণ করিয়ে দেওয়া, অ্যালার্ম বা আজানে কখনোই নয়।",
-  "The free masjid screen in the Sky look, dark": "বিনামূল্যের মসজিদ স্ক্রিন, Sky রূপ, গাঢ়",
   "Choose a look": "একটি রূপ বেছে নিন",
   "The Sun Path look": "Sun Path ধরন",
   "The Centre Dial look": "Centre Dial ধরন",
@@ -453,5 +448,7 @@
   "Alerts and alarms": "অ্যালার্ট ও অ্যালার্ম",
   "A reminder before each prayer begins": "প্রতিটি নামাজ শুরুর আগে মনে করিয়ে দেওয়া",
   "A clock counts down to the next prayer, with all of today's times below it. Pick from five looks, in light or dark.": "একটি ঘড়ি পরের নামাজ পর্যন্ত উল্টো গণনা করে, নিচে আজকের সব সময়। পাঁচটি ধরন থেকে বেছে নিন, হালকা বা গাঢ়।",
-  "A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.": "তারাবির কাউন্টার, শেষ দশ রাত, এবং আপনার সরকারি সংস্থার যাকাতুল ফিতরের লিংক।"
+  "A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.": "তারাবির কাউন্টার, শেষ দশ রাত, এবং আপনার সরকারি সংস্থার যাকাতুল ফিতরের লিংক।",
+  "Five looks, each in dark or light.": "পাঁচটি রূপ, প্রতিটি গাঢ় বা হালকা রঙে।",
+  "The free masjid screen in the Big and Simple look, dark": "বিনামূল্যের মসজিদ স্ক্রিন, Big and Simple রূপ, গাঢ়"
 }
