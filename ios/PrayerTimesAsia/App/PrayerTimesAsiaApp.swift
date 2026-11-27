@@ -75,10 +75,10 @@ struct RootView: View {
         if model.prefs.hasOnboarded {
             TabView(selection: $model.selectedTab) {
                 TodayView()
-                    .tabItem { Label("Prayer", systemImage: "clock") }
+                    .tabItem { Label { Text("Prayer") } icon: { Image("Tab-prayer") } }
                     .tag(AppModel.Tab.today)
                 QiblaView()
-                    .tabItem { Label("Qibla", systemImage: "location.north.circle") }
+                    .tabItem { Label { Text("Qibla") } icon: { Image("Tab-qibla") } }
                     .tag(AppModel.Tab.qibla)
                 FalakView(isTab: true)
                     .tabItem { Label("Falak", systemImage: "sun.max") }
