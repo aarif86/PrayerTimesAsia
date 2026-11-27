@@ -140,6 +140,37 @@ jobs:
             done
           done
 
+      # The same app on other screen shapes: the smallest iPhone, the biggest iPhone and iPad
+      # (the iPad version is what a foldable iPhone would reuse). Pictures only, and a failure
+      # here never fails the run.
+      - name: Capture screenshots on other devices
+        continue-on-error: true
+        run: |
+          APP=$(find build/dd/Build/Products -name 'PrayerTimesAsia.app' -path '*iphonesimulator*' | head -n1)
+          mkdir -p screenshots/devices
+          for pat in 'iPhone SE' 'iPhone.*Pro Max' 'iPad Pro.*13' 'iPad mini'; do
+            LINE=$(xcrun simctl list devices available -j | jq -r --arg p "$pat" '[.devices[][] | select(.isAvailable == true and (.name | test($p)))][0] | "\(.udid)|\(.name)"')
+            UDID=${LINE%%|*}; NAME=${LINE#*|}
+            if [ -z "$UDID" ] || [ "$UDID" = null ]; then echo "No simulator for $pat"; continue; fi
+            SLUG=$(echo "$NAME" | tr -c 'A-Za-z0-9\n' '-')
+            xcrun simctl boot "$UDID" || true
+            xcrun simctl bootstatus "$UDID" -b
+            xcrun simctl install "$UDID" "$APP"
+            for look in centre simple; do
+              for t in today qibla settings; do
+                xcrun simctl terminate "$UDID" com.prayertimesasia.app || true
+                xcrun simctl launch "$UDID" com.prayertimesasia.app -demo -$look -tab $t
+                sleep 6
+                xcrun simctl io "$UDID" screenshot "screenshots/devices/$SLUG-$look-$t.png"
+              done
+            done
+            xcrun simctl terminate "$UDID" com.prayertimesasia.app || true
+            xcrun simctl launch "$UDID" com.prayertimesasia.app -demo -centre -tab today -largetext
+            sleep 6
+            xcrun simctl io "$UDID" screenshot "screenshots/devices/$SLUG-centre-today-big-text.png"
+            xcrun simctl shutdown "$UDID" || true
+          done
+
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
