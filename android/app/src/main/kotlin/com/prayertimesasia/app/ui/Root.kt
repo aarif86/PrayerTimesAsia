@@ -89,6 +89,7 @@ import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Rounded
 import com.prayertimesasia.app.ui.theme.SkyScheme
 import com.prayertimesasia.app.ui.theme.Txt
+import com.prayertimesasia.app.ui.theme.cappedSp
 import com.prayertimesasia.app.ui.today.AppSheet
 import com.prayertimesasia.app.ui.today.TrackerSheetContent
 import com.prayertimesasia.app.ui.today.WakeUpSheetContent
@@ -317,7 +318,7 @@ fun TabBar(state: AppState, modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
             ) {
                 Icon(AppIcons.tab(key, selected), null, Modifier.size(25.dp), tint = color)
-                Text(label, fontSize = 10.5.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                Text(label, fontSize = cappedSp(10.5f, 1.3f), fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
                     letterSpacing = 0.1.sp, color = color, maxLines = 1)
             }
         }

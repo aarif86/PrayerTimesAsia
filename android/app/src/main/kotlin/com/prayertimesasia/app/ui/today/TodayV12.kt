@@ -85,6 +85,7 @@ import com.prayertimesasia.app.ui.components.trCount
 import androidx.lifecycle.compose.currentStateAsState
 import com.prayertimesasia.app.ui.theme.AppIcons
 import com.prayertimesasia.app.ui.theme.Body
+import com.prayertimesasia.app.ui.theme.cappedSp
 import com.prayertimesasia.app.ui.theme.LocalLook
 import com.prayertimesasia.app.ui.theme.Look
 import com.prayertimesasia.app.ui.theme.Lucide
@@ -261,7 +262,7 @@ private fun PlaceChipV12(state: AppState, onClick: () -> Unit, modifier: Modifie
     ) {
         if (state.prefs.useGPS) Icon(Lucide.navigationFilled, null, Modifier.size(11.dp), tint = col.accent)
         else Icon(Lucide.mapPin(), null, Modifier.size(12.dp), tint = col.accent)
-        Text(name, fontFamily = Body, fontSize = if (name.length > 11) 13.sp else 15.sp, fontWeight = FontWeight.SemiBold,
+        Text(name, fontFamily = Body, fontSize = cappedSp(if (name.length > 11) 13f else 15f, 1.4f), fontWeight = FontWeight.SemiBold,
             color = col.fg, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
         if (place != null && place.isInAsia) Text(place.profile.flag, fontSize = 14.sp)
         Icon(Lucide.chevronDown(3f), null, Modifier.size(12.dp), tint = col.fg.copy(alpha = 0.6f))
@@ -453,10 +454,10 @@ private fun SmallDial(f: TodayFrame, size: Dp, gold: Boolean, col: PageColors) {
 @Composable
 private fun DialCentreV12(kicker: String, count: String, label: String, urgent: Boolean, kSize: Float, cSize: Float, lSize: Float, col: PageColors) {
     Column(Modifier.clearAndSetSemantics {}.widthIn(max = 200.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(kicker, fontFamily = Body, fontSize = kSize.sp, lineHeight = (kSize * 1.3f).sp, color = col.fg2, maxLines = 1)
-        Text(count, fontFamily = Rounded, fontSize = cSize.sp, lineHeight = (cSize * 1.15f).sp, fontWeight = FontWeight.Bold,
+        Text(kicker, fontFamily = Body, fontSize = cappedSp(kSize), lineHeight = cappedSp(kSize * 1.3f), color = col.fg2, maxLines = 1)
+        Text(count, fontFamily = Rounded, fontSize = cappedSp(cSize), lineHeight = cappedSp(cSize * 1.15f), fontWeight = FontWeight.Bold,
             color = if (urgent) col.accent else col.fg, maxLines = 1, softWrap = false, style = TextStyle(fontFeatureSettings = "tnum"))
-        if (label.isNotEmpty()) Text(label, fontFamily = Body, fontSize = lSize.sp, lineHeight = (lSize * 1.3f).sp, color = col.fg2, maxLines = 1,
+        if (label.isNotEmpty()) Text(label, fontFamily = Body, fontSize = cappedSp(lSize), lineHeight = cappedSp(lSize * 1.3f), color = col.fg2, maxLines = 1,
             textAlign = TextAlign.Center)
     }
 }
