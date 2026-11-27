@@ -5,6 +5,8 @@ import com.prayertimesasia.app.ui.makers.ReviewContent
 import android.app.Activity
 import android.provider.Settings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -324,11 +326,21 @@ fun TabBar(state: AppState, modifier: Modifier = Modifier) {
 
 @Composable
 private fun WidgetPreviewContent(state: AppState) {
+    var look by remember { mutableStateOf(state.resolver.prefs.todayStyle.look) }
+    val dark = LocalSkyScheme.current.dark
     Column(Modifier.fillMaxWidth().padding(Dims.gutter), horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(tr(R.string.widget_big), style = Txt.headline, color = Palette.primary)
-        WidgetModel.from(state.resolver, state.now)?.let { TimetableCardPreview(it) }
-        Text("Touch and hold your home screen, tap Widgets and find Prayer Times Asia. Choose \"Today's timetable\". It follows your Prayer screen style.",
+        // The five looks by their full names, so none is cut short.
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TodayStyle.looks.forEach { l ->
+                Text(com.prayertimesasia.app.ui.settings.lookName(l), style = Txt.footnote, color = Palette.primary,
+                    modifier = Modifier.clip(RoundedCornerShape(50)).background(Palette.primary.copy(alpha = if (l == look) 0.16f else 0.06f))
+                        .selectable(selected = l == look, onClick = { look = l }).padding(horizontal = 14.dp, vertical = 8.dp))
+            }
+        }
+        WidgetModel.from(state.resolver, state.now, look, dark)?.let { TimetableCardPreview(it) }
+        Text("Touch and hold your home screen, tap Widgets and find Prayer Times Asia. Choose \"Next prayer\" (small, wide or large) or \"Today's timetable\". They follow your Prayer screen look.",
             style = Txt.footnote, color = Palette.secondary)
     }
 }
