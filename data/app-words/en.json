@@ -1579,5 +1579,8 @@
   "phone.alarm.snoozed": "Snoozed",
   "phone.alarm.prayerAlarm": "Prayer alarm",
   "phone.a11y.prayed": "prayed",
-  "phone.source.methodName": "{name} method"
+  "phone.source.methodName": "{name} method",
+  "phone.unit.h": "h",
+  "phone.unit.m": "m",
+  "phone.unit.s": "s"
 }

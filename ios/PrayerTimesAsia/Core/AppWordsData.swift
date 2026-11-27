@@ -1583,6 +1583,9 @@ extension AppWords {
         "phone.alarm.prayerAlarm": "Prayer alarm",
         "phone.a11y.prayed": "prayed",
         "phone.source.methodName": "{name} method",
+        "phone.unit.h": "h",
+        "phone.unit.m": "m",
+        "phone.unit.s": "s",
     ]
 
     static let msLines: [String: String] = [
@@ -1664,7 +1667,7 @@ extension AppWords {
         "today.changeLocation": "Tukar lokasi",
         "today.blessedTimes": "{name}, Dhuha dan waktu malam yang mulia",
         "today.before": "Sebelum {name}",
-        "today.alertPrompt": "Dapatkan makluman apabila masuk waktu solat",
+        "today.alertPrompt": "Dapatkan makluman setiap waktu solat",
         "today.welcomeTo": "Selamat datang ke {place}",
         "today.welcome": "Selamat datang",
         "today.switched": "Bertukar kepada {method} ({country}), waktu tempatan. Boleh digunakan tanpa internet.",
@@ -3167,6 +3170,9 @@ extension AppWords {
         "phone.alarm.prayerAlarm": "Penggera solat",
         "phone.a11y.prayed": "sudah bersolat",
         "phone.source.methodName": "Kaedah {name}",
+        "phone.unit.h": "j",
+        "phone.unit.m": "min",
+        "phone.unit.s": "s",
     ]
 
     static let idLines: [String: String] = [
@@ -3248,7 +3254,7 @@ extension AppWords {
         "today.changeLocation": "Ubah lokasi",
         "today.blessedTimes": "{name}, Dhuha dan waktu malam yang mulia",
         "today.before": "Sebelum {name}",
-        "today.alertPrompt": "Dapatkan pemberitahuan saat waktu salat tiba",
+        "today.alertPrompt": "Beri tahu saya tiap waktu salat",
         "today.welcomeTo": "Selamat datang di {place}",
         "today.welcome": "Selamat datang",
         "today.switched": "Beralih ke {method} ({country}), waktu setempat. Tetap berfungsi tanpa internet.",
@@ -4751,5 +4757,8 @@ extension AppWords {
         "phone.alarm.prayerAlarm": "Alarm salat",
         "phone.a11y.prayed": "sudah salat",
         "phone.source.methodName": "Metode {name}",
+        "phone.unit.h": "j",
+        "phone.unit.m": "mnt",
+        "phone.unit.s": "d",
     ]
 }

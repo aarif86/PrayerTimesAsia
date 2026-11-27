@@ -866,10 +866,11 @@ struct TodayView: View {
 
     static func short(_ seconds: TimeInterval) -> String {
         let s = max(0, Int(seconds.rounded(.up)))
-        if s < 60 { return "\(s)s" }
+        let uh = W("phone.unit.h"), um = W("phone.unit.m"), us = W("phone.unit.s")
+        if s < 60 { return "\(s)\(us)" }
         let minutes = (s + 59) / 60
         let h = minutes / 60, m = minutes % 60
-        return h > 0 ? "\(h)h \(m)m" : "\(m)m"
+        return h > 0 ? "\(h)\(uh) \(m)\(um)" : "\(m)\(um)"
     }
 
     /// "1 hour 5 minutes" for VoiceOver.
@@ -936,7 +937,7 @@ struct TodayView: View {
             Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText).accessibilityHidden(true)
             Text(W("today.alertPrompt")).font(.subheadline.weight(.semibold))
                 .lineLimit(typeSize.isAccessibilitySize ? nil : 2).minimumScaleFactor(0.85)
-                .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
+                .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 4)
             Button(W("common.turnOn")) {
                 Task {

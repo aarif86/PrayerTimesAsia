@@ -79,7 +79,7 @@
     <string name="today_changeLocation" formatted="false">Ubah lokasi</string>
     <string name="today_blessedTimes" formatted="false">{name}, Dhuha dan waktu malam yang mulia</string>
     <string name="today_before" formatted="false">Sebelum {name}</string>
-    <string name="today_alertPrompt" formatted="false">Dapatkan pemberitahuan saat waktu salat tiba</string>
+    <string name="today_alertPrompt" formatted="false">Beri tahu saya tiap waktu salat</string>
     <string name="today_welcomeTo" formatted="false">Selamat datang di {place}</string>
     <string name="today_welcome" formatted="false">Selamat datang</string>
     <string name="today_switched" formatted="false">Beralih ke {method} ({country}), waktu setempat. Tetap berfungsi tanpa internet.</string>
@@ -1582,4 +1582,7 @@
     <string name="phone_alarm_prayerAlarm" formatted="false">Alarm salat</string>
     <string name="phone_a11y_prayed" formatted="false">sudah salat</string>
     <string name="phone_source_methodName" formatted="false">Metode {name}</string>
+    <string name="phone_unit_h" formatted="false">j</string>
+    <string name="phone_unit_m" formatted="false">mnt</string>
+    <string name="phone_unit_s" formatted="false">d</string>
 </resources>

@@ -77,7 +77,7 @@
   "today.changeLocation": "Tukar lokasi",
   "today.blessedTimes": "{name}, Dhuha dan waktu malam yang mulia",
   "today.before": "Sebelum {name}",
-  "today.alertPrompt": "Dapatkan makluman apabila masuk waktu solat",
+  "today.alertPrompt": "Dapatkan makluman setiap waktu solat",
   "today.welcomeTo": "Selamat datang ke {place}",
   "today.welcome": "Selamat datang",
   "today.switched": "Bertukar kepada {method} ({country}), waktu tempatan. Boleh digunakan tanpa internet.",
@@ -1579,5 +1579,8 @@
   "phone.alarm.snoozed": "Ditunda",
   "phone.alarm.prayerAlarm": "Penggera solat",
   "phone.a11y.prayed": "sudah bersolat",
-  "phone.source.methodName": "Kaedah {name}"
+  "phone.source.methodName": "Kaedah {name}",
+  "phone.unit.h": "j",
+  "phone.unit.m": "min",
+  "phone.unit.s": "s"
 }
