@@ -190,9 +190,9 @@
 /* MARK: Looks, fitted to the layouts */
 
 /* Sky: glass panels over the sky outside. */
-.lay-look-night .lay-times, .lay-look-dial .lay-times { background: var(--glass); border: 1px solid var(--stroke); border-radius: calc(var(--u) * 2.4); padding: calc(var(--u) * 0.8);
+.lay-look-dial .lay-times { background: var(--glass); border: 1px solid var(--stroke); border-radius: calc(var(--u) * 2.4); padding: calc(var(--u) * 0.8);
   -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); }
-.lay-look-night .lay-bar, .lay-look-board .lay-bar, .lay-look-dial .lay-bar, .lay-look-sunpath .lay-bar { -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); background: var(--glass); }
+.lay-look-dial .lay-bar, .lay-look-sunpath .lay-bar { -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); background: var(--glass); }
 
 /* Board: the list on a bordered board, a departure board. */
 .lay-look-board .lay-times { background: var(--glass); border: 1px solid var(--stroke); border-radius: calc(var(--u) * 2.4); padding: calc(var(--u) * 1); gap: 0;

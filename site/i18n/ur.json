@@ -425,15 +425,10 @@
   "In Singapore it uses the official timetable from the Islamic Religious Council of Singapore (MUIS)": "سنگاپور میں یہ اسلامک ریلیجس کونسل آف سنگاپور (MUIS) کا سرکاری جدول استعمال کرتی ہے",
   "Try the free masjid screen": "مفت مسجد اسکرین آزمائیں",
   "Compare our times with yours": "ہمارے اوقات کا اپنے اوقات سے موازنہ کریں",
-  "Sky": "Sky",
-  "Bands": "Bands",
-  "Simple": "Simple",
   "Dark": "گہرا",
   "Light": "روشن",
-  "Six looks, each in dark or light.": "چھ شکلیں، ہر ایک گہرے یا روشن انداز میں۔",
   "Pick yours": "اپنی شکل چنیں",
   "No Google, Facebook or Instagram ads, and no tracking. Never on the masjid screen, in reminders, alarms or the azan.": "نہ Google، Facebook یا Instagram کے اشتہارات، اور نہ ٹریکنگ۔ مسجد اسکرین، یاد دہانیوں، الارم یا اذان میں کبھی نہیں۔",
-  "The free masjid screen in the Sky look, dark": "مفت مسجد اسکرین، Sky شکل، گہرا",
   "Choose a look": "شکل چنیں",
   "The Sun Path look": "Sun Path انداز",
   "The Centre Dial look": "Centre Dial انداز",
@@ -454,5 +449,7 @@
   "Alerts and alarms": "الرٹس اور الارم",
   "A reminder before each prayer begins": "ہر نماز شروع ہونے سے پہلے یاد دہانی",
   "A clock counts down to the next prayer, with all of today's times below it. Pick from five looks, in light or dark.": "ایک گھڑی اگلی نماز تک الٹی گنتی کرتی ہے، اور اس کے نیچے آج کے سب اوقات ہیں۔ پانچ انداز میں سے چنیں، ہلکا یا گہرا۔",
-  "A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.": "تراویح کا کاؤنٹر، آخری دس راتیں، اور آپ کے سرکاری ادارے کے صدقۂ فطر کے لنک۔"
+  "A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.": "تراویح کا کاؤنٹر، آخری دس راتیں، اور آپ کے سرکاری ادارے کے صدقۂ فطر کے لنک۔",
+  "Five looks, each in dark or light.": "پانچ شکلیں، ہر ایک گہرے یا روشن انداز میں۔",
+  "The free masjid screen in the Big and Simple look, dark": "مفت مسجد اسکرین، Big and Simple شکل، گہرا"
 }

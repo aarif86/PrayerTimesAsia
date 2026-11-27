@@ -186,39 +186,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .scr-light .scr-cell.on { background: rgba(255, 255, 255, 0.7); background: color-mix(in srgb, var(--tint) 16%, rgba(255, 255, 255, 0.6)); }
 
-/* Board: countdown on the left, the day's times as the app's prayer list on the right. */
-.landscape .scr-look-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 4); }
-.landscape .scr-look-board .scr-head, .landscape .scr-look-board .scr-foot { grid-column: 1 / -1; }
-.landscape .scr-look-board .scr-big { font-size: calc(var(--u) * 17); }
-.landscape .scr-look-board .scr-line { font-size: calc(var(--u) * 3.4); }
-.scr-look-board .scr-grid {
-  grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: 1fr; align-content: center; gap: calc(var(--u) * 0.5);
-  padding: calc(var(--u) * 1); border-radius: calc(var(--u) * 2.6); background: var(--glass); border: 1px solid var(--stroke);
-  -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); align-self: center;
-}
-/* With a long name, a long notice and the Ramadan line, the list gives up its spacing rather than push the footer off the screen. */
-.scr-look-board .scr-grid { min-height: 0; max-height: 100%; grid-auto-rows: minmax(0, 1fr); }
-.scr-look-board .scr-cell { min-height: 0; }
-.scr-look-board .scr-cell {
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); grid-template-areas: "name time iq" "tag time iq"; justify-items: start; align-items: center;
-  row-gap: 0; padding: calc(var(--u) * 1) calc(var(--u) * 2.4); background: transparent; border: 0; border-radius: calc(var(--u) * 1.6);
-  -webkit-backdrop-filter: none; backdrop-filter: none;
-}
-.scr-look-board .scr-cell.on { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tint) 45%, transparent); }
-.scr-look-board .scr-bar { left: calc(var(--u) * 0.6); right: auto; top: 22%; bottom: 22%; width: calc(var(--u) * 0.45); height: auto; }
-.scr-look-board .scr-name { grid-area: name; font-size: calc(var(--u) * 3.8); }
-.scr-look-board .scr-tag { grid-area: tag; font-size: min(calc(var(--u) * 2.1), var(--tcap)); min-height: 0; }
-.scr-look-board .scr-cell .scr-t { grid-area: time; font-size: min(calc(var(--u) * 5.6), var(--tcap)); justify-self: end; }
-.scr-look-board .scr-iq { grid-area: iq; justify-self: end; font-size: calc(var(--u) * 2.9); }
-.scr-look-board .scr-syuruk .scr-t, .scr-look-board .scr-imsak .scr-t { font-size: min(calc(var(--u) * 4.6), var(--tcap)); }
-
 /* Portrait: times in two columns under the countdown. */
 .portrait .scr-head { flex-direction: column; align-items: stretch; }
 .portrait .scr-clock { font-size: calc(var(--u) * 9); }
 .portrait .scr-title h1 { white-space: normal; }
 .portrait .scr-hero { padding-block: calc(var(--u) * 3); }
 .portrait .scr-grid { grid-auto-flow: row; grid-template-columns: 1fr 1fr; align-content: center; row-gap: calc(var(--u) * 2); }
-.portrait .scr-look-board .scr-grid { grid-template-columns: 1fr; row-gap: calc(var(--u) * 0.5); }
 .portrait .scr-brand, .landscape .scr-look-bands .scr-brand { flex-wrap: wrap; white-space: normal; row-gap: calc(var(--u) * 0.6); }
 
 /* MARK: Looks from the app's Prayer screen styles */
@@ -396,8 +369,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-dm .scr-dm-iq .scr-t { font-size: 1.3em; }
 
 /* Ramadan: "Berbuka" under Maghrib in the column cards, where beside it there is no room. */
-.scr-look-night .scr-name em, .scr-look-sunpath .scr-name em, .scr-look-board .scr-name em { display: block; font-size: 0.62em; line-height: 1.1; }
-.scr-look-night .scr-name em .scr-dotsep, .scr-look-sunpath .scr-name em .scr-dotsep, .scr-look-board .scr-name em .scr-dotsep { display: none; }
+.scr-look-sunpath .scr-name em { display: block; font-size: 0.62em; line-height: 1.1; }
+.scr-look-sunpath .scr-name em .scr-dotsep { display: none; }
 .scr-name em .scr-dotsep { font-style: normal; }
 
 /* MARK: Parts the committee turned off (setup "Show on the TV") */

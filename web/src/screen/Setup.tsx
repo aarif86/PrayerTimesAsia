@@ -18,17 +18,12 @@ import { name, officialSourceForScreen } from './model'
 import { SEASON_PREVIEW_LABEL, SEASON_PREVIEWS, type SeasonPreview } from '../core/season'
 import { PAIR_CODE_RE, pairClaim, pairUpdate, saveShortLink, tidyPairCode, useLiveScreenCount } from './live'
 import { ModeButton, Sky, useSiteTheme } from './sky'
+import { LOOK_TEXT, LOOK_WORDS } from './lookText'
 import './setup.css'
 
 const EDITOR_KEY = 'ptasia.screen.editor'
 
-const LOOK_CHOICES: { id: ScreenLook; label: string; hint: string }[] = [
-  { id: 'dial', label: 'Centre Dial', hint: 'The whole day as a ring on the sky, like the app' },
-  { id: 'sunpath', label: 'Sun Path', hint: 'The sun moving across the day, like the app' },
-  { id: 'bands', label: 'Colour Bands', hint: 'Each prayer in its own colour, like the app' },
-  { id: 'simple', label: 'Big and Simple', hint: 'Plain, big and calm, with no moving sky' },
-  { id: 'surau', label: 'Calm Gold', hint: 'Navy and gold with a faint pattern, calm and clear' },
-]
+const LOOK_IDS: ScreenLook[] = ['dial', 'sunpath', 'bands', 'simple', 'surau']
 
 const LAYOUT_CHOICES: { id: ScreenLayout; label: string; hint: string }[] = [
   { id: 'full', label: 'Full clock', hint: 'The clock and the times across the whole screen. No slides.' },
@@ -302,19 +297,19 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
             </section>
 
             <section class="sp-step" aria-labelledby="sp-s3">
-              <h2 id="sp-s3"><span class="sp-num">3</span>Choose the look</h2>
+              <h2 id="sp-s3"><span class="sp-num">3</span>{LOOK_WORDS[c.lang].heading}</h2>
               <div class="sp-looks" role="radiogroup" aria-label="Look">
-                {LOOK_CHOICES.map((l) => (
-                  <button key={l.id} type="button" role="radio" aria-checked={c.look === l.id} class={`sp-chip${c.look === l.id ? ' on' : ''}`} onClick={() => set({ look: l.id })}>{l.label}</button>
+                {LOOK_IDS.map((id) => (
+                  <button key={id} type="button" role="radio" aria-checked={c.look === id} class={`sp-chip${c.look === id ? ' on' : ''}`} onClick={() => set({ look: id })}>{LOOK_TEXT[c.lang][id].name}</button>
                 ))}
               </div>
-              <p class="sp-hint">{LOOK_CHOICES.find((l) => l.id === c.look)?.hint}. Every look fits every layout.</p>
+              <p class="sp-hint">{LOOK_TEXT[c.lang][c.look].hint}. {LOOK_WORDS[c.lang].fitsAll}</p>
               <div class="sp-modes" role="radiogroup" aria-label="Light or dark">
                 {(['dark', 'light'] as const).map((m) => (
-                  <button key={m} type="button" role="radio" aria-checked={c.mode === m} class={`sp-chip${c.mode === m ? ' on' : ''}`} onClick={() => set({ mode: m })}>{m === 'dark' ? 'Dark' : 'Light'}</button>
+                  <button key={m} type="button" role="radio" aria-checked={c.mode === m} class={`sp-chip${c.mode === m ? ' on' : ''}`} onClick={() => set({ mode: m })}>{m === 'dark' ? LOOK_WORDS[c.lang].dark : LOOK_WORDS[c.lang].light}</button>
                 ))}
               </div>
-              <p class="sp-hint">Dark suits a dim prayer hall. Light suits a bright hall or the foyer.</p>
+              <p class="sp-hint">{LOOK_WORDS[c.lang].modeHint}</p>
             </section>
 
             <section class="sp-step" aria-labelledby="sp-s4">

@@ -424,15 +424,10 @@
   "In Singapore it uses the official timetable from the Islamic Religious Council of Singapore (MUIS)": "في سنغافورة تعتمد الجدول الرسمي من مجلس الشؤون الإسلامية في سنغافورة (MUIS)",
   "Try the free masjid screen": "جرّبوا شاشة المسجد المجانية",
   "Compare our times with yours": "قارنوا أوقاتنا بأوقاتكم",
-  "Sky": "Sky",
-  "Bands": "Bands",
-  "Simple": "Simple",
   "Dark": "داكن",
   "Light": "فاتح",
-  "Six looks, each in dark or light.": "ستة أشكال، كل منها بوضع داكن أو فاتح.",
   "Pick yours": "اختاروا شكلكم",
   "No Google, Facebook or Instagram ads, and no tracking. Never on the masjid screen, in reminders, alarms or the azan.": "لا إعلانات من Google أو Facebook أو Instagram، ولا تتبّع. ولا تظهر أبدًا على شاشة المسجد أو في التذكيرات أو المنبهات أو الأذان.",
-  "The free masjid screen in the Sky look, dark": "شاشة المسجد المجانية بشكل Sky، داكن",
   "Choose a look": "اختاروا الشكل",
   "The Sun Path look": "نمط Sun Path",
   "The Centre Dial look": "نمط Centre Dial",
@@ -453,5 +448,7 @@
   "Alerts and alarms": "التنبيهات والمنبّهات",
   "A reminder before each prayer begins": "تذكير قبل بدء كل صلاة",
   "A clock counts down to the next prayer, with all of today's times below it. Pick from five looks, in light or dark.": "ساعة تعدّ تنازليًا إلى الصلاة التالية، وتحتها أوقات اليوم كلها. اختر من خمسة أنماط، فاتحًا أو داكنًا.",
-  "A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.": "عدّاد للتراويح، والليالي العشر الأخيرة، وروابط زكاة الفطر إلى جهتك الرسمية."
+  "A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.": "عدّاد للتراويح، والليالي العشر الأخيرة، وروابط زكاة الفطر إلى جهتك الرسمية.",
+  "Five looks, each in dark or light.": "خمسة أشكال، كل منها بوضع داكن أو فاتح.",
+  "The free masjid screen in the Big and Simple look, dark": "شاشة المسجد المجانية بشكل Big and Simple، داكن"
 }
