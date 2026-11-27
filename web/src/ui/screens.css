@@ -1274,6 +1274,7 @@ html[data-large-text] .pname { font-size: 20px; }
 .m-bands .space-list li:nth-child(5n+5) { background: #88702e; }
 .m-bands .space-list li.sp-mus { background: #4a63b8; }
 .m-bands .space-list li.open { padding: 0 24px; }
+.m-bands .friday-card .space-list li, .m-bands .friday-card .space-list li.open { padding: 0 24px; }
 .m-bands .space-row { min-height: 62px; color: #fff; }
 .m-bands .space-row > svg { display: none; }
 .m-bands .space-name { font-weight: 700; }
