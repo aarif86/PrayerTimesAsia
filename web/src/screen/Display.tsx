@@ -133,7 +133,8 @@ function AppDial({ phase, now, config: c, label, day: sd }: {
   if (phase.kind === 'azan') {
     kicker = `${w.azan} ${label(phase.prayer)}`
     count = phase.iqamah != null ? countdown(phase.iqamah - now) : ''
-    line = phase.iqamah != null ? w.iqamahIn : ''
+    const jumuah = phase.prayer === 'dhuhr' && phase.day.friday && !!c.jumuah
+    line = phase.iqamah != null ? (jumuah ? w.khutbahIn : w.iqamahIn) : ''
   } else if (phase.kind === 'waiting') {
     kicker = w.next
     count = c.hide.countdown ? '' : shortLeft(phase.at - now)
