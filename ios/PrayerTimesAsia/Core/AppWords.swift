@@ -68,6 +68,8 @@ enum AppWords {
 enum AppLanguageChoice: String, CaseIterable, Codable, Identifiable, Sendable {
     case en, ms, id
 
+    var id: String { rawValue }
+
     var lang: RamadanContent.Lang {
         switch self {
         case .en: .en
