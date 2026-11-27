@@ -89,7 +89,6 @@ import com.prayertimesasia.app.ui.theme.Palette
 import com.prayertimesasia.app.ui.theme.Rounded
 import com.prayertimesasia.app.ui.theme.SkyScheme
 import com.prayertimesasia.app.ui.theme.Txt
-import com.prayertimesasia.app.ui.theme.cappedSp
 import com.prayertimesasia.app.ui.today.AppSheet
 import com.prayertimesasia.app.ui.today.TrackerSheetContent
 import com.prayertimesasia.app.ui.today.WakeUpSheetContent
@@ -318,8 +317,12 @@ fun TabBar(state: AppState, modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
             ) {
                 Icon(AppIcons.tab(key, selected), null, Modifier.size(25.dp), tint = color)
-                Text(label, fontSize = cappedSp(10.5f, 1.1f), fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
-                    letterSpacing = 0.1.sp, color = color, maxLines = 1)
+                // The bar is a fixed 64 dp tall and five labels share the width, so the labels keep their size
+                // whatever the phone's text setting (like the iPhone tab bar); the icon and the current-tab colour carry the rest.
+                CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 1f)) {
+                    Text(label, fontSize = 10.5.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                        letterSpacing = 0.1.sp, color = color, maxLines = 1)
+                }
             }
         }
     }

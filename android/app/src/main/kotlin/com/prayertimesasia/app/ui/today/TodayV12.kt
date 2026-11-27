@@ -663,7 +663,7 @@ private fun PrayerRowV12(
         if (noBar && lit && f.isToday) Box(Modifier.offset(x = 2.dp).size(8.dp).background(dotColor, CircleShape))
         Column(Modifier.weight(1f).clearAndSetSemantics {}.padding(vertical = 6.dp)) {
             FlowLine {
-                Text(r.prayerName(prayer, time), fontFamily = Body, fontSize = if (simple) 23.sp else 19.sp,
+                Text(r.prayerName(prayer, time), fontFamily = Body, fontSize = cappedSp(if (simple) 23f else 19f, 1.4f),
                     fontWeight = if (lit) FontWeight.Bold else FontWeight.Medium, color = if (passed) col.fg2 else col.fg, maxLines = 1, modifier = Modifier.align(Alignment.CenterVertically))
                 r.localName(prayer, time)?.let { Text(it, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = col.fg2, maxLines = 1, modifier = Modifier.align(Alignment.CenterVertically)) }
                 if (prayed) Box(Modifier.align(Alignment.CenterVertically).size(18.dp).background(if (look.gold) Color(0xFFE2B65A) else col.accent, CircleShape), contentAlignment = Alignment.Center) {
