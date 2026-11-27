@@ -318,7 +318,7 @@ fun TabBar(state: AppState, modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
             ) {
                 Icon(AppIcons.tab(key, selected), null, Modifier.size(25.dp), tint = color)
-                Text(label, fontSize = cappedSp(10.5f, 1.3f), fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                Text(label, fontSize = cappedSp(10.5f, 1.1f), fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
                     letterSpacing = 0.1.sp, color = color, maxLines = 1)
             }
         }

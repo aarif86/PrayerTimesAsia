@@ -680,7 +680,7 @@ private fun PrayerRowV12(
             val src = day(f).alternateSource
             if (other != null && src != null) Text("$src ${r.formatted(other)}", fontFamily = Body, fontSize = 13.sp, color = col.fg2)
         }
-        TimeV12(r.timeParts(time), if (simple) 23.sp else 20.sp, if (simple) 15.sp else 13.sp, FontWeight.SemiBold,
+        TimeV12(r.timeParts(time), cappedSp(if (simple) 23f else 20f, 1.4f), cappedSp(if (simple) 15f else 13f, 1.4f), FontWeight.SemiBold,
             if (passed) col.fg2 else col.fg, col.fg2, Modifier.clearAndSetSemantics {})
         if (hideBell) Spacer(Modifier.size(48.dp)) else BellV12(state, prayer, mode, col)
     }
@@ -747,7 +747,7 @@ private fun BlessedRowV12(state: AppState, blessed: BlessedTime, time: Instant, 
             Text(blessed.name(r.naming), fontFamily = Body, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = col.fg2)
             Text(blessed.note, fontFamily = Body, fontSize = 12.sp, lineHeight = 15.sp, color = col.fg2.copy(alpha = col.fg2.alpha * 0.7f))
         }
-        TimeV12(r.timeParts(time), if (look.simple) 21.sp else 20.sp, 13.sp, FontWeight.Medium, col.fg2, col.fg2)
+        TimeV12(r.timeParts(time), cappedSp(if (look.simple) 21f else 20f, 1.4f), cappedSp(13f, 1.4f), FontWeight.Medium, col.fg2, col.fg2)
         Spacer(Modifier.width(30.dp))
     }
 }
