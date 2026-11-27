@@ -2060,6 +2060,9 @@ private struct V12Dial: View {
             ctx.fill(Path(ellipseIn: CGRect(x: dot.x - 13 * k, y: dot.y - 13 * k, width: 26 * k, height: 26 * k)), with: .color(p.accent.opacity(0.5)))
             ctx.fill(Path(ellipseIn: CGRect(x: dot.x - 9 * k, y: dot.y - 9 * k, width: 18 * k, height: 18 * k)), with: .color(.white))
         }
+        // The glow around the marker reaches past the ring, so the drawing area is a little
+        // larger than the dial. Otherwise the marker is sliced off at midnight (bottom) and noon (top).
+        .frame(width: size * 1.2, height: size * 1.2)
         .frame(width: size, height: size)
     }
 
