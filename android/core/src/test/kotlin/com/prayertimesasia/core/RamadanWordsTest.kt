@@ -42,4 +42,19 @@ class RamadanWordsTest {
         assertEquals("H", RamadanWords.letter(FastMark.PERIOD, RamadanContent.Lang.MS))
         assertEquals("Malam ini malam 27, salah satu malam ganjil. Carilah Lailatul Qadar.", RamadanWords.In(RamadanContent.Lang.ID)(RamadanWordKey.oddNight, "n" to 27))
     }
+
+    /** Picking Malay or Indonesian prayer names (Subuh, Zohor) must not turn the Ramadan page into Malay. */
+    @Test fun prayerNamesNeverChangeTheAppLanguage() {
+        for (style in NamingStyle.entries) {
+            val english = Resolver(Preferences(namingOverride = style), locale = java.util.Locale("en", "SG"))
+            assertEquals("$style names on an English phone", RamadanContent.Lang.EN, english.appLang)
+        }
+        // The phone or the app language setting is what changes the words.
+        assertEquals(RamadanContent.Lang.MS, Resolver(Preferences(), locale = java.util.Locale("ms", "MY")).appLang)
+        assertEquals(RamadanContent.Lang.ID, Resolver(Preferences(), locale = java.util.Locale("in", "ID")).appLang)
+        // And the names still follow their own setting.
+        val malayNames = Resolver(Preferences(namingOverride = NamingStyle.MALAY), locale = java.util.Locale("en", "SG"))
+        assertEquals("Subuh", Prayer.FAJR.name(malayNames.naming))
+        assertEquals("Tonight", RamadanWords.In(malayNames.appLang)(RamadanWordKey.tonight))
+    }
 }

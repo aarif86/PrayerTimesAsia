@@ -47,4 +47,20 @@ final class AppWordsTests: XCTestCase {
         XCTAssertEqual(AppWords.deviceLang(["ar-SA"]), .en)
         XCTAssertEqual(AppWords.deviceLang([]), .en)
     }
+
+    /// Choosing Malay or Indonesian prayer names (Subuh, Zohor) must not turn the
+    /// Ramadan page, alert lines or hadith cards into Malay. Only the App words
+    /// choice may do that, and it is not in the app yet.
+    func testPrayerNamesNeverChangeTheAppLanguage() {
+        for style in NamingStyle.allCases {
+            XCTAssertEqual(AppWords.appLanguage(naming: style), .en, "\(style) names, app words stay English")
+        }
+        // The names themselves still follow the setting.
+        XCTAssertEqual(Prayer.fajr.name(.malay, isFriday: false), "Subuh")
+        XCTAssertEqual(Prayer.fajr.name(.international, isFriday: false), "Fajr")
+        // The Ramadan page is built from the app language, so it reads English.
+        let t = RamadanWords.In(AppWords.appLanguage(naming: .malay))
+        XCTAssertEqual(t(.tonight), "Tonight")
+        XCTAssertEqual(t(.doaAndNiat), "Duas and intention")
+    }
 }

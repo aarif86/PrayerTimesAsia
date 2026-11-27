@@ -1415,7 +1415,7 @@ private struct LongDaysNote: View {
 
     var body: some View {
         if let key = model.longDaysNote(now) {
-            let w = LongDays.words(RamadanContent.lang(model.naming))
+            let w = LongDays.words(model.appLang)
             GlassCard {
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: "sun.max.fill").font(.title2).foregroundStyle(Theme.accent)

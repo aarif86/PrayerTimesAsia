@@ -116,8 +116,11 @@ describe('prayer alerts', () => {
     expect(nextWakeUp(now)?.id).toBe('2026-11-20-jumuah-alarm')
   })
 
-  it('speaks Malay with Malay prayer names', () => {
+  it('speaks Malay only when the app language is Malay, not for Malay prayer names alone', () => {
     use(SG, { jumuahReminderMinutes: 15, namingOverride: 'malay' })
+    const english = upcomingAlerts(sg(2026, 11, 20, 6)).find((a) => a.id.endsWith('-jumuah'))!
+    expect(english.title).toBe('Time to leave for Jumaat')
+    use(SG, { jumuahReminderMinutes: 15, namingOverride: 'malay', appLanguageOverride: 'ms' })
     const j = upcomingAlerts(sg(2026, 11, 20, 6)).find((a) => a.id.endsWith('-jumuah'))!
     expect(j.title).toBe('Masa untuk bertolak ke solat Jumaat')
     expect(j.body).toMatch(/^Solat Jumaat bermula pada .+, 15 minit lagi\.$/)
