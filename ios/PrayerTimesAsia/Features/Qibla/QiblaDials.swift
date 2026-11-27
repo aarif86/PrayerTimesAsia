@@ -132,7 +132,7 @@ private struct DialBox<Content: View>: View {
         .padding(.top, 12)
         .animation(.spring(response: 0.5, dampingFraction: 0.7), value: aligned)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(aligned ? "Facing the qibla" : "Qibla compass")
+        .accessibilityLabel(aligned ? W("qibla.facingQibla") : W("qibla.compass"))
         .accessibilityAddTraits(.isImage)
     }
 }
@@ -148,7 +148,7 @@ private struct AlignedBadge: View {
             Image(systemName: "checkmark")
                 .font(.system(size: size * 0.1, weight: .heavy))
                 .foregroundStyle(QiblaColors.green)
-            Text("Aligned")
+            Text(W("qibla.aligned"))
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(look.palette.tx)
                 .lineLimit(1)
@@ -501,7 +501,7 @@ struct QiblaSunCurve: View {
         .padding(.top, 18)
         .padding(.bottom, 6)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(aligned ? "Facing the qibla" : "Qibla compass")
+        .accessibilityLabel(aligned ? W("qibla.facingQibla") : W("qibla.compass"))
         .accessibilityAddTraits(.isImage)
     }
 
@@ -512,7 +512,7 @@ struct QiblaSunCurve: View {
                 .fill(RadialGradient(colors: [gold.opacity(0.8), gold.opacity(0)], center: .center, startRadius: 0, endRadius: 30 * k))
                 .frame(width: 60 * k, height: 60 * k)
             Circle().fill(Color.white).frame(width: 18 * k, height: 18 * k)
-            Text(hasHeading ? "You face here" : "North")
+            Text(hasHeading ? W("qibla.youFaceHere") : W("qibla.northHere"))
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(p.tx2)
                 .fixedSize()

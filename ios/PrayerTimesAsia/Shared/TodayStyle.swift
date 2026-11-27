@@ -21,13 +21,13 @@ enum TodayStyle: String, Codable, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .centre: "Centre Dial"
-        case .list: "Side Dial"
-        case .dial: "Day Dial"
-        case .sunPath: "Sun Path"
-        case .bands: "Colour Bands"
-        case .simple: "Big and Simple"
-        case .gold: "Calm Gold"
+        case .centre: W("style.centre")
+        case .list: W("style.list")
+        case .dial: W("style.dial")
+        case .sunPath: W("style.sunPath")
+        case .bands: W("style.bands")
+        case .simple: W("style.simple")
+        case .gold: W("style.gold")
         }
     }
     /// The five looks people can pick, in the web app's order. Side Dial and Day Dial are

@@ -269,7 +269,7 @@ struct RamadanView: View {
                 }
                 .navigationTitle(syawal ? t(.syawal) : t(.ramadan))
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
             }
         }
     }
@@ -670,7 +670,7 @@ private struct WeekCardView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Ramadan Kareem").font(.system(size: 22, weight: .bold)).foregroundStyle(gold)
+                    Text(W("phone.ramadan.kareem")).font(.system(size: 22, weight: .bold)).foregroundStyle(gold)
                     Text(place).font(.system(size: 34, weight: .bold))
                     Text(t(.weekCardTitle)).font(.system(size: 17)).opacity(0.75)
                 }
@@ -710,7 +710,7 @@ private struct RayaCardView: View {
             Image(systemName: "moon.stars.fill").font(.system(size: 80)).foregroundStyle(gold).padding(.top, 40)
             Text(t(.rayaCardTitle)).font(.system(size: 40, weight: .bold)).multilineTextAlignment(.center).foregroundStyle(gold)
             Text(t(.maafZahirBatin)).font(.system(size: 22, weight: .medium))
-            Text("Taqabbalallahu minna wa minkum").font(.system(size: 17)).opacity(0.8)
+            Text(W("phone.ramadan.taqabbal")).font(.system(size: 17)).opacity(0.8)
             if !from.trimmingCharacters(in: .whitespaces).isEmpty {
                 Text(t(.rayaCardFrom, ["name": String(from.prefix(40))])).font(.system(size: 22, weight: .semibold)).padding(.top, 20)
             }

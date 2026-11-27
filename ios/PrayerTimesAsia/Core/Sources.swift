@@ -12,21 +12,21 @@ enum SourceGrade: String, Codable, Sendable {
 
     var title: String {
         switch self {
-        case .official: "Official"
+        case .official: W("source.gradeA")
         case .masjid: "Masjid-confirmed"
-        case .community: "Community-verified"
-        case .calculated: "Calculated"
-        case .falak: "Falak (observed)"
+        case .community: W("source.gradeC")
+        case .calculated: W("source.gradeD")
+        case .falak: W("source.gradeF")
         }
     }
 
     var explanation: String {
         switch self {
-        case .official: "Published by the national or state religious authority, or its exact published method."
+        case .official: W("source.explainA")
         case .masjid: "From a named mosque's own timetable, checked against our calculation."
-        case .community: "Method confirmed by two or more independent local contributors."
-        case .calculated: "Astronomical calculation on your phone. The method is shown. Local mosques may differ by a few minutes."
-        case .falak: "Worked out from your own observation of the sun's shadow or the sky, with honest ± minutes. Used to learn and to check, never in place of the grades above."
+        case .community: W("source.explainC")
+        case .calculated: W("phone.source.astro")
+        case .falak: W("source.explainF")
         }
     }
 }
@@ -75,13 +75,13 @@ struct MosqueProfile: Codable, Identifiable, Hashable, Sendable {
         guard let fp = fingerprint else { return nil }
         var offsets: [Prayer: Double] = [:]
         for (k, v) in fp.offsets { if let p = Prayer(rawValue: k) { offsets[p] = v } }
-        let isha = fp.ishaAngle.map { "Isha \($0)°" } ?? "Isha +\(Int(fp.ishaInterval ?? 0)) min"
+        let isha = fp.ishaAngle.map { W("phone.method.isha", ["n": $0]) } ?? W("phone.method.ishaMin", ["n": Int(fp.ishaInterval ?? 0)])
         return CalculationMethod(
             id: "mosque-\(id)", name: name, shortName: name,
             fajrAngle: fp.fajrAngle, ishaAngle: fp.ishaAngle, ishaInterval: fp.ishaInterval,
             ramadanIshaInterval: nil, maghribAngle: nil, offsets: offsets,
             matchesOfficialTable: false,
-            note: "\(name)'s own timetable (Fajr \(fp.fajrAngle)° · \(isha)), from: \(source).")
+            note: W("phone.sources.ownTimetable", ["name": name, "n": fp.fajrAngle, "rest": isha, "source": source]))
     }
 
     var asrSchool: AsrSchool? {

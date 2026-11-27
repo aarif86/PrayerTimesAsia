@@ -57,7 +57,7 @@ struct QiblaView: View {
                     if demoAligned { dialHeading = bearing; aligned = true }
                 }
             } else {
-                Text("Choose a place to find the qibla.").font(.headline).foregroundStyle(look.palette.tx)
+                Text(W("qibla.choosePlace")).font(.headline).foregroundStyle(look.palette.tx)
             }
         }
         .sensoryFeedback(.success, trigger: aligned) { _, now in now }
@@ -86,9 +86,9 @@ struct QiblaView: View {
         let instruction: String
         if let delta {
             let deg = Int(abs(delta).rounded())
-            instruction = isAligned ? "You're facing the qibla" : (delta > 0 ? "Turn right \(deg)°" : "Turn left \(deg)°")
+            instruction = isAligned ? W("qibla.youAreFacing") : (delta > 0 ? W("qibla.turnRight", ["deg": deg]) : W("qibla.turnLeft", ["deg": deg]))
         } else {
-            instruction = "Face \(Int(bearing.rounded()))° from north"
+            instruction = W("qibla.faceFromNorth", ["deg": Int(bearing.rounded())])
         }
         return Reading(
             bearing: bearing, heading: heading, delta: delta, aligned: isAligned,
@@ -145,7 +145,7 @@ struct QiblaView: View {
             VStack(spacing: 0) {
                 say(r, font: Theme.display(wide ? sunSayWide : sunSay, .bold), color: look.palette.tx)
                 if r.heading != nil && !r.aligned {
-                    Text("Turn until the sun reaches the Ka'bah.")
+                    Text(W("qibla.sunHint"))
                         .font(.subheadline)
                         .foregroundStyle(look.palette.tx2)
                         .multilineTextAlignment(.center)
@@ -167,7 +167,7 @@ struct QiblaView: View {
             simpleSayView(r)
             SimpleCompass(state: r.dial, size: qiblaDialSize(screen: width, max: 300, margin: 80))
                 .padding(.top, 16)
-            Text("\(r.km) km to Makkah")
+            Text(W("qibla.kmToMakkah", ["km": r.km]))
                 .font(Theme.display(simpleKm, .semibold))
                 .foregroundStyle(look.palette.tx2)
                 .multilineTextAlignment(.center)
@@ -181,7 +181,7 @@ struct QiblaView: View {
     private func simpleSayView(_ r: Reading) -> some View {
         if let delta = r.delta, !r.aligned {
             VStack(spacing: 2) {
-                Text(delta > 0 ? "Turn right" : "Turn left").font(Theme.display(simpleWord, .bold))
+                Text(delta > 0 ? W("qibla.turnRightWord") : W("qibla.turnLeftWord")).font(Theme.display(simpleWord, .bold))
                 Text("\(Int(abs(delta).rounded()))°").font(Theme.display(simpleDegrees, .heavy)).monospacedDigit()
             }
             .foregroundStyle(look.palette.tx)
@@ -199,7 +199,7 @@ struct QiblaView: View {
     private func bandsBody(_ r: Reading, width: CGFloat) -> some View {
         let rows: [(String, String)] = [("Qibla", r.qibla), ("Facing", r.facing), ("To Makkah", "\(r.km) km")]
         return VStack(spacing: 0) {
-            Text("Qibla")
+            Text(W("tab.qibla"))
                 .font(Theme.screenTitle)
                 .foregroundStyle(.white)
                 .accessibilityAddTraits(.isHeader)
@@ -240,7 +240,7 @@ struct QiblaView: View {
     // MARK: Shared parts
 
     private func title(_ font: Font) -> some View {
-        Text("Qibla")
+        Text(W("tab.qibla"))
             .font(font)
             .tracking(-0.5)
             .foregroundStyle(look.palette.tx)
@@ -262,9 +262,9 @@ struct QiblaView: View {
     /// QIBLA, FACING and TO MAKKAH in one card.
     private func stats(_ r: Reading) -> some View {
         HStack(spacing: 0) {
-            stat("Qibla", r.qibla)
-            stat("Facing", r.facing)
-            stat("To Makkah", "\(r.km) km")
+            stat(W("tab.qibla"), r.qibla)
+            stat(W("qibla.facingShort"), r.facing)
+            stat(W("qibla.toMakkah"), "\(r.km) km")
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 4)
@@ -294,7 +294,7 @@ struct QiblaView: View {
         return Button { model.selectedTab = .falak } label: {
             HStack(spacing: 10) {
                 Image(systemName: "sun.max").font(.system(size: 20, weight: .semibold)).accessibilityHidden(true)
-                Text("Check with the sun").font(.system(size: size, weight: .bold))
+                Text(W("qibla.checkSun")).font(.system(size: size, weight: .bold))
             }
             .foregroundStyle(p.onBtn)
             .padding(.horizontal, 20)
@@ -304,7 +304,7 @@ struct QiblaView: View {
             .contentShape(RoundedRectangle(cornerRadius: p.radius + 8, style: .continuous))
         }
         .buttonStyle(.plain)
-        .accessibilityHint("Falak Mode, find the qibla from the sun")
+        .accessibilityHint(W("qibla.falakMode"))
     }
 
     /// How to use it, step by step, plus a calibration note only when needed.
@@ -312,22 +312,22 @@ struct QiblaView: View {
         let p = look.palette
         let sun = look == .sunPath
         return VStack(alignment: .leading, spacing: 12) {
-            Text("How to find the qibla").font(.headline).foregroundStyle(p.tx)
+            Text(W("qibla.howTo")).font(.headline).foregroundStyle(p.tx)
                 .accessibilityAddTraits(.isHeader)
             if !location.headingAvailable && !demoAligned {
                 step(icon: AnyView(Image(systemName: "map").foregroundStyle(p.actx)),
-                     "This phone has no compass. Use the qibla bearing above with a map, or the sun in Falak.")
+                     W("phone.qibla.noCompass"))
             } else {
-                step(icon: AnyView(NumBadge(n: 1)), "Hold your phone flat in front of you, screen facing up.")
+                step(icon: AnyView(NumBadge(n: 1)), W("qibla.step1"))
                 step(icon: AnyView(NumBadge(n: 2)), sun
-                     ? "Turn your whole body slowly until the sun reaches the Ka'bah."
-                     : "Turn your whole body slowly until the Ka'bah reaches the marker at the top.")
+                     ? W("qibla.sunStep2")
+                     : W("qibla.step2"))
                 step(icon: AnyView(NumBadge(n: 3)), sun
-                     ? "When the words turn green and your phone taps, you're facing the qibla."
-                     : "When the dial turns green and your phone taps, you're facing the qibla.")
+                     ? W("qibla.sunStep3")
+                     : W("qibla.step3"))
                 if !demoAligned && (location.headingAccuracy < 0 || location.headingAccuracy > 25) {
                     step(icon: AnyView(Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Theme.warning)),
-                         "The compass needs calibrating. Wave your phone in a figure 8 a few times, away from cars, laptops and magnetic cases.")
+                         W("qibla.calibrate"))
                 }
             }
         }

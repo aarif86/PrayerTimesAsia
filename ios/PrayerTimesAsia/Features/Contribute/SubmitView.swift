@@ -41,13 +41,13 @@ struct SubmitView: View {
         NavigationStack {
             Form {
                 Section {
-                    Picker("Sending", selection: $kind) {
+                    Picker(W("phone.submit.sending"), selection: $kind) {
                         ForEach(Kind.allCases) { Text($0.rawValue).tag($0) }
                     }
                     .pickerStyle(.segmented)
-                    TextField("City, area, country", text: $place)
+                    TextField(W("phone.submit.place"), text: $place)
                 } header: {
-                    Text("Where")
+                    Text(W("verify.where"))
                 }
 
                 switch kind {
@@ -57,22 +57,22 @@ struct SubmitView: View {
                 }
 
                 Section {
-                    TextField("Anything else (optional)", text: $note, axis: .vertical).lineLimit(2...5)
+                    TextField(W("phone.submit.other"), text: $note, axis: .vertical).lineLimit(2...5)
                 }
 
                 Section {
-                    Toggle("Share under CC-BY 4.0", isOn: $consent)
+                    Toggle(W("verify.license"), isOn: $consent)
                 } footer: {
-                    Text("Checked by a person before it changes anyone's times. Only what you type or pick here is sent - not your location. Photos are kept as evidence and not republished without the mosque's permission.")
+                    Text(W("phone.submit.checked"))
                 }
             }
-            .navigationTitle("Help verify times")
+            .navigationTitle(W("verify.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(W("phone.cancel")) { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     if sending { ProgressView() } else {
-                        Button("Send") { Task { await send() } }.disabled(!isValid)
+                        Button(W("phone.send")) { Task { await send() } }.disabled(!isValid)
                     }
                 }
             }
@@ -82,9 +82,9 @@ struct SubmitView: View {
                     if let data = try? await item?.loadTransferable(type: Data.self) { photo = UIImage(data: data) }
                 }
             }
-            .alert(failed ? "Couldn't send" : "Thank you", isPresented: Binding(
+            .alert(failed ? W("phone.submit.couldNotSend") : W("phone.submit.thankYou"), isPresented: Binding(
                 get: { result != nil }, set: { if !$0 { if !failed { dismiss() }; result = nil } })) {
-                Button("OK", role: .cancel) {}
+                Button(W("common.ok"), role: .cancel) {}
             } message: {
                 Text(result ?? "")
             }
@@ -93,45 +93,45 @@ struct SubmitView: View {
 
     @ViewBuilder private var timetableFields: some View {
         Section {
-            TextField("Mosque or musolla name", text: $mosque)
-            TextField("Map link or address (optional)", text: $mapsLink)
+            TextField(W("phone.submit.mosqueOrMusolla"), text: $mosque)
+            TextField(W("phone.submit.mapLink"), text: $mapsLink)
                 .textInputAutocapitalization(.never).keyboardType(.URL)
             PhotosPicker(selection: $photoItem, matching: .images) {
-                Label(photo == nil ? "Choose timetable photo" : "Change photo", systemImage: "photo.on.rectangle")
+                Label(photo == nil ? W("phone.submit.choosePhoto") : W("phone.submit.changePhoto"), systemImage: "photo.on.rectangle")
             }
             if let photo {
                 Image(uiImage: photo).resizable().scaledToFit().frame(maxHeight: 220)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
             }
-            TextField("Jamaah / Jumu'ah times if shown (optional)", text: $jamaah, axis: .vertical).lineLimit(1...4)
+            TextField(W("phone.submit.jamaahTimes"), text: $jamaah, axis: .vertical).lineLimit(1...4)
         } header: {
-            Text("Mosque timetable")
+            Text(W("phone.submit.timetable"))
         } footer: {
-            Text("One month is enough - we work out the mosque's method so the whole year can be generated.")
+            Text(W("phone.submit.oneMonth"))
         }
     }
 
     @ViewBuilder private var methodFields: some View {
-        Section("Mosques here follow") {
-            Picker("Method", selection: $method) {
+        Section(W("phone.submit.mosquesFollow")) {
+            Picker(W("settings.method"), selection: $method) {
                 ForEach(Self.methods, id: \.id) { Text($0.label).tag($0.id) }
             }
-            Picker("Asr", selection: $asr) {
-                Text("Earlier (Shafi'i)").tag("shafii")
-                Text("Later (Hanafi)").tag("hanafi")
-                Text("Not sure").tag("unsure")
+            Picker(W("settings.asr"), selection: $asr) {
+                Text(W("phone.asrEarlier")).tag("shafii")
+                Text(W("phone.asrLater")).tag("hanafi")
+                Text(W("verify.notSure")).tag("unsure")
             }
-            TextField("How do you know?", text: $how, axis: .vertical).lineLimit(2...5)
+            TextField(W("phone.submit.howKnow"), text: $how, axis: .vertical).lineLimit(2...5)
         }
     }
 
     @ViewBuilder private var spotFields: some View {
-        Section("What you heard") {
-            TextField("Mosque name", text: $mosque)
-            Picker("Prayer", selection: $prayer) {
+        Section(W("verify.heard")) {
+            TextField(W("phone.submit.mosqueName"), text: $mosque)
+            Picker(W("tab.prayer"), selection: $prayer) {
                 ForEach(Prayer.obligatory) { Text($0.name(model.naming)).tag($0) }
             }
-            DatePicker("Adhan called at", selection: $heardAt, in: ...Date.now)
+            DatePicker(W("phone.submit.adhanAt"), selection: $heardAt, in: ...Date.now)
         }
     }
 
@@ -181,7 +181,7 @@ struct SubmitView: View {
         switch await Submissions.send(body) {
         case .success(let id):
             failed = false
-            result = "Your submission (\(id.prefix(6))) is in the review queue. JazakAllahu khairan."
+            result = W("phone.submit.inQueue", ["id": id.prefix(6)])
         case .failure(let message):
             failed = true
             result = message
@@ -216,7 +216,7 @@ enum Submissions {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(installToken, forHTTPHeaderField: "x-install-token")
-        guard let json = try? JSONSerialization.data(withJSONObject: body) else { return .failure("Couldn't prepare the submission.") }
+        guard let json = try? JSONSerialization.data(withJSONObject: body) else { return .failure(W("phone.submit.couldNotPrepare")) }
         request.httpBody = json
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
@@ -224,9 +224,9 @@ enum Submissions {
             if (response as? HTTPURLResponse)?.statusCode == 201, let id = object?["id"] as? String {
                 return .success(id)
             }
-            return .failure(object?["error"] as? String ?? "The server couldn't accept it. Please try again later.")
+            return .failure(object?["error"] as? String ?? W("phone.submit.serverNo"))
         } catch {
-            return .failure("No connection. Please try again when you're online.")
+            return .failure(W("phone.submit.noConnection"))
         }
     }
 }

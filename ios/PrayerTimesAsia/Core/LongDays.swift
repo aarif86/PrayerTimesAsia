@@ -53,7 +53,7 @@ enum LongDays {
             return Words(
                 title: "Long summer days here",
                 body: { f, i in "In summer the sky here never gets fully dark, so \(f) comes very early and \(i) very late. The app uses a twilight rule for these two times, which is why they may look unusual. Please follow the timetable of your local masjid and your local religious authority." },
-                close: "Close")
+                close: W("common.close"))
         }
     }
 }

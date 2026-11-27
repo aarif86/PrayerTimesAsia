@@ -15,7 +15,7 @@ struct TimetableCard: View {
     /// never draws and iOS leaves the grey placeholder bars on the Home Screen.
     var body: AnyView {
         guard let s = snapshot, let day = s.day(containing: date) else {
-            return AnyView(Text("Open Prayer Times Asia to set your location.")
+            return AnyView(Text(W("widget.setLocation"))
                 .font(.headline)
                 .foregroundStyle(.white)
                 .padding())
@@ -72,11 +72,11 @@ struct TimetableCard: View {
                         // number never stands alone, so it can't read as how long Sunrise lasts.
                         let timer = Text(timerInterval: date...max(date, next.time), countsDown: true)
                         VStack(spacing: 0) {
-                            Text(lead.isNext ? "NEXT" : "NOW")
+                            Text(lead.isNext ? W("today.next") : W("today.now"))
                                 .font(.system(size: 9, weight: .heavy)).tracking(0.8).opacity(0.85)
                             Text(s.name(lead.prayer, at: lead.time))
                                 .font(.system(size: 17, weight: .bold, design: .rounded))
-                            (lead.isNext ? Text("in ") + timer : timer + Text(" left"))
+                            (lead.isNext ? Text(Wsplit("today.in").0) + timer + Text(Wsplit("today.in").1) : Text(Wsplit("phone.time.timeLeft").0) + timer + Text(Wsplit("phone.time.timeLeft").1))
                                 .font(.system(size: 13, weight: .semibold, design: .rounded)).monospacedDigit()
                                 .multilineTextAlignment(.center)
                                 .foregroundStyle(Color(red: 0.97, green: 0.74, blue: 0.56))
@@ -91,7 +91,7 @@ struct TimetableCard: View {
                     Text(Hijri.format(date, timeZone: s.timeZone, style: s.naming, adjustment: s.hijriAdjustment ?? 0))
                         .font(.system(size: 12)).opacity(0.75).lineLimit(2)
                     if let next {
-                        Text("Next: \(s.name(next.prayer, at: next.time)) \(s.format(next.time))")
+                        Text(W("today.nextAria", ["name": s.name(next.prayer, at: next.time), "time": s.format(next.time)]))
                             .font(.system(size: 12, weight: .semibold)).opacity(0.9).lineLimit(1).minimumScaleFactor(0.8)
                     }
                 }
@@ -136,7 +136,7 @@ struct TimetableCard: View {
                 Spacer()
                 if let next {
                     // Syuruk to Zohor the name on the left is already the next prayer.
-                    Text(lead?.isNext == true ? "in " : "\(s.name(next.prayer, at: next.time)) in ")
+                    Text(lead?.isNext == true ? Wsplit("today.in").0 : "\(s.name(next.prayer, at: next.time)) \(Wsplit("today.in").0)")
                         .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
                     + Text(next.time, style: .relative).font(.system(size: 12, weight: .semibold))
                 }
@@ -193,7 +193,7 @@ struct TimetableCard: View {
                         HStack(alignment: .firstTextBaseline) {
                             Text(s.name(prayer, at: time)).font(.system(size: 21, weight: .bold))
                             if isCurrent {
-                                Text("NOW").font(.system(size: 10, weight: .heavy))
+                                Text(W("today.now")).font(.system(size: 10, weight: .heavy))
                                     .padding(.horizontal, 6).padding(.vertical, 2)
                                     .background(.white.opacity(0.25), in: Capsule())
                             }
@@ -234,7 +234,7 @@ struct TimetableCard: View {
         f.dateFormat = "EEEE d MMMM"
         return VStack(spacing: 4) {
             HStack(spacing: 6) {
-                Text("TODAY").font(.system(size: 10, weight: .heavy)).tracking(0.4)
+                Text(W("common.today").uppercased()).font(.system(size: 10, weight: .heavy)).tracking(0.4)
                 Rectangle().fill(Color.white.opacity(0.35)).frame(width: 1, height: 9)
                 Text("\(s.placeName) \(s.flag)").font(.system(size: 11, weight: .semibold)).lineLimit(1)
             }
@@ -261,7 +261,7 @@ struct TimetableCard: View {
                 if isCurrent || countdown != nil {
                     HStack(spacing: 5) {
                         if isCurrent {
-                            Text("NOW").font(.system(size: 9, weight: .heavy)).foregroundStyle(prayer.tint)
+                            Text(W("today.now")).font(.system(size: 9, weight: .heavy)).foregroundStyle(prayer.tint)
                         }
                         if let countdown {
                             countdownText(countdown).font(.system(size: 11, weight: .semibold))

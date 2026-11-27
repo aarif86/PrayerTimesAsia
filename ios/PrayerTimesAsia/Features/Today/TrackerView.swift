@@ -18,23 +18,23 @@ struct TrackerView: View {
                     HStack(spacing: 8) {
                         Image(systemName: model.trackerPaused ? "pause.fill" : "checkmark.circle").foregroundStyle(Theme.accent)
                         Text("\(model.streak)").font(.largeTitle.bold()).monospacedDigit()
-                        Text("day streak").foregroundStyle(.secondary)
+                        Text(W("tracker.streakLabel")).foregroundStyle(.secondary)
                     }
                     .accessibilityElement(children: .combine)
                     if model.trackerPaused {
-                        Button { model.endTrackerPause() } label: { Label("End pause", systemImage: "play.fill") }
+                        Button { model.endTrackerPause() } label: { Label(W("tracker.endPause"), systemImage: "play.fill") }
                     } else {
-                        Button { model.pauseTracker() } label: { Label("Pause tracker", systemImage: "pause.fill") }
+                        Button { model.pauseTracker() } label: { Label(W("tracker.pause"), systemImage: "pause.fill") }
                         Button { model.toggleExcused(.now) } label: {
-                            Label(model.isExcused(.now) ? "Excused today (tap to undo)" : "Excuse just today", systemImage: "drop.fill")
+                            Label(model.isExcused(.now) ? W("phone.tracker.excusedUndo") : W("phone.tracker.excuseToday"), systemImage: "drop.fill")
                         }
                         .tint(Self.pink)
                     }
                 } footer: {
                     if let since = model.prefs.trackerPausedSince {
-                        Text("Paused since \(Self.label(since)). These days count as excused, so your streak waits for you.")
+                        Text(W("tracker.pausedSince", ["date": Self.label(since)]))
                     } else {
-                        Text("For haid, nifas or illness: pause the tracker and every day until you end it counts as excused.")
+                        Text(W("tracker.pauseHelp"))
                     }
                 }
                 if model.trackerPaused {
@@ -44,12 +44,12 @@ struct TrackerView: View {
                 Section {
                     month
                 } footer: {
-                    Text("Tap a prayer on the Prayer screen once its time has come to tick it off. Your tracker is kept only on this phone - never uploaded, and it moves to a new phone only through Move my settings.")
+                    Text(W("phone.tracker.howTo"))
                 }
             }
-            .navigationTitle("Prayer tracker")
+            .navigationTitle(W("settings.trackerOn"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
         }
     }
 
@@ -78,13 +78,13 @@ struct TrackerView: View {
         return VStack(spacing: 12) {
             HStack {
                 Button { monthsBack += 1 } label: { Image(systemName: "chevron.left") }
-                    .accessibilityLabel("Previous month")
+                    .accessibilityLabel(W("tracker.prevMonth"))
                 Spacer()
                 Text(first.formatted(.dateTime.month(.wide).year().locale(Locale(identifier: "en_GB")))).font(.headline)
                 Spacer()
                 Button { monthsBack -= 1 } label: { Image(systemName: "chevron.right") }
                     .disabled(monthsBack == 0)
-                    .accessibilityLabel("Next month")
+                    .accessibilityLabel(W("tracker.nextMonth"))
             }
             .buttonStyle(.borderless)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 7), spacing: 6) {
@@ -96,16 +96,16 @@ struct TrackerView: View {
                 }
             }
             HStack(spacing: 14) {
-                Label("All five", systemImage: "circle.fill").foregroundStyle(.green)
-                Label("Some", systemImage: "circle.lefthalf.filled").foregroundStyle(.green)
-                Label("Excused", systemImage: "drop.fill").foregroundStyle(Self.pink)
+                Label(W("tracker.allFive"), systemImage: "circle.fill").foregroundStyle(.green)
+                Label(W("tracker.some"), systemImage: "circle.lefthalf.filled").foregroundStyle(.green)
+                Label(W("tracker.excused"), systemImage: "drop.fill").foregroundStyle(Self.pink)
             }
             .font(.caption)
             Group {
                 if counted > 0 {
-                    Text("\(prayed) of \(counted) prayers ticked") + Text(excused > 0 ? " · \(excused) excused day\(excused == 1 ? "" : "s")" : "").foregroundColor(.secondary)
+                    Text(W("tracker.tickedOf", ["n": prayed, "total": counted])) + Text(excused > 0 ? " · \(excused) excused day\(excused == 1 ? "" : "s")" : "").foregroundColor(.secondary)
                 } else {
-                    Text("Nothing to count yet")
+                    Text(W("tracker.nothing"))
                 }
             }
             .font(.subheadline)

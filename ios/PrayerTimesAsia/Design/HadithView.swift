@@ -44,7 +44,7 @@ struct HadithView: View {
                 GlassCard(padding: 18) {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text((tag ?? "Hadith").uppercased())
+                            Text((tag ?? W("hadith.title")).uppercased())
                                 .font(.caption2.weight(.bold)).tracking(1.2).foregroundStyle(Theme.accentText)
                             Spacer()
                             closeButton
@@ -77,14 +77,14 @@ struct HadithView: View {
                 .background(Color.primary.opacity(0.12), in: Circle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Hide this hadith")
+        .accessibilityLabel(W("hadith.hide"))
     }
 
     private var undoNote: some View {
         HStack(spacing: 12) {
-            Text("Hadith hidden here. Bring them all back in Settings, Hadith.").font(.subheadline)
+            Text(W("hadith.hidden")).font(.subheadline)
             Spacer()
-            Button("Undo") {
+            Button(W("common.undo")) {
                 withAnimation {
                     model.prefs.hiddenHadith.removeAll { $0 == id.rawValue }
                     justHidden = false

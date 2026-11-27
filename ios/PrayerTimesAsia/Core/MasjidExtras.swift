@@ -106,8 +106,8 @@ enum MasjidExtras {
     /// About 5 km an hour on foot, shown up to 2 km; by car a rough town pace (the maps app shows the jams).
     static func tripText(_ km: Double, mode: TripMode) -> String? {
         switch mode {
-        case .walk: km > 2 ? nil : "\(max(1, Int((km / 0.08).rounded()))) min walk"
-        case .drive: "\(max(2, Int((km * 2 + 2).rounded()))) min drive"
+        case .walk: km > 2 ? nil : W("masjid.walkMin", ["n": max(1, Int((km / 0.08).rounded()))])
+        case .drive: W("masjid.driveMin", ["n": max(2, Int((km * 2 + 2).rounded()))])
         }
     }
 
@@ -135,10 +135,10 @@ enum MasjidExtras {
     }
 
     static let facilityLabels: [(Character, String, String)] = [
-        ("w", "Women's space", "figure.stand.dress"),
-        ("a", "Wheelchair access", "figure.roll"),
-        ("p", "Parking", "parkingsign"),
-        ("t", "Toilets", "toilet"),
+        ("w", W("masjid.women"), "figure.stand.dress"),
+        ("a", W("masjid.wheelchair"), "figure.roll"),
+        ("p", W("masjid.parking"), "parkingsign"),
+        ("t", W("masjid.toilets"), "toilet"),
     ]
 
     /// "13:00" as 1 PM, or 13:00 with the 24 hour clock.
@@ -258,9 +258,9 @@ enum OpeningHours {
     }
 
     static func text(_ n: Now, use24: Bool) -> String {
-        if n.open, let until = n.until { return "Open now, until \(MasjidExtras.clock(until, use24: use24))" }
-        if n.open { return "Open now, all day" }
-        if let at = n.opensAt { return "Closed now, opens \(MasjidExtras.clock(at, use24: use24))" }
-        return "Closed today"
+        if n.open, let until = n.until { return W("masjid.openUntil", ["time": MasjidExtras.clock(until, use24: use24)]) }
+        if n.open { return W("masjid.openAllDay") }
+        if let at = n.opensAt { return W("masjid.closedOpens", ["time": MasjidExtras.clock(at, use24: use24)]) }
+        return W("masjid.closedToday")
     }
 }

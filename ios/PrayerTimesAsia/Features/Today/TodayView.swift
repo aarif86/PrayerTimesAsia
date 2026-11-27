@@ -67,7 +67,7 @@ struct TodayView: View {
             }
         }
         .onChange(of: model.prefs.appearance) { _, appearance in
-            let label = appearance == .system ? "Automatic: follows the sky" : appearance.label
+            let label = appearance == .system ? W("appearance.system") : appearance.label
             withAnimation(.snappy) { styleToast = label }
             Task {
                 try? await Task.sleep(for: .seconds(1.4))
@@ -174,7 +174,7 @@ struct TodayView: View {
                         .background(Theme.accent.opacity(0.25), in: Circle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Musafir: you may shorten and combine prayers")
+                .accessibilityLabel(W("today.musafirButton"))
             }
             wakeChip(now)
             if model.prefs.trackerEnabled { streakChip(now) }
@@ -189,7 +189,7 @@ struct TodayView: View {
             HStack(spacing: 5) {
                 Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                     .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1).minimumScaleFactor(0.8)
+                Text(model.activePlace?.name ?? W("masjid.choosePlace")).lineLimit(typeSize.isAccessibilitySize ? 3 : 1).minimumScaleFactor(0.8)
                 if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                 Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
             }
@@ -198,7 +198,7 @@ struct TodayView: View {
             .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.7), lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .accessibilityHint("Change location")
+        .accessibilityHint(W("today.changeLocation"))
         dateBlock(shown)
         SourceBadge(day: shown, compact: true)
     }
@@ -210,16 +210,16 @@ struct TodayView: View {
         f.timeZone = model.timeZone
         f.dateFormat = "EEE d MMM"
         let label: String = switch dayOffset {
-        case 0: "TODAY"
-        case 1: "TOMORROW"
-        case -1: "YESTERDAY"
-        default: dayOffset > 0 ? "IN \(dayOffset) DAYS" : "\(-dayOffset) DAYS AGO"
+        case 0: W("common.today").uppercased()
+        case 1: W("common.tomorrow").uppercased()
+        case -1: W("today.yesterday").uppercased()
+        default: dayOffset > 0 ? W("today.inDays", ["n": dayOffset]).uppercased() : W("today.daysAgo", ["n": -dayOffset]).uppercased()
         }
         return HStack(spacing: 2) {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
                 Image(systemName: "chevron.left").font(.subheadline.weight(.semibold)).frame(width: 22, height: 40).opacity(0.6)
             }
-            .accessibilityLabel("Previous day")
+            .accessibilityLabel(W("today.prevDay"))
             Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(label).font(.caption2.weight(.heavy)).tracking(0.5).foregroundStyle(Theme.accentText)
@@ -233,11 +233,11 @@ struct TodayView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+            .accessibilityHint(dayOffset == 0 ? W("today.datesSources") : W("today.backToToday"))
             Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
                 Image(systemName: "chevron.right").font(.subheadline.weight(.semibold)).frame(width: 22, height: 40).opacity(0.6)
             }
-            .accessibilityLabel("Next day")
+            .accessibilityLabel(W("today.nextDay"))
         }
         .buttonStyle(.plain)
     }
@@ -280,7 +280,7 @@ struct TodayView: View {
                 HStack(spacing: 5) {
                     Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                         .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1).minimumScaleFactor(0.8)
+                    Text(model.activePlace?.name ?? W("masjid.choosePlace")).lineLimit(typeSize.isAccessibilitySize ? 3 : 1).minimumScaleFactor(0.8)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                 }
@@ -289,7 +289,7 @@ struct TodayView: View {
                 .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.7), lineWidth: 1))
             }
             .buttonStyle(.plain)
-            .accessibilityHint("Change location")
+            .accessibilityHint(W("today.changeLocation"))
             Spacer(minLength: 0)
             if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                 Button { model.showJourney = true } label: {
@@ -298,7 +298,7 @@ struct TodayView: View {
                         .background(Theme.accent.opacity(0.25), in: Circle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Musafir: you may shorten and combine prayers")
+                .accessibilityLabel(W("today.musafirButton"))
             }
             wakeChip(now)
                     if model.prefs.trackerEnabled { streakChip(now) }
@@ -351,10 +351,10 @@ struct TodayView: View {
         f.timeZone = model.timeZone
         f.dateFormat = "EEEE d MMMM"
         let label: String = switch dayOffset {
-        case 0: "TODAY"
-        case 1: "TOMORROW"
-        case -1: "YESTERDAY"
-        default: dayOffset > 0 ? "IN \(dayOffset) DAYS" : "\(-dayOffset) DAYS AGO"
+        case 0: W("common.today").uppercased()
+        case 1: W("common.tomorrow").uppercased()
+        case -1: W("today.yesterday").uppercased()
+        default: dayOffset > 0 ? W("today.inDays", ["n": dayOffset]).uppercased() : W("today.daysAgo", ["n": -dayOffset]).uppercased()
         }
         return Button {
             if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } }
@@ -373,7 +373,7 @@ struct TodayView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
-        .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+        .accessibilityHint(dayOffset == 0 ? W("today.datesSources") : W("today.backToToday"))
     }
 
     /// The dial's centre: the prayer we are in and the time left until the next.
@@ -384,7 +384,7 @@ struct TodayView: View {
         if let lead = PrayerLead(current: current, next: next), let next {
             let count = PrayerCountdown(now: now, next: next, model: model)
             VStack(spacing: size * 0.006) {
-                Text(lead.isNext ? "NEXT" : "NOW").font(.system(size: size * 0.028, weight: .heavy)).tracking(0.6)
+                Text(lead.isNext ? W("today.next") : W("today.now")).font(.system(size: size * 0.028, weight: .heavy)).tracking(0.6)
                     .foregroundStyle(lead.prayer.textTint)
                 Text(lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time)))
                     .font(Theme.display(size * 0.085, .bold))
@@ -415,7 +415,7 @@ struct TodayView: View {
                 Image(systemName: "chevron.left").font(.subheadline.weight(.semibold))
                     .frame(width: 36, height: 36).background(Color.primary.opacity(0.08), in: Circle())
             }
-            .accessibilityLabel("Previous day")
+            .accessibilityLabel(W("today.prevDay"))
             Spacer(minLength: 4)
             SourceBadge(day: shown, compact: true)
             Spacer(minLength: 4)
@@ -423,7 +423,7 @@ struct TodayView: View {
                 Image(systemName: "chevron.right").font(.subheadline.weight(.semibold))
                     .frame(width: 36, height: 36).background(Color.primary.opacity(0.08), in: Circle())
             }
-            .accessibilityLabel("Next day")
+            .accessibilityLabel(W("today.nextDay"))
         }
         .buttonStyle(.plain)
     }
@@ -441,14 +441,14 @@ struct TodayView: View {
                         HStack(spacing: 5) {
                             Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                                 .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                            Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
+                            Text(model.activePlace?.name ?? W("masjid.choosePlace")).lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
                             if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                             Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                         }
                         .font(.title3.weight(.bold))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityHint("Change location")
+                    .accessibilityHint(W("today.changeLocation"))
                     Spacer(minLength: 0)
                     if model.prefs.musafirEnabled, let status = model.musafirStatus, status.isTraveller {
                         Button { model.showJourney = true } label: {
@@ -456,7 +456,7 @@ struct TodayView: View {
                                 .frame(width: 34, height: 34).background(Color.white.opacity(0.12), in: Circle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("Musafir: you may shorten and combine prayers")
+                        .accessibilityLabel(W("today.musafirButton"))
                     }
                     wakeChip(now)
                     if model.prefs.trackerEnabled { streakChip(now) }
@@ -524,7 +524,7 @@ struct TodayView: View {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
                 Image(systemName: "chevron.left").frame(width: 36, height: 40)
             }
-            .accessibilityLabel("Previous day")
+            .accessibilityLabel(W("today.prevDay"))
             Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
                 HStack(spacing: 6) {
                     if dayOffset != 0 { Image(systemName: "arrow.uturn.backward").font(.caption) }
@@ -532,11 +532,11 @@ struct TodayView: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+            .accessibilityHint(dayOffset == 0 ? W("today.datesSources") : W("today.backToToday"))
             Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
                 Image(systemName: "chevron.right").frame(width: 36, height: 40)
             }
-            .accessibilityLabel("Next day")
+            .accessibilityLabel(W("today.nextDay"))
         }
         .font(.headline)
         .buttonStyle(.plain)
@@ -666,10 +666,10 @@ struct TodayView: View {
     /// "TODAY | ➤ Pasir Ris 🇸🇬" - which day and where, in one centred chip.
     private func sunPlaceChip() -> some View {
         let label: String = switch dayOffset {
-        case 0: "TODAY"
-        case 1: "TOMORROW"
-        case -1: "YESTERDAY"
-        default: dayOffset > 0 ? "IN \(dayOffset) DAYS" : "\(-dayOffset) DAYS AGO"
+        case 0: W("common.today").uppercased()
+        case 1: W("common.tomorrow").uppercased()
+        case -1: W("today.yesterday").uppercased()
+        default: dayOffset > 0 ? W("today.inDays", ["n": dayOffset]).uppercased() : W("today.daysAgo", ["n": -dayOffset]).uppercased()
         }
         return Button { showPlaces = true } label: {
             HStack(spacing: 8) {
@@ -678,7 +678,7 @@ struct TodayView: View {
                 HStack(spacing: 5) {
                     Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin").font(.caption2)
                         .symbolEffect(.pulse, isActive: model.isCheckingLocation)
-                    Text(model.activePlace?.name ?? "Choose a place").lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
+                    Text(model.activePlace?.name ?? W("masjid.choosePlace")).lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
                     if let place = model.activePlace, place.isInAsia { Text(place.profile.flag) }
                     Image(systemName: "chevron.down").font(.caption2.weight(.bold)).opacity(0.6)
                 }
@@ -691,7 +691,7 @@ struct TodayView: View {
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity)
         .padding(.top, -6)
-        .accessibilityHint("Change location")
+        .accessibilityHint(W("today.changeLocation"))
     }
 
     /// "Isyak · 9h 22m left to pray" - small, top left. From Syuruk to Zohor
@@ -717,8 +717,8 @@ struct TodayView: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(lead.isNext
-            ? "Next \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))"
-            : "Now \(leadName). \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))")
+            ? W("phone.today.nextAt", ["name": nextName, "time": model.formatted(next.time), "left": Self.spoken(remaining)])
+            : W("phone.today.nowThen", ["name": leadName, "next": nextName, "time": model.formatted(next.time), "left": Self.spoken(remaining)]))
     }
 
     private func sunDayNavigator(_ shown: PrayerDay) -> some View {
@@ -731,7 +731,7 @@ struct TodayView: View {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
                 Image(systemName: "chevron.left").frame(width: 40, height: 40).opacity(0.6)
             }
-            .accessibilityLabel("Previous day")
+            .accessibilityLabel(W("today.prevDay"))
             Spacer()
             Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
                 VStack(spacing: 2) {
@@ -745,12 +745,12 @@ struct TodayView: View {
                 }
             }
             .buttonStyle(.plain)
-            .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+            .accessibilityHint(dayOffset == 0 ? W("today.datesSources") : W("today.backToToday"))
             Spacer()
             Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
                 Image(systemName: "chevron.right").frame(width: 40, height: 40).opacity(0.6)
             }
-            .accessibilityLabel("Next day")
+            .accessibilityLabel(W("today.nextDay"))
         }
         .font(.headline.weight(.semibold))
         .buttonStyle(.plain)
@@ -762,7 +762,7 @@ struct TodayView: View {
             Button { model.showJourney = true } label: {
                 HStack {
                     Image("Tab-journey").resizable().scaledToFit().frame(width: 17, height: 17)
-                    Text("Musafir. You may shorten and join").lineLimit(1)
+                    Text(W("today.musafirLine")).lineLimit(1)
                     Spacer(minLength: 4)
                     Image(systemName: "chevron.right").font(.caption.weight(.bold))
                 }
@@ -777,7 +777,7 @@ struct TodayView: View {
                     .background(Color.primary.opacity(0.1), in: Circle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Hide, keep the luggage button at the top")
+            .accessibilityLabel(W("today.musafirHide"))
         }
         .font(.subheadline.weight(.semibold))
         .padding(.leading, 16).padding(.trailing, 8).padding(.vertical, 8)
@@ -795,7 +795,7 @@ struct TodayView: View {
                     .background(Theme.accent.opacity(0.25), in: Circle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Musafir: you may shorten and combine prayers")
+            .accessibilityLabel(W("today.musafirButton"))
             .transition(.scale.combined(with: .opacity))
         }
     }
@@ -824,8 +824,8 @@ struct TodayView: View {
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: model.prefs.appearance)
-        .accessibilityLabel("Appearance: \(model.prefs.appearance.label)")
-        .accessibilityHint("Switches between Automatic, Light and Dark.")
+        .accessibilityLabel(W("phone.a11y.appearance", ["name": model.prefs.appearance.label]))
+        .accessibilityHint(W("phone.a11y.appearanceHint"))
     }
 
     /// Tap to try the next Prayer screen style; touch and hold to pick one.
@@ -849,15 +849,15 @@ struct TodayView: View {
             }
         }
         .sensoryFeedback(.selection, trigger: model.prefs.todayStyle)
-        .accessibilityLabel("Prayer screen style: \(model.prefs.todayStyle.label)")
-        .accessibilityHint("Switches to the next style. Touch and hold to choose one.")
+        .accessibilityLabel(W("phone.a11y.styleLabel", ["name": model.prefs.todayStyle.label]))
+        .accessibilityHint(W("phone.a11y.styleHint"))
     }
 
     /// "9h 22m", "22m", "45s".
     /// "Jamaah 1:20 PM", with a countdown between the azan and the iqamah.
     @MainActor static func jamaahText(_ jamaah: Date, for prayer: Prayer, on day: PrayerDay, now: Date, model: AppModel) -> String {
-        let text = "Jamaah \(model.formatted(jamaah))"
-        return day.time(prayer) <= now && now < jamaah ? "\(text) · in \(short(jamaah.timeIntervalSince(now)))" : text
+        let text = W("phone.today.jamaah", ["time": model.formatted(jamaah)])
+        return day.time(prayer) <= now && now < jamaah ? W("today.nextIn", ["name": text, "time": short(jamaah.timeIntervalSince(now))]) : text
     }
 
     static func short(_ seconds: TimeInterval) -> String {
@@ -895,8 +895,8 @@ struct TodayView: View {
             .background(next == nil ? Color.primary.opacity(0.1) : Theme.sunArc.opacity(0.3), in: Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(next.map { "Next alarm at \(model.formatted($0.date))" } ?? "Alerts and alarms")
-        .accessibilityHint("Off, Notify or Alarm for \(fajr) and every prayer, sahur, and how they sound.")
+        .accessibilityLabel(next.map { W("phone.today.nextAlarm", ["time": model.formatted($0.date)]) } ?? W("settings.alertsAlarms"))
+        .accessibilityHint(W("phone.a11y.alertsHint", ["name": fajr]))
     }
 
     private func streakChip(_ now: Date) -> some View {
@@ -912,8 +912,8 @@ struct TodayView: View {
             .background(Color.primary.opacity(0.1), in: Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Prayer tracker: streak \(model.streak) days\(paused ? ", paused" : excused ? ", excused today" : "")")
-        .accessibilityHint("Opens the tracker: pause it for haid or illness, and see each month.")
+        .accessibilityLabel(W("today.trackerButton", ["n": model.streak, "extra": paused ? ", paused" : excused ? ", excused today" : ""]))
+        .accessibilityHint(W("phone.a11y.trackerHint"))
     }
 
     // MARK: Day
@@ -923,18 +923,18 @@ struct TodayView: View {
     @ViewBuilder
     private func prayerHadith(_ next: (prayer: Prayer, time: Date)?) -> some View {
         if dayOffset == 0, let next, next.prayer == .fajr || next.prayer == .asr {
-            HadithView(id: .coolPrayers, tag: "Before \(next.prayer.name(model.naming))")
+            HadithView(id: .coolPrayers, tag: W("today.before", ["name": next.prayer.name(model.naming)]))
         }
     }
 
     private var alertsPrompt: some View {
         HStack(spacing: 10) {
             Image(systemName: "bell.badge.fill").foregroundStyle(Theme.accentText).accessibilityHidden(true)
-            Text("Get an alert when each prayer begins").font(.subheadline.weight(.semibold))
+            Text(W("today.alertPrompt")).font(.subheadline.weight(.semibold))
                 .lineLimit(typeSize.isAccessibilitySize ? nil : 2).minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
             Spacer(minLength: 4)
-            Button("Turn on") {
+            Button(W("common.turnOn")) {
                 Task {
                     guard await NotificationScheduler.requestPermission() else { return }
                     model.prefs.notifyPrayers = Set(Prayer.obligatory)
@@ -951,7 +951,7 @@ struct TodayView: View {
                     .padding(.vertical, -10)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Not now")
+            .accessibilityLabel(W("common.notNow"))
         }
         .padding(.leading, 14).padding(.trailing, 8).padding(.vertical, 8)
         .background(Color.primary.opacity(0.08), in: Capsule())
@@ -961,7 +961,7 @@ struct TodayView: View {
     private var showMoreButton: some View {
         Button { withAnimation(.snappy) { showMore.toggle() } } label: {
             HStack(spacing: 6) {
-                Text(showMore ? "SHOW LESS" : "SHOW MORE")
+                Text(showMore ? W("common.showLess").uppercased() : W("common.showMore").uppercased())
                 Image(systemName: showMore ? "chevron.up" : "chevron.down")
             }
             .font(.footnote.weight(.bold))
@@ -971,7 +971,7 @@ struct TodayView: View {
         }
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity)
-        .accessibilityHint("Dhuha and the blessed times of the night")
+        .accessibilityHint(W("phone.a11y.moreTimes"))
     }
 }
 
@@ -1022,14 +1022,14 @@ private struct PrayerList: View {
                 Button { model.showWakeUp = true } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "bell.fill").font(.caption)
-                        Text("Alerts on for all 5 prayers").font(.footnote)
-                        Text("Change").font(.footnote.weight(.bold)).foregroundStyle(Theme.accentText)
+                        Text(W("today.allFiveOn")).font(.footnote)
+                        Text(W("alerts.change")).font(.footnote.weight(.bold)).foregroundStyle(Theme.accentText)
                     }
                     .frame(maxWidth: .infinity, minHeight: 44)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Alerts on for all 5 prayers. Change")
+                .accessibilityLabel(W("phone.a11y.allFive"))
             }
         }
     }
@@ -1071,7 +1071,7 @@ private struct PrayerList: View {
                     if let local = model.localName(prayer, at: time) {
                         Text(local).font(.caption.weight(.medium)).foregroundStyle(.secondary)
                             .lineLimit(1).layoutPriority(-1)
-                            .accessibilityLabel("called \(local) here")
+                            .accessibilityLabel(W("today.calledHere", ["name": local]))
                     }
                     if prayed {
                         Image(systemName: "checkmark.circle.fill")
@@ -1081,9 +1081,9 @@ private struct PrayerList: View {
                     }
                 }
                 if isCurrent {
-                    Text("NOW").font(.caption2.weight(.heavy)).foregroundStyle(prayer.textTint)
+                    Text(W("today.now")).font(.caption2.weight(.heavy)).foregroundStyle(prayer.textTint)
                 } else if isNext, let next {
-                    Text("in \(TodayView.short(next.time.timeIntervalSince(now)))")
+                    Text(W("today.in", ["time": TodayView.short(next.time.timeIntervalSince(now))]))
                         .font(.caption.weight(.semibold)).monospacedDigit()
                         .foregroundStyle(prayer.textTint)
                 }
@@ -1094,7 +1094,7 @@ private struct PrayerList: View {
                     Text("\(name) \(model.formatted(other))")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(SourceGrade.masjid.tint)
-                        .accessibilityLabel("\(name) gives \(model.formatted(other))")
+                        .accessibilityLabel(W("phone.a11y.gives", ["a": name, "b": model.formatted(other)]))
                 }
             }
             .layoutPriority(-1)
@@ -1117,7 +1117,7 @@ private struct PrayerList: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(prayer.name(model.naming)) \(mode.word)")
-                .accessibilityHint("Tap to change. Hold for more.")
+                .accessibilityHint(W("phone.a11y.tapChange"))
                 .contextMenu { AlertMenuItems(prayer: prayer) }
             }
             }
@@ -1134,7 +1134,7 @@ private struct PrayerList: View {
             withAnimation(.snappy) { model.togglePrayed(prayer, on: time) }
         }
         .sensoryFeedback(.success, trigger: prayed) { _, new in new }
-        .accessibilityAction(named: prayed ? "Mark as not prayed" : "Mark as prayed") {
+        .accessibilityAction(named: prayed ? W("phone.tracker.markNot") : W("phone.tracker.mark")) {
             if trackable { model.togglePrayed(prayer, on: time) }
         }
         .background {
@@ -1195,7 +1195,7 @@ private struct PrayerMark: View {
             AlertMenuItems(prayer: prayer)
             if trackable {
                 Button { withAnimation(.snappy) { model.togglePrayed(prayer, on: time) } } label: {
-                    Label(prayed ? "Mark as not prayed" : "Mark as prayed",
+                    Label(prayed ? W("phone.tracker.markNot") : W("phone.tracker.mark"),
                           systemImage: prayed ? "xmark.circle" : "checkmark.circle")
                 }
             }
@@ -1280,8 +1280,8 @@ private struct BlessedMark: View {
     /// The dial has room for a word or two.
     private var shortName: String {
         switch blessed {
-        case .midnight: "Midnight"
-        case .lastThird: "Last third"
+        case .midnight: W("today.midnightShort")
+        case .lastThird: W("today.lastThirdShort")
         default: blessed.name(model.naming)
         }
     }
@@ -1310,7 +1310,7 @@ private struct PrayerBand: View {
             AlertMenuItems(prayer: prayer)
             if trackable {
                 Button { withAnimation(.snappy) { model.togglePrayed(prayer, on: time) } } label: {
-                    Label(prayed ? "Mark as not prayed" : "Mark as prayed",
+                    Label(prayed ? W("phone.tracker.markNot") : W("phone.tracker.mark"),
                           systemImage: prayed ? "xmark.circle" : "checkmark.circle")
                 }
             }
@@ -1324,14 +1324,14 @@ private struct PrayerBand: View {
                             Text(local).font(.caption.weight(.semibold)).opacity(0.8)
                         }
                         if isCurrent {
-                            Text("NOW").font(.system(size: 11, weight: .heavy))
+                            Text(W("today.now")).font(.system(size: 11, weight: .heavy))
                                 .padding(.horizontal, 7).padding(.vertical, 3)
                                 .background(.white.opacity(0.25), in: Capsule())
                         }
                         if prayed { Image(systemName: "checkmark.circle.fill").font(.subheadline) }
                     }
                     if let next {
-                        Text("in \(TodayView.short(next.time.timeIntervalSince(now)))")
+                        Text(W("today.in", ["time": TodayView.short(next.time.timeIntervalSince(now))]))
                             .font(.caption.weight(.semibold)).monospacedDigit().opacity(0.85)
                     }
                 }
@@ -1448,11 +1448,11 @@ private struct ArrivalCard: View {
                 HStack(alignment: .top, spacing: 12) {
                     Text(profile.flag.isEmpty ? "🌏" : profile.flag).font(.system(size: 34))
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(profile.code.isEmpty ? "Welcome" : "Welcome to \(profile.name)")
+                        Text(profile.code.isEmpty ? W("today.welcome") : W("today.welcomeTo", ["place": profile.name]))
                             .font(.headline)
                         Text(model.isMethodAutomatic
-                             ? "Switched to \(model.method.name) (\(model.method.parameterSummary)), local time. Works offline."
-                             : "Local time applied. You've pinned \(model.method.shortName) in Settings.")
+                             ? W("today.switched", ["method": model.method.name, "country": model.method.parameterSummary])
+                             : W("today.pinned", ["method": model.method.shortName]))
                             .font(.subheadline)
                             .opacity(0.85)
                             .fixedSize(horizontal: false, vertical: true)
@@ -1466,15 +1466,15 @@ private struct ArrivalCard: View {
                         Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Dismiss")
+                    .accessibilityLabel(W("common.dismiss"))
                 }
                 Divider().overlay(Color.primary.opacity(0.25)).padding(.vertical, 8)
                 Toggle(isOn: Binding(
                     get: { model.isMethodAutomatic },
                     set: { auto in model.prefs.methodOverrideID = auto ? nil : model.method.id })) {
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("Switch automatically").font(.subheadline.weight(.semibold))
-                        Text("Follow each country's method as you travel").font(.caption).opacity(0.75)
+                        Text(W("today.switchAuto")).font(.subheadline.weight(.semibold))
+                        Text(W("today.switchAutoSub")).font(.caption).opacity(0.75)
                     }
                 }
                 .tint(Theme.accent)
@@ -1482,8 +1482,8 @@ private struct ArrivalCard: View {
                     Toggle(isOn: Binding(get: { model.prefs.musafirEnabled },
                                          set: { model.prefs.musafirEnabled = $0 })) {
                         VStack(alignment: .leading, spacing: 1) {
-                            Text("Musafir features").font(.subheadline.weight(.semibold))
-                            Text("Jamak and qasar guidance while you're away").font(.caption).opacity(0.75)
+                            Text(W("settings.musafir")).font(.subheadline.weight(.semibold))
+                            Text(W("today.musafirSub")).font(.caption).opacity(0.75)
                         }
                     }
                     .tint(Theme.accent)
@@ -1493,16 +1493,16 @@ private struct ArrivalCard: View {
                     }
                 }
                 HStack {
-                    Text("Asr").font(.subheadline.weight(.semibold))
+                    Text(W("settings.asr")).font(.subheadline.weight(.semibold))
                     Spacer()
                     Menu {
-                        Button("Automatic (\(profile.asr.label))") { model.prefs.asrOverride = nil }
+                        Button(W("common.automaticWith", ["name": profile.asr.label])) { model.prefs.asrOverride = nil }
                         ForEach(AsrSchool.allCases) { school in
                             Button(school.label) { model.prefs.asrOverride = school }
                         }
                     } label: {
                         HStack(spacing: 4) {
-                            Text(model.asrSchool == .hanafi ? "Later Asr (Hanafi)" : "Earlier Asr (Shafi'i)")
+                            Text(model.asrSchool == .hanafi ? W("today.asrHanafi") : W("today.asrShafii"))
                             Image(systemName: "chevron.up.chevron.down").font(.caption2)
                         }
                         .font(.subheadline)
@@ -1523,11 +1523,11 @@ private struct NoPlaceView: View {
             LivingSkyBackground(colors: .preDawn)
             VStack(spacing: 16) {
                 Image(systemName: "location.circle").font(.system(size: 54, weight: .light))
-                Text(model.location.isDenied ? "Location is off" : "Finding where you are…")
+                Text(model.location.isDenied ? W("today.locationOff") : W("today.finding"))
                     .font(.title2.weight(.semibold))
-                Text("Prayer times are calculated for your exact spot. Allow location, or pick a city.")
+                Text(W("today.whereExplain"))
                     .multilineTextAlignment(.center).opacity(0.85)
-                Button("Choose a city") { showPlaces = true }
+                Button(W("today.chooseCity")) { showPlaces = true }
                     .buttonStyle(.borderedProminent).tint(Color.primary.opacity(0.25))
             }
             .padding(32)
@@ -1616,11 +1616,11 @@ extension TodayView {
         let bare = TodayView.short(next.time.timeIntervalSince(now))
         let tomorrowFajr = model.day(containing: model.noon(now, plus: 1))?.time(.fajr) ?? day.time(.fajr).addingTimeInterval(86_400)
         V12Dial(now: now, day: day, nextFajr: tomorrowFajr, timeZone: model.timeZone, gold: gold,
-                kicker: inPrayer ? name : "Next prayer",
+                kicker: inPrayer ? name : W("today.nextPrayer"),
                 count: inPrayer ? count.count : bare,
                 label: inPrayer ? count.label : "until \(nextName)",
                 urgent: count.urgent,
-                spoken: inPrayer ? "Now \(name). \(count.count) left to pray." : "Next \(nextName), in \(TodayView.spoken(next.time.timeIntervalSince(now))).")
+                spoken: inPrayer ? W("phone.today.nowLeft", ["name": name, "left": count.count]) : W("phone.today.nextIn", ["name": nextName, "left": TodayView.spoken(next.time.timeIntervalSince(now))]))
             .frame(width: gold ? 204 : 190, height: gold ? 204 : 190)
             .frame(maxWidth: .infinity)
             .padding(.top, 2)
@@ -1647,8 +1647,8 @@ extension TodayView {
             .padding(.top, 2)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(lead.isNext
-                ? "Next \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))"
-                : "Now \(name). \(nextName) at \(model.formatted(next.time)), in \(Self.spoken(remaining))")
+                ? W("phone.today.nextAt", ["name": nextName, "time": model.formatted(next.time), "left": Self.spoken(remaining)])
+                : W("phone.today.nowThen", ["name": name, "next": nextName, "time": model.formatted(next.time), "left": Self.spoken(remaining)]))
             if let place = model.activePlace {
                 V12SunPath(now: now, day: day, timeZone: place.timeZone)
                     .frame(height: 120)
@@ -1694,7 +1694,7 @@ extension TodayView {
                         .background(v12Shape(22).fill(pal.accent.opacity(0.25)))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Musafir: you may shorten and combine prayers")
+                .accessibilityLabel(W("today.musafirButton"))
             }
             v12WakeChip(now)
             v12Menu(now)
@@ -1718,7 +1718,7 @@ extension TodayView {
     }
 
     private var v12PlaceChip: some View {
-        let name = model.activePlace?.name ?? "Choose a place"
+        let name = model.activePlace?.name ?? W("masjid.choosePlace")
         return Button { showPlaces = true } label: {
             HStack(spacing: 5) {
                 Image(systemName: model.prefs.useGPS ? "location.fill" : "mappin")
@@ -1738,7 +1738,7 @@ extension TodayView {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(name). Change location")
+        .accessibilityLabel(W("phone.a11y.changeLocation", ["place": name]))
     }
 
     /// The alarm clock, with the next alarm's time when one is set.
@@ -1759,14 +1759,14 @@ extension TodayView {
             .background(v12Chip(22))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(next.map { "Next alarm at \(model.formatted($0.date))" } ?? "Alerts and alarms")
-        .accessibilityHint("Off, Notify or Alarm for \(fajr) and every prayer, sahur, and how they sound.")
+        .accessibilityLabel(next.map { W("phone.today.nextAlarm", ["time": model.formatted($0.date)]) } ?? W("settings.alertsAlarms"))
+        .accessibilityHint(W("phone.a11y.alertsHint", ["name": fajr]))
     }
 
     /// The menu: light or dark, the five looks, and the prayer tracker.
     private func v12Menu(_ now: Date) -> some View {
         Menu {
-            Section("Appearance") {
+            Section(W("settings.appearance")) {
                 ForEach(Appearance.allCases) { a in
                     Button { withAnimation(.easeInOut) { model.prefs.appearance = a } } label: {
                         if a == model.prefs.appearance { Label(v12AppearanceWord(a), systemImage: "checkmark") } else { Text(v12AppearanceWord(a)) }
@@ -1780,10 +1780,10 @@ extension TodayView {
                     }
                 }
             } label: {
-                Label("Look and feel", systemImage: "paintpalette")
+                Label(W("settings.lookFeel"), systemImage: "paintpalette")
             }
             Button { showTracker = true } label: {
-                Label("Prayer tracker", systemImage: "checkmark.circle")
+                Label(W("settings.trackerOn"), systemImage: "checkmark.circle")
                 Text(v12TrackerWord(now))
             }
         } label: {
@@ -1794,23 +1794,23 @@ extension TodayView {
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: model.prefs.todayStyle)
-        .accessibilityLabel("Menu, look \(model.prefs.todayStyle.label)")
-        .accessibilityHint("Light or dark, the five looks and the prayer tracker.")
+        .accessibilityLabel(W("phone.a11y.menuLook", ["name": model.prefs.todayStyle.label]))
+        .accessibilityHint(W("phone.a11y.menuHint"))
     }
 
     private func v12AppearanceWord(_ a: Appearance) -> String {
         switch a {
-        case .system: "Automatic"
-        case .light: "Light"
-        case .dark: "Dark"
+        case .system: W("common.automatic")
+        case .light: W("appearance.light")
+        case .dark: W("appearance.dark")
         }
     }
 
     private func v12TrackerWord(_ now: Date) -> String {
-        if !model.prefs.trackerEnabled { return "Off" }
-        if model.trackerPaused { return "Paused" }
-        if model.isExcused(now) { return "Excused today" }
-        return model.streak == 1 ? "1 day" : "\(model.streak) days"
+        if !model.prefs.trackerEnabled { return W("common.off") }
+        if model.trackerPaused { return W("today.trackerPaused") }
+        if model.isExcused(now) { return W("tracker.excusedToday") }
+        return model.streak == 1 ? W("phone.today.oneDay") : "\(model.streak) days"
     }
 
     // MARK: Date
@@ -1826,7 +1826,7 @@ extension TodayView {
                 Image(systemName: "chevron.left").font(.system(size: 20, weight: .medium))
                     .foregroundStyle(pal.tx2).frame(width: 44, height: 44).contentShape(Rectangle())
             }
-            .accessibilityLabel("Previous day")
+            .accessibilityLabel(W("today.prevDay"))
             Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
                 VStack(spacing: 1) {
                     Text(f.string(from: date)).font(vf(18, .bold)).foregroundStyle(pal.tx)
@@ -1841,12 +1841,12 @@ extension TodayView {
                 .contentShape(Rectangle())
             }
             .accessibilityElement(children: .combine)
-            .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+            .accessibilityHint(dayOffset == 0 ? W("today.datesSources") : W("today.backToToday"))
             Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
                 Image(systemName: "chevron.right").font(.system(size: 20, weight: .medium))
                     .foregroundStyle(pal.tx2).frame(width: 44, height: 44).contentShape(Rectangle())
             }
-            .accessibilityLabel("Next day")
+            .accessibilityLabel(W("today.nextDay"))
         }
         .buttonStyle(.plain)
         .padding(.top, 2)
@@ -1902,7 +1902,7 @@ extension TodayView {
                 if dayOffset == 0 { ReviewLine(now: now) }
                 if model.prefs.showOffers && showMore { CommunityCardSlot(now: now, next: next) }
                 V12AllFiveLine(look: .bands)
-                Text("A tribute to prayertimes.sg & my by Awsam Tech LLP. Used with permission.")
+                Text(W("bands.credit"))
                     .font(vf(12)).foregroundStyle(pal.tx2)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.bottom, 8)
@@ -1925,7 +1925,7 @@ extension TodayView {
                 Image(systemName: "chevron.left").font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(pal.tx2).frame(width: 44, height: 44).contentShape(Rectangle())
             }
-            .accessibilityLabel("Previous day")
+            .accessibilityLabel(W("today.prevDay"))
             Button { if dayOffset == 0 { showCalendar = true } else { withAnimation(.snappy) { dayOffset = 0 } } } label: {
                 HStack(spacing: 6) {
                     if dayOffset != 0 { Image(systemName: "arrow.uturn.backward").font(.caption) }
@@ -1935,12 +1935,12 @@ extension TodayView {
                 .frame(maxWidth: .infinity, minHeight: 44)
                 .contentShape(Rectangle())
             }
-            .accessibilityHint(dayOffset == 0 ? "Ramadan and Eid dates with their sources" : "Back to today")
+            .accessibilityHint(dayOffset == 0 ? W("today.datesSources") : W("today.backToToday"))
             Button { withAnimation(.snappy) { dayOffset += 1 } } label: {
                 Image(systemName: "chevron.right").font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(pal.tx2).frame(width: 44, height: 44).contentShape(Rectangle())
             }
-            .accessibilityLabel("Next day")
+            .accessibilityLabel(W("today.nextDay"))
         }
         .buttonStyle(.plain)
         .padding(.horizontal, Theme.gutter - 4)
@@ -2327,7 +2327,7 @@ private struct V12List: View {
                     if let local = model.localName(prayer, at: time) {
                         Text(local).font(vf(13, .medium)).foregroundStyle(pal.tx2)
                             .lineLimit(1).layoutPriority(-1)
-                            .accessibilityLabel("called \(local) here")
+                            .accessibilityLabel(W("today.calledHere", ["name": local]))
                     }
                     if prayed {
                         Image(systemName: "checkmark").font(.system(size: 10, weight: .heavy))
@@ -2335,10 +2335,10 @@ private struct V12List: View {
                             .frame(width: 18, height: 18)
                             .background(fill, in: Circle())
                             .transition(.scale.combined(with: .opacity))
-                            .accessibilityLabel("prayed")
+                            .accessibilityLabel(W("today.prayed"))
                     }
                     if isNext && !isCurrent, let next {
-                        Text("in \(TodayView.short(next.time.timeIntervalSince(now)))")
+                        Text(W("today.in", ["time": TodayView.short(next.time.timeIntervalSince(now))]))
                             .font(vf(simple ? 15 : 13, .semibold)).monospacedDigit()
                             .foregroundStyle(pal.accent)
                             .lineLimit(1).fixedSize()
@@ -2352,7 +2352,7 @@ private struct V12List: View {
                     Text("\(name) \(model.formatted(other))")
                         .font(vf(13, .medium))
                         .foregroundStyle(SourceGrade.masjid.tint)
-                        .accessibilityLabel("\(name) gives \(model.formatted(other))")
+                        .accessibilityLabel(W("phone.a11y.gives", ["a": name, "b": model.formatted(other)]))
                 }
             }
             .layoutPriority(-1)
@@ -2393,7 +2393,7 @@ private struct V12List: View {
         }
         .sensoryFeedback(.success, trigger: prayed) { _, new in new }
         .accessibilityElement(children: .contain)
-        .accessibilityAction(named: prayed ? "Mark as not prayed" : "Mark as prayed") {
+        .accessibilityAction(named: prayed ? W("phone.tracker.markNot") : W("phone.tracker.mark")) {
             if trackable { model.togglePrayed(prayer, on: time) }
         }
         .accessibilityValue(isCurrent ? "now" : "")
@@ -2411,7 +2411,7 @@ private struct V12List: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(prayer.name(model.naming)) \(mode.word)")
-        .accessibilityHint("Tap to change. Hold for more.")
+        .accessibilityHint(W("phone.a11y.tapChange"))
         .contextMenu { AlertMenuItems(prayer: prayer) }
     }
 
@@ -2457,7 +2457,7 @@ private struct V12MoreLink: View {
         let big = look == .simple
         Button { withAnimation(.snappy) { showMore.toggle() } } label: {
             HStack(spacing: 4) {
-                Text(showMore ? "Show less" : "Show more")
+                Text(showMore ? W("common.showLess") : W("common.showMore"))
                 Image(systemName: showMore ? "chevron.up" : "chevron.down").font(.system(size: big ? 17 : 15, weight: .semibold))
             }
             .font(V12Type.font(big ? 17 : 15, .semibold, display: false, min(typeSize, .accessibility2)))
@@ -2466,8 +2466,8 @@ private struct V12MoreLink: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(showMore ? "Show less" : "Show more")
-        .accessibilityHint("Dhuha and the blessed times of the night")
+        .accessibilityLabel(showMore ? W("common.showLess") : W("common.showMore"))
+        .accessibilityHint(W("phone.a11y.moreTimes"))
     }
 }
 
@@ -2481,15 +2481,15 @@ private struct V12AllFiveLine: View {
             Button { model.showWakeUp = true } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "bell.fill").font(.caption)
-                    Text("Alerts on for all 5 prayers").font(.footnote)
-                    Text("Change").font(.footnote.weight(.bold)).foregroundStyle(look.palette.accent)
+                    Text(W("today.allFiveOn")).font(.footnote)
+                    Text(W("alerts.change")).font(.footnote.weight(.bold)).foregroundStyle(look.palette.accent)
                 }
                 .foregroundStyle(look.palette.tx2)
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: look == .bands ? .leading : .center)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Alerts on for all 5 prayers. Change")
+            .accessibilityLabel(W("phone.a11y.allFive"))
         }
     }
 }
@@ -2516,7 +2516,7 @@ private struct V12SourceLine: View {
         Button { showSanad = true } label: {
             (Text(day.grade.title).bold().foregroundColor(look == .bands ? p.tx2 : p.accent)
                 + Text(authority.map { " · \($0)" } ?? "")
-                + Text(" · Grade \(day.grade.rawValue)"))
+                + Text(" · \(W("source.grade")) \(day.grade.rawValue)"))
                 .font(V12Type.font(size, .regular, display: false, min(typeSize, .accessibility2)))
                 .foregroundStyle(look == .bands ? p.tx2 : p.tx3)
                 .multilineTextAlignment(look == .bands ? .leading : .center)
@@ -2524,8 +2524,8 @@ private struct V12SourceLine: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Source grade \(day.grade.rawValue), \(day.grade.title)")
-        .accessibilityHint("Shows where these times come from")
+        .accessibilityLabel(W("phone.a11y.sourceGrade", ["grade": day.grade.rawValue, "a": day.grade.title]))
+        .accessibilityHint(W("phone.source.showsWhere"))
         .sheet(isPresented: $showSanad) { SanadSheet(day: day) }
     }
 }
@@ -2568,7 +2568,7 @@ private struct V12Band: View {
             AlertMenuItems(prayer: prayer)
             if trackable {
                 Button { withAnimation(.snappy) { model.togglePrayed(prayer, on: time) } } label: {
-                    Label(prayed ? "Mark as not prayed" : "Mark as prayed",
+                    Label(prayed ? W("phone.tracker.markNot") : W("phone.tracker.mark"),
                           systemImage: prayed ? "xmark.circle" : "checkmark.circle")
                 }
             }
@@ -2589,7 +2589,7 @@ private struct V12Band: View {
                     Text(local).font(vf(12, .semibold)).opacity(0.8)
                 }
                 if isCurrent {
-                    Text("NOW").font(.system(size: 11, weight: .heavy))
+                    Text(W("today.now")).font(.system(size: 11, weight: .heavy))
                         .foregroundStyle(Color(hex: 0x1D1D20))
                         .padding(.horizontal, 7).padding(.vertical, 3)
                         .background(.white, in: Capsule())
@@ -2600,7 +2600,7 @@ private struct V12Band: View {
                         .frame(width: 18, height: 18).background(.white, in: Circle())
                 }
                 if let next {
-                    Text("in \(TodayView.short(next.time.timeIntervalSince(now)))")
+                    Text(W("today.in", ["time": TodayView.short(next.time.timeIntervalSince(now))]))
                         .font(vf(15, .semibold)).monospacedDigit().opacity(0.9).fixedSize()
                 }
             }

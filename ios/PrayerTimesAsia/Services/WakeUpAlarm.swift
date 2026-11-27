@@ -84,12 +84,12 @@ enum WakeUpAlarm {
             guard state == .authorized else { return false }
             for (date, title) in alarms where date > .now {
                 let id = UUID()
-                let stop = AlarmButton(text: "Stop", textColor: .white, systemImageName: "stop.fill")
+                let stop = AlarmButton(text: W("alerts.azanStop"), textColor: .white, systemImageName: "stop.fill")
                 // Snooze: rings again in 5 minutes. Stop on the Lock Screen ends it.
-                let snooze = AlarmButton(text: "Snooze 5 min", textColor: .white, systemImageName: "zzz")
+                let snooze = AlarmButton(text: W("phone.alerts.snooze5"), textColor: .white, systemImageName: "zzz")
                 let alert = AlarmPresentation.Alert(title: LocalizedStringResource("\(title)"), stopButton: stop,
                                                     secondaryButton: snooze, secondaryButtonBehavior: .countdown)
-                let countdown = AlarmPresentation.Countdown(title: "Snoozed. Rings again in 5 min")
+                let countdown = AlarmPresentation.Countdown(title: W("phone.alerts.snoozed"))
                 let attributes = AlarmAttributes<WakeUpMetadata>(presentation: AlarmPresentation(alert: alert, countdown: countdown),
                                                                  tintColor: Color(red: 1, green: 0.62, blue: 0.4))
                 // Classic is the phone's own alarm sound; the others are our tones in Resources/.

@@ -23,8 +23,8 @@ struct FalakARScreen: View {
                 Color.black.ignoresSafeArea()
                 VStack(spacing: 10) {
                     Image(systemName: "arkit").font(.system(size: 44))
-                    Text("Needs a camera with AR").font(.headline)
-                    Text("This view uses the camera to draw the qibla and the stick's shadow on the floor. It isn't available on this device.")
+                    Text(W("phone.arNeeded")).font(.headline)
+                    Text(W("phone.arUnavailable"))
                         .font(.footnote).multilineTextAlignment(.center).opacity(0.8)
                 }
                 .foregroundStyle(.white)
@@ -39,17 +39,17 @@ struct FalakARScreen: View {
                     .background(.ultraThinMaterial, in: Circle())
             }
             .padding(16)
-            .accessibilityLabel("Close")
+            .accessibilityLabel(W("common.close"))
         }
     }
 
     private var legend: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Point the camera at the floor until the stick appears.")
+            Text(W("phone.pointFloor"))
                 .font(.subheadline.weight(.semibold))
-            Label("Gold line: the qibla", systemImage: "line.diagonal").foregroundStyle(Theme.gold)
-            Label("Dark bar: where a stick's shadow falls right now", systemImage: "line.diagonal")
-            Text("Outdoors in sunshine, real shadows should lie along the dark bar. If they don't, move away from metal and wave the phone in a figure-8 to recalibrate the compass. Never look at the sun.")
+            Label(W("phone.falak.goldLine"), systemImage: "line.diagonal").foregroundStyle(Theme.gold)
+            Label(W("phone.falak.darkBar"), systemImage: "line.diagonal")
+            Text(W("phone.falak.arHelp"))
                 .font(.caption).opacity(0.85)
         }
         .font(.footnote)

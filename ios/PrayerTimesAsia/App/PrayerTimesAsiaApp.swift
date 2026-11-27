@@ -75,19 +75,19 @@ struct RootView: View {
         if model.prefs.hasOnboarded {
             TabView(selection: $model.selectedTab) {
                 TodayView()
-                    .tabItem { Label { Text("Prayer") } icon: { Image("Tab-prayer") } }
+                    .tabItem { Label { Text(W("tab.prayer")) } icon: { Image("Tab-prayer") } }
                     .tag(AppModel.Tab.today)
                 QiblaView()
-                    .tabItem { Label { Text("Qibla") } icon: { Image("Tab-qibla") } }
+                    .tabItem { Label { Text(W("tab.qibla")) } icon: { Image("Tab-qibla") } }
                     .tag(AppModel.Tab.qibla)
                 FalakView(isTab: true)
-                    .tabItem { Label("Falak", systemImage: "sun.max") }
+                    .tabItem { Label(W("tab.falak"), systemImage: "sun.max") }
                     .tag(AppModel.Tab.falak)
                 NearbyView()
-                    .tabItem { Label { Text("Masjid") } icon: { Image("Tab-masjid") } }
+                    .tabItem { Label { Text(W("tab.masjid")) } icon: { Image("Tab-masjid") } }
                     .tag(AppModel.Tab.nearby)
                 SettingsView(isTab: true)
-                    .tabItem { Label("Settings", systemImage: "slider.horizontal.3") }
+                    .tabItem { Label(W("tab.settings"), systemImage: "slider.horizontal.3") }
                     .tag(AppModel.Tab.settings)
             }
             // The web app's tab bar: outline icons, the look's accent on the open tab.
@@ -106,10 +106,10 @@ struct RootView: View {
                 try? await Task.sleep(for: .seconds(1))
                 if guideDue { showGuide = true }
             }
-            .alert("Welcome back", isPresented: $model.showWelcomeBack) {
-                Button("OK") {}
+            .alert(W("phone.today.welcomeBack"), isPresented: $model.showWelcomeBack) {
+                Button(W("common.ok")) {}
             } message: {
-                Text("Your settings are back, just as you left them. Your phone keeps a private copy, so deleting the app never loses them.")
+                Text(W("phone.settingsBack"))
             }
             .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-widget-preview"))) {
                 NavigationStack { WidgetPreviewView() }

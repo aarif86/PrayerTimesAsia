@@ -41,20 +41,20 @@ enum Musafir {
     static func guidance(for status: Status, rules: Rules, naming: NamingStyle) -> (title: String, body: String) {
         switch status {
         case .home:
-            return ("You're home", "Pray in full. Travel concessions apply once you journey at least \(Int(rules.thresholdKm)) km.")
+            return (W("journey.homeTitle"), W("journey.homeBody", ["km": Int(rules.thresholdKm)]))
         case .nearby:
-            return ("Within \(Int(rules.thresholdKm)) km of home",
-                    "That's short of the travel distance, so pray in full.")
+            return (W("journey.nearbyTitle", ["km": Int(rules.thresholdKm)]),
+                    W("journey.nearbyBody"))
         case .traveller:
             if rules.allowsJamak {
-                return ("You are a musafir",
-                        "You may shorten (qasar) and join (jamak) your prayers. Here is what changes for each one.")
+                return (W("phone.journey.youAreMusafir"),
+                        W("journey.travellerBody"))
             }
-            return ("You are a musafir",
-                    "You may shorten (qasr) your prayers. In the Hanafi school prayers are not joined outside Hajj. Here is what changes for each one.")
+            return (W("phone.journey.youAreMusafir"),
+                    W("phone.journey.hanafiNote"))
         case .settled(_, let days):
-            return ("Settled here",
-                    "You've been here \(days) days. Staying longer than \(rules.maxStayDays) days ends the travel concession, so pray in full.")
+            return (W("journey.settledTitle"),
+                    W("journey.settledBody", ["n": days, "max": rules.maxStayDays]))
         }
     }
 
@@ -74,21 +74,21 @@ enum Musafir {
     static func plan(rules: Rules, naming: NamingStyle) -> [PlanRow] {
         let n = (naming.isRightToLeft ? NamingStyle.international : naming).names
         func join(_ p: Prayer) -> String {
-            guard rules.allowsJamak else { return "Not joined" }
+            guard rules.allowsJamak else { return W("journey.notJoined") }
             switch p {
-            case .dhuhr: return "Can join with \(n[.asr]!)"
-            case .asr: return "Can join with \(n[.dhuhr]!)"
-            case .maghrib: return "Can join with \(n[.isha]!)"
-            case .isha: return "Can join with \(n[.maghrib]!)"
-            default: return "Never joined"
+            case .dhuhr: return W("journey.canJoin", ["name": n[.asr]!])
+            case .asr: return W("journey.canJoin", ["name": n[.dhuhr]!])
+            case .maghrib: return W("journey.canJoin", ["name": n[.isha]!])
+            case .isha: return W("journey.canJoin", ["name": n[.maghrib]!])
+            default: return W("journey.neverJoinedShort")
             }
         }
         return [
-            PlanRow(prayer: .fajr, name: n[.fajr]!, rakaat: "2 rakaat", change: "No change", join: rules.allowsJamak ? "Never joined" : "Not joined"),
-            PlanRow(prayer: .dhuhr, name: n[.dhuhr]!, rakaat: "2 rakaat", change: "Shortened from 4", join: join(.dhuhr)),
-            PlanRow(prayer: .asr, name: n[.asr]!, rakaat: "2 rakaat", change: "Shortened from 4", join: join(.asr)),
-            PlanRow(prayer: .maghrib, name: n[.maghrib]!, rakaat: "3 rakaat", change: "No change", join: join(.maghrib)),
-            PlanRow(prayer: .isha, name: n[.isha]!, rakaat: "2 rakaat", change: "Shortened from 4", join: join(.isha)),
+            PlanRow(prayer: .fajr, name: n[.fajr]!, rakaat: W("phone.journey.rakaat2"), change: W("journey.noChange"), join: rules.allowsJamak ? W("journey.neverJoinedShort") : W("journey.notJoined")),
+            PlanRow(prayer: .dhuhr, name: n[.dhuhr]!, rakaat: W("phone.journey.rakaat2"), change: W("journey.shortened"), join: join(.dhuhr)),
+            PlanRow(prayer: .asr, name: n[.asr]!, rakaat: W("phone.journey.rakaat2"), change: W("journey.shortened"), join: join(.asr)),
+            PlanRow(prayer: .maghrib, name: n[.maghrib]!, rakaat: W("phone.journey.rakaat3"), change: W("journey.noChange"), join: join(.maghrib)),
+            PlanRow(prayer: .isha, name: n[.isha]!, rakaat: W("phone.journey.rakaat2"), change: W("journey.shortened"), join: join(.isha)),
         ]
     }
 
@@ -100,9 +100,9 @@ enum Musafir {
         case .home:
             return nil
         case .nearby(let km):
-            return (false, "You are \(Int(km.rounded(.down)).formatted()) km from home. That is less than \(limit) km, so this trip does not count as travel yet.")
+            return (false, W("journey.notTravel", ["km": Int(km.rounded(.down)).formatted(), "limit": limit]))
         case .traveller(let km), .settled(let km, _):
-            return (true, "You are \(Int(km.rounded()).formatted()) km from home. That is more than \(limit) km, so this trip counts as travel.")
+            return (true, W("journey.isTravel", ["km": Int(km.rounded()).formatted(), "limit": limit]))
         }
     }
 }

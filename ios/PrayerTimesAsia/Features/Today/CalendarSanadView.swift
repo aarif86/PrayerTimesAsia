@@ -16,20 +16,20 @@ struct CalendarSanadView: View {
                 }
 
                 Section {
-                    Picker("My community follows", selection: $model.prefs.communityAuthority) {
-                        Text("Automatic · \(model.communityAuthority.map(CalendarSanad.authorityName) ?? "none")").tag(String?.none)
+                    Picker(W("calendar.follows"), selection: $model.prefs.communityAuthority) {
+                        Text(W("common.automaticWith", ["name": model.communityAuthority.map(CalendarSanad.authorityName) ?? "none"])).tag(String?.none)
                         ForEach(CalendarSanad.authorities) { a in
                             Text(a.name).tag(String?.some(a.id))
                         }
                     }
                 } footer: {
-                    Text("Countries can start Ramadan and celebrate Eid on different days, because of local moon sighting and different methods. Pick whose announcement your masjid follows.")
+                    Text(W("calendar.explain"))
                 }
 
                 ForEach(CalendarSanad.upcoming(after: .now, timeZone: model.timeZone)) { item in
                     Section {
                         if let expected = CalendarSanad.expected(item.event, hijriYear: item.hijriYear) {
-                            row(title: "Expected", date: expected, detail: "Astronomical estimate (Umm al-Qura calendar). Local dates may differ by a day.",
+                            row(title: W("calendar.expected"), date: expected, detail: W("calendar.estimateExplain"),
                                 status: nil, highlight: false, link: nil)
                         }
                         let entries = model.hijriCalendar.announcements(for: item.event, hijriYear: item.hijriYear)
@@ -44,23 +44,23 @@ struct CalendarSanadView: View {
                         }
                         if !entries.contains(where: { $0.authority == model.communityAuthority && $0.status == .announced }),
                            let mine = model.communityAuthority {
-                            Text("\(CalendarSanad.authorityName(mine)) hasn't announced yet. It usually does the evening before; this page updates within a few hours.")
+                            Text(W("calendar.notYet", ["name": CalendarSanad.authorityName(mine)]))
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
                     } header: {
-                        Text("\(item.event.title(lang: model.appLang)) \(String(item.hijriYear)) AH")
+                        Text(W("phone.calendar.yearAh", ["name": item.event.title(lang: model.appLang), "year": String(item.hijriYear)]).uppercased())
                     }
                 }
 
                 Section {
-                    Link("Send an announcement", destination: URL(string: "https://prayertimes.asia/announcement.html")!)
+                    Link(W("phone.calendar.send"), destination: URL(string: "https://prayertimes.asia/announcement.html")!)
                 } footer: {
-                    Text("Every date shows who set it and how: moon sighting, calculation, or following another authority. Dates are shared openly under CC-BY 4.0.")
+                    Text(W("phone.calendar.everyDate"))
                 }
             }
-            .navigationTitle("Calendar")
+            .navigationTitle(W("calendar.title"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
             .task { await model.hijriCalendar.refreshIfStale() }
         }
     }
@@ -74,12 +74,12 @@ struct CalendarSanadView: View {
                     if highlight { Image(systemName: "person.2.fill").font(.caption).foregroundStyle(.secondary) }
                 }
                 Text(detail).font(.caption).foregroundStyle(.secondary)
-                if let link { Link("Source", destination: link).font(.caption) }
+                if let link { Link(W("source.title"), destination: link).font(.caption) }
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text(format(date)).font(.subheadline.weight(.semibold)).monospacedDigit()
-                Text(status == .announced ? "Announced" : (status == .expected ? "Expected" : "Estimate"))
+                Text(status == .announced ? W("calendar.announced") : (status == .expected ? W("calendar.expected") : W("calendar.estimate")))
                     .font(.caption2.weight(.heavy))
                     .foregroundStyle(status == .announced ? SourceGrade.official.tint : .secondary)
             }

@@ -14,10 +14,10 @@ private struct RuleRow: Identifiable { let id: String; let label: String; let va
     let h24 = model.prefs.use24Hour
     var rows = Prayer.obligatory.compactMap { p -> RuleRow? in
         guard let r = m.jamaah[p.rawValue] else { return nil }
-        let value = r.fixed.map { clock($0, h24: h24) } ?? (r.after == 0 ? "At the azan" : "\(r.after ?? 0) min after azan")
+        let value = r.fixed.map { clock($0, h24: h24) } ?? (r.after == 0 ? W("myMasjid.atAzan") : W("myMasjid.afterAzan", ["n": r.after ?? 0]))
         return RuleRow(id: p.rawValue, label: p.name(model.naming), value: value)
     }
-    if let j = m.jumuah { rows.append(RuleRow(id: "jumuah", label: "Jumu'ah", value: clock(j, h24: h24))) }
+    if let j = m.jumuah { rows.append(RuleRow(id: "jumuah", label: W("myMasjid.jumuah"), value: clock(j, h24: h24))) }
     return rows
 }
 
@@ -33,7 +33,7 @@ struct MasjidLinkSheet: View {
                     VStack(spacing: 8) {
                         Image(systemName: "moon.stars.fill").font(.title).foregroundStyle(Theme.accentText)
                         Text(link.name).font(.headline).multilineTextAlignment(.center)
-                        Text("Add it as your masjid and its iqamah times show on your Prayer screen whenever you're nearby.")
+                        Text(W("myMasjid.addExplain"))
                             .font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity)
@@ -42,29 +42,29 @@ struct MasjidLinkSheet: View {
                 Section {
                     let rows = rules(link, model: model)
                     if rows.isEmpty {
-                        Text("This masjid hasn't set its iqamah times yet.").foregroundStyle(.secondary)
+                        Text(W("myMasjid.noTimes")).foregroundStyle(.secondary)
                     }
                     ForEach(rows) { r in LabeledContent(r.label, value: r.value) }
                 } header: {
-                    Text("Iqamah")
+                    Text(W("myMasjid.iqamah"))
                 } footer: {
                     if let current = model.prefs.myMasjid, current.name != link.name {
-                        Text("This replaces \(current.name).")
+                        Text(W("myMasjid.replaces", ["name": current.name]))
                     }
                 }
                 Section {
                     Button { model.followPendingMasjid() } label: {
-                        Text("Add my masjid").font(.headline).frame(maxWidth: .infinity)
+                        Text(W("myMasjid.add")).font(.headline).frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(Theme.accent)
                     .listRowBackground(Color.clear)
                 }
             }
-            .navigationTitle("Your masjid")
+            .navigationTitle(W("myMasjid.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Not now") { model.pendingMasjid = nil } }
+                ToolbarItem(placement: .cancellationAction) { Button(W("common.notNow")) { model.pendingMasjid = nil } }
             }
         }
         .presentationDetents([.large])

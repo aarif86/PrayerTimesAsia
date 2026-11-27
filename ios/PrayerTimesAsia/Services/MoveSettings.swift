@@ -359,7 +359,7 @@ extension MovedSettings {
         if let n = savedPlaces?.count, n > 0 { lines.append("\(n) saved place\(n == 1 ? "" : "s")") }
         let days = prayedLog?.count ?? 0
         if trackerEnabled == true || days > 0 {
-            lines.append("Prayer tracker" + (days > 0 ? ", \(days) day\(days == 1 ? "" : "s") of history" : ""))
+            lines.append(W("settings.trackerOn") + (days > 0 ? ", \(days) day\(days == 1 ? "" : "s") of history" : ""))
         }
         if methodOverrideID != nil || asrOverride != nil || jakimZoneOverride != nil { lines.append("Your calculation choices") }
         if appearance != nil || todayStyle != nil || use24Hour != nil || namingOverride != nil { lines.append("Your look and prayer names") }
@@ -372,8 +372,8 @@ extension MovedSettings {
         if !(fastLog ?? [:]).isEmpty || !(tarawihLog ?? []).isEmpty || !(quranLog ?? []).isEmpty {
             lines.append("Your Ramadan record of fasts, Tarawih and juz")
         }
-        if largeText == true { lines.append("Bigger text") }
-        if musafirEnabled == true { lines.append("Musafir features") }
+        if largeText == true { lines.append(W("settings.biggerText")) }
+        if musafirEnabled == true { lines.append(W("settings.musafir")) }
         return lines.isEmpty ? ["The standard settings"] : lines
     }
 }

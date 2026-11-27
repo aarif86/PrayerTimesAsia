@@ -12,9 +12,9 @@ struct LevelView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                Picker("Check", selection: $motion.mode) {
-                    Text("Ground (phone flat)").tag(LevelMotion.Mode.flat)
-                    Text("Stick (phone upright)").tag(LevelMotion.Mode.upright)
+                Picker(W("phone.falak.check"), selection: $motion.mode) {
+                    Text(W("falakTools.ground")).tag(LevelMotion.Mode.flat)
+                    Text(W("falakTools.stick")).tag(LevelMotion.Mode.upright)
                 }
                 .pickerStyle(.segmented)
 
@@ -33,22 +33,22 @@ struct LevelView: View {
                     Text(motion.available ? String(format: "%.1f°", motion.tilt) : "-")
                         .font(Theme.display(54, .bold)).monospacedDigit()
                     Text(motion.available
-                         ? (motion.isLevel ? "Level - good for a reading" : "Not level yet - adjust until the bubble turns green")
-                         : "This device has no motion sensor.")
+                         ? (motion.isLevel ? W("falakTools.isLevel") : W("falakTools.notLevel"))
+                         : W("falakTools.noMotion"))
                         .font(.headline)
                         .foregroundStyle(motion.isLevel ? Color.green : Color.primary)
                 }
                 Text(motion.mode == .flat
-                     ? "Lay the phone flat where the stick will stand. Within 0.5° is good."
-                     : "Hold the phone's long edge against the stick. Within 0.5° of vertical is good.")
+                     ? W("falakTools.groundHow")
+                     : W("falakTools.stickHow"))
                     .font(.footnote).multilineTextAlignment(.center).opacity(0.75)
                 Spacer()
             }
             .padding(24)
             .sensoryFeedback(.success, trigger: motion.isLevel) { _, now in now }
-            .navigationTitle("Level")
+            .navigationTitle(W("falak.level"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
             .onAppear { motion.start() }
             .onDisappear { motion.stop() }
         }

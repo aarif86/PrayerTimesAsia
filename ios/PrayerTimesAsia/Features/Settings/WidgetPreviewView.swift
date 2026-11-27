@@ -12,7 +12,7 @@ struct WidgetPreviewView: View {
                            startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
             VStack(spacing: 20) {
-                Picker("Style", selection: Binding(get: { style }, set: { self.style = $0 })) {
+                Picker(W("phone.widget.style"), selection: Binding(get: { style }, set: { self.style = $0 })) {
                     ForEach(TodayStyle.looks) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.segmented)
@@ -23,14 +23,14 @@ struct WidgetPreviewView: View {
                     .background(TimetableCard.background(snapshot, at: .now, style: style))
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                     .shadow(color: .black.opacity(0.25), radius: 16, y: 8)
-                Text("Touch and hold your Home Screen, tap Edit, then Add Widget and search for Prayer Times Asia. Choose \"Today's timetable\". It follows your Prayer screen style; touch and hold it, then Edit Widget, to pick another.")
+                Text(W("phone.widget.howTo"))
                     .font(.footnote)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 32)
             }
         }
-        .navigationTitle("Big widget")
+        .navigationTitle(W("widget.big"))
         .navigationBarTitleDisplayMode(.inline)
     }
 

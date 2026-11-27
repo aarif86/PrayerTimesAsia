@@ -10,20 +10,20 @@ enum BlessedTime: String, CaseIterable, Identifiable, Sendable {
     /// all read these the same way. (The style is kept for a future translation.)
     func name(_ style: NamingStyle) -> String {
         switch self {
-        case .imsak: "Imsak"
-        case .dhuha: "Dhuha"
-        case .midnight: "Middle of the night"
-        case .lastThird: "Last third of the night"
+        case .imsak: W("today.imsakShort")
+        case .dhuha: W("today.dhuhaShort")
+        case .midnight: W("phone.blessed.middle")
+        case .lastThird: W("phone.blessed.lastThird")
         }
     }
 
     /// One line on what the time is and how it is worked out.
     var note: String {
         switch self {
-        case .imsak: "10 minutes before Fajr. Finish sahur by now"
-        case .dhuha: "Sun a spear's length up (about 4½°)"
-        case .midnight: "Halfway from Maghrib to Fajr"
-        case .lastThird: "Best time for tahajjud and dua"
+        case .imsak: W("today.imsakNote")
+        case .dhuha: W("phone.blessed.spear")
+        case .midnight: W("phone.blessed.halfway")
+        case .lastThird: W("phone.blessed.best")
         }
     }
 

@@ -119,6 +119,6 @@ struct DayDial: View {
         }
         .aspectRatio(1, contentMode: .fit)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(isNext ? "Next \(currentName), \(countdown)." : "Now \(currentName). \(countdown) \(label).")
+        .accessibilityLabel(isNext ? W("today.nextAria", ["name": currentName, "time": countdown]) : "Now \(currentName). \(countdown) \(label).")
     }
 }
