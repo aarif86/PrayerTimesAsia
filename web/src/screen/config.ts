@@ -16,12 +16,15 @@ export interface IqamahRule { after?: number; fixed?: string }
 export type ScreenLanguage = 'en' | 'ms' | 'id'
 
 /**
- * Six designs, each in Light or Dark (`mode`): Sky (the app's Living Sky, id 'night'), Board (a departure-board list),
- * Bands (coloured bands), Day Dial, Sun Path, and Simple (plain and calm).
- * Old links that say 'day' still work: they open as Sky in Light.
+ * Five looks, named like the app's, each in Light or Dark (`mode`): Centre Dial (id 'dial'), Sun Path ('sunpath'),
+ * Colour Bands ('bands'), Big and Simple ('simple') and Calm Gold ('surau').
+ * Old links and saved screens keep working: Sky ('night'), Board ('board') and 'day' open as Big and Simple
+ * ('day' in Light), see LEGACY_LOOKS. Other ids are unchanged.
  */
-export type ScreenLook = 'night' | 'board' | 'bands' | 'dial' | 'sunpath' | 'simple' | 'surau'
-export const LOOKS: readonly ScreenLook[] = ['night', 'board', 'bands', 'dial', 'sunpath', 'simple', 'surau']
+export type ScreenLook = 'bands' | 'dial' | 'sunpath' | 'simple' | 'surau'
+export const LOOKS: readonly ScreenLook[] = ['dial', 'sunpath', 'bands', 'simple', 'surau']
+/** Looks that were retired. They open as the look on the right (and 'day' also as Light). */
+export const LEGACY_LOOKS: Readonly<Record<string, ScreenLook>> = { night: 'simple', board: 'simple', day: 'simple' }
 
 /**
  * How the screen is arranged. `full` is the clock and the times across the whole screen (the original designs).
@@ -179,7 +182,7 @@ export const DEFAULT_CONFIG: ScreenConfig = {
   names: 'arabic',
   arabic: false,
   lang: 'en',
-  look: 'night',
+  look: 'simple',
   layout: 'full',
   mode: 'dark',
   iqamah: { fajr: { after: 10 }, dhuhr: { after: 10 }, asr: { after: 10 }, maghrib: { after: 5 }, isha: { after: 10 } },
@@ -265,7 +268,7 @@ export function sanitize(raw: unknown): ScreenConfig {
   out.arabic = r.arabic === true
   if (r.lang === 'en' || r.lang === 'ms' || r.lang === 'id') out.lang = r.lang
   if (LOOKS.includes(r.look as ScreenLook)) out.look = r.look as ScreenLook
-  else if (r.look === 'day') { out.look = 'night'; out.mode = 'light' }
+  else if (typeof r.look === 'string' && Object.hasOwn(LEGACY_LOOKS, r.look)) { out.look = LEGACY_LOOKS[r.look]; if (r.look === 'day') out.mode = 'light' }
   if (r.mode === 'dark' || r.mode === 'light') out.mode = r.mode
   if (LAYOUTS.includes(r.layout as ScreenLayout)) out.layout = r.layout as ScreenLayout
   if (r.iqamah && typeof r.iqamah === 'object') {

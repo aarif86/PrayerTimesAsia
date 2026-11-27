@@ -7,9 +7,9 @@ const SG: ScreenConfig = { ...DEFAULT_CONFIG, place: { name: 'Pasir Ris', lat: 1
 const slide = (n: number) => ({ title: `T${n}`, text: `Words ${n}`, img: '', tone: 'gold' as const })
 
 describe('screen layouts and looks', () => {
-  it('has eight layouts and seven looks, and old links open as the full clock', () => {
+  it('has eight layouts and five looks named like the app, and old links open as the full clock', () => {
     expect(LAYOUTS).toHaveLength(8)
-    expect(LOOKS).toContain('surau')
+    expect(LOOKS).toEqual(['dial', 'sunpath', 'bands', 'simple', 'surau'])
     expect(sanitize({ look: 'board' }).layout).toBe('full')
     expect(sanitize({ layout: 'splitN', look: 'surau' })).toMatchObject({ layout: 'splitN', look: 'surau' })
     expect(sanitize({ layout: 'nonsense' }).layout).toBe('full')
