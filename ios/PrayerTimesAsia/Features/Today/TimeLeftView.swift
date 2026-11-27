@@ -14,8 +14,6 @@ struct PrayerCountdown {
     let done: Bool
     /// True while the current prayer window is counting down (not "until the next prayer").
     let inWindow: Bool
-    /// True while the current prayer window is counting down (not "until the next prayer").
-    let inWindow: Bool
     var text: String { label.isEmpty ? count : "\(count) \(label)" }
 
     @MainActor init(now: Date, next: (prayer: Prayer, time: Date), model: AppModel) {
