@@ -25,6 +25,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -164,7 +165,7 @@ private fun SunPath(m: WidgetModel, pal: WPal) {
                 modifier = Modifier.clip(CircleShape).background(pal.card).padding(horizontal = 10.dp, vertical = 3.dp), maxLines = 1)
         }
         androidx.compose.foundation.Image(
-            bitmap = sunPathBitmap(m, 400, 110).let { androidx.compose.ui.graphics.asImageBitmap(it) }, contentDescription = "Sun path",
+            bitmap = sunPathBitmap(m, 400, 110).asImageBitmap(), contentDescription = "Sun path",
             modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 6.dp), contentScale = androidx.compose.ui.layout.ContentScale.FillBounds,
         )
         Rows(m, pal, Modifier.fillMaxWidth().weight(1f))
