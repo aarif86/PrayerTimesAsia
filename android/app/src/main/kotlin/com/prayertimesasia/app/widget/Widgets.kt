@@ -245,7 +245,7 @@ internal fun NextPrayerContent(context: Context) {
     Box(back) {
         if (wide) {
             Row(GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-                Box(GlanceModifier.width(140.dp).fillMaxHeight().let { if (bands) it.background(BandsPalette.color(next.first)) else it }) {
+                Box(GlanceModifier.width(112.dp).fillMaxHeight().let { if (bands) it.background(BandsPalette.color(next.first)) else it }) {
                     HeadlineFace(context, m, pal, next, size, medium = true)
                 }
                 PrayerRows(context, m, pal, { it }, GlanceModifier.defaultWeight().fillMaxHeight().padding(if (bands) 0.dp else 8.dp), compact = true)
@@ -274,8 +274,8 @@ private fun HeadlineFace(context: Context, m: WidgetModel, pal: WPal, next: Pair
         TodayStyle.BANDS -> Column(GlanceModifier.fillMaxSize().padding(pad)) {
             Text("${m.placeName} ${m.flag}", style = st(11, FontWeight.Medium, Color.White.copy(alpha = 0.9f)), maxLines = 1)
             Spacer(GlanceModifier.defaultWeight())
-            Text(title, style = st(if (medium) 20 else 22, FontWeight.Bold), maxLines = 1)
-            Text(time, style = st(if (medium) 22 else 26, FontWeight.Medium), maxLines = 1)
+            Text(title, style = st(if (medium || short) 18 else 22, FontWeight.Bold), maxLines = 1)
+            Text(time, style = st(if (medium || short) 20 else 24, FontWeight.Medium), maxLines = 1)
             Countdown(context, target, Color.White)
             if (nextLine != null) Text(nextLine, style = st(11, FontWeight.Medium, Color.White.copy(alpha = 0.85f)), maxLines = 1)
         }
@@ -307,7 +307,7 @@ private fun HeadlineFace(context: Context, m: WidgetModel, pal: WPal, next: Pair
             Image(ImageProvider(dialBitmap(m, px)), "Day dial", GlanceModifier.size(side.dp))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(title, style = st(if (side < 100f) 10 else 12, FontWeight.Medium, pal.fg2), maxLines = 1)
-                Countdown(context, target, pal.fg, big = side >= 100f)
+                Countdown(context, target, pal.fg)
                 Text(time, style = st(if (side < 100f) 10 else 12, FontWeight.Medium, pal.fg2), maxLines = 1)
                 if (nextLine != null && !short) Text(nextLine, style = st(10, FontWeight.Medium, pal.fg2), maxLines = 1)
             }
@@ -452,7 +452,7 @@ private fun DialBadge(context: Context, m: WidgetModel, pal: WPal, dp: Int) {
         if (lead != null && next != null) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(if (lead.isNext) "Next prayer" else "Now ${m.names.getValue(lead.prayer)}", style = st(10, FontWeight.Medium, pal.fg2), maxLines = 1)
-                Countdown(context, next.second, pal.fg, big = dp >= 120)
+                Countdown(context, next.second, pal.fg)
                 Text(if (lead.isNext) "until ${m.names.getValue(lead.prayer)}" else "left", style = st(10, FontWeight.Medium, pal.fg2), maxLines = 1)
             }
         }
@@ -464,7 +464,7 @@ private fun PlaceBlock(m: WidgetModel, pal: WPal) {
     Column {
         Text("${m.placeName} ${m.flag}", style = st(15, FontWeight.Bold, pal.fg), maxLines = 1)
         Text(m.hijri, style = st(12, color = pal.fg2), maxLines = 2)
-        if (m.nextName != null) Text("Next: ${m.nextName} ${m.nextTime}", style = st(12, FontWeight.Medium, pal.fg), maxLines = 1)
+        if (m.nextName != null) Text("Next: ${m.nextName} ${m.nextTime}", style = st(12, FontWeight.Medium, pal.fg), maxLines = 2)
     }
 }
 
@@ -476,8 +476,8 @@ private fun PrayerRows(
 ) {
     val gold = m.style == TodayStyle.GOLD
     val countdown = m.countdownRow()
-    val nameSize = if (compact) 11 else if (bigger) 19 else 16
-    val timeSize = if (compact) 11 else if (bigger) 22 else 18
+    val nameSize = if (compact) 10 else if (bigger) 19 else 16
+    val timeSize = if (compact) 10 else if (bigger) 22 else 18
     Column(modifier.cornerRadius(16.dp).background(pal.card)) {
         Prayer.all.forEach { p ->
             val hit = countdown?.first == p
