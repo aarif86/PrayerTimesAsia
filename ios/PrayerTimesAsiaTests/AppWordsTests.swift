@@ -126,7 +126,7 @@ final class AppWordsTests: XCTestCase {
         }
         XCTAssertGreaterThan(keys.count, 300, "found the keys the screens use")
         // Lines that read the same in every language on purpose.
-        let sameOK: Set<String> = ["common.ok", "tab.masjid", "tab.falak", "settings.hanafi"]
+        let sameOK: Set<String> = ["common.ok", "tab.masjid", "tab.falak", "settings.hanafi", "phone.ramadan.taqabbal"]
         for key in keys.sorted() {
             XCTAssertNotNil(AppWords.enLines[key], "\(key) is not in the word list")
             for lang in [RamadanContent.Lang.ms, .id] {
