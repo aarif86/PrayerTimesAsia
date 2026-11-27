@@ -243,33 +243,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-look-simple .scr-cell.on { background: color-mix(in srgb, var(--tint) 20%, transparent); box-shadow: inset 0 0 0 2px var(--tint); }
 .scr-look-simple .scr-next { background: var(--fill); -webkit-backdrop-filter: none; backdrop-filter: none; }
 
-/* Day Dial: the app's dial on the left, the countdown on the right. */
-.scr-look-dial .scr-grid { display: none; }
+/* Centre Dial and Calm Gold: the app's own dial on the left (countdown inside), the clock and the times on the right. */
 .scr-dialslot { min-height: 0; min-width: 0; align-self: stretch; display: grid; place-items: center; }
 .scr-dialbox { --ds: min(calc(var(--k) * 0.5), var(--fit, 99)); width: calc(600px * var(--ds)); height: calc(600px * var(--ds)); align-self: center; justify-self: center; }
-.scr-dialbox > .herodial { position: relative; transform: scale(var(--ds)); transform-origin: top left; }
-.scr-dialbox .herodial svg { position: absolute; inset: 0; }
-.scr-dialbox .dial-label { position: absolute; display: flex; }
-.scr-dialbox .herodial-centre { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; }
-.landscape .scr-look-dial { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 4); }
-.landscape .scr-look-dial .scr-head, .landscape .scr-look-dial .scr-foot { grid-column: 1 / -1; }
-.landscape .scr-look-dial .scr-big { font-size: calc(var(--u) * 18); }
+.scr-dialbox > .daydial { position: relative; flex: none; transform: scale(var(--ds)); transform-origin: top left; }
+.daydial svg { position: absolute; inset: 0; }
+.dial-sun, .dial-moon { position: absolute; left: 50%; transform: translate(-50%, -50%); display: flex; color: var(--accent); line-height: 0; }
+.dial-sun svg, .dial-moon svg { position: static; fill: none; }
+.daydial-centre { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; white-space: nowrap; gap: 0; }
+.dial-kicker { color: var(--fg2); line-height: 1.3; }
+.dial-count { font-family: var(--font-display); font-weight: 800; line-height: 1.15; color: var(--fg); }
+.dial-label-line { color: var(--fg2); }
+.golddial path, .golddial circle:last-child { stroke: var(--gold); }
+.scr-look-dial, .scr-look-surau { --gold-track: rgba(255, 255, 255, 0.12); }
+.scr-look-surau.scr-light { --gold-track: rgba(21, 26, 69, 0.12); }
+.landscape .scr-look-dial:not(.scr-no-times), .landscape .scr-look-surau:not(.scr-no-times) { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr auto; column-gap: calc(var(--u) * 5); }
+.landscape .scr-look-dial .scr-head, .landscape .scr-look-dial .scr-foot, .landscape .scr-look-surau .scr-head, .landscape .scr-look-surau .scr-foot { grid-column: 1 / -1; }
 .portrait .scr-dialbox { --ds: min(calc(var(--k) * 1.18), var(--fit, 99)); }
-.scr-dm { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1.05;
-  border-radius: 16px; border: 1.5px solid transparent; }
-.scr-dm.on { background: color-mix(in srgb, var(--tint) 18%, transparent); border-color: color-mix(in srgb, var(--tint) 55%, transparent); }
-.scr-dm.passed { opacity: 0.72; }
-.scr-dm-name { font-size: 21px; font-weight: 700; white-space: nowrap; font-variant-numeric: normal; }
-.scr-dm.on .scr-dm-name { color: var(--tint); }
-.scr-dm .scr-t { font-size: 33px; font-weight: 700; white-space: nowrap; }
-.scr-dm-iq { font-size: 15px; color: var(--fg2); white-space: nowrap; font-variant-numeric: normal; }
-.scr-dm-iq .scr-t { font-size: 1em; color: var(--fg); }
-.scr-dm.minor .scr-dm-name { font-size: 14px; color: var(--fg2); }
-.scr-dm.minor .scr-t { font-size: 18px; }
-.scr-dial-centre { display: grid; justify-items: center; gap: 4px; text-align: center; }
-.scr-dial-centre span { font-size: 17px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tint, var(--accent)); }
-.scr-dial-centre b { font-family: var(--font-display); font-size: 46px; font-weight: 800; white-space: nowrap; }
-
 /* Sun Path: the sun's arc over the day between the countdown and the times. */
 .scr-look-sunpath { grid-template-rows: auto auto minmax(0, 1fr) auto auto; }
 .scr-look-sunpath .scr-big { font-size: calc(var(--u) * 14); }
@@ -428,3 +418,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-cell .scr-t small, .lay-row .scr-t small { margin-left: 0.14em; }
 /* The big clock: a clear gap between the seconds and AM or PM. */
 .scr-clockbig small { margin-left: 0.7em; }
+
+/* The right side: the clock, then the six times as rows (name on the left, time on the right). */
+.scr-side { display: flex; flex-direction: column; justify-content: center; gap: calc(var(--u) * 1.6); min-height: 0; min-width: 0; }
+.scr-side .scr-hero { gap: calc(var(--u) * 0.8); }
+.landscape .scr .scr-side .scr-big { font-size: calc(var(--u) * 9); }
+.scr .scr-side .scr-grid { grid-auto-flow: row; grid-template-columns: 1fr; grid-auto-columns: auto; gap: calc(var(--u) * 0.7); }
+.scr .scr-side .scr-grid .scr-cell { grid-template-columns: 1fr auto; justify-items: stretch; align-items: center; column-gap: calc(var(--u) * 2); row-gap: 0; padding: calc(var(--u) * 0.95) calc(var(--u) * 2.2) calc(var(--u) * 0.95) calc(var(--u) * 2.8); border-radius: calc(var(--u) * 1.8); }
+.scr .scr-side .scr-grid .scr-cell .scr-name { grid-column: 1; font-size: calc(var(--u) * 3.8); }
+.scr .scr-side .scr-grid .scr-cell .scr-t { grid-column: 2; font-size: calc(var(--u) * 4.6); font-weight: 700; justify-self: end; }
+.scr .scr-side .scr-grid .scr-cell .scr-iq { grid-column: 1 / -1; font-size: calc(var(--u) * 2.2); }
+.scr .scr-side .scr-grid .scr-cell .scr-bar { left: calc(var(--u) * 0.9); right: auto; top: 22%; bottom: 22%; width: calc(var(--u) * 0.45); height: auto; }
+.scr.scr-look-surau .scr-side .scr-bar { display: none; }
+/* Calm Gold is flat: no cards, a hairline between rows, one gold outline on the next prayer. */
+.scr.scr-look-surau .scr-side .scr-grid .scr-cell { background: transparent; border: 0; border-bottom: 1px solid var(--stroke); border-radius: 0; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.scr.scr-look-surau .scr-side .scr-grid .scr-cell.on { background: var(--fill); border: 1.5px solid var(--gold); border-radius: calc(var(--u) * 1.4); }
+.scr.scr-look-dial .scr-side .scr-grid .scr-cell.on .scr-name { color: var(--fg); }
+
+.scr .scr-side .scr-grid .scr-syuruk .scr-t, .scr .scr-side .scr-grid .scr-imsak .scr-t { font-size: calc(var(--u) * 4.2); }
