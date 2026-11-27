@@ -10,22 +10,13 @@
   --t-fajr: #e2b65a; --t-sunrise: #e2b65a; --t-dhuhr: #e2b65a; --t-asr: #e2b65a; --t-maghrib: #e2b65a; --t-isha: #e2b65a;
 }
 .scr-look-surau.scr-light, .lay-look-surau.scr-light {
-  --bg: #fbf6ea; --panel: #fffdf7; --glass: rgba(255, 253, 247, 0.95); --glass-strong: #fffdf7; --fg: #151a45; --fg2: rgba(21, 26, 69, 0.7); --fg3: rgba(21, 26, 69, 0.4);
+  --bg: #fbf6ea; --panel: #fffdf7; --glass: rgba(255, 253, 247, 0.95); --glass-strong: #fffdf7; --fg: #151a45; --fg2: rgba(21, 26, 69, 0.7); --fg3: rgba(21, 26, 69, 0.62);
   --accent: #a87b1c; --gold: #a87b1c; --fill: rgba(21, 26, 69, 0.06); --stroke: rgba(21, 26, 69, 0.12);
   --t-fajr: #8a620d; --t-sunrise: #8a620d; --t-dhuhr: #8a620d; --t-asr: #8a620d; --t-maghrib: #8a620d; --t-isha: #8a620d;
 }
-.scr-look-surau::before, .lay-look-surau::before {
-  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.07;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72' fill='none' stroke='%23e2b65a' stroke-width='1.4'%3E%3Cellipse cx='36' cy='18' rx='8' ry='18'/%3E%3Cellipse cx='36' cy='54' rx='8' ry='18'/%3E%3Cellipse cx='18' cy='36' rx='18' ry='8'/%3E%3Cellipse cx='54' cy='36' rx='18' ry='8'/%3E%3C/svg%3E");
-  background-size: calc(var(--u) * 9) calc(var(--u) * 9);
-}
-.scr-look-surau.scr-light::before, .lay-look-surau.scr-light::before { opacity: 0.1; filter: brightness(0.7); }
-.scr-look-surau .scr-cell.on { background: var(--gold); border-color: var(--gold); color: #151a45; }
-.scr-look-surau .scr-cell.on .scr-name, .scr-look-surau .scr-cell.on .scr-iq, .scr-look-surau .scr-cell.on .scr-iq .scr-t, .scr-look-surau .scr-cell.on .scr-t { color: #151a45; }
-/* Light: the next prayer is a navy block with a gold name and a white time, the strongest thing on the screen. */
-.scr-look-surau.scr-light .scr-cell.on { background: #151a45; border-color: #151a45; color: #fff; }
-.scr-look-surau.scr-light .scr-cell.on .scr-name { color: #f0cd7e; }
-.scr-look-surau.scr-light .scr-cell.on .scr-t, .scr-look-surau.scr-light .scr-cell.on .scr-iq, .scr-look-surau.scr-light .scr-cell.on .scr-iq .scr-t { color: #fff; }
+/* Calm Gold is flat navy or warm white with one gold accent: the next prayer gets a gold outline. */
+.scr-look-surau .scr-cell.on { background: var(--fill); border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+.scr-look-surau .scr-cell.on .scr-name { color: var(--fg); }
 
 /* MARK: The maker line, in every layout */
 .scr-maker { font-weight: 500; }
@@ -190,9 +181,9 @@
 /* MARK: Looks, fitted to the layouts */
 
 /* Sky: glass panels over the sky outside. */
-.lay-look-night .lay-times, .lay-look-dial .lay-times { background: var(--glass); border: 1px solid var(--stroke); border-radius: calc(var(--u) * 2.4); padding: calc(var(--u) * 0.8);
+.lay-look-dial .lay-times { background: var(--glass); border: 1px solid var(--stroke); border-radius: calc(var(--u) * 2.4); padding: calc(var(--u) * 0.8);
   -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); }
-.lay-look-night .lay-bar, .lay-look-board .lay-bar, .lay-look-dial .lay-bar, .lay-look-sunpath .lay-bar { -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); background: var(--glass); }
+.lay-look-dial .lay-bar, .lay-look-sunpath .lay-bar { -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); background: var(--glass); }
 
 /* Board: the list on a bordered board, a departure board. */
 .lay-look-board .lay-times { background: var(--glass); border: 1px solid var(--stroke); border-radius: calc(var(--u) * 2.4); padding: calc(var(--u) * 1); gap: 0;
@@ -229,11 +220,15 @@
 .ring-track { fill: none; stroke: var(--stroke); stroke-width: 3; }
 .ring-mark { stroke: var(--bg); stroke-width: 1.5; }
 .ring-mark.on { stroke: var(--fg); stroke-width: 2; }
-.ring-now { fill: var(--fg); }
+.ring-now { fill: #fff; stroke: rgba(0, 0, 0, 0.25); stroke-width: 1.5; }
+.ring-sky { fill: none; stroke: url(#lay-ring-sky); stroke-width: 9; }
+.ring-gold { fill: none; stroke: var(--gold); stroke-width: 3; stroke-linecap: round; }
+.ring-now.gold { stroke: var(--gold); stroke-width: 2.5; }
+.lay-ring.gold .ring-track { stroke: var(--stroke); }
 .lay-strip .lay-ring, .lay-big .lay-ring { width: calc(var(--u) * 9); height: calc(var(--u) * 9); }
 .portrait .lay-ring { width: calc(var(--u) * 17); height: calc(var(--u) * 17); }
-.lay-look-dial .lay-hero { flex-direction: row; }
-.portrait .lay-look-dial .lay-hero { flex-direction: column; }
+.lay-look-dial .lay-hero, .lay-look-surau .lay-hero { flex-direction: row; }
+.portrait .lay-look-dial .lay-hero, .portrait .lay-look-surau .lay-hero { flex-direction: column; }
 
 /* Sun Path: the sun's arc between the clock and the times. */
 .lay-sun { flex: none; height: calc(var(--u) * 9); margin-inline: calc(var(--u) * -1); }
@@ -253,11 +248,8 @@
 .lay-look-simple.scr-light .lay-row.on .scr-name { color: color-mix(in srgb, var(--tint) 78%, #000); }
 .lay-look-simple .lay-times { gap: calc(var(--u) * 0.5); }
 .lay-look-surau .lay-times { gap: calc(var(--u) * 0.3); }
-.lay-look-surau .lay-row.on { background: var(--gold); box-shadow: none; color: #151a45; }
-.lay-look-surau .lay-row.on .scr-name, .lay-look-surau .lay-row.on .scr-t, .lay-look-surau .lay-row.on .scr-iq, .lay-look-surau .lay-row.on .scr-iq .scr-t { color: #151a45; }
-.lay-look-surau.scr-light .lay-row.on { background: #151a45; color: #fff; }
-.lay-look-surau.scr-light .lay-row.on .scr-name { color: #f0cd7e; }
-.lay-look-surau.scr-light .lay-row.on .scr-t, .lay-look-surau.scr-light .lay-row.on .scr-iq, .lay-look-surau.scr-light .lay-row.on .scr-iq .scr-t { color: #fff; }
+.lay-look-surau .lay-row.on { background: var(--fill); box-shadow: inset 0 0 0 calc(var(--u) * 0.18) var(--gold); color: var(--fg); }
+.lay-look-surau .lay-row.on .scr-name { color: var(--fg); }
 .lay-look-surau .lay-row { border-bottom: 1px solid var(--stroke); border-radius: 0; }
 .lay-look-surau .lay-row.on { border-radius: calc(var(--u) * 1.4); border-bottom-color: transparent; }
 .lay-look-surau .lay-bar { background: var(--panel); border-color: var(--stroke); }

@@ -424,15 +424,10 @@
   "In Singapore it uses the official timetable from the Islamic Religious Council of Singapore (MUIS)": "À Singapour, il utilise le calendrier officiel du Conseil religieux islamique de Singapour (MUIS)",
   "Try the free masjid screen": "Essayer l'écran gratuit pour mosquée",
   "Compare our times with yours": "Comparer nos horaires avec les vôtres",
-  "Sky": "Sky",
-  "Bands": "Bands",
-  "Simple": "Simple",
   "Dark": "Sombre",
   "Light": "Clair",
-  "Six looks, each in dark or light.": "Six styles, chacun en mode sombre ou clair.",
   "Pick yours": "Choisissez votre style",
   "No Google, Facebook or Instagram ads, and no tracking. Never on the masjid screen, in reminders, alarms or the azan.": "Aucune publicité Google, Facebook ou Instagram, et aucun suivi. Jamais sur l'écran de la mosquée, dans les rappels, les alarmes ou l'adhan.",
-  "The free masjid screen in the Sky look, dark": "Écran gratuit pour mosquée, style Sky, sombre",
   "Choose a look": "Choisissez un style",
   "The Sun Path look": "Style Sun Path",
   "The Centre Dial look": "Style Centre Dial",
@@ -453,5 +448,7 @@
   "Alerts and alarms": "Alertes et alarmes",
   "A reminder before each prayer begins": "Un rappel avant le début de chaque prière",
   "A clock counts down to the next prayer, with all of today's times below it. Pick from five looks, in light or dark.": "Une horloge compte à rebours jusqu'à la prochaine prière, avec tous les horaires du jour en dessous. Choisissez parmi cinq styles, clair ou sombre.",
-  "A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.": "Un compteur de tarawih, les dix dernières nuits et des liens de zakat al-fitr vers votre autorité officielle."
+  "A Tarawih counter, the last ten nights, and zakat al-Fitr links to your official body.": "Un compteur de tarawih, les dix dernières nuits et des liens de zakat al-fitr vers votre autorité officielle.",
+  "Five looks, each in dark or light.": "Cinq styles, chacun en mode sombre ou clair.",
+  "The free masjid screen in the Big and Simple look, dark": "Écran gratuit pour mosquée, style Big and Simple, sombre"
 }

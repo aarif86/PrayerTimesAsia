@@ -1110,16 +1110,18 @@
           </div>
         </div>
         <div class="mscreen" id="mscreen">
-          <div class="tv"><img id="mscreen-img" src="img/masjid-screen-sky-dark.webp" alt="The free masjid screen in the Sky look, dark" width="960" height="540" loading="lazy" style="display:block;width:100%;height:auto;border-radius:9px" /></div>
+          <div class="tv"><img id="mscreen-img" src="img/masjid-screen-big-and-simple-dark.webp" alt="The free masjid screen in the Big and Simple look, dark" width="960" height="540" loading="lazy" style="display:block;width:100%;height:auto;border-radius:9px" /></div>
           <div class="mscreen-pick" role="group" aria-label="Choose a look">
-            <button type="button" data-look="sky" aria-pressed="true">Sky</button>
-            <button type="button" data-look="bands" aria-pressed="false">Bands</button>
-            <button type="button" data-look="simple" aria-pressed="false">Simple</button>
+            <button type="button" data-look="centre-dial" aria-pressed="false">Centre Dial</button>
+            <button type="button" data-look="sun-path" aria-pressed="false">Sun Path</button>
+            <button type="button" data-look="colour-bands" aria-pressed="false">Colour Bands</button>
+            <button type="button" data-look="big-and-simple" aria-pressed="true">Big and Simple</button>
+            <button type="button" data-look="calm-gold" aria-pressed="false">Calm Gold</button>
             <span class="mscreen-sep" aria-hidden="true"></span>
             <button type="button" data-mode="dark" aria-pressed="true">Dark</button>
             <button type="button" data-mode="light" aria-pressed="false">Light</button>
           </div>
-          <p class="muted center" style="font-size: 0.85rem; margin-top: 12px">Six looks, each in dark or light. <a href="tv/">Pick yours</a>.</p>
+          <p class="muted center" style="font-size: 0.85rem; margin-top: 12px">Five looks, each in dark or light. <a href="tv/">Pick yours</a>.</p>
         </div>
       </div>
     </div>
@@ -1479,11 +1481,10 @@
   })();
 </script>
 <script>
-  // Masjid screen picker: three looks, dark or light.
+  // Masjid screen picker: five looks, dark or light.
   (function () {
     var box = document.getElementById('mscreen'); if (!box) return;
-    var img = document.getElementById('mscreen-img'), look = 'sky', mode = 'dark';
-    var names = { sky: 'Sky', bands: 'Bands', simple: 'Simple' };
+    var img = document.getElementById('mscreen-img'), look = 'big-and-simple', mode = 'dark';
     box.addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b) return;
       if (b.dataset.look) look = b.dataset.look; else if (b.dataset.mode) mode = b.dataset.mode; else return;
@@ -1492,7 +1493,8 @@
         x.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
       img.src = 'img/masjid-screen-' + look + '-' + mode + '.webp';
-      img.alt = 'The free masjid screen in the ' + names[look] + ' look, ' + mode;
+      var on = function (a) { var x = box.querySelector('[' + a + '][aria-pressed="true"]'); return x ? x.textContent : ''; };
+      img.alt = 'The free masjid screen in the ' + on('data-look') + ' look, ' + on('data-mode').toLowerCase();
     });
   })();
 </script>
