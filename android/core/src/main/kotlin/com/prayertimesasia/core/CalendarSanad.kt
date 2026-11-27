@@ -21,21 +21,28 @@ enum class HijriEvent(val raw: String) {
     val hijriMonth: Int get() = when (this) { RAMADAN -> 9; SYAWAL -> 10; ADHA -> 12; MUHARRAM -> 1 }
     val hijriDay: Int get() = if (this == ADHA) 10 else 1
 
-    fun title(style: NamingStyle): String = when (this) {
+    fun title(style: NamingStyle): String = title(when (style) {
+        NamingStyle.MALAY -> RamadanContent.Lang.MS
+        NamingStyle.INDONESIAN -> RamadanContent.Lang.ID
+        else -> RamadanContent.Lang.EN
+    })
+
+    /** The event's name in the app language (not the prayer names setting). */
+    fun title(lang: RamadanContent.Lang): String = when (this) {
         RAMADAN -> "1 Ramadan"
-        SYAWAL -> when (style) {
-            NamingStyle.MALAY -> "Hari Raya Aidilfitri"
-            NamingStyle.INDONESIAN -> "Idulfitri"
+        SYAWAL -> when (lang) {
+            RamadanContent.Lang.MS -> "Hari Raya Aidilfitri"
+            RamadanContent.Lang.ID -> "Idulfitri"
             else -> "Eid al-Fitr"
         }
-        ADHA -> when (style) {
-            NamingStyle.MALAY -> "Hari Raya Aidiladha"
-            NamingStyle.INDONESIAN -> "Iduladha"
+        ADHA -> when (lang) {
+            RamadanContent.Lang.MS -> "Hari Raya Aidiladha"
+            RamadanContent.Lang.ID -> "Iduladha"
             else -> "Eid al-Adha"
         }
-        MUHARRAM -> when (style) {
-            NamingStyle.MALAY, NamingStyle.INDONESIAN -> "Awal Muharram"
-            else -> "Islamic New Year"
+        MUHARRAM -> when (lang) {
+            RamadanContent.Lang.EN -> "Islamic New Year"
+            else -> "Awal Muharram"
         }
     }
 }

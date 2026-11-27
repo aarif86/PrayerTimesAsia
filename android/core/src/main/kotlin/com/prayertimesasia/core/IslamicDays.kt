@@ -52,6 +52,7 @@ object IslamicDays {
             (k.kind == IslamicDayKind.ZULHIJJAH_TEN && h.day == 1)
 
     private fun lang(s: NamingStyle): Int = when (s) { NamingStyle.MALAY -> 1; NamingStyle.INDONESIAN -> 2; else -> 0 }
+    private fun idx(l: RamadanContent.Lang): Int = when (l) { RamadanContent.Lang.MS -> 1; RamadanContent.Lang.ID -> 2; RamadanContent.Lang.EN -> 0 }
 
     private val names: Map<IslamicDayKind, List<String>> = mapOf(
         IslamicDayKind.NEW_YEAR to listOf("Islamic New Year", "Awal Muharram", "Tahun Baru Islam"),
@@ -96,6 +97,9 @@ object IslamicDays {
 
     fun name(k: IslamicDayKind, s: NamingStyle): String = names.getValue(k)[lang(s)]
     fun shortName(k: IslamicDayKind, s: NamingStyle): String = (short[k] ?: names.getValue(k))[lang(s)]
+    /** The same in the app language (not the prayer names setting). */
+    fun name(k: IslamicDayKind, l: RamadanContent.Lang): String = names.getValue(k)[idx(l)]
+    fun shortName(k: IslamicDayKind, l: RamadanContent.Lang): String = (short[k] ?: names.getValue(k))[idx(l)]
 
     /** Hijri month names short enough for a calendar day (English and Malay/Indonesian; others use the full name). */
     fun monthShort(month: Int, s: NamingStyle): String {
@@ -118,7 +122,10 @@ object IslamicDays {
         val note: (String?) -> String, val notePublished: (String) -> String,
     )
 
-    fun words(s: NamingStyle): Words = when (lang(s)) {
+    fun words(s: NamingStyle): Words = wordsAt(lang(s))
+    fun words(l: RamadanContent.Lang): Words = wordsAt(idx(l))
+
+    private fun wordsAt(i: Int): Words = when (i) {
         1 -> Words("Hari ini", "dan", "Tiada hari kebesaran bulan ini.", "Cetak kalendar setahun",
             "Anjak tarikh Hijrah", "Tidak dianjak", "Sehari lebih awal", "Sehari lebih lewat", "hari", "Waktu solat",
             listOf("Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"),

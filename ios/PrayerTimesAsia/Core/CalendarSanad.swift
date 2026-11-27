@@ -14,16 +14,19 @@ enum HijriEvent: String, Codable, CaseIterable, Identifiable, Sendable {
     var hijriMonth: Int { switch self { case .ramadan: 9; case .syawal: 10; case .adha: 12; case .muharram: 1 } }
     var hijriDay: Int { self == .adha ? 10 : 1 }
 
-    func title(_ style: NamingStyle) -> String {
-        switch (self, style) {
+    func title(_ style: NamingStyle) -> String { title(lang: IslamicDays.lang(style)) }
+
+    /// The event's name in the app language (not the prayer names setting).
+    func title(lang: RamadanContent.Lang) -> String {
+        switch (self, lang) {
         case (.ramadan, _): "1 Ramadan"
-        case (.syawal, .malay): "Hari Raya Aidilfitri"
-        case (.syawal, .indonesian): "Idulfitri"
+        case (.syawal, .ms): "Hari Raya Aidilfitri"
+        case (.syawal, .id): "Idulfitri"
         case (.syawal, _): "Eid al-Fitr"
-        case (.adha, .malay): "Hari Raya Aidiladha"
-        case (.adha, .indonesian): "Iduladha"
+        case (.adha, .ms): "Hari Raya Aidiladha"
+        case (.adha, .id): "Iduladha"
         case (.adha, _): "Eid al-Adha"
-        case (.muharram, .malay), (.muharram, .indonesian): "Awal Muharram"
+        case (.muharram, .ms), (.muharram, .id): "Awal Muharram"
         case (.muharram, _): "Islamic New Year"
         }
     }

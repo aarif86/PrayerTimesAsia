@@ -3,6 +3,9 @@ import { join } from 'node:path'
 import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 import { appLangFromLocales, appWord, resolveAppLang } from '../src/core/appWords'
+import { hijriCalWordsIn, islamicDayNameIn } from '../src/core/islamicDays'
+import { eventTitleIn } from '../src/core/calendarSanad'
+import { guideLang } from '../src/core/guideWords'
 
 // Every word on the web app's screens comes from the shared word list
 // (data/app-words), so the app can show it in English, Malay or Indonesian.
@@ -98,5 +101,19 @@ describe('prayer names never change the app language', () => {
     expect(resolveAppLang(null, ['ms-MY'])).toBe('ms')
     expect(resolveAppLang('ms', ['en-SG'])).toBe('ms')
     expect(resolveAppLang('en', ['ms-MY'])).toBe('en')
+  })
+})
+
+describe('the Hijri calendar and guide follow the app language', () => {
+  it('English app words give English day names, Malay gives Malay', () => {
+    expect(islamicDayNameIn('aidilfitri', 'en')).toBe('Eid al-Fitr')
+    expect(islamicDayNameIn('aidilfitri', 'ms')).toBe('Hari Raya Aidilfitri')
+    expect(hijriCalWordsIn('en').today).toBe('Today')
+    expect(eventTitleIn('1_syawal', 'en')).toBe('Eid al-Fitr')
+    expect(eventTitleIn('1_syawal', 'ms')).toBe('Hari Raya Aidilfitri')
+  })
+  it('the guide starts in the device language only', () => {
+    expect(guideLang('en-SG')).toBe('en')
+    expect(guideLang('ms-MY')).toBe('ms')
   })
 })

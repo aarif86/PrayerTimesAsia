@@ -10,13 +10,17 @@ export type HijriEvent = '1_ramadan' | '1_syawal' | '10_zulhijjah' | '1_muharram
 export const EVENT_MONTH: Record<HijriEvent, number> = { '1_ramadan': 9, '1_syawal': 10, '10_zulhijjah': 12, '1_muharram': 1 }
 export const EVENT_DAY: Record<HijriEvent, number> = { '1_ramadan': 1, '1_syawal': 1, '10_zulhijjah': 10, '1_muharram': 1 }
 
-export function eventTitle(e: HijriEvent, style: NamingStyle): string {
+export function eventTitleIn(e: HijriEvent, lang: 'en' | 'ms' | 'id'): string {
   switch (e) {
     case '1_ramadan': return '1 Ramadan'
-    case '1_syawal': return style === 'malay' ? 'Hari Raya Aidilfitri' : style === 'indonesian' ? 'Idulfitri' : 'Eid al-Fitr'
-    case '10_zulhijjah': return style === 'malay' ? 'Hari Raya Aidiladha' : style === 'indonesian' ? 'Iduladha' : 'Eid al-Adha'
-    case '1_muharram': return style === 'malay' || style === 'indonesian' ? 'Awal Muharram' : 'Islamic New Year'
+    case '1_syawal': return lang === 'ms' ? 'Hari Raya Aidilfitri' : lang === 'id' ? 'Idulfitri' : 'Eid al-Fitr'
+    case '10_zulhijjah': return lang === 'ms' ? 'Hari Raya Aidiladha' : lang === 'id' ? 'Iduladha' : 'Eid al-Adha'
+    case '1_muharram': return lang === 'en' ? 'Islamic New Year' : 'Awal Muharram'
   }
+}
+
+export function eventTitle(e: HijriEvent, style: NamingStyle): string {
+  return eventTitleIn(e, style === 'malay' ? 'ms' : style === 'indonesian' ? 'id' : 'en')
 }
 
 export interface CalendarAnnouncement {

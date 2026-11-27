@@ -63,4 +63,13 @@ final class AppWordsTests: XCTestCase {
         XCTAssertEqual(t(.tonight), "Tonight")
         XCTAssertEqual(t(.doaAndNiat), "Duas and intention")
     }
+
+    /// The Hijri calendar writes its day names in the app language, not the prayer names.
+    func testCalendarFollowsTheAppLanguage() {
+        let lang = AppWords.appLanguage(naming: .malay)
+        XCTAssertEqual(IslamicDays.name(.aidilfitri, lang: lang), "Eid al-Fitr")
+        XCTAssertEqual(IslamicDays.words(lang: lang).today, "Today")
+        XCTAssertEqual(HijriEvent.syawal.title(lang: lang), "Eid al-Fitr")
+        XCTAssertEqual(IslamicDays.name(.aidilfitri, lang: .ms), "Hari Raya Aidilfitri")
+    }
 }

@@ -19,15 +19,4 @@ enum GuideWords {
         for (name, value) in args { line = line.replacingOccurrences(of: "{\(name)}", with: value) }
         return line
     }
-
-    /// The prayer names' language if it is Malay or Indonesian, else the phone's.
-    static func startLanguage(naming: NamingStyle, locale: Locale = .current) -> RamadanContent.Lang {
-        let fromNames = RamadanContent.lang(naming)
-        if fromNames != .en { return fromNames }
-        switch locale.language.languageCode?.identifier {
-        case "ms": return .ms
-        case "id", "in": return .id
-        default: return .en
-        }
-    }
 }
