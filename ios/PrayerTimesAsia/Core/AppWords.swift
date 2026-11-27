@@ -45,6 +45,15 @@ enum AppWords {
         return .en
     }
 
+    /// Day and month names for dates follow the app language.
+    static var formatLocale: Locale {
+        switch AppLanguage.shared.lang {
+        case .en: Locale(identifier: "en_GB")
+        case .ms: Locale(identifier: "ms_MY")
+        case .id: Locale(identifier: "id_ID")
+        }
+    }
+
     static func lines(_ lang: RamadanContent.Lang) -> [String: String] {
         switch lang {
         case .en: enLines
@@ -73,6 +82,14 @@ enum AppLanguageChoice: String, CaseIterable, Codable, Identifiable, Sendable {
         case .en: "English"
         case .ms: "Bahasa Melayu"
         case .id: "Bahasa Indonesia"
+        }
+    }
+
+    static func code(_ lang: RamadanContent.Lang) -> String {
+        switch lang {
+        case .en: "en"
+        case .ms: "ms"
+        case .id: "id"
         }
     }
 

@@ -21,6 +21,14 @@ struct FalakView: View {
     enum Part: String, CaseIterable, Identifiable {
         case sky = "Sky", then = "Then", now = "Now", why = "Why"
         var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .sky: W("falak.tabSky")
+            case .then: W("falak.tabThen")
+            case .now: W("common.now")
+            case .why: W("falak.tabWhy")
+            }
+        }
     }
 
     var body: some View {
@@ -93,7 +101,7 @@ struct FalakView: View {
             ForEach(Part.allCases) { part in
                 let on = part == tab
                 Button { tab = part } label: {
-                    Text(part.rawValue)
+                    Text(part.title)
                         .lookFont(14, .semibold)
                         .foregroundStyle(on ? p.tx : p.tx2)
                         .frame(maxWidth: .infinity, minHeight: 40)
@@ -102,7 +110,7 @@ struct FalakView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(part.rawValue)
+                .accessibilityLabel(part.title)
                 .accessibilityAddTraits(on ? AccessibilityTraits.isSelected : AccessibilityTraits())
             }
         }
@@ -325,13 +333,14 @@ extension AppModel {
     func longDate(_ date: Date) -> String {
         var style = Date.FormatStyle(date: .complete, time: .omitted)
         style.timeZone = timeZone
+        style.locale = AppWords.formatLocale
         return date.formatted(style)
     }
 }
 
 private func minutesText(_ m: Double) -> String {
     let r = Int(m.rounded())
-    return r == 1 || r == -1 ? "\(abs(r)) minute" : "\(abs(r)) minutes"
+    return W("falak.minutes", ["n": abs(r)])
 }
 
 struct SunSafetyCard: View {
@@ -546,7 +555,7 @@ private struct ShadowStickCard: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(W("falak.forStick")).font(.subheadline.weight(.semibold))
                     row(W("falak.zawal"), model.formatted(plan.noon),
-                        "\(cm(plan.noonShadow(height: height))) pointing \(Geo.compassPoint(plan.noonShadowBearing))")
+                        W("falak.pointing", ["length": cm(plan.noonShadow(height: height)), "point": Geo.compassPoint(plan.noonShadowBearing)]))
                     if let t = plan.asrShafii {
                         row(W("falak.asrShafii"), model.formatted(t), cm(plan.asrShadow(height: height, school: .standard)))
                     }
@@ -605,8 +614,8 @@ private struct ShadowStickCard: View {
             if let reached = r.asrReached {
                 let target = plan.asrShadow(height: height, school: school)
                 Text(reached
-                     ? W("falak.asrBegun", ["school": school == .hanafi ? "Hanafi" : "Shafi'i", "length": cm(target)])
-                     : W("falak.asrNotBegun", ["school": school == .hanafi ? "Hanafi" : "Shafi'i", "length": cm(target)]))
+                     ? W("falak.asrBegun", ["school": school == .hanafi ? W("settings.hanafi") : W("settings.shafii"), "length": cm(target)])
+                     : W("falak.asrNotBegun", ["school": school == .hanafi ? W("settings.hanafi") : W("settings.shafii"), "length": cm(target)]))
                     .font(.footnote.weight(.semibold))
             } else {
                 Text(W("falak.morning", ["name": Prayer.dhuhr.name(model.naming)])).font(.footnote.weight(.semibold))

@@ -22,8 +22,8 @@ struct SettingsView: View {
         let alarm = modes.filter { $0 == .alarm }.count
         if notify + alarm == 0 { return model.prefs.anyAlarm ? W("common.on") : W("settings.nothingOn") }
         var parts: [String] = []
-        if notify > 0 { parts.append("\(notify) notify") }
-        if alarm > 0 { parts.append(alarm == 1 ? W("phone.settings.oneAlarm") : "\(alarm) alarms") }
+        if notify > 0 { parts.append(W("settings.nNotify", ["n": notify])) }
+        if alarm > 0 { parts.append(alarm == 1 ? W("phone.settings.oneAlarm") : W("settings.nAlarms", ["n": alarm])) }
         return parts.joined(separator: ", ")
     }
 
@@ -426,7 +426,7 @@ private struct PrayerTimesPage: View {
                     }
                 }
                 Picker(W("settings.asr"), selection: $model.prefs.asrOverride) {
-                    Text(W("common.automaticWith", ["name": model.profile.asr == .hanafi ? "Hanafi" : "Shafi'i"])).tag(AsrSchool?.none)
+                    Text(W("common.automaticWith", ["name": model.profile.asr == .hanafi ? W("settings.hanafi") : W("settings.shafii")])).tag(AsrSchool?.none)
                     ForEach(AsrSchool.allCases) { Text($0.label).tag(AsrSchool?.some($0)) }
                 }
                 if model.method.id == "jakim", let place = model.activePlace {

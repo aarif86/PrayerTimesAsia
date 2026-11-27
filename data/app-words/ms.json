@@ -1558,5 +1558,21 @@
   "phone.method.ishaMin": "Isyak +{n} min",
   "phone.method.fajrIsha": "Subuh {n}° · {rest}",
   "phone.sources.ownTimetable": "Jadual waktu {name} sendiri (Subuh {n}° · {rest}), daripada {source}.",
-  "phone.time.timeLeft": "{time} lagi"
+  "phone.time.timeLeft": "{time} lagi",
+  "phone.alerts.alarmRingsWord": "penggera berbunyi",
+  "phone.alerts.notifComesWord": "notifikasi tiba",
+  "phone.alerts.forSahurWord": "untuk sahur",
+  "phone.alerts.forNameWord": "untuk {name}",
+  "phone.move.sumPlace": "Tempat {name}",
+  "phone.move.sumSaved": "{n} tempat disimpan",
+  "phone.move.sumSaved_one": "{n} tempat disimpan",
+  "phone.move.sumHistory": "sejarah {n} hari",
+  "phone.move.sumHistory_one": "sejarah {n} hari",
+  "phone.move.sumCalc": "Pilihan pengiraan anda",
+  "phone.move.sumLook": "Rupa dan nama waktu solat anda",
+  "phone.move.sumAlerts": "Solat mana yang dimaklumkan, dan caranya",
+  "phone.move.sumAlarms": "Penggera solat anda",
+  "phone.move.sumRamadan": "Rekod Ramadan anda tentang puasa, Tarawih dan juzuk",
+  "phone.move.sumStandard": "Tetapan piawai",
+  "phone.today.nowThen2": "Sekarang {name}. {count} {label}."
 }

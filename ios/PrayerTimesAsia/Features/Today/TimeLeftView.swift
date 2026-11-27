@@ -12,6 +12,10 @@ struct PrayerCountdown {
     let label: String
     let urgent: Bool
     let done: Bool
+    /// True while the current prayer window is counting down (not "until the next prayer").
+    let inWindow: Bool
+    /// True while the current prayer window is counting down (not "until the next prayer").
+    let inWindow: Bool
     var text: String { label.isEmpty ? count : "\(count) \(label)" }
 
     @MainActor init(now: Date, next: (prayer: Prayer, time: Date), model: AppModel) {
@@ -20,14 +24,17 @@ struct PrayerCountdown {
         if let w, !done {
             count = TodayView.short(w.end.timeIntervalSince(now))
             label = W("today.leftLabel")
+            inWindow = true
             urgent = w.prayer != .isha && now >= w.nudgeAt
         } else if w == nil && model.current(at: now)?.prayer == .sunrise {
-            count = "in \(TodayView.short(next.time.timeIntervalSince(now)))"
+            count = W("today.in", ["time": TodayView.short(next.time.timeIntervalSince(now))])
             label = ""
+            inWindow = false
             urgent = false
         } else {
             count = TodayView.short(next.time.timeIntervalSince(now))
-            label = "until \(next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))"
+            label = W("today.untilName", ["name": next.prayer.name(model.naming, isFriday: model.isFriday(next.time))])
+            inWindow = false
             urgent = false
         }
     }

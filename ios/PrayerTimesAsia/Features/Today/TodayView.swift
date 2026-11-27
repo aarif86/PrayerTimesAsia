@@ -209,6 +209,7 @@ struct TodayView: View {
         let f = DateFormatter()
         f.timeZone = model.timeZone
         f.dateFormat = "EEE d MMM"
+        f.locale = AppWords.formatLocale
         let label: String = switch dayOffset {
         case 0: W("common.today").uppercased()
         case 1: W("common.tomorrow").uppercased()
@@ -350,6 +351,7 @@ struct TodayView: View {
         let f = DateFormatter()
         f.timeZone = model.timeZone
         f.dateFormat = "EEEE d MMMM"
+        f.locale = AppWords.formatLocale
         let label: String = switch dayOffset {
         case 0: W("common.today").uppercased()
         case 1: W("common.tomorrow").uppercased()
@@ -519,6 +521,7 @@ struct TodayView: View {
         let f = DateFormatter()
         f.timeZone = model.timeZone
         f.dateFormat = "d MMM yyyy"
+        f.locale = AppWords.formatLocale
         let hijri = model.hijriLabel(date)
         return HStack(spacing: 4) {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
@@ -726,6 +729,7 @@ struct TodayView: View {
         let f = DateFormatter()
         f.timeZone = model.timeZone
         f.dateFormat = "EEEE d MMMM"
+        f.locale = AppWords.formatLocale
         let hijri = model.hijriLabel(date)
         return HStack {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
@@ -912,7 +916,7 @@ struct TodayView: View {
             .background(Color.primary.opacity(0.1), in: Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(W("today.trackerButton", ["n": model.streak, "extra": paused ? ", paused" : excused ? ", excused today" : ""]))
+        .accessibilityLabel(W("today.trackerButton", ["n": model.streak, "extra": paused ? W("today.trackerPaused") : excused ? W("today.trackerExcused") : ""]))
         .accessibilityHint(W("phone.a11y.trackerHint"))
     }
 
@@ -1238,7 +1242,7 @@ private struct PrayerMark: View {
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.success, trigger: prayed) { _, new in new }
-        .accessibilityLabel("\(name), \(model.formatted(time))\(isCurrent ? ", now" : "")\(prayed ? ", prayed" : "")")
+        .accessibilityLabel("\(name), \(model.formatted(time))\(isCurrent ? ", " + W("common.now").lowercased() : "")\(prayed ? ", " + W("phone.a11y.prayed") : "")")
     }
 
     /// "Fajr · Subuh" for a visitor, so they know what it is called here.
@@ -1359,7 +1363,7 @@ private struct PrayerBand: View {
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.success, trigger: prayed) { _, new in new }
-        .accessibilityLabel("\(prayer.name(model.naming)), \(model.formatted(time))\(isCurrent ? ", now" : "")\(prayed ? ", prayed" : "")")
+        .accessibilityLabel("\(prayer.name(model.naming)), \(model.formatted(time))\(isCurrent ? ", " + W("common.now").lowercased() : "")\(prayed ? ", " + W("phone.a11y.prayed") : "")")
     }
 
 }
@@ -1611,14 +1615,14 @@ extension TodayView {
     @ViewBuilder
     private func v12DialHero(now: Date, day: PrayerDay, name: String, next: Moment, count: PrayerCountdown) -> some View {
         let gold = lookStyle == .gold
-        let inPrayer = count.label == "left to pray"
+        let inPrayer = count.inWindow
         let nextName = next.prayer.name(model.naming, isFriday: model.isFriday(next.time))
         let bare = TodayView.short(next.time.timeIntervalSince(now))
         let tomorrowFajr = model.day(containing: model.noon(now, plus: 1))?.time(.fajr) ?? day.time(.fajr).addingTimeInterval(86_400)
         V12Dial(now: now, day: day, nextFajr: tomorrowFajr, timeZone: model.timeZone, gold: gold,
                 kicker: inPrayer ? name : W("today.nextPrayer"),
                 count: inPrayer ? count.count : bare,
-                label: inPrayer ? count.label : "until \(nextName)",
+                label: inPrayer ? count.label : W("today.untilName", ["name": nextName]),
                 urgent: count.urgent,
                 spoken: inPrayer ? W("phone.today.nowLeft", ["name": name, "left": count.count]) : W("phone.today.nextIn", ["name": nextName, "left": TodayView.spoken(next.time.timeIntervalSince(now))]))
             .frame(width: gold ? 204 : 190, height: gold ? 204 : 190)
@@ -1810,7 +1814,7 @@ extension TodayView {
         if !model.prefs.trackerEnabled { return W("common.off") }
         if model.trackerPaused { return W("today.trackerPaused") }
         if model.isExcused(now) { return W("tracker.excusedToday") }
-        return model.streak == 1 ? W("phone.today.oneDay") : "\(model.streak) days"
+        return model.streak == 1 ? W("phone.today.oneDay") : W("settings.days", ["n": model.streak])
     }
 
     // MARK: Date
@@ -1821,6 +1825,7 @@ extension TodayView {
         let f = DateFormatter()
         f.timeZone = model.timeZone
         f.dateFormat = "EEE d MMM"
+        f.locale = AppWords.formatLocale
         return HStack(spacing: 0) {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
                 Image(systemName: "chevron.left").font(.system(size: 20, weight: .medium))
@@ -1860,7 +1865,7 @@ extension TodayView {
                 v12TopBar(now)
                 if dayOffset == 0, let lead = PrayerLead(current: current, next: next), let next {
                     let name = lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time))
-                    let hero = Text(lead.isNext ? name : "\(name) now").font(vf(34, .bold, display: true))
+                    let hero = Text(lead.isNext ? name : W("today.nameNow", ["name": name])).font(vf(34, .bold, display: true))
                         + Text("  " + PrayerCountdown(now: now, next: next, model: model).text).font(vf(17)).foregroundColor(pal.tx2)
                     hero
                         .lineLimit(2).minimumScaleFactor(0.7)
@@ -1920,6 +1925,7 @@ extension TodayView {
         let f = DateFormatter()
         f.timeZone = model.timeZone
         f.dateFormat = "d MMM"
+        f.locale = AppWords.formatLocale
         return HStack(spacing: 0) {
             Button { withAnimation(.snappy) { dayOffset -= 1 } } label: {
                 Image(systemName: "chevron.left").font(.system(size: 17, weight: .semibold))
@@ -2577,7 +2583,7 @@ private struct V12Band: View {
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.success, trigger: prayed) { _, new in new }
-        .accessibilityLabel("\(prayer.name(model.naming)), \(model.formatted(time))\(isCurrent ? ", now" : "")\(prayed ? ", prayed" : ""), \(mode.word)")
+        .accessibilityLabel("\(prayer.name(model.naming)), \(model.formatted(time))\(isCurrent ? ", " + W("common.now").lowercased() : "")\(prayed ? ", " + W("phone.a11y.prayed") : ""), \(mode.word)")
     }
 
     private func bandLabel(mode: AlertMode, prayed: Bool, hideBell: Bool) -> some View {

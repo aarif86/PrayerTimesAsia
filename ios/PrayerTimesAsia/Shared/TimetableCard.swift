@@ -232,6 +232,7 @@ struct TimetableCard: View {
         let f = DateFormatter()
         f.timeZone = s.timeZone
         f.dateFormat = "EEEE d MMMM"
+        f.locale = AppWords.formatLocale
         return VStack(spacing: 4) {
             HStack(spacing: 6) {
                 Text(W("common.today").uppercased()).font(.system(size: 10, weight: .heavy)).tracking(0.4)

@@ -197,7 +197,7 @@ struct QiblaView: View {
 
     /// Colour Bands: full width bands, square corners, the numbers as three bands.
     private func bandsBody(_ r: Reading, width: CGFloat) -> some View {
-        let rows: [(String, String)] = [("Qibla", r.qibla), ("Facing", r.facing), ("To Makkah", "\(r.km) km")]
+        let rows: [(String, String)] = [(W("tab.qibla"), r.qibla), (W("qibla.facingShort"), r.facing), (W("qibla.toMakkah"), "\(r.km) km")]
         return VStack(spacing: 0) {
             Text(W("tab.qibla"))
                 .font(Theme.screenTitle)

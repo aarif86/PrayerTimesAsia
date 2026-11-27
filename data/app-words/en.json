@@ -1558,5 +1558,21 @@
   "phone.method.ishaMin": "Isha +{n} min",
   "phone.method.fajrIsha": "Fajr {n}° · {rest}",
   "phone.sources.ownTimetable": "{name}'s own timetable (Fajr {n}° · {rest}), from {source}.",
-  "phone.time.timeLeft": "{time} left"
+  "phone.time.timeLeft": "{time} left",
+  "phone.alerts.alarmRingsWord": "alarm rings",
+  "phone.alerts.notifComesWord": "notification comes",
+  "phone.alerts.forSahurWord": "for sahur",
+  "phone.alerts.forNameWord": "for {name}",
+  "phone.move.sumPlace": "Place {name}",
+  "phone.move.sumSaved": "{n} saved places",
+  "phone.move.sumSaved_one": "{n} saved place",
+  "phone.move.sumHistory": "{n} days of history",
+  "phone.move.sumHistory_one": "{n} day of history",
+  "phone.move.sumCalc": "Your calculation choices",
+  "phone.move.sumLook": "Your look and prayer names",
+  "phone.move.sumAlerts": "Which prayers to alert, and how",
+  "phone.move.sumAlarms": "Your prayer alarms",
+  "phone.move.sumRamadan": "Your Ramadan record of fasts, Tarawih and juz",
+  "phone.move.sumStandard": "The standard settings",
+  "phone.today.nowThen2": "Now {name}. {count} {label}."
 }

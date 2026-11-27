@@ -66,7 +66,7 @@ struct JourneyView: View {
                     Text(g.body).font(.body).opacity(0.9).fixedSize(horizontal: false, vertical: true)
                     if status.isTraveller { planTable }
                     if model.prefs.arrivedAt != nil, status.isTraveller || isSettled(status) {
-                        Text(W("phone.journey.dayIn", ["n": model.daysHere + 1, "place": model.profile.name.isEmpty ? "this place" : model.profile.name]))
+                        Text(W("phone.journey.dayIn", ["n": model.daysHere + 1, "place": model.profile.name.isEmpty ? W("journey.thisPlace") : model.profile.name]))
                             .font(.subheadline.weight(.semibold)).opacity(0.8)
                     }
                 }

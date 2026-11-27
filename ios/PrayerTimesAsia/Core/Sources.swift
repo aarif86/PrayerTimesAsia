@@ -13,7 +13,7 @@ enum SourceGrade: String, Codable, Sendable {
     var title: String {
         switch self {
         case .official: W("source.gradeA")
-        case .masjid: "Masjid-confirmed"
+        case .masjid: W("source.gradeB")
         case .community: W("source.gradeC")
         case .calculated: W("source.gradeD")
         case .falak: W("source.gradeF")
@@ -23,7 +23,7 @@ enum SourceGrade: String, Codable, Sendable {
     var explanation: String {
         switch self {
         case .official: W("source.explainA")
-        case .masjid: "From a named mosque's own timetable, checked against our calculation."
+        case .masjid: W("source.explainB")
         case .community: W("source.explainC")
         case .calculated: W("phone.source.astro")
         case .falak: W("source.explainF")

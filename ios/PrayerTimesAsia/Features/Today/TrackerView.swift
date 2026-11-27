@@ -80,7 +80,7 @@ struct TrackerView: View {
                 Button { monthsBack += 1 } label: { Image(systemName: "chevron.left") }
                     .accessibilityLabel(W("tracker.prevMonth"))
                 Spacer()
-                Text(first.formatted(.dateTime.month(.wide).year().locale(Locale(identifier: "en_GB")))).font(.headline)
+                Text(first.formatted(.dateTime.month(.wide).year().locale(AppWords.formatLocale))).font(.headline)
                 Spacer()
                 Button { monthsBack -= 1 } label: { Image(systemName: "chevron.right") }
                     .disabled(monthsBack == 0)
@@ -103,7 +103,7 @@ struct TrackerView: View {
             .font(.caption)
             Group {
                 if counted > 0 {
-                    Text(W("tracker.tickedOf", ["n": prayed, "total": counted])) + Text(excused > 0 ? " · \(excused) excused day\(excused == 1 ? "" : "s")" : "").foregroundColor(.secondary)
+                    Text(W("tracker.tickedOf", ["n": prayed, "total": counted])) + Text(excused > 0 ? " · " + W("tracker.excusedDays", ["n": excused]) : "").foregroundColor(.secondary)
                 } else {
                     Text(W("tracker.nothing"))
                 }
@@ -138,13 +138,13 @@ struct TrackerView: View {
         .font(.footnote.monospacedDigit())
         .frame(width: 38, height: 38)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(n): \(future ? "not yet" : d.excused ? "excused" : "\(d.prayed) of 5 prayers")")
+        .accessibilityLabel("\(n): \(future ? W("phone.tracker.sourceNone") : d.excused ? W("phone.tracker.excusedWord") : W("phone.tracker.ofFive", ["n": d.prayed]))")
     }
 
     private static func label(_ key: String) -> String {
         let p = key.split(separator: "-").compactMap { Int($0) }
         guard p.count == 3 else { return key }
-        let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        let months = { () -> [String] in let f = DateFormatter(); f.locale = AppWords.formatLocale; return f.shortMonthSymbols }()
         return "\(p[2]) \(months[p[1] - 1])"
     }
 }

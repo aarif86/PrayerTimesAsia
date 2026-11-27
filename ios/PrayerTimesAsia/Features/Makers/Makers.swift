@@ -39,7 +39,7 @@ struct MakersCard: View {
                 .frame(width: compact ? 28 : 34, height: compact ? 28 : 34)
                 .background(Theme.accent.opacity(0.18), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(card.isSponsor ? "\(picksName) · Sponsored" : picksName)
+                    Text(card.isSponsor ? "\(picksName) · \(W("makers.sponsored"))" : picksName)
                         .textCase(.uppercase).font(.system(size: 10, weight: .bold)).tracking(0.6).foregroundStyle(.secondary)
                     Text(card.title).font(.subheadline.weight(.semibold)).lineLimit(1)
                     if !compact {

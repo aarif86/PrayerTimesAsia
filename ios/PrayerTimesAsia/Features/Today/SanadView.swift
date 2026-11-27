@@ -80,7 +80,7 @@ struct SourceBadge: View {
     }
 
     private var sourceName: String {
-        day.officialSource ?? "\(model.method.shortName) method"
+        day.officialSource ?? W("phone.source.methodName", ["name": model.method.shortName])
     }
 }
 

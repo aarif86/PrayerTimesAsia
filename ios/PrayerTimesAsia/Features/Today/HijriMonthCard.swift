@@ -248,7 +248,7 @@ struct HijriMonthCard: View {
         let utc = TimeZone(identifier: "UTC")!
         var style = Date.FormatStyle(date: .complete, time: .omitted)
         style.timeZone = utc
-        style.locale = Locale(identifier: "en_GB")
+        style.locale = AppWords.formatLocale
         return g.noon(in: utc).formatted(style)
     }
 }

@@ -355,25 +355,25 @@ extension MovedSettings {
     /// What people are about to bring in, in a few short lines.
     var summary: [String] {
         var lines: [String] = []
-        if let place = home?.name ?? manualPlace?.name { lines.append("Place: \(place)") }
-        if let n = savedPlaces?.count, n > 0 { lines.append("\(n) saved place\(n == 1 ? "" : "s")") }
+        if let place = home?.name ?? manualPlace?.name { lines.append(W("phone.move.sumPlace", ["name": place])) }
+        if let n = savedPlaces?.count, n > 0 { lines.append(W("phone.move.sumSaved", ["n": n])) }
         let days = prayedLog?.count ?? 0
         if trackerEnabled == true || days > 0 {
-            lines.append(W("settings.trackerOn") + (days > 0 ? ", \(days) day\(days == 1 ? "" : "s") of history" : ""))
+            lines.append(W("settings.trackerOn") + (days > 0 ? ", " + W("phone.move.sumHistory", ["n": days]) : ""))
         }
-        if methodOverrideID != nil || asrOverride != nil || jakimZoneOverride != nil { lines.append("Your calculation choices") }
-        if appearance != nil || todayStyle != nil || use24Hour != nil || namingOverride != nil { lines.append("Your look and prayer names") }
+        if methodOverrideID != nil || asrOverride != nil || jakimZoneOverride != nil { lines.append(W("phone.move.sumCalc")) }
+        if appearance != nil || todayStyle != nil || use24Hour != nil || namingOverride != nil { lines.append(W("phone.move.sumLook")) }
         if notifyPrayers != nil || reminderMinutesBefore != nil || quietHours != nil || buzzOnly != nil || jumuahReminderMinutes != nil {
-            lines.append("Which prayers to alert, and how")
+            lines.append(W("phone.move.sumAlerts"))
         }
         if wakeUp != nil || sahurAlarm != nil || dhuhrAlarm != nil || asrAlarm != nil || maghribAlarm != nil || ishaAlarm != nil {
-            lines.append("Your prayer alarms")
+            lines.append(W("phone.move.sumAlarms"))
         }
         if !(fastLog ?? [:]).isEmpty || !(tarawihLog ?? []).isEmpty || !(quranLog ?? []).isEmpty {
-            lines.append("Your Ramadan record of fasts, Tarawih and juz")
+            lines.append(W("phone.move.sumRamadan"))
         }
         if largeText == true { lines.append(W("settings.biggerText")) }
         if musafirEnabled == true { lines.append(W("settings.musafir")) }
-        return lines.isEmpty ? ["The standard settings"] : lines
+        return lines.isEmpty ? [W("phone.move.sumStandard")] : lines
     }
 }

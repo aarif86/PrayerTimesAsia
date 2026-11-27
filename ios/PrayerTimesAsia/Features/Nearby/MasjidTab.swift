@@ -384,10 +384,10 @@ struct NearbyView: View {
                 Spacer(minLength: 0)
             }
             LookSegmented(p: p, label: W("masjid.howGoing"),
-                          options: [("Walk", TripMode.walk.rawValue), ("Drive", TripMode.drive.rawValue)],
+                          options: [(W("masjid.walk"), TripMode.walk.rawValue), (W("masjid.drive"), TripMode.drive.rawValue)],
                           selection: $modeRaw)
             LookSegmented(p: p, label: W("phone.masjid.type"),
-                          options: PrayerSpace.Kind.allCases.map { ($0.rawValue, $0) },
+                          options: PrayerSpace.Kind.allCases.map { ($0.title, $0) },
                           selection: $kind)
             if search.spaces.contains(where: { hoursNow($0, at: now) != nil }) {
                 Toggle(isOn: $openOnly) { Label(W("masjid.openOnly"), systemImage: "clock") }
@@ -426,7 +426,7 @@ struct NearbyView: View {
                 Text(busy ? W("phone.masjid.slow")
                      : search.failed ? W("phone.masjid.needInternet")
                      : openOnly ? W("masjid.nothingOpenBody")
-                     : W("phone.masjid.noneWithin", ["name": kind == .musollah ? "prayer room" : "masjid"]))
+                     : W("phone.masjid.noneWithin", ["name": kind == .musollah ? W("masjid.musollah").lowercased() : W("masjid.masjid").lowercased()]))
             } actions: {
                 if busy || search.failed {
                     Button(W("common.tryAgain")) { slow = false; search.retry() }
@@ -502,7 +502,7 @@ struct NearbyView: View {
 
     private func distanceLine(_ km: Double) -> String {
         let trip = MasjidExtras.tripText(km, mode: mode)
-        return "\(MasjidExtras.distanceText(km)) away" + (trip.map { ", \($0)" } ?? "")
+        return W("phone.masjid.away", ["distance": MasjidExtras.distanceText(km), "extra": trip.map { ", \($0)" } ?? ""])
     }
 
     private func mapItem(_ name: String, _ c: Coordinates) -> MKMapItem {
@@ -593,7 +593,7 @@ private struct SpaceRow: View {
                         Label(OpeningHours.text(hours, use24: use24), systemImage: "clock").font(.footnote)
                     }
                     if let fri {
-                        Text(W("phone.masjid.secondFriday", ["time": MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24), "women": fri.womenSession2 ? ", with space for women" : ""]))
+                        Text(W("phone.masjid.secondFriday", ["time": MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24), "women": fri.womenSession2 ? ", " + W("masjid.spaceWomen").lowercased() : ""]))
                             .font(.footnote).foregroundStyle(p.actx)
                     }
                     if let raya, let eid {
@@ -785,7 +785,7 @@ private struct YourMasjidCard: View {
                         .foregroundStyle(p.tx2)
                 }
                 if let fri {
-                    Text(W("phone.masjid.secondFriday", ["time": MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24), "women": fri.womenSession2 ? ", with space for women" : ""]))
+                    Text(W("phone.masjid.secondFriday", ["time": MasjidExtras.clock(MasjidExtras.fridaySecondFrom, use24: use24), "women": fri.womenSession2 ? ", " + W("masjid.spaceWomen").lowercased() : ""]))
                         .foregroundStyle(p.actx)
                 }
                 if let raya, let eid {
@@ -834,6 +834,7 @@ private struct FridayCard: View {
         f.dateFormat = "yyyy-MM-dd"
         guard let d = f.date(from: MasjidExtras.fridaySourceUpdated) else { return MasjidExtras.fridaySourceUpdated }
         f.dateFormat = "d MMM yyyy"
+        f.locale = AppWords.formatLocale
         return f.string(from: d)
     }
 
@@ -988,6 +989,7 @@ private struct EidCard: View {
         f.dateFormat = "yyyy-MM-dd"
         guard let d = f.date(from: event.date) else { return event.date }
         f.dateFormat = "EEEE d MMMM"
+        f.locale = AppWords.formatLocale
         return f.string(from: d)
     }
 }

@@ -511,8 +511,9 @@ private struct NextAlarmSection: View {
         f.timeZone = model.timeZone
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "EEEE"
+        f.locale = AppWords.formatLocale
         let when = cal.isDateInToday(w.date) ? W("common.today") : cal.isDateInTomorrow(w.date) ? W("common.tomorrow") : f.string(from: w.date)
-        let what = w.isSahur ? " for sahur" : w.prayer.map { " for \($0.name(model.naming, isFriday: model.isFriday(w.date)))" } ?? ""
+        let what = w.isSahur ? " " + W("phone.alerts.forSahurWord") : w.prayer.map { " " + W("phone.alerts.forNameWord", ["name": $0.name(model.naming, isFriday: model.isFriday(w.date))]) } ?? ""
         return "\(when) \(model.formatted(w.date))\(what)"
     }
 
@@ -935,7 +936,7 @@ private struct PrayerAlertPage: View {
                             .foregroundStyle(mode == .alarm ? Theme.sunArc : Color.primary)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(model.formatted(at)).font(.title.weight(.semibold)).monospacedDigit()
-                            Text(W("phone.alerts.yourAt", ["a": name, "b": mode == .alarm ? "alarm rings" : "notification comes", "c": dayWord(at)]))
+                            Text(W("phone.alerts.yourAt", ["a": name, "b": mode == .alarm ? W("phone.alerts.alarmRingsWord") : W("phone.alerts.notifComesWord"), "c": dayWord(at)]))
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
                     }
@@ -1003,7 +1004,7 @@ private struct PrayerAlertPage: View {
     private func dayWord(_ date: Date) -> String {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = model.timeZone
-        return cal.isDateInToday(date) ? "today" : "tomorrow"
+        return cal.isDateInToday(date) ? W("common.today").lowercased() : W("common.tomorrow").lowercased()
     }
 }
 
@@ -1217,7 +1218,7 @@ enum AlarmPreview {
 private struct AwayReminderSection: View {
     @Environment(AppModel.self) private var model
 
-    private func word(_ m: Int) -> String { m == 60 ? W("early.hour") : "\(m) min" }
+    private func word(_ m: Int) -> String { m == 60 ? W("early.hour") : W("early.min", ["n": m]) }
 
     var body: some View {
         Section {
@@ -1251,7 +1252,7 @@ private struct AwayReminderSection: View {
         } header: {
             Text(W("early.awayHead"))
         } footer: {
-            Text(model.prefs.awayReminder ? "Fajr starts Off because most people are asleep. Use a Fajr alarm instead. Your home and where you are stay on your phone. We never send them anywhere."
+            Text(model.prefs.awayReminder ? W("phone.alerts.fajrOff")
                  : W("early.privacy"))
         }
     }
