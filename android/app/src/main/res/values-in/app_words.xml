@@ -91,6 +91,7 @@
     <string name="today_asrShafii" formatted="false">Ashar lebih awal (Syafii)</string>
     <string name="today_calledHere" formatted="false">disebut {name} di sini</string>
     <string name="today_now" formatted="false">SEKARANG</string>
+    <string name="widget_nextPrayer" formatted="false">Salat berikutnya</string>
     <string name="today_next" formatted="false">BERIKUTNYA</string>
     <string name="today_nextPrayer" formatted="false">Salat berikutnya</string>
     <string name="today_nextIn" formatted="false">{name} dalam {time}</string>
@@ -1397,7 +1398,7 @@
     <string name="phone_settings_picksBody" formatted="false">Usaha dan kegiatan Muslim yang halal yang kami periksa sendiri, aman untuk seluruh keluarga. Sebagian besar layanan kami sendiri, dan yang berbayar ditandai Disponsori. Kami hanya menghitung seberapa sering kartu dilihat dan diketuk, tidak pernah siapa Anda.</string>
     <string name="phone_settings_builtAsia" formatted="false">Dibuat di Asia, untuk Muslim di mana pun.</string>
     <string name="phone_widget_style" formatted="false">Gaya</string>
-    <string name="phone_widget_howTo" formatted="false">Sentuh dan tahan Layar Utama, ketuk Edit, lalu Tambah Widget dan cari Prayer Times Asia. Pilih Jadwal hari ini. Widget mengikuti gaya layar Salat Anda. Sentuh dan tahan widget, lalu Edit Widget, untuk memilih yang lain.</string>
+    <string name="phone_widget_howTo" formatted="false">Sentuh dan tahan Layar Utama, ketuk Edit, lalu Tambah Widget dan cari Prayer Times Asia. Pilih Salat berikutnya (Kecil, Sedang atau Besar) atau Jadwal hari ini. Widget mengikuti tampilan layar Salat Anda. Sentuh dan tahan satu, lalu Edit Widget, untuk memilih yang lain.</string>
     <string name="phone_calendar_yearAh" formatted="false">{name} {year} H</string>
     <string name="phone_calendar_send" formatted="false">Kirim pengumuman</string>
     <string name="phone_calendar_everyDate" formatted="false">Setiap tanggal menunjukkan siapa yang menetapkan dan caranya, rukyat hilal, hisab, atau mengikuti otoritas lain. Tanggal dibagikan terbuka di bawah CC-BY 4.0.</string>

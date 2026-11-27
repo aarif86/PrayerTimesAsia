@@ -91,6 +91,7 @@
     <string name="today_asrShafii" formatted="false">Earlier Asr (Shafi\'i)</string>
     <string name="today_calledHere" formatted="false">called {name} here</string>
     <string name="today_now" formatted="false">NOW</string>
+    <string name="widget_nextPrayer" formatted="false">Next prayer</string>
     <string name="today_next" formatted="false">NEXT</string>
     <string name="today_nextPrayer" formatted="false">Next prayer</string>
     <string name="today_nextIn" formatted="false">{name} in {time}</string>
@@ -1397,7 +1398,7 @@
     <string name="phone_settings_picksBody" formatted="false">Halal Muslim businesses and causes we check by hand, safe for the whole family. Most are our own services, and paid ones are marked Sponsored. We only count how often a card is seen and tapped, never who you are.</string>
     <string name="phone_settings_builtAsia" formatted="false">Built in Asia, made for Muslims everywhere.</string>
     <string name="phone_widget_style" formatted="false">Style</string>
-    <string name="phone_widget_howTo" formatted="false">Touch and hold your Home Screen, tap Edit, then Add Widget and search for Prayer Times Asia. Choose Today\'s timetable. It follows your Prayer screen style. Touch and hold it, then Edit Widget, to pick another.</string>
+    <string name="phone_widget_howTo" formatted="false">Touch and hold your Home Screen, tap Edit, then Add Widget and search for Prayer Times Asia. Choose Next prayer (Small, Medium or Large) or Today\'s timetable. They follow your Prayer screen look. Touch and hold one, then Edit Widget, to pick another.</string>
     <string name="phone_calendar_yearAh" formatted="false">{name} {year} AH</string>
     <string name="phone_calendar_send" formatted="false">Send an announcement</string>
     <string name="phone_calendar_everyDate" formatted="false">Every date shows who set it and how, moon sighting, calculation, or following another authority. Dates are shared openly under CC-BY 4.0.</string>

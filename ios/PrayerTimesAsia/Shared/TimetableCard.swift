@@ -1,15 +1,15 @@
 import SwiftUI
 
-/// The large widget's face, in each of the Prayer screen's styles: a mini
-/// version of the list, the Day Dial, the Sun Path or the Colour Bands. Every
-/// style shows how long until the next prayer.
-/// Shared so the app can show it too (Settings preview, CI).
+/// The large widget's face in each of the five looks (Centre Dial, Sun Path, Colour Bands,
+/// Big and Simple, Calm Gold), drawn like that look's Prayer screen. Every look shows how
+/// long until the next prayer. Shared so the app can show it too (Settings preview, CI).
+/// Small and Medium use WidgetFaces.swift.
 struct TimetableCard: View {
     let snapshot: WidgetSnapshot?
     let date: Date
-    var style: TodayStyle = .list
+    var style: TodayStyle = .centre
 
-    /// Each style, header and row is wrapped in AnyView on purpose: the widget
+    /// Each look, header and row is wrapped in AnyView on purpose: the widget
     /// draws on a small stack, and one deeply nested SwiftUI type is enough to
     /// overflow it while Swift looks the type up. When that happens the widget
     /// never draws and iOS leaves the grey placeholder bars on the Home Screen.
@@ -17,320 +17,121 @@ struct TimetableCard: View {
         guard let s = snapshot, let day = s.day(containing: date) else {
             return AnyView(Text(W("widget.setLocation"))
                 .font(.headline)
-                .foregroundStyle(.white)
+                .foregroundStyle(WidgetPal.of(style).fg)
                 .padding())
         }
-        switch style {
-        case .list, .simple: return AnyView(list(s, day: day))
-        case .dial, .centre, .gold: return AnyView(dial(s, day: day))
-        case .sunPath: return AnyView(sunPath(s, day: day))
-        case .bands: return AnyView(bands(s, day: day))
+        let pal = WidgetPal.of(style)
+        switch style.look {
+        case .sunPath: return AnyView(sunPath(s, day: day, pal: pal))
+        case .bands: return AnyView(bands(s, day: day, pal: pal))
+        case .simple: return AnyView(simple(s, day: day, pal: pal))
+        default: return AnyView(dial(s, day: day, pal: pal, gold: style.look == .gold))
         }
     }
 
-    /// What goes behind the card: the Living Sky, or charcoal for the bands.
+    /// What goes behind the card.
     static func background(_ snapshot: WidgetSnapshot?, at date: Date, style: TodayStyle) -> AnyView {
-        style == .bands ? AnyView(BandsPalette.header) : AnyView(sky(snapshot, at: date))
+        AnyView(WidgetBackdrop(snapshot: snapshot, date: date, style: style))
     }
 
-    // MARK: Side Dial (a mini version of the list)
+    // MARK: Centre Dial and Calm Gold
 
-    private func list(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
-        let current = PrayerLead.open(s.current(at: date))?.prayer
-        let countdown = countdownRow(s, day: day)
-        return VStack(spacing: 8) {
-            AnyView(header(s, day: day))
-            VStack(spacing: 2) {
-                ForEach(Prayer.allCases) { prayer in
-                    AnyView(row(s, prayer: prayer, time: day.time(prayer), isCurrent: prayer == current,
-                                countdown: countdown?.prayer == prayer ? countdown : nil))
-                }
-            }
-            .padding(5)
-            .background(Color.black.opacity(0.18), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.1), lineWidth: 1))
-        }
-        .padding(12)
-        .foregroundStyle(.white)
-    }
-
-    // MARK: Day Dial
-
-    /// The 24-hour ring with the current prayer and countdown inside, the six
-    /// times underneath.
-    private func dial(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
+    private func dial(_ s: WidgetSnapshot, day: PrayerDay, pal: WidgetPal, gold: Bool) -> some View {
         let next = s.next(after: date)
-        let lead = PrayerLead(current: s.current(at: date), next: next)
-        let current = PrayerLead.open(s.current(at: date))
         return VStack(spacing: 8) {
             HStack(spacing: 14) {
-                ZStack {
-                    DialRing(day: day, now: date, timeZone: s.timeZone)
-                    if let lead, let next {
-                        // "NEXT Jumu'ah in 53:08" or "NOW Asar 1:20:05 left": a ticking
-                        // number never stands alone, so it can't read as how long Sunrise lasts.
-                        let timer = Text(timerInterval: date...max(date, next.time), countsDown: true)
-                        VStack(spacing: 0) {
-                            Text(lead.isNext ? W("today.next") : W("today.now"))
-                                .font(.system(size: 9, weight: .heavy)).tracking(0.8).opacity(0.85)
-                            Text(s.name(lead.prayer, at: lead.time))
-                                .font(.system(size: 17, weight: .bold, design: .rounded))
-                            (lead.isNext ? Text(Wsplit("today.in").0) + timer + Text(Wsplit("today.in").1) : Text(Wsplit("phone.time.timeLeft").0) + timer + Text(Wsplit("phone.time.timeLeft").1))
-                                .font(.system(size: 13, weight: .semibold, design: .rounded)).monospacedDigit()
-                                .multilineTextAlignment(.center)
-                                .foregroundStyle(Color(red: 0.97, green: 0.74, blue: 0.56))
-                        }
-                        .frame(width: 84)
-                        .lineLimit(1).minimumScaleFactor(0.7)
-                    }
-                }
-                .frame(width: 136, height: 136)
+                AnyView(WidgetDialFace(snapshot: s, day: day, date: date, pal: pal, gold: gold, size: 132))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(s.placeName) \(s.flag)").font(.system(size: 15, weight: .semibold)).lineLimit(1)
-                    Text(Hijri.format(date, timeZone: s.timeZone, style: s.naming, adjustment: s.hijriAdjustment ?? 0))
-                        .font(.system(size: 12)).opacity(0.75).lineLimit(2)
+                    Text("\(s.placeName) \(s.flag)").font(.system(size: 15, weight: .bold)).lineLimit(1)
+                    Text(WidgetText.dateLine(s, date: date, day: day))
+                        .font(.system(size: 12)).foregroundStyle(pal.fg2).lineLimit(2)
                     if let next {
                         Text(W("today.nextAria", ["name": s.name(next.prayer, at: next.time), "time": s.format(next.time)]))
-                            .font(.system(size: 12, weight: .semibold)).opacity(0.9).lineLimit(1).minimumScaleFactor(0.8)
+                            .font(.system(size: 12, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
                     }
                 }
                 Spacer(minLength: 0)
             }
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3), spacing: 6) {
-                ForEach(Prayer.allCases) { prayer in
-                    let time = day.time(prayer)
-                    let isCurrent = prayer == current?.prayer
-                    let isNext = lead?.isNext == true && prayer == lead?.prayer && abs(time.timeIntervalSince(lead?.time ?? .distantPast)) < 60
-                    AnyView(VStack(spacing: 1) {
-                        Text(s.name(prayer, at: time)).font(.system(size: 12, weight: .semibold)).opacity(0.85)
-                        Text(s.format(time)).font(.system(size: 16, weight: .semibold, design: .rounded)).monospacedDigit()
-                    }
-                    .lineLimit(1).minimumScaleFactor(0.7)
-                    .frame(maxWidth: .infinity).padding(.vertical, 7)
-                    .background(isNext ? Color.white.opacity(0.2) : prayer.tint.opacity(isCurrent ? 0.35 : 0.14),
-                                in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(isNext ? Color.white.opacity(0.9) : prayer.tint.opacity(isCurrent ? 0.8 : 0), lineWidth: 1))
-                    .opacity(time <= date && !isCurrent ? 0.6 : 1))
-                }
-            }
+            .padding(.horizontal, 6)
+            AnyView(WidgetList(snapshot: s, day: day, date: date, style: gold ? .gold : .centre, size: 15, compact: false))
         }
-        .padding(14)
-        .foregroundStyle(.white)
+        .padding(12)
+        .foregroundStyle(pal.fg)
     }
 
     // MARK: Sun Path
 
-    /// The sun's arc over the day with each prayer on it, then the list.
-    private func sunPath(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
-        let next = s.next(after: date)
-        let lead = PrayerLead(current: s.current(at: date), next: next)
-        let current = PrayerLead.open(s.current(at: date))
-        return VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline) {
-                if let lead {
-                    Circle().fill(lead.prayer.tint).frame(width: 8, height: 8)
-                    Text(s.name(lead.prayer, at: lead.time)).font(.system(size: 20, weight: .bold))
-                }
+    private func sunPath(_ s: WidgetSnapshot, day: PrayerDay, pal: WidgetPal) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("\(s.placeName) \(s.flag)").font(.system(size: 12, weight: .semibold))
                 Spacer()
-                if let next {
-                    // Syuruk to Zohor the name on the left is already the next prayer.
-                    Text(lead?.isNext == true ? Wsplit("today.in").0 : "\(s.name(next.prayer, at: next.time)) \(Wsplit("today.in").0)")
-                        .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
-                    + Text(next.time, style: .relative).font(.system(size: 12, weight: .semibold))
-                }
+                Text(WidgetText.dateLine(s, date: date, day: day)).font(.system(size: 11)).lineLimit(1).minimumScaleFactor(0.7)
             }
-            .lineLimit(1).minimumScaleFactor(0.7)
-            SunArc(day: day, now: date).frame(height: 64)
-            VStack(spacing: 0) {
-                ForEach(Prayer.allCases) { prayer in
-                    let time = day.time(prayer)
-                    let isCurrent = prayer == current?.prayer
-                    let parts = timeParts(s, time)
-                    AnyView(HStack {
-                        Capsule().fill(prayer.tint).frame(width: 3, height: 16)
-                        Text(s.name(prayer, at: time)).font(.system(size: 15, weight: isCurrent ? .bold : .semibold))
-                        Spacer()
-                        Text(parts.time).font(.system(size: 18, weight: .semibold, design: .rounded)).monospacedDigit()
-                        if let suffix = parts.suffix { Text(suffix).font(.system(size: 10, weight: .bold)).opacity(0.7) }
-                    }
-                    .padding(.horizontal, 8)
-                    .frame(maxHeight: .infinity)
-                    .background {
-                        if isCurrent { RoundedRectangle(cornerRadius: 10, style: .continuous).fill(prayer.tint.opacity(0.25)) }
-                    }
-                    .opacity(time <= date && !isCurrent ? 0.6 : 1))
-                }
-            }
+            .foregroundStyle(pal.fg2)
+            .padding(.horizontal, 6)
+            AnyView(WidgetSunHero(snapshot: s, day: day, date: date, pal: pal, big: true))
+                .padding(.horizontal, 6)
+            SunArc(day: day, now: date, ink: pal.fg, line: Color(red: 0.85, green: 0.45, blue: 0.18))
+                .frame(height: 56)
+                .padding(.horizontal, 6)
+            AnyView(WidgetList(snapshot: s, day: day, date: date, style: .sunPath, size: 15, compact: false))
         }
-        .padding(14)
-        .foregroundStyle(.white)
+        .padding(12)
+        .foregroundStyle(pal.fg)
+    }
+
+    // MARK: Big and Simple
+
+    private func simple(_ s: WidgetSnapshot, day: PrayerDay, pal: WidgetPal) -> some View {
+        VStack(spacing: 6) {
+            Text("\(s.placeName) \(s.flag)  ·  \(Hijri.format(date, timeZone: s.timeZone, style: s.naming, adjustment: s.hijriAdjustment ?? 0))")
+                .font(.system(size: 11, weight: .medium)).foregroundStyle(pal.fg2).lineLimit(1).minimumScaleFactor(0.7)
+            AnyView(WidgetSimpleHero(snapshot: s, date: date, pal: pal, nameSize: 38, countSize: 20))
+            AnyView(WidgetList(snapshot: s, day: day, date: date, style: .simple, size: 18, compact: false))
+        }
+        .padding(12)
+        .foregroundStyle(pal.fg)
     }
 
     // MARK: Colour Bands
 
-    /// Each prayer a full-width band, like the classic Singapore timetable.
-    private func bands(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
-        let current = PrayerLead.open(s.current(at: date))?.prayer
-        let countdown = countdownRow(s, day: day)
+    /// A header with the prayer and the countdown, the date bar, then each prayer a full-width band.
+    private func bands(_ s: WidgetSnapshot, day: PrayerDay, pal: WidgetPal) -> some View {
+        let lead = PrayerLead(current: s.current(at: date), next: s.next(after: date))
+        let next = s.next(after: date)
         return VStack(spacing: 0) {
-            VStack(spacing: 1) {
-                Text(Hijri.format(date, timeZone: s.timeZone, style: s.naming, adjustment: s.hijriAdjustment ?? 0))
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                Text("\(s.placeName) \(s.flag)  ·  \(s.sourceLabel)")
-                    .font(.caption2.weight(.medium)).opacity(0.65)
-            }
-            .lineLimit(1)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 9)
-            ForEach(Prayer.allCases) { prayer in
-                let time = day.time(prayer)
-                let parts = timeParts(s, time)
-                let isCurrent = prayer == current
-                AnyView(HStack(alignment: .firstTextBaseline) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack(alignment: .firstTextBaseline) {
-                            Text(s.name(prayer, at: time)).font(.system(size: 21, weight: .bold))
-                            if isCurrent {
-                                Text(W("today.now")).font(.system(size: 10, weight: .heavy))
-                                    .padding(.horizontal, 6).padding(.vertical, 2)
-                                    .background(.white.opacity(0.25), in: Capsule())
-                            }
-                        }
-                        if let countdown, countdown.prayer == prayer {
-                            countdownText(countdown).font(.system(size: 12, weight: .semibold)).opacity(0.9)
-                        }
-                    }
-                    .lineLimit(1)
-                    Spacer()
-                    Text(parts.time).font(.system(size: 25, weight: .light)).monospacedDigit()
-                    if let suffix = parts.suffix { Text(suffix).font(.system(size: 15, weight: .light)) }
-                })
-                .padding(.horizontal, 16)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(BandsPalette.color(prayer))
-                .overlay(alignment: .leading) {
-                    if isCurrent { Rectangle().fill(.white).frame(width: 4) }
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                if let lead {
+                    Text(s.name(lead.prayer, at: lead.time)).font(.system(size: 26, weight: .bold))
                 }
-            }
-        }
-        .foregroundStyle(.white)
-    }
-
-    /// The sky behind the card, for the widget container and the preview.
-    static func sky(_ snapshot: WidgetSnapshot?, at date: Date) -> some View {
-        let colors = (snapshot?.day(containing: date).map { SkyColors.at(date, day: $0) } ?? .night).readable
-        return ZStack {
-            LinearGradient(colors: [colors.top.color, colors.bottom.color], startPoint: .top, endPoint: .bottom)
-            RadialGradient(colors: [colors.glow.color.opacity(0.2), .clear],
-                           center: UnitPoint(x: 0.5, y: 1.1), startRadius: 4, endRadius: 260)
-        }
-    }
-
-    private func header(_ s: WidgetSnapshot, day: PrayerDay) -> some View {
-        let f = DateFormatter()
-        f.timeZone = s.timeZone
-        f.dateFormat = "EEEE d MMMM"
-        f.locale = AppWords.formatLocale
-        return VStack(spacing: 4) {
-            HStack(spacing: 6) {
-                Text(W("common.today").uppercased()).font(.system(size: 10, weight: .heavy)).tracking(0.4)
-                Rectangle().fill(Color.white.opacity(0.35)).frame(width: 1, height: 9)
-                Text("\(s.placeName) \(s.flag)").font(.system(size: 11, weight: .semibold)).lineLimit(1)
-            }
-            .padding(.horizontal, 10).padding(.vertical, 4)
-            .overlay(Capsule().strokeBorder(Color(red: 0.97, green: 0.74, blue: 0.56).opacity(0.75), lineWidth: 1))
-            HStack(spacing: 6) {
-                Text(f.string(from: day.time(.dhuhr))).font(.system(size: 14, weight: .semibold))
-                Text("·").opacity(0.5)
-                Text(Hijri.format(date, timeZone: s.timeZone, style: s.naming, adjustment: s.hijriAdjustment ?? 0))
-                    .font(.system(size: 12)).opacity(0.7)
-            }
-            .lineLimit(1)
-            .minimumScaleFactor(0.8)
-        }
-    }
-
-    private func row(_ s: WidgetSnapshot, prayer: Prayer, time: Date, isCurrent: Bool,
-                     countdown: Countdown?) -> some View {
-        let parts = timeParts(s, time)
-        let passed = time <= date && !isCurrent
-        return HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text(s.name(prayer, at: time)).font(.system(size: 16, weight: .semibold))
-                if isCurrent || countdown != nil {
-                    HStack(spacing: 5) {
-                        if isCurrent {
-                            Text(W("today.now")).font(.system(size: 9, weight: .heavy)).foregroundStyle(prayer.tint)
-                        }
-                        if let countdown {
-                            countdownText(countdown).font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(Color(red: 0.97, green: 0.74, blue: 0.56))
-                        }
-                    }
-                    .lineLimit(1)
+                if let next {
+                    (Text(lead?.isNext == true ? Wsplit("today.in").0 : "\(s.name(next.prayer, at: next.time)) \(Wsplit("today.in").0)")
+                     + Text(timerInterval: date...max(date, next.time), countsDown: true).monospacedDigit())
+                        .font(.system(size: 14, weight: .medium)).foregroundStyle(pal.fg2)
                 }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 4)
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text(parts.time).font(.system(size: 22, weight: .semibold, design: .rounded)).monospacedDigit()
-                if let suffix = parts.suffix {
-                    Text(suffix).font(.system(size: 11, weight: .bold, design: .rounded)).opacity(0.7)
-                }
-            }
-            .fixedSize()
+            .lineLimit(1).minimumScaleFactor(0.7)
+            .padding(.horizontal, 16).padding(.top, 14).padding(.bottom, 8)
+            Text(WidgetText.dateLine(s, date: date, day: day))
+                .font(.system(size: 13, weight: .semibold))
+                .lineLimit(1).minimumScaleFactor(0.8)
+                .frame(maxWidth: .infinity).padding(.vertical, 5)
+                .background(pal.bar)
+            AnyView(WidgetList(snapshot: s, day: day, date: date, style: .bands, size: 19, compact: false))
         }
-        .padding(.leading, 16).padding(.trailing, 10)
-        .frame(maxHeight: .infinity)
-        .background {
-            if isCurrent {
-                RoundedRectangle(cornerRadius: 13, style: .continuous)
-                    .fill(prayer.tint.opacity(0.2))
-                    .overlay(RoundedRectangle(cornerRadius: 13, style: .continuous)
-                        .strokeBorder(prayer.tint.opacity(0.5), lineWidth: 1))
-            }
-        }
-        .overlay(alignment: .leading) {
-            Capsule().fill(prayer.tint.opacity(isCurrent ? 1 : 0.6)).frame(width: 3).padding(.vertical, 10).offset(x: 2)
-        }
-        .opacity(passed ? 0.6 : 1)
-    }
-
-    typealias Countdown = (prayer: Prayer, label: String, until: Date)
-
-    /// Which row carries the live "in 1:23:45": the next prayer's, or once the
-    /// next is tomorrow's Subuh, the one we are in ("Subuh in 7:12:03").
-    private func countdownRow(_ s: WidgetSnapshot, day: PrayerDay) -> Countdown? {
-        guard let next = s.next(after: date) else { return nil }
-        if abs(day.time(next.prayer).timeIntervalSince(next.time)) < 60 { return (next.prayer, "in", next.time) }
-        guard let current = s.current(at: date)?.prayer else { return nil }
-        return (current, "\(s.name(next.prayer, at: next.time)) in", next.time)
-    }
-
-    /// Ticks by itself between timeline entries.
-    private func countdownText(_ c: Countdown) -> Text {
-        Text("\(c.label) ") + Text(timerInterval: date...max(date, c.until), countsDown: true).monospacedDigit()
-    }
-
-    private func timeParts(_ s: WidgetSnapshot, _ date: Date) -> (time: String, suffix: String?) {
-        let f = DateFormatter()
-        f.timeZone = s.timeZone
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = s.use24Hour ? "HH:mm" : "h:mm"
-        let time = f.string(from: date)
-        guard !s.use24Hour else { return (time, nil) }
-        f.dateFormat = "a"
-        return (time, f.string(from: date))
+        .foregroundStyle(pal.fg)
     }
 }
 
 /// The Day Dial's ring for the widget: noon at the top, each prayer's period in
 /// its sky colour, a dot for now.
-private struct DialRing: View {
+struct DialRing: View {
     let day: PrayerDay
     let now: Date
     let timeZone: TimeZone
+    var ink: Color = .white
 
     var body: some View {
         Canvas { ctx, size in
@@ -346,7 +147,7 @@ private struct DialRing: View {
                 p.addArc(center: c, radius: r, startAngle: .degrees(a0 - 90), endAngle: .degrees(a1 - 90), clockwise: false)
                 return p
             }
-            ctx.stroke(arc(0, 360), with: .color(.white.opacity(0.12)), style: StrokeStyle(lineWidth: ring))
+            ctx.stroke(arc(0, 360), with: .color(ink.opacity(0.12)), style: StrokeStyle(lineWidth: ring))
             let order = Prayer.allCases
             for (i, prayer) in order.enumerated() {
                 let start = angle(day.time(prayer))
@@ -365,9 +166,11 @@ private struct DialRing: View {
 
 /// A smooth arc for the sun from Subuh to Isyak: above the horizon between
 /// sunrise and Maghrib, each prayer marked, the sun where it is now.
-private struct SunArc: View {
+struct SunArc: View {
     let day: PrayerDay
     let now: Date
+    var ink: Color = .white
+    var line: Color = Color(red: 0.97, green: 0.74, blue: 0.56)
 
     var body: some View {
         Canvas { ctx, size in
@@ -386,10 +189,10 @@ private struct SunArc: View {
                 let p = CGPoint(x: x(d), y: y(d))
                 if i == 0 { path.move(to: p) } else { path.addLine(to: p) }
             }
-            var line = Path()
-            line.move(to: CGPoint(x: 0, y: horizon)); line.addLine(to: CGPoint(x: size.width, y: horizon))
-            ctx.stroke(line, with: .color(.white.opacity(0.25)), lineWidth: 1)
-            ctx.stroke(path, with: .color(Color(red: 0.97, green: 0.74, blue: 0.56).opacity(0.9)), lineWidth: 2.5)
+            var horizonLine = Path()
+            horizonLine.move(to: CGPoint(x: 0, y: horizon)); horizonLine.addLine(to: CGPoint(x: size.width, y: horizon))
+            ctx.stroke(horizonLine, with: .color(ink.opacity(0.25)), lineWidth: 1)
+            ctx.stroke(path, with: .color(line.opacity(0.9)), lineWidth: 2.5)
             for prayer in Prayer.allCases {
                 let p = CGPoint(x: x(day.time(prayer)), y: y(day.time(prayer)))
                 ctx.fill(Path(ellipseIn: CGRect(x: p.x - 3.5, y: p.y - 3.5, width: 7, height: 7)), with: .color(prayer.tint))
@@ -401,6 +204,34 @@ private struct SunArc: View {
                 ctx.fill(Path(ellipseIn: CGRect(x: p.x - 6, y: p.y - 6, width: 12, height: 12)),
                          with: .color(Color(red: 1, green: 0.85, blue: 0.6)))
             }
+        }
+    }
+}
+
+/// Calm Gold's ring: one thin gold line, a faint full circle, a gold dot where now is.
+struct GoldRing: View {
+    let day: PrayerDay
+    let now: Date
+    let timeZone: TimeZone
+    var gold: Color
+
+    var body: some View {
+        Canvas { ctx, size in
+            var cal = Calendar(identifier: .gregorian)
+            cal.timeZone = timeZone
+            let midnight = cal.startOfDay(for: day.time(.dhuhr))
+            func angle(_ d: Date) -> Double { d.timeIntervalSince(midnight) / 86_400 * 360 + 180 }
+            let c = CGPoint(x: size.width / 2, y: size.height / 2)
+            let r = size.width / 2 - 6
+            var full = Path()
+            full.addArc(center: c, radius: r, startAngle: .degrees(0), endAngle: .degrees(360), clockwise: false)
+            ctx.stroke(full, with: .color(gold.opacity(0.35)), lineWidth: 2)
+            var done = Path()
+            done.addArc(center: c, radius: r, startAngle: .degrees(90), endAngle: .degrees(angle(now) - 90), clockwise: false)
+            ctx.stroke(done, with: .color(gold), lineWidth: 2)
+            let a = (angle(now) - 90) * .pi / 180
+            let dot = CGPoint(x: c.x + cos(a) * r, y: c.y + sin(a) * r)
+            ctx.fill(Path(ellipseIn: CGRect(x: dot.x - 5, y: dot.y - 5, width: 10, height: 10)), with: .color(gold))
         }
     }
 }

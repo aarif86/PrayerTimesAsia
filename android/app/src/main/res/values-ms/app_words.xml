@@ -91,6 +91,7 @@
     <string name="today_asrShafii" formatted="false">Asar awal (Syafie)</string>
     <string name="today_calledHere" formatted="false">disebut {name} di sini</string>
     <string name="today_now" formatted="false">SEKARANG</string>
+    <string name="widget_nextPrayer" formatted="false">Solat seterusnya</string>
     <string name="today_next" formatted="false">SETERUSNYA</string>
     <string name="today_nextPrayer" formatted="false">Solat seterusnya</string>
     <string name="today_nextIn" formatted="false">{name} dalam {time}</string>
@@ -1397,7 +1398,7 @@
     <string name="phone_settings_picksBody" formatted="false">Perniagaan dan tujuan Muslim yang halal yang kami semak sendiri, selamat untuk seluruh keluarga. Kebanyakannya perkhidmatan kami sendiri, dan yang berbayar ditandakan Ditaja. Kami hanya mengira berapa kerap kad dilihat dan diketik, tidak pernah siapa anda.</string>
     <string name="phone_settings_builtAsia" formatted="false">Dibina di Asia, dibuat untuk Muslim di mana-mana.</string>
     <string name="phone_widget_style" formatted="false">Gaya</string>
-    <string name="phone_widget_howTo" formatted="false">Sentuh dan tahan Skrin Utama, ketik Edit, kemudian Tambah Widget dan cari Prayer Times Asia. Pilih Jadual hari ini. Ia mengikut gaya skrin Solat anda. Sentuh dan tahan padanya, kemudian Edit Widget, untuk memilih yang lain.</string>
+    <string name="phone_widget_howTo" formatted="false">Sentuh dan tahan Skrin Utama, ketik Edit, kemudian Tambah Widget dan cari Prayer Times Asia. Pilih Solat seterusnya (Kecil, Sederhana atau Besar) atau Jadual hari ini. Ia mengikut rupa skrin Solat anda. Sentuh dan tahan satu, kemudian Edit Widget, untuk memilih yang lain.</string>
     <string name="phone_calendar_yearAh" formatted="false">{name} {year} H</string>
     <string name="phone_calendar_send" formatted="false">Hantar pengumuman</string>
     <string name="phone_calendar_everyDate" formatted="false">Setiap tarikh menunjukkan siapa yang menetapkannya dan caranya, pencerapan anak bulan, pengiraan, atau mengikut pihak berkuasa lain. Tarikh dikongsi secara terbuka di bawah CC-BY 4.0.</string>

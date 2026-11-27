@@ -108,23 +108,35 @@ struct NextPrayerView: View {
     private var smallOrMedium: some View {
         Group {
             if let s = entry.snapshot, let next = s.next(after: entry.date) {
-                let sky = (s.day(containing: entry.date).map { SkyColors.at(entry.date, day: $0) } ?? .night).readable
-                AnyView(content(s, next: next))
+                let style = WidgetStyleChoice.app.resolved(s)
+                let head = Self.headline(s, next: next, date: entry.date)
+                AnyView(content(s, head: head, style: style))
                     .containerBackground(for: .widget) {
-                        ZStack {
-                            LinearGradient(colors: [sky.top.color, sky.bottom.color], startPoint: .top, endPoint: .bottom)
-                            RadialGradient(colors: [sky.glow.color.opacity(0.2), .clear],
-                                           center: UnitPoint(x: 0.5, y: 1.1), startRadius: 4, endRadius: 200)
+                        if style.look == .bands && family == .systemSmall {
+                            BandsPalette.color(head.prayer)
+                        } else {
+                            TimetableCard.background(s, at: entry.date, style: style)
                         }
                     }
             } else {
                 Text(W("widget.setLocation"))
                     .font(.caption)
+                    .foregroundStyle(.white)
                     .padding()
                     .containerBackground(for: .widget) { SkyColors.preDawn.top.color }
             }
         }
-        .foregroundStyle(.white)
+    }
+
+    /// Ramadan: count down to Berbuka by day and Imsak at night; the next prayer
+    /// stays as a small line when it is a different moment. Outside Ramadan, the next prayer.
+    private static func headline(_ s: WidgetSnapshot, next: (prayer: Prayer, time: Date), date: Date) -> WidgetHeadline {
+        let fast = s.fastMoment(at: date)
+        return WidgetHeadline(title: fast?.label ?? s.name(next.prayer, at: next.time),
+                              target: fast?.time ?? next.time,
+                              prayer: next.prayer,
+                              nextLine: nextLine(s, next: next, fastTime: fast?.time),
+                              isFast: fast != nil)
     }
 
     /// "Asar 4:32 PM" under the Ramadan countdown; nil outside Ramadan or when the next prayer is Berbuka itself.
@@ -134,71 +146,34 @@ struct NextPrayerView: View {
     }
 
     @ViewBuilder
-    private func content(_ s: WidgetSnapshot, next: (prayer: Prayer, time: Date)) -> some View {
-        // Ramadan: count down to Berbuka by day and Imsak at night; the next prayer
-        // stays as a small line when it is a different moment. Outside Ramadan, as before.
-        let fast = s.fastMoment(at: entry.date)
-        let title = fast?.label ?? s.name(next.prayer, at: next.time)
-        let target = fast?.time ?? next.time
-        let symbol = fast?.symbol ?? next.prayer.symbol
-        let nextLine = Self.nextLine(s, next: next, fastTime: fast?.time)
-        let small = VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 4) {
-                Image(systemName: symbol).accessibilityHidden(true)
-                Text(s.placeName).lineLimit(1)
-            }
-            .font(.caption2.weight(.semibold))
-            .opacity(0.85)
-            Spacer(minLength: 0)
-            Text(title)
-                .font(.headline)
-                .lineLimit(1)
-            Text(s.format(target))
-                .font(.system(size: 26, weight: .semibold, design: .rounded))
-                .minimumScaleFactor(0.6)
-                .lineLimit(1)
-            Text(timerInterval: entry.date...max(entry.date, target), countsDown: true)
-                .font(.caption.weight(.medium).monospacedDigit())
-                .opacity(0.85)
-            if let nextLine {
-                Text(nextLine)
-                    .font(.caption2.weight(.medium))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .opacity(0.75)
-            }
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        // One VoiceOver stop: place, prayer, time, time left.
-        .accessibilityElement(children: .combine)
-
-        if family == .systemMedium {
-            HStack(spacing: 0) {
-                small.frame(maxWidth: 150)
-                let current = PrayerLead.open(s.current(at: entry.date))?.prayer
-                if let day = s.day(containing: entry.date) {
-                    VStack(spacing: 3) {
-                        ForEach(Prayer.allCases) { p in
-                            HStack {
-                                Text(s.name(p, at: day.time(p))).font(.caption.weight(p == current ? .bold : .medium))
-                                Spacer()
-                                Text(s.format(day.time(p))).font(.caption.monospacedDigit())
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background(p == current ? Color.white.opacity(0.22) : .clear, in: Capsule())
-                            .opacity(day.time(p) < entry.date && p != current ? 0.65 : 1)
-                            .accessibilityElement(children: .combine)
-                            .accessibilityAddTraits(p == current ? .isSelected : [])
-                        }
-                    }
-                    .padding(.vertical, 12)
-                    .padding(.trailing, 12)
+    private func content(_ s: WidgetSnapshot, head: WidgetHeadline, style: TodayStyle) -> some View {
+        let day = s.day(containing: entry.date)
+        let pal = WidgetPal.of(style)
+        let face = WidgetHeadlineFace(snapshot: s, day: day, date: entry.date, style: style, head: head,
+                                      medium: family == .systemMedium)
+            .overlay(alignment: .bottom) {
+                if let line = head.nextLine {
+                    Text(line).font(.caption2.weight(.medium)).lineLimit(1).minimumScaleFactor(0.7)
+                        .foregroundStyle(style.look == .bands ? Color.white.opacity(0.85) : pal.fg2)
+                        .padding(.bottom, 6)
                 }
             }
+            // One VoiceOver stop: place, prayer, time, time left.
+            .accessibilityElement(children: .combine)
+
+        if family == .systemMedium, let day {
+            HStack(spacing: 0) {
+                face
+                    .frame(width: 150)
+                    .background {
+                        if style.look == .bands { BandsPalette.color(head.prayer).ignoresSafeArea() }
+                    }
+                AnyView(WidgetList(snapshot: s, day: day, date: entry.date, style: style, size: 12, compact: true))
+                    .padding(style.look == .bands ? EdgeInsets() : EdgeInsets(top: 10, leading: 4, bottom: 10, trailing: 10))
+            }
+            .foregroundStyle(pal.fg)
         } else {
-            small
+            face
         }
     }
 }

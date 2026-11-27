@@ -190,7 +190,7 @@ private object SettingsLinks {
 
 /** The look's name in the app's language (Side Dial and Day Dial show as Centre Dial, as on the web). */
 @Composable
-private fun lookName(style: TodayStyle): String = when (style.look) {
+internal fun lookName(style: TodayStyle): String = when (style.look) {
     TodayStyle.SUN_PATH -> tr(R.string.style_sunPath)
     TodayStyle.BANDS -> tr(R.string.style_bands)
     TodayStyle.SIMPLE -> tr(R.string.style_simple)

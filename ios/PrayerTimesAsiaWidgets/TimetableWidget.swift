@@ -2,48 +2,51 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
-/// The whole day at a glance, in any of the Prayer screen's styles.
+/// The whole day at a glance, in any of the five looks.
 struct TimetableWidget: Widget {
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: "Timetable", intent: TimetableStyleIntent.self, provider: TimetableProvider()) { entry in
             TimetableView(entry: entry)
         }
         .configurationDisplayName("Today's timetable")
-        .description("All of today's prayer times. Touch and hold, then Edit Widget, to pick a style.")
+        .description("All of today's prayer times. Touch and hold, then Edit Widget, to pick a look.")
         .supportedFamilies([.systemLarge])
         .contentMarginsDisabled()
     }
 }
 
-/// "Same as app" follows the style chosen on the Prayer screen.
+/// "Same as app" follows the look chosen on the Prayer screen. Widgets set to the retired
+/// Side Dial or Day Dial no longer decode and fall back to "Same as app".
 enum WidgetStyleChoice: String, AppEnum {
-    case app, list, dial, sunPath, bands
+    case app, centre, sunPath, bands, simple, gold
 
-    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Style"
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Look"
     static let caseDisplayRepresentations: [WidgetStyleChoice: DisplayRepresentation] = [
         .app: "Same as app",
-        .list: "Side Dial (list)",
-        .dial: "Day Dial",
+        .centre: "Centre Dial",
         .sunPath: "Sun Path",
         .bands: "Colour Bands",
+        .simple: "Big and Simple",
+        .gold: "Calm Gold",
     ]
 
     func resolved(_ snapshot: WidgetSnapshot?) -> TodayStyle {
         switch self {
-        case .app: snapshot?.style ?? .centre
-        case .list: .list
-        case .dial: .dial
+        case .app: (snapshot?.style ?? .centre).look
+        case .centre: .centre
         case .sunPath: .sunPath
         case .bands: .bands
+        case .simple: .simple
+        case .gold: .gold
         }
     }
 }
 
 struct TimetableStyleIntent: WidgetConfigurationIntent {
-    static let title: LocalizedStringResource = "Timetable style"
+    static let title: LocalizedStringResource = "Timetable look"
     static let description = IntentDescription("Choose how the timetable looks.")
 
-    @Parameter(title: "Style", default: .app)
+    @Parameter(title: "Look", default: .app)
     var style: WidgetStyleChoice
 }
 
@@ -56,7 +59,7 @@ struct TimetableEntry: TimelineEntry {
 /// The same timeline as the other widgets (every 15 minutes and at each prayer).
 struct TimetableProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> TimetableEntry {
-        TimetableEntry(date: .now, snapshot: .preview, style: .list)
+        TimetableEntry(date: .now, snapshot: .preview, style: .centre)
     }
 
     func snapshot(for configuration: TimetableStyleIntent, in context: Context) async -> TimetableEntry {
