@@ -30,12 +30,14 @@ jobs:
         run: npm run build
         env:
           BASE_PATH: /PrayerTimesAsia/
-      - name: Install the browser
-        working-directory: web
-        run: npx playwright install --with-deps chromium
       - name: Pictures on every device shape and sideways-scroll check
         working-directory: web
-        run: node scripts/device-shapes.mjs "$RUNNER_TEMP/device-shapes"
+        run: |
+          # The runner's own Google Chrome (Playwright cannot install its Chromium on every runner image).
+          chrome=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)
+          if [ -z "$chrome" ]; then npx playwright install chromium; fi
+          echo "Browser: ${chrome:-Playwright Chromium}"
+          CHROMIUM_PATH="$chrome" node scripts/device-shapes.mjs "$RUNNER_TEMP/device-shapes"
       - name: Publish the pictures
         if: always() && github.event.pull_request.head.repo.full_name == github.repository
         env:
