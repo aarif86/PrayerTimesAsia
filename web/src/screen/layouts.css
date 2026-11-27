@@ -10,7 +10,7 @@
   --t-fajr: #e2b65a; --t-sunrise: #e2b65a; --t-dhuhr: #e2b65a; --t-asr: #e2b65a; --t-maghrib: #e2b65a; --t-isha: #e2b65a;
 }
 .scr-look-surau.scr-light, .lay-look-surau.scr-light {
-  --bg: #fbf6ea; --panel: #fffdf7; --glass: rgba(255, 253, 247, 0.95); --glass-strong: #fffdf7; --fg: #151a45; --fg2: rgba(21, 26, 69, 0.7); --fg3: rgba(21, 26, 69, 0.4);
+  --bg: #fbf6ea; --panel: #fffdf7; --glass: rgba(255, 253, 247, 0.95); --glass-strong: #fffdf7; --fg: #151a45; --fg2: rgba(21, 26, 69, 0.7); --fg3: rgba(21, 26, 69, 0.62);
   --accent: #a87b1c; --gold: #a87b1c; --fill: rgba(21, 26, 69, 0.06); --stroke: rgba(21, 26, 69, 0.12);
   --t-fajr: #8a620d; --t-sunrise: #8a620d; --t-dhuhr: #8a620d; --t-asr: #8a620d; --t-maghrib: #8a620d; --t-isha: #8a620d;
 }
