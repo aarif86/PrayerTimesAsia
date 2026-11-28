@@ -139,6 +139,20 @@ jobs:
               done
             done
           done
+          # The same looks in Malay and Indonesian app words, to check nothing is English or too long.
+          for lang in ms id; do
+            for look in centre sunpath bands simple gold; do
+              for mode in dark light; do
+                flag=""; [ "$mode" = light ] && flag="-light"
+                tabs="today settings"; [ "$mode" = dark ] && tabs="today qibla falak nearby settings"
+                for t in $tabs; do
+                  shot -demo -$look $flag -tab $t -words-$lang
+                  [ "$t" = nearby ] && sleep 4
+                  xcrun simctl io "$UDID" screenshot "screenshots/W-$lang-$look-$mode-$t.png"
+                done
+              done
+            done
+          done
 
       - name: Upload screenshots
         if: always()

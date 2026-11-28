@@ -84,8 +84,8 @@ enum Falak {
         /// What the shadow does at this moment.
         var shadowNote: String {
             switch kind {
-            case .sunInQibla: "Shadows point directly away from the qibla. Face along the shadow, from its tip to the base of the stick."
-            case .sunOpposite: "Shadows point directly towards the qibla. Face along the shadow, from the base of the stick to its tip."
+            case .sunInQibla: W("phone.falak.shadowAway")
+            case .sunOpposite: W("phone.falak.shadowToward")
             }
         }
     }

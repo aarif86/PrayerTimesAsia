@@ -50,7 +50,7 @@ struct WakeUpAlarmActivity: Widget {
     }
 
     private func label(_ state: AlarmPresentationState) -> String {
-        isSnoozed(state) ? "Snoozed" : "Prayer alarm"
+        isSnoozed(state) ? W("phone.alarm.snoozed") : W("phone.alarm.prayerAlarm")
     }
 
     private func icon(_ state: AlarmPresentationState) -> String {
@@ -60,10 +60,10 @@ struct WakeUpAlarmActivity: Widget {
     /// Ends the alarm for good, so a snooze never rings again.
     private func stopButton(_ state: AlarmPresentationState) -> some View {
         Button(intent: StopPrayerAlarmIntent(alarmID: state.alarmID)) {
-            Label("Stop", systemImage: "stop.fill").font(.headline)
+            Label(W("alerts.azanStop"), systemImage: "stop.fill").font(.headline)
         }
         .tint(Color(red: 1, green: 0.62, blue: 0.4))
-        .accessibilityLabel("Stop alarm")
+        .accessibilityLabel(W("phone.alerts.stopAlarm"))
     }
 
     @ViewBuilder

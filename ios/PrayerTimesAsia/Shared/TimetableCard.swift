@@ -15,7 +15,7 @@ struct TimetableCard: View {
     /// never draws and iOS leaves the grey placeholder bars on the Home Screen.
     var body: AnyView {
         guard let s = snapshot, let day = s.day(containing: date) else {
-            return AnyView(Text("Open Prayer Times Asia to set your location.")
+            return AnyView(Text(W("widget.setLocation"))
                 .font(.headline)
                 .foregroundStyle(WidgetPal.of(style).fg)
                 .padding())
@@ -46,7 +46,7 @@ struct TimetableCard: View {
                     Text(WidgetText.dateLine(s, date: date, day: day))
                         .font(.system(size: 12)).foregroundStyle(pal.fg2).lineLimit(2)
                     if let next {
-                        Text("Next: \(s.name(next.prayer, at: next.time)) \(s.format(next.time))")
+                        Text(W("today.nextAria", ["name": s.name(next.prayer, at: next.time), "time": s.format(next.time)]))
                             .font(.system(size: 12, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
                     }
                 }
@@ -106,7 +106,7 @@ struct TimetableCard: View {
                     Text(s.name(lead.prayer, at: lead.time)).font(.system(size: 26, weight: .bold))
                 }
                 if let next {
-                    (Text(lead?.isNext == true ? "in " : "\(s.name(next.prayer, at: next.time)) in ")
+                    (Text(lead?.isNext == true ? Wsplit("today.in").0 : "\(s.name(next.prayer, at: next.time)) \(Wsplit("today.in").0)")
                      + Text(timerInterval: date...max(date, next.time), countsDown: true).monospacedDigit())
                         .font(.system(size: 14, weight: .medium)).foregroundStyle(pal.fg2)
                 }

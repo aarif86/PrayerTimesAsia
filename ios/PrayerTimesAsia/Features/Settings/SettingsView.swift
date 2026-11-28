@@ -20,10 +20,10 @@ struct SettingsView: View {
         let modes = Prayer.allCases.map { model.prefs.alertMode($0) }
         let notify = modes.filter { $0 == .notify }.count
         let alarm = modes.filter { $0 == .alarm }.count
-        if notify + alarm == 0 { return model.prefs.anyAlarm ? "On" : "Nothing is on" }
+        if notify + alarm == 0 { return model.prefs.anyAlarm ? W("common.on") : W("settings.nothingOn") }
         var parts: [String] = []
-        if notify > 0 { parts.append("\(notify) notify") }
-        if alarm > 0 { parts.append(alarm == 1 ? "1 alarm" : "\(alarm) alarms") }
+        if notify > 0 { parts.append(W("settings.nNotify", ["n": notify])) }
+        if alarm > 0 { parts.append(alarm == 1 ? W("phone.settings.oneAlarm") : W("settings.nAlarms", ["n": alarm])) }
         return parts.joined(separator: ", ")
     }
 
@@ -41,89 +41,89 @@ struct SettingsView: View {
 
                 Section {
                     NavigationLink { LocationPage() } label: {
-                        SettingsRow("Location", icon: "location.fill", slot: 0, color: .blue, value: model.activePlace?.name ?? "Not set")
+                        SettingsRow(W("settings.location"), icon: "location.fill", slot: 0, color: .blue, value: model.activePlace?.name ?? W("settings.notSet"))
                     }
                     NavigationLink { PrayerTimesPage() } label: {
-                        SettingsRow("Prayer times", icon: "clock.fill", slot: 1, color: .teal, value: model.method.shortName)
+                        SettingsRow(W("today.title"), icon: "clock.fill", slot: 1, color: .teal, value: model.method.shortName)
                     }
                     Button { model.openAlerts() } label: {
                         HStack {
-                            SettingsRow("Alerts and alarms", icon: "alarm.fill", slot: 2, color: .red, value: alertsCount)
+                            SettingsRow(W("settings.alertsAlarms"), icon: "alarm.fill", slot: 2, color: .red, value: alertsCount)
                             Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
                         }
                     }
                     .foregroundStyle(.primary)
                     NavigationLink { OwnAzanView() } label: {
-                        SettingsRow("Your own azan", icon: "music.note", color: .teal, value: OwnAzan.isSet ? "On" : "Off")
+                        SettingsRow(W("phone.azan.own"), icon: "music.note", color: .teal, value: OwnAzan.isSet ? W("common.on") : W("common.off"))
                     }
                 }
                 .lookRows(look)
 
                 Section {
                     NavigationLink { LookPage() } label: {
-                        SettingsRow("Look and feel", icon: "paintpalette.fill", slot: 3, color: .purple, value: model.prefs.todayStyle.label)
+                        SettingsRow(W("settings.lookFeel"), icon: "paintpalette.fill", slot: 3, color: .purple, value: model.prefs.todayStyle.label)
                     }
                     NavigationLink { LanguagePage() } label: {
-                        SettingsRow("Language", icon: "globe", slot: 4, color: .blue, value: "English")
+                        SettingsRow(W("settings.language"), icon: "globe", slot: 4, color: .blue, value: AppLanguageChoice.label(model.appLang))
                     }
                     NavigationLink { LockScreenPage() } label: {
-                        SettingsRow("Home and Lock Screen", icon: "iphone", slot: 5, color: .indigo,
-                                    value: model.prefs.liveActivityEnabled ? "Countdown on" : "Countdown off")
+                        SettingsRow(W("phone.settings.homeLock"), icon: "iphone", slot: 5, color: .indigo,
+                                    value: model.prefs.liveActivityEnabled ? W("phone.settings.countdown") : W("phone.settings.countdownOff"))
                     }
                 }
                 .lookRows(look)
 
                 Section {
                     NavigationLink { RamadanSettingsPage() } label: {
-                        SettingsRow("Ramadan", icon: "moon.stars.fill", slot: 0, color: Brand.duskIndigo,
-                                    value: model.prefs.seasonPreview == .off ? "Starts by itself" : "Pretend on")
+                        SettingsRow(W("alerts.dayRamadan"), icon: "moon.stars.fill", slot: 0, color: Brand.duskIndigo,
+                                    value: model.prefs.seasonPreview == .off ? W("settings.ramadanStarts") : W("settings.pretendOn"))
                     }
                     NavigationLink { TrackerPage() } label: {
-                        SettingsRow("Prayer tracker", icon: "checkmark.circle.fill", slot: 1, color: .green, value: model.prefs.trackerEnabled ? "On" : "Off")
+                        SettingsRow(W("settings.trackerOn"), icon: "checkmark.circle.fill", slot: 1, color: .green, value: model.prefs.trackerEnabled ? W("common.on") : W("common.off"))
                     }
                     NavigationLink { HadithPage() } label: {
-                        SettingsRow("Hadith", icon: "book.fill", slot: 2, color: .brown,
-                                    value: model.prefs.showHadith || model.prefs.hadithInAlerts ? "On" : "Off")
+                        SettingsRow(W("hadith.title"), icon: "book.fill", slot: 2, color: .brown,
+                                    value: model.prefs.showHadith || model.prefs.hadithInAlerts ? W("common.on") : W("common.off"))
                     }
                 }
                 .lookRows(look)
 
                 Section {
                     NavigationLink { MovePhonePage() } label: {
-                        SettingsRow("Move to a new phone", icon: "arrow.left.arrow.right", slot: 3, color: .cyan)
+                        SettingsRow(W("settings.movePhone"), icon: "arrow.left.arrow.right", slot: 3, color: .cyan)
                     }
                     NavigationLink { PrivacyPage() } label: {
-                        SettingsRow("Privacy", icon: "hand.raised.fill", slot: 4, color: .blue)
+                        SettingsRow(W("settings.privacy"), icon: "hand.raised.fill", slot: 4, color: .blue)
                     }
                     NavigationLink { HelpPage() } label: {
-                        SettingsRow("Help", icon: "questionmark.circle.fill", slot: 5, color: .orange)
+                        SettingsRow(W("settings.help"), icon: "questionmark.circle.fill", slot: 5, color: .orange)
                     }
                 }
                 .lookRows(look)
 
                 Section {
                     ShareLink(item: SettingsLinks.appPage,
-                              message: Text("Prayer Times Asia, free prayer times for iPhone and Android.")) {
-                        SettingsRow("Share with family and friends", icon: "square.and.arrow.up", slot: 0, color: .green)
+                              message: Text(W("settings.shareText"))) {
+                        SettingsRow(W("settings.share"), icon: "square.and.arrow.up", slot: 0, color: .green)
                     }
                     .foregroundStyle(.primary)
                     Button { showReview = true } label: {
-                        SettingsRow("Rate the app", icon: "star.fill", slot: 1, color: .yellow)
+                        SettingsRow(W("settings.rateApp"), icon: "star.fill", slot: 1, color: .yellow)
                     }
                     .foregroundStyle(.primary)
                     Button { showNote = true } label: {
-                        SettingsRow("Send us a note", icon: "envelope.fill", slot: 2, color: .blue)
+                        SettingsRow(W("settings.sendUsNote"), icon: "envelope.fill", slot: 2, color: .blue)
                     }
                     .foregroundStyle(.primary)
                     NavigationLink { PicksPage() } label: {
-                        SettingsRow(picksName, icon: "gift.fill", slot: 3, color: .pink, value: model.prefs.showOffers ? "On" : "Off")
+                        SettingsRow(picksName, icon: "gift.fill", slot: 3, color: .pink, value: model.prefs.showOffers ? W("common.on") : W("common.off"))
                     }
                     NavigationLink { AboutPage() } label: {
-                        SettingsRow("About and credits", icon: "info.circle.fill", slot: 4, color: .gray)
+                        SettingsRow(W("settings.aboutCredits"), icon: "info.circle.fill", slot: 4, color: .gray)
                     }
                     .id("makers")
                 } footer: {
-                    Text("Version \(Bundle.main.appVersion)")
+                    Text(W("settings.versionN", ["v": Bundle.main.appVersion]))
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 8)
                 }
@@ -136,11 +136,11 @@ struct SettingsView: View {
                 }
             }
             }
-            .settingsPage("Settings", inline: false)
+            .settingsPage(W("tab.settings"), inline: false)
             .sheet(isPresented: $showReview) { ReviewView() }
             .sheet(isPresented: $showNote) { NoteView() }
             .toolbar {
-                if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+                if !isTab { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
             }
         }
     }
@@ -240,13 +240,13 @@ private struct LookAppCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
                 .shadow(color: .black.opacity(0.3), radius: 7, y: 4)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Prayer Times Asia")
+                Text(W("phone.onboard.title"))
                     .font(look == .simple ? Theme.display(26, .bold) : .title3.weight(.bold))
                     .foregroundStyle(nameColor)
                 if look != .simple {
-                    Text("Built fisabilillah in Singapore").font(.subheadline).foregroundStyle(lineColor)
+                    Text(W("settings.builtIn")).font(.subheadline).foregroundStyle(lineColor)
                 }
-                Text("Version \(Bundle.main.appVersion)")
+                Text(W("settings.versionN", ["v": Bundle.main.appVersion]))
                     .font(look == .simple ? .subheadline : .footnote).foregroundStyle(lineColor)
             }
             Spacer(minLength: 0)
@@ -257,7 +257,7 @@ private struct LookAppCard: View {
         .overlay { cardEdge }
         .clipShape(RoundedRectangle(cornerRadius: look == .bands ? 0 : Theme.corner, style: .continuous))
         .accessibilityElement(children: .combine)
-        .accessibilityHint("Sources and credits")
+        .accessibilityHint(W("settings.sources"))
     }
 
     @ViewBuilder
@@ -369,29 +369,29 @@ private struct LocationPage: View {
         Form {
             Section {
                 Button { showPlaces = true } label: {
-                    LabeledContent("Place", value: model.activePlace?.name ?? "Not set")
+                    LabeledContent(W("settings.place"), value: model.activePlace?.name ?? W("settings.notSet"))
                 }
                 .foregroundStyle(.primary)
             } footer: {
-                Text("Your times follow the place you pick here.")
+                Text(W("settings.placeFoot"))
             }
             Section {
                 Toggle(isOn: $model.prefs.musafirEnabled) {
-                    Text("Musafir mode")
-                    Text("Jamak and qasar help when you are away from home")
+                    Text(W("settings.musafirMode"))
+                    Text(W("settings.musafirModeSub"))
                 }
                 if model.prefs.musafirEnabled {
                     Button { model.showJourney = true } label: {
-                        Label("My journeys", image: "Tab-journey")
+                        Label(W("settings.myJourneys"), image: "Tab-journey")
                     }
                 }
             } header: {
-                Text("Travel")
+                Text(W("settings.travel"))
             } footer: {
-                Text("We will ask when you land in another country.")
+                Text(W("settings.travelAsk"))
             }
         }
-        .settingsPage("Location")
+        .settingsPage(W("settings.location"))
         .sheet(isPresented: $showPlaces) { PlacesView() }
     }
 }
@@ -406,86 +406,86 @@ private struct PrayerTimesPage: View {
         @Bindable var model = model
         Form {
             Section {
-                LabeledContent("Country rules", value: model.profile.code.isEmpty ? model.profile.name : "\(model.profile.flag) \(model.profile.name)")
-                LabeledContent("Times from", value: model.method.shortName)
-                LabeledContent("Timetable", value: timetableStatus)
+                LabeledContent(W("settings.countryRules"), value: model.profile.code.isEmpty ? model.profile.name : "\(model.profile.flag) \(model.profile.name)")
+                LabeledContent(W("settings.timesFrom"), value: model.method.shortName)
+                LabeledContent(W("settings.timetable"), value: timetableStatus)
                 if model.officialSource != nil {
-                    Button(downloading ? "Downloading" : "Download the timetable again") {
+                    Button(downloading ? W("phone.settings.downloading") : W("settings.downloadAgain")) {
                         downloading = true
                         model.refreshOfficialTimetable()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3) { downloading = false }
                     }
                     .disabled(downloading)
                 }
-                NavigationLink("How accurate are the times?") { AccuracyPage() }
+                NavigationLink(W("settings.howAccurate")) { AccuracyPage() }
             } footer: {
-                Text("\(model.sourceShort) Always follow your local religious authority.")
+                Text(W("phone.settings.followAuthority", ["source": model.sourceShort]))
             }
 
             Section {
-                Picker("Method", selection: $model.prefs.methodOverrideID) {
-                    Text("Automatic · \(model.profile.method.shortName)").tag(String?.none)
+                Picker(W("settings.method"), selection: $model.prefs.methodOverrideID) {
+                    Text(W("common.automaticWith", ["name": model.profile.method.shortName])).tag(String?.none)
                     ForEach(CalculationMethod.all) { m in
                         Text(m.name).tag(String?.some(m.id))
                     }
                 }
-                Picker("Asr", selection: $model.prefs.asrOverride) {
-                    Text("Automatic · \(model.profile.asr == .hanafi ? "Hanafi" : "Shafi'i")").tag(AsrSchool?.none)
+                Picker(W("settings.asr"), selection: $model.prefs.asrOverride) {
+                    Text(W("common.automaticWith", ["name": model.profile.asr == .hanafi ? W("settings.hanafi") : W("settings.shafii")])).tag(AsrSchool?.none)
                     ForEach(AsrSchool.allCases) { Text($0.label).tag(AsrSchool?.some($0)) }
                 }
                 if model.method.id == "jakim", let place = model.activePlace {
-                    Picker("JAKIM zone", selection: $model.prefs.jakimZoneOverride) {
-                        Text("Automatic · \(OfficialTimetables.nearestJakimZone(to: place.coordinates))").tag(String?.none)
+                    Picker(W("settings.jakimZone"), selection: $model.prefs.jakimZoneOverride) {
+                        Text(W("common.automaticWith", ["name": OfficialTimetables.nearestJakimZone(to: place.coordinates)])).tag(String?.none)
                         ForEach(JakimZones.zones) { zone in
                             Text("\(zone.id) · \(zone.areas)").tag(String?.some(zone.id))
                         }
                     }
                 }
             } header: {
-                Text("Calculation")
+                Text(W("settings.calculation"))
             } footer: {
-                Text("Automatic follows the country you are in. Change these only if your masjid follows another way.")
+                Text(W("settings.calcFootShort"))
             }
 
             Section {
                 Stepper(value: $model.prefs.hijriAdjustment, in: -2...2) {
-                    LabeledContent("Hijri date",
-                                   value: model.prefs.hijriAdjustment == 0 ? "Same day" : String(format: "%+d day", model.prefs.hijriAdjustment))
+                    LabeledContent(W("settings.hijriDate"),
+                                   value: model.prefs.hijriAdjustment == 0 ? W("settings.sameDay") : String(format: "%+d day", model.prefs.hijriAdjustment))
                 }
             } header: {
-                Text("Dates")
+                Text(W("settings.dates"))
             } footer: {
-                Text("Move the Hijri date by a day if your local moon sighting is different.")
+                Text(W("settings.hijriFoot"))
             }
 
             Section {
                 if let feed = model.officialSource?.calendarFeed {
                     Link(destination: feed) {
-                        Label("Subscribe in Calendar", systemImage: "calendar.badge.plus")
+                        Label(W("settings.subscribe"), systemImage: "calendar.badge.plus")
                     }
                 }
                 if let all = CalendarFile.make(model: model, prayers: Prayer.obligatory) {
                     ShareLink(item: all) {
-                        Label("Add the next 30 days", systemImage: "calendar")
+                        Label(W("phone.settings.add30"), systemImage: "calendar")
                     }
                 }
                 if let work = CalendarFile.make(model: model, prayers: [.dhuhr, .asr]) {
                     ShareLink(item: work) {
-                        Label("\(Prayer.dhuhr.name(model.naming)) and \(Prayer.asr.name(model.naming)) only, for work",
+                        Label(W("phone.settings.workOnly", ["a": Prayer.dhuhr.name(model.naming), "b": Prayer.asr.name(model.naming)]),
                               systemImage: "briefcase")
                     }
                 }
             } header: {
-                Text("Add to calendar")
+                Text(W("settings.addToCalendar"))
             }
         }
-        .settingsPage("Prayer times")
+        .settingsPage(W("today.title"))
     }
 
     private var timetableStatus: String {
-        guard let source = model.officialSource else { return Device.words("Worked out on your phone") }
+        guard let source = model.officialSource else { return W("phone.settings.workedOut") }
         let year = Calendar(identifier: .gregorian).component(.year, from: .now)
-        return model.official.hasTable(source, year: year) ? "Saved for offline" : "Downloads when online"
+        return model.official.hasTable(source, year: year) ? W("phone.settings.savedOffline") : W("phone.settings.downloadsOnline")
     }
 }
 
@@ -493,24 +493,24 @@ private struct AccuracyPage: View {
     var body: some View {
         Form {
             Section {
-                Text("In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year and keeps it for offline use. Only the year, zone code or area name is sent.")
-                Text(Device.words("Everywhere else, and before that download, times are worked out on your phone with the country's own method."))
-                Text("That working is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables. For Singapore it is never earlier than the official time, and at most 2 minutes later. For Malaysia and Indonesia it is within about 2 minutes.")
+                Text(W("phone.settings.officialDownload"))
+                Text(W("phone.settings.elsewhere"))
+                Text(W("phone.settings.checkedAgainst"))
             }
             Section {
-                LabeledContent("A", value: "Official")
-                LabeledContent("B", value: "Confirmed by a masjid")
-                LabeledContent("C", value: "Checked by the community")
-                LabeledContent("D", value: Device.words("Worked out on your phone"))
-                LabeledContent("F", value: "Your own shadow reading")
+                LabeledContent("A", value: W("source.gradeA"))
+                LabeledContent("B", value: W("phone.settings.confirmedMasjid"))
+                LabeledContent("C", value: W("phone.settings.checkedCommunity"))
+                LabeledContent("D", value: W("phone.settings.workedOut"))
+                LabeledContent("F", value: W("phone.settings.ownShadow"))
             } header: {
-                Text("The letter beside each day")
+                Text(W("phone.settings.letterBeside"))
             } footer: {
-                Text("A falak reading from your own shadow stick only checks the times.")
+                Text(W("phone.settings.falakOnlyChecks"))
             }
         }
         .font(.callout)
-        .settingsPage("How accurate are the times?")
+        .settingsPage(W("settings.howAccurate"))
     }
 }
 
@@ -523,41 +523,41 @@ private struct LookPage: View {
         @Bindable var model = model
         Form {
             Section {
-                Picker("Prayer screen", selection: $model.prefs.todayStyle) {
+                Picker(W("settings.prayerScreen"), selection: $model.prefs.todayStyle) {
                     ForEach(TodayStyle.looks) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.inline)
                 .labelsHidden()
             } header: {
-                Text("Prayer screen")
+                Text(W("settings.prayerScreen"))
             }
             Section {
-                Picker("Appearance", selection: $model.prefs.appearance) {
-                    Text("Automatic").tag(Appearance.system)
-                    Text("Light").tag(Appearance.light)
-                    Text("Dark").tag(Appearance.dark)
+                Picker(W("settings.appearance"), selection: $model.prefs.appearance) {
+                    Text(W("common.automatic")).tag(Appearance.system)
+                    Text(W("appearance.light")).tag(Appearance.light)
+                    Text(W("appearance.dark")).tag(Appearance.dark)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
             } header: {
-                Text("Appearance")
+                Text(W("settings.appearance"))
             } footer: {
-                Text("Automatic follows the sky where you are.")
+                Text(W("settings.appearanceFoot"))
             }
             Section {
-                Toggle("Bigger text", isOn: $model.prefs.largeText)
-                Toggle("24 hour time", isOn: $model.prefs.use24Hour)
+                Toggle(W("settings.biggerText"), isOn: $model.prefs.largeText)
+                Toggle(W("settings.hour24"), isOn: $model.prefs.use24Hour)
                 Toggle(isOn: $model.prefs.showOpening) {
-                    Text("Moving dial when the app opens")
-                    Text("Turn off to open straight to your times")
+                    Text(W("settings.openingDial"))
+                    Text(W("settings.openingDialSub"))
                 }
             } header: {
-                Text("Text and time")
+                Text(W("settings.textTime"))
             } footer: {
-                Text("Tip. The two round buttons at the top of the Prayer screen change the look too.")
+                Text(W("settings.lookTip"))
             }
         }
-        .settingsPage("Look and feel")
+        .settingsPage(W("settings.lookFeel"))
     }
 }
 
@@ -571,26 +571,29 @@ private struct LanguagePage: View {
         @Bindable var model = model
         Form {
             Section {
-                LabeledContent("App words", value: "English")
+                Picker(W("phone.settings.appWords"), selection: $model.prefs.appLanguageOverride) {
+                    Text(W("common.automaticWith", ["name": AppLanguageChoice.label(AppWords.deviceLang())])).tag(AppLanguageChoice?.none)
+                    ForEach(AppLanguageChoice.allCases) { Text($0.label).tag(AppLanguageChoice?.some($0)) }
+                }
                 if Bundle.main.localizations.filter({ $0 != "Base" }).count > 1 {
-                    Button("Change in iPhone Settings") { openSettings() }
+                    Button(W("phone.settings.changeInSettings")) { openSettings() }
                 }
             } footer: {
-                Text("The app's words are in English for now. Malay and Indonesian are on the way.")
+                Text(W("settings.languageFoot"))
             }
             Section {
-                Picker("Prayer names", selection: $model.prefs.namingOverride) {
-                    Text("Automatic · \(model.personalNaming.language)").tag(NamingStyle?.none)
+                Picker(W("settings.names"), selection: $model.prefs.namingOverride) {
+                    Text(W("common.automaticWith", ["name": model.personalNaming.language])).tag(NamingStyle?.none)
                     ForEach(NamingStyle.allCases) { Text($0.label).tag(NamingStyle?.some($0)) }
                 }
-                Toggle("Local names when travelling", isOn: $model.prefs.showLocalNames)
+                Toggle(W("phone.settings.localNames"), isOn: $model.prefs.showLocalNames)
             } header: {
-                Text("Prayer names")
+                Text(W("settings.names"))
             } footer: {
-                Text("Pick Malay for Subuh and Isyak. When you travel, the local name shows small underneath, so the masjid's signs make sense.")
+                Text(W("phone.settings.namesFoot"))
             }
         }
-        .settingsPage("Language")
+        .settingsPage(W("settings.language"))
     }
 
     private func openSettings() {
@@ -608,15 +611,15 @@ private struct LockScreenPage: View {
         Form {
             Section {
                 Toggle(isOn: $model.prefs.liveActivityEnabled) {
-                    Text("Live countdown")
-                    Text("Next prayer on the Lock Screen and Dynamic Island")
+                    Text(W("widget.liveCountdown"))
+                    Text(W("phone.settings.lockDynamic"))
                 }
-                NavigationLink("See the widgets") { WidgetPreviewView() }
+                NavigationLink(W("settings.seeWidgets")) { WidgetPreviewView() }
             } footer: {
-                Text(Device.words("To add a widget, touch and hold your Home Screen, then tap Edit."))
+                Text(W("phone.settings.addWidget"))
             }
         }
-        .settingsPage("Home and Lock Screen")
+        .settingsPage(W("phone.settings.homeLock"))
     }
 }
 
@@ -631,27 +634,27 @@ private struct RamadanSettingsPage: View {
         Form {
             Section {
                 Button { showRamadan = true } label: {
-                    Label("Open the Ramadan page", systemImage: "moon.stars")
+                    Label(W("phone.settings.openRamadan"), systemImage: "moon.stars")
                 }
             } footer: {
-                Text("Ramadan mode starts by itself when your local religious authority announces it. Sahur and iftar alerts are in Alerts and alarms.")
+                Text(W("settings.ramadanFootShort"))
             }
             // Tester builds only, or if it is somehow still on, so it can be turned off.
             if SettingsLinks.isTesterBuild || model.prefs.seasonPreview != .off {
                 Section {
-                    Picker("Pretend it is", selection: $model.prefs.seasonPreview) {
+                    Picker(W("phone.settings.pretend"), selection: $model.prefs.seasonPreview) {
                         ForEach(SeasonPreview.allCases) { p in Text(p.label).tag(p) }
                     }
                 } header: {
-                    Text("For testers")
+                    Text(W("settings.forTesters"))
                 } footer: {
                     Text(model.prefs.seasonPreview == .off
-                         ? "Shows a pretend Ramadan or Eid date so you can try it early."
-                         : "Pretend mode is on. The app shows a pretend date, not today's. Turn it off before you rely on the times.")
+                         ? W("settings.pretendFoot")
+                         : W("settings.pretendOnFoot"))
                 }
             }
         }
-        .settingsPage("Ramadan")
+        .settingsPage(W("alerts.dayRamadan"))
         .sheet(isPresented: $showRamadan) { RamadanView() }
     }
 }
@@ -663,13 +666,13 @@ private struct TrackerPage: View {
         @Bindable var model = model
         Form {
             Section {
-                Toggle("Prayer tracker", isOn: $model.prefs.trackerEnabled)
+                Toggle(W("settings.trackerOn"), isOn: $model.prefs.trackerEnabled)
             } footer: {
-                Text(Device.words("Tick off each prayer on the Prayer screen once it has passed, and keep a streak. Tap the streak to mark a day as excused, like haid or illness, so it carries on. Kept only on this phone.")
-                     + (model.prefs.trackerEnabled ? " The nudge before time runs out is in Alerts and alarms." : ""))
+                Text(W("settings.trackerFootPhone")
+                     + (model.prefs.trackerEnabled ? W("settings.trackerNudgeNote") : ""))
             }
         }
-        .settingsPage("Prayer tracker")
+        .settingsPage(W("settings.trackerOn"))
     }
 }
 
@@ -682,18 +685,18 @@ private struct HadithPage: View {
             Section {
                 Toggle(isOn: Binding(get: { model.prefs.showHadith },
                                      set: { on in model.prefs.showHadith = on; if on { model.prefs.hiddenHadith = [] } })) {
-                    Text("Show hadith in the app")
-                    Text("A short hadith or ayah on some screens")
+                    Text(W("settings.showHadith"))
+                    Text(W("settings.showHadithSub"))
                 }
                 Toggle(isOn: $model.prefs.hadithInAlerts) {
-                    Text("Add a hadith to wake up alerts")
-                    Text("One short line under Fajr and tahajjud alerts")
+                    Text(W("settings.wakeHadith"))
+                    Text(W("phone.settings.oneShort"))
                 }
             } footer: {
-                Text(Device.words("Tap ✕ on any hadith to hide just that one."))
+                Text(W("phone.settings.hideHadith"))
             }
         }
-        .settingsPage("Hadith")
+        .settingsPage(W("hadith.title"))
     }
 }
 
@@ -704,16 +707,16 @@ private struct MovePhonePage: View {
         Form {
             Section {
                 NavigationLink { MoveOutView() } label: {
-                    Label("Send my settings", systemImage: "arrow.left.arrow.right")
+                    Label(W("phone.settings.sendMine"), systemImage: "arrow.left.arrow.right")
                 }
                 NavigationLink { MoveInView() } label: {
-                    Label("Bring in settings", systemImage: "square.and.arrow.down")
+                    Label(W("move.bringIn"), systemImage: "square.and.arrow.down")
                 }
             } footer: {
-                Text("A QR code or link carries your places, choices and tracker. No account and nothing uploaded. Works with iPhone, Android and the web. Restoring a new iPhone from an iCloud backup brings them too.")
+                Text(W("phone.settings.moveBody"))
             }
         }
-        .settingsPage("Move to a new phone")
+        .settingsPage(W("settings.movePhone"))
     }
 }
 
@@ -726,49 +729,49 @@ private struct PrivacyPage: View {
         @Bindable var model = model
         Form {
             Section {
-                Label("No outside ads and no accounts", systemImage: "hand.raised.fill")
-                Label(Device.words("Your exact location stays on your phone"), systemImage: "location.slash.fill")
-                Label("Masjid search sends only your area", systemImage: "map.fill")
+                Label(W("phone.settings.noAds"), systemImage: "hand.raised.fill")
+                Label(W("settings.privacyPhone"), systemImage: "location.slash.fill")
+                Label(W("settings.privacyMasjid"), systemImage: "map.fill")
             } header: {
-                Text("Our promise")
+                Text(W("settings.promise"))
             }
             Section {
-                Toggle("Share anonymous counts", isOn: $model.prefs.shareUsage)
+                Toggle(W("phone.settings.shareCounts"), isOn: $model.prefs.shareUsage)
             } footer: {
-                Text("Tells us which cities use the app, so we know where to add official timetables. A random number stands in for you. Never your name, exact location or IP address.")
+                Text(W("phone.settings.countsFoot"))
             }
             Section {
-                LabeledContent("Location", value: locationStatus)
-                LabeledContent("Notifications", value: notificationStatus)
-                Button("Open iPhone Settings") {
+                LabeledContent(W("settings.location"), value: locationStatus)
+                LabeledContent(W("settings.notificationsWord"), value: notificationStatus)
+                Button(W("phone.settings.openIphone")) {
                     if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                 }
             } header: {
-                Text("Phone permissions")
+                Text(W("settings.phonePermissions"))
             } footer: {
-                Text("If times or alerts look wrong, check these first.")
+                Text(W("settings.phonePermissionsFoot"))
             }
             Section {
-                Link("Privacy policy", destination: SettingsLinks.privacy)
+                Link(W("settings.privacyPolicy"), destination: SettingsLinks.privacy)
             }
         }
-        .settingsPage("Privacy")
+        .settingsPage(W("settings.privacy"))
         .task {
             notifications = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
         }
     }
 
     private var locationStatus: String {
-        if model.location.isAuthorized { return "Allowed" }
-        if model.location.isDenied { return "Off" }
-        return model.prefs.useGPS ? "Not asked yet" : "Using a place you picked"
+        if model.location.isAuthorized { return W("settings.allowed") }
+        if model.location.isDenied { return W("common.off") }
+        return model.prefs.useGPS ? W("settings.notAsked") : W("settings.pickedPlace")
     }
 
     private var notificationStatus: String {
         switch notifications {
-        case .authorized, .provisional, .ephemeral: return "Allowed"
-        case .denied: return "Off"
-        default: return "Not asked yet"
+        case .authorized, .provisional, .ephemeral: return W("settings.allowed")
+        case .denied: return W("common.off")
+        default: return W("settings.notAsked")
         }
     }
 }
@@ -780,19 +783,19 @@ private struct HelpPage: View {
         Form {
             Section {
                 Button { showGuide = true } label: {
-                    Label("Show the quick guide", systemImage: "lightbulb")
+                    Label(W("settings.showGuide"), systemImage: "lightbulb")
                 }
                 Link(destination: SettingsLinks.faq) {
-                    Label("Questions and answers", systemImage: "questionmark.bubble")
+                    Label(W("settings.faq"), systemImage: "questionmark.bubble")
                 }
                 Link(destination: SettingsLinks.verify) {
-                    Label("Help check times where you live", systemImage: "checkmark.seal")
+                    Label(W("phone.settings.helpCheck"), systemImage: "checkmark.seal")
                 }
             } footer: {
-                Text(Device.words("The quick guide is a short tour that taps the real buttons for you."))
+                Text(W("phone.settings.quickGuide"))
             }
         }
-        .settingsPage("Help")
+        .settingsPage(W("settings.help"))
         .fullScreenCover(isPresented: $showGuide) { GuideView() }
     }
 }
@@ -812,10 +815,10 @@ private struct PicksPage: View {
                 }
             }
             Section {
-                Toggle("Show \(picksName)", isOn: $model.prefs.showOffers)
-                Link("Our rules for \(picksName)", destination: SettingsLinks.picksRules)
+                Toggle(W("phone.settings.show", ["name": picksName]), isOn: $model.prefs.showOffers)
+                Link(W("phone.settings.ourRules", ["name": picksName]), destination: SettingsLinks.picksRules)
             } footer: {
-                Text("Halal Muslim businesses and causes we check by hand, safe for the whole family. Most are our own services, and paid ones are marked Sponsored. We only count how often a card is seen and tapped, never who you are.")
+                Text(W("phone.settings.picksBody"))
             }
         }
         .settingsPage(picksName)
@@ -831,27 +834,27 @@ struct AboutPage: View {
                     .listRowBackground(Color.clear)
             }
             Section {
-                NavigationLink("Sources and credits") { CreditsView() }
-                Link("Design a new look", destination: SettingsLinks.newLook)
+                NavigationLink(W("settings.sources")) { CreditsView() }
+                Link(W("settings.designLook"), destination: SettingsLinks.newLook)
             } footer: {
-                Text("Built in Asia, made for Muslims everywhere.")
+                Text(W("phone.settings.builtAsia"))
             }
             Section {
-                Link("Join the Timekeepers", destination: SettingsLinks.join)
-                Link("Follow us on Instagram", destination: SettingsLinks.instagram)
-                Link("Follow us on Facebook", destination: SettingsLinks.facebook)
+                Link(W("settings.joinTimekeepers"), destination: SettingsLinks.join)
+                Link(W("settings.instagram"), destination: SettingsLinks.instagram)
+                Link(W("settings.facebook"), destination: SettingsLinks.facebook)
             } header: {
-                Text("Community")
+                Text(W("settings.community"))
             }
             Section {
-                Link("Privacy policy", destination: SettingsLinks.privacy)
-                Link("Terms of use", destination: SettingsLinks.terms)
-                LabeledContent("Version", value: Bundle.main.appVersion)
+                Link(W("settings.privacyPolicy"), destination: SettingsLinks.privacy)
+                Link(W("settings.terms"), destination: SettingsLinks.terms)
+                LabeledContent(W("settings.version"), value: Bundle.main.appVersion)
             } footer: {
-                Text("Free for everyone. No paid version.")
+                Text(W("settings.freeLine"))
             }
         }
-        .settingsPage("About and credits")
+        .settingsPage(W("settings.aboutCredits"))
     }
 }
 

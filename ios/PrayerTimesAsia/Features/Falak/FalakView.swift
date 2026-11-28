@@ -21,6 +21,14 @@ struct FalakView: View {
     enum Part: String, CaseIterable, Identifiable {
         case sky = "Sky", then = "Then", now = "Now", why = "Why"
         var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .sky: W("falak.tabSky")
+            case .then: W("falak.tabThen")
+            case .now: W("common.now")
+            case .why: W("falak.tabWhy")
+            }
+        }
     }
 
     var body: some View {
@@ -43,7 +51,7 @@ struct FalakView: View {
                                     SunSafetyCard()
                                 case .why: WhyItHelps()
                                 }
-                                Text("For learning. Always follow your local religious authority.")
+                                Text(W("falak.footer"))
                                     .lookFont(12)
                                     .foregroundStyle(look.palette.tx2)
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -58,13 +66,13 @@ struct FalakView: View {
                         }
                     }
                 } else {
-                    Text("Choose a place first.").font(.headline)
+                    Text(W("falak.choosePlace")).font(.headline)
                 }
             }
             .foregroundStyle(look.palette.tx)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if !isTab { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+                if !isTab { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
             }
             .toolbar(isTab ? .hidden : .automatic, for: .navigationBar)
             .fullScreenCover(isPresented: $showAR) { FalakARScreen() }
@@ -77,11 +85,11 @@ struct FalakView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Falak")
+            Text(W("tab.falak"))
                 .font(Theme.display(look == .simple ? 38 : 34, .bold))
                 .foregroundStyle(look.palette.tx)
                 .accessibilityAddTraits(.isHeader)
-            Text("The sun and the sky set the prayer times. Slide to see how.")
+            Text(W("falak.lede"))
                 .lookFont(15).foregroundStyle(look.palette.tx2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -96,7 +104,7 @@ struct FalakView: View {
             ForEach(Part.allCases) { part in
                 let on = part == tab
                 Button { tab = part } label: {
-                    Text(part.rawValue)
+                    Text(part.title)
                         .lookFont(14, .semibold)
                         .foregroundStyle(on ? p.tx : p.tx2)
                         .frame(maxWidth: .infinity, minHeight: 40)
@@ -105,7 +113,7 @@ struct FalakView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(part.rawValue)
+                .accessibilityLabel(part.title)
                 .accessibilityAddTraits(on ? AccessibilityTraits.isSelected : AccessibilityTraits())
             }
         }
@@ -138,22 +146,22 @@ struct FalakView: View {
 
     private func toolItems(asr: String, plan: Falak.ShadowDay, qiblaLine: String, now: Date, full: Bool) -> [ToolItem] {
         var rows: [ToolItem] = [
-            ToolItem(symbol: "figure.walk", title: "Shadow steps", subtitle: "Find \(asr) with your own shadow",
+            ToolItem(symbol: "figure.walk", title: W("falak.stepsTitle"), subtitle: W("falak.stepsSub", ["name": asr]),
                      trailing: Falak.stepsText(Falak.asrSteps(plan, school: model.asrSchool)), action: { showSteps = true }),
-            ToolItem(symbol: "camera.viewfinder", title: "Shadow camera", subtitle: "Point, tap, done", trailing: nil,
+            ToolItem(symbol: "camera.viewfinder", title: W("falak.cameraTitle"), subtitle: W("falak.cameraTitleSub"), trailing: nil,
                      action: { showCamera = true }),
-            ToolItem(symbol: "location.north.line.fill", title: "Qibla from the sun", subtitle: qiblaLine, trailing: nil,
+            ToolItem(symbol: "location.north.line.fill", title: W("falak.qiblaSunTitle"), subtitle: qiblaLine, trailing: nil,
                      action: { showExpert = true })
         ]
         if full {
-            rows.append(ToolItem(symbol: "sun.max.circle.fill", title: "Sun over the Kaaba",
+            rows.append(ToolItem(symbol: "sun.max.circle.fill", title: W("falak.sunOverKaaba"),
                                  subtitle: model.longDate(Falak.nextQiblaDay(after: now)), trailing: nil, action: { showExpert = true }))
-            rows.append(ToolItem(symbol: "arkit", title: "Camera", subtitle: "Qibla and shadow on the camera", trailing: nil,
+            rows.append(ToolItem(symbol: "arkit", title: W("falak.camera"), subtitle: W("falak.cameraSub"), trailing: nil,
                                  action: { showAR = true }))
-            rows.append(ToolItem(symbol: "level", title: "Level", subtitle: "Ground and stick", trailing: nil,
+            rows.append(ToolItem(symbol: "level", title: W("falak.level"), subtitle: W("falak.levelSub"), trailing: nil,
                                  action: { showLevel = true }))
-            rows.append(ToolItem(symbol: "slider.horizontal.3", title: "Expert tools",
-                                 subtitle: "Shadow stick, Qibla Day and sky signs in detail", trailing: nil, action: { showExpert = true }))
+            rows.append(ToolItem(symbol: "slider.horizontal.3", title: W("falak.expert"),
+                                 subtitle: W("falak.expertSub"), trailing: nil, action: { showExpert = true }))
         }
         return rows
     }
@@ -190,17 +198,17 @@ private struct ToolGroupStyle: ViewModifier {
 extension FalakView {
     /// When the sun next lines up with the qibla: later today, or the next day it does.
     func qiblaSub(place: Place, now: Date, today: [Falak.Alignment]) -> String {
-        if let next = today.first(where: { $0.time > now }) { return "Today at \(model.formatted(next.time))" }
+        if let next = today.first(where: { $0.time > now }) { return W("falak.qiblaSunToday", ["time": model.formatted(next.time)]) }
         for offset in 1...60 {
             let ymd = model.ymd(model.noon(now, plus: offset))
             if let first = Falak.rashdulQiblat(year: ymd.0, month: ymd.1, day: ymd.2, timeZone: model.timeZone,
                                                coordinates: place.coordinates).first {
                 var style = Date.FormatStyle().day().month(.wide)
                 style.timeZone = model.timeZone
-                return "Next on \(first.time.formatted(style))"
+                return W("falak.qiblaSunNext", ["date": first.time.formatted(style)])
             }
         }
-        return "Not in the coming weeks here"
+        return W("falak.qiblaSunNone")
     }
 }
 
@@ -279,8 +287,8 @@ struct FalakExpertView: View {
                         ScrollView {
                             VStack(spacing: 16) {
                                 HStack(spacing: 8) {
-                                    Chip(text: "Grade F · Falak", systemImage: SourceGrade.falak.symbol)
-                                    Chip(text: "Pending shariah review", systemImage: "hourglass")
+                                    Chip(text: W("falak.grade"), systemImage: SourceGrade.falak.symbol)
+                                    Chip(text: W("falak.pendingReview"), systemImage: "hourglass")
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 SunSafetyCard()
@@ -299,9 +307,9 @@ struct FalakExpertView: View {
                     }
                 }
             }
-            .navigationTitle("Expert tools")
+            .navigationTitle(W("falak.expert"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
         }
     }
 }
@@ -331,13 +339,14 @@ extension AppModel {
     func longDate(_ date: Date) -> String {
         var style = Date.FormatStyle(date: .complete, time: .omitted)
         style.timeZone = timeZone
+        style.locale = AppWords.formatLocale
         return date.formatted(style)
     }
 }
 
 private func minutesText(_ m: Double) -> String {
     let r = Int(m.rounded())
-    return r == 1 || r == -1 ? "\(abs(r)) minute" : "\(abs(r)) minutes"
+    return W("falak.minutes", ["n": abs(r)])
 }
 
 struct SunSafetyCard: View {
@@ -346,7 +355,7 @@ struct SunSafetyCard: View {
             Image(systemName: "eye.trianglebadge.exclamationmark.fill")
                 .font(.title2).foregroundStyle(Theme.warning)
                 .accessibilityHidden(true)
-            Text("Never look at the sun - not briefly, not through sunglasses, binoculars or your phone's camera. Look only at the shadow on the ground.")
+            Text(W("falak.neverLook"))
                 .font(.footnote.weight(.semibold))
         }
         .padding(14)
@@ -369,21 +378,21 @@ private struct ShadowCompassCard: View {
         let shadowBearing = Astro.fix(sun.azimuth + 180, 360)
         GlassCard {
             VStack(alignment: .leading, spacing: 12) {
-                CardTitle(title: "The shadow right now", symbol: "sun.max.fill")
+                CardTitle(title: W("falak.shadowNow"), symbol: "sun.max.fill")
                 HStack(spacing: 16) {
                     ShadowDial(qibla: qibla, shadowBearing: shadowBearing, altitude: sun.altitude)
                         .frame(width: 140, height: 140)
                     VStack(alignment: .leading, spacing: 6) {
                         if sun.altitude > 0 {
-                            Text("Sun \(Int(sun.altitude.rounded()))° up, in the \(Geo.compassPoint(sun.azimuth))")
+                            Text(W("falak.sunUp", ["deg": Int(sun.altitude.rounded()), "point": Geo.compassPoint(sun.azimuth)]))
                                 .font(.subheadline.weight(.semibold))
-                            Text("A stick's shadow points \(Int(shadowBearing.rounded()))° \(Geo.compassPoint(shadowBearing)) and is \(String(format: "%.1f", Falak.shadowLength(height: 1, altitude: max(sun.altitude, 0.5))))× its height.")
+                            Text(W("falak.stickShadow", ["deg": Int(shadowBearing.rounded()), "point": Geo.compassPoint(shadowBearing), "x": String(format: "%.1f", Falak.shadowLength(height: 1, altitude: max(sun.altitude, 0.5)))]))
                                 .font(.footnote).opacity(0.85)
                         } else {
-                            Text("The sun is below the horizon.").font(.subheadline.weight(.semibold))
-                            Text("Shadow readings start after sunrise. See the sky signs below.").font(.footnote).opacity(0.85)
+                            Text(W("falak.sunBelow")).font(.subheadline.weight(.semibold))
+                            Text(W("falak.afterSunrise")).font(.footnote).opacity(0.85)
                         }
-                        Label("Qibla \(Int(qibla.rounded()))° \(Geo.compassPoint(qibla))", systemImage: "location.north.line.fill")
+                        Label(W("falak.qiblaBearing", ["deg": Int(qibla.rounded()), "point": Geo.compassPoint(qibla)]), systemImage: "location.north.line.fill")
                             .font(.footnote.weight(.semibold))
                             .foregroundStyle(Theme.gold)
                     }
@@ -428,7 +437,7 @@ private struct ShadowDial: View {
             }
             ctx.fill(Path(ellipseIn: CGRect(x: c.x - 5, y: c.y - 5, width: 10, height: 10)), with: .color(Color.primary))
         }
-        .accessibilityLabel("Shadow points \(Int(shadowBearing.rounded())) degrees; qibla is \(Int(qibla.rounded())) degrees")
+        .accessibilityLabel(W("falak.qiblaVsShadow", ["a": Int(shadowBearing.rounded()), "b": Int(qibla.rounded())]))
     }
 }
 
@@ -446,21 +455,21 @@ private struct QiblaDayCard: View {
                                                        to: model.placeCalendar.startOfDay(for: day)).day ?? 0
         GlassCard {
             VStack(alignment: .leading, spacing: 10) {
-                CardTitle(title: "Qibla Day", symbol: "sun.max.circle.fill")
+                CardTitle(title: W("falak.qiblaDay"), symbol: "sun.max.circle.fill")
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(days <= 0 ? "Today" : "\(days)")
+                    Text(days <= 0 ? W("common.today") : "\(days)")
                         .font(Theme.display(44, .bold)).monospacedDigit()
-                    if days > 0 { Text(days == 1 ? "day to go" : "days to go").font(.headline).opacity(0.85) }
+                    if days > 0 { Text(days == 1 ? W("phone.falak.dayToGo") : W("phone.falak.daysToGo")).font(.headline).opacity(0.85) }
                 }
-                Text("\(model.longDate(day)) at \(model.formatted(day)) your time")
+                Text(W("falak.dateAtYourTime", ["date": model.longDate(day), "time": model.formatted(day)]))
                     .font(.subheadline.weight(.semibold))
-                Text("Twice a year the sun stands directly over the Ka'bah at Makkah noon (istiwa' a'zam). At that minute, every upright shadow wherever the sun is up points straight away from the Ka'bah - the most exact qibla check there is, with nothing but a stick.")
+                Text(W("falak.qiblaDayExplain"))
                     .font(.footnote).opacity(0.85)
                 if sun.altitude > 3 {
-                    Label("Visible from here: the sun will be \(Int(sun.altitude.rounded()))° up. Stand a straight stick upright on level ground and face from the shadow's tip to its base. The day before and after also work within about half a degree.", systemImage: "checkmark.circle.fill")
+                    Label(W("falak.qiblaDayVisible", ["deg": Int(sun.altitude.rounded())]), systemImage: "checkmark.circle.fill")
                         .font(.footnote)
                 } else {
-                    Label("The sun is down here at that moment. Use the daily rashdul qiblat below, or the next Qibla Day.", systemImage: "moon.fill")
+                    Label(W("falak.qiblaDayDown"), systemImage: "moon.fill")
                         .font(.footnote)
                 }
             }
@@ -480,15 +489,15 @@ private struct RashdulCard: View {
         let today = Falak.rashdulQiblat(year: ymd.0, month: ymd.1, day: ymd.2, timeZone: model.timeZone, coordinates: place.coordinates)
         GlassCard {
             VStack(alignment: .leading, spacing: 10) {
-                CardTitle(title: "Rashdul qiblat today", symbol: "arrow.up.and.down.and.sparkles")
-                Text("The moments the sun lines up with the qibla from where you are, so any upright shadow lies along the qibla line.")
+                CardTitle(title: W("falak.rashdulToday"), symbol: "arrow.up.and.down.and.sparkles")
+                Text(W("falak.rashdulExplain"))
                     .font(.footnote).opacity(0.85)
                 if today.isEmpty {
                     if let next = nextAlignment(after: now) {
-                        Text("No alignment with the sun high enough today. Next: \(model.longDate(next.time)) at \(model.formatted(next.time)).")
+                        Text(W("phone.falak.noAlignment", ["date": model.longDate(next.time), "time": model.formatted(next.time)]))
                             .font(.subheadline.weight(.semibold))
                     } else {
-                        Text("The sun doesn't line up with the qibla from here in the coming weeks. Use the compass or Qibla Day.")
+                        Text(W("falak.rashdulNever"))
                             .font(.subheadline.weight(.semibold))
                     }
                 } else {
@@ -496,15 +505,15 @@ private struct RashdulCard: View {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
                                 Text(model.formatted(a.time)).font(Theme.display(24, .bold)).monospacedDigit()
-                                if a.time < now { Text("passed").font(.caption.weight(.semibold)).opacity(0.6) }
+                                if a.time < now { Text(W("falak.passed")).font(.caption.weight(.semibold)).opacity(0.6) }
                                 Spacer()
-                                Text("sun \(Int(a.altitude.rounded()))° up").font(.caption).opacity(0.75)
+                                Text(W("phone.falak.sunUp", ["deg": Int(a.altitude.rounded())])).font(.caption).opacity(0.75)
                             }
                             Text(a.shadowNote).font(.footnote)
                         }
                         .opacity(a.time < now ? 0.6 : 1)
                     }
-                    Text("Good for about ±2 minutes either side; check that the stick is truly vertical with a plumb line or a hanging string.")
+                    Text(W("falak.rashdulGood"))
                         .font(.caption).opacity(0.7)
                 }
             }
@@ -539,46 +548,46 @@ private struct ShadowStickCard: View {
         let official = model.day(containing: measuredAt)
         GlassCard {
             VStack(alignment: .leading, spacing: 12) {
-                CardTitle(title: "Tongkat istiwa' (shadow stick)", symbol: "ruler.fill")
-                Text("Stand a straight stick upright on level ground - a pen on a table works. Measure the stick and its shadow in centimetres.")
+                CardTitle(title: W("falak.stickTitle"), symbol: "ruler.fill")
+                Text(W("falak.stickHow"))
                     .font(.footnote).opacity(0.85)
 
-                LabeledContent("Stick height") {
-                    TextField("cm", value: $height, format: .number.precision(.fractionLength(0...1)))
+                LabeledContent(W("falak.stickHeight")) {
+                    TextField(W("phone.cm"), value: $height, format: .number.precision(.fractionLength(0...1)))
                         .keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(width: 90)
                 }
                 .font(.subheadline)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Today, for this stick").font(.subheadline.weight(.semibold))
-                    row("Zawal (shortest shadow)", model.formatted(plan.noon),
-                        "\(cm(plan.noonShadow(height: height))) pointing \(Geo.compassPoint(plan.noonShadowBearing))")
+                    Text(W("falak.forStick")).font(.subheadline.weight(.semibold))
+                    row(W("falak.zawal"), model.formatted(plan.noon),
+                        W("falak.pointing", ["length": cm(plan.noonShadow(height: height)), "point": Geo.compassPoint(plan.noonShadowBearing)]))
                     if let t = plan.asrShafii {
-                        row("Asr, Shafi'i (+1× stick)", model.formatted(t), cm(plan.asrShadow(height: height, school: .standard)))
+                        row(W("falak.asrShafii"), model.formatted(t), cm(plan.asrShadow(height: height, school: .standard)))
                     }
                     if let t = plan.asrHanafi {
-                        row("Asr, Hanafi (+2× stick)", model.formatted(t), cm(plan.asrShadow(height: height, school: .hanafi)))
+                        row(W("falak.asrHanafi"), model.formatted(t), cm(plan.asrShadow(height: height, school: .hanafi)))
                     }
-                    Text("\(Prayer.dhuhr.name(model.naming)) begins once the shadow stops shrinking and starts to grow. Asr begins when the shadow is the noon shadow plus the stick's height (twice it, for Hanafi).")
+                    Text(W("falak.zawalExplain", ["name": Prayer.dhuhr.name(model.naming)]))
                         .font(.caption).opacity(0.75)
                     if let official {
-                        Text("Your timetable: \(Prayer.dhuhr.name(model.naming)) \(model.formatted(official.time(.dhuhr))), Asr \(model.formatted(official.time(.asr))). Timetables add a few minutes of ihtiyat (precaution) on top of the sun's geometry.")
+                        Text(W("phone.falak.yourTimetable", ["name": Prayer.dhuhr.name(model.naming), "time": model.formatted(official.time(.dhuhr)), "asr": model.formatted(official.time(.asr))]))
                             .font(.caption).opacity(0.75)
                     }
                 }
 
                 Divider().overlay(Color.primary.opacity(0.3))
 
-                Text("Check a reading").font(.subheadline.weight(.semibold))
-                LabeledContent("Shadow length") {
-                    TextField("cm", value: $shadow, format: .number.precision(.fractionLength(0...1)))
+                Text(W("falak.checkReading")).font(.subheadline.weight(.semibold))
+                LabeledContent(W("falak.shadowLength")) {
+                    TextField(W("phone.cm"), value: $shadow, format: .number.precision(.fractionLength(0...1)))
                         .keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(width: 90)
                 }
                 .font(.subheadline)
                 HStack {
-                    DatePicker("Measured at", selection: $measuredAt, displayedComponents: .hourAndMinute)
+                    DatePicker(W("falak.measuredAt"), selection: $measuredAt, displayedComponents: .hourAndMinute)
                         .environment(\.timeZone, model.timeZone)
-                    Button("Now") { measuredAt = .now }.buttonStyle(.bordered)
+                    Button(W("common.now")) { measuredAt = .now }.buttonStyle(.bordered)
                 }
                 .font(.subheadline)
 
@@ -593,29 +602,29 @@ private struct ShadowStickCard: View {
     @ViewBuilder
     private func result(_ r: Falak.Reading, shadow: Double, plan: Falak.ShadowDay, school: AsrSchool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Chip(text: "Grade F · your observation", systemImage: SourceGrade.falak.symbol)
-            Text("The sun is \(String(format: "%.1f", r.altitude))° up by your shadow.").font(.subheadline.weight(.semibold))
+            Chip(text: W("falak.gradeObservation"), systemImage: SourceGrade.falak.symbol)
+            Text(W("falak.sunByShadow", ["deg": String(format: "%.1f", r.altitude)])).font(.subheadline.weight(.semibold))
             if let t = r.sunTime, let off = r.offsetMinutes, let pm = r.uncertaintyMinutes {
-                let side = abs(off) <= pm ? "matches the clock" :
-                    (off > 0 ? "is \(minutesText(off)) ahead of the clock" : "is \(minutesText(off)) behind the clock")
-                Text("That puts the sun's time at \(model.formatted(t)) (±\(Int(pm.rounded(.up))) min), which \(side).")
+                let side = abs(off) <= pm ? W("falak.matches") :
+                    (off > 0 ? W("falak.ahead", ["time": minutesText(off)]) : W("falak.behind", ["time": minutesText(off)]))
+                Text(W("phone.falak.putsSun", ["time": model.formatted(t), "n": Int(pm.rounded(.up)), "side": side]))
                     .font(.footnote)
                 if abs(off) > pm {
-                    Text("Usual causes: the stick isn't vertical, the ground isn't level, or the shadow tip was hard to see. Try again with a plumb line.")
+                    Text(W("phone.falak.usualCauses"))
                         .font(.caption).opacity(0.75)
                 }
             } else {
-                Text("The sun never gets that low on this side of noon today. Re-measure, or check the time.")
+                Text(W("phone.falak.tooLow"))
                     .font(.footnote)
             }
             if let reached = r.asrReached {
                 let target = plan.asrShadow(height: height, school: school)
                 Text(reached
-                     ? "Asr (\(school == .hanafi ? "Hanafi" : "Shafi'i")) has begun by your shadow: it is past \(cm(target))."
-                     : "Asr (\(school == .hanafi ? "Hanafi" : "Shafi'i")) hasn't begun by your shadow: it needs to reach \(cm(target)).")
+                     ? W("falak.asrBegun", ["school": school == .hanafi ? W("settings.hanafi") : W("settings.shafii"), "length": cm(target)])
+                     : W("falak.asrNotBegun", ["school": school == .hanafi ? W("settings.hanafi") : W("settings.shafii"), "length": cm(target)]))
                     .font(.footnote.weight(.semibold))
             } else {
-                Text("Morning reading - before zawal. \(Prayer.dhuhr.name(model.naming)) has not begun.").font(.footnote.weight(.semibold))
+                Text(W("falak.morning", ["name": Prayer.dhuhr.name(model.naming)])).font(.footnote.weight(.semibold))
             }
         }
         .padding(12)
@@ -649,8 +658,8 @@ private struct SkySignsCard: View {
         let day = model.day(containing: now)
         GlassCard {
             VStack(alignment: .leading, spacing: 14) {
-                CardTitle(title: "Signs in the sky", symbol: "sparkles")
-                Text("What the prayer times describe, so you can see them for yourself. Informational: city lights, haze and buildings hide these signs, and scholars differ on how to read dawn and twilight. Pray by your timetable.")
+                CardTitle(title: W("falak.skySigns"), symbol: "sparkles")
+                Text(W("phone.falak.signsHelp"))
                     .font(.footnote).opacity(0.85)
                 sign("Maghrib", .maghrib, day, "sunset",
                      "The whole disc of the sun has gone below the horizon - its upper edge has disappeared. Best seen over the sea or open land; behind hills or buildings it vanishes early, so don't pray by that.")
@@ -669,7 +678,7 @@ private struct SkySignsCard: View {
                 HStack {
                     Text(prayer.name(model.naming)).font(.subheadline.weight(.semibold))
                     Spacer()
-                    if let day { Text("today \(model.formatted(day.time(prayer)))").font(.caption).opacity(0.75) }
+                    if let day { Text(W("falak.todayAt", ["time": model.formatted(day.time(prayer))])).font(.caption).opacity(0.75) }
                 }
                 Text(text).font(.footnote).opacity(0.9)
             }

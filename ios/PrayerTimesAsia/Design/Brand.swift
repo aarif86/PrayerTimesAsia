@@ -89,9 +89,9 @@ struct AppCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
                 .shadow(color: .black.opacity(0.3), radius: 7, y: 4)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Prayer Times Asia").font(.title3.weight(.bold)).foregroundStyle(.white)
-                Text("Built fisabilillah in Singapore").font(.subheadline).foregroundStyle(Brand.moonText.opacity(0.88))
-                Text("Version \(Bundle.main.appVersion)").font(.footnote).foregroundStyle(Brand.moonText.opacity(0.75))
+                Text(W("phone.onboard.title")).font(.title3.weight(.bold)).foregroundStyle(.white)
+                Text(W("settings.builtIn")).font(.subheadline).foregroundStyle(Brand.moonText.opacity(0.88))
+                Text(W("settings.versionN", ["v": Bundle.main.appVersion])).font(.footnote).foregroundStyle(Brand.moonText.opacity(0.75))
             }
             Spacer(minLength: 0)
             if showsChevron {
@@ -113,7 +113,7 @@ struct AppCard: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
         .environment(\.colorScheme, .dark)
         .accessibilityElement(children: .combine)
-        .accessibilityHint("Sources and credits")
+        .accessibilityHint(W("settings.sources"))
     }
 }
 

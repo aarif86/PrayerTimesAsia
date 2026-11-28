@@ -15,7 +15,7 @@ struct JourneyView: View {
                 SkyNow()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Journey").font(Theme.screenTitle).accessibilityAddTraits(.isHeader).padding(.top, 8)
+                        Text(W("settings.journey")).font(Theme.screenTitle).accessibilityAddTraits(.isHeader).padding(.top, 8)
                         if model.prefs.home != nil, !model.prefs.homeConfirmed {
                             HomeQuestionCard()
                         } else {
@@ -26,7 +26,7 @@ struct JourneyView: View {
                         homeCard
                         rulesCard
                         if !model.prefs.trip.isEmpty { tripCard }
-                        Text("This is general guidance on the traveller's concessions (rukhsah), not a fatwa. When unsure, follow your local religious authority.")
+                        Text(W("journey.notFatwa"))
                             .font(.caption).opacity(0.7)
                     }
                     .padding(.horizontal, Theme.gutter)
@@ -35,7 +35,7 @@ struct JourneyView: View {
                 .scrollIndicators(.hidden)
             }
             .foregroundStyle(.primary)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
             .sheet(isPresented: $pickingHome) { PlacesView(purpose: .home) }
         }
     }
@@ -59,24 +59,24 @@ struct JourneyView: View {
                         Text(g.title).font(.title2.weight(.bold))
                     }
                     if let km = distance(status) {
-                        Text("\(Int(km.rounded()).formatted()) km")
+                        Text(W("common.km", ["n": Int(km.rounded()).formatted()]))
                             .font(Theme.display(distanceSize)).monospacedDigit()
-                        + Text("  from home").font(.headline)
+                        + Text(W("phone.journey.fromHome")).font(.headline)
                     }
                     Text(g.body).font(.body).opacity(0.9).fixedSize(horizontal: false, vertical: true)
                     if status.isTraveller { planTable }
                     if model.prefs.arrivedAt != nil, status.isTraveller || isSettled(status) {
-                        Text("Day \(model.daysHere + 1) in \(model.profile.name.isEmpty ? "this place" : model.profile.name)")
+                        Text(W("phone.journey.dayIn", ["n": model.daysHere + 1, "place": model.profile.name.isEmpty ? W("journey.thisPlace") : model.profile.name]))
                             .font(.subheadline.weight(.semibold)).opacity(0.8)
                     }
                 }
             } else {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Set your home").font(.title2.weight(.bold))
-                    Text("Tell us where home is and we'll work out when you count as a traveller.")
+                    Text(W("journey.setHome")).font(.title2.weight(.bold))
+                    Text(W("journey.setHomeHelp"))
                         .opacity(0.85)
                     Button { pickingHome = true } label: {
-                        Label("Set home", systemImage: "house.fill").font(.headline)
+                        Label(W("journey.setHomeButton"), systemImage: "house.fill").font(.headline)
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.primary)
@@ -111,10 +111,10 @@ struct JourneyView: View {
     private var fastingCard: some View {
         GlassCard {
             VStack(alignment: .leading, spacing: 8) {
-                Text("FASTING ON THIS JOURNEY").font(.caption.weight(.heavy)).opacity(0.7)
-                Text("As a traveller you may choose not to fast today and replace it after Ramadan. If fasting is easy for you, fasting is better. The day counts as travel only if you left home before Fajr.")
+                Text(W("journey.fasting").uppercased()).font(.caption.weight(.heavy)).opacity(0.7)
+                Text(W("phone.fastingToday"))
                     .font(.footnote)
-                Text("Mark it on the Ramadan page so the app counts the day to replace.").font(.footnote).opacity(0.8)
+                Text(W("phone.markRamadan")).font(.footnote).opacity(0.8)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -127,13 +127,13 @@ struct JourneyView: View {
             GlassCard {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Text("COMBINED WINDOWS TODAY").font(.caption.weight(.heavy)).opacity(0.7)
+                        Text(W("journey.combined").uppercased()).font(.caption.weight(.heavy)).opacity(0.7)
                         Spacer()
-                        Text("Pending shariah review").font(.caption2.weight(.semibold)).opacity(0.6)
+                        Text(W("falak.pendingReview")).font(.caption2.weight(.semibold)).opacity(0.6)
                     }
                     window(.dhuhr, .asr, from: today.time(.dhuhr), to: today.time(.maghrib))
                     window(.maghrib, .isha, from: today.time(.maghrib), to: tomorrow.time(.fajr))
-                    Text("Jamak taqdim means praying both in the first prayer's time. Jamak ta'khir means praying both in the second prayer's time. \(Prayer.fajr.name(model.naming)) is never joined.")
+                    Text(W("phone.journey.jamakExplain", ["name": Prayer.fajr.name(model.naming)]))
                         .font(.footnote).opacity(0.85)
                 }
             }
@@ -152,15 +152,15 @@ struct JourneyView: View {
         GlassCard {
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("HOME").font(.caption.weight(.heavy)).opacity(0.7)
-                    Text(model.prefs.home.map { "\($0.profile.flag) \($0.name)" } ?? "Not set")
+                    Text(W("journey.home").uppercased()).font(.caption.weight(.heavy)).opacity(0.7)
+                    Text(model.prefs.home.map { "\($0.profile.flag) \($0.name)" } ?? W("settings.notSet"))
                         .font(.headline)
                     if let home = model.prefs.home, !home.subtitle.isEmpty {
                         Text(home.subtitle).font(.subheadline).opacity(0.75)
                     }
                 }
                 Button { pickingHome = true } label: {
-                    Label(model.prefs.home == nil ? "Set home" : "Change home", systemImage: "house")
+                    Label(model.prefs.home == nil ? W("journey.setHomeButton") : W("journey.changeHome"), systemImage: "house")
                         .font(.subheadline.weight(.semibold))
                 }
                 .buttonStyle(.bordered)
@@ -174,20 +174,20 @@ struct JourneyView: View {
         @Bindable var model = model
         return GlassCard {
             VStack(alignment: .leading, spacing: 12) {
-                Text("TRAVEL DISTANCE").font(.caption.weight(.heavy)).opacity(0.7)
+                Text(W("journey.distance").uppercased()).font(.caption.weight(.heavy)).opacity(0.7)
                 if model.asrSchool == .hanafi {
-                    Text("In the Hanafi school the travel distance is about 78 km, for stays of up to 15 days. Prayers are shortened but not joined.")
+                    Text(W("journey.hanafi"))
                         .font(.subheadline)
                 } else {
-                    Picker("Distance", selection: $model.prefs.musafirThresholdKm.animation(.spring(duration: 0.35))) {
-                        Text("81 km (2 marhalah)").tag(81.0)
-                        Text("89 km").tag(89.0)
+                    Picker(W("phone.journey.distanceShort"), selection: $model.prefs.musafirThresholdKm.animation(.spring(duration: 0.35))) {
+                        Text(W("journey.km81")).tag(81.0)
+                        Text(W("journey.km89")).tag(89.0)
                     }
                     .pickerStyle(.segmented)
                     .sensoryFeedback(.selection, trigger: model.prefs.musafirThresholdKm)
-                    Text("Most of Southeast Asia uses 81 km, which is two marhalah. Some scholars use 89 km. Pick the one your local religious authority uses.")
+                    Text(W("journey.distanceHelp"))
                         .font(.subheadline).opacity(0.85)
-                    Text("In the Shafi'i school this holds for stays of up to 3 days, not counting the day you arrive and the day you leave.")
+                    Text(W("journey.shafii"))
                         .font(.subheadline).opacity(0.85)
                 }
                 if let status = model.musafirStatus, let check = Musafir.distanceCheck(for: status, rules: model.musafirRules) {
@@ -211,7 +211,7 @@ struct JourneyView: View {
     private var tripCard: some View {
         GlassCard {
             VStack(alignment: .leading, spacing: 10) {
-                Text("WHERE YOU'VE PRAYED").font(.caption.weight(.heavy)).opacity(0.7)
+                Text(W("journey.prayedAt").uppercased()).font(.caption.weight(.heavy)).opacity(0.7)
                 ForEach(model.prefs.trip.prefix(12)) { stop in
                     HStack {
                         Text(AsiaRegions.profile(for: stop.countryCode)?.flag ?? "🌏")
@@ -255,21 +255,21 @@ struct HomeQuestionCard: View {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 10) {
                         Image(systemName: "house.circle.fill").font(.system(size: 30))
-                        Text("Is \(home.name) your home?").font(.title3.weight(.bold))
+                        Text(W("places.isHome", ["place": home.name])).font(.title3.weight(.bold))
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    Text("We guessed it from where your \(Device.noun) was when you first opened the app. Home is used to work out when you count as a traveller, so please check it.")
+                    Text(W("phone.homeGuess"))
                         .font(.subheadline).opacity(0.85)
                         .fixedSize(horizontal: false, vertical: true)
                     HStack(spacing: 10) {
                         Button { withAnimation { model.confirmHome() } } label: {
-                            Text("Yes, this is home").font(.subheadline.weight(.semibold))
+                            Text(W("places.yesHome")).font(.subheadline.weight(.semibold))
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(.primary)
                         .foregroundStyle(.background)
                         Button { pickingHome = true } label: {
-                            Text("Change home").font(.subheadline.weight(.semibold))
+                            Text(W("journey.changeHome")).font(.subheadline.weight(.semibold))
                         }
                         .buttonStyle(.bordered)
                         .tint(.primary)

@@ -38,7 +38,7 @@ struct HijriMonthCard: View {
 
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                arrow("chevron.left", label: "Previous month") { move(-1, from: ym) }
+                arrow("chevron.left", label: W("tracker.prevMonth")) { move(-1, from: ym) }
                 Spacer()
                 VStack(spacing: 2) {
                     Text("\(w.months[ym.m - 1]) \(String(ym.y))").font(.headline)
@@ -47,7 +47,7 @@ struct HijriMonthCard: View {
                 .accessibilityElement(children: .combine)
                 .accessibilityAddTraits(.isHeader)
                 Spacer()
-                arrow("chevron.right", label: "Next month") { move(1, from: ym) }
+                arrow("chevron.right", label: W("tracker.nextMonth")) { move(1, from: ym) }
             }
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 7), spacing: 3) {
@@ -248,7 +248,7 @@ struct HijriMonthCard: View {
         let utc = TimeZone(identifier: "UTC")!
         var style = Date.FormatStyle(date: .complete, time: .omitted)
         style.timeZone = utc
-        style.locale = Locale(identifier: "en_GB")
+        style.locale = AppWords.formatLocale
         return g.noon(in: utc).formatted(style)
     }
 }

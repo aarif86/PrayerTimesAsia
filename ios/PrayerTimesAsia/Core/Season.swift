@@ -63,12 +63,12 @@ enum SeasonPreview: String, Codable, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .off: "Off (real dates)"
-        case .sighting: "Moon sighting night (29 Sha'ban)"
-        case .ramadan: "Ramadan (day 12)"
-        case .lastTen: "Last ten nights (day 26)"
-        case .raya: "Eid morning (1 Shawwal)"
-        case .syawal: "Shawwal (day 8)"
+        case .off: W("preview.off")
+        case .sighting: W("preview.sighting")
+        case .ramadan: W("preview.ramadan")
+        case .lastTen: W("preview.lastTen")
+        case .raya: W("preview.raya")
+        case .syawal: W("preview.syawal")
         }
     }
     var target: (month: Int, day: Int)? {

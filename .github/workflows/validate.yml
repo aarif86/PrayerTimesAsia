@@ -44,5 +44,7 @@ jobs:
         run: python3 tools/build_android_words.py --check
       - name: iPhone words match the shared app words
         run: python3 tools/build_ios_words.py --check
+      - name: iPhone screens read their words from the word list
+        run: python3 tools/check_ios_words_wired.py
       - name: Compare with official timetables
         run: python3 tools/validate_official.py ${{ github.event.inputs.zones }}

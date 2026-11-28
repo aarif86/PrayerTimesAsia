@@ -45,7 +45,8 @@ enum WidgetBridge {
             hijriAdjustment: model.prefs.hijriAdjustment,
             style: model.prefs.todayStyle,
             fasts: fasts,
-            fastWords: .init(imsak: words(.imsak), berbuka: words(.berbuka)))
+            fastWords: .init(imsak: words(.imsak), berbuka: words(.berbuka)),
+            appLang: AppLanguageChoice.code(model.appLang))
         return snapshot
     }
 }

@@ -13,18 +13,18 @@ enum AlertMode: String, CaseIterable, Identifiable, Sendable {
 
     var word: String {
         switch self {
-        case .off: "Off"
-        case .notify: "Notify"
-        case .alarm: "Alarm"
+        case .off: W("common.off")
+        case .notify: W("alerts.modeNotify")
+        case .alarm: W("alerts.modeAlarm")
         }
     }
 
     /// What a choice means, on the big cards of a prayer's page.
     var help: String {
         switch self {
-        case .off: "Nothing for this prayer"
-        case .notify: Device.words("A notification with sound. Quiet when your phone is on silent or in a Focus.")
-        case .alarm: "Rings until you stop it, even on silent and in a Focus. Snooze 5 min."
+        case .off: W("alerts.helpOff")
+        case .notify: W("alerts.helpNotify")
+        case .alarm: W("phone.alerts.alarmRings")
         }
     }
 

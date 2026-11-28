@@ -72,15 +72,15 @@ struct PlacesView: View {
                         } label: {
                             Label {
                                 VStack(alignment: .leading) {
-                                    Text("Current location")
+                                    Text(W("places.current"))
                                     if let gps = model.gpsPlace { Text(gps.name).font(.caption).foregroundStyle(.secondary) }
                                 }
                             } icon: { Image(systemName: "location.fill") }
                         }
-                        .badge(model.prefs.useGPS ? Text("On") : nil)
+                        .badge(model.prefs.useGPS ? Text(W("common.on")) : nil)
                     }
                     if !model.prefs.savedPlaces.isEmpty {
-                        Section("Saved places") {
+                        Section(W("places.saved")) {
                             ForEach(model.prefs.savedPlaces) { place in
                                 Button { pick(place) } label: { placeRow(place) }
                             }
@@ -88,7 +88,7 @@ struct PlacesView: View {
                         }
                     }
                     Section {
-                        Text("Search any city, like Hanoi, Istanbul, London or Toronto. Times are calculated on your \(Device.noun), so they keep working offline.")
+                        Text(W("phone.searchCity"))
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                 } else {
@@ -112,12 +112,12 @@ struct PlacesView: View {
             }
             .tint(.primary)
             .overlay { if resolving { ProgressView() } }
-            .searchable(text: $search.query, placement: .navigationBarDrawer(displayMode: .always), prompt: "City or place")
+            .searchable(text: $search.query, placement: .navigationBarDrawer(displayMode: .always), prompt: W("phone.cityOrPlace"))
             .onChange(of: search.query) { search.update() }
-            .navigationTitle(purpose == .home ? "Where is home?" : "Location")
+            .navigationTitle(purpose == .home ? W("places.whereHome") : W("settings.location"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } }
             }
         }
     }
@@ -147,7 +147,7 @@ struct PlacesView: View {
                 Button { pick(here) } label: {
                     Label {
                         VStack(alignment: .leading) {
-                            Text("Where I am now")
+                            Text(W("places.whereNow"))
                             Text(here.name + (here.countryName.map { ", \($0)" } ?? "")).font(.caption).foregroundStyle(.secondary)
                         }
                     } icon: { Image(systemName: "location.fill") }
@@ -156,14 +156,14 @@ struct PlacesView: View {
         }
         let saved = model.prefs.savedPlaces.filter { $0.name != "Current location" }
         if !saved.isEmpty {
-            Section("Saved places") {
+            Section(W("places.saved")) {
                 ForEach(saved) { place in
                     Button { pick(place) } label: { placeRow(place) }
                 }
             }
         }
         Section {
-            Text("Search the town or area where you live, like Tampines, Shah Alam or Bandung. Home is used to work out when you count as a traveller.")
+            Text(W("places.homeHelp"))
                 .font(.footnote).foregroundStyle(.secondary)
         }
     }

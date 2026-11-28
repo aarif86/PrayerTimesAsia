@@ -72,11 +72,11 @@ enum WakeUpTiming: String, Codable, CaseIterable, Identifiable, Sendable {
     func label(_ naming: NamingStyle) -> String {
         let fajr = Prayer.fajr.name(naming), sunrise = Prayer.sunrise.name(naming)
         switch self {
-        case .fajrMinus30: return "30 min before \(fajr) for tahajjud"
-        case .atFajr: return "At \(fajr)"
-        case .sunriseMinus60: return "1 hour before \(sunrise)"
+        case .fajrMinus30: return W("alerts.wakeTahajjud", ["fajr": fajr])
+        case .atFajr: return W("alerts.wakeAtFajr", ["fajr": fajr])
+        case .sunriseMinus60: return W("alerts.wakeHourBefore", ["sunrise": sunrise])
         default:
-            return group == .beforeSunrise ? "\(minutes) min before \(sunrise)" : "\(minutes) min after \(fajr) begins"
+            return group == .beforeSunrise ? W("alerts.wakeBeforeSunrise", ["n": minutes, "sunrise": sunrise]) : W("alerts.wakeAfterFajr", ["n": minutes, "fajr": fajr])
         }
     }
 
@@ -105,9 +105,9 @@ enum SahurTiming: String, Codable, CaseIterable, Identifiable, Sendable {
     func label(_ naming: NamingStyle) -> String {
         let fajr = Prayer.fajr.name(naming)
         switch self {
-        case .fajrMinus60: return "1 hour before \(fajr)"
-        case .fajrMinus90: return "1 hour 30 min before \(fajr)"
-        case .fajrMinus120: return "2 hours before \(fajr)"
+        case .fajrMinus60: return W("alerts.wakeHourBefore", ["sunrise": fajr])
+        case .fajrMinus90: return W("alerts.sahur90", ["fajr": fajr])
+        case .fajrMinus120: return W("alerts.sahur120", ["fajr": fajr])
         }
     }
 
@@ -140,9 +140,9 @@ enum PrayerAlarmTiming: String, Codable, CaseIterable, Identifiable, Sendable {
     /// Short, as it sits in the row beside the prayer's name.
     var label: String {
         switch self {
-        case .atStart: "On time"
-        case .endMinus30: "30 min before it ends"
-        default: "\(minutes) min after"
+        case .atStart: W("alerts.onTime")
+        case .endMinus30: W("alerts.beforeEnds")
+        default: W("alerts.minAfter", ["n": minutes])
         }
     }
 
@@ -174,11 +174,11 @@ enum AlarmSound: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var label: String {
         switch self {
-        case .classic: "Classic alarm"
-        case .chime: "Gentle chime"
-        case .bells: "Rising bells"
-        case .beeps: "Soft beeps"
-        case .phone: "From my phone"
+        case .classic: W("alerts.soundClassic")
+        case .chime: W("alerts.soundChime")
+        case .bells: W("alerts.soundBells")
+        case .beeps: W("alerts.soundBeeps")
+        case .phone: W("alerts.soundPhone")
         }
     }
 
@@ -198,10 +198,10 @@ enum SahurDay: String, Codable, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .ramadan: "Ramadan"
-        case .monThu: "Mondays and Thursdays"
-        case .whiteDays: "White days (13, 14 and 15 of the Hijri month)"
-        case .everyDay: "Every day"
+        case .ramadan: W("alerts.dayRamadan")
+        case .monThu: W("alerts.dayMonThu")
+        case .whiteDays: W("alerts.dayWhite")
+        case .everyDay: W("alerts.dayEvery")
         }
     }
 
@@ -232,9 +232,9 @@ enum Appearance: String, Codable, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .system: "Automatic (follows the sky)"
-        case .light: "Light"
-        case .dark: "Dark"
+        case .system: W("appearance.system")
+        case .light: W("appearance.light")
+        case .dark: W("appearance.dark")
         }
     }
 }
@@ -254,6 +254,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var methodOverrideID: String?
     var asrOverride: AsrSchool?
     var namingOverride: NamingStyle?
+    /// The language of the app's words. nil = Automatic, the phone's language (English unless Malay or Indonesian).
+    var appLanguageOverride: AppLanguageChoice?
     /// A new install follows the phone's own clock setting; after that it is the user's choice.
     var use24Hour = Preferences.phoneUses24Hour
     var hijriAdjustment = 0
@@ -461,6 +463,7 @@ struct Preferences: Codable, Equatable, Sendable {
         methodOverrideID = v(.methodOverrideID, d.methodOverrideID)
         asrOverride = v(.asrOverride, d.asrOverride)
         namingOverride = v(.namingOverride, d.namingOverride)
+        appLanguageOverride = v(.appLanguageOverride, d.appLanguageOverride)
         use24Hour = v(.use24Hour, d.use24Hour)
         hijriAdjustment = v(.hijriAdjustment, d.hijriAdjustment)
         // Saved settings without this choice come from before it defaulted to on: keep them Off.

@@ -16,13 +16,13 @@ struct OwnAzanView: View {
         Form {
             Section {
                 if isSet {
-                    LabeledContent("Your azan", value: OwnAzan.sourceName ?? "Chosen file")
-                    LabeledContent("Length", value: "\(Int(OwnAzan.seconds.rounded())) seconds")
+                    LabeledContent(W("phone.azan.yours"), value: OwnAzan.sourceName ?? W("phone.common.chosenFile"))
+                    LabeledContent(W("alerts.azanLength"), value: "\(Int(OwnAzan.seconds.rounded())) seconds")
                 }
                 Button {
                     picking = true
                 } label: {
-                    Label(busy ? "Preparing your azan…" : isSet ? "Choose a different file" : "Choose an audio file",
+                    Label(busy ? W("phone.azan.preparing") : isSet ? W("phone.azan.chooseOther") : W("phone.azan.chooseFile"),
                           systemImage: "folder")
                 }
                 .disabled(busy)
@@ -30,27 +30,27 @@ struct OwnAzanView: View {
                     Button {
                         if player != nil { stop() } else { play() }
                     } label: {
-                        Label(player != nil ? "Stop" : "Play", systemImage: player != nil ? "stop.fill" : "play.fill")
+                        Label(player != nil ? W("alerts.azanStop") : W("phone.common.play"), systemImage: player != nil ? "stop.fill" : "play.fill")
                     }
                     Button(role: .destructive) {
                         stop()
                         OwnAzan.remove()
                         isSet = false
-                        note = "Removed. Alerts use the app's azan again."
+                        note = W("phone.azan.removed")
                         model.scheduleNotifications()
                     } label: {
-                        Label("Go back to the app's azan", systemImage: "trash")
+                        Label(W("phone.azan.goBack"), systemImage: "trash")
                     }
                 }
             } footer: {
-                Text("Pick an azan recording saved on this iPhone or in Files. We use the start of it, up to \(Int(AudioClip.maxSeconds)) seconds, with a soft fade at the end, and even out the volume. iPhone does not play alert sounds longer than 30 seconds. The file stays on this phone. We never upload it or share it.")
+                Text(W("phone.azan.pick", ["n": Int(AudioClip.maxSeconds)]))
             }
             if let note {
                 Section { Text(note) }
             }
             Section {
             } footer: {
-                Text("Only use a recording you have the right to use, such as one you or your masjid recorded. It plays for every prayer, Fajr too, when \"Play the azan\" is on in Alerts and alarms.")
+                Text(W("phone.azan.rights"))
             }
         }
         .fileImporter(isPresented: $picking, allowedContentTypes: [.audio]) { result in
@@ -68,17 +68,17 @@ struct OwnAzanView: View {
                     model.prefs.azanSound = true
                     model.scheduleNotifications()
                     note = wasCut
-                        ? "Saved. Your iPhone plays the first \(Int(seconds.rounded())) seconds, with a soft fade at the end."
-                        : "Saved. It is \(Int(seconds.rounded())) seconds long."
+                        ? W("phone.azan.savedFirst", ["n": Int(seconds.rounded())])
+                        : W("phone.azan.savedLong", ["n": Int(seconds.rounded())])
                 case .noSound:
-                    note = "That file has no sound we could use. Try another one."
+                    note = W("phone.azan.noSound")
                 case .unreadable:
-                    note = "This iPhone could not open that file. Try an MP3, M4A or WAV."
+                    note = W("phone.azan.cannotOpen")
                 }
             }
         }
         .onDisappear { stop() }
-        .settingsPage("Your own azan")
+        .settingsPage(W("phone.azan.own"))
     }
 
     private func play() {

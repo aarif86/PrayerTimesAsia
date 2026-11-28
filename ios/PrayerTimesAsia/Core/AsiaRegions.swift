@@ -48,25 +48,25 @@ struct CountryProfile: Sendable, Hashable {
     /// Where the times come from, in plain words. Same wording as the web and Android apps.
     func sourceSummary(method: CalculationMethod, pinned: Bool, short: Bool = false) -> String {
         if short {
-            if pinned { return "You chose \(method.name) in Settings." }
+            if pinned { return W("source.summary.pinnedShort", ["method": method.name]) }
             switch source {
-            case .table: return "Official timetable from \(authority ?? name)."
-            case .authority: return "Follows \(authority ?? name)."
-            case .standard: return "No official timetable here, so the app uses \(method.name). Your local masjid may differ by a few minutes."
+            case .table: return W("source.summary.tableShort", ["authority": authority ?? name])
+            case .authority: return W("source.summary.authorityShort", ["authority": authority ?? name])
+            case .standard: return W("source.summary.standardShort", ["method": method.name])
             }
         }
         if pinned {
-            let auto = source == .standard ? "the method most used here" : (authority ?? "the local authority")
-            return "You chose \(method.name) in Settings. Automatic would follow \(auto)."
+            let auto = source == .standard ? W("source.summary.mostUsed") : (authority ?? W("source.summary.localAuthority"))
+            return W("source.summary.pinned", ["method": method.name, "follow": auto])
         }
         switch source {
         case .table:
-            return "Official timetable from \(authority ?? name). When it can't be downloaded, the app works it out with the same method."
+            return W("source.summary.table", ["authority": authority ?? name])
         case .authority:
-            return "Follows \(authority ?? name), worked out on your \(Device.noun) with their method so it works offline." + (note.map { " \($0)" } ?? "")
+            return W("source.summary.authority", ["authority": authority ?? name]) + (note.map { " \($0)" } ?? "")
         case .standard:
-            let lead = note ?? "No official timetable here yet, so the app uses \(method.name), a widely used international method."
-            return lead + " Your local masjid may differ by a few minutes. Always follow your local religious authority."
+            let lead = note ?? W("source.summary.standardNone", ["method": method.name])
+            return lead + W("source.summary.standardEnd")
         }
     }
 }
@@ -83,7 +83,7 @@ enum AsiaRegions {
     }
 
     /// Somewhere not in the table: still works, with the international method.
-    static let fallback = CountryProfile(code: "", name: "Worldwide", methodID: "mwl",
+    static let fallback = CountryProfile(code: "", name: W("phone.settings.worldwide"), methodID: "mwl",
                                          asr: .standard, naming: .international, highLatitude: .angle)
 
     /// Offline country guess from the phone's time zone, for when the phone has

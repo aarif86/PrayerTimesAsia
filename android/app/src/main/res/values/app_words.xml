@@ -91,6 +91,7 @@
     <string name="today_asrShafii" formatted="false">Earlier Asr (Shafi\'i)</string>
     <string name="today_calledHere" formatted="false">called {name} here</string>
     <string name="today_now" formatted="false">NOW</string>
+    <string name="widget_nextPrayer" formatted="false">Next prayer</string>
     <string name="today_next" formatted="false">NEXT</string>
     <string name="today_nextPrayer" formatted="false">Next prayer</string>
     <string name="today_nextIn" formatted="false">{name} in {time}</string>
@@ -1312,4 +1313,277 @@
     <string name="test_sub" formatted="false">We send a sample alert in a few seconds, the same way your real ones arrive.</string>
     <string name="test_sent" formatted="false">Test alert coming in a few seconds. Stay on this screen to see and hear it.</string>
     <string name="test_blocked" formatted="false">Alerts are not allowed on this device yet.</string>
+    <string name="phone_submit_sending" formatted="false">Sending</string>
+    <string name="phone_submit_place" formatted="false">City, area, country</string>
+    <string name="phone_submit_other" formatted="false">Anything else (optional)</string>
+    <string name="phone_submit_checked" formatted="false">Checked by a person before it changes anyone\'s times. Only what you type or pick here is sent, not your location. Photos are kept as evidence and not republished without the mosque\'s permission.</string>
+    <string name="phone_submit_mosqueOrMusolla" formatted="false">Mosque or musolla name</string>
+    <string name="phone_submit_mapLink" formatted="false">Map link or address (optional)</string>
+    <string name="phone_submit_jamaahTimes" formatted="false">Jamaah / Jumu\'ah times if shown (optional)</string>
+    <string name="phone_submit_timetable" formatted="false">Mosque timetable</string>
+    <string name="phone_submit_oneMonth" formatted="false">One month is enough. We work out the mosque\'s method so the whole year can be generated.</string>
+    <string name="phone_submit_mosquesFollow" formatted="false">Mosques here follow</string>
+    <string name="phone_submit_howKnow" formatted="false">How do you know?</string>
+    <string name="phone_submit_mosqueName" formatted="false">Mosque name</string>
+    <string name="phone_submit_adhanAt" formatted="false">Adhan called at</string>
+    <string name="phone_falak_goldLine" formatted="false">Gold line, the qibla</string>
+    <string name="phone_falak_darkBar" formatted="false">Dark bar, where a stick\'s shadow falls right now</string>
+    <string name="phone_falak_arHelp" formatted="false">Outdoors in sunshine, real shadows should lie along the dark bar. If they don\'t, move away from metal and wave the phone in a figure 8 to recalibrate the compass. Never look at the sun.</string>
+    <string name="phone_falak_estimate" formatted="false">An estimate from the phone\'s tilt, for learning. Always follow your local religious authority.</string>
+    <string name="phone_falak_sunBack" formatted="false">Puts the sun back to the time now</string>
+    <string name="phone_falak_noAlignment" formatted="false">No alignment with the sun high enough today. Next {date} at {time}.</string>
+    <string name="phone_falak_sunUp" formatted="false">sun {deg}° up</string>
+    <string name="phone_falak_yourTimetable" formatted="false">Your timetable {name} {time}, Asr {asr}. Timetables add a few minutes of ihtiyat (precaution) on top of the sun\'s geometry.</string>
+    <string name="phone_falak_putsSun" formatted="false">That puts the sun\'s time at {time} (±{n} min), which {side}.</string>
+    <string name="phone_falak_usualCauses" formatted="false">Usual causes are that the stick isn\'t vertical, the ground isn\'t level, or the shadow tip was hard to see. Try again with a plumb line.</string>
+    <string name="phone_falak_tooLow" formatted="false">The sun never gets that low on this side of noon today. Re-measure, or check the time.</string>
+    <string name="phone_falak_signsHelp" formatted="false">What the prayer times describe, so you can see them for yourself. This is for information. City lights, haze and buildings hide these signs, and scholars differ on how to read dawn and twilight. Pray by your timetable.</string>
+    <string name="phone_falak_check" formatted="false">Check</string>
+    <string name="phone_journey_fromHome" formatted="false">from home</string>
+    <string name="phone_journey_dayIn" formatted="false">Day {n} in {place}</string>
+    <string name="phone_journey_jamakExplain" formatted="false">Jamak taqdim means praying both in the first prayer\'s time. Jamak ta\'khir means praying both in the second prayer\'s time. {name} is never joined.</string>
+    <string name="phone_journey_distanceShort" formatted="false">Distance</string>
+    <string name="phone_makers_opensSafari" formatted="false">Opens {name} in Safari</string>
+    <string name="phone_review_about" formatted="false">About</string>
+    <string name="phone_review_send" formatted="false">Send your note</string>
+    <string name="phone_review_opensNote" formatted="false">It opens our note page with your words filled in. Add your email there so we can thank you.</string>
+    <string name="phone_masjid_placesFrom" formatted="false">Places from Apple Maps, OpenStreetMap and the open musolla list, which volunteers keep up to date. Missing one, or a pin in the wrong spot? Tell the map, no sign up needed.</string>
+    <string name="phone_masjid_scanQr" formatted="false">A masjid with a Prayer Times Asia screen? Scan its QR code with the Camera app to see its iqamah times on your Prayer screen.</string>
+    <string name="phone_masjid_locationOff" formatted="false">Location is turned off for this app in Settings. Showing places near {place}.</string>
+    <string name="phone_masjid_secondFriday" formatted="false">Second Friday prayer from {time}{women}.</string>
+    <string name="phone_masjid_prayerAt" formatted="false">{name} prayer at {time}.</string>
+    <string name="phone_masjid_away" formatted="false">{distance} away{extra}</string>
+    <string name="phone_masjid_muisUpdated" formatted="false">From the Islamic Religious Council of Singapore (MUIS), updated {date}. No booking needed, except on public holidays.</string>
+    <string name="phone_masjid_prayerName" formatted="false">{name} prayer</string>
+    <string name="phone_masjid_muis" formatted="false">From the Islamic Religious Council of Singapore (MUIS).</string>
+    <string name="phone_suggest_send" formatted="false">Send your suggestion</string>
+    <string name="phone_onboard_title" formatted="false">Prayer Times\nAsia</string>
+    <string name="phone_credits_also" formatted="false">Also</string>
+    <string name="phone_move_otherPhone" formatted="false">On the other phone, open Prayer Times Asia › Settings › Bring in settings and scan this code. No app there? Point its camera at the code and it opens the web app with your settings.</string>
+    <string name="phone_azan_yours" formatted="false">Your azan</string>
+    <string name="phone_azan_goBack" formatted="false">Go back to the app\'s azan</string>
+    <string name="phone_azan_pick" formatted="false">Pick an azan recording saved on this iPhone or in Files. We use the start of it, up to {n} seconds, with a soft fade at the end, and even out the volume. iPhone does not play alert sounds longer than 30 seconds. The file stays on this phone. We never upload it or share it.</string>
+    <string name="phone_azan_rights" formatted="false">Only use a recording you have the right to use, such as one you or your masjid recorded. It plays for every prayer, Fajr too, when Play the azan is on in Alerts and alarms.</string>
+    <string name="phone_azan_own" formatted="false">Your own azan</string>
+    <string name="phone_settings_homeLock" formatted="false">Home and Lock Screen</string>
+    <string name="phone_settings_followAuthority" formatted="false">{source} Always follow your local religious authority.</string>
+    <string name="phone_settings_add30" formatted="false">Add the next 30 days</string>
+    <string name="phone_settings_workOnly" formatted="false">{a} and {b} only, for work</string>
+    <string name="phone_settings_officialDownload" formatted="false">In Singapore, Malaysia and Indonesia the app downloads the official MUIS, JAKIM or Kemenag timetable for the year and keeps it for offline use. Only the year, zone code or area name is sent.</string>
+    <string name="phone_settings_elsewhere" formatted="false">Everywhere else, and before that download, times are worked out on your phone with the country\'s own method.</string>
+    <string name="phone_settings_checkedAgainst" formatted="false">That working is checked against every day of the 2026 MUIS, JAKIM and Kemenag timetables. For Singapore it is never earlier than the official time, and at most 2 minutes later. For Malaysia and Indonesia it is within about 2 minutes.</string>
+    <string name="phone_settings_letterBeside" formatted="false">The letter beside each day</string>
+    <string name="phone_settings_falakOnlyChecks" formatted="false">A falak reading from your own shadow stick only checks the times.</string>
+    <string name="phone_settings_appWords" formatted="false">App words</string>
+    <string name="phone_settings_changeInSettings" formatted="false">Change in iPhone Settings</string>
+    <string name="phone_settings_appWordsFoot" formatted="false">The words on every screen and in alerts. Prayer names have their own setting.</string>
+    <string name="phone_settings_localNames" formatted="false">Local names when travelling</string>
+    <string name="phone_settings_namesFoot" formatted="false">Pick Malay for Subuh and Isyak. When you travel, the local name shows small underneath, so the masjid\'s signs make sense.</string>
+    <string name="phone_settings_lockDynamic" formatted="false">Next prayer on the Lock Screen and Dynamic Island</string>
+    <string name="phone_settings_addWidget" formatted="false">To add a widget, touch and hold your Home Screen, then tap Edit.</string>
+    <string name="phone_settings_openRamadan" formatted="false">Open the Ramadan page</string>
+    <string name="phone_settings_pretend" formatted="false">Pretend it is</string>
+    <string name="phone_settings_oneShort" formatted="false">One short line under Fajr and tahajjud alerts</string>
+    <string name="phone_settings_hideHadith" formatted="false">Tap ✕ on any hadith to hide just that one.</string>
+    <string name="phone_settings_sendMine" formatted="false">Send my settings</string>
+    <string name="phone_settings_moveBody" formatted="false">A QR code or link carries your places, choices and tracker. No account and nothing uploaded. Works with iPhone, Android and the web. Restoring a new iPhone from an iCloud backup brings them too.</string>
+    <string name="phone_settings_noAds" formatted="false">No outside ads and no accounts</string>
+    <string name="phone_settings_shareCounts" formatted="false">Share anonymous counts</string>
+    <string name="phone_settings_countsFoot" formatted="false">Tells us which cities use the app, so we know where to add official timetables. A random number stands in for you. Never your name, exact location or IP address.</string>
+    <string name="phone_settings_openIphone" formatted="false">Open iPhone Settings</string>
+    <string name="phone_settings_helpCheck" formatted="false">Help check times where you live</string>
+    <string name="phone_settings_quickGuide" formatted="false">The quick guide is a short tour that taps the real buttons for you.</string>
+    <string name="phone_settings_show" formatted="false">Show {name}</string>
+    <string name="phone_settings_ourRules" formatted="false">Our rules for {name}</string>
+    <string name="phone_settings_picksBody" formatted="false">Halal Muslim businesses and causes we check by hand, safe for the whole family. Most are our own services, and paid ones are marked Sponsored. We only count how often a card is seen and tapped, never who you are.</string>
+    <string name="phone_settings_builtAsia" formatted="false">Built in Asia, made for Muslims everywhere.</string>
+    <string name="phone_widget_style" formatted="false">Style</string>
+    <string name="phone_widget_howTo" formatted="false">Touch and hold your Home Screen, tap Edit, then Add Widget and search for Prayer Times Asia. Choose Next prayer (Small, Medium or Large) or Today\'s timetable. They follow your Prayer screen look. Touch and hold one, then Edit Widget, to pick another.</string>
+    <string name="phone_calendar_yearAh" formatted="false">{name} {year} AH</string>
+    <string name="phone_calendar_send" formatted="false">Send an announcement</string>
+    <string name="phone_calendar_everyDate" formatted="false">Every date shows who set it and how, moon sighting, calculation, or following another authority. Dates are shared openly under CC-BY 4.0.</string>
+    <string name="phone_ramadan_kareem" formatted="false">Ramadan Kareem</string>
+    <string name="phone_ramadan_taqabbal" formatted="false">Taqabbalallahu minna wa minkum</string>
+    <string name="phone_source_gradeLabel" formatted="false">Source grade {grade}, {a}, {b}</string>
+    <string name="phone_source_showsWhere" formatted="false">Shows where these times come from</string>
+    <string name="phone_source_beginsToday" formatted="false">Prayer time begins at the times on the Today screen. These are when the congregation prays.</string>
+    <string name="phone_source_sendTimetable" formatted="false">Send a mosque timetable from here</string>
+    <string name="phone_source_tellMethod" formatted="false">Tell us which method mosques here use</string>
+    <string name="phone_source_reportAdhan" formatted="false">Report an adhan time you heard</string>
+    <string name="phone_a11y_appearance" formatted="false">Appearance {name}</string>
+    <string name="phone_a11y_appearanceHint" formatted="false">Switches between Automatic, Light and Dark.</string>
+    <string name="phone_a11y_styleLabel" formatted="false">Prayer screen style {name}</string>
+    <string name="phone_a11y_styleHint" formatted="false">Switches to the next style. Touch and hold to choose one.</string>
+    <string name="phone_a11y_alertsHint" formatted="false">Off, Notify or Alarm for {name} and every prayer, sahur, and how they sound.</string>
+    <string name="phone_a11y_trackerHint" formatted="false">Opens the tracker. Pause it for haid or illness, and see each month.</string>
+    <string name="phone_a11y_moreTimes" formatted="false">Dhuha and the blessed times of the night</string>
+    <string name="phone_a11y_allFive" formatted="false">Alerts on for all 5 prayers. Change</string>
+    <string name="phone_a11y_gives" formatted="false">{a} gives {b}</string>
+    <string name="phone_a11y_tapChange" formatted="false">Tap to change. Hold for more.</string>
+    <string name="phone_a11y_changeLocation" formatted="false">{place}. Change location</string>
+    <string name="phone_a11y_menuLook" formatted="false">Menu, look {name}</string>
+    <string name="phone_a11y_menuHint" formatted="false">Light or dark, the five looks and the prayer tracker.</string>
+    <string name="phone_a11y_sourceGrade" formatted="false">Source grade {grade}, {a}</string>
+    <string name="phone_tracker_howTo" formatted="false">Tap a prayer on the Prayer screen once its time has come to tick it off. Your tracker is kept only on this phone, never uploaded, and it moves to a new phone only through Move my settings.</string>
+    <string name="phone_tracker_markNot" formatted="false">Mark as not prayed</string>
+    <string name="phone_tracker_mark" formatted="false">Mark as prayed</string>
+    <string name="phone_tracker_excusedUndo" formatted="false">Excused today (tap to undo)</string>
+    <string name="phone_tracker_excuseToday" formatted="false">Excuse just today</string>
+    <string name="phone_today_oneDay" formatted="false">1 day</string>
+    <string name="phone_today_nextAt" formatted="false">Next {name} at {time}, in {left}</string>
+    <string name="phone_today_nowThen" formatted="false">Now {name}. {next} at {time}, in {left}</string>
+    <string name="phone_today_nowLeft" formatted="false">Now {name}. {left} left to pray.</string>
+    <string name="phone_today_nextIn" formatted="false">Next {name}, in {left}.</string>
+    <string name="phone_today_jamaah" formatted="false">Jamaah {time}</string>
+    <string name="phone_today_nextAlarm" formatted="false">Next alarm at {time}</string>
+    <string name="phone_today_dayShow" formatted="false">Show more times Dhuha and the blessed times of the night</string>
+    <string name="phone_alerts_silentFocus" formatted="false">On silent or in a Focus, only alarms ring</string>
+    <string name="phone_alerts_sampleSoon" formatted="false">We send a sample alert in a few seconds, the same way your real ones arrive. Lock your screen to see how it looks.</string>
+    <string name="phone_alerts_noFullAzan" formatted="false">An iPhone notification can only play a short sound, up to 30 seconds, so a full azan is not possible here. For a long call, use Alarm.</string>
+    <string name="phone_alerts_pickOff" formatted="false">Pick Off, Notify or Alarm. Tap Change to choose the exact time. Notify is a notification, quiet when your phone is on silent or in a Focus. Alarm rings until you stop it, even on silent.</string>
+    <string name="phone_alerts_changeTime" formatted="false">Change the time</string>
+    <string name="phone_alerts_shortFull" formatted="false">Short is the opening Allahu akbar. Full is the whole azan, with a Fajr azan at {name} when the voice has one. iPhone plays up to 30 seconds of it.</string>
+    <string name="phone_alerts_playsSound" formatted="false">Plays the sound</string>
+    <string name="phone_alerts_tapSound" formatted="false">Tap a sound to hear it. Every alarm plays this sound. Classic is your iPhone\'s own alarm.</string>
+    <string name="phone_alerts_yourAt" formatted="false">Your {a} {b} {c} at this time</string>
+    <string name="phone_alerts_inAlerts" formatted="false">{name} in Alerts and alarms</string>
+    <string name="phone_alerts_testComing" formatted="false">Test alert coming in a few seconds.</string>
+    <string name="phone_alerts_notAllowedIphone" formatted="false">Alerts are not allowed on this iPhone yet.</string>
+    <string name="phone_alerts_alarmRingsSilent" formatted="false">An alarm rings even in Silent mode and Focus, like the Clock app. Tap Stop to end it. Snooze 5 min rings it once more.</string>
+    <string name="phone_alerts_alarmAsNotification" formatted="false">On this iPhone an alarm comes as a notification. From iOS 26 it rings like a real alarm, even in Silent mode.</string>
+    <string name="phone_alerts_imsakBody" formatted="false">A notification 10 minutes before Imsak, so you finish eating in time.{extra}</string>
+    <string name="phone_alerts_berbukaBody" formatted="false">A notification at {time} when it is time to break your fast.{extra}</string>
+    <string name="phone_alerts_qiyamBody" formatted="false">On the last ten nights of Ramadan, a notification when the last third of the night begins, the best time for qiyam and dua.{extra}</string>
+    <string name="phone_alerts_yourFile" formatted="false">Your file plays for every prayer</string>
+    <string name="phone_alerts_pickAudio" formatted="false">Pick an audio file on this iPhone</string>
+    <string name="phone_alerts_notificationsOff" formatted="false">Notifications are turned off</string>
+    <string name="phone_alerts_turnOnIn" formatted="false">Turn them on in Settings, Notifications, Prayer Times Asia.</string>
+    <string name="phone_alerts_openSettings" formatted="false">Open Settings</string>
+    <string name="phone_alerts_alarmsAllowed" formatted="false">Alarms allowed</string>
+    <string name="phone_alerts_alarmsRing" formatted="false">Your alarms ring even on silent and in a Focus.</string>
+    <string name="phone_alerts_alarmsOff" formatted="false">Alarms are turned off</string>
+    <string name="phone_alerts_withoutThem" formatted="false">Without them, alarms come as quiet notifications.</string>
+    <string name="phone_alerts_alarmsNotYet" formatted="false">Alarms not allowed yet</string>
+    <string name="phone_alerts_allowAlarms" formatted="false">Allow alarms</string>
+    <string name="phone_alerts_alarmsAsNotif" formatted="false">Alarms come as notifications on this iPhone</string>
+    <string name="phone_alerts_fromIos26" formatted="false">From iOS 26 they ring like the Clock app, even on silent.</string>
+    <string name="phone_alerts_timeSensitive" formatted="false">Time Sensitive is on</string>
+    <string name="phone_alerts_throughFocus" formatted="false">Notifications come through a Focus.</string>
+    <string name="phone_alerts_focusHolds" formatted="false">A Focus can hold notifications back</string>
+    <string name="phone_alerts_focusHow" formatted="false">In Settings, Focus, pick each Focus you use (Work, Sleep) and add Prayer Times Asia under Apps. Alarms always come through.</string>
+    <string name="phone_alerts_silentMutes" formatted="false">The silent switch mutes notifications</string>
+    <string name="phone_alerts_noAppSilent" formatted="false">No app can sound a notification on silent. Alarms still ring. If you need to hear a prayer, set it to Alarm.</string>
+    <string name="phone_alerts_makeAlarmSilent" formatted="false">Make it an alarm so it rings through silent and Focus.</string>
+    <string name="phone_alerts_onePrayerNotify" formatted="false">1 prayer is set to Notify</string>
+    <string name="phone_alerts_nPrayersNotify" formatted="false">{n} prayers are set to Notify</string>
+    <string name="phone_alerts_quietSilent" formatted="false">They stay quiet on silent. Change any of them to Alarm on the list.</string>
+    <string name="phone_alerts_onNow" formatted="false">{name}, on now</string>
+    <string name="phone_alerts_fajrOff" formatted="false">Fajr starts Off because most people are asleep. Use a Fajr alarm instead. Your home and where you are stay on</string>
+    <string name="phone_alerts_friday" formatted="false">Friday</string>
+    <string name="phone_alerts_fridaySummary" formatted="false">{a} {b}, for {c} at {d}</string>
+    <string name="phone_alerts_snooze5" formatted="false">Snooze 5 min</string>
+    <string name="phone_alerts_snoozed" formatted="false">Snoozed. Rings again in 5 min</string>
+    <string name="phone_alerts_stopAlarm" formatted="false">Stop alarm</string>
+    <string name="phone_alerts_alarmRings" formatted="false">Rings until you stop it, even on silent and in a Focus. Snooze 5 min.</string>
+    <string name="phone_notify_imsakIn" formatted="false">Imsak at {time}</string>
+    <string name="phone_notify_wakeSahur" formatted="false">Wake up for sahur · {a} at {b}</string>
+    <string name="phone_notify_wakeTahajjud" formatted="false">Wake up for tahajjud · {a} at {b}</string>
+    <string name="phone_notify_wakeFor" formatted="false">Wake up for {a} · ends {b}</string>
+    <string name="phone_notify_endsIn30" formatted="false">{a} ends in 30 min · {b}</string>
+    <string name="phone_notify_timeFor" formatted="false">Time for {a} · {b}</string>
+    <string name="phone_notify_timeForOpen" formatted="false">Time for {a} · open until {b}</string>
+    <string name="phone_notify_breakFast" formatted="false">Time to break your fast. Ramadan day {n} · {name}</string>
+    <string name="phone_common_play" formatted="false">Play</string>
+    <string name="phone_common_chosenFile" formatted="false">Chosen file</string>
+    <string name="phone_azan_seconds" formatted="false">{n} seconds</string>
+    <string name="phone_azan_preparing" formatted="false">Preparing your azan…</string>
+    <string name="phone_azan_chooseOther" formatted="false">Choose a different file</string>
+    <string name="phone_azan_chooseFile" formatted="false">Choose an audio file</string>
+    <string name="phone_azan_removed" formatted="false">Removed. Alerts use the app\'s azan again.</string>
+    <string name="phone_azan_savedFirst" formatted="false">Saved. Your iPhone plays the first {n} seconds, with a soft fade at the end.</string>
+    <string name="phone_azan_savedLong" formatted="false">Saved. It is {n} seconds long.</string>
+    <string name="phone_azan_noSound" formatted="false">That file has no sound we could use. Try another one.</string>
+    <string name="phone_azan_cannotOpen" formatted="false">This iPhone could not open that file. Try an MP3, M4A or WAV.</string>
+    <string name="phone_settings_oneAlarm" formatted="false">1 alarm</string>
+    <string name="phone_settings_countdown" formatted="false">Countdown on</string>
+    <string name="phone_settings_countdownOff" formatted="false">Countdown off</string>
+    <string name="phone_settings_downloading" formatted="false">Downloading</string>
+    <string name="phone_settings_workedOut" formatted="false">Worked out on your phone</string>
+    <string name="phone_settings_savedOffline" formatted="false">Saved for offline</string>
+    <string name="phone_settings_downloadsOnline" formatted="false">Downloads when online</string>
+    <string name="phone_settings_confirmedMasjid" formatted="false">Confirmed by a masjid</string>
+    <string name="phone_settings_checkedCommunity" formatted="false">Checked by the community</string>
+    <string name="phone_settings_ownShadow" formatted="false">Your own shadow reading</string>
+    <string name="phone_source_downloadedYearly" formatted="false">Downloaded once a year from the authority and kept on your phone, so it works offline.</string>
+    <string name="phone_falak_stepsMore" formatted="false">{n} more steps means {name} has begun.</string>
+    <string name="phone_falak_dayToGo" formatted="false">day to go</string>
+    <string name="phone_falak_daysToGo" formatted="false">days to go</string>
+    <string name="phone_falak_maghribSign" formatted="false">The whole disc of the sun has gone below the horizon and its upper edge has disappeared. Best seen over the sea or open land.</string>
+    <string name="phone_falak_ishaSign" formatted="false">The red glow (shafaq ahmar) has gone from the western sky, the view of the Shafi\'i, Maliki and Hanbali schools.</string>
+    <string name="phone_falak_fajrSign" formatted="false">True dawn (fajr sadiq) is a thin whiteness spreading sideways along the eastern horizon, growing steadily. It is not the false dawn that rises straight up.</string>
+    <string name="phone_masjid_youAreHere" formatted="false">You are here</string>
+    <string name="phone_masjid_searchingFrom" formatted="false">Searching from here</string>
+    <string name="phone_masjid_stillLooking" formatted="false">Still looking</string>
+    <string name="phone_masjid_slow" formatted="false">The connection is slow. Places will appear here as soon as they arrive.</string>
+    <string name="phone_masjid_needInternet" formatted="false">Searching needs an internet connection.</string>
+    <string name="phone_masjid_noneWithin" formatted="false">Neither Apple Maps nor OpenStreetMap lists a {name} within 15 km. Use the Qibla tab to pray where you are.</string>
+    <string name="phone_masjid_hidesDetails" formatted="false">Hides the details</string>
+    <string name="phone_masjid_showsFacilities" formatted="false">Shows facilities, directions and more</string>
+    <string name="phone_masjid_type" formatted="false">Type</string>
+    <string name="phone_qibla_noCompass" formatted="false">This phone has no compass. Use the qibla bearing above with a map, or the sun in Falak.</string>
+    <string name="phone_submit_adhanHeard" formatted="false">Adhan heard</string>
+    <string name="phone_submit_couldNotSend" formatted="false">Couldn\'t send</string>
+    <string name="phone_submit_thankYou" formatted="false">Thank you</string>
+    <string name="phone_submit_choosePhoto" formatted="false">Choose timetable photo</string>
+    <string name="phone_submit_changePhoto" formatted="false">Change photo</string>
+    <string name="phone_submit_inQueue" formatted="false">Your submission ({id}) is in the review queue. JazakAllahu khairan.</string>
+    <string name="phone_submit_couldNotPrepare" formatted="false">Couldn\'t prepare the submission.</string>
+    <string name="phone_submit_serverNo" formatted="false">The server couldn\'t accept it. Please try again later.</string>
+    <string name="phone_submit_noConnection" formatted="false">No connection. Please try again when you\'re online.</string>
+    <string name="phone_settings_moveCarries" formatted="false">The QR code carries {what}. To bring all of it, share the link instead.</string>
+    <string name="phone_settings_worldwide" formatted="false">Worldwide</string>
+    <string name="phone_sanad_timetable" formatted="false">{name} timetable</string>
+    <string name="phone_today_welcomeBack" formatted="false">Welcome back</string>
+    <string name="phone_journey_youAreMusafir" formatted="false">You are a musafir</string>
+    <string name="phone_journey_hanafiNote" formatted="false">You may shorten (qasr) your prayers. In the Hanafi school prayers are not joined outside Hajj. Here is what changes for each one.</string>
+    <string name="phone_journey_rakaat2" formatted="false">2 rakaat</string>
+    <string name="phone_journey_rakaat3" formatted="false">3 rakaat</string>
+    <string name="phone_source_astro" formatted="false">Astronomical calculation on your phone. The method is shown. Local mosques may differ by a few minutes.</string>
+    <string name="phone_blessed_middle" formatted="false">Middle of the night</string>
+    <string name="phone_blessed_lastThird" formatted="false">Last third of the night</string>
+    <string name="phone_blessed_spear" formatted="false">Sun a spear\'s length up (about 4½°)</string>
+    <string name="phone_blessed_halfway" formatted="false">Halfway from Maghrib to Fajr</string>
+    <string name="phone_blessed_best" formatted="false">Best time for tahajjud and dua</string>
+    <string name="phone_falak_pending" formatted="false">Pending review by a falak and shariah panel. For learning and checking. Follow your authority\'s times.</string>
+    <string name="phone_falak_shadowAway" formatted="false">Shadows point directly away from the qibla. Face along the shadow, from its tip to the base of the stick.</string>
+    <string name="phone_falak_shadowToward" formatted="false">Shadows point directly towards the qibla. Face along the shadow, from the base of the stick to its tip.</string>
+    <string name="phone_method_isha" formatted="false">Isha {n}°</string>
+    <string name="phone_method_ishaMin" formatted="false">Isha +{n} min</string>
+    <string name="phone_method_fajrIsha" formatted="false">Fajr {n}° · {rest}</string>
+    <string name="phone_sources_ownTimetable" formatted="false">{name}\'s own timetable (Fajr {n}° · {rest}), from {source}.</string>
+    <string name="phone_time_timeLeft" formatted="false">{time} left</string>
+    <string name="phone_alerts_alarmRingsWord" formatted="false">alarm rings</string>
+    <string name="phone_alerts_notifComesWord" formatted="false">notification comes</string>
+    <string name="phone_alerts_forSahurWord" formatted="false">for sahur</string>
+    <string name="phone_alerts_forNameWord" formatted="false">for {name}</string>
+    <string name="phone_move_sumPlace" formatted="false">Place {name}</string>
+    <string name="phone_move_sumSaved" formatted="false">{n} saved places</string>
+    <string name="phone_move_sumSaved_one" formatted="false">{n} saved place</string>
+    <string name="phone_move_sumHistory" formatted="false">{n} days of history</string>
+    <string name="phone_move_sumHistory_one" formatted="false">{n} day of history</string>
+    <string name="phone_move_sumCalc" formatted="false">Your calculation choices</string>
+    <string name="phone_move_sumLook" formatted="false">Your look and prayer names</string>
+    <string name="phone_move_sumAlerts" formatted="false">Which prayers to alert, and how</string>
+    <string name="phone_move_sumAlarms" formatted="false">Your prayer alarms</string>
+    <string name="phone_move_sumRamadan" formatted="false">Your Ramadan record of fasts, Tarawih and juz</string>
+    <string name="phone_move_sumStandard" formatted="false">The standard settings</string>
+    <string name="phone_today_nowThen2" formatted="false">Now {name}. {count} {label}.</string>
+    <string name="phone_widget_openApp" formatted="false">Open the app</string>
+    <string name="phone_alarm_snoozed" formatted="false">Snoozed</string>
+    <string name="phone_alarm_prayerAlarm" formatted="false">Prayer alarm</string>
+    <string name="phone_a11y_prayed" formatted="false">prayed</string>
+    <string name="phone_source_methodName" formatted="false">{name} method</string>
+    <string name="phone_unit_h" formatted="false">h</string>
+    <string name="phone_unit_m" formatted="false">m</string>
+    <string name="phone_unit_s" formatted="false">s</string>
 </resources>
