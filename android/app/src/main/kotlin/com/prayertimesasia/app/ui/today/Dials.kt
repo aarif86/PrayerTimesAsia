@@ -127,6 +127,8 @@ fun DayDial(
     size: Dp, modifier: Modifier = Modifier,
     /** Syuruk to Zohor: the centre names the next prayer ("Zohor", "in 53m"), not the one we are in. */
     isNext: Boolean = false,
+    /** Little surprise: a warm glow behind the dial at Iftar. */
+    warm: Boolean = false,
 ) {
     val primary = Palette.primary
     val accent = Palette.accent
@@ -134,6 +136,7 @@ fun DayDial(
     val mid = midnight(day, zone)
     Box(modifier.size(size).semantics { contentDescription = if (isNext) "Next $currentName, $countdown." else "Now $currentName. $countdown $label." },
         contentAlignment = Alignment.Center) {
+        if (warm) Box(Modifier.fillMaxSize().background(Brush.radialGradient(listOf(Color(0x66FFAA5A), Color.Transparent))))
         Canvas(Modifier.fillMaxSize()) {
             val ring = this.size.width * 0.085f
             val r = this.size.width / 2 - ring / 2 - 2.dp.toPx()

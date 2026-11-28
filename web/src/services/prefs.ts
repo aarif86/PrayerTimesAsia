@@ -148,6 +148,8 @@ export interface Preferences {
   menuSide: MenuSide
   /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
   showOpening: boolean
+  /** Small quiet touches (a soft glow when the qibla is found, a warm dial at Iftar). Off means none. */
+  littleSurprises: boolean
   /** The quick guide (seven swipe cards) was seen or skipped. Settings opens it again. */
   guideShown: boolean
   /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
@@ -250,6 +252,7 @@ export const DEFAULT_PREFS: Preferences = {
   largeText: false,
   menuSide: 'auto',
   showOpening: true,
+  littleSurprises: true,
   guideShown: false,
   jumuahReminderMinutes: 0,
   jumuahSession: 'first',

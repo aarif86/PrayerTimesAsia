@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact'
-import { useLayoutEffect, useRef, useState } from 'preact/hooks'
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks'
 import {
   AlarmClock, BellOff, BellRing, Calendar, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleCheck, Ellipsis,
   CloudMoon, Globe, Heart, Palette, Star, MapPin, Navigation, Smartphone, Sparkles, Sun, Undo2, Utensils, X,
@@ -60,6 +60,10 @@ async function turnOnAlerts(only?: Prayer) {
 function toggleNotify(prayer: Prayer) {
   if (!store.prefs.notificationsEnabled && alertMode(store.prefs, prayer) === 'off' && alertSupport() !== 'supported') { openSheet({ kind: 'alerts-help' }); return }
   announce(cycleAlert(prayer))
+  // Little surprise: a warm word when the Fajr alert is switched on.
+  if (prayer === 'fajr' && store.prefs.littleSurprises && alertMode(store.prefs, prayer) !== 'off') {
+    window.dispatchEvent(new CustomEvent('pta-toast', { detail: tr('alerts.fajrSet', { name: store.name(prayer) }) }))
+  }
 }
 
 /** The bell on Dhuha, the middle of the night and the last third: Off, Notify, Alarm. */
@@ -95,6 +99,16 @@ export function TodayScreen() {
   useDayRequests(setOffset)
   const [showMore, setShowMoreState] = useState(() => s.demo ? s.demo.more : readString('today.showMore') === '1')
   const [toast, showToast] = useToast()
+  useEffect(() => {
+    const on = (e: Event) => showToast(String((e as CustomEvent).detail))
+    window.addEventListener('pta-toast', on)
+    return () => window.removeEventListener('pta-toast', on)
+  }, [])
+  // Little surprise: on the odd nights of the last ten of Ramadan, a quiet reminder to seek Laylat al-Qadr.
+  const qadr = s.prefs.littleSurprises && offset === 0 && s.season(now).oddNight
+  // Little surprise: a quiet line on Fridays.
+  const friday = s.prefs.littleSurprises && offset === 0
+    && new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: s.timeZone }).format(now) === 'Fri'
   const setShowMore = (v: boolean) => { setShowMoreState(v); if (!s.demo) writeString('today.showMore', v ? '1' : '0') }
   const day = s.day(now)
   if (!day) return <NoPlace />
@@ -108,6 +122,8 @@ export function TodayScreen() {
     <div class={`today style-${style}`} data-theme-local={style === 'bands' ? 'dark' : undefined}>
       <h1 class="sr-only">{s.activePlace ? tr('today.titleIn', { place: s.activePlace.name }) : tr('today.title')}</h1>
       <p id="bell-status" class="sr-only" aria-live="polite" />
+      {friday && <p class="egg-jumuah">{tr('today.jumuahLine')}</p>}
+      {qadr && <p class="egg-jumuah">{tr('today.qadrLine')}</p>}
       {style === 'centre' && <CentrePage c={ctx} />}
       {style === 'sunPath' && <SunPathPage c={ctx} />}
       {style === 'bands' && <BandsPage c={ctx} />}
@@ -581,11 +597,15 @@ function SmallDial({ c, size, gold }: { c: Ctx; size: number; gold?: boolean }) 
   const kicker = inPrayer ? name : tr('today.nextPrayer')
   const count = inPrayer ? t.count : t.bare
   const label = inPrayer ? t.label : tr('today.untilName', { name: next ? store.name(next.prayer, next.time) : name })
-  return (
+  // Little surprise: for twenty minutes after Maghrib in Ramadan the dial glows warm, the moment to break the fast.
+  const iftar = store.prefs.littleSurprises && current?.prayer === 'maghrib' && now - current.time < 20 * 60_000
+    && store.season(now).phase === 'ramadan'
+  const dial = (
     <Dial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}
       kicker={kicker} countdown={count} label={label} urgent={t.urgent}
       ariaLabel={inPrayer ? `${tr('common.now')} ${name}. ${count} ${label}.` : tr('today.nextAria', { name: next ? store.name(next.prayer, next.time) : name, time: count })} />
   )
+  return iftar ? <div class="egg-iftar">{dial}</div> : dial
 }
 
 // ---------- Time left to pray ----------

@@ -1069,6 +1069,12 @@
     <string name="settings_appearanceFoot" formatted="false">Automatic follows the sky where you are.</string>
     <string name="settings_openingDial" formatted="false">Moving dial when the app opens</string>
     <string name="settings_openingDialSub" formatted="false">Turn off to open straight to your times</string>
+    <string name="settings_surprises" formatted="false">Little surprises</string>
+    <string name="settings_surprisesSub" formatted="false">Quiet touches, like a soft glow when you face the qibla. Turn off for none.</string>
+    <string name="qibla_lockedLine" formatted="false">You face the same way as Muslims around the world.</string>
+    <string name="alerts_fajrSet" formatted="false">{name} alert is set. Sleep well.</string>
+    <string name="today_jumuahLine" formatted="false">It is Jumuah today. Go early if you can.</string>
+    <string name="today_qadrLine" formatted="false">One of the odd nights. Seek Laylat al-Qadr.</string>
     <string name="settings_placeFoot" formatted="false">Your times follow the place you pick here.</string>
     <string name="settings_musafirMode" formatted="false">Musafir mode</string>
     <string name="settings_musafirModeSub" formatted="false">Jamak and qasar help when you are away from home</string>

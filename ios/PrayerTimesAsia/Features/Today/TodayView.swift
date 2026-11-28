@@ -66,6 +66,14 @@ struct TodayView: View {
                     .allowsHitTesting(false)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .ptaToast)) { note in
+            guard let line = note.object as? String else { return }
+            withAnimation(.snappy) { styleToast = line }
+            Task {
+                try? await Task.sleep(for: .seconds(2.2))
+                withAnimation(.easeOut) { if styleToast == line { styleToast = nil } }
+            }
+        }
         .onChange(of: model.prefs.appearance) { _, appearance in
             let label = appearance == .system ? W("appearance.system") : appearance.label
             withAnimation(.snappy) { styleToast = label }
@@ -150,6 +158,13 @@ struct TodayView: View {
         })
     }
 
+    /// Little surprise: in Ramadan, for 20 minutes after Maghrib, the dial glows warm (off with the Settings switch).
+    private func iftarWarm(current: (prayer: Prayer, time: Date)?, now: Date) -> Bool {
+        guard model.prefs.littleSurprises, let c = current, c.prayer == .maghrib,
+              now >= c.time, now.timeIntervalSince(c.time) < 20 * 60 else { return false }
+        return model.season(at: now).phase == .ramadan
+    }
+
     @ViewBuilder
     private func headerDial(now: Date, day: PrayerDay, current: (prayer: Prayer, time: Date)?,
                             next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
@@ -161,6 +176,7 @@ struct TodayView: View {
                     label: PrayerCountdown(now: now, next: next, model: model).label,
                     isNext: lead.isNext)
                 .frame(width: size, height: size)
+                .iftarGlow(iftarWarm(current: current, now: now))
         }
     }
 
@@ -563,6 +579,7 @@ struct TodayView: View {
                             label: PrayerCountdown(now: now, next: next, model: model).label,
                             isNext: lead.isNext)
                         .frame(width: 148, height: 148)
+                        .iftarGlow(iftarWarm(current: current, now: now))
                         .frame(maxWidth: .infinity)
                 }
                 VStack(spacing: 8) {
@@ -1405,6 +1422,7 @@ private struct BlessedBand: View {
 /// The long summer days note, then the Ramadan and Syawal card. One view, so the
 /// Prayer pages' types stay as shallow as before.
 private struct TodayNotes: View {
+    @Environment(AppModel.self) private var model
     let now: Date
 
     var body: some View {
@@ -1412,6 +1430,16 @@ private struct TodayNotes: View {
         SourceAwayNote()
         SelangorNote(now: now)
         SeasonCard(now: now)
+        // Little surprises: a quiet line on Fridays, and on the odd nights of the last ten of Ramadan.
+        if model.prefs.littleSurprises {
+            if model.isFriday(now) { quiet(W("today.jumuahLine")) }
+            if model.season(at: now).oddNight { quiet(W("today.qadrLine")) }
+        }
+    }
+
+    private func quiet(_ text: String) -> some View {
+        Text(text).font(.footnote).foregroundStyle(Theme.accentText)
+            .multilineTextAlignment(.center).frame(maxWidth: .infinity)
     }
 }
 
@@ -1688,6 +1716,7 @@ extension TodayView {
                 urgent: count.urgent,
                 spoken: inPrayer ? W("phone.today.nowLeft", ["name": name, "left": count.count]) : W("phone.today.nextIn", ["name": nextName, "left": TodayView.spoken(next.time.timeIntervalSince(now))]))
             .frame(width: gold ? 204 : 190, height: gold ? 204 : 190)
+            .iftarGlow(iftarWarm(current: model.current(at: now), now: now))
             .frame(maxWidth: .infinity)
             .padding(.top, 2)
     }
@@ -2726,5 +2755,12 @@ private struct V12BlessedBand: View {
         .opacity(time <= now ? 0.7 : 1)
         .transition(.opacity.combined(with: .move(edge: .top)))
         .accessibilityElement(children: .combine)
+    }
+}
+
+private extension View {
+    /// The warm Iftar glow around the dial. Still, so it needs no reduce-motion handling.
+    func iftarGlow(_ on: Bool) -> some View {
+        self.saturation(on ? 1.3 : 1).shadow(color: Color.orange.opacity(on ? 0.5 : 0), radius: 18)
     }
 }

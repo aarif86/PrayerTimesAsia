@@ -411,6 +411,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var largeText = false
     /// The moving opening screen. Off goes straight to the app; it still shows the first time.
     var showOpening = true
+    /// Small quiet touches (a line when the qibla is found, a warm word when the Fajr alert is set). Off means none.
+    var littleSurprises = true
     /// The quick guide (swipe cards) was seen or skipped. Settings > Help opens it again.
     var guideShown = false
     /// Fridays: a reminder this many minutes before Jumaat (0 = off).
@@ -529,6 +531,7 @@ struct Preferences: Codable, Equatable, Sendable {
         buzzOnly = v(.buzzOnly, d.buzzOnly)
         largeText = v(.largeText, d.largeText)
         showOpening = v(.showOpening, d.showOpening)
+        littleSurprises = v(.littleSurprises, d.littleSurprises)
         // Everyone sees the quick guide once, testers who were set up before it came too
         // (new key, so the old "guideSeen" that skipped them is left behind).
         guideShown = v(.guideShown, false)

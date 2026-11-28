@@ -105,6 +105,12 @@ struct QiblaView: View {
     private func page(_ r: Reading, location: LocationService, width: CGFloat) -> some View {
         VStack(spacing: 0) {
             lookBody(r, width: width)
+            // Little surprise: once the qibla is found, one quiet line fades in (off with the Settings switch).
+            if r.aligned && model.prefs.littleSurprises {
+                Text(W("qibla.lockedLine"))
+                    .font(.subheadline).foregroundStyle(Theme.accentText).multilineTextAlignment(.center)
+                    .padding(.top, 12).padding(.horizontal, 24)
+            }
             steps(location: location)
                 .padding(.top, 22)
                 .padding(.horizontal, look == .bands ? 24 : Theme.gutter)
