@@ -219,10 +219,16 @@ extension CalculationMethod {
         highLatitude: .angle,
         northOffsets: [.sunrise: -5.5, .dhuhr: 4.5, .asr: 4.5, .maghrib: 4.5])
 
+    static let muftiyatKg = CalculationMethod(
+        id: "muftiyatkg", name: "Muftiyat · Kyrgyzstan", shortName: "Muftiyat",
+        fajrAngle: 18, ishaAngle: 16, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.fajr: -0.125, .sunrise: -1, .asr: 1.5, .maghrib: 6.875, .isha: 0.125], matchesOfficialTable: false,
+        note: W("method.note.muftiyatkg"))
+
     static let all: [CalculationMethod] = [
         .muis, .jakim, .kemenag, .southeastAsia, .mwl, .karachi,
         .ummAlQura, .dubai, .qatar, .kuwait, .turkey, .tehran, .egyptian,
-        .isna, .moonsighting, .uoif, .russia, .algeria, .tunisia, .morocco, .jordan, .icBih, .kmsh, .qmdb,
+        .isna, .moonsighting, .uoif, .russia, .algeria, .tunisia, .morocco, .jordan, .icBih, .kmsh, .qmdb, .muftiyatKg,
     ]
 
     static func with(id: String) -> CalculationMethod? { all.first { $0.id == id } }

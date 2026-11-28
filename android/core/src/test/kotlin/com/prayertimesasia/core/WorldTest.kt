@@ -20,6 +20,7 @@ class WorldTest {
         assertEquals("icbih", AsiaRegions.profile("BA")?.method?.id)
         assertEquals("kmsh", AsiaRegions.profile("AL")?.method?.id)
         assertEquals("qmdb", AsiaRegions.profile("KZ")?.method?.id)
+        assertEquals("muftiyatkg", AsiaRegions.profile("KG")?.method?.id)
         assertEquals(AsrSchool.STANDARD, AsiaRegions.profile("BA")?.asr)
         assertEquals("FR", AsiaRegions.countryCode("Europe/Paris"))
     }

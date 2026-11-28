@@ -66,6 +66,29 @@ describe('Countries worldwide', () => {
     expect(profileFor('KZ')).toMatchObject({ methodID: 'qmdb', source: 'authority', asr: 'hanafi' })
   })
 
+  it('matches the Kyrgyz Muftiyat calendar for Bishkek, never earlier', () => {
+    // muftiyat.kg Bishkek 2026 (UTC+6): 15 January, 15 April, 15 July, 15 October.
+    const days: [number, number, string[]][] = [
+      [1, 15, ['06:49', '08:29', '13:11', '16:11', '17:58', '19:21']], [4, 15, ['04:38', '06:20', '13:02', '17:46', '19:50', '21:12']],
+      [7, 15, ['03:27', '05:36', '13:08', '18:23', '20:45', '22:29']], [10, 15, ['05:40', '07:14', '12:48', '16:37', '18:27', '19:43']],
+    ]
+    const keys = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
+    const minutesIn = (ms: number) => {
+      const p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Bishkek', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(ms))
+      return Number(p[0].value) * 60 + Number(p[2].value)
+    }
+    for (const [month, dayOfMonth, ref] of days) {
+      const day = compute(2026, month, dayOfMonth, { latitude: 42.8746, longitude: 74.5698 }, METHODS.muftiyatkg, 'hanafi')
+      keys.forEach((k, i) => {
+        const [h, m] = ref[i].split(':').map(Number)
+        const diff = minutesIn(day.times[k]) - (h * 60 + m)
+        expect(Math.abs(diff), `${month} ${k}`).toBeLessThanOrEqual(2)
+        expect(k === 'sunrise' ? diff <= 0 : diff >= 0, `${month} ${k} safe side`).toBe(true)
+      })
+    }
+    expect(profileFor('KG')).toMatchObject({ methodID: 'muftiyatkg', source: 'authority', asr: 'hanafi' })
+  })
+
   it('uses a northern method in the UK and says why', () => {
     const uk = profileFor('GB')!
     expect(uk).toMatchObject({ methodID: 'moonsighting', source: 'standard' })

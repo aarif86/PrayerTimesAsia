@@ -32,7 +32,7 @@ enum Countries {
         CountryProfile(code: "MV", name: "Maldives", methodID: "karachi", asr: .standard, naming: .southAsian, source: .standard, authority: nil, note: "The app uses the Karachi method, the one most masjids across South Asia follow.", highLatitude: nil),
         CountryProfile(code: "KZ", name: "Kazakhstan", methodID: "qmdb", asr: .hanafi, naming: .international, source: .authority, authority: "the Spiritual Administration of Muslims of Kazakhstan, QMDB", note: nil, highLatitude: .angle),
         CountryProfile(code: "UZ", name: "Uzbekistan", methodID: "mwl", asr: .hanafi, naming: .international, source: .standard, authority: nil, note: nil, highLatitude: .angle),
-        CountryProfile(code: "KG", name: "Kyrgyzstan", methodID: "mwl", asr: .hanafi, naming: .international, source: .standard, authority: nil, note: nil, highLatitude: .angle),
+        CountryProfile(code: "KG", name: "Kyrgyzstan", methodID: "muftiyatkg", asr: .hanafi, naming: .international, source: .authority, authority: "the Spiritual Administration of Muslims of Kyrgyzstan, Muftiyat", note: nil, highLatitude: .angle),
         CountryProfile(code: "TJ", name: "Tajikistan", methodID: "mwl", asr: .hanafi, naming: .international, source: .standard, authority: nil, note: nil, highLatitude: .angle),
         CountryProfile(code: "TM", name: "Turkmenistan", methodID: "mwl", asr: .hanafi, naming: .international, source: .standard, authority: nil, note: nil, highLatitude: .angle),
         CountryProfile(code: "SA", name: "Saudi Arabia", methodID: "ummalqura", asr: .standard, naming: .international, source: .authority, authority: "Umm al-Qura, the official calendar of Saudi Arabia that the Haramain in Makkah and Madinah follow", note: nil, highLatitude: nil),

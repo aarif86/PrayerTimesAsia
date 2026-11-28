@@ -43,7 +43,7 @@ A nearby masjid's own timetable (data/mosques.json) still comes before all of th
 | Maldives | Standard method | Karachi | Shafi'i | method's own | The app uses the Karachi method, the one most masjids across South Asia follow. |
 | Kazakhstan | the Spiritual Administration of Muslims of Kazakhstan, QMDB (authority's own method) | QMDB Kazakhstan | Hanafi | angle |  |
 | Uzbekistan | Standard method | Muslim World League | Hanafi | angle |  |
-| Kyrgyzstan | Standard method | Muslim World League | Hanafi | angle |  |
+| Kyrgyzstan | the Spiritual Administration of Muslims of Kyrgyzstan, Muftiyat (authority's own method) | Muftiyat Kyrgyzstan | Hanafi | angle |  |
 | Tajikistan | Standard method | Muslim World League | Hanafi | angle |  |
 | Turkmenistan | Standard method | Muslim World League | Hanafi | angle |  |
 | Saudi Arabia | Umm al-Qura, the official calendar of Saudi Arabia that the Haramain in Makkah and Madinah follow (authority's own method) | Umm al-Qura | Shafi'i | method's own |  |

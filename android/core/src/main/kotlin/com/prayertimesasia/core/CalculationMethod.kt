@@ -184,9 +184,15 @@ data class CalculationMethod(
             HighLatitudeRule.ANGLE,
             mapOf(Prayer.SUNRISE to -5.5, Prayer.DHUHR to 4.5, Prayer.ASR to 4.5, Prayer.MAGHRIB to 4.5))
 
+        val MUFTIYAT_KG = CalculationMethod(
+            "muftiyatkg", "Muftiyat · Kyrgyzstan", "Muftiyat", 18.0, 16.0, null, null, null,
+            mapOf(Prayer.FAJR to -0.125, Prayer.SUNRISE to -1.0, Prayer.ASR to 1.5, Prayer.MAGHRIB to 6.875,
+                Prayer.ISHA to 0.125), false,
+            "The method of the Spiritual Administration of Muslims of Kyrgyzstan, Muftiyat (Fajr 18°, Isha 16°, Asr at two shadow lengths), with minutes fitted on its published 2026 Bishkek calendar. Never earlier than the published time.")
+
         val all: List<CalculationMethod> = listOf(
             MUIS, JAKIM, KEMENAG, SOUTHEAST_ASIA, MWL, KARACHI, UMM_AL_QURA, DUBAI, QATAR, KUWAIT, TURKEY, TEHRAN, EGYPTIAN,
-            ISNA, MOONSIGHTING, UOIF, RUSSIA, ALGERIA, TUNISIA, MOROCCO, JORDAN, IC_BIH, KMSH, QMDB,
+            ISNA, MOONSIGHTING, UOIF, RUSSIA, ALGERIA, TUNISIA, MOROCCO, JORDAN, IC_BIH, KMSH, QMDB, MUFTIYAT_KG,
         )
 
         fun withId(id: String?): CalculationMethod? = all.firstOrNull { it.id == id }

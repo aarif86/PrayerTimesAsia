@@ -32,7 +32,7 @@ object Countries {
         CountryProfile("MV", "Maldives", "karachi", AsrSchool.STANDARD, NamingStyle.SOUTH_ASIAN, TimesSource.STANDARD, null, "The app uses the Karachi method, the one most masjids across South Asia follow.", null),
         CountryProfile("KZ", "Kazakhstan", "qmdb", AsrSchool.HANAFI, NamingStyle.INTERNATIONAL, TimesSource.AUTHORITY, "the Spiritual Administration of Muslims of Kazakhstan, QMDB", null, HighLatitudeRule.ANGLE),
         CountryProfile("UZ", "Uzbekistan", "mwl", AsrSchool.HANAFI, NamingStyle.INTERNATIONAL, TimesSource.STANDARD, null, null, HighLatitudeRule.ANGLE),
-        CountryProfile("KG", "Kyrgyzstan", "mwl", AsrSchool.HANAFI, NamingStyle.INTERNATIONAL, TimesSource.STANDARD, null, null, HighLatitudeRule.ANGLE),
+        CountryProfile("KG", "Kyrgyzstan", "muftiyatkg", AsrSchool.HANAFI, NamingStyle.INTERNATIONAL, TimesSource.AUTHORITY, "the Spiritual Administration of Muslims of Kyrgyzstan, Muftiyat", null, HighLatitudeRule.ANGLE),
         CountryProfile("TJ", "Tajikistan", "mwl", AsrSchool.HANAFI, NamingStyle.INTERNATIONAL, TimesSource.STANDARD, null, null, HighLatitudeRule.ANGLE),
         CountryProfile("TM", "Turkmenistan", "mwl", AsrSchool.HANAFI, NamingStyle.INTERNATIONAL, TimesSource.STANDARD, null, null, HighLatitudeRule.ANGLE),
         CountryProfile("SA", "Saudi Arabia", "ummalqura", AsrSchool.STANDARD, NamingStyle.INTERNATIONAL, TimesSource.AUTHORITY, "Umm al-Qura, the official calendar of Saudi Arabia that the Haramain in Makkah and Madinah follow", null, null),

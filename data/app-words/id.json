@@ -1253,6 +1253,7 @@
   "method.note.icbih": "Metode Takvim Komunitas Islam Bosnia dan Herzegovina (Subuh 18°, Isya 16°, Asar pada satu panjang bayangan), dengan menit kehati-hatian saat terbit dan terbenam matahari, disesuaikan dengan waktu yang diterbitkannya untuk Sarajevo. Tidak pernah lebih awal dari waktu yang diterbitkan.",
   "method.note.kmsh": "Metode Komunitas Muslim Albania, KMSH (Subuh 18°, Isya 17°, Asar pada satu panjang bayangan), dengan menit yang disesuaikan pada kalender Tirana 2026. Tidak pernah lebih awal dari waktu yang diterbitkan.",
   "method.note.qmdb": "Metode Administrasi Rohani Muslim Kazakhstan (QMDB). Subuh dan Isya pada 15°, Asar pada dua panjang bayangan, dengan menit ditambah pada Zuhur, Asar dan magrib serta dikurangi saat terbit, lebih banyak mulai lintang 48° utara. Diperiksa dengan rumus yang diterbitkannya untuk satu tahun penuh.",
+  "method.note.muftiyatkg": "Metode Administrasi Rohani Muslim Kirgizstan, Muftiyat (Subuh 18°, Isya 16°, Asar pada dua panjang bayangan), dengan menit yang disesuaikan pada kalender Bishkek 2026 yang diterbitkannya. Tidak pernah lebih awal dari waktu yang diterbitkan.",
   "menu.appearance": "Tampilan",
   "menu.auto": "Otomatis",
   "menu.light": "Terang",

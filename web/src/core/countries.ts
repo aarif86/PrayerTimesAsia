@@ -46,7 +46,7 @@ export const COUNTRY_ROWS: CountryRow[] = [
   { code: "MV", name: "Maldives", methodID: "karachi", asr: "standard", naming: "southAsian", source: "standard", note: "The app uses the Karachi method, the one most masjids across South Asia follow." },
   { code: "KZ", name: "Kazakhstan", methodID: "qmdb", asr: "hanafi", naming: "arabic", source: "authority", authority: "the Spiritual Administration of Muslims of Kazakhstan, QMDB", highLatitude: "angle" },
   { code: "UZ", name: "Uzbekistan", methodID: "mwl", asr: "hanafi", naming: "arabic", source: "standard", highLatitude: "angle" },
-  { code: "KG", name: "Kyrgyzstan", methodID: "mwl", asr: "hanafi", naming: "arabic", source: "standard", highLatitude: "angle" },
+  { code: "KG", name: "Kyrgyzstan", methodID: "muftiyatkg", asr: "hanafi", naming: "arabic", source: "authority", authority: "the Spiritual Administration of Muslims of Kyrgyzstan, Muftiyat", highLatitude: "angle" },
   { code: "TJ", name: "Tajikistan", methodID: "mwl", asr: "hanafi", naming: "arabic", source: "standard", highLatitude: "angle" },
   { code: "TM", name: "Turkmenistan", methodID: "mwl", asr: "hanafi", naming: "arabic", source: "standard", highLatitude: "angle" },
   { code: "SA", name: "Saudi Arabia", methodID: "ummalqura", asr: "standard", naming: "arabic", source: "authority", authority: "Umm al-Qura, the official calendar of Saudi Arabia that the Haramain in Makkah and Madinah follow" },

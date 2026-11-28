@@ -1253,6 +1253,7 @@
   "method.note.icbih": "The Islamic Community of Bosnia and Herzegovina and its Takvim method (Fajr 18°, Isha 16°, Asr at one shadow length), with its minutes of caution at sunrise and sunset, fitted on its published times for Sarajevo. Never earlier than the published time.",
   "method.note.kmsh": "The method of the Muslim Community of Albania, KMSH (Fajr 18°, Isha 17°, Asr at one shadow length), with minutes fitted on its 2026 Tirana calendar. Never earlier than the published time.",
   "method.note.qmdb": "The method of the Spiritual Administration of Muslims of Kazakhstan (QMDB), with Fajr and Isha at 15°, Asr at two shadow lengths, with minutes added at midday, Asr and sunset and taken off at sunrise, more of them from latitude 48° north. Checked against its published formula for a full year.",
+  "method.note.muftiyatkg": "The method of the Spiritual Administration of Muslims of Kyrgyzstan, Muftiyat (Fajr 18°, Isha 16°, Asr at two shadow lengths), with minutes fitted on its published 2026 Bishkek calendar. Never earlier than the published time.",
   "menu.appearance": "Appearance",
   "menu.auto": "Auto",
   "menu.light": "Light",

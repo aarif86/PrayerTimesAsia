@@ -176,6 +176,11 @@ export const METHODS = {
     northOffsets: { sunrise: -5.5, dhuhr: 4.5, asr: 4.5, maghrib: 4.5 }, matchesOfficialTable: false, highLatitude: 'angle',
     note: "The method of the Spiritual Administration of Muslims of Kazakhstan (QMDB), with Fajr and Isha at 15°, Asr at two shadow lengths, with minutes added at midday, Asr and sunset and taken off at sunrise, more of them from latitude 48° north. Checked against its published formula for a full year.",
   }),
+  muftiyatkg: M({
+    id: 'muftiyatkg', name: 'Muftiyat · Kyrgyzstan', shortName: 'Muftiyat', fajrAngle: 18, ishaAngle: 16,
+    offsets: { fajr: -0.125, sunrise: -1, asr: 1.5, maghrib: 6.875, isha: 0.125 }, matchesOfficialTable: false,
+    note: "The method of the Spiritual Administration of Muslims of Kyrgyzstan, Muftiyat (Fajr 18°, Isha 16°, Asr at two shadow lengths), with minutes fitted on its published 2026 Bishkek calendar. Never earlier than the published time.",
+  }),
   jordan: M({
     id: 'jordan', name: 'Jordan', shortName: 'Jordan', fajrAngle: 18, ishaAngle: 18,
     offsets: {}, matchesOfficialTable: false,
@@ -187,7 +192,7 @@ export const ALL_METHODS: CalculationMethod[] = [
   METHODS.muis, METHODS.jakim, METHODS.kemenag, METHODS.sea, METHODS.mwl, METHODS.karachi,
   METHODS.ummalqura, METHODS.dubai, METHODS.qatar, METHODS.kuwait, METHODS.diyanet, METHODS.tehran, METHODS.egyptian,
   METHODS.isna, METHODS.moonsighting, METHODS.uoif, METHODS.russia, METHODS.algeria, METHODS.tunisia, METHODS.morocco,
-  METHODS.jordan, METHODS.icbih, METHODS.kmsh, METHODS.qmdb,
+  METHODS.jordan, METHODS.icbih, METHODS.kmsh, METHODS.qmdb, METHODS.muftiyatkg,
 ]
 
 export function methodWithId(id: string | null | undefined): CalculationMethod | undefined {

@@ -384,15 +384,17 @@
   {
    "code": "KG",
    "name": "Kyrgyzstan",
-   "method": "mwl",
+   "method": "muftiyatkg",
    "asr": "hanafi",
    "naming": "international",
-   "source": "standard",
+   "source": "authority",
    "highLatitude": "angle",
    "zones": [
     "Asia/Bishkek"
    ],
-   "cities": []
+   "cities": [],
+   "authority": "the Spiritual Administration of Muslims of Kyrgyzstan, Muftiyat",
+   "authorityUrl": "https://muftiyat.kg/"
   },
   {
    "code": "TJ",
