@@ -23,7 +23,7 @@ struct NearbyView: View {
     @State private var showAbout = false
     /// Where the bottom panel rests: small (just the search button), half (map and list share the screen, the start), or large.
     @AppStorage("masjidSheetStop") private var stopRaw = SheetStop.half.rawValue
-    @State private var drag: CGFloat = 0
+    @GestureState private var drag: CGFloat = 0
     @State private var suggesting = false
     /// When Near me last found the person, so Suggest a prayer room only offers a recent spot as the room's pin.
     @State private var nearMeAt: Date?
@@ -163,17 +163,23 @@ struct NearbyView: View {
     /// The bottom panel. Drag the handle area up or down (or tap it) to give the map or the list more room.
     private func sheet(list: [PrayerSpace], now: Date, height: CGFloat, total: CGFloat) -> some View {
         VStack(spacing: 0) {
-            LookStrip(look: look, p: p)
+            VStack(spacing: 0) {
+                LookStrip(look: look, p: p)
+                if look == .bands {
+                    Capsule().fill(p.tx3.opacity(0.5)).frame(width: 38, height: 5).padding(.top, 6)
+                }
+            }
                 .padding(.bottom, 6)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .top)
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture(minimumDistance: 4)
-                        .onChanged { drag = $0.translation.height }
+                        .updating($drag) { v, state, _ in state = v.translation.height }
                         .onEnded { v in
                             let target = sheetHeight(stop, total: total) - v.predictedEndTranslation.height
                             let best = SheetStop.allCases.min { abs(sheetHeight($0, total: total) - target) < abs(sheetHeight($1, total: total) - target) } ?? .half
-                            withAnimation(.snappy) { stopRaw = best.rawValue; drag = 0 }
+                            withAnimation(.snappy) { stopRaw = best.rawValue }
+                            if best == .large { selected = nil }
                         }
                 )
                 .onTapGesture { withAnimation(.snappy) { stopRaw = (stop == .large ? SheetStop.half : SheetStop(rawValue: stop.rawValue + 1)!).rawValue } }
@@ -1045,7 +1051,7 @@ private struct EidCard: View {
 
 // MARK: - The look's own parts
 
-/// The slim strip on top of the list sheet: kawung dots for Centre Dial, the sun's curve for
+/// The slim strip on top of the list sheet: just the handle for Centre Dial, the sun's curve for
 /// Sun Path, six colour stripes for Colour Bands, a thin gold line for Calm Gold.
 private struct LookStrip: View {
     let look: TodayStyle
