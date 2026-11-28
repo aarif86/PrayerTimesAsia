@@ -152,6 +152,9 @@ jobs:
           test -f _site/prayer-times/singapore/index.html
           test -f _site/prayer-times/kuala-lumpur/index.html
           test -f _site/prayer-times/jakarta/index.html
+          # City pages and printable timetables: English plus each city's own language (Malay, Indonesian, Thai, Japanese and so on).
+          for f in ms/waktu-solat/kuala-lumpur id/jadwal-sholat/jakarta printable-timetables/singapore ms/jadual-cetak/kuala-lumpur id/jadwal-cetak/jakarta th/prayer-times/bangkok ja/prayer-times/tokyo hi/printable-timetables/delhi zh/prayer-times/hong-kong; do test -f "_site/$f/index.html"; done
+          test "$(find _site/prayer-times _site/ms/waktu-solat _site/id/jadwal-sholat -name index.html | wc -l)" -ge 80
           test -f _site/ramadan.html
           ! grep -q "__TELEMETRYDECK_APP_ID__" _site/index.html _site/ms/index.html _site/id/index.html _site/ar/index.html _site/ur/index.html _site/bn/index.html _site/tr/index.html _site/fr/index.html
           # Every image and page the promo page links to is there.
