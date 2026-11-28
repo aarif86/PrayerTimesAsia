@@ -66,6 +66,14 @@ struct TodayView: View {
                     .allowsHitTesting(false)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .ptaToast)) { note in
+            guard let line = note.object as? String else { return }
+            withAnimation(.snappy) { styleToast = line }
+            Task {
+                try? await Task.sleep(for: .seconds(2.2))
+                withAnimation(.easeOut) { if styleToast == line { styleToast = nil } }
+            }
+        }
         .onChange(of: model.prefs.appearance) { _, appearance in
             let label = appearance == .system ? W("appearance.system") : appearance.label
             withAnimation(.snappy) { styleToast = label }
@@ -1414,11 +1422,22 @@ private struct BlessedBand: View {
 /// The long summer days note, then the Ramadan and Syawal card. One view, so the
 /// Prayer pages' types stay as shallow as before.
 private struct TodayNotes: View {
+    @Environment(AppModel.self) private var model
     let now: Date
 
     var body: some View {
         LongDaysNote(now: now)
         SeasonCard(now: now)
+        // Little surprises: a quiet line on Fridays, and on the odd nights of the last ten of Ramadan.
+        if model.prefs.littleSurprises {
+            if model.isFriday(now) { quiet(W("today.jumuahLine")) }
+            if model.season(at: now).oddNight { quiet(W("today.qadrLine")) }
+        }
+    }
+
+    private func quiet(_ text: String) -> some View {
+        Text(text).font(.footnote).foregroundStyle(Theme.accentText)
+            .multilineTextAlignment(.center).frame(maxWidth: .infinity)
     }
 }
 

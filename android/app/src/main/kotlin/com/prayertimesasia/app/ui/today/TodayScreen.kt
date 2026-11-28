@@ -166,6 +166,14 @@ private fun StyleToast(state: AppState) {
     var first by remember { mutableStateOf(true) }
     val style = state.prefs.todayStyle
     val appearance = state.prefs.appearance
+    val fajrSet = state.fajrSetCount
+    val fajrLine = tr(R.string.alerts_fajrSet, "name" to Prayer.FAJR.name(state.resolver.naming))
+    LaunchedEffect(fajrSet) {
+        if (fajrSet == 0) return@LaunchedEffect
+        toast = fajrLine
+        delay(2200)
+        if (toast == fajrLine) toast = null
+    }
     LaunchedEffect(style) {
         if (first) return@LaunchedEffect
         toast = style.label
@@ -208,6 +216,17 @@ internal fun ColumnScope.Prompts(f: TodayFrame, hadith: Boolean = false) {
     if (!p.arrivalBannerDismissed) ArrivalCard(f.state)
     if (f.offset == 0) LongDaysNote(f.state, f.now)
     if (f.offset == 0) SeasonCard(f.state, f.now)
+    // Little surprises: a quiet line on Fridays, and on the odd nights of the last ten of Ramadan.
+    if (f.offset == 0 && p.littleSurprises) {
+        if (f.state.resolver.isFriday(f.now)) QuietLine(tr(R.string.today_jumuahLine))
+        if (f.state.resolver.season(f.now).oddNight) QuietLine(tr(R.string.today_qadrLine))
+    }
+}
+
+@Composable
+private fun QuietLine(text: String) {
+    Text(text, style = Txt.footnote, color = Palette.accent, textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp))
 }
 
 /** Today's one community card, below the times and only with Show more open (docs/community-cards.md). */

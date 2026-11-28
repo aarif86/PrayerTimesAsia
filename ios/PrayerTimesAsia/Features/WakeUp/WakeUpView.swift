@@ -84,9 +84,18 @@ struct AlertModePicker: View {
 @MainActor
 func applyAlertMode(_ mode: AlertMode, _ prayer: Prayer, model: AppModel) {
     withAnimation { model.prefs.setAlertMode(mode, prayer) }
+    // Little surprise: a warm word when the Fajr alert is switched on.
+    if prayer == .fajr, mode != .off, model.prefs.littleSurprises {
+        NotificationCenter.default.post(name: .ptaToast, object: W("alerts.fajrSet", ["name": prayer.name(model.naming)]))
+    }
     Task {
         if mode == .off { await WakeUpAlarm.stopRinging() } else { await askForAlerts() }
     }
+}
+
+extension Notification.Name {
+    /// A short line for the Prayer screen's toast (see TodayView).
+    static let ptaToast = Notification.Name("ptaToast")
 }
 
 @MainActor
