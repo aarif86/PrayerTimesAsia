@@ -180,6 +180,7 @@ fun ShadowCameraScreen(state: AppState, onClose: () -> Unit) {
     var granted by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
     }
+    LaunchedEffect(Unit) { state.usageAction("falakShadow") }
     LaunchedEffect(Unit) { if (!granted) granted = state.permissions?.camera() ?: false }
     val pitch = rememberCameraPitch(context)
     var tap by remember { mutableStateOf<Pair<Float, Double>?>(null) }

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks'
 import { zoned } from '../core/tz'
 import { ensureTable } from '../services/officialTables'
 import { readJSON, readString, writeJSON, writeString } from '../services/storage'
-import { countScreenRunning, SCREEN_EVERY_MS } from '../services/usage'
+import { countScreenPaired, countScreenRunning, SCREEN_EVERY_MS } from '../services/usage'
 import { registerServiceWorker } from '../ui/pwa'
 import { configFromHash, decodeConfig, DEFAULT_CONFIG, encodeConfig, EXAMPLE_PLACE, isTvHash, looksLikeTv, pairCodeFromHash, sanitize, shortCodeFromHash, type ScreenConfig } from './config'
 import { Display } from './Display'
@@ -152,7 +152,15 @@ function App() {
   useEffect(() => { document.documentElement.lang = editing || !config ? 'en' : config.lang }, [editing, config])
 
   if (!config && tv && !code && !editing) {
-    return <PairScreen onPaired={(c, pair) => { writeJSON(STORAGE, c); writeJSON(PAIR_KEY, pair); writeString(CODE_KEY, ''); setConfig(c) }} />
+    return <PairScreen onPaired={(c, pair) => {
+      writeJSON(STORAGE, c); writeJSON(PAIR_KEY, pair); writeString(CODE_KEY, ''); setConfig(c)
+      // Counted once per pairing, unless the committee turned counting off for this screen.
+      if (c.report && c.place) {
+        countScreenPaired(SCREEN_VERSION, {
+          masjid: c.name, city: c.place.district || c.place.name || null, countryCode: c.place.cc ?? null, look: reportLook(c), language: c.lang,
+        })
+      }
+    }} />
   }
   if (!config && code && !editing) {
     return <div class="scr scr-empty"><p>{link === 'failed' ? 'Could not open this link yet. Check that the TV is online. Trying again.' : 'Opening your masjid screen'}</p></div>

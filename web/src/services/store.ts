@@ -28,7 +28,7 @@ import { appLang, resolveAppLang, setAppLang } from '../core/appWords'
 import type { Lang3 } from '../core/ramadanContent'
 import { DEFAULT_PREFS, loadPreferences, savePreferences, TODAY_STYLES, type Preferences, type TodayStyle } from './prefs'
 import { fetchOK, readJSON, readString, writeJSON, writeString } from './storage'
-import { countAppOpen, countCard, tallyScreen, tallyStart, tallyStop, type CardFacts } from './usage'
+import { countAppOpen, countCard, tallyAction, tallyScreen, tallyStart, tallyStop, type CardFacts, type SettingsFacts } from './usage'
 import { VERSION } from '../ui/version'
 
 export type Tab = 'today' | 'qibla' | 'falak' | 'masjid' | 'settings'
@@ -196,8 +196,25 @@ class AppStore {
     if (!this.usageOn) return
     if (!visible) { tallyStop(); return }
     const p = this.activePlace
-    tallyStart(VERSION.replace(' (web)', ''), { city: p?.name, countryCode: p?.countryCode })
+    tallyStart(VERSION.replace(' (web)', ''), { city: p?.name, countryCode: p?.countryCode }, this.settingsFacts())
     tallyScreen(this.tab === 'today' ? 'prayer' : this.tab)
+  }
+
+  /** Something done today worth counting (Qibla compass on, a Falak tool opened). Checks Settings first. */
+  usageAction(action: string): void {
+    if (this.usageOn) tallyAction(action)
+  }
+
+  /** How the app is set up, in short words and yes or no (services/usage.ts, SettingsFacts). */
+  private settingsFacts(): SettingsFacts {
+    const p = this.prefs
+    return {
+      look: p.todayStyle, theme: p.appearance, language: p.appLanguageOverride ?? 'auto',
+      alertPrayers: p.notificationsEnabled ? p.notifyPrayers.length : 0,
+      azanSound: p.azanSound, azanVoice: p.azanVoice, azanLength: p.azanFull ? 'full' : 'short', ownAzan: false,
+      alarms: [p.wakeUp, p.sahurAlarm, p.dhuhrAlarm, p.asrAlarm, p.maghribAlarm, p.ishaAlarm].filter((a) => a != null).length,
+      largeText: p.largeText, tracker: p.trackerEnabled, myMasjid: p.myMasjid != null, widgets: 0,
+    }
   }
 
   /** Anonymous count of a Barakah Picks card seen or tapped (docs/community-cards.md). */

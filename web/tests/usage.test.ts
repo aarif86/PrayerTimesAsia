@@ -70,4 +70,16 @@ describe('a day of use (App.daySummary)', async () => {
     expect(minutesBand(0.5)).toBe('under 1')
     expect(minutesBand(75)).toBe('over 60')
   })
+  it('adds what was done once, and sends the setup as short words only', async () => {
+    const { addAction } = await import('../src/services/usage')
+    let t = addAction(addAction(addAction(emptyTally('d'), 'qiblaCompass'), 'falakLevel'), 'qiblaCompass')
+    expect(t.actions).toEqual(['qiblaCompass', 'falakLevel'])
+    // A tally saved before this release has no actions list.
+    t = { day: 'd', seconds: 0, opens: 1, screens: [] }
+    expect(addAction(t, 'falakAR').actions).toEqual(['falakAR'])
+    const facts = { look: 'bands', theme: 'dark', language: 'auto', alertPrayers: 5, azanSound: true, azanVoice: 'asim', azanLength: 'short' as const, ownAzan: false, alarms: 2, largeText: false, tracker: true, myMasjid: false, widgets: 0 }
+    const p = dayPayload({}, { ...t, actions: ['qiblaFaced'] }, facts)
+    expect(p).toMatchObject({ 'Did.qiblaFaced': true, 'Did.falakAR': false, 'Pref.look': 'bands', 'Pref.alertsOn': true, 'Pref.azanVoice': 'asim', 'Pref.alarms': 2 })
+    expect(Object.keys(dayPayload({}, t))).not.toContain('Pref.look')
+  })
 })

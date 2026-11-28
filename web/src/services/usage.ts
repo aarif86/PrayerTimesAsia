@@ -27,7 +27,7 @@ export const SCREEN_EVERY_MS = 6 * 3_600_000
 export interface UsageConfig { telemetryDeckAppID: string; enabled: boolean }
 interface CachedConfig extends UsageConfig { fetchedAt: number }
 
-export type UsageEvent = 'App.installed' | 'App.opened' | 'Screen.running' | 'Card.seen' | 'Card.tapped' | 'App.daySummary'
+export type UsageEvent = 'App.installed' | 'App.opened' | 'Screen.running' | 'Screen.paired' | 'Card.seen' | 'Card.tapped' | 'App.daySummary'
 export type Payload = Record<string, string | number | boolean>
 
 export interface Signal {
@@ -217,13 +217,15 @@ export function countCard(event: 'Card.seen' | 'Card.tapped', version: string, w
  * app opens on a later day, so a whole day costs one event. Same rules in
  * UsageCounter.swift and UsageCounter.kt.
  */
-export interface DayTally { day: string; seconds: number; opens: number; screens: string[] }
+export interface DayTally { day: string; seconds: number; opens: number; screens: string[]; actions?: string[] }
 
 /** One stretch on screen counts at most this long (a phone left open on a table). */
 export const MAX_STRETCH_S = 2 * 3600
 export const SCREENS = ['prayer', 'qibla', 'falak', 'masjid', 'settings'] as const
+/** Things done today worth knowing about, each sent as true or false (Did.qiblaCompass ...). Same list on the phones. */
+export const ACTIONS = ['qiblaCompass', 'qiblaFaced', 'falakShadow', 'falakLevel', 'falakAR'] as const
 
-export const emptyTally = (day: string): DayTally => ({ day, seconds: 0, opens: 0, screens: [] })
+export const emptyTally = (day: string): DayTally => ({ day, seconds: 0, opens: 0, screens: [], actions: [] })
 
 /** Starts today's tally, handing back yesterday's (or older) if it has anything to send. */
 export function rollTally(t: DayTally | null, today: string): { tally: DayTally; finished: DayTally | null } {
@@ -250,10 +252,51 @@ export function minutesBand(minutes: number): string {
   return 'over 60'
 }
 
-export function dayPayload(base: Payload, t: DayTally): Payload {
+export function addAction(t: DayTally, action: string): DayTally {
+  const have = t.actions ?? []
+  return have.includes(action) ? t : { ...t, actions: [...have, action] }
+}
+
+/**
+ * How the app is set up today, as short words and yes or no (never anything typed
+ * by the person, never a place). Sent once a day inside App.daySummary. The same
+ * keys come from the iPhone and Android apps.
+ */
+export interface SettingsFacts {
+  look: string
+  theme: string
+  /** The app language the person picked, or 'auto' for the phone's own. */
+  language: string
+  /** How many of the five prayers have an alert (0 when alerts are off). */
+  alertPrayers: number
+  azanSound: boolean
+  azanVoice: string
+  azanLength: 'short' | 'full'
+  ownAzan: boolean
+  /** How many alarms are set (Subuh, sahur, other prayers). */
+  alarms: number
+  largeText: boolean
+  tracker: boolean
+  myMasjid: boolean
+  /** Home screen widgets in use (phones only). */
+  widgets: number
+}
+
+export function settingsPayload(f: SettingsFacts): Payload {
+  return {
+    'Pref.look': f.look, 'Pref.theme': f.theme, 'Pref.language': f.language,
+    'Pref.alertPrayers': f.alertPrayers, 'Pref.alertsOn': f.alertPrayers > 0,
+    'Pref.azanSound': f.azanSound, 'Pref.azanVoice': f.azanVoice, 'Pref.azanLength': f.azanLength, 'Pref.ownAzan': f.ownAzan,
+    'Pref.alarms': f.alarms, 'Pref.largeText': f.largeText, 'Pref.tracker': f.tracker, 'Pref.myMasjid': f.myMasjid, 'Pref.widgets': f.widgets,
+  }
+}
+
+export function dayPayload(base: Payload, t: DayTally, facts?: SettingsFacts): Payload {
   const minutes = Math.round(t.seconds / 60)
   const out: Payload = { ...base, 'Day.date': t.day, 'Day.minutes': minutes, 'Day.minutesBand': minutesBand(t.seconds / 60), 'Day.opens': t.opens, 'Day.screens': [...t.screens].sort().join(',') }
   for (const s of SCREENS) out[`Used.${s}`] = t.screens.includes(s)
+  for (const a of ACTIONS) out[`Did.${a}`] = (t.actions ?? []).includes(a)
+  if (facts) Object.assign(out, settingsPayload(facts))
   return out
 }
 
@@ -274,13 +317,13 @@ function saveStretch(): void {
  * the first open of a new day, sends the last day's summary. The caller checks
  * Settings first.
  */
-export function tallyStart(version: string, where: Where): void {
+export function tallyStart(version: string, where: Where, facts?: SettingsFacts): void {
   const { tally, finished } = rollTally(readJSON<DayTally>(TALLY_KEY), localDay())
   writeJSON(TALLY_KEY, { ...tally, opens: tally.opens + 1 })
   activeSince = Date.now()
   if (finished) {
     const { id } = deviceId()
-    void send(['App.daySummary'], dayPayload(basePayload('web', version, where, navigator.language || 'en'), finished), id)
+    void send(['App.daySummary'], dayPayload(basePayload('web', version, where, navigator.language || 'en'), finished, facts), id)
   }
 }
 
@@ -294,4 +337,21 @@ export function tallyStop(): void {
 export function tallyScreen(screen: string): void {
   const t = rollTally(readJSON<DayTally>(TALLY_KEY), localDay()).tally
   writeJSON(TALLY_KEY, addScreen(t, screen))
+}
+
+/** Something worth knowing was done today (Did.qiblaCompass ...). The caller checks Settings first. */
+export function tallyAction(action: string): void {
+  const t = rollTally(readJSON<DayTally>(TALLY_KEY), localDay()).tally
+  writeJSON(TALLY_KEY, addAction(t, action))
+}
+
+// MARK: A TV paired with a phone
+
+/** The masjid screen was paired (once per pairing), so setup success can be told from drop-off. */
+export function countScreenPaired(version: string, s: ScreenFacts): void {
+  let id = readString(SCREEN_ID_KEY)
+  const fresh = !id
+  if (!id) { id = randomId(); writeString(SCREEN_ID_KEY, id) }
+  // A TV's ID is made here when it is new, so the install is counted here too.
+  void send(fresh ? ['App.installed', 'Screen.paired'] : ['Screen.paired'], screenPayload(version, s, innerHeight > innerWidth), id)
 }

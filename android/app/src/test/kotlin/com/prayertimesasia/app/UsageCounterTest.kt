@@ -73,4 +73,21 @@ class UsageCounterTest {
         assertEquals("false", p["Used.masjid"])
         assertEquals("1 to 5", UsageCounter.minutesBand(4.9))
     }
+
+    @Test fun actionsAndSetupAreShortWordsOnly() {
+        val t = UsageCounter.DayTally("2026-11-17").addAction("qiblaCompass").addAction("falakAR").addAction("qiblaCompass")
+        assertEquals(listOf("qiblaCompass", "falakAR"), t.actions)
+        assertEquals(t, UsageCounter.DayTally.decode(t.encode()))
+        // A tally saved before this release has no actions.
+        assertEquals(emptyList<String>(), UsageCounter.DayTally.decode("""{"day":"d","seconds":1,"opens":1,"screens":[]}""")!!.actions)
+        val settings = UsageCounter.settingsPayload(Preferences(trackerEnabled = true, azanFull = true), widgets = 2, ownAzan = false)
+        val p = UsageCounter.dayPayload(mapOf("App.platform" to "android"), t, settings)
+        assertEquals("true", p["Did.qiblaCompass"])
+        assertEquals("false", p["Did.falakShadow"])
+        assertEquals("centre", p["Pref.look"])
+        assertEquals("full", p["Pref.azanLength"])
+        assertEquals("true", p["Pref.tracker"])
+        assertEquals("2", p["Pref.widgets"])
+        assertNull(UsageCounter.dayPayload(emptyMap(), t)["Pref.look"])
+    }
 }

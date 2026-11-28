@@ -665,11 +665,18 @@ final class AppModel {
     func usageVisible(_ visible: Bool) {
         guard usageOn else { if !visible { UsageCounter.tallyStop() }; return }
         if visible {
-            UsageCounter.tallyStart(place: activePlace)
+            UsageCounter.tallyStart(place: activePlace, settings: UsageCounter.settingsPayload(prefs, widgets: UsageCounter.widgetCount))
+            UsageCounter.refreshWidgetCount()
             usageScreen(selectedTab)
         } else {
             UsageCounter.tallyStop()
         }
+    }
+
+    /// Something done today worth counting (Qibla compass on, a Falak tool opened). Checks Settings first.
+    func usageAction(_ action: String) {
+        guard usageOn else { return }
+        UsageCounter.tallyAction(action)
     }
 
     func usageScreen(_ tab: Tab) {

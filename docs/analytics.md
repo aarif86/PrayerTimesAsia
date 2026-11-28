@@ -28,7 +28,7 @@ file and commit.
 
 | Question | Where it comes from |
 |---|---|
-| How many people visit the website, from which countries, on phone or computer, from which link | The promo page (TelemetryDeck's web script: page views with country and referrer) |
+| How many people visit the website, from which countries, on phone or computer, from which link | Every public website page (TelemetryDeck's web script: page views with country and referrer), added to each page when the site is published (`tools/inject_visitor_counts.py`). Left out: the three form pages that carry details in their link (verify, note, announcement), the 404 page, the web app and the TV screen (which count themselves) |
 | How many people use the apps each day and month | `App.opened` events, counted by user |
 | How many times it is used | `App.opened` (counts once per hour per device, so a quick check and a re-open don't count twice) |
 | Which city and country people pray in | `Place.city` and `Place.country` on every event |
@@ -37,6 +37,9 @@ file and commit.
 | Which masjids run the screen, and whether each is still on | `Screen.running` with `Masjid.name` (sent at start and every 6 hours; a masjid missing for a day means its TV is off or offline) |
 | How masjids set up their screen | `Screen.look`, `Screen.language`, `Screen.orientation` |
 | How many minutes a day people use it, how many times a day they open it, and which screens they use | `App.daySummary`, one per device per day used, sent on the next open: `Day.date`, `Day.minutes`, `Day.minutesBand` (under 1, 1 to 5, 5 to 15, 15 to 30, 30 to 60, over 60), `Day.opens` (every time the app comes on screen), `Day.screens` and `Used.prayer`, `Used.qibla`, `Used.falak`, `Used.masjid`, `Used.settings` (true or false) |
+| How people set the app up (changes daily, so a chart shows what most people choose) | `App.daySummary` also carries `Pref.look`, `Pref.theme`, `Pref.language` (`auto` unless they chose one), `Pref.alertPrayers` (0 to 5) and `Pref.alertsOn`, `Pref.azanSound`, `Pref.azanVoice`, `Pref.azanLength`, `Pref.ownAzan`, `Pref.alarms` (how many), `Pref.largeText`, `Pref.tracker`, `Pref.myMasjid`, `Pref.widgets` (how many on the phone; iPhone and Android only, the web is 0). Short words and yes or no only |
+| Whether Qibla and Falak are really used, not just opened | `Did.qiblaCompass` (compass working), `Did.qiblaFaced` (turned to face the Qibla), `Did.falakShadow`, `Did.falakLevel`, `Did.falakAR`, true or false, in the same daily note |
+| How many TVs get paired, and whether setup finishes | `Screen.paired`, sent once by the TV when a phone pairs with it (same keys as `Screen.running`). Compare with `Screen.running` for TVs that carry on |
 | Roughly how many people have it open now | `App.opened` in the last hour (the nearest to live; nothing is sent while the app sits open) |
 | How often each Barakah Picks card is seen and tapped | `Card.seen` (once a day per card per device) and `Card.tapped`, with `Card.id`, `Card.kind`, `Card.placement` |
 

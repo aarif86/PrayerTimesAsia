@@ -108,7 +108,9 @@ private fun QiblaContent(state: AppState, place: Place) {
         acc.last = heading
     }
     val dialHeading = acc.heading
+    LaunchedEffect(heading != null) { if (heading != null && !state.demoAligned) state.usageAction("qiblaCompass") }
     LaunchedEffect(aligned) {
+        if (aligned && !state.demoAligned) state.usageAction("qiblaFaced")
         if (aligned && !state.demoAligned) {
             view.performHapticFeedback(if (Build.VERSION.SDK_INT >= 30) HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.LONG_PRESS)
         }

@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import WidgetKit
 
 /// Anonymous usage counts, sent to TelemetryDeck (privacy-first: no IP
 /// addresses stored, nothing linked to a person). The web app and the Android
@@ -138,7 +139,12 @@ enum UsageCounter {
         var seconds: Double = 0
         var opens: Int = 0
         var screens: [String] = []
+        /// Things done today worth knowing about (see `actions`). Optional so a tally saved before this release still loads.
+        var actions: [String]?
     }
+
+    /// Things done today, each sent as true or false (Did.qiblaCompass ...). The same list on the web and Android apps.
+    static let actions = ["qiblaCompass", "qiblaFaced", "falakShadow", "falakLevel", "falakAR"]
 
     /// One stretch on screen counts at most this long (a phone left open on a table).
     static let maxStretch: TimeInterval = 2 * 3_600
@@ -165,6 +171,54 @@ enum UsageCounter {
         return out
     }
 
+    static func adding(action: String, to t: DayTally) -> DayTally {
+        var out = t
+        var have = out.actions ?? []
+        if !have.contains(action) { have.append(action) }
+        out.actions = have
+        return out
+    }
+
+    /// How the app is set up, as short words and yes or no (never anything typed by the person,
+    /// never a place). Sent once a day inside App.daySummary; the same keys as the web and Android apps.
+    static func settingsPayload(_ p: Preferences, widgets: Int) -> [String: String] {
+        let alerts = p.notificationsEnabled ? p.notifyPrayers.count : 0
+        let alarms = [p.wakeUp != nil, p.sahurAlarm != nil, p.dhuhrAlarm != nil, p.asrAlarm != nil, p.maghribAlarm != nil, p.ishaAlarm != nil].filter { $0 }.count
+        return [
+            "Pref.look": p.todayStyle.rawValue,
+            "Pref.theme": p.appearance.rawValue,
+            "Pref.language": p.appLanguageOverride?.rawValue ?? "auto",
+            "Pref.alertPrayers": String(alerts),
+            "Pref.alertsOn": String(alerts > 0),
+            "Pref.azanSound": String(p.azanSound),
+            "Pref.azanVoice": p.azanVoice,
+            "Pref.azanLength": p.azanFull ? "full" : "short",
+            "Pref.ownAzan": String(OwnAzan.isSet),
+            "Pref.alarms": String(alarms),
+            "Pref.largeText": String(p.largeText),
+            "Pref.tracker": String(p.trackerEnabled),
+            "Pref.myMasjid": String(p.myMasjid != nil),
+            "Pref.widgets": String(widgets),
+        ]
+    }
+
+    private static let widgetsKey = "usage.widgets"
+
+    /// How many widgets are on the Home Screen or Lock Screen, as last asked. Refreshed each time the app comes on screen.
+    static var widgetCount: Int { UserDefaults.standard.integer(forKey: widgetsKey) }
+
+    static func refreshWidgetCount() {
+        #if DEBUG
+        // Test and debug builds have no widgets to count, and asking WidgetKit there can stall the UI tests.
+        return
+        #else
+        WidgetCenter.shared.getCurrentConfigurations { result in
+            guard case .success(let found) = result else { return }
+            UserDefaults.standard.set(found.count, forKey: widgetsKey)
+        }
+        #endif
+    }
+
     static func minutesBand(_ minutes: Double) -> String {
         switch minutes {
         case ..<1: return "under 1"
@@ -176,7 +230,7 @@ enum UsageCounter {
         }
     }
 
-    static func dayPayload(_ base: [String: String], _ t: DayTally) -> [String: String] {
+    static func dayPayload(_ base: [String: String], _ t: DayTally, settings: [String: String] = [:]) -> [String: String] {
         var out = base
         out["Day.date"] = t.day
         out["Day.minutes"] = String(Int((t.seconds / 60).rounded()))
@@ -184,7 +238,8 @@ enum UsageCounter {
         out["Day.opens"] = String(t.opens)
         out["Day.screens"] = t.screens.sorted().joined(separator: ",")
         for s in screens { out["Used.\(s)"] = t.screens.contains(s) ? "true" : "false" }
-        return out
+        for a in actions { out["Did.\(a)"] = (t.actions ?? []).contains(a) ? "true" : "false" }
+        return out.merging(settings) { _, new in new }
     }
 
     static func localDay(_ date: Date = .now) -> String {
@@ -203,7 +258,7 @@ enum UsageCounter {
     /// The app came on screen: one open for today, start the clock, and on the
     /// first open of a new day send the last day's summary. AppModel checks Settings first.
     @MainActor
-    static func tallyStart(place: Place?) {
+    static func tallyStart(place: Place?, settings: [String: String] = [:]) {
         let (tally, finished) = roll(readTally(), today: localDay())
         var t = tally
         t.opens += 1
@@ -217,7 +272,7 @@ enum UsageCounter {
         let base = payload(version: version, system: UIDevice.current.systemVersion,
                            language: Locale.preferredLanguages.first ?? "en",
                            city: place?.district ?? place?.name, countryCode: place?.countryCode)
-        let body = dayPayload(base, finished)
+        let body = dayPayload(base, finished, settings: settings)
         Task.detached(priority: .utility) { await send(types: ["App.daySummary"], payload: body, clientUser: id) }
     }
 
@@ -228,6 +283,12 @@ enum UsageCounter {
         let t = roll(readTally(), today: localDay()).tally
         writeTally(adding(Date.now.timeIntervalSince(since), to: t))
         activeSince = nil
+    }
+
+    /// Something worth knowing was done today (Did.qiblaCompass ...). AppModel.usageAction checks Settings first.
+    @MainActor
+    static func tallyAction(_ action: String) {
+        writeTally(adding(action: action, to: roll(readTally(), today: localDay()).tally))
     }
 
     /// A screen (tab) was used today.

@@ -119,6 +119,7 @@ export function ShadowCamera() {
   /** The tapped head of the shadow, as degrees below the horizon. */
   const [tapped, setTapped] = useState<number | null>(null)
   const announced = useRef<string | null>(null)
+  useEffect(() => { store.usageAction('falakShadow') }, [])
 
   useEffect(() => {
     let stream: MediaStream | null = null
