@@ -64,16 +64,20 @@ object WidgetUpdater {
     suspend fun updateAll(context: Context) {
         runCatching { NextPrayerWidget().updateAll(context) }
         runCatching { TimetableWidget().updateAll(context) }
+        runCatching { NowNextWidget().updateAll(context) }
+        runCatching { CurrentPrayerWidget().updateAll(context) }
+        runCatching { DayBarWidget().updateAll(context) }
+        runCatching { HijriCalendarWidget().updateAll(context) }
     }
 }
 
-private fun st(size: Int, weight: FontWeight = FontWeight.Normal, color: Color = Color.White) =
+internal fun st(size: Int, weight: FontWeight = FontWeight.Normal, color: Color = Color.White) =
     TextStyle(color = ColorProvider(color), fontSize = size.sp, fontWeight = weight)
 
 /** Tests only: draw the widgets from this demo state (and its fixed clock) instead of the app's. */
 internal var widgetTestState: com.prayertimesasia.app.AppState? = null
 
-private fun model(context: Context, style: TodayStyle? = null): WidgetModel? {
+internal fun model(context: Context, style: TodayStyle? = null): WidgetModel? {
     val state = widgetTestState ?: (context.applicationContext as? PrayerApp)?.state ?: return null
     // widgetResolver() still finds a place when the process was just started (a resize, a reboot)
     // and GPS has not answered yet, so the widget never flashes "set your location" by mistake.
@@ -195,7 +199,7 @@ internal fun sunPathBitmap(m: WidgetModel, w: Int, h: Int): Bitmap {
 
 /** A live countdown the launcher ticks by itself (a RemoteViews Chronometer). */
 @Composable
-private fun Countdown(context: Context, to: Instant, color: Color, big: Boolean = false) {
+internal fun Countdown(context: Context, to: Instant, color: Color, big: Boolean = false) {
     val rv = RemoteViews(context.packageName, if (big) R.layout.widget_countdown_big else R.layout.widget_countdown)
     val millis = (to.toEpochMilli() - System.currentTimeMillis()).coerceAtLeast(0)
     rv.setChronometer(R.id.countdown, SystemClock.elapsedRealtime() + millis, null, true)
@@ -216,7 +220,7 @@ private fun RowCountdown(context: Context, m: WidgetModel, label: String, color:
 
 /** Only when the phone truly knows no place yet. Still a proper card, and a tap opens the app. */
 @Composable
-private fun Empty() {
+internal fun Empty() {
     val night = SkyColors.night.readable
     Box(
         GlanceModifier.fillMaxSize().appWidgetBackground().cornerRadius(22.dp)
@@ -442,6 +446,7 @@ private fun BandsBody(context: Context, m: WidgetModel, pal: WPal, base: GlanceM
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Tick(m, p, pal); Spacer(GlanceModifier.width(6.dp))
                     Text(m.names.getValue(p), style = st(sz(20), FontWeight.Bold))
                     if (countdown?.first == p) { Spacer(GlanceModifier.width(6.dp)); RowCountdown(context, m, countdown.second.trim() + " ", Color.White) }
                 }
@@ -501,6 +506,7 @@ private fun PrayerRows(
                     .padding(horizontal = if (compact) 8.dp else 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                if (!compact) { Tick(m, p, pal); Spacer(GlanceModifier.width(6.dp)) }
                 if (gold) Box(GlanceModifier.size(7.dp).cornerRadius(4.dp).background(if (hit) pal.acc else Color.Transparent)) {}
                 else Box(GlanceModifier.width(3.dp).height(if (compact) 12.dp else 18.dp).cornerRadius(2.dp).background(p.tint)) {}
                 Spacer(GlanceModifier.width(8.dp))
@@ -512,6 +518,18 @@ private fun PrayerRows(
                 t.second?.let { Text(" $it", style = st(sz(if (compact) 9 else 11), FontWeight.Bold, pal.fg2.copy(alpha = if (passed) 0.6f else 1f))) }
             }
         }
+    }
+}
+
+/** A tick for each prayer whose time has closed, a faint ring for the others, nothing for Syuruk. */
+@Composable
+private fun Tick(m: WidgetModel, p: Prayer, pal: WPal) {
+    when {
+        p == Prayer.SUNRISE -> Spacer(GlanceModifier.size(16.dp))
+        m.isDone(p) -> Box(GlanceModifier.size(16.dp).cornerRadius(8.dp).background(if (m.style == TodayStyle.BANDS) Color.White else pal.acc), contentAlignment = Alignment.Center) {
+            Text("\u2713", style = st(11, FontWeight.Bold, if (m.style == TodayStyle.BANDS) BandsPalette.color(p) else if (m.style == TodayStyle.GOLD && m.dark) Color(0xFF0B0F2A) else Color.White))
+        }
+        else -> Box(GlanceModifier.size(16.dp).cornerRadius(8.dp).background((if (m.style == TodayStyle.BANDS) Color.White else pal.fg2).copy(alpha = 0.2f))) {}
     }
 }
 

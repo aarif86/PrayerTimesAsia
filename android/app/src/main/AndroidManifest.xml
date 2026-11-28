@@ -73,7 +73,7 @@
         <receiver
             android:name=".widget.NextPrayerWidgetReceiver"
             android:exported="true"
-            android:label="@string/widget_next_name">
+            android:label="@string/widget_nextName">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -85,13 +85,61 @@
         <receiver
             android:name=".widget.TimetableWidgetReceiver"
             android:exported="true"
-            android:label="@string/widget_timetable_name">
+            android:label="@string/widget_timetableName">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/timetable_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.NowNextWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_nowNextName">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/now_next_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.CurrentPrayerWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_currentName">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/current_prayer_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.DayBarWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_dayBarName">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/day_bar_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.HijriCalendarWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_hijriName">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/hijri_calendar_widget_info" />
         </receiver>
 
         <!-- Shares the prayer calendar (.ics) the app makes in its cache with a calendar app. -->

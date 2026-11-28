@@ -742,6 +742,32 @@
     <string name="widget_addAndroid" formatted="false">Touch and hold your home screen, tap Widgets and find Prayer Times Asia.</string>
     <string name="widget_setLocation" formatted="false">Open Prayer Times Asia to set your location.</string>
     <string name="widget_thisWeek" formatted="false">Imsak and iftar this week</string>
+    <string name="widget_nowNextName" formatted="false">Now and Next</string>
+    <string name="widget_nowNextHint" formatted="false">The prayer you are in, and the one after it.</string>
+    <string name="widget_currentName" formatted="false">Current prayer</string>
+    <string name="widget_currentHint" formatted="false">The prayer time you are in now, from start to end.</string>
+    <string name="widget_dayBarName" formatted="false">Day bar</string>
+    <string name="widget_dayBarHint" formatted="false">Today\'s five prayers on one line, with where you are now.</string>
+    <string name="widget_nextName" formatted="false">Next prayer</string>
+    <string name="widget_nextHint" formatted="false">The next prayer and how long to wait.</string>
+    <string name="widget_timetableName" formatted="false">Today\'s timetable</string>
+    <string name="widget_timetableHint" formatted="false">All of today\'s prayers, with a mark for each one that has passed.</string>
+    <string name="widget_hijriName" formatted="false">Hijri calendar</string>
+    <string name="widget_hijriHint" formatted="false">The Hijri month with Ramadan and Eid marked. Dates are expected, so follow your local religious authority.</string>
+    <string name="widget_lockName" formatted="false">Next prayer on Lock Screen</string>
+    <string name="widget_lockHint" formatted="false">The next prayer on your Lock Screen.</string>
+    <string name="widget_then" formatted="false">THEN</string>
+    <string name="widget_untilTime" formatted="false">until {time}</string>
+    <string name="widget_range" formatted="false">{from} to {to}</string>
+    <string name="widget_timeLeft" formatted="false">{time} left</string>
+    <string name="widget_today" formatted="false">Today</string>
+    <string name="widget_passed" formatted="false">Time has passed</string>
+    <string name="widget_hijriExpected" formatted="false">Expected dates</string>
+    <string name="widget_ramadanIn" formatted="false">Ramadan in {n} days</string>
+    <string name="widget_ramadanIn_one" formatted="false">Ramadan in {n} day</string>
+    <string name="widget_eid" formatted="false">Eid</string>
+    <string name="widget_nuzul" formatted="false">Nuzul al-Quran</string>
+    <string name="widget_lastTen" formatted="false">Last ten days</string>
     <string name="verify_title" formatted="false">Help verify times</string>
     <string name="verify_howTo" formatted="false">How to contribute</string>
     <string name="verify_timetable" formatted="false">Masjid timetable</string>
