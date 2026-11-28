@@ -7,7 +7,7 @@ import * as Falak from '../core/falak'
 import { compassPoint, qiblaBearing } from '../core/geo'
 import type { Place } from '../core/place'
 import type { Prayer } from '../core/prayer'
-import { daysBetween, noonDaysAfter, zoned, zonedTime } from '../core/tz'
+import { daysBetween, noonDaysAfter, startOfDay, zoned, zonedTime } from '../core/tz'
 import { readString, writeString } from '../services/storage'
 import { store, useNow, useStore } from '../services/store'
 import { fmtDate, openSheet, Segmented, Sheet } from './common'
@@ -92,12 +92,38 @@ function skyColours(alt: number, stage: Falak.SkyStage, k: number): [string, str
   return [rgb(night), rgb([24, 36, 74])]
 }
 
+/** 0 = new moon, 0.5 = full, from the average length of a lunar month (good to about a day). */
+function moonPhase(t: number): number {
+  const synodic = 29.530588853 * 86_400_000
+  const newMoon = Date.UTC(2000, 0, 6, 18, 14)
+  return (((t - newMoon) % synodic) + synodic) % synodic / synodic
+}
+
+function MoonShape({ x, y, r, phase }: { x: number; y: number; r: number; phase: number }) {
+  const waxing = phase < 0.5
+  const k = Math.cos(2 * Math.PI * phase) // 1 new .. -1 full
+  const rx = Math.abs(k) * r
+  const lit = `M0 ${-r} A${r} ${r} 0 0 1 0 ${r} A${rx} ${r} 0 0 ${k > 0 ? 0 : 1} 0 ${-r}Z`
+  return (
+    <g transform={`translate(${x} ${y})${waxing ? '' : ' scale(-1 1)'}`}>
+      <circle r={r} fill="#fff" opacity=".12" />
+      <path d={lit} fill="#f1efe6" />
+    </g>
+  )
+}
+
 function SkySlider({ place, now }: { place: Place; now: number }) {
   const day = store.day(now)
+<<<<<<< HEAD
   // The slider always starts at the current time and follows it until you drag it.
   // It lives only while the Sky tab is open, so coming back later starts at now again.
   const range = day ? Falak.skyRange(day.times.fajr, day.times.isha, now) : { from: now - 12 * 3_600_000, to: now + 12 * 3_600_000 }
   const t0 = range.from, t1 = range.to
+=======
+  // The whole day, midnight to midnight, so the night can be explored too.
+  const t0 = day ? startOfDay(day.times.dhuhr, store.timeZone) : now - 12 * 3_600_000
+  const t1 = day ? startOfDay(t0 + 36 * 3_600_000, store.timeZone) : now + 12 * 3_600_000
+>>>>>>> 3a81e5c (Falak sky slider covers the full 24 hours, with small surprises (moon phase, last third of the night, shooting star, midday stillness))
   const [picked, setPicked] = useState<number | null>(null)
   const t = picked ?? now
   if (!day) return null
@@ -125,10 +151,25 @@ function SkySlider({ place, now }: { place: Place; now: number }) {
     dhuhr: tr('falak.stageDhuhrSay'), asr: tr('falak.stageAsrSay'), maghrib: tr('falak.stageMaghribSay'), isha: tr('falak.stageIshaSay'),
   }[stage]
   const dark = sun.altitude <= 0 && stage !== 'fajr'
+<<<<<<< HEAD
   // In daylight the sky takes the look's own colours, as in the mockup. Dawn, dusk and night keep their real colours.
   const lit = sun.altitude > 0 && stage !== 'fajr' && stage !== 'maghrib'
   const ink = lit ? 'var(--s-st)' : '#fff'
   const stars = dark ? Array.from({ length: 14 }, (_, i) => <circle cx={(i * 73) % W} cy={(i * 37) % 100 + 8} r="1.2" fill="#fff" opacity=".7" />) : null
+=======
+  // Small surprises while you slide. Midday stillness, the last third of the night, a shooting star in the deepest night.
+  const nightStart = times.maghrib - 24 * 3_600_000
+  const lastThirdFrom = times.fajr - (times.fajr - nightStart) / 3
+  const midNight = (nightStart + times.fajr) / 2
+  const lastThird = t >= lastThirdFrom && t < times.fajr
+  const atNoon = Math.abs(t - plan.noon) <= 15 * 60_000
+  const meteor = dark && Math.abs(t - midNight) <= 30 * 60_000
+  const stars = dark ? Array.from({ length: lastThird ? 26 : 14 }, (_, i) => <circle cx={(i * 73) % W} cy={(i * 37) % 100 + 8} r={lastThird ? 1.6 : 1.2} fill="#fff" opacity={lastThird ? 0.95 : 0.7} />) : null
+  // The moon shows today's real phase and crosses the night sky, east to west.
+  const nightP = ((t - times.maghrib + 24 * 3_600_000) % (24 * 3_600_000)) / (times.fajr + 24 * 3_600_000 - times.maghrib)
+  const moon = dark && nightP >= 0 && nightP <= 1 ? { x: 44 + (W - 88) * nightP, y: GY - 34 - (GY - 64) * Math.sin(Math.PI * nightP), phase: moonPhase(t) } : null
+  const sayText = lastThird ? tr('falak.lastThirdSay') : atNoon ? tr('falak.noonSay') : say
+>>>>>>> 3a81e5c (Falak sky slider covers the full 24 hours, with small surprises (moon phase, last third of the night, shooting star, midday stillness))
   const minutes = Math.round((t1 - t0) / 60_000)
   const shadowEnd = STICK_X + (morning ? 1 : -1) * shadow
   return (
@@ -140,6 +181,8 @@ function SkySlider({ place, now }: { place: Place; now: number }) {
         </defs>
         <rect width={W} height={H} fill="url(#falak-sky)" />
         {stars}
+        {moon && <MoonShape x={moon.x} y={moon.y} r={9} phase={moon.phase} />}
+        {meteor && <line key={Math.round(t / 60_000 / 5)} class="falak-meteor" x1="250" y1="22" x2="214" y2="46" stroke="#fff" stroke-width="1.6" stroke-linecap="round" />}
         {stage === 'fajr' && <ellipse cx="50" cy={GY} rx={110 + 60 * k} ry={8 + 8 * k} fill="#fff" opacity={0.5 + 0.35 * k} />}
         {stage === 'maghrib' && <ellipse cx={W - 50} cy={GY} rx="150" ry={22 * (1 - k)} fill="#ff5a2a" opacity={0.75 * (1 - k)} />}
         <path d={`M16 ${GY} Q${W / 2} -20 ${W - 16} ${GY}`} fill="none" style={{ stroke: ink }} stroke-opacity={lit ? 0.6 : 0.3} stroke-width="1.2" stroke-dasharray="3 5" />
@@ -166,7 +209,8 @@ function SkySlider({ place, now }: { place: Place; now: number }) {
       <div class="sky-info">
         <div class="sky-time">{store.formatted(t)}</div>
         <div class="sky-name">{title}</div>
-        <p class="secondary">{say}</p>
+        <p class="secondary">{sayText}</p>
+        {lastThird && <Hadith id="lastThird" variant="line" />}
         <input type="range" min="0" max={minutes} step="1" value={Math.round((t - t0) / 60_000)} aria-label={tr('falak.slideSun')}
           onInput={(e) => setPicked(t0 + Number((e.target as HTMLInputElement).value) * 60_000)} />
         {picked !== null && <button type="button" class="sky-now" onClick={() => setPicked(null)}>{tr('common.now')}</button>}

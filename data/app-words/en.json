@@ -249,6 +249,8 @@
   "falak.stageAsrSay": "The shadow has grown one length longer than at noon.",
   "falak.stageMaghribSay": "The sun has fully set. A red glow stays in the west.",
   "falak.stageIshaSay": "The red glow is gone. The sky is dark.",
+  "falak.lastThirdSay": "The last third of the night. The stars are at their brightest. A good time to ask.",
+  "falak.noonSay": "The sun is at its highest and the shadow is at its shortest. This is why Dhuhr waits.",
   "falak.stepsTitle": "Shadow steps",
   "falak.stepsSub": "Find {name} with your own shadow",
   "falak.cameraTitle": "Shadow camera",

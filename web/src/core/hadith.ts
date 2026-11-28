@@ -10,7 +10,7 @@
 export type HadithId =
   | 'fixedTimes' | 'coolPrayers' | 'syuruk' | 'river' | 'illness'
   | 'fajrRakaat' | 'nightPrayer' | 'whiteDays' | 'monThu' | 'azan' | 'iftar'
-  | 'falakJibril' | 'falakDawn' | 'falakFeet'
+  | 'falakJibril' | 'falakDawn' | 'falakFeet' | 'lastThird'
 
 type Words = { en: string; ms: string; id: string }
 
@@ -177,6 +177,17 @@ export const HADITH: Record<HadithId, Hadith> = {
     },
     source: prophet(MUSLIM),
     ref: 'Sahih Muslim 1094b',
+  },
+  lastThird: {
+    id: 'lastThird',
+    arabic: 'مَنْ يَدْعُونِي فَأَسْتَجِيبَ لَهُ',
+    meaning: {
+      en: 'Our Lord comes down to the lowest heaven when the last third of the night remains, and says, who calls on Me so I may answer him?',
+      ms: 'Tuhan kita turun ke langit dunia ketika tinggal sepertiga malam terakhir, lalu berfirman, siapa yang berdoa kepada-Ku, nescaya Aku perkenankan.',
+      id: 'Tuhan kita turun ke langit dunia ketika tersisa sepertiga malam terakhir, lalu berfirman, siapa yang berdoa kepada-Ku, niscaya Aku kabulkan.',
+    },
+    source: prophet(BUKHARI),
+    ref: 'Sahih al Bukhari 1145 (also Sahih Muslim 758a). Arabic is the clause quoted from the full hadith',
   },
   falakFeet: {
     id: 'falakFeet',

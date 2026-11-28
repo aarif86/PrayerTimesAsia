@@ -251,6 +251,8 @@
     <string name="falak_stageAsrSay" formatted="false">The shadow has grown one length longer than at noon.</string>
     <string name="falak_stageMaghribSay" formatted="false">The sun has fully set. A red glow stays in the west.</string>
     <string name="falak_stageIshaSay" formatted="false">The red glow is gone. The sky is dark.</string>
+    <string name="falak_lastThirdSay" formatted="false">The last third of the night. The stars are at their brightest. A good time to ask.</string>
+    <string name="falak_noonSay" formatted="false">The sun is at its highest and the shadow is at its shortest. This is why Dhuhr waits.</string>
     <string name="falak_stepsTitle" formatted="false">Shadow steps</string>
     <string name="falak_stepsSub" formatted="false">Find {name} with your own shadow</string>
     <string name="falak_cameraTitle" formatted="false">Shadow camera</string>

@@ -6,7 +6,7 @@ package com.prayertimesasia.core
  * web/src/core/hadith.ts, keep the three in step (ios Core/HadithContent.swift).
  */
 /** [key] is the id the web and iPhone use, kept in the closed list. */
-enum class HadithId(val key: String) { FIXED_TIMES("fixedTimes"), COOL_PRAYERS("coolPrayers"), SYURUK("syuruk"), RIVER("river"), ILLNESS("illness"), FAJR_RAKAAT("fajrRakaat"), NIGHT_PRAYER("nightPrayer"), WHITE_DAYS("whiteDays"), MON_THU("monThu"), AZAN("azan"), IFTAR("iftar"), FALAK_JIBRIL("falakJibril"), FALAK_DAWN("falakDawn"), FALAK_FEET("falakFeet") }
+enum class HadithId(val key: String) { FIXED_TIMES("fixedTimes"), COOL_PRAYERS("coolPrayers"), SYURUK("syuruk"), RIVER("river"), ILLNESS("illness"), FAJR_RAKAAT("fajrRakaat"), NIGHT_PRAYER("nightPrayer"), WHITE_DAYS("whiteDays"), MON_THU("monThu"), AZAN("azan"), IFTAR("iftar"), FALAK_JIBRIL("falakJibril"), FALAK_DAWN("falakDawn"), FALAK_FEET("falakFeet"), LAST_THIRD("lastThird") }
 
 data class Hadith(
     val id: HadithId,
@@ -124,6 +124,13 @@ data class Hadith(
                 Doa.Words("The shadow when the Prophet ﷺ prayed Dhuhr in summer was three to five feet, and in winter five to seven feet.", "Ukuran bayang ketika Rasulullah ﷺ solat Zohor pada musim panas ialah tiga hingga lima tapak kaki, dan pada musim sejuk lima hingga tujuh tapak kaki.", "Ukuran bayangan ketika Rasulullah ﷺ salat Zuhur pada musim panas adalah tiga sampai lima telapak kaki, dan pada musim dingin lima sampai tujuh telapak kaki."),
                 Doa.Words("Ibn Masud, narrated by Abu Dawud", "Ibn Masud, riwayat Abu Daud", "Ibnu Masud, riwayat Abu Dawud"),
                 "Sunan Abi Dawud 400 (Sahih, al Albani)",
+            ),
+            Hadith(
+                HadithId.LAST_THIRD,
+                "مَنْ يَدْعُونِي فَأَسْتَجِيبَ لَهُ",
+                Doa.Words("Our Lord comes down to the lowest heaven when the last third of the night remains, and says, who calls on Me so I may answer him?", "Tuhan kita turun ke langit dunia ketika tinggal sepertiga malam terakhir, lalu berfirman, siapa yang berdoa kepada-Ku, nescaya Aku perkenankan.", "Tuhan kita turun ke langit dunia ketika tersisa sepertiga malam terakhir, lalu berfirman, siapa yang berdoa kepada-Ku, niscaya Aku kabulkan."),
+                Doa.Words("The Prophet ﷺ, narrated by al Bukhari", "Sabda Nabi ﷺ, riwayat al Bukhari", "Sabda Nabi ﷺ, riwayat al Bukhari"),
+                "Sahih al Bukhari 1145 (also Sahih Muslim 758a). Arabic is the clause quoted from the full hadith",
             ),
         )
     }
