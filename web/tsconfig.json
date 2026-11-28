@@ -16,5 +16,5 @@
     "types": ["vite/client", "node"],
     "paths": { "react": ["./node_modules/preact/compat/"], "react-dom": ["./node_modules/preact/compat/"] }
   },
-  "include": ["src", "tests", "vite.config.ts"]
+  "include": ["src", "tests", "journey", "vite.config.ts"]
 }

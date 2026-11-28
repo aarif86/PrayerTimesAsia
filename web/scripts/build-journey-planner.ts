@@ -114,7 +114,7 @@ ${THEME}
 <h1>${esc(w.h1)}</h1>
 <p class="lead">${esc(w.lead)}</p>
 <p class="date">${esc(w.steps)} ${esc(w.footFollow)}</p>
-<div class="planner" id="planner"><noscript><p class="card">JavaScript is needed for this planner. It runs on your device and sends nothing anywhere.</p></noscript></div>
+<div class="planner" id="planner"><noscript><p class="card">${esc(w.noscript)}</p></noscript></div>
 </main>
 <footer><div class="wrap"><div>${esc(w.footFollow)} <a href="${BASE}about.html">${esc(w.about)}</a> · <a href="${BASE}sources.html">${esc(w.sources)}</a> · <a href="${BASE}privacy.html">${esc(w.privacy)}</a></div>
 <div>${esc(w.nasar)} <a href="https://nasardigital.com/">Nasar Digital</a></div></div></footer>

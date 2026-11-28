@@ -105,6 +105,7 @@ function wire() {
     input.addEventListener('input', () => {
       if (which === 'from') legs[i].from = null; else { legs[i].to = null; if (legs[i + 1]) legs[i + 1].from = null }
       hits = searchCities(input.value, 8); cur = -1
+      if (which === 'to') render2(i)
       if (input.value.trim()) paint(); else close()
     })
     input.addEventListener('keydown', (e) => {
@@ -131,7 +132,7 @@ function wire() {
     legs.push({ from: last.to, to: null, depart: '', arrive: '' }); render()
     root.querySelectorAll<HTMLInputElement>('.leg:last-of-type .cf:not(.fixed) input')[0]?.focus()
   })
-  root.querySelectorAll<HTMLElement>('[data-rm]').forEach((b) => b.addEventListener('click', () => { legs.splice(Number(b.dataset.rm), 1); render() }))
+  root.querySelectorAll<HTMLElement>('[data-rm]').forEach((b) => b.addEventListener('click', () => { legs.splice(Number(b.dataset.rm), 1); chain(); render() }))
   root.querySelector('#clr')!.addEventListener('click', () => { legs = [{ from: null, to: null, depart: '', arrive: '' }]; history.replaceState(null, '', location.pathname); render() })
   root.querySelector('#ex')!.addEventListener('click', example)
   root.querySelector('#f')!.addEventListener('submit', (e) => { e.preventDefault(); show(true) })
@@ -147,6 +148,8 @@ function render2(i: number) {
   const next = root.querySelectorAll<HTMLElement>('.leg')[i + 1]
   if (next) { next.querySelector('.cf.fixed b')!.textContent = l.to ? label(l.to) : ''; next.querySelector('.cf.fixed small')!.textContent = fill(W.connecting, l.to?.name ?? '') ; const s = next.querySelectorAll<HTMLElement>('.tf small')[0]; s.textContent = l.to ? fill(W.localHint, l.to.name) : W.cityHint }
 }
+/** Every flight after the first starts where the one before landed. */
+function chain() { for (let k = 1; k < legs.length; k++) legs[k].from = legs[k - 1].to }
 function keepTimes() { /* times stay as typed, they are read when the plan is made */ }
 
 const find = (name: string, cc: string) => CITIES.find((c) => c.name === name && c.countryCode === cc) ?? null
@@ -165,6 +168,7 @@ function example() {
 
 // ---- reading the form --------------------------------------------------------------------------------------------------
 function readLegs(): { legs: Leg[] } | { error: string } {
+  chain()
   const out: Leg[] = []
   for (const l of legs) {
     if (!l.from || !l.to) return { error: W.errCity }
@@ -179,8 +183,10 @@ function readLegs(): { legs: Leg[] } | { error: string } {
     if (arriveMs <= departMs) return { error: W.errWhen }
     if (arriveMs - departMs > 30 * 3_600_000) return { error: W.errTooLong }
     if (out.length && departMs < out[out.length - 1].arriveMs) return { error: W.errLayover }
+    if (out.length && departMs - out[out.length - 1].arriveMs > 72 * 3_600_000) return { error: W.errStop }
     out.push({ from, to, departMs, arriveMs })
   }
+  if (out[out.length - 1].arriveMs - out[0].departMs > 10 * 86_400_000) return { error: W.errStop }
   return { legs: out }
 }
 
@@ -206,7 +212,7 @@ function picture(ls: Leg[], runs: PrayerRun[], dep: number, arr: number): string
   </div><p class="note">${esc(W.picNote)}</p>`
 }
 
-function partLine(ls: Leg[], r: PrayerRun, p: PrayerRun['parts'][number]): string {
+function partLine(ls: Leg[], p: PrayerRun['parts'][number]): string {
   if (p.kind === 'before') return fill(W.pBefore, p.stop!.name, clock(p.fromMs, p.stop!.tz), clock(p.toMs, p.stop!.tz))
   if (p.kind === 'after') return fill(W.pAfter, p.stop!.name, clock(p.fromMs, p.stop!.tz), clock(p.toMs, p.stop!.tz))
   if (p.kind === 'layover') return fill(W.pLayover, p.stop!.name, clock(p.fromMs, p.stop!.tz), clock(p.toMs, p.stop!.tz))
@@ -226,7 +232,7 @@ function card(ls: Leg[], r: PrayerRun): string {
       const q = Math.round(qiblaBearing(p.pos))
       extra = `<small>${esc(fill(W.qibla, String(q), compass(q)))}</small>`
     }
-    return `<li class="${p.kind}">${esc(partLine(ls, r, p))}${extra}</li>`
+    return `<li class="${p.kind}">${esc(partLine(ls, p))}${extra}</li>`
   }).join('')
   const notes = [r.startedBeforeTakeoff ? W.startedEarlier : '', r.endsAfterLanding ? W.continues : ''].filter(Boolean)
   return `<article class="card pc ${badge[0]}" style="--pc:${COLORS[r.prayer]}">
@@ -274,6 +280,7 @@ function restore() {
     const next: LegState[] = rows.map(([a, b, d, e]) => ({ from: byId.get(String(a)) ?? null, to: byId.get(String(b)) ?? null, depart: String(d), arrive: String(e) }))
     if (next.some((l) => !l.from || !l.to)) return false
     legs = next
+    chain()
     return true
   } catch { return false }
 }

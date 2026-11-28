@@ -18,7 +18,7 @@ export interface JWords {
   cityPlaceholder: string; noCity: string; addFlight: string; removeFlight: string; example: string; clear: string; show: string
   connecting: string
   /** Problems */
-  errCity: string; errTimes: string; errTooLong: string; errLayover: string; errWhen: string
+  errCity: string; errTimes: string; errTooLong: string; errLayover: string; errWhen: string; errStop: string; noscript: string
   /** Results */
   summary: string; picH: string; picNote: string; rowWhere: string; rowPrayer: string; air: string; ground: string; layover: string
   prayersH: string; noFard: string; begins: string; ends: string; badgeAir: string; badgePart: string; badgeGround: string
@@ -46,6 +46,8 @@ const EN: JWords = {
   errCity: 'Please choose a city from the list for every flight.', errTimes: 'Please fill in the takeoff and landing times.',
   errTooLong: 'That flight looks longer than 30 hours. Please check the times.', errLayover: 'The next flight must take off after the one before lands.',
   errWhen: 'Landing must be after takeoff. Please check the times and cities.',
+  errStop: 'A stopover can be up to 3 days and a whole trip up to 10 days. Please check the dates.',
+  noscript: 'JavaScript is needed for this planner. It runs on your device and sends nothing anywhere.',
   summary: '{a} in the air · {b} from takeoff to landing',
   picH: 'Your journey at a glance', picNote: 'Times along the bar are in your first city. The bar shows where you are and which prayer time is in force.',
   rowWhere: 'Where you are', rowPrayer: 'Prayer time in force', air: 'In the air', ground: 'On the ground', layover: 'Stopover',
@@ -79,6 +81,8 @@ const MS: JWords = {
   errCity: 'Sila pilih bandar daripada senarai untuk setiap penerbangan.', errTimes: 'Sila isi masa berlepas dan masa mendarat.',
   errTooLong: 'Penerbangan itu nampaknya lebih 30 jam. Sila semak masa.', errLayover: 'Penerbangan seterusnya mesti berlepas selepas penerbangan sebelumnya mendarat.',
   errWhen: 'Masa mendarat mesti selepas masa berlepas. Sila semak masa dan bandar.',
+  errStop: 'Transit boleh sehingga 3 hari dan seluruh perjalanan sehingga 10 hari. Sila semak tarikh.',
+  noscript: 'JavaScript diperlukan untuk perancang ini. Ia berjalan pada peranti anda dan tidak menghantar apa-apa ke mana-mana.',
   summary: '{a} di udara · {b} dari berlepas hingga mendarat',
   picH: 'Perjalanan anda sekilas pandang', picNote: 'Masa pada bar ialah waktu di bandar pertama anda. Bar menunjukkan di mana anda berada dan waktu solat yang sedang berjalan.',
   rowWhere: 'Anda berada di', rowPrayer: 'Waktu solat sedang berjalan', air: 'Di udara', ground: 'Di darat', layover: 'Transit',
@@ -112,6 +116,8 @@ const ID: JWords = {
   errCity: 'Silakan pilih kota dari daftar untuk setiap penerbangan.', errTimes: 'Silakan isi jam lepas landas dan jam mendarat.',
   errTooLong: 'Penerbangan itu tampaknya lebih dari 30 jam. Silakan periksa jamnya.', errLayover: 'Penerbangan berikutnya harus lepas landas setelah penerbangan sebelumnya mendarat.',
   errWhen: 'Jam mendarat harus setelah jam lepas landas. Silakan periksa jam dan kotanya.',
+  errStop: 'Transit bisa sampai 3 hari dan seluruh perjalanan sampai 10 hari. Silakan periksa tanggalnya.',
+  noscript: 'JavaScript diperlukan untuk perencana ini. Perencana ini berjalan di perangkat Anda dan tidak mengirim apa pun ke mana pun.',
   summary: '{a} di udara · {b} dari lepas landas sampai mendarat',
   picH: 'Perjalanan Anda sekilas', picNote: 'Jam pada bilah adalah jam di kota pertama Anda. Bilah menunjukkan di mana Anda berada dan waktu salat yang sedang berjalan.',
   rowWhere: 'Posisi Anda', rowPrayer: 'Waktu salat yang berjalan', air: 'Di udara', ground: 'Di darat', layover: 'Transit',
