@@ -41,7 +41,7 @@ A nearby masjid's own timetable (data/mosques.json) still comes before all of th
 | Bhutan | Standard method | Karachi | Hanafi | method's own | The app uses the Karachi method, the one most masjids across South Asia follow. |
 | Sri Lanka | Standard method | Karachi | Shafi'i | method's own | The app uses the Karachi method, the one most masjids across South Asia follow. |
 | Maldives | Standard method | Karachi | Shafi'i | method's own | The app uses the Karachi method, the one most masjids across South Asia follow. |
-| Kazakhstan | Standard method | Muslim World League | Hanafi | angle |  |
+| Kazakhstan | the Spiritual Administration of Muslims of Kazakhstan, QMDB (authority's own method) | QMDB Kazakhstan | Hanafi | angle |  |
 | Uzbekistan | Standard method | Muslim World League | Hanafi | angle |  |
 | Kyrgyzstan | Standard method | Muslim World League | Hanafi | angle |  |
 | Tajikistan | Standard method | Muslim World League | Hanafi | angle |  |

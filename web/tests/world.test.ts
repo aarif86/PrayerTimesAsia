@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { compute } from '../src/core/engine'
-import { METHODS, methodWithId } from '../src/core/methods'
+import { METHODS, methodWithId, withHighLatitude } from '../src/core/methods'
 import { countryForTimeZone, methodHere, PROFILES, profileFor, profileMethod, sourceSummary, timeZoneForPlace } from '../src/core/regions'
 import { searchCities } from '../src/services/cities'
 import { bruneiFeed, officialSourceFor, officialSummary, parseLondon } from '../src/core/official'
@@ -45,6 +45,25 @@ describe('Countries worldwide', () => {
       ['3:09', '5:13', '12:53', '16:56', '20:31', '22:17'])
     check(compute(2026, 1, 1, { latitude: 41.3275, longitude: 19.8187 }, METHODS.kmsh, 'standard'), 'Europe/Tirane',
       ['5:27', '7:00', '11:49', '14:08', '16:28', '17:55'])
+  })
+
+  it('matches the Kazakhstan board formula in Almaty and, with its northern minutes, in Astana', () => {
+    // Reference days made with the board's own PrayTimes script (ISNA, Hanafi, angle based, UTC+5), 15th of the month, minutes after midnight.
+    const days: [number, number, number, number[]][] = [
+      [43.2389, 76.8897, 1, [358, 439, 725, 903, 1005, 1086]], [43.2389, 76.8897, 6, [143, 249, 716, 1035, 1177, 1283]],
+      [43.2389, 76.8897, 9, [252, 329, 711, 975, 1086, 1163]], [51.1694, 71.4491, 1, [392, 487, 749, 894, 1001, 1095]],
+      [51.1694, 71.4491, 6, [127, 233, 740, 1076, 1236, 1343]], [51.1694, 71.4491, 9, [255, 344, 734, 994, 1114, 1203]],
+    ]
+    const keys = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
+    const minutesIn = (ms: number) => {
+      const p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Almaty', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(ms))
+      return Number(p[0].value) * 60 + Number(p[2].value)
+    }
+    for (const [latitude, longitude, month, ref] of days) {
+      const day = compute(2026, month, 15, { latitude, longitude }, withHighLatitude(METHODS.qmdb, 'angle'), 'hanafi')
+      keys.forEach((k, i) => expect(Math.abs(minutesIn(day.times[k]) - ref[i]), `${latitude} ${month} ${k}`).toBeLessThanOrEqual(1))
+    }
+    expect(profileFor('KZ')).toMatchObject({ methodID: 'qmdb', source: 'authority', asr: 'hanafi' })
   })
 
   it('uses a northern method in the UK and says why', () => {

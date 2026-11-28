@@ -30,7 +30,7 @@ enum Countries {
         CountryProfile(code: "BT", name: "Bhutan", methodID: "karachi", asr: .hanafi, naming: .southAsian, source: .standard, authority: nil, note: "The app uses the Karachi method, the one most masjids across South Asia follow.", highLatitude: nil),
         CountryProfile(code: "LK", name: "Sri Lanka", methodID: "karachi", asr: .standard, naming: .southAsian, source: .standard, authority: nil, note: "The app uses the Karachi method, the one most masjids across South Asia follow.", highLatitude: nil),
         CountryProfile(code: "MV", name: "Maldives", methodID: "karachi", asr: .standard, naming: .southAsian, source: .standard, authority: nil, note: "The app uses the Karachi method, the one most masjids across South Asia follow.", highLatitude: nil),
-        CountryProfile(code: "KZ", name: "Kazakhstan", methodID: "mwl", asr: .hanafi, naming: .international, source: .standard, authority: nil, note: nil, highLatitude: .angle),
+        CountryProfile(code: "KZ", name: "Kazakhstan", methodID: "qmdb", asr: .hanafi, naming: .international, source: .authority, authority: "the Spiritual Administration of Muslims of Kazakhstan, QMDB", note: nil, highLatitude: .angle),
         CountryProfile(code: "UZ", name: "Uzbekistan", methodID: "mwl", asr: .hanafi, naming: .international, source: .standard, authority: nil, note: nil, highLatitude: .angle),
         CountryProfile(code: "KG", name: "Kyrgyzstan", methodID: "mwl", asr: .hanafi, naming: .international, source: .standard, authority: nil, note: nil, highLatitude: .angle),
         CountryProfile(code: "TJ", name: "Tajikistan", methodID: "mwl", asr: .hanafi, naming: .international, source: .standard, authority: nil, note: nil, highLatitude: .angle),

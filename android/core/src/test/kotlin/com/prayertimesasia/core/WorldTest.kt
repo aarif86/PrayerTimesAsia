@@ -19,6 +19,7 @@ class WorldTest {
         assertEquals("moonsighting", AsiaRegions.profile("GB")?.method?.id)
         assertEquals("icbih", AsiaRegions.profile("BA")?.method?.id)
         assertEquals("kmsh", AsiaRegions.profile("AL")?.method?.id)
+        assertEquals("qmdb", AsiaRegions.profile("KZ")?.method?.id)
         assertEquals(AsrSchool.STANDARD, AsiaRegions.profile("BA")?.asr)
         assertEquals("FR", AsiaRegions.countryCode("Europe/Paris"))
     }

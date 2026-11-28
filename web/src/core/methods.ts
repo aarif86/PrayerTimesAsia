@@ -20,6 +20,8 @@ export interface CalculationMethod {
   /** Sun depression for Maghrib; null means at sunset. */
   maghribAngle: number | null
   offsets: Partial<Record<Prayer, number>>
+  /** Replaces the offsets for these prayers at or north of NORTH_FROM_LATITUDE (the Kazakhstan board's own rule). */
+  northOffsets: Partial<Record<Prayer, number>>
   matchesOfficialTable: boolean
   note: string
   /**
@@ -31,6 +33,9 @@ export interface CalculationMethod {
    */
   highLatitude: HighLatitudeRule
 }
+
+/** Latitude from which a method's northOffsets apply. */
+export const NORTH_FROM_LATITUDE = 48
 
 export type HighLatitudeRule = 'fallback' | 'angle' | 'seventh' | 'middle' | 'moonsighting'
 
@@ -48,9 +53,9 @@ export function parameterSummary(m: CalculationMethod): string {
   return `Fajr ${fmt(m.fajrAngle)}° · ${isha}`
 }
 
-const M = (m: Omit<CalculationMethod, 'ramadanIshaInterval' | 'maghribAngle' | 'ishaInterval' | 'highLatitude'> &
-  Partial<Pick<CalculationMethod, 'ramadanIshaInterval' | 'maghribAngle' | 'ishaInterval' | 'highLatitude'>>): CalculationMethod => ({
-  ishaInterval: null, ramadanIshaInterval: null, maghribAngle: null, highLatitude: 'fallback', ...m,
+const M = (m: Omit<CalculationMethod, 'ramadanIshaInterval' | 'maghribAngle' | 'ishaInterval' | 'highLatitude' | 'northOffsets'> &
+  Partial<Pick<CalculationMethod, 'ramadanIshaInterval' | 'maghribAngle' | 'ishaInterval' | 'highLatitude' | 'northOffsets'>>): CalculationMethod => ({
+  ishaInterval: null, ramadanIshaInterval: null, maghribAngle: null, highLatitude: 'fallback', northOffsets: {}, ...m,
 })
 
 export const METHODS = {
@@ -165,6 +170,12 @@ export const METHODS = {
     offsets: { sunrise: -7.75, dhuhr: 4.75, asr: 4.125, maghrib: 7.625, isha: 1.125 }, matchesOfficialTable: false,
     note: "The method of the Muslim Community of Albania, KMSH (Fajr 18°, Isha 17°, Asr at one shadow length), with minutes fitted on its 2026 Tirana calendar. Never earlier than the published time.",
   }),
+  qmdb: M({
+    id: 'qmdb', name: 'QMDB · Kazakhstan', shortName: 'QMDB', fajrAngle: 15, ishaAngle: 15,
+    offsets: { fajr: -0.5, sunrise: -3.5, dhuhr: 2.5, asr: 2.5, maghrib: 2.5, isha: -0.5 },
+    northOffsets: { sunrise: -5.5, dhuhr: 4.5, asr: 4.5, maghrib: 4.5 }, matchesOfficialTable: false, highLatitude: 'angle',
+    note: "The method of the Spiritual Administration of Muslims of Kazakhstan (QMDB), with Fajr and Isha at 15°, Asr at two shadow lengths, with minutes added at midday, Asr and sunset and taken off at sunrise, more of them from latitude 48° north. Checked against its published formula for a full year.",
+  }),
   jordan: M({
     id: 'jordan', name: 'Jordan', shortName: 'Jordan', fajrAngle: 18, ishaAngle: 18,
     offsets: {}, matchesOfficialTable: false,
@@ -176,7 +187,7 @@ export const ALL_METHODS: CalculationMethod[] = [
   METHODS.muis, METHODS.jakim, METHODS.kemenag, METHODS.sea, METHODS.mwl, METHODS.karachi,
   METHODS.ummalqura, METHODS.dubai, METHODS.qatar, METHODS.kuwait, METHODS.diyanet, METHODS.tehran, METHODS.egyptian,
   METHODS.isna, METHODS.moonsighting, METHODS.uoif, METHODS.russia, METHODS.algeria, METHODS.tunisia, METHODS.morocco,
-  METHODS.jordan, METHODS.icbih, METHODS.kmsh,
+  METHODS.jordan, METHODS.icbih, METHODS.kmsh, METHODS.qmdb,
 ]
 
 export function methodWithId(id: string | null | undefined): CalculationMethod | undefined {

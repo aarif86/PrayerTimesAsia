@@ -42,6 +42,8 @@ data class CalculationMethod(
     val note: String,
     /** What to do on nights when twilight barely ends; see [HighLatitudeRule]. */
     val highLatitude: HighLatitudeRule = HighLatitudeRule.FALLBACK,
+    /** Replaces [offsets] for these prayers at or north of [NORTH_FROM_LATITUDE] (the Kazakhstan board's own rule). */
+    val northOffsets: Map<Prayer, Double> = emptyMap(),
 ) {
     /** The same method with another high-latitude rule (a country's own, see Countries.kt). */
     fun withHighLatitude(rule: HighLatitudeRule?): CalculationMethod =
@@ -172,9 +174,19 @@ data class CalculationMethod(
                 Prayer.ISHA to 1.125), false,
             "The method of the Muslim Community of Albania, KMSH (Fajr 18°, Isha 17°, Asr at one shadow length), with minutes fitted on its 2026 Tirana calendar. Never earlier than the published time.")
 
+        const val NORTH_FROM_LATITUDE = 48.0
+
+        val QMDB = CalculationMethod(
+            "qmdb", "QMDB · Kazakhstan", "QMDB", 15.0, 15.0, null, null, null,
+            mapOf(Prayer.FAJR to -0.5, Prayer.SUNRISE to -3.5, Prayer.DHUHR to 2.5, Prayer.ASR to 2.5,
+                Prayer.MAGHRIB to 2.5, Prayer.ISHA to -0.5), false,
+            "The method of the Spiritual Administration of Muslims of Kazakhstan (QMDB), with Fajr and Isha at 15°, Asr at two shadow lengths, with minutes added at midday, Asr and sunset and taken off at sunrise, more of them from latitude 48° north. Checked against its published formula for a full year.",
+            HighLatitudeRule.ANGLE,
+            mapOf(Prayer.SUNRISE to -5.5, Prayer.DHUHR to 4.5, Prayer.ASR to 4.5, Prayer.MAGHRIB to 4.5))
+
         val all: List<CalculationMethod> = listOf(
             MUIS, JAKIM, KEMENAG, SOUTHEAST_ASIA, MWL, KARACHI, UMM_AL_QURA, DUBAI, QATAR, KUWAIT, TURKEY, TEHRAN, EGYPTIAN,
-            ISNA, MOONSIGHTING, UOIF, RUSSIA, ALGERIA, TUNISIA, MOROCCO, JORDAN, IC_BIH, KMSH,
+            ISNA, MOONSIGHTING, UOIF, RUSSIA, ALGERIA, TUNISIA, MOROCCO, JORDAN, IC_BIH, KMSH, QMDB,
         )
 
         fun withId(id: String?): CalculationMethod? = all.firstOrNull { it.id == id }

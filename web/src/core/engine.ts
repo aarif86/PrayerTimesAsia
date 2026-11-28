@@ -1,6 +1,6 @@
 import { darccos, darccot, dcos, dsin, dtan, fix, julianDay, sun, utcMidnight } from './astro'
 import { isRamadan } from './hijri'
-import type { CalculationMethod } from './methods'
+import { NORTH_FROM_LATITUDE, type CalculationMethod } from './methods'
 import { PRAYERS, shadowFactor, type AsrSchool, type Prayer } from './prayer'
 import type { SourceGrade } from './sources'
 import { zoned } from './tz'
@@ -85,7 +85,8 @@ export function compute(
   const times = {} as Record<Prayer, number>
   for (const prayer of PRAYERS) {
     const hoursUTC = t[prayer] - lng / 15
-    const seconds = hoursUTC * 3600 + (method.offsets[prayer] ?? 0) * 60
+    const offset = (lat >= NORTH_FROM_LATITUDE ? method.northOffsets[prayer] : undefined) ?? method.offsets[prayer] ?? 0
+    const seconds = hoursUTC * 3600 + offset * 60
     const minutes = Math.ceil(seconds / 60)
     times[prayer] = midnight + minutes * 60_000
   }

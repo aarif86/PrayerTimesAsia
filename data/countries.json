@@ -355,15 +355,17 @@
   {
    "code": "KZ",
    "name": "Kazakhstan",
-   "method": "mwl",
+   "method": "qmdb",
    "asr": "hanafi",
    "naming": "international",
-   "source": "standard",
+   "source": "authority",
    "highLatitude": "angle",
    "zones": [
     "Asia/Almaty"
    ],
-   "cities": []
+   "cities": [],
+   "authority": "the Spiritual Administration of Muslims of Kazakhstan, QMDB",
+   "authorityUrl": "https://www.muftyat.kz/"
   },
   {
    "code": "UZ",

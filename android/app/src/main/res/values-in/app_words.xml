@@ -1254,6 +1254,7 @@
     <string name="method_note_jordan" formatted="false">Metode Kementerian Wakaf dan Urusan Islam Yordania. Juga dipakai di Palestina.</string>
     <string name="method_note_icbih" formatted="false">Metode Takvim Komunitas Islam Bosnia dan Herzegovina (Subuh 18°, Isya 16°, Asar pada satu panjang bayangan), dengan menit kehati-hatian saat terbit dan terbenam matahari, disesuaikan dengan waktu yang diterbitkannya untuk Sarajevo. Tidak pernah lebih awal dari waktu yang diterbitkan.</string>
     <string name="method_note_kmsh" formatted="false">Metode Komunitas Muslim Albania, KMSH (Subuh 18°, Isya 17°, Asar pada satu panjang bayangan), dengan menit yang disesuaikan pada kalender Tirana 2026. Tidak pernah lebih awal dari waktu yang diterbitkan.</string>
+    <string name="method_note_qmdb" formatted="false">Metode Administrasi Rohani Muslim Kazakhstan (QMDB). Subuh dan Isya pada 15°, Asar pada dua panjang bayangan, dengan menit ditambah pada Zuhur, Asar dan magrib serta dikurangi saat terbit, lebih banyak mulai lintang 48° utara. Diperiksa dengan rumus yang diterbitkannya untuk satu tahun penuh.</string>
     <string name="menu_appearance" formatted="false">Tampilan</string>
     <string name="menu_auto" formatted="false">Otomatis</string>
     <string name="menu_light" formatted="false">Terang</string>

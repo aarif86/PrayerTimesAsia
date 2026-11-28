@@ -24,7 +24,7 @@ METHOD_NAMES = {'muis': 'MUIS timetable', 'jakim': 'JAKIM timetable', 'kemenag':
                 'russia': 'Spiritual Administration of Muslims of Russia', 'algeria': 'Algeria Ministry of Religious Affairs',
                 'tunisia': 'Tunisia Ministry of Religious Affairs', 'morocco': 'Morocco Ministry of Habous',
                 'jordan': 'Jordan Ministry of Awqaf', 'icbih': 'Islamic Community of Bosnia and Herzegovina',
-                'kmsh': 'KMSH Albania'}
+                'kmsh': 'KMSH Albania', 'qmdb': 'Spiritual Administration of Muslims of Kazakhstan'}
 WHO = {'table': ('Official times', 'The authority publishes the times and the app shows them exactly as they are.'),
        'authority': ('Follows the local authority', 'The app works out the times on your phone, the same way this authority does.'),
        'standard': ("What most masjids use", 'There is no national authority the app can follow, so it uses what most masjids there use.')}

@@ -120,7 +120,8 @@ object PrayerEngine {
         val midnightUTC = Astro.utcMidnight(year, month, day)
         val times = Prayer.all.associateWith { prayer ->
             val hoursUTC = t.getValue(prayer) - lng / 15
-            val seconds = hoursUTC * 3600 + (method.offsets[prayer] ?: 0.0) * 60
+            val offset = (if (lat >= CalculationMethod.NORTH_FROM_LATITUDE) method.northOffsets[prayer] else null) ?: method.offsets[prayer] ?: 0.0
+            val seconds = hoursUTC * 3600 + offset * 60
             // Round UP to the whole minute: a time is never shown earlier than it is.
             val minutes = ceil(seconds / 60)
             midnightUTC.plusSeconds((minutes * 60).toLong())
