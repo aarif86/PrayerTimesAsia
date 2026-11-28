@@ -102,7 +102,8 @@ extension Preferences {
         switch alertMode(prayer) {
         case .off: .off
         case .alarm: .alarm
-        case .notify: azanPlays(prayer) ? .azan : .notification
+        // With no azan recordings or own azan on the phone the notification plays the normal sound, so it is a Notification.
+        case .notify: azanPlays(prayer) && Azan.isAvailable ? .azan : .notification
         }
     }
 
@@ -190,7 +191,8 @@ extension Preferences {
         let mode: AlertMode = level == .off ? .off : (level == .alarm ? .alarm : .notify)
         for prayer in Prayer.obligatory where prayer != .fajr || includeFajr { setAlertMode(mode, prayer) }
         if level == .notify { azanSound = false }
-        if level == .azan { azanSound = true; quietPrayers = [] }
+        // A Fajr left alone keeps its own quiet choice.
+        if level == .azan { azanSound = true; quietPrayers = includeFajr ? [] : quietPrayers.intersection([.fajr]) }
         guard let early else { return }
         reminderMinutesBefore = early
         // Away from home the app uses its own minutes for each prayer, so they follow the same choice.

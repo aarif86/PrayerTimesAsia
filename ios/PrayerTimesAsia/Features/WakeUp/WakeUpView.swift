@@ -391,7 +391,7 @@ private struct AllFivePage: View {
             fajrToo = model.prefs.wakeUp == nil
             switch model.prefs.alertMode(.dhuhr) {
             case .alarm: level = .alarm
-            case .notify: level = model.prefs.azanSound && Azan.isAvailable ? .azan : .notify
+            case .notify: level = model.prefs.alertChoice(.dhuhr) == .azan ? .azan : .notify
             case .off: level = .off
             }
         }
