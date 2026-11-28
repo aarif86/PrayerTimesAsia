@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
+import { countSetupStep, type SetupStep } from '../services/usage'
 import { sourceLabel } from '../core/official'
 import { NAMING_LABEL, NAMING_STYLES, type NamingStyle } from '../core/prayer'
 import { profileFor, timeZoneForLocated } from '../core/regions'
@@ -100,10 +101,14 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
   const [short, setShort] = useState<{ encoded: string; link: string } | null>(null)
   const shortOk = short?.encoded === encoded ? short.link : null
   const link = shortOk ?? longLink
+  // A step on this page, counted anonymously unless the committee unticked counting (never the masjid's name).
+  const step = (s: SetupStep) => { if (c.report && !new URLSearchParams(location.search).has('demo')) countSetupStep('1.0.0', s) }
+  useEffect(() => { step('opened') }, [])
   const getLink = async (): Promise<string> => {
     if (shortOk) return shortOk
     const code = await saveShortLink(encoded)
     if (!code) return longLink
+    step('linkMade')
     const made = `${location.origin}${location.pathname}#k=${code}`
     setShort({ encoded, link: made })
     return made
@@ -178,8 +183,9 @@ export function Setup({ initial, now, onOpen }: { initial: ScreenConfig; now: nu
     if (typeof r === 'object') {
       const e = { code, editKey: r.editKey }
       writeJSON(EDITOR_KEY, e); setEditor(e); setPairInput('')
+      step('sentToTv')
       setPairMsg({ ok: true, text: 'Done. Your TV is showing your masjid screen now. To change something later, come back here and tap Update my TV.' })
-    } else setPairMsg({ ok: false, text: r === 'offline' ? 'No internet on this phone. Try again.' : r === 'busy' ? 'Too many tries today. Try again tomorrow, or send the link below.' : 'That code did not work. It runs out after 15 minutes, so check the TV for the newest code.' })
+    } else { step('tvCodeFailed'); setPairMsg({ ok: false, text: r === 'offline' ? 'No internet on this phone. Try again.' : r === 'busy' ? 'Too many tries today. Try again tomorrow, or send the link below.' : 'That code did not work. It runs out after 15 minutes, so check the TV for the newest code.' }) }
   }
   const updateNow = async () => {
     if (!editor) return

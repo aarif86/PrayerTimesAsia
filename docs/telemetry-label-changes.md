@@ -11,6 +11,12 @@ how many alarms, big text, prayer tracker, My masjid, how many widgets. It also 
 the Falak tools (shadow camera, level, AR) were used that day. A masjid TV also sends one note when it is paired with a phone.
 Nothing typed, no file, no name, no place beyond city and country (already declared).
 
+Also in the follow-up change: whether the Join, Help verify, Note and Rate links were tapped (yes or no, in the same daily note),
+and website button presses and masjid screen setup steps (web only, no app label impact).
+
+Apple App Store link tagging (to see installs that came from the website) needs your Apple provider token. Open App Store Connect,
+App Analytics, Campaigns, make a campaign link named `website`, and send it to us; we add it to the website's iPhone buttons.
+
 ## Apple App Privacy (App Store Connect, App Privacy)
 
 Everything stays **Data Not Linked to You**, **not used for tracking**, purpose **Analytics**.

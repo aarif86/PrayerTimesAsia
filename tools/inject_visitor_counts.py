@@ -26,6 +26,11 @@ SNIPPET = """  <!-- Anonymous visitor counts (TelemetryDeck: no cookies, no IP a
       s.src = 'https://cdn.telemetrydeck.com/websdk/telemetrydeck.min.js';
       s.setAttribute('data-app-id', id);
       document.head.appendChild(s);
+      window.PTA_TD = id;
+      var t = document.createElement('script');
+      t.async = true;
+      t.src = 'https://prayertimes.asia/track.js';
+      document.head.appendChild(t);
     })();
   </script>
 """

@@ -144,7 +144,7 @@ enum UsageCounter {
     }
 
     /// Things done today, each sent as true or false (Did.qiblaCompass ...). The same list on the web and Android apps.
-    static let actions = ["qiblaCompass", "qiblaFaced", "falakShadow", "falakLevel", "falakAR"]
+    static let actions = ["qiblaCompass", "qiblaFaced", "falakShadow", "falakLevel", "falakAR", "tapJoin", "tapVerify", "tapNote", "tapReview"]
 
     /// One stretch on screen counts at most this long (a phone left open on a table).
     static let maxStretch: TimeInterval = 2 * 3_600

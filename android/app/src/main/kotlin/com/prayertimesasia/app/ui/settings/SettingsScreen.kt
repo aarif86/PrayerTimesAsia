@@ -164,9 +164,9 @@ fun SettingsScreen(
                 "hadith" -> SettingsPage(tr(R.string.settings_hadith), settingsWord, { page = null }) { HadithPage(state) }
                 "move" -> SettingsPage(tr(R.string.settings_movePhone), settingsWord, { page = null }) { MovePage(openMoveOut, openMoveIn) }
                 "privacy" -> SettingsPage(tr(R.string.settings_privacy), settingsWord, { page = null }) { PrivacyPage(state) }
-                "help" -> SettingsPage(tr(R.string.settings_help), settingsWord, { page = null }) { HelpPage(openGuide) }
+                "help" -> SettingsPage(tr(R.string.settings_help), settingsWord, { page = null }) { HelpPage(state, openGuide) }
                 "picks" -> SettingsPage(PICKS_NAME, settingsWord, { page = null }) { PicksPage(state) }
-                "about" -> SettingsPage(tr(R.string.settings_aboutCredits), settingsWord, { page = null }) { AboutPage(openCredits) }
+                "about" -> SettingsPage(tr(R.string.settings_aboutCredits), settingsWord, { page = null }) { AboutPage(state, openCredits) }
                 "ownAzan" -> SettingsPage("Your own azan", settingsWord, { page = null }) { OwnAzanPage(state) }
                 else -> SettingsMain(state, listState, { page = it }, openReview, openNote)
             }
@@ -180,10 +180,10 @@ private object SettingsLinks {
     const val FAQ = "https://prayertimes.asia/#faq"
     const val PRIVACY = "https://prayertimes.asia/privacy.html"
     const val TERMS = "https://prayertimes.asia/terms.html"
-    const val JOIN = "https://prayertimes.asia/join"
+    const val JOIN = "https://prayertimes.asia/join?from=android-app"
     const val INSTAGRAM = "https://www.instagram.com/prayertimesasia"
     const val FACEBOOK = "https://www.facebook.com/prayertimesasia"
-    const val VERIFY = "https://prayertimes.asia/verify.html"
+    const val VERIFY = "https://prayertimes.asia/verify.html?from=android-app"
     const val NEW_LOOK = "https://prayertimes.asia/new-look.html"
     const val PICKS_RULES = "https://prayertimes.asia/barakah-picks.html"
 }
@@ -606,12 +606,12 @@ private fun PrivacyPage(state: AppState) {
 }
 
 @Composable
-private fun HelpPage(openGuide: () -> Unit) {
+private fun HelpPage(state: AppState, openGuide: () -> Unit) {
     val uri = LocalUriHandler.current
     Section(null, tr(R.string.settings_helpFoot)) {
         LinkRow(tr(R.string.settings_showGuide), LineIcons.of("lightbulb"), onClick = openGuide)
         LinkRow(tr(R.string.settings_faq), null) { runCatching { uri.openUri(SettingsLinks.FAQ) } }
-        LinkRow(tr(R.string.settings_helpVerify), null) { runCatching { uri.openUri(SettingsLinks.VERIFY) } }
+        LinkRow(tr(R.string.settings_helpVerify), null) { state.usageAction("tapVerify"); runCatching { uri.openUri(SettingsLinks.VERIFY) } }
     }
 }
 
@@ -631,14 +631,14 @@ private fun PicksPage(state: AppState) {
 }
 
 @Composable
-private fun AboutPage(openCredits: () -> Unit) {
+private fun AboutPage(state: AppState, openCredits: () -> Unit) {
     val uri = LocalUriHandler.current
     Section(null, tr(R.string.settings_motto)) {
         LinkRow(tr(R.string.settings_sources), null, onClick = openCredits)
         LinkRow(tr(R.string.settings_designLook), null) { runCatching { uri.openUri(SettingsLinks.NEW_LOOK) } }
     }
     Section(tr(R.string.settings_community)) {
-        LinkRow(tr(R.string.settings_joinTimekeepers), null) { runCatching { uri.openUri(SettingsLinks.JOIN) } }
+        LinkRow(tr(R.string.settings_joinTimekeepers), null) { state.usageAction("tapJoin"); runCatching { uri.openUri(SettingsLinks.JOIN) } }
         LinkRow(tr(R.string.settings_instagram), null) { runCatching { uri.openUri(SettingsLinks.INSTAGRAM) } }
         LinkRow(tr(R.string.settings_facebook), null) { runCatching { uri.openUri(SettingsLinks.FACEBOOK) } }
     }
