@@ -81,7 +81,7 @@ struct RootView: View {
                     .tabItem { Label { Text(W("tab.qibla")) } icon: { Image("Tab-qibla") } }
                     .tag(AppModel.Tab.qibla)
                 FalakView(isTab: true)
-                    .tabItem { Label(W("tab.falak"), systemImage: "sun.max") }
+                    .tabItem { Label { Text(W("tab.falak")) } icon: { Image("Tab-sun") } }
                     .tag(AppModel.Tab.falak)
                 NearbyView()
                     .tabItem { Label { Text(W("tab.masjid")) } icon: { Image("Tab-masjid") } }
