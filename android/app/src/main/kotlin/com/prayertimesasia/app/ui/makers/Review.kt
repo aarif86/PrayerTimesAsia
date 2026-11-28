@@ -106,6 +106,7 @@ fun ReviewContent(state: AppState, openNote: () -> Unit) {
                         if (text.isNotEmpty()) { context.copy(text); copiedFor = link.id }
                         save()
                         state.update { it.copy(reviewTappedAt = System.currentTimeMillis()) }
+                        state.usageAction("tapReview")
                         context.open(link.url)
                     }.padding(horizontal = 14.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -180,6 +181,7 @@ fun NoteContent(state: AppState) {
         SwitchLine("Add my city and app version", "Helps us check your times. Never your exact location.", addDetails) { addDetails = it }
         if (kind == Reviews.NoteKind.KIND) SwitchLine("You may share my words", "On our website, without your name.", mayShare) { mayShare = it }
         Box(Modifier.fillMaxWidth().clip(CircleShape).background(Palette.sunArc).clickable {
+            state.usageAction("tapNote")
             val uri = Reviews.noteUrl(Reviews.about(kind), mail.second)
             runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
         }.padding(vertical = 14.dp), contentAlignment = Alignment.Center) {

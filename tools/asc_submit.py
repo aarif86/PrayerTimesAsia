@@ -24,19 +24,15 @@ MODE = os.environ.get("MODE", "read")
 BUILD = os.environ.get("BUILD", "").strip()
 
 WHATS_NEW = {
-    "en": ("A fresh new look. Pick one of five looks in Settings: Centre Dial, Sun Path, Colour Bands, "
-           "Big and Simple or Calm Gold. Each one works in light and dark, and Prayer, Qibla, Falak, "
-           "Masjid and Settings all follow the look you pick.\n\n"
-           "Early reminders before a prayer when you are away from home, a button to try an alert, "
-           "and one tap to set the same alert for all five prayers."),
-    "ms": ("Rupa baharu yang segar. Pilih satu daripada lima rupa dalam Tetapan. Setiap rupa boleh "
-           "digunakan dalam mod cerah dan gelap, dan semua skrin mengikut rupa yang anda pilih.\n\n"
-           "Peringatan awal sebelum waktu solat ketika anda berada jauh dari rumah, butang untuk "
-           "mencuba amaran, dan satu sentuhan untuk menetapkan amaran yang sama bagi kelima-lima waktu."),
-    "id": ("Tampilan baru yang segar. Pilih salah satu dari lima tampilan di Pengaturan. Setiap tampilan "
-           "bisa dipakai dalam mode terang dan gelap, dan semua layar mengikuti tampilan yang Anda pilih.\n\n"
-           "Pengingat lebih awal sebelum waktu salat saat Anda jauh dari rumah, tombol untuk mencoba "
-           "pengingat, dan satu sentuhan untuk mengatur pengingat yang sama untuk kelima waktu."),
+    "en": ("Widgets now follow the look you pick, in light and dark. The app and its alerts speak your "
+           "language, English, Malay or Indonesian, and prayer names no longer change it. "
+           "Cleaner Prayer dial around midnight and noon, and easier reading at the largest text size."),
+    "ms": ("Widget kini mengikut rupa yang anda pilih, dalam mod cerah dan gelap. Aplikasi dan amaran "
+           "menggunakan bahasa anda, Inggeris, Melayu atau Indonesia, dan nama solat tidak lagi mengubahnya. "
+           "Dail solat lebih kemas pada tengah malam dan tengah hari, serta lebih mudah dibaca pada saiz teks terbesar."),
+    "id": ("Widget kini mengikuti tampilan yang Anda pilih, dalam mode terang dan gelap. Aplikasi dan pengingat "
+           "memakai bahasa Anda, Inggris, Melayu atau Indonesia, dan nama salat tidak lagi mengubahnya. "
+           "Dial salat lebih rapi pada tengah malam dan tengah hari, serta lebih mudah dibaca pada ukuran teks terbesar."),
 }
 
 

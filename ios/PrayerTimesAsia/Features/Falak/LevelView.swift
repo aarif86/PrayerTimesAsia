@@ -6,6 +6,7 @@ import SwiftUI
 /// check the stick is vertical. A tilt of 1° moves a 1 m stick's shadow tip
 /// by about 1.7 cm - enough to shift a reading by a minute.
 struct LevelView: View {
+    @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var motion = LevelMotion()
 
@@ -49,7 +50,7 @@ struct LevelView: View {
             .navigationTitle(W("falak.level"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
-            .onAppear { motion.start() }
+            .onAppear { motion.start(); model.usageAction("falakLevel") }
             .onDisappear { motion.stop() }
         }
     }

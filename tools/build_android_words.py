@@ -46,9 +46,31 @@ def xml(lang: str) -> str:
     return "\n".join(out)
 
 
+CORE = ROOT / "android/core/src/main/kotlin/com/prayertimesasia/core/NotifyWordsData.kt"
+NOTIFY = [k for k in words["en"] if k.startswith(("notify.", "phone.notify."))]
+
+
+def kt_escape(s: str) -> str:
+    return s.replace("\\", "\\\\").replace('"', '\\"').replace("$", "\\$").replace("\n", "\\n")
+
+
+def notify_kt() -> str:
+    """The alert lines, for the alert planner (it has no Android Context, so it cannot read string resources)."""
+    out = ["package com.prayertimesasia.core", "", f"// {HEADER}", "", "internal object NotifyWordsData {",
+           "    val data: Map<RamadanContent.Lang, Map<String, String>> = mapOf("]
+    for lang, tag in (("en", "EN"), ("ms", "MS"), ("id", "ID")):
+        out.append(f"        RamadanContent.Lang.{tag} to mapOf(")
+        for k in NOTIFY:
+            out.append(f'            "{k}" to "{kt_escape(words[lang][k])}",')
+        out.append("        ),")
+    out += ["    )", "}", ""]
+    return "\n".join(out)
+
+
 names = [name(k) for k in words["en"]]
 assert len(names) == len(set(names)), "two keys make the same resource name"
 OUT = {RES / folder / "app_words.xml": xml(lang) for lang, folder in FOLDERS.items()}
+OUT[CORE] = notify_kt()
 
 if "--check" in sys.argv:
     stale = [str(p.relative_to(ROOT)) for p, text in OUT.items() if not p.exists() or p.read_text(encoding="utf-8") != text]

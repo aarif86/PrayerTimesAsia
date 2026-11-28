@@ -309,6 +309,39 @@ function AlertsPrompt() {
   )
 }
 
+/** Selangor's nine district timetables from 1 January 2027, before the new zone codes are in the app. */
+function SelangorNote({ now }: { now: number }) {
+  if (!store.selangorNotice(now) || store.prefs.sourceAwayClosed.includes('selangor2027')) return null
+  return (
+    <div class="glass card arrival long-days" role="note">
+      <div class="row" style={{ alignItems: 'flex-start', gap: '12px' }}>
+        <MapPin size={26} class="accent" style={{ flex: 'none', marginTop: '2px' }} />
+        <div style={{ flex: 1 }}><div class="subhead" style={{ opacity: 0.85 }}>{tr('source.selangor2027')}</div></div>
+        <button aria-label={tr('common.dismiss')} onClick={() => store.closeSourceAwayNote('selangor2027')} style={{ padding: '6px' }}><X size={16} strokeWidth={3} /></button>
+      </div>
+    </div>
+  )
+}
+
+/** A method pinned in Settings and used in another country: say whose times these are. */
+function SourceAwayNote() {
+  const n = store.sourceAwayNote()
+  if (!n) return null
+  return (
+    <div class="glass card arrival long-days" role="note">
+      <div class="row" style={{ alignItems: 'flex-start', gap: '12px' }}>
+        <Globe size={26} class="accent" style={{ flex: 'none', marginTop: '2px' }} />
+        <div style={{ flex: 1 }}>
+          <div class="headline">{tr('travel.sourceTitle', { country: n.country })}</div>
+          <div class="subhead" style={{ opacity: 0.85, marginTop: '4px' }}>{tr('travel.sourceBody', { method: n.method, country: n.country })}</div>
+          <button class="primary-btn" style={{ marginTop: '10px' }} onClick={() => store.update((p) => { p.methodOverrideID = null })}>{tr('travel.sourceFollow')}</button>
+        </div>
+        <button aria-label={tr('common.dismiss')} onClick={() => store.closeSourceAwayNote(n.key)} style={{ padding: '6px' }}><X size={16} strokeWidth={3} /></button>
+      </div>
+    </div>
+  )
+}
+
 /** Far from the equator in summer: why Fajr and Isha look unusual. Once per place and summer, closable. */
 function LongDaysNote({ now }: { now: number }) {
   const key = store.longDaysNote(now)
@@ -605,6 +638,8 @@ function SimplePage({ c }: { c: Ctx }) {
       <TopPrompt />
       <ArrivalCard />
       {c.offset === 0 && <LongDaysNote now={c.now} />}
+      {c.offset === 0 && <SourceAwayNote />}
+      {c.offset === 0 && <SelangorNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={c.now} />
       <DayNavigator c={c} slim />
@@ -657,6 +692,8 @@ function CentrePage({ c, gold }: { c: Ctx; gold?: boolean }) {
       <PrayerHadith c={c} />
       <ArrivalCard />
       {c.offset === 0 && <LongDaysNote now={c.now} />}
+      {c.offset === 0 && <SourceAwayNote />}
+      {c.offset === 0 && <SelangorNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={c.now} />
       <DayNavigator c={c} slim />
@@ -700,6 +737,8 @@ function SunPathPage({ c }: { c: Ctx }) {
       <PrayerHadith c={c} />
       <ArrivalCard />
       {c.offset === 0 && <LongDaysNote now={c.now} />}
+      {c.offset === 0 && <SourceAwayNote />}
+      {c.offset === 0 && <SelangorNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       <MusafirChip now={now} />
       <DayNavigator c={c} slim />
@@ -735,6 +774,8 @@ function BandsPage({ c }: { c: Ctx }) {
         <TopPrompt />
         <ArrivalCard />
       {c.offset === 0 && <LongDaysNote now={c.now} />}
+      {c.offset === 0 && <SourceAwayNote />}
+      {c.offset === 0 && <SelangorNote now={c.now} />}
       {c.offset === 0 && <SeasonCard now={c.now} />}
       </div>
       <div class="bands-date">

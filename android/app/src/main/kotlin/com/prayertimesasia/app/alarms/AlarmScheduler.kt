@@ -17,6 +17,7 @@ import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerAlarmTiming
 import com.prayertimesasia.core.PrayerDay
 import com.prayertimesasia.core.PrayerWindow
+import com.prayertimesasia.core.NotifyWords
 import com.prayertimesasia.core.Resolver
 import com.prayertimesasia.core.SahurDay
 import com.prayertimesasia.core.Season
@@ -65,8 +66,8 @@ object AlarmScheduler {
                         val at = w.nudgeAt
                         val name = r.prayerName(w.prayer, w.start)
                         val left = (w.end.epochSecond - at.epochSecond) / 60
-                        out += Alert("$key-${w.prayer.raw}-nudge", "$name time ends in $left min",
-                            "$name is open until ${r.formatted(w.end)}. Tick it in the app once you have prayed.", at, Kind.NUDGE,
+                        out += Alert("$key-${w.prayer.raw}-nudge", NotifyWords.line(r.appLang, "notify.nudgeTitle", "name" to name, "n" to left),
+                            NotifyWords.line(r.appLang, "notify.nudgeBody", "name" to name, "time" to r.formatted(w.end)), at, Kind.NUDGE,
                             silent = r.isSilent(at, w.prayer), unlessPrayed = w.prayer to w.start)
                     }
                 }
@@ -94,16 +95,19 @@ object AlarmScheduler {
                     if (early > 0) {
                         // The heads-up before the prayer, on its own switch: for when a
                         // meeting or work would otherwise run past the time.
-                        val title = if (prayer == Prayer.SUNRISE) "${Prayer.FAJR.name(r.naming)} ends in $early min" else if (early == 60) "$name in 1 hour" else "$name in $early min"
+                        val title = if (prayer == Prayer.SUNRISE) NotifyWords.line(r.appLang, "notify.endsIn", "name" to Prayer.FAJR.name(r.naming), "n" to early)
+                            else if (early == 60) NotifyWords.line(r.appLang, "notify.nameInHour", "name" to name)
+                            else NotifyWords.line(r.appLang, "notify.nameIn", "name" to name, "n" to early)
                         val at = time.minusSeconds(early * 60L)
-                        val body = if (away && p.awayReminder && prayer != Prayer.SUNRISE) "$name begins at ${r.formatted(time)}. A good time to find a place to pray." else "$name at ${r.formatted(time)}"
+                        val body = NotifyWords.line(r.appLang, if (away && p.awayReminder && prayer != Prayer.SUNRISE) "notify.nameAtAway" else "notify.nameAt",
+                            "name" to name, "time" to r.formatted(time))
                         out += Alert("$id-early", title, body, at, Kind.EARLY, silent = r.isSilent(at, prayer))
                     }
                     if (!p.notificationsEnabled) continue
                     // An alarm at the same minute rings instead, so it doesn't sound twice.
                     if (p.alarmAtStart(prayer)) continue
                     if (prayer == Prayer.SUNRISE) {
-                        out += Alert(id, "$name · ${r.formatted(time)}", "${Prayer.FAJR.name(r.naming)} has ended.", time, Kind.PRAYER,
+                        out += Alert(id, "$name · ${r.formatted(time)}", NotifyWords.line(r.appLang, "notify.ended", "name" to Prayer.FAJR.name(r.naming)), time, Kind.PRAYER,
                             silent = r.isSilent(time, prayer))
                         continue
                     }
@@ -113,7 +117,8 @@ object AlarmScheduler {
                         else -> Sound.AZAN
                     }
                     if (prayer == Prayer.MAGHRIB && r.isRamadanDay(time)) {
-                        out += Alert(id, "Time for iftar · $name ${r.formatted(time)}", BREAK_FAST, time, Kind.PRAYER, sound,
+                        out += Alert(id, NotifyWords.line(r.appLang, "notify.iftarName", "name" to name, "time" to r.formatted(time)),
+                            NotifyWords.line(r.appLang, "notify.breakFast"), time, Kind.PRAYER, sound,
                             silent = r.isSilent(time, prayer))
                         continue
                     }
@@ -131,8 +136,6 @@ object AlarmScheduler {
         return out.filter { it.at > now }.sortedBy { it.at }.take(48)
     }
 
-    private const val BREAK_FAST = "Time to break your fast"
-
     /** Ramadan's own alerts: Imsak (10 minutes before), Berbuka at Maghrib, qiyam in the last ten nights. */
     private fun ramadanAlerts(r: Resolver, day: PrayerDay, key: String, here: String, maghribAlertOn: Boolean): List<Alert> {
         val p = r.prefs
@@ -141,19 +144,19 @@ object AlarmScheduler {
         if (s.phase == Season.Phase.RAMADAN) {
             val imsak = r.imsak(day)
             if (p.imsakAlert) {
-                out += Alert("$key-imsak", "Imsak in 10 minutes · ${r.formatted(imsak)}",
-                    "Finish your sahur. ${Prayer.FAJR.name(r.naming)} at ${r.formatted(day.time(Prayer.FAJR))} · $here", imsak.minusSeconds(600), Kind.PRAYER, silent = r.isSilent(imsak, Prayer.FAJR))
+                out += Alert("$key-imsak", NotifyWords.line(r.appLang, "notify.imsakIn", "time" to r.formatted(imsak)),
+                    NotifyWords.line(r.appLang, "notify.finishSahur", "name" to Prayer.FAJR.name(r.naming), "time" to r.formatted(day.time(Prayer.FAJR)), "place" to here), imsak.minusSeconds(600), Kind.PRAYER, silent = r.isSilent(imsak, Prayer.FAJR))
             }
             if (p.berbukaAlert && !maghribAlertOn) {
-                out += Alert("$key-berbuka", "Time for iftar · ${r.formatted(day.time(Prayer.MAGHRIB))}",
-                    "$BREAK_FAST. Ramadan day ${s.ramadanDay ?: 0} · $here", day.time(Prayer.MAGHRIB), Kind.PRAYER, silent = r.isSilent(day.time(Prayer.MAGHRIB), Prayer.MAGHRIB))
+                out += Alert("$key-berbuka", NotifyWords.line(r.appLang, "notify.iftar", "time" to r.formatted(day.time(Prayer.MAGHRIB))),
+                    NotifyWords.line(r.appLang, "phone.notify.breakFast", "n" to (s.ramadanDay ?: 0), "name" to here), day.time(Prayer.MAGHRIB), Kind.PRAYER, silent = r.isSilent(day.time(Prayer.MAGHRIB), Prayer.MAGHRIB))
             }
         }
         val night = s.nightTonight
         if (p.qiyamAlert && s.lastTen && night != null) {
             r.blessedTimes(day).firstOrNull { it.first == BlessedTime.LAST_THIRD }?.let { (_, t) ->
-                out += Alert("$key-qiyam", "Night $night · the last third has begun",
-                    if (s.oddNight) "An odd night of the last ten. Seek Lailatul Qadr." else "One of the last ten nights of Ramadan.", t, Kind.PRAYER, silent = r.isSilent(t, Prayer.ISHA))
+                out += Alert("$key-qiyam", NotifyWords.line(r.appLang, "notify.qiyamTitle", "night" to night),
+                    NotifyWords.line(r.appLang, if (s.oddNight) "notify.qiyamOdd" else "notify.qiyamEven"), t, Kind.PRAYER, silent = r.isSilent(t, Prayer.ISHA))
             }
         }
         return out
@@ -171,14 +174,17 @@ object AlarmScheduler {
         val out = mutableListOf<Alert>()
         p.sahurAlarm?.let { s ->
             if (SahurDay.rings(day, p.sahurDays, r.zone, p.hijriAdjustment)) {
-                out += Alert("$key-sahur", "Wake up for sahur", "$fajr at ${r.formatted(day.time(Prayer.FAJR))} · $placeName", s.date(day), Kind.WAKE)
+                out += Alert("$key-sahur", NotifyWords.line(r.appLang, "notify.wakeSahur"),
+                    NotifyWords.line(r.appLang, "notify.atPlace", "name" to fajr, "time" to r.formatted(day.time(Prayer.FAJR)), "place" to placeName), s.date(day), Kind.WAKE)
             }
         }
         p.wakeUp?.let { w ->
             out += if (w == WakeUpTiming.FAJR_MINUS_30) {
-                Alert("$key-wake", "Wake up for tahajjud", "$fajr at ${r.formatted(day.time(Prayer.FAJR))} · $placeName${hadithLine(r, HadithId.NIGHT_PRAYER)}", w.date(day), Kind.WAKE)
+                Alert("$key-wake", NotifyWords.line(r.appLang, "notify.wakeTahajjud"),
+                    NotifyWords.line(r.appLang, "notify.atPlace", "name" to fajr, "time" to r.formatted(day.time(Prayer.FAJR)), "place" to placeName) + hadithLine(r, HadithId.NIGHT_PRAYER), w.date(day), Kind.WAKE)
             } else {
-                Alert("$key-wake", "Wake up for $fajr", "$fajr ends at ${r.formatted(day.time(Prayer.SUNRISE))} · $placeName${hadithLine(r, HadithId.FAJR_RAKAAT)}", w.date(day), Kind.WAKE)
+                Alert("$key-wake", NotifyWords.line(r.appLang, "notify.wakeFor", "name" to fajr),
+                    NotifyWords.line(r.appLang, "notify.endsAtPlace", "name" to fajr, "time" to r.formatted(day.time(Prayer.SUNRISE)), "place" to placeName) + hadithLine(r, HadithId.FAJR_RAKAAT), w.date(day), Kind.WAKE)
             }
         }
         for (prayer in PrayerAlarmTiming.prayers) {
@@ -186,8 +192,10 @@ object AlarmScheduler {
             val start = day.time(prayer)
             val end = PrayerAlarmTiming.end(prayer, day)
             val name = r.prayerName(prayer, start)
-            val title = if (t == PrayerAlarmTiming.END_MINUS_30) "$name ends in 30 min" else "Time for $name"
-            val body = if (prayer == Prayer.ISHA) "$name began at ${r.formatted(start)} · $placeName" else "$name is open until ${r.formatted(end)} · $placeName"
+            val title = if (t == PrayerAlarmTiming.END_MINUS_30) NotifyWords.line(r.appLang, "notify.endsIn", "name" to name, "n" to 30)
+                else NotifyWords.line(r.appLang, "notify.timeFor", "name" to name)
+            val body = if (prayer == Prayer.ISHA) NotifyWords.line(r.appLang, "notify.beganAt", "name" to name, "time" to r.formatted(start), "place" to placeName)
+                else NotifyWords.line(r.appLang, "notify.openUntil", "name" to name, "time" to r.formatted(end), "place" to placeName)
             out += Alert("$key-${prayer.raw}-alarm", title, body, t.date(start, end), Kind.WAKE)
         }
         // Leave for Jumaat, when it rings as an alarm.

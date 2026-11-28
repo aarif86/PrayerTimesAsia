@@ -349,6 +349,7 @@
     <string name="masjid_title" formatted="false">Masjid dan Musala</string>
     <string name="masjid_about" formatted="false">Tentang aplikasi ini</string>
     <string name="masjid_refresh" formatted="false">Muat ulang daftar masjid</string>
+    <string name="masjid_listSize" formatted="false">Ubah ukuran daftar dan peta</string>
     <string name="masjid_all" formatted="false">Semua</string>
     <string name="masjid_masjid" formatted="false">Masjid</string>
     <string name="masjid_musollah" formatted="false">Musala</string>
@@ -1218,6 +1219,18 @@
     <string name="source_explainC" formatted="false">Metode dikonfirmasi oleh dua atau lebih kontributor setempat yang terpisah.</string>
     <string name="source_explainD" formatted="false">Perhitungan astronomi di perangkat Anda. Metodenya ditampilkan. Masjid setempat mungkin berbeda beberapa menit.</string>
     <string name="source_explainF" formatted="false">Dihitung dari pengamatan Anda sendiri atas bayangan matahari atau langit, dengan ± menit yang jujur. Untuk belajar dan mengecek, bukan untuk menggantikan tingkat di atas.</string>
+    <string name="source_kindPublished" formatted="false">Jadwal terbitan</string>
+    <string name="source_kindFormula" formatted="false">Rumus</string>
+    <string name="source_kindCalculated" formatted="false">Dihitung</string>
+    <string name="source_kindMasjid" formatted="false">Jadwal masjid</string>
+    <string name="source_kindExplainPublished" formatted="false">Disalin dari jadwal yang diterbitkan otoritas. Aplikasi tidak menghitung waktu ini.</string>
+    <string name="source_kindExplainFormula" formatted="false">Dihitung di perangkat Anda dengan metode yang diterbitkan otoritas itu sendiri. Hasilnya bisa berbeda satu dua menit dari jadwal cetaknya.</string>
+    <string name="source_kindExplainCalculated" formatted="false">Dihitung di perangkat Anda dengan metode internasional yang banyak dipakai, karena tidak ada jadwal resmi di sini yang bisa dipakai aplikasi. Masjid setempat mungkin berbeda beberapa menit.</string>
+    <string name="source_kindExplainMasjid" formatted="false">Dari jadwal masjid Anda sendiri.</string>
+    <string name="source_selangor2027" formatted="false">Selangor beralih ke sembilan jadwal per daerah mulai 1 Januari 2027. JAKIM belum menerbitkan kode zona baru, jadi untuk sementara waktu ini mengikuti zona lama dan bisa berbeda beberapa menit dari masjid Anda. Kami akan memperbarui aplikasi saat JAKIM menerbitkannya. Selalu ikuti masjid dan otoritas agama setempat Anda.</string>
+    <string name="travel_sourceTitle" formatted="false">Anda sedang di luar {country}</string>
+    <string name="travel_sourceBody" formatted="false">Anda memilih {method} di Pengaturan, jadi waktu Anda masih mengikuti {country}. Di sini waktu dihitung dengan rumusnya, bukan dibaca dari jadwal terbitan. Ikuti tempat Anda berada, atau biarkan jika memang itu maksud Anda.</string>
+    <string name="travel_sourceFollow" formatted="false">Ikuti tempat saya berada</string>
     <string name="method_note_muis" formatted="false">Majlis Ugama Islam Singapura. Saat daring, aplikasi menampilkan jadwal resmi MUIS. Tanpa internet, aplikasi menghitung sendiri dan tidak pernah lebih awal dari waktu resmi.</string>
     <string name="method_note_jakim" formatted="false">Kriteria Subuh 18° Malaysia (sejak 2019). Saat daring, aplikasi menampilkan jadwal resmi e-Solat JAKIM untuk zona Anda. Tanpa internet, aplikasi menghitung dengan selisih sekitar 2 menit.</string>
     <string name="method_note_kemenag" formatted="false">Kementerian Agama. Saat daring, aplikasi menampilkan jadwal resmi Kemenag untuk kota atau kabupaten Anda. Tanpa internet, aplikasi menghitung dengan koreksi yang disesuaikan pada jadwal lengkap 2026 untuk Jakarta, Surabaya dan Makassar.</string>

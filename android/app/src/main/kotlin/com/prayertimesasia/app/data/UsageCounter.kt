@@ -1,10 +1,15 @@
 package com.prayertimesasia.app.data
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.os.Build
 import com.prayertimesasia.app.BuildConfig
 import com.prayertimesasia.core.CommunityCard
 import com.prayertimesasia.core.Place
+import com.prayertimesasia.core.Preferences
+import com.prayertimesasia.core.TodayStyle
+import com.prayertimesasia.app.alarms.OwnAzan
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -31,6 +36,7 @@ import java.util.UUID
  * or in demo mode.
  */
 class UsageCounter(context: Context) {
+    private val appContext = context.applicationContext
     private val sp = context.getSharedPreferences("prayertimesasia.usage", Context.MODE_PRIVATE)
 
     data class Config(val appId: String, val enabled: Boolean) {
@@ -101,7 +107,7 @@ class UsageCounter(context: Context) {
     private fun writeTally(t: DayTally) { sp.edit().putString(TALLY, t.encode()).apply() }
 
     /** The app came on screen: one open for today, start the clock, and send the last day's summary if due. */
-    suspend fun tallyStart(place: Place?): Unit = withContext(Dispatchers.IO) {
+    suspend fun tallyStart(place: Place?, prefs: Preferences? = null): Unit = withContext(Dispatchers.IO) {
         runCatching<Unit> {
             val (tally, finished) = roll(readTally(), LocalDate.now().toString())
             writeTally(tally.copy(opens = tally.opens + 1))
@@ -112,7 +118,7 @@ class UsageCounter(context: Context) {
             val appId = config()?.activeAppId ?: return@runCatching
             val base = payload(BuildConfig.VERSION_NAME, Build.VERSION.RELEASE ?: "?", Locale.getDefault().toLanguageTag(),
                 place?.district ?: place?.name, place?.countryCode)
-            Http.postJson(ENDPOINT, signals(appId, id, listOf("App.daySummary"), dayPayload(base, finished), BuildConfig.DEBUG))
+            Http.postJson(ENDPOINT, signals(appId, id, listOf("App.daySummary"), dayPayload(base, finished, prefs?.let { settingsPayload(it, widgetCount(appContext), OwnAzan.isSet(appContext)) } ?: emptyMap()), BuildConfig.DEBUG))
         }
         Unit
     }
@@ -124,17 +130,24 @@ class UsageCounter(context: Context) {
         runCatching { writeTally(roll(readTally(), LocalDate.now().toString()).first.addSeconds((System.currentTimeMillis() - since) / 1000.0)) }
     }
 
+    /** Something worth knowing was done today (Did.qiblaCompass ...). AppState.usageAction checks Settings first. */
+    fun tallyAction(action: String) {
+        runCatching { writeTally(roll(readTally(), LocalDate.now().toString()).first.addAction(action)) }
+    }
+
     /** A screen (tab) was used today. */
     fun tallyScreen(screen: String) {
         runCatching { writeTally(roll(readTally(), LocalDate.now().toString()).first.addScreen(screen)) }
     }
 
-    data class DayTally(val day: String, val seconds: Double = 0.0, val opens: Int = 0, val screens: List<String> = emptyList()) {
+    data class DayTally(val day: String, val seconds: Double = 0.0, val opens: Int = 0, val screens: List<String> = emptyList(), val actions: List<String> = emptyList()) {
+        fun addAction(action: String) = if (action in actions) this else copy(actions = actions + action)
         fun addSeconds(s: Double) = copy(seconds = seconds + Math.round(s.coerceIn(0.0, MAX_STRETCH_S)).toDouble())
         fun addScreen(screen: String) = if (screen in screens) this else copy(screens = screens + screen)
         fun encode(): String = buildJsonObject {
             put("day", day); put("seconds", seconds); put("opens", opens)
             put("screens", JsonArray(screens.map { JsonPrimitive(it) }))
+            put("actions", JsonArray(actions.map { JsonPrimitive(it) }))
         }.toString()
 
         companion object {
@@ -145,6 +158,7 @@ class UsageCounter(context: Context) {
                     o["seconds"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
                     o["opens"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
                     (o["screens"] as? JsonArray)?.map { it.jsonPrimitive.content } ?: emptyList(),
+                    (o["actions"] as? JsonArray)?.map { it.jsonPrimitive.content } ?: emptyList(),
                 )
             }.getOrNull()
         }
@@ -197,7 +211,42 @@ class UsageCounter(context: Context) {
             else -> "over 60"
         }
 
-        fun dayPayload(base: Map<String, String>, t: DayTally): Map<String, String> {
+        /** Things done today, each sent as true or false (Did.qiblaCompass ...). The same list on the web and iPhone apps. */
+        val ACTIONS = listOf("qiblaCompass", "qiblaFaced", "falakShadow", "falakLevel", "falakAR", "tapJoin", "tapVerify", "tapNote", "tapReview")
+
+        /** How many widgets are on the Home Screen. */
+        fun widgetCount(context: Context): Int = runCatching {
+            val manager = AppWidgetManager.getInstance(context)
+            listOf("com.prayertimesasia.app.widget.NextPrayerWidgetReceiver", "com.prayertimesasia.app.widget.TimetableWidgetReceiver")
+                .sumOf { manager.getAppWidgetIds(ComponentName(context.packageName, it)).size }
+        }.getOrDefault(0)
+
+        /**
+         * How the app is set up, as short words and yes or no (never anything typed by the person, never a place).
+         * Sent once a day inside App.daySummary; the same keys as the web and iPhone apps.
+         */
+        fun settingsPayload(p: Preferences, widgets: Int, ownAzan: Boolean): Map<String, String> {
+            val alerts = if (p.notificationsEnabled) p.notifyPrayers.size else 0
+            val alarms = listOf(p.wakeUp, p.sahurAlarm, p.dhuhrAlarm, p.asrAlarm, p.maghribAlarm, p.ishaAlarm).count { it != null }
+            return mapOf(
+                "Pref.look" to when (p.todayStyle) { TodayStyle.SUN_PATH -> "sunPath"; TodayStyle.LIST, TodayStyle.DIAL -> "centre"; else -> p.todayStyle.name.lowercase() },
+                "Pref.theme" to p.appearance.name.lowercase(),
+                "Pref.language" to "auto",
+                "Pref.alertPrayers" to alerts.toString(),
+                "Pref.alertsOn" to (alerts > 0).toString(),
+                "Pref.azanSound" to p.azanSound.toString(),
+                "Pref.azanVoice" to p.azanVoice,
+                "Pref.azanLength" to if (p.azanFull) "full" else "short",
+                "Pref.ownAzan" to ownAzan.toString(),
+                "Pref.alarms" to alarms.toString(),
+                "Pref.largeText" to p.largeText.toString(),
+                "Pref.tracker" to p.trackerEnabled.toString(),
+                "Pref.myMasjid" to (p.myMasjid != null).toString(),
+                "Pref.widgets" to widgets.toString(),
+            )
+        }
+
+        fun dayPayload(base: Map<String, String>, t: DayTally, settings: Map<String, String> = emptyMap()): Map<String, String> {
             val out = base.toMutableMap()
             out["Day.date"] = t.day
             out["Day.minutes"] = Math.round(t.seconds / 60).toString()
@@ -205,6 +254,8 @@ class UsageCounter(context: Context) {
             out["Day.opens"] = t.opens.toString()
             out["Day.screens"] = t.screens.sorted().joinToString(",")
             for (s in SCREENS) out["Used.$s"] = (s in t.screens).toString()
+            for (a in ACTIONS) out["Did.$a"] = (a in t.actions).toString()
+            out.putAll(settings)
             return out
         }
 

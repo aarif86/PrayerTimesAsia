@@ -21,6 +21,7 @@ export function ARScreen() {
   const compass = useCompass(true)
   const now = useNow(15_000)
   const place = store.activePlace
+  useEffect(() => { store.usageAction('falakAR') }, [])
 
   useEffect(() => {
     let stream: MediaStream | null = null
@@ -114,6 +115,7 @@ export function LevelSheet() {
     }
   }
   const available = motion.state === 'active'
+  useEffect(() => { store.usageAction('falakLevel') }, [])
   const level = available && tilt < 0.5
   useEffect(() => { if (level) { try { navigator.vibrate?.(20) } catch { /* ignore */ } } }, [level])
   return (

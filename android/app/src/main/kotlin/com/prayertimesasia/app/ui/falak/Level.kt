@@ -1,5 +1,6 @@
 package com.prayertimesasia.app.ui.falak
 
+import com.prayertimesasia.app.AppState
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -55,7 +56,8 @@ import com.prayertimesasia.app.R
  */
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-fun LevelScreen() {
+fun LevelScreen(state: AppState? = null) {
+    LaunchedEffect(Unit) { state?.usageAction("falakLevel") }
     val context = LocalContext.current
     val view = LocalView.current
     var upright by remember { mutableStateOf(false) }

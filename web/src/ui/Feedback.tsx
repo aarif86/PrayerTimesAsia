@@ -79,7 +79,7 @@ export function FeedbackSheet() {
           <ToggleItem label={tr('feedback.addDetails')} sub={tr('feedback.addDetailsSub')} on={addDetails} onChange={setAddDetails} />
           {kind === 'kind' && <ToggleItem label={tr('feedback.mayShare')} sub={tr('feedback.mayShareSub')} on={mayShare} onChange={setMayShare} />}
         </div>
-        <a class="primary-btn" href={href} target="_blank" rel="noopener" onClick={() => { store.update((x) => { x.feedbackSentAt = Date.now() }); setTimeout(closeSheet, 400) }}><Mail size={16} /> {tr('feedback.send')}</a>
+        <a class="primary-btn" href={href} target="_blank" rel="noopener" onClick={() => { store.usageAction('tapNote'); store.update((x) => { x.feedbackSentAt = Date.now() }); setTimeout(closeSheet, 400) }}><Mail size={16} /> {tr('feedback.send')}</a>
         <p class="footnote secondary">{tr('feedback.goesTo', { email: FEEDBACK_EMAIL })}</p>
       </div>
     </Sheet>
@@ -113,6 +113,7 @@ export function ReviewSheet() {
   // Write once, use everywhere: each review button copies the words first, so they
   // only need a paste on the store page (no store lets an app fill the review in).
   const tapped = (id: string) => {
+    store.usageAction('tapReview')
     store.update((x) => { x.reviewTappedAt = Date.now(); x.reviewDraft = words })
     if (words.trim()) { navigator.clipboard?.writeText(words.trim()).then(() => setCopiedFor(id), () => undefined) }
   }

@@ -76,6 +76,7 @@ fun FalakCameraScreen(state: AppState, onClose: () -> Unit) {
     var granted by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
     }
+    LaunchedEffect(Unit) { state.usageAction("falakAR") }
     LaunchedEffect(Unit) { if (!granted) granted = state.permissions?.camera() ?: false }
     val heading = rememberCameraHeading(context, place?.coordinates?.latitude, place?.coordinates?.longitude)
     Box(Modifier.fillMaxSize().background(Color.Black)) {

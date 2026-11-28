@@ -289,6 +289,8 @@ data class Preferences(
     val musafirChipDismissed: Boolean = false,
     /** Long summer days notes closed, one per place and summer ([LongDays.key]). Stays on this phone. */
     val longDaysClosed: List<String> = emptyList(),
+    /** "Your times follow another country" notes closed, one per method and country ("jakim>SG"). Stays on this phone. */
+    val sourceAwayClosed: List<String> = emptyList(),
     val trip: List<TripStop> = emptyList(),
 
     // Prayer tracker (opt-in)

@@ -67,7 +67,7 @@ Data types collected (for each: **Collected** yes, **Shared** no (sponsors only 
 | Section | Data type | Why |
 |---|---|---|
 | Location | Approximate location | The city and country of the place in use, sent with the usage counts. Never coordinates. |
-| App activity | App interactions | Anonymous app-open counts, a daily total of minutes used, opens and which screens were used, and which Barakah Picks card was shown or tapped (TelemetryDeck). |
+| App activity | App interactions | Anonymous app-open counts, a daily total of minutes used, opens and which screens were used, which Barakah Picks card was shown or tapped, and a daily note of short setup words (look, theme, alerts and alarms count, azan voice and length, own azan yes or no, big text, tracker, My masjid, widgets count) and whether the Qibla compass and Falak tools were used (TelemetryDeck). |
 | Device or other IDs | Device or other IDs | The random number made on the phone to count people, not visits. |
 
 Not collected: precise location (used on the phone only), personal info, photos (the camera is used only on the phone for the Falak shadow stick and scanning a settings QR code), contacts, messages, files, health, financial info.
