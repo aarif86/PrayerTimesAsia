@@ -135,10 +135,12 @@ export function QiblaScreen() {
     )
   }
 
+  const lock = isAligned && s.prefs.littleSurprises
   return (
-    <div class={`page qibla v12s v12q q-${look}`}>
+    <div class={`page qibla v12s v12q q-${look}${lock ? ' q-locked' : ''}`}>
       {said}
       {body}
+      {lock && <div class="q-lock-line" aria-hidden="true">{tr('qibla.lockedLine')}</div>}
       <div class="q-card steps">
         <div class="headline" style={{ marginBottom: '12px' }}>{tr('qibla.howTo')}</div>
         {askFirst && (
