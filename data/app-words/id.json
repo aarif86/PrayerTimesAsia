@@ -1602,5 +1602,16 @@
   "phone.source.methodName": "Metode {name}",
   "phone.unit.h": "j",
   "phone.unit.m": "mnt",
-  "phone.unit.s": "d"
+  "phone.unit.s": "d",
+  "allset.title": "Semuanya sudah siap",
+  "allset.lead": "Ini pilihan kami untuk Anda",
+  "allset.source": "Waktu dari",
+  "allset.asr": "Metode Asar",
+  "allset.place": "Tempat",
+  "allset.next": "Salat berikutnya",
+  "allset.inTime": "dalam {time}",
+  "allset.go": "Tampilkan waktu salat saya",
+  "allset.change": "Anda dapat mengubah semua ini di Pengaturan.",
+  "qibla.whyCompass": "Kami memakai kompas hanya untuk memutar dial ke arah kiblat. Tidak ada yang dikirim ke mana pun.",
+  "qibla.whyLocation": "Kami memakai lokasi Anda hanya untuk menghitung arah ke Kakbah. Lokasi tetap di ponsel Anda."
 }

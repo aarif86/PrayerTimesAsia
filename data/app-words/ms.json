@@ -1602,5 +1602,16 @@
   "phone.source.methodName": "Kaedah {name}",
   "phone.unit.h": "j",
   "phone.unit.m": "min",
-  "phone.unit.s": "s"
+  "phone.unit.s": "s",
+  "allset.title": "Semuanya sudah siap",
+  "allset.lead": "Inilah pilihan kami untuk anda",
+  "allset.source": "Waktu daripada",
+  "allset.asr": "Kaedah Asar",
+  "allset.place": "Tempat",
+  "allset.next": "Solat seterusnya",
+  "allset.inTime": "dalam {time}",
+  "allset.go": "Tunjukkan waktu solat saya",
+  "allset.change": "Anda boleh ubah semua ini di Tetapan.",
+  "qibla.whyCompass": "Kami guna kompas hanya untuk memutar dail ke arah kiblat. Tiada apa dihantar ke mana-mana.",
+  "qibla.whyLocation": "Kami guna lokasi anda hanya untuk mengira arah ke Kaabah. Ia kekal di telefon anda."
 }

@@ -1606,6 +1606,17 @@ extension AppWords {
         "phone.unit.h": "h",
         "phone.unit.m": "m",
         "phone.unit.s": "s",
+        "allset.title": "You are all set",
+        "allset.lead": "Here is what we chose for you",
+        "allset.source": "Times from",
+        "allset.asr": "Asr method",
+        "allset.place": "Place",
+        "allset.next": "Next prayer",
+        "allset.inTime": "in {time}",
+        "allset.go": "Show my prayer times",
+        "allset.change": "You can change any of this in Settings.",
+        "qibla.whyCompass": "We use the compass only to turn the dial toward Qibla. Nothing is sent anywhere.",
+        "qibla.whyLocation": "We use your location only to work out the direction to the Kaaba. It stays on your phone.",
     ]
 
     static let msLines: [String: String] = [
@@ -3213,6 +3224,17 @@ extension AppWords {
         "phone.unit.h": "j",
         "phone.unit.m": "min",
         "phone.unit.s": "s",
+        "allset.title": "Semuanya sudah siap",
+        "allset.lead": "Inilah pilihan kami untuk anda",
+        "allset.source": "Waktu daripada",
+        "allset.asr": "Kaedah Asar",
+        "allset.place": "Tempat",
+        "allset.next": "Solat seterusnya",
+        "allset.inTime": "dalam {time}",
+        "allset.go": "Tunjukkan waktu solat saya",
+        "allset.change": "Anda boleh ubah semua ini di Tetapan.",
+        "qibla.whyCompass": "Kami guna kompas hanya untuk memutar dail ke arah kiblat. Tiada apa dihantar ke mana-mana.",
+        "qibla.whyLocation": "Kami guna lokasi anda hanya untuk mengira arah ke Kaabah. Ia kekal di telefon anda.",
     ]
 
     static let idLines: [String: String] = [
@@ -4820,5 +4842,16 @@ extension AppWords {
         "phone.unit.h": "j",
         "phone.unit.m": "mnt",
         "phone.unit.s": "d",
+        "allset.title": "Semuanya sudah siap",
+        "allset.lead": "Ini pilihan kami untuk Anda",
+        "allset.source": "Waktu dari",
+        "allset.asr": "Metode Asar",
+        "allset.place": "Tempat",
+        "allset.next": "Salat berikutnya",
+        "allset.inTime": "dalam {time}",
+        "allset.go": "Tampilkan waktu salat saya",
+        "allset.change": "Anda dapat mengubah semua ini di Pengaturan.",
+        "qibla.whyCompass": "Kami memakai kompas hanya untuk memutar dial ke arah kiblat. Tidak ada yang dikirim ke mana pun.",
+        "qibla.whyLocation": "Kami memakai lokasi Anda hanya untuk menghitung arah ke Kakbah. Lokasi tetap di ponsel Anda.",
     ]
 }

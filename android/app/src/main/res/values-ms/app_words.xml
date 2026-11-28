@@ -1605,4 +1605,15 @@
     <string name="phone_unit_h" formatted="false">j</string>
     <string name="phone_unit_m" formatted="false">min</string>
     <string name="phone_unit_s" formatted="false">s</string>
+    <string name="allset_title" formatted="false">Semuanya sudah siap</string>
+    <string name="allset_lead" formatted="false">Inilah pilihan kami untuk anda</string>
+    <string name="allset_source" formatted="false">Waktu daripada</string>
+    <string name="allset_asr" formatted="false">Kaedah Asar</string>
+    <string name="allset_place" formatted="false">Tempat</string>
+    <string name="allset_next" formatted="false">Solat seterusnya</string>
+    <string name="allset_inTime" formatted="false">dalam {time}</string>
+    <string name="allset_go" formatted="false">Tunjukkan waktu solat saya</string>
+    <string name="allset_change" formatted="false">Anda boleh ubah semua ini di Tetapan.</string>
+    <string name="qibla_whyCompass" formatted="false">Kami guna kompas hanya untuk memutar dail ke arah kiblat. Tiada apa dihantar ke mana-mana.</string>
+    <string name="qibla_whyLocation" formatted="false">Kami guna lokasi anda hanya untuk mengira arah ke Kaabah. Ia kekal di telefon anda.</string>
 </resources>

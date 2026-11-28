@@ -152,6 +152,8 @@ export interface Preferences {
   littleSurprises: boolean
   /** The quick guide (seven swipe cards) was seen or skipped. Settings opens it again. */
   guideShown: boolean
+  /** The "You are all set" summary was shown once to a new user. */
+  allSetShown: boolean
   /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
   jumuahReminderMinutes: number
   /** Singapore only: leave for the first Jumaat (at Zohor) or the second one some masjids hold from 2 PM. */
@@ -254,6 +256,7 @@ export const DEFAULT_PREFS: Preferences = {
   showOpening: true,
   littleSurprises: true,
   guideShown: false,
+  allSetShown: false,
   jumuahReminderMinutes: 0,
   jumuahSession: 'first',
   jumuahLeaveAlarm: false,

@@ -1602,5 +1602,16 @@
   "phone.source.methodName": "{name} method",
   "phone.unit.h": "h",
   "phone.unit.m": "m",
-  "phone.unit.s": "s"
+  "phone.unit.s": "s",
+  "allset.title": "You are all set",
+  "allset.lead": "Here is what we chose for you",
+  "allset.source": "Times from",
+  "allset.asr": "Asr method",
+  "allset.place": "Place",
+  "allset.next": "Next prayer",
+  "allset.inTime": "in {time}",
+  "allset.go": "Show my prayer times",
+  "allset.change": "You can change any of this in Settings.",
+  "qibla.whyCompass": "We use the compass only to turn the dial toward Qibla. Nothing is sent anywhere.",
+  "qibla.whyLocation": "We use your location only to work out the direction to the Kaaba. It stays on your phone."
 }
