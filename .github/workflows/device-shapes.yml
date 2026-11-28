@@ -1,0 +1,54 @@
+name: Device shapes
+
+# Pictures of the web app on small phones, folding phones, dual screens, tablets and laptops,
+# and a check that no screen scrolls sideways. Pictures go to the `screenshots-devices-<branch>`
+# branch so they can be looked at on github.com. Needs no secrets.
+on:
+  pull_request:
+    paths: ['web/**', '.github/workflows/device-shapes.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  shapes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install
+        working-directory: web
+        run: npm ci
+      - name: Build
+        working-directory: web
+        run: npm run build
+        env:
+          BASE_PATH: /PrayerTimesAsia/
+      - name: Pictures on every device shape and sideways-scroll check
+        working-directory: web
+        run: |
+          # The runner's own Google Chrome (Playwright cannot install its Chromium on every runner image).
+          chrome=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)
+          if [ -z "$chrome" ]; then npx playwright install chromium; fi
+          echo "Browser: ${chrome:-Playwright Chromium}"
+          CHROMIUM_PATH="$chrome" node scripts/device-shapes.mjs "$RUNNER_TEMP/device-shapes"
+      - name: Publish the pictures
+        if: always() && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          TARGET: screenshots-devices-${{ github.head_ref || github.ref_name }}
+        run: |
+          set -e
+          ls "$RUNNER_TEMP"/device-shapes/*.png >/dev/null 2>&1 || { echo "No pictures"; exit 0; }
+          cd "$RUNNER_TEMP/device-shapes"
+          git init -q -b "$TARGET"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -q -m "Device shape pictures for ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" "$TARGET"

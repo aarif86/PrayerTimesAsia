@@ -85,6 +85,7 @@ import com.prayertimesasia.app.ui.components.trCount
 import androidx.lifecycle.compose.currentStateAsState
 import com.prayertimesasia.app.ui.theme.AppIcons
 import com.prayertimesasia.app.ui.theme.Body
+import com.prayertimesasia.app.ui.theme.cappedSp
 import com.prayertimesasia.app.ui.theme.LocalLook
 import com.prayertimesasia.app.ui.theme.Look
 import com.prayertimesasia.app.ui.theme.Lucide
@@ -261,7 +262,7 @@ private fun PlaceChipV12(state: AppState, onClick: () -> Unit, modifier: Modifie
     ) {
         if (state.prefs.useGPS) Icon(Lucide.navigationFilled, null, Modifier.size(11.dp), tint = col.accent)
         else Icon(Lucide.mapPin(), null, Modifier.size(12.dp), tint = col.accent)
-        Text(name, fontFamily = Body, fontSize = if (name.length > 11) 13.sp else 15.sp, fontWeight = FontWeight.SemiBold,
+        Text(name, fontFamily = Body, fontSize = cappedSp(if (name.length > 11) 13f else 15f, 1.4f), fontWeight = FontWeight.SemiBold,
             color = col.fg, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
         if (place != null && place.isInAsia) Text(place.profile.flag, fontSize = 14.sp)
         Icon(Lucide.chevronDown(3f), null, Modifier.size(12.dp), tint = col.fg.copy(alpha = 0.6f))
@@ -453,10 +454,10 @@ private fun SmallDial(f: TodayFrame, size: Dp, gold: Boolean, col: PageColors) {
 @Composable
 private fun DialCentreV12(kicker: String, count: String, label: String, urgent: Boolean, kSize: Float, cSize: Float, lSize: Float, col: PageColors) {
     Column(Modifier.clearAndSetSemantics {}.widthIn(max = 200.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(kicker, fontFamily = Body, fontSize = kSize.sp, lineHeight = (kSize * 1.3f).sp, color = col.fg2, maxLines = 1)
-        Text(count, fontFamily = Rounded, fontSize = cSize.sp, lineHeight = (cSize * 1.15f).sp, fontWeight = FontWeight.Bold,
+        Text(kicker, fontFamily = Body, fontSize = cappedSp(kSize), lineHeight = cappedSp(kSize * 1.3f), color = col.fg2, maxLines = 1)
+        Text(count, fontFamily = Rounded, fontSize = cappedSp(cSize), lineHeight = cappedSp(cSize * 1.15f), fontWeight = FontWeight.Bold,
             color = if (urgent) col.accent else col.fg, maxLines = 1, softWrap = false, style = TextStyle(fontFeatureSettings = "tnum"))
-        if (label.isNotEmpty()) Text(label, fontFamily = Body, fontSize = lSize.sp, lineHeight = (lSize * 1.3f).sp, color = col.fg2, maxLines = 1,
+        if (label.isNotEmpty()) Text(label, fontFamily = Body, fontSize = cappedSp(lSize), lineHeight = cappedSp(lSize * 1.3f), color = col.fg2, maxLines = 1,
             textAlign = TextAlign.Center)
     }
 }
@@ -662,7 +663,7 @@ private fun PrayerRowV12(
         if (noBar && lit && f.isToday) Box(Modifier.offset(x = 2.dp).size(8.dp).background(dotColor, CircleShape))
         Column(Modifier.weight(1f).clearAndSetSemantics {}.padding(vertical = 6.dp)) {
             FlowLine {
-                Text(r.prayerName(prayer, time), fontFamily = Body, fontSize = if (simple) 23.sp else 19.sp,
+                Text(r.prayerName(prayer, time), fontFamily = Body, fontSize = cappedSp(if (simple) 23f else 19f, if (simple) 1.1f else 1.25f),
                     fontWeight = if (lit) FontWeight.Bold else FontWeight.Medium, color = if (passed) col.fg2 else col.fg, maxLines = 1, modifier = Modifier.align(Alignment.CenterVertically))
                 r.localName(prayer, time)?.let { Text(it, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = col.fg2, maxLines = 1, modifier = Modifier.align(Alignment.CenterVertically)) }
                 if (prayed) Box(Modifier.align(Alignment.CenterVertically).size(18.dp).background(if (look.gold) Color(0xFFE2B65A) else col.accent, CircleShape), contentAlignment = Alignment.Center) {
@@ -679,7 +680,7 @@ private fun PrayerRowV12(
             val src = day(f).alternateSource
             if (other != null && src != null) Text("$src ${r.formatted(other)}", fontFamily = Body, fontSize = 13.sp, color = col.fg2)
         }
-        TimeV12(r.timeParts(time), if (simple) 23.sp else 20.sp, if (simple) 15.sp else 13.sp, FontWeight.SemiBold,
+        TimeV12(r.timeParts(time), cappedSp(if (simple) 23f else 20f, 1.2f), cappedSp(if (simple) 15f else 13f, 1.2f), FontWeight.SemiBold,
             if (passed) col.fg2 else col.fg, col.fg2, Modifier.clearAndSetSemantics {})
         if (hideBell) Spacer(Modifier.size(48.dp)) else BellV12(state, prayer, mode, col)
     }
@@ -746,7 +747,7 @@ private fun BlessedRowV12(state: AppState, blessed: BlessedTime, time: Instant, 
             Text(blessed.name(r.naming), fontFamily = Body, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = col.fg2)
             Text(blessed.note, fontFamily = Body, fontSize = 12.sp, lineHeight = 15.sp, color = col.fg2.copy(alpha = col.fg2.alpha * 0.7f))
         }
-        TimeV12(r.timeParts(time), if (look.simple) 21.sp else 20.sp, 13.sp, FontWeight.Medium, col.fg2, col.fg2)
+        TimeV12(r.timeParts(time), cappedSp(if (look.simple) 21f else 20f, 1.4f), cappedSp(13f, 1.4f), FontWeight.Medium, col.fg2, col.fg2)
         Spacer(Modifier.width(30.dp))
     }
 }

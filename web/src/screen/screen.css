@@ -298,6 +298,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .scr-azan .scr-line { color: var(--gold); }
 /* The highlighted card is the next prayer: a tinted outline and a stronger time. */
 .scr-cell.on .scr-name { color: var(--tint); font-weight: 800; }
+.scr:not(.scr-light) .scr-cell.on .scr-name { color: color-mix(in srgb, var(--tint) 60%, #fff); }
 .scr-look-bands .scr-cell.on .scr-name { color: #fff; }
 /* Bands: the hero sits on the left beside the bands. */
 .landscape .scr-look-bands .scr-head { flex-direction: column; }

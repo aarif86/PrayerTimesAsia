@@ -35,7 +35,7 @@
 .source-badge.full .src { font-size: 13px; }
 
 .daydial { position: relative; flex: none; }
-.daydial svg { position: absolute; inset: 0; }
+.daydial svg { position: absolute; inset: 0; overflow: visible; }
 .dial-sun, .dial-moon { position: absolute; left: 50%; transform: translate(-50%, -50%); display: flex; }
 .daydial-centre { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; white-space: nowrap; }
 
