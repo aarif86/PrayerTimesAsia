@@ -1409,7 +1409,7 @@ html[data-large-text] .pname { font-size: 20px; }
 .azan-foot.azan-free { padding-bottom: 14px; font-size: 12px; opacity: .85; }
 =======
 /* Falak sky: a shooting star in the deepest night */
-.falak-meteor { stroke-dasharray: 40; animation: falak-meteor 1.2s ease-out 1; }
+.falak-meteor { stroke-dasharray: 40; animation: falak-meteor 1.2s ease-out 1 forwards; }
 @keyframes falak-meteor { from { stroke-dashoffset: 40; opacity: 1; } to { stroke-dashoffset: -40; opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .falak-meteor { animation: none; opacity: 0; } }
 >>>>>>> 3a81e5c (Falak sky slider covers the full 24 hours, with small surprises (moon phase, last third of the night, shooting star, midday stillness))

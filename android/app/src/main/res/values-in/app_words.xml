@@ -252,7 +252,7 @@
     <string name="falak_stageMaghribSay" formatted="false">Matahari sudah terbenam sepenuhnya. Cahaya merah masih ada di barat.</string>
     <string name="falak_stageIshaSay" formatted="false">Cahaya merah sudah hilang. Langit sudah gelap.</string>
     <string name="falak_lastThirdSay" formatted="false">Sepertiga malam terakhir. Bintang paling terang. Waktu yang baik untuk memohon.</string>
-    <string name="falak_noonSay" formatted="false">Matahari di puncaknya dan bayangan paling pendek. Itulah sebabnya Zuhur menunggu.</string>
+    <string name="falak_noonSay" formatted="false">Matahari di puncaknya dan bayangan paling pendek. Itulah sebabnya {name} menunggu.</string>
     <string name="falak_stepsTitle" formatted="false">Langkah bayangan</string>
     <string name="falak_stepsSub" formatted="false">Cari waktu {name} dengan bayangan sendiri</string>
     <string name="falak_cameraTitle" formatted="false">Kamera bayangan</string>

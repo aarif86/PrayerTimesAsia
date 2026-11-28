@@ -233,11 +233,11 @@ export function cameraReading(depression: number, clock: number, c: Coordinates,
 }
 
 /**
- * The span the sky slider covers: from 45 minutes before Fajr to 45 minutes after Isha,
- * stretched if needed so that "now" is always on the slider (for example at 1:20 AM).
+ * When the last third of the night begins: the night runs from yesterday's Maghrib to today's Fajr
+ * (today's Maghrib minus 24 hours is within a minute or two of yesterday's).
  */
-export function skyRange(fajr: number, isha: number, now: number): { from: number; to: number } {
-  return { from: Math.min(fajr - 45 * 60_000, now), to: Math.max(isha + 45 * 60_000, now) }
+export function lastThirdStart(maghrib: number, fajr: number): number {
+  return fajr - (fajr - (maghrib - 24 * 3_600_000)) / 3
 }
 
 export type SkyStage = 'night' | 'fajr' | 'sunrise' | 'morning' | 'dhuhr' | 'asr' | 'maghrib' | 'isha'

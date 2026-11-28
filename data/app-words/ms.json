@@ -250,7 +250,7 @@
   "falak.stageMaghribSay": "Matahari sudah terbenam sepenuhnya. Cahaya merah masih ada di barat.",
   "falak.stageIshaSay": "Cahaya merah sudah hilang. Langit sudah gelap.",
   "falak.lastThirdSay": "Sepertiga malam terakhir. Bintang paling terang. Waktu yang baik untuk memohon.",
-  "falak.noonSay": "Matahari di puncaknya dan bayang paling pendek. Itulah sebabnya Zohor menunggu.",
+  "falak.noonSay": "Matahari di puncaknya dan bayang paling pendek. Itulah sebabnya {name} menunggu.",
   "falak.stepsTitle": "Langkah bayang",
   "falak.stepsSub": "Cari waktu {name} dengan bayang sendiri",
   "falak.cameraTitle": "Kamera bayang",

@@ -114,16 +114,9 @@ function MoonShape({ x, y, r, phase }: { x: number; y: number; r: number; phase:
 
 function SkySlider({ place, now }: { place: Place; now: number }) {
   const day = store.day(now)
-<<<<<<< HEAD
-  // The slider always starts at the current time and follows it until you drag it.
-  // It lives only while the Sky tab is open, so coming back later starts at now again.
-  const range = day ? Falak.skyRange(day.times.fajr, day.times.isha, now) : { from: now - 12 * 3_600_000, to: now + 12 * 3_600_000 }
-  const t0 = range.from, t1 = range.to
-=======
-  // The whole day, midnight to midnight, so the night can be explored too.
+  // The whole day, midnight to midnight, so the night can be explored too. It starts at now and follows it until you drag it.
   const t0 = day ? startOfDay(day.times.dhuhr, store.timeZone) : now - 12 * 3_600_000
   const t1 = day ? startOfDay(t0 + 36 * 3_600_000, store.timeZone) : now + 12 * 3_600_000
->>>>>>> 3a81e5c (Falak sky slider covers the full 24 hours, with small surprises (moon phase, last third of the night, shooting star, midday stillness))
   const [picked, setPicked] = useState<number | null>(null)
   const t = picked ?? now
   if (!day) return null
@@ -151,30 +144,25 @@ function SkySlider({ place, now }: { place: Place; now: number }) {
     dhuhr: tr('falak.stageDhuhrSay'), asr: tr('falak.stageAsrSay'), maghrib: tr('falak.stageMaghribSay'), isha: tr('falak.stageIshaSay'),
   }[stage]
   const dark = sun.altitude <= 0 && stage !== 'fajr'
-<<<<<<< HEAD
   // In daylight the sky takes the look's own colours, as in the mockup. Dawn, dusk and night keep their real colours.
   const lit = sun.altitude > 0 && stage !== 'fajr' && stage !== 'maghrib'
   const ink = lit ? 'var(--s-st)' : '#fff'
-  const stars = dark ? Array.from({ length: 14 }, (_, i) => <circle cx={(i * 73) % W} cy={(i * 37) % 100 + 8} r="1.2" fill="#fff" opacity=".7" />) : null
-=======
   // Small surprises while you slide. Midday stillness, the last third of the night, a shooting star in the deepest night.
   const nightStart = times.maghrib - 24 * 3_600_000
-  const lastThirdFrom = times.fajr - (times.fajr - nightStart) / 3
   const midNight = (nightStart + times.fajr) / 2
-  const lastThird = t >= lastThirdFrom && t < times.fajr
+  const lastThird = t >= Falak.lastThirdStart(times.maghrib, times.fajr) && t < times.fajr
   const atNoon = Math.abs(t - plan.noon) <= 15 * 60_000
   const meteor = dark && Math.abs(t - midNight) <= 30 * 60_000
   const stars = dark ? Array.from({ length: lastThird ? 26 : 14 }, (_, i) => <circle cx={(i * 73) % W} cy={(i * 37) % 100 + 8} r={lastThird ? 1.6 : 1.2} fill="#fff" opacity={lastThird ? 0.95 : 0.7} />) : null
   // The moon shows today's real phase and crosses the night sky, east to west.
   const nightP = ((t - times.maghrib + 24 * 3_600_000) % (24 * 3_600_000)) / (times.fajr + 24 * 3_600_000 - times.maghrib)
   const moon = dark && nightP >= 0 && nightP <= 1 ? { x: 44 + (W - 88) * nightP, y: GY - 34 - (GY - 64) * Math.sin(Math.PI * nightP), phase: moonPhase(t) } : null
-  const sayText = lastThird ? tr('falak.lastThirdSay') : atNoon ? tr('falak.noonSay') : say
->>>>>>> 3a81e5c (Falak sky slider covers the full 24 hours, with small surprises (moon phase, last third of the night, shooting star, midday stillness))
+  const sayText = lastThird ? tr('falak.lastThirdSay') : atNoon ? tr('falak.noonSay', { name: names.dhuhr }) : say
   const minutes = Math.round((t1 - t0) / 60_000)
   const shadowEnd = STICK_X + (morning ? 1 : -1) * shadow
   return (
     <div class="sky-card">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${title}. ${say}`}>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${title}. ${sayText}`}>
         <defs>
           <linearGradient id="falak-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style={{ stopColor: lit ? 'var(--s-fk1)' : top }} /><stop offset="1" style={{ stopColor: lit ? 'var(--s-fk2)' : bottom }} /></linearGradient>
           <radialGradient id="falak-sun"><stop offset="0" stop-color="#fff7d6" /><stop offset=".45" stop-color="#ffd66b" /><stop offset="1" stop-color="#ffd66b" stop-opacity="0" /></radialGradient>
