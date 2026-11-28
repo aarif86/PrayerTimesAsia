@@ -1219,7 +1219,7 @@ html[data-large-text] .pname { font-size: 20px; }
 :root[data-theme="light"] .m-sunPath .m-deco { background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 390 34%27%3E%3Cpath d=%27M-10 32 Q195 -18 400 32%27 fill=%27none%27 stroke=%27%23C9622A%27 stroke-opacity=%27.6%27 stroke-width=%272.5%27/%3E%3Ccircle cx=%27195%27 cy=%277%27 r=%276%27 fill=%27%23C9622A%27/%3E%3C/svg%3E"); }
 .m-bands .m-deco { height: 8px; margin: 0 calc(-1 * var(--gutter)) 12px; border: 0; border-radius: 0; background-size: auto;
   background-image: linear-gradient(90deg, #3a6f63 0 16.66%, #8a9a52 0 33.33%, #ab8d3a 0 50%, #cd7d38 0 66.66%, #d3705c 0 83.33%, #c9565d 0); }
-.m-simple .m-deco { display: none; }
+.m-simple .m-deco, .m-centre .m-deco { display: none; }
 .m-gold .m-deco { height: 1px; border: 0; border-radius: 0; background: var(--s-ac); background-image: none; opacity: .7; margin: 0 0 12px; }
 .m-bands .masjid-page { background: var(--m-bg); border-radius: 0; margin-top: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .m-bands .m-grab { display: none; }

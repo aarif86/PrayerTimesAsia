@@ -21,6 +21,9 @@ struct NearbyView: View {
     @State private var openOnly = false
     @State private var allFriday = false
     @State private var showAbout = false
+    /// Where the bottom panel rests: small (just the search button), half (map and list share the screen, the start), or large.
+    @AppStorage("masjidSheetStop") private var stopRaw = SheetStop.half.rawValue
+    @State private var drag: CGFloat = 0
     @State private var suggesting = false
     /// When Near me last found the person, so Suggest a prayer room only offers a recent spot as the room's pin.
     @State private var nearMeAt: Date?
@@ -33,6 +36,7 @@ struct NearbyView: View {
     @AppStorage("masjidTripMode") private var modeRaw = TripMode.walk.rawValue
     @Environment(\.openURL) private var openURL
 
+    private var stop: SheetStop { SheetStop(rawValue: stopRaw) ?? .half }
     private var mode: TripMode { TripMode(rawValue: modeRaw) ?? .walk }
     private var use24: Bool { model.prefs.use24Hour }
 
@@ -93,14 +97,18 @@ struct NearbyView: View {
             TimelineView(.periodic(from: .now, by: 300)) { context in
                 let now = context.date
                 let list = visible(at: now)
-                VStack(spacing: look == .bands ? 0 : -overlap) {
-                    map(list)
-                    ScrollView {
-                        content(list: list, now: now)
-                            .padding(.bottom, 14)
+                GeometryReader { geo in
+                    let total = geo.size.height
+                    let committed = sheetHeight(stop, total: total)
+                    let live = min(max(committed - drag, sheetHeight(.small, total: total)), sheetHeight(.large, total: total))
+                    ZStack(alignment: .bottom) {
+                        VStack(spacing: 0) {
+                            map(list).frame(height: max(total - committed + overlap, 140))
+                            Spacer(minLength: 0)
+                        }
+                        .animation(.snappy, value: stopRaw)
+                        sheet(list: list, now: now, height: live, total: total)
                     }
-                    .background(sheetBackground)
-                    .zIndex(1)
                 }
             }
             .background(SkyNow())
@@ -141,6 +149,50 @@ struct NearbyView: View {
     }
 
     // MARK: Sheet
+
+    private enum SheetStop: Int, CaseIterable { case small, half, large }
+
+    private func sheetHeight(_ stop: SheetStop, total: CGFloat) -> CGFloat {
+        switch stop {
+        case .small: return min(200, total * 0.3)
+        case .half: return total * 0.5 + overlap
+        case .large: return total * 0.88
+        }
+    }
+
+    /// The bottom panel. Drag the handle area up or down (or tap it) to give the map or the list more room.
+    private func sheet(list: [PrayerSpace], now: Date, height: CGFloat, total: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            LookStrip(look: look, p: p)
+                .padding(.bottom, 6)
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 4)
+                        .onChanged { drag = $0.translation.height }
+                        .onEnded { v in
+                            let target = sheetHeight(stop, total: total) - v.predictedEndTranslation.height
+                            let best = SheetStop.allCases.min { abs(sheetHeight($0, total: total) - target) < abs(sheetHeight($1, total: total) - target) } ?? .half
+                            withAnimation(.snappy) { stopRaw = best.rawValue; drag = 0 }
+                        }
+                )
+                .onTapGesture { withAnimation(.snappy) { stopRaw = (stop == .large ? SheetStop.half : SheetStop(rawValue: stop.rawValue + 1)!).rawValue } }
+                .accessibilityElement()
+                .accessibilityLabel(W("masjid.listSize"))
+                .accessibilityAddTraits(.isButton)
+                .accessibilityAdjustableAction { dir in
+                    let next = dir == .increment ? stop.rawValue + 1 : stop.rawValue - 1
+                    if let s = SheetStop(rawValue: next) { withAnimation(.snappy) { stopRaw = s.rawValue } }
+                }
+            ScrollView {
+                content(list: list, now: now)
+                    .padding(.bottom, 14)
+            }
+            .id("\(modeRaw)-\(kind)-\(openOnly)")
+        }
+        .frame(height: height, alignment: .top)
+        .background(sheetBackground)
+    }
 
     /// How far the list sheet rides up over the map (none in Colour Bands, which is flat).
     private var overlap: CGFloat { look == .bands ? 0 : 24 }
@@ -208,7 +260,6 @@ struct NearbyView: View {
             }
         }
         }
-        .containerRelativeFrame(.vertical) { length, _ in min(look == .simple ? 300 : 340, length * 0.42) }
         .overlay(alignment: .bottom) {
             if let s = selected { pinCard(s).padding(.bottom, overlap) }
         }
@@ -286,9 +337,7 @@ struct NearbyView: View {
     private func content(list: [PrayerSpace], now: Date) -> some View {
         let eid = currentEid(now)
         let friday = isFridayMorning(now)
-        LazyVStack(alignment: .leading, spacing: 12) {
-            LookStrip(look: look, p: p)
-
+        VStack(alignment: .leading, spacing: 12) {
             if let m = model.prefs.myMasjid, let here {
                 YourMasjidCard(link: m, from: here, mode: mode, singapore: singapore, eid: eid,
                                onFocus: focus, onDirections: { directions(to: mapItem(m.name, m.coordinates)) })
@@ -1031,13 +1080,7 @@ private struct LookStrip: View {
             }
             .accessibilityHidden(true)
         default:
-            VStack(spacing: 10) {
-                grab
-                KawungDots()
-                    .frame(height: 10)
-                    .padding(.horizontal)
-            }
-            .accessibilityHidden(true)
+            grab
         }
     }
 
