@@ -1586,19 +1586,6 @@
     <string name="phone_unit_h" formatted="false">h</string>
     <string name="phone_unit_m" formatted="false">m</string>
     <string name="phone_unit_s" formatted="false">s</string>
-    <string name="nopray_title" formatted="false">Times not to pray</string>
-    <string name="nopray_sub" formatted="false">Three short windows each day for extra prayers</string>
-    <string name="nopray_sunrise" formatted="false">After sunrise</string>
-    <string name="nopray_sunriseNote" formatted="false">Wait until the sun has risen</string>
-    <string name="nopray_zenith" formatted="false">Sun at its highest</string>
-    <string name="nopray_zenithNote" formatted="false">Just before Zuhr</string>
-    <string name="nopray_sunset" formatted="false">Before sunset</string>
-    <string name="nopray_sunsetNote" formatted="false">When the sun turns yellow</string>
-    <string name="nopray_range" formatted="false">{from} to {to}</string>
-    <string name="nopray_nowInside" formatted="false">Not a time for extra prayers until {to}</string>
-    <string name="nopray_nowFine" formatted="false">Fine to pray now. Next window starts {from}</string>
-    <string name="nopray_nowDone" formatted="false">Fine to pray now. No more windows today</string>
-    <string name="nopray_fineprint" formatted="false">Prayers you missed and fard prayers are allowed. Follow your local religious authority.</string>
     <string name="allset_title" formatted="false">You are all set</string>
     <string name="allset_lead" formatted="false">Here is what we chose for you</string>
     <string name="allset_source" formatted="false">Times from</string>

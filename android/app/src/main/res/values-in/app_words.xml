@@ -1586,19 +1586,6 @@
     <string name="phone_unit_h" formatted="false">j</string>
     <string name="phone_unit_m" formatted="false">mnt</string>
     <string name="phone_unit_s" formatted="false">d</string>
-    <string name="nopray_title" formatted="false">Waktu terlarang salat sunah</string>
-    <string name="nopray_sub" formatted="false">Tiga waktu singkat setiap hari untuk salat sunah</string>
-    <string name="nopray_sunrise" formatted="false">Setelah matahari terbit</string>
-    <string name="nopray_sunriseNote" formatted="false">Tunggu sampai matahari naik</string>
-    <string name="nopray_zenith" formatted="false">Matahari tepat di atas</string>
-    <string name="nopray_zenithNote" formatted="false">Sesaat sebelum Zuhur</string>
-    <string name="nopray_sunset" formatted="false">Sebelum matahari terbenam</string>
-    <string name="nopray_sunsetNote" formatted="false">Saat matahari menguning</string>
-    <string name="nopray_range" formatted="false">{from} sampai {to}</string>
-    <string name="nopray_nowInside" formatted="false">Bukan waktu salat sunah sampai {to}</string>
-    <string name="nopray_nowFine" formatted="false">Boleh salat sekarang. Waktu terlarang berikutnya mulai {from}</string>
-    <string name="nopray_nowDone" formatted="false">Boleh salat sekarang. Tidak ada lagi waktu terlarang hari ini</string>
-    <string name="nopray_fineprint" formatted="false">Salat yang terlewat dan salat fardu diperbolehkan. Ikuti otoritas agama setempat Anda.</string>
     <string name="allset_title" formatted="false">Semuanya sudah siap</string>
     <string name="allset_lead" formatted="false">Ini pilihan kami untuk Anda</string>
     <string name="allset_source" formatted="false">Waktu dari</string>

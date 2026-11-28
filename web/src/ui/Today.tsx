@@ -30,7 +30,6 @@ import { appBannerShownByBrowser, isStandalone, phoneAppOffer } from './pwa'
 import { TabJourney } from './icons'
 import { SeasonCard } from './Ramadan'
 import { Hadith } from './Hadith'
-import { NoPrayCard } from './NoPray'
 import { blessedNote, styleLabel, tr } from '../core/appWords'
 
 type Moment = { prayer: Prayer; time: number } | null
@@ -610,7 +609,6 @@ function SimplePage({ c }: { c: Ctx }) {
       <MusafirChip now={c.now} />
       <DayNavigator c={c} slim />
       <PrayerList c={c} fill slim footer={<ShowMoreLink c={c} />} />
-      {c.showMore && <NoPrayCard day={c.shown} now={c.now} today={c.offset === 0} />}
       <NotePrompt c={c} />
       <Offer c={c} />
     </div>
@@ -663,7 +661,6 @@ function CentrePage({ c, gold }: { c: Ctx; gold?: boolean }) {
       <MusafirChip now={c.now} />
       <DayNavigator c={c} slim />
       <PrayerList c={c} fill slim footer={<ShowMoreLink c={c} />} />
-      {c.showMore && <NoPrayCard day={c.shown} now={c.now} today={c.offset === 0} />}
       <SourceLine day={c.shown} />
       <NotePrompt c={c} />
       <Offer c={c} />
@@ -707,7 +704,6 @@ function SunPathPage({ c }: { c: Ctx }) {
       <MusafirChip now={now} />
       <DayNavigator c={c} slim />
       <PrayerList c={c} fill slim footer={<ShowMoreLink c={c} />} />
-      {c.showMore && <NoPrayCard day={c.shown} now={c.now} today={c.offset === 0} />}
       <SourceLine day={c.shown} />
       <NotePrompt c={c} />
       <Offer c={c} />
@@ -755,7 +751,6 @@ function BandsPage({ c }: { c: Ctx }) {
       </div>
       <div class="bands-foot page">
         <div class="row foot-row"><SourceLine day={shown} /><span class="spacer" /><ShowMoreLink c={c} /></div>
-        {c.showMore && <NoPrayCard day={shown} now={now} today={offset === 0} />}
         <NotePrompt c={c} />
       <Offer c={c} />
         <AllFiveLine />

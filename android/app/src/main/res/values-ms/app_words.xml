@@ -1586,19 +1586,6 @@
     <string name="phone_unit_h" formatted="false">j</string>
     <string name="phone_unit_m" formatted="false">min</string>
     <string name="phone_unit_s" formatted="false">s</string>
-    <string name="nopray_title" formatted="false">Waktu larangan solat sunat</string>
-    <string name="nopray_sub" formatted="false">Tiga waktu singkat setiap hari untuk solat sunat</string>
-    <string name="nopray_sunrise" formatted="false">Selepas terbit matahari</string>
-    <string name="nopray_sunriseNote" formatted="false">Tunggu sehingga matahari naik</string>
-    <string name="nopray_zenith" formatted="false">Matahari tegak di atas</string>
-    <string name="nopray_zenithNote" formatted="false">Sejurus sebelum Zohor</string>
-    <string name="nopray_sunset" formatted="false">Sebelum matahari terbenam</string>
-    <string name="nopray_sunsetNote" formatted="false">Apabila matahari menguning</string>
-    <string name="nopray_range" formatted="false">{from} hingga {to}</string>
-    <string name="nopray_nowInside" formatted="false">Bukan waktu solat sunat sehingga {to}</string>
-    <string name="nopray_nowFine" formatted="false">Boleh bersolat sekarang. Waktu larangan seterusnya bermula {from}</string>
-    <string name="nopray_nowDone" formatted="false">Boleh bersolat sekarang. Tiada lagi waktu larangan hari ini</string>
-    <string name="nopray_fineprint" formatted="false">Solat yang tertinggal dan solat fardu dibolehkan. Ikut pihak berkuasa agama tempatan anda.</string>
     <string name="allset_title" formatted="false">Semuanya sudah siap</string>
     <string name="allset_lead" formatted="false">Inilah pilihan kami untuk anda</string>
     <string name="allset_source" formatted="false">Waktu daripada</string>
