@@ -36,7 +36,6 @@ const DAYS = 30
 const ORIGIN = 'https://prayertimes.asia'
 const PLAY = 'https://play.google.com/store/apps/details?id=com.prayertimesasia.app'
 type Lang = 'en' | 'ms' | 'id' | 'ar' | 'ur' | 'bn' | 'tr'
-/** Every city has these three. The rest are the city's own language, where the website has it. */
 const LANGS: Lang[] = ['en', 'ms', 'id']
 const ALL_LANGS: Lang[] = ['en', 'ms', 'id', 'ar', 'ur', 'bn', 'tr']
 const LOCAL: Record<string, Lang> = { makkah: 'ar', madinah: 'ar', dubai: 'ar', karachi: 'ur', lahore: 'ur', dhaka: 'bn', istanbul: 'tr' }
@@ -98,7 +97,10 @@ const timesAt = (c: City2, ms: number): Times => computeFor(ms, c.tz, c.coords, 
 const LOCALE: Record<Lang, string> = { en: 'en-GB', ms: 'ms-MY', id: 'id-ID', ar: 'ar-u-ca-gregory-nu-latn', ur: 'ur-PK-u-nu-latn', bn: 'bn-BD-u-nu-latn', tr: 'tr-TR' }
 const NATIVE: Record<Lang, string> = { en: 'EN', ms: 'MS', id: 'ID', ar: 'العربية', ur: 'اردو', bn: 'বাংলা', tr: 'TR' }
 const RTL: Lang[] = ['ar', 'ur']
-const langsFor = (c: City2): Lang[] => (LOCAL[c.slug] ? [...LANGS, LOCAL[c.slug]] : LANGS)
+/** English everywhere. Malay where Malay is spoken (Malaysia, Singapore, Brunei), Indonesian in Indonesia, and the city's own language where the website has it. */
+const langsFor = (c: City2): Lang[] => [
+  'en', ...(['MY', 'SG', 'BN'].includes(c.country) ? ['ms' as Lang] : []), ...(c.country === 'ID' ? ['id' as Lang] : []), ...(LOCAL[c.slug] ? [LOCAL[c.slug]] : []),
+]
 const inLang = (c: City2, l: Lang) => langsFor(c).includes(l)
 const BASE_DIR: Record<Lang, string> = { en: 'prayer-times', ms: 'ms/waktu-solat', id: 'id/jadwal-sholat', ar: 'ar/mawaqit-alsalat', ur: 'ur/namaz-ke-auqat', bn: 'bn/namajer-somoy', tr: 'tr/namaz-vakitleri' }
 const PRINT_DIR: Record<Lang, string> = { en: 'printable-timetables', ms: 'ms/jadual-cetak', id: 'id/jadwal-cetak', ar: 'ar/jadwal-lil-tibaa', ur: 'ur/chapai-ka-jadwal', bn: 'bn/print-somoysuchi', tr: 'tr/yazdirilabilir-vakitler' }
@@ -828,4 +830,4 @@ write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 ${entries.join('\n')}
 </urlset>
 `)
-console.log(`Search pages built: ${cities.length} cities in English, Malay, Indonesian and local languages, printable timetables, about, sitemap with ${entries.length} addresses`)
+console.log(`Search pages built: ${cities.length} cities, English plus the local languages that fit each city, printable timetables, about, sitemap with ${entries.length} addresses`)

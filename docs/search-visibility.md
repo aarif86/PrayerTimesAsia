@@ -3,7 +3,7 @@
 What the website publishes so Google, Bing and AI answer tools can find and read it.
 
 ## What is built (every Web workflow run)
-- `prayer-times/` plus one page per city (50 today, also in Malay at `ms/waktu-solat/` and Indonesian at `id/jadwal-sholat/`, each with a printable monthly and Ramadan timetable page under `printable-timetables/`, `ms/jadual-cetak/` and `id/jadwal-cetak/`), built by `web/scripts/build-search-pages.ts` from the same prayer engine and country table as the apps. Today's times are plain text, with the next 30 days, a short FAQ, and FAQPage, BreadcrumbList, WebSite and Organization markup.
+- `prayer-times/` plus one page per city (50 today, also in Malay at `ms/waktu-solat/` for Malaysia, Singapore and Brunei, Indonesian at `id/jadwal-sholat/` for Indonesia, and the city's own language where the site has it, each with a printable monthly and Ramadan timetable page under `printable-timetables/`, `ms/jadual-cetak/` and `id/jadwal-cetak/`), built by `web/scripts/build-search-pages.ts` from the same prayer engine and country table as the apps. Today's times are plain text, with the next 30 days, a short FAQ, and FAQPage, BreadcrumbList, WebSite and Organization markup.
 - `about.html`, how the times are worked out and which authorities are followed.
 - `sitemap.xml` (home in 8 languages with hreflang, every public page, every city page) and `robots.txt`.
 - A daily rebuild (16:20 UTC) so the written "today" times stay fresh. A small script also shows the right day if a page is older.
