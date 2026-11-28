@@ -208,10 +208,15 @@ enum UsageCounter {
     static var widgetCount: Int { UserDefaults.standard.integer(forKey: widgetsKey) }
 
     static func refreshWidgetCount() {
+        #if DEBUG
+        // Test and debug builds have no widgets to count, and asking WidgetKit there can stall the UI tests.
+        return
+        #else
         WidgetCenter.shared.getCurrentConfigurations { result in
             guard case .success(let found) = result else { return }
             UserDefaults.standard.set(found.count, forKey: widgetsKey)
         }
+        #endif
     }
 
     static func minutesBand(_ minutes: Double) -> String {
