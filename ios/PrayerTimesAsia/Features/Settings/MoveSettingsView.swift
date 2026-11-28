@@ -99,7 +99,7 @@ struct MoveInView: View {
                 }
             } else {
                 Section {
-                    if DataScannerViewController.isSupported {
+                    if QRScanner.isSupported {
                         Button { scanning = true } label: { Label(W("phone.scanQr"), systemImage: "qrcode.viewfinder") }
                     }
                     PasteButton(payloadType: String.self) { strings in
