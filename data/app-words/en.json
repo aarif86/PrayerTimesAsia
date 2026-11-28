@@ -1606,5 +1606,6 @@
   "allset.inTime": "in {time}",
   "allset.go": "Show my prayer times",
   "allset.change": "You can change any of this in Settings.",
-  "qibla.whyCompass": "We use the compass only to turn the dial toward Qibla. Nothing is sent anywhere."
+  "qibla.whyCompass": "We use the compass only to turn the dial toward Qibla. Nothing is sent anywhere.",
+  "qibla.whyLocation": "We use your location only to work out the direction to the Kaaba. It stays on your phone."
 }

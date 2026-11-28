@@ -1609,4 +1609,5 @@
     <string name="allset_go" formatted="false">Show my prayer times</string>
     <string name="allset_change" formatted="false">You can change any of this in Settings.</string>
     <string name="qibla_whyCompass" formatted="false">We use the compass only to turn the dial toward Qibla. Nothing is sent anywhere.</string>
+    <string name="qibla_whyLocation" formatted="false">We use your location only to work out the direction to the Kaaba. It stays on your phone.</string>
 </resources>

@@ -144,7 +144,7 @@ export function QiblaScreen() {
         {askFirst && (
           <Step icon={<CompassIcon size={20} class="q-ac" />}>
             {trWith('qibla.browserAsksHow', { button: <b>{tr('qibla.compassOn')}</b>, allow: <b>{tr('qibla.allow')}</b> })}
-            <div class="caption" style={{ marginTop: '4px', opacity: 0.8 }}>{tr('qibla.whyCompass')}</div>
+            <div class="caption" style={{ marginTop: '4px', opacity: 0.8 }}>{tr('qibla.whyCompass')} {tr('qibla.whyLocation')}</div>
           </Step>
         )}
         {(compass.state === 'unavailable' || compass.state === 'denied') && !demoAligned && demoHeading == null && (

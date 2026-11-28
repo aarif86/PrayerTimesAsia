@@ -1609,4 +1609,5 @@
     <string name="allset_go" formatted="false">Tunjukkan waktu solat saya</string>
     <string name="allset_change" formatted="false">Anda boleh ubah semua ini di Tetapan.</string>
     <string name="qibla_whyCompass" formatted="false">Kami guna kompas hanya untuk memutar dail ke arah kiblat. Tiada apa dihantar ke mana-mana.</string>
+    <string name="qibla_whyLocation" formatted="false">Kami guna lokasi anda hanya untuk mengira arah ke Kaabah. Ia kekal di telefon anda.</string>
 </resources>

@@ -1606,5 +1606,6 @@
   "allset.inTime": "dalam {time}",
   "allset.go": "Tunjukkan waktu solat saya",
   "allset.change": "Anda boleh ubah semua ini di Tetapan.",
-  "qibla.whyCompass": "Kami guna kompas hanya untuk memutar dail ke arah kiblat. Tiada apa dihantar ke mana-mana."
+  "qibla.whyCompass": "Kami guna kompas hanya untuk memutar dail ke arah kiblat. Tiada apa dihantar ke mana-mana.",
+  "qibla.whyLocation": "Kami guna lokasi anda hanya untuk mengira arah ke Kaabah. Ia kekal di telefon anda."
 }
