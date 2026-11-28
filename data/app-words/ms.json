@@ -1588,5 +1588,7 @@
   "alerts.helpAzan": "Laungan azan dengan bunyi. Hanya pada lima waktu solat. Ia menggantikan paparan biasa.",
   "alerts.pickHint": "Pilih Azan, Notifikasi, Penggera atau Mati",
   "alerts.threeWords": "Azan, notifikasi, penggera",
-  "alerts.threeWordsSub": "Kami hanya menggunakan tiga perkataan ini di seluruh aplikasi."
+  "alerts.threeWordsSub": "Kami hanya menggunakan tiga perkataan ini di seluruh aplikasi.",
+  "alerts.focusBreak": "Muncul semasa Fokus",
+  "alerts.focusBreakSub": "Benarkan notifikasi solat muncul walaupun dalam Fokus atau Jangan Ganggu. Penggera sentiasa berbunyi. Mod senyap masih menyenyapkan notifikasi."
 }

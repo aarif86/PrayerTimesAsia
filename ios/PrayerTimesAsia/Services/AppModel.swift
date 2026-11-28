@@ -1117,7 +1117,7 @@ final class AppModel {
                                                 body: place.name, fireDate: $0.0, sound: .alarm(sound))
                 }
             }
-            NotificationScheduler.reschedule(enabled: !all.isEmpty, alerts: all)
+            NotificationScheduler.reschedule(enabled: !all.isEmpty, alerts: all, timeSensitive: prefs.breakThroughFocus)
         }
         WidgetBridge.publish(self)
     }

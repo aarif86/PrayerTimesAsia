@@ -57,6 +57,9 @@ targets:
       properties:
         com.apple.security.application-groups:
           - group.com.prayertimesasia.app
+        # Time Sensitive Notifications: prayer notifications can come through Focus.
+        # The App ID has the capability (28 Nov 2026) and the "Prayer Times Asia" profile was regenerated.
+        com.apple.developer.usernotifications.time-sensitive: true
     dependencies:
       - target: PrayerTimesAsiaWidgets
         embed: true

@@ -408,6 +408,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var quietTo = 6 * 60
     /// Every alert buzzes only, never a sound.
     var buzzOnly = false
+    /// Prayer notifications may break through Focus and Do Not Disturb (Time Sensitive). On by default; needs the capability in the build.
+    var breakThroughFocus = true
     /// Bigger text everywhere, for older eyes.
     var largeText = false
     /// The moving opening screen. Off goes straight to the app; it still shows the first time.
@@ -528,6 +530,7 @@ struct Preferences: Codable, Equatable, Sendable {
         if !(0..<1440).contains(quietFrom) { quietFrom = d.quietFrom }
         if !(0..<1440).contains(quietTo) { quietTo = d.quietTo }
         buzzOnly = v(.buzzOnly, d.buzzOnly)
+        breakThroughFocus = v(.breakThroughFocus, d.breakThroughFocus)
         largeText = v(.largeText, d.largeText)
         showOpening = v(.showOpening, d.showOpening)
         // Everyone sees the quick guide once, testers who were set up before it came too

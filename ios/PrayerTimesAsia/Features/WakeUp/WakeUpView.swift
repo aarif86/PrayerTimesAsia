@@ -227,6 +227,7 @@ private struct AlertsMainList: View {
             NextAlarmSection()
             ExtrasSection()
             SoundSection()
+            FocusSection()
             AlarmSoundSection()
             WakeHadithSection()
         }
@@ -314,7 +315,7 @@ private struct TestAlertSection: View {
         let name = model.current(at: now).map { $0.prayer.name(model.naming) } ?? W("tab.prayer")
         let quiet = model.prefs.buzzOnly
         let sound: Azan.Sound = model.prefs.azanSound && Azan.isAvailable ? .azan(voice: model.prefs.azanVoice, full: model.prefs.azanFull, fajr: false) : .standard
-        return await NotificationScheduler.sendTest(title: W("notify.testTitle", ["name": name]), body: W("notify.testBody"), sound: sound, silent: quiet)
+        return await NotificationScheduler.sendTest(title: W("notify.testTitle", ["name": name]), body: W("notify.testBody"), sound: sound, silent: quiet, timeSensitive: model.prefs.breakThroughFocus)
     }
 }
 
@@ -861,6 +862,21 @@ private struct AzanChoiceRows: View {
         player?.stop()
         player = nil
         playing = nil
+    }
+}
+
+/// Time Sensitive: let prayer notifications through Focus and Do Not Disturb. Alarms always do.
+private struct FocusSection: View {
+    @Environment(AppModel.self) private var model
+    var body: some View {
+        Section {
+            Toggle(isOn: Binding(get: { model.prefs.breakThroughFocus }, set: { model.prefs.breakThroughFocus = $0 })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(W("alerts.focusBreak"))
+                    Text(W("alerts.focusBreakSub")).font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+        }
     }
 }
 

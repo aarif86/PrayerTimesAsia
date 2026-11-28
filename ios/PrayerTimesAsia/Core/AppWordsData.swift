@@ -1592,6 +1592,8 @@ extension AppWords {
         "alerts.pickHint": "Choose Azan, Notification, Alarm or Off",
         "alerts.threeWords": "Azan, notification, alarm",
         "alerts.threeWordsSub": "We only use these three words, everywhere in the app.",
+        "alerts.focusBreak": "Come through Focus",
+        "alerts.focusBreakSub": "Let prayer notifications show up even in Focus or Do Not Disturb. Alarms always do. Silent mode still mutes notifications.",
     ]
 
     static let msLines: [String: String] = [
@@ -3185,6 +3187,8 @@ extension AppWords {
         "alerts.pickHint": "Pilih Azan, Notifikasi, Penggera atau Mati",
         "alerts.threeWords": "Azan, notifikasi, penggera",
         "alerts.threeWordsSub": "Kami hanya menggunakan tiga perkataan ini di seluruh aplikasi.",
+        "alerts.focusBreak": "Muncul semasa Fokus",
+        "alerts.focusBreakSub": "Benarkan notifikasi solat muncul walaupun dalam Fokus atau Jangan Ganggu. Penggera sentiasa berbunyi. Mod senyap masih menyenyapkan notifikasi.",
     ]
 
     static let idLines: [String: String] = [
@@ -4778,5 +4782,7 @@ extension AppWords {
         "alerts.pickHint": "Pilih Azan, Notifikasi, Alarm, atau Nonaktif",
         "alerts.threeWords": "Azan, notifikasi, alarm",
         "alerts.threeWordsSub": "Kami hanya memakai tiga kata ini di seluruh aplikasi.",
+        "alerts.focusBreak": "Tampil saat Fokus",
+        "alerts.focusBreakSub": "Izinkan notifikasi salat tampil meski dalam Fokus atau Jangan Ganggu. Alarm selalu berbunyi. Mode senyap tetap membisukan notifikasi.",
     ]
 }

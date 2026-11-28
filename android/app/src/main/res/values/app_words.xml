@@ -1591,4 +1591,6 @@
     <string name="alerts_pickHint" formatted="false">Choose Azan, Notification, Alarm or Off</string>
     <string name="alerts_threeWords" formatted="false">Azan, notification, alarm</string>
     <string name="alerts_threeWordsSub" formatted="false">We only use these three words, everywhere in the app.</string>
+    <string name="alerts_focusBreak" formatted="false">Come through Focus</string>
+    <string name="alerts_focusBreakSub" formatted="false">Let prayer notifications show up even in Focus or Do Not Disturb. Alarms always do. Silent mode still mutes notifications.</string>
 </resources>

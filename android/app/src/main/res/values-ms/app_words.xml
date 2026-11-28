@@ -1591,4 +1591,6 @@
     <string name="alerts_pickHint" formatted="false">Pilih Azan, Notifikasi, Penggera atau Mati</string>
     <string name="alerts_threeWords" formatted="false">Azan, notifikasi, penggera</string>
     <string name="alerts_threeWordsSub" formatted="false">Kami hanya menggunakan tiga perkataan ini di seluruh aplikasi.</string>
+    <string name="alerts_focusBreak" formatted="false">Muncul semasa Fokus</string>
+    <string name="alerts_focusBreakSub" formatted="false">Benarkan notifikasi solat muncul walaupun dalam Fokus atau Jangan Ganggu. Penggera sentiasa berbunyi. Mod senyap masih menyenyapkan notifikasi.</string>
 </resources>

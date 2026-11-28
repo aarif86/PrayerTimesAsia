@@ -1588,5 +1588,7 @@
   "alerts.helpAzan": "Kumandang azan dengan suara. Hanya pada lima waktu salat. Menggantikan pop-up biasa.",
   "alerts.pickHint": "Pilih Azan, Notifikasi, Alarm, atau Nonaktif",
   "alerts.threeWords": "Azan, notifikasi, alarm",
-  "alerts.threeWordsSub": "Kami hanya memakai tiga kata ini di seluruh aplikasi."
+  "alerts.threeWordsSub": "Kami hanya memakai tiga kata ini di seluruh aplikasi.",
+  "alerts.focusBreak": "Tampil saat Fokus",
+  "alerts.focusBreakSub": "Izinkan notifikasi salat tampil meski dalam Fokus atau Jangan Ganggu. Alarm selalu berbunyi. Mode senyap tetap membisukan notifikasi."
 }

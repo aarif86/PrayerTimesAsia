@@ -1591,4 +1591,6 @@
     <string name="alerts_pickHint" formatted="false">Pilih Azan, Notifikasi, Alarm, atau Nonaktif</string>
     <string name="alerts_threeWords" formatted="false">Azan, notifikasi, alarm</string>
     <string name="alerts_threeWordsSub" formatted="false">Kami hanya memakai tiga kata ini di seluruh aplikasi.</string>
+    <string name="alerts_focusBreak" formatted="false">Tampil saat Fokus</string>
+    <string name="alerts_focusBreakSub" formatted="false">Izinkan notifikasi salat tampil meski dalam Fokus atau Jangan Ganggu. Alarm selalu berbunyi. Mode senyap tetap membisukan notifikasi.</string>
 </resources>

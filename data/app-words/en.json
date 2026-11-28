@@ -1588,5 +1588,7 @@
   "alerts.helpAzan": "The call to prayer, with sound. Only at the five prayer times. It replaces the pop-up.",
   "alerts.pickHint": "Choose Azan, Notification, Alarm or Off",
   "alerts.threeWords": "Azan, notification, alarm",
-  "alerts.threeWordsSub": "We only use these three words, everywhere in the app."
+  "alerts.threeWordsSub": "We only use these three words, everywhere in the app.",
+  "alerts.focusBreak": "Come through Focus",
+  "alerts.focusBreakSub": "Let prayer notifications show up even in Focus or Do Not Disturb. Alarms always do. Silent mode still mutes notifications."
 }

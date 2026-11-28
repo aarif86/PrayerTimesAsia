@@ -12,7 +12,7 @@ and where it's heading is in [docs/website/roadmap.md](docs/website/roadmap.md).
 - [x] **Apple, send the app for review** (done, iPhone 1.0 released 26 November 2026) - after the switch, press Add for Review and then Submit in App Store Connect. Everything else (text in English, Malay and Indonesian, screenshots, privacy, build) is already filled in.
 - [ ] **Google Play review** - sent 17 November as Nasar Pte Ltd (can take up to 7 days). Google's emails go to the nasarpteltd inbox.
 - [ ] **Samsung Galaxy Store** - after Google approves, upload Play's signed APK. Steps in the thread "Publish on Samsung Galaxy Store".
-- [ ] **Time Sensitive prayer alerts on iPhone** - Apple Developer, Identifiers, com.prayertimesasia.app, tick *Time Sensitive Notifications*, Save. Then tell Claude. Alarms already ring through Focus; this is for the notifications.
+- [x] **Time Sensitive prayer alerts on iPhone** - capability ticked and profile regenerated 28 Nov. Still to do: update the GitHub secret APPLE_PROVISIONING_PROFILE_BASE64 with the new profile before the next iPhone build.
 - [ ] **Read and OK the open pull requests** - store listings (#118), masjid screen extras (#115), Malay and Indonesian app (#132, #133), one place for alerts and alarms (#136), Mac trial (#137), Android update message (#56).
 
 ### Other devices
