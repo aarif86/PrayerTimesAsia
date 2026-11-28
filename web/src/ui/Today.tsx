@@ -548,11 +548,15 @@ function SmallDial({ c, size, gold }: { c: Ctx; size: number; gold?: boolean }) 
   const kicker = inPrayer ? name : tr('today.nextPrayer')
   const count = inPrayer ? t.count : t.bare
   const label = inPrayer ? t.label : tr('today.untilName', { name: next ? store.name(next.prayer, next.time) : name })
-  return (
+  // Little surprise: for twenty minutes after Maghrib in Ramadan the dial glows warm, the moment to break the fast.
+  const iftar = store.prefs.littleSurprises && current?.prayer === 'maghrib' && now - current.time < 20 * 60_000
+    && store.season(now).phase === 'ramadan'
+  const dial = (
     <Dial size={size} now={now} day={day} nextFajr={tomorrow.times.fajr} tz={store.timeZone}
       kicker={kicker} countdown={count} label={label} urgent={t.urgent}
       ariaLabel={inPrayer ? `${tr('common.now')} ${name}. ${count} ${label}.` : tr('today.nextAria', { name: next ? store.name(next.prayer, next.time) : name, time: count })} />
   )
+  return iftar ? <div class="egg-iftar">{dial}</div> : dial
 }
 
 // ---------- Time left to pray ----------
