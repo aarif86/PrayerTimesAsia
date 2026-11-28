@@ -1073,6 +1073,7 @@
     <string name="qibla_lockedLine" formatted="false">Anda menghadap arah yang sama dengan umat Islam di seluruh dunia.</string>
     <string name="alerts_fajrSet" formatted="false">Pengingat {name} sudah diatur. Selamat beristirahat.</string>
     <string name="today_jumuahLine" formatted="false">Hari ini hari Jumat. Berangkatlah lebih awal jika bisa.</string>
+    <string name="today_qadrLine" formatted="false">Salah satu malam ganjil. Carilah Lailatul Qadar.</string>
     <string name="settings_placeFoot" formatted="false">Waktu salat Anda mengikuti tempat yang Anda pilih di sini.</string>
     <string name="settings_musafirMode" formatted="false">Mode musafir</string>
     <string name="settings_musafirModeSub" formatted="false">Panduan jamak dan qasar saat Anda jauh dari rumah</string>

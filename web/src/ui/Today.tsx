@@ -104,6 +104,8 @@ export function TodayScreen() {
     window.addEventListener('pta-toast', on)
     return () => window.removeEventListener('pta-toast', on)
   }, [])
+  // Little surprise: on the odd nights of the last ten of Ramadan, a quiet reminder to seek Laylat al-Qadr.
+  const qadr = s.prefs.littleSurprises && offset === 0 && s.season(now).oddNight
   // Little surprise: a quiet line on Fridays.
   const friday = s.prefs.littleSurprises && offset === 0
     && new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: s.timeZone }).format(now) === 'Fri'
@@ -121,6 +123,7 @@ export function TodayScreen() {
       <h1 class="sr-only">{s.activePlace ? tr('today.titleIn', { place: s.activePlace.name }) : tr('today.title')}</h1>
       <p id="bell-status" class="sr-only" aria-live="polite" />
       {friday && <p class="egg-jumuah">{tr('today.jumuahLine')}</p>}
+      {qadr && <p class="egg-jumuah">{tr('today.qadrLine')}</p>}
       {style === 'centre' && <CentrePage c={ctx} />}
       {style === 'sunPath' && <SunPathPage c={ctx} />}
       {style === 'bands' && <BandsPage c={ctx} />}
