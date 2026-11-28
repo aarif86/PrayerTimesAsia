@@ -1069,6 +1069,8 @@
   "settings.surprises": "Little surprises",
   "settings.surprisesSub": "Quiet touches, like a soft glow when you face the qibla. Turn off for none.",
   "qibla.lockedLine": "You face the same way as Muslims around the world.",
+  "alerts.fajrSet": "{name} alert is set. Sleep well.",
+  "today.jumuahLine": "It is Jumuah today. Go early if you can.",
   "settings.placeFoot": "Your times follow the place you pick here.",
   "settings.musafirMode": "Musafir mode",
   "settings.musafirModeSub": "Jamak and qasar help when you are away from home",

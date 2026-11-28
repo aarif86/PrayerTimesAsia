@@ -1421,3 +1421,4 @@ html[data-large-text] .pname { font-size: 20px; }
   .q-lock-line { animation: none; opacity: 1; }
   .egg-iftar { animation: none; }
 }
+.egg-jumuah { text-align: center; margin: 6px 24px 0; font-size: 14px; opacity: .8; color: var(--gold-text); }
