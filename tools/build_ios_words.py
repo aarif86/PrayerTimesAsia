@@ -34,10 +34,36 @@ for lang in LANGS:
 lines[-1:] = ["}", ""]
 text = "\n".join(lines)
 
+# The widget picker (the gallery iOS shows) is drawn by the system in the phone's language, not the
+# App words choice, so the English text in the widgets is looked up in ms.lproj and id.lproj.
+PICKER = ["nowNextName", "nowNextHint", "currentName", "currentHint", "dayBarName", "dayBarHint", "nextName", "nextHint",
+          "timetableName", "timetableHint", "hijriName", "hijriHint", "lockName", "lockHint"]
+# Lines whose picker text in the widgets carries extra English (the timetable also says how to pick a look).
+EXTRA = {"timetableHint": " Touch and hold, then Edit Widget, to pick a look."}
+WIDGETS = ROOT / "ios/PrayerTimesAsiaWidgets"
+
+
+def strings(lang: str) -> str:
+    out = [f"/* {HEADER} */"]
+    for k in PICKER:
+        en = words["en"]["widget." + k] + EXTRA.get(k, "")
+        loc = words[lang]["widget." + k]
+        out.append(f'{q(en)} = {q(loc)};')
+    return "\n".join(out) + "\n"
+
+
+targets = {WIDGETS / "ms.lproj/Localizable.strings": strings("ms"), WIDGETS / "id.lproj/Localizable.strings": strings("id")}
+
 if "--check" in sys.argv:
     if not OUT.exists() or OUT.read_text(encoding="utf-8") != text:
         sys.exit("Out of date, run python3 tools/build_ios_words.py: ios/PrayerTimesAsia/Core/AppWordsData.swift")
+    for path, body in targets.items():
+        if not path.exists() or path.read_text(encoding="utf-8") != body:
+            sys.exit(f"Out of date, run python3 tools/build_ios_words.py: {path.relative_to(ROOT)}")
     print(f"iPhone app words OK, {len(words['en'])} lines in {len(LANGS)} languages")
 else:
     OUT.write_text(text, encoding="utf-8")
+    for path, body in targets.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(body, encoding="utf-8")
     print(f"Wrote {len(words['en'])} iPhone lines in {len(LANGS)} languages")

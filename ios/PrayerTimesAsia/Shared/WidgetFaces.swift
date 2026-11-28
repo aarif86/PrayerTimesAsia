@@ -73,6 +73,7 @@ struct WidgetList: View {
         let passed = time <= date && hit == nil
         let gold = style.look == .gold
         return HStack(spacing: 8) {
+            if !compact { AnyView(tick(prayer, time: time, pal: pal)) }
             if gold {
                 Circle().fill(pal.acc).frame(width: 7, height: 7).opacity(hit == nil ? 0 : 1)
             } else {
@@ -100,10 +101,29 @@ struct WidgetList: View {
         .opacity(passed ? 0.6 : 1)
     }
 
+    /// A tick for each prayer whose time has closed, an empty ring for the others, nothing for
+    /// Syuruk. Said as "Time has passed" to VoiceOver, never as "prayed".
+    @ViewBuilder
+    private func tick(_ prayer: Prayer, time: Date, pal: WidgetPal) -> some View {
+        let d = size * 0.9
+        if prayer == .sunrise {
+            Color.clear.frame(width: d, height: d)
+        } else if WidgetMore.isDone(prayer, time: time, snapshot, date) {
+            Image(systemName: "checkmark.circle.fill").font(.system(size: d))
+                .foregroundStyle(style.look == .bands ? Color.white : pal.acc)
+                .accessibilityLabel(W("widget.passed"))
+        } else {
+            Circle().stroke(style.look == .bands ? Color.white.opacity(0.6) : pal.fg2.opacity(0.5), lineWidth: 1.5)
+                .frame(width: d - 2, height: d - 2).padding(1)
+                .accessibilityHidden(true)
+        }
+    }
+
     private func band(_ prayer: Prayer, hit: (prayer: Prayer, label: String, until: Date)?) -> some View {
         let time = day.time(prayer)
         let parts = WidgetText.timeParts(snapshot, time)
         return HStack(alignment: .firstTextBaseline, spacing: 6) {
+            if !compact { AnyView(tick(prayer, time: time, pal: WidgetPal.of(style))) }
             Text(snapshot.name(prayer, at: time)).font(.system(size: size, weight: .bold)).lineLimit(1)
             if let hit, !compact {
                 WidgetText.countdown(hit.label, date, hit.until)

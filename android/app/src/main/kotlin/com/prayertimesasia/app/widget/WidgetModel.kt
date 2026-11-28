@@ -32,6 +32,13 @@ data class WidgetModel(
     val fast: FastMoment? = null,
     /** Dark or light, from the app's Appearance (or the phone's, on Automatic): the widgets follow it as the Prayer screen does. */
     val dark: Boolean = true,
+    /** Tomorrow's Subuh, where Isyak ends. */
+    val tomorrowFajr: Instant? = null,
+    /** The Hijri date of a civil day as this community counts it (the Hijri Calendar widget). */
+    val hijriOf: ((java.time.LocalDate) -> com.prayertimesasia.core.Hijri.HijriDate)? = null,
+    val hijriMonths: List<String> = emptyList(),
+    /** A time as the Prayer screen writes it, such as "4:17 PM". */
+    val format: (Instant) -> String = { "" },
 ) {
     /** The prayer marked NOW: null between Syuruk and Zohor, when no prayer is open. */
     val open: Prayer? get() = com.prayertimesasia.core.PrayerLead.open(current)?.first
@@ -71,6 +78,10 @@ data class WidgetModel(
                 nextTime = next?.let { r.formatted(it.second) },
                 zone = r.zone,
                 dark = dark,
+                tomorrowFajr = r.day(now, 1)?.times?.get(Prayer.FAJR),
+                hijriOf = { d -> r.hijriOf(d) },
+                hijriMonths = r.naming.hijriMonths,
+                format = { t -> r.formatted(t) },
                 fast = r.fastingMoment(now)?.let { (kind, at) ->
                     val t = RamadanWords.In(r.appLang)
                     FastMoment(kind, at, t(if (kind == Resolver.FastingKind.IMSAK) RamadanWordKey.imsak else RamadanWordKey.berbuka), r.formatted(at))

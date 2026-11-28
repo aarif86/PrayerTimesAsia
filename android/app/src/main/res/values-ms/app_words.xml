@@ -742,6 +742,32 @@
     <string name="widget_addAndroid" formatted="false">Sentuh dan tahan skrin utama anda, ketik Widget dan cari Prayer Times Asia.</string>
     <string name="widget_setLocation" formatted="false">Buka Prayer Times Asia untuk menetapkan lokasi anda.</string>
     <string name="widget_thisWeek" formatted="false">Imsak dan berbuka minggu ini</string>
+    <string name="widget_nowNextName" formatted="false">Kini dan Seterusnya</string>
+    <string name="widget_nowNextHint" formatted="false">Solat yang sedang berjalan, dan yang selepasnya.</string>
+    <string name="widget_currentName" formatted="false">Waktu semasa</string>
+    <string name="widget_currentHint" formatted="false">Waktu solat sekarang, dari mula hingga tamat.</string>
+    <string name="widget_dayBarName" formatted="false">Bar hari ini</string>
+    <string name="widget_dayBarHint" formatted="false">Lima solat hari ini pada satu garisan, dengan kedudukan anda kini.</string>
+    <string name="widget_nextName" formatted="false">Solat seterusnya</string>
+    <string name="widget_nextHint" formatted="false">Solat seterusnya dan baki masa.</string>
+    <string name="widget_timetableName" formatted="false">Jadual hari ini</string>
+    <string name="widget_timetableHint" formatted="false">Semua solat hari ini, dengan tanda untuk yang sudah berlalu.</string>
+    <string name="widget_hijriName" formatted="false">Kalendar Hijrah</string>
+    <string name="widget_hijriHint" formatted="false">Bulan Hijrah dengan Ramadan dan Hari Raya ditandakan. Tarikh adalah jangkaan, jadi ikut pihak berkuasa agama tempatan.</string>
+    <string name="widget_lockName" formatted="false">Solat seterusnya pada Skrin Kunci</string>
+    <string name="widget_lockHint" formatted="false">Solat seterusnya pada Skrin Kunci anda.</string>
+    <string name="widget_then" formatted="false">KEMUDIAN</string>
+    <string name="widget_untilTime" formatted="false">hingga {time}</string>
+    <string name="widget_range" formatted="false">{from} hingga {to}</string>
+    <string name="widget_timeLeft" formatted="false">{time} lagi</string>
+    <string name="widget_today" formatted="false">Hari ini</string>
+    <string name="widget_passed" formatted="false">Waktu telah berlalu</string>
+    <string name="widget_hijriExpected" formatted="false">Tarikh jangkaan</string>
+    <string name="widget_ramadanIn" formatted="false">Ramadan dalam {n} hari</string>
+    <string name="widget_ramadanIn_one" formatted="false">Ramadan dalam {n} hari</string>
+    <string name="widget_eid" formatted="false">Raya</string>
+    <string name="widget_nuzul" formatted="false">Nuzul al-Quran</string>
+    <string name="widget_lastTen" formatted="false">Sepuluh hari akhir</string>
     <string name="verify_title" formatted="false">Bantu sahkan waktu</string>
     <string name="verify_howTo" formatted="false">Cara menyumbang</string>
     <string name="verify_timetable" formatted="false">Jadual waktu masjid</string>

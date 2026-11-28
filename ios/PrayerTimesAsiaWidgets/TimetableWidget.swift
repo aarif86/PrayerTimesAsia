@@ -9,7 +9,7 @@ struct TimetableWidget: Widget {
             TimetableView(entry: entry)
         }
         .configurationDisplayName("Today's timetable")
-        .description("All of today's prayer times. Touch and hold, then Edit Widget, to pick a look.")
+        .description("All of today's prayers, with a mark for each one that has passed. Touch and hold, then Edit Widget, to pick a look.")
         .supportedFamilies([.systemLarge])
         .contentMarginsDisabled()
     }

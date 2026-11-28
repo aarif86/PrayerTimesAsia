@@ -5,7 +5,11 @@ import WidgetKit
 struct PrayerTimesAsiaWidgets: WidgetBundle {
     var body: some Widget {
         NextPrayerWidget()
+        NowNextWidget()
+        CurrentPrayerWidget()
+        DayBarWidget()
         TimetableWidget()
+        HijriCalendarWidget()
         LockScreenWidget()
         PrayerLiveActivity()
         #if canImport(AlarmKit)
@@ -80,7 +84,7 @@ struct NextPrayerWidget: Widget {
             NextPrayerView(entry: entry)
         }
         .configurationDisplayName("Next prayer")
-        .description("Countdown to the next prayer, under your Living Sky.")
+        .description("The next prayer and how long to wait.")
         // Large too, so "Large" shows when someone touches and holds this widget to
         // resize it (it opens the full timetable, in the Prayer screen's look).
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
@@ -186,7 +190,7 @@ struct LockScreenWidget: Widget {
             LockScreenView(entry: entry)
                 .containerBackground(for: .widget) { Color.clear }
         }
-        .configurationDisplayName("Next prayer")
+        .configurationDisplayName("Next prayer on Lock Screen")
         .description("The next prayer on your Lock Screen.")
         .supportedFamilies([.accessoryRectangular, .accessoryCircular, .accessoryInline])
     }
