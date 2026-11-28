@@ -200,6 +200,8 @@ internal fun ColumnScope.Prompts(f: TodayFrame, hadith: Boolean = false) {
     }
     if (!p.arrivalBannerDismissed) ArrivalCard(f.state)
     if (f.offset == 0) LongDaysNote(f.state, f.now)
+    if (f.offset == 0) SourceAwayNote(f.state)
+    if (f.offset == 0) SelangorNote(f.state, f.now)
     if (f.offset == 0) SeasonCard(f.state, f.now)
 }
 

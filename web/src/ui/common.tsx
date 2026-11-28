@@ -6,7 +6,8 @@ import type { Prayer } from '../core/prayer'
 import { sourceAuthority } from '../core/official'
 import type { SourceGrade } from '../core/sources'
 import { store } from '../services/store'
-import { appLocale, gradeTitle, methodName, tr } from '../core/appWords'
+import { appLocale, methodName, tr } from '../core/appWords'
+import { timeKindTitle } from '../core/timeKind'
 
 /** A time with its AM/PM set smaller on the same baseline. Never wraps. */
 export function TimeText({ ms, size = 28, weight = 600, class: cls, style }: { ms: number; size?: number; weight?: number; class?: string; style?: JSX.CSSProperties }) {
@@ -156,15 +157,16 @@ export function Segmented<T extends string | number>({ value, options, onChange 
 /** "Every time has a source. We show it." The badge by the prayer list. */
 export function SourceBadge({ day, compact }: { day: PrayerDay; compact?: boolean }) {
   const grade = day.grade
+  const kind = timeKindTitle(store.timeKindOf(day))
   const shortSource = grade === 'A'
-    ? `${gradeTitle(grade)} · ${store.officialSource && day.officialSource ? sourceAuthority(store.officialSource) : store.method.shortName}`
-    : grade === 'B' || grade === 'C' ? day.mosqueName ?? gradeTitle(grade) : `${gradeTitle(grade)} · ${store.method.shortName}`
+    ? `${kind} · ${store.officialSource && day.officialSource ? sourceAuthority(store.officialSource) : store.method.shortName}`
+    : grade === 'B' || grade === 'C' ? day.mosqueName ?? kind : `${kind} · ${store.method.shortName}`
   const sourceName = day.officialSource ?? methodName(store.method)
   return (
     <button class={`source-badge ${compact ? 'compact' : 'full'}`} onClick={() => openSheet({ kind: 'sanad', day })}
-      aria-label={tr('common.sourceBadge', { grade, name: gradeTitle(grade), detail: sourceName })}>
+      aria-label={tr('common.sourceBadge', { grade, name: kind, detail: sourceName })}>
       <span class="grade" style={{ background: GRADE_TINT[grade] }}>{grade}</span>
-      <span class="src">{compact ? shortSource : `${gradeTitle(grade)} · ${sourceName}`}</span>
+      <span class="src">{compact ? shortSource : `${kind} · ${sourceName}`}</span>
       {!compact && <span class="spacer" />}
       <Info size={compact ? 12 : 15} style={{ opacity: 0.7, flex: 'none' }} />
     </button>
@@ -178,10 +180,11 @@ export function SourceLine({ day }: { day: PrayerDay }) {
     ? (store.officialSource && day.officialSource ? sourceAuthority(store.officialSource) : store.method.shortName)
     : grade === 'B' || grade === 'C' ? day.mosqueName : store.method.shortName
   const sourceName = day.officialSource ?? methodName(store.method)
+  const kind = timeKindTitle(store.timeKindOf(day))
   return (
     <button class="source-line" onClick={() => openSheet({ kind: 'sanad', day })}
-      aria-label={tr('common.sourceBadge', { grade, name: gradeTitle(grade), detail: sourceName })}>
-      <b>{gradeTitle(grade)}</b>{authority ? ` · ${authority}` : ''} · {tr('source.grade')} {grade}
+      aria-label={tr('common.sourceBadge', { grade, name: kind, detail: sourceName })}>
+      <b>{kind}</b>{authority ? ` · ${authority}` : ''} · {tr('source.grade')} {grade}
     </button>
   )
 }

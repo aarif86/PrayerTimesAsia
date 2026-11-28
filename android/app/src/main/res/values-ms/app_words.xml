@@ -1218,6 +1218,18 @@
     <string name="source_explainC" formatted="false">Kaedah disahkan oleh dua atau lebih penyumbang tempatan yang berasingan.</string>
     <string name="source_explainD" formatted="false">Pengiraan astronomi pada peranti anda. Kaedahnya ditunjukkan. Masjid setempat mungkin berbeza beberapa minit.</string>
     <string name="source_explainF" formatted="false">Dikira daripada pemerhatian anda sendiri terhadap bayang matahari atau langit, dengan ± minit yang jujur. Untuk belajar dan menyemak, bukan untuk menggantikan gred di atas.</string>
+    <string name="source_kindPublished" formatted="false">Jadual diterbitkan</string>
+    <string name="source_kindFormula" formatted="false">Formula</string>
+    <string name="source_kindCalculated" formatted="false">Dikira</string>
+    <string name="source_kindMasjid" formatted="false">Jadual masjid</string>
+    <string name="source_kindExplainPublished" formatted="false">Disalin daripada jadual yang diterbitkan oleh pihak berkuasa. Aplikasi tidak mengira waktu ini.</string>
+    <string name="source_kindExplainFormula" formatted="false">Dikira pada peranti anda dengan kaedah yang diterbitkan oleh pihak berkuasa itu sendiri. Ia mungkin berbeza seminit dua daripada jadual cetakannya.</string>
+    <string name="source_kindExplainCalculated" formatted="false">Dikira pada peranti anda dengan kaedah antarabangsa yang digunakan secara meluas, kerana tiada jadual rasmi di sini untuk digunakan oleh aplikasi. Masjid setempat anda mungkin berbeza beberapa minit.</string>
+    <string name="source_kindExplainMasjid" formatted="false">Daripada jadual masjid anda sendiri.</string>
+    <string name="source_selangor2027" formatted="false">Selangor bertukar kepada sembilan jadual daerah pada 1 Januari 2027. JAKIM belum menerbitkan kod zon baharu, jadi buat masa ini waktu ini mengikut zon lama dan mungkin berbeza beberapa minit daripada masjid anda. Kami akan mengemas kini aplikasi apabila JAKIM menerbitkannya. Sentiasa ikut masjid dan pihak berkuasa agama setempat anda.</string>
+    <string name="travel_sourceTitle" formatted="false">Anda berada di luar {country}</string>
+    <string name="travel_sourceBody" formatted="false">Anda memilih {method} dalam Tetapan, jadi waktu anda masih mengikut {country}. Di sini waktu dikira dengan formulanya, bukan dibaca daripada jadual yang diterbitkan. Ikut tempat anda berada, atau kekalkan jika itu yang anda maksudkan.</string>
+    <string name="travel_sourceFollow" formatted="false">Ikut tempat saya berada</string>
     <string name="method_note_muis" formatted="false">Majlis Ugama Islam Singapura. Dalam talian, aplikasi menunjukkan jadual rasmi MUIS. Tanpa talian, aplikasi mengira sendiri dan tidak pernah lebih awal daripada waktu rasmi.</string>
     <string name="method_note_jakim" formatted="false">Kriteria Subuh 18° Malaysia (sejak 2019). Dalam talian, aplikasi menunjukkan jadual rasmi e-Solat JAKIM bagi zon anda. Tanpa talian, aplikasi mengira dengan perbezaan kira-kira 2 minit.</string>
     <string name="method_note_kemenag" formatted="false">Kementerian Agama Indonesia. Dalam talian, aplikasi menunjukkan jadual rasmi Kemenag bagi bandar atau kabupaten anda. Tanpa talian, aplikasi mengira dengan pelarasan yang dipadankan pada jadual penuh 2026 bagi Jakarta, Surabaya dan Makassar.</string>

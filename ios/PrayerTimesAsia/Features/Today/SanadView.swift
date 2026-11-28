@@ -35,7 +35,7 @@ struct SourceBadge: View {
             if compact { compactLabel } else { fullLabel }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(W("phone.source.gradeLabel", ["grade": day.grade.rawValue, "a": day.grade.title, "b": sourceName]))
+        .accessibilityLabel(W("phone.source.gradeLabel", ["grade": day.grade.rawValue, "a": model.timeKind(day).title, "b": sourceName]))
         .accessibilityHint(W("phone.source.showsWhere"))
         .sheet(isPresented: $showSanad) { SanadSheet(day: day) }
     }
@@ -56,9 +56,9 @@ struct SourceBadge: View {
 
     private var shortSource: String {
         switch day.grade {
-        case .official: "\(day.grade.title) · \(model.officialSource?.authority ?? model.method.shortName)"
-        case .masjid, .community: day.mosqueName ?? day.grade.title
-        default: "\(day.grade.title) · \(model.method.shortName)"
+        case .official: "\(model.timeKind(day).title) · \(model.officialSource?.authority ?? model.method.shortName)"
+        case .masjid, .community: day.mosqueName ?? model.timeKind(day).title
+        default: "\(model.timeKind(day).title) · \(model.method.shortName)"
         }
     }
 
@@ -69,7 +69,7 @@ struct SourceBadge: View {
                     .frame(width: 20, height: 20)
                     .background(day.grade.tint.opacity(0.9), in: Circle())
                     .foregroundStyle(.black.opacity(0.8))
-                Text("\(day.grade.title) · \(sourceName)")
+                Text("\(model.timeKind(day).title) · \(sourceName)")
                     .font(.footnote.weight(.semibold))
                     .lineLimit(1)
                 Spacer(minLength: 4)
@@ -101,9 +101,15 @@ struct SanadSheet: View {
                             .accessibilityHidden(true)
                             .frame(width: 32)
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(W("source.gradeName", ["grade": day.grade.rawValue, "name": day.grade.title])).font(.headline)
+                            Text(model.timeKind(day).title).font(.headline)
                             Text(day.officialSource ?? model.method.name).font(.subheadline)
+                            Text(model.timeKind(day).explanation).font(.footnote).foregroundStyle(.secondary)
                             Text(detail).font(.footnote).foregroundStyle(.secondary)
+                            Text(W("source.gradeName", ["grade": day.grade.rawValue, "name": day.grade.title]))
+                                .font(.footnote).foregroundStyle(.secondary)
+                            if model.selangorNotice(day.time(.dhuhr)) {
+                                Text(W("source.selangor2027")).font(.footnote.weight(.semibold))
+                            }
                         }
                     }
                     .padding(.vertical, 4)

@@ -291,6 +291,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var musafirChipDismissed = false
     /// Long summer days notes closed, one per place and summer (Core/LongDays.swift). Stays on this phone.
     var longDaysClosed: [String] = []
+    /// "Your times follow another country" notes closed, one per method and country ("jakim>SG"). Stays on this phone.
+    var sourceAwayClosed: [String] = []
     var trip: [TripStop] = []
 
     /// Keep a Live Activity countdown to the next prayer on the Lock Screen.
@@ -482,6 +484,7 @@ struct Preferences: Codable, Equatable, Sendable {
         arrivalBannerDismissed = v(.arrivalBannerDismissed, d.arrivalBannerDismissed)
         musafirChipDismissed = v(.musafirChipDismissed, d.musafirChipDismissed)
         longDaysClosed = v(.longDaysClosed, d.longDaysClosed)
+        sourceAwayClosed = v(.sourceAwayClosed, d.sourceAwayClosed)
         trip = v(.trip, d.trip)
         liveActivityEnabled = v(.liveActivityEnabled, d.liveActivityEnabled)
         trackerEnabled = v(.trackerEnabled, d.trackerEnabled)

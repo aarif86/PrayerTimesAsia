@@ -1409,6 +1409,8 @@ private struct TodayNotes: View {
 
     var body: some View {
         LongDaysNote(now: now)
+        SourceAwayNote()
+        SelangorNote(now: now)
         SeasonCard(now: now)
     }
 }
@@ -1437,6 +1439,65 @@ private struct LongDaysNote: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(w.close)
+                }
+            }
+        }
+    }
+}
+
+/// A method pinned in Settings and used in another country: say whose times these are.
+private struct SourceAwayNote: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        if let n = model.sourceAwayNote() {
+            GlassCard {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "globe").font(.title2).foregroundStyle(Theme.accent).accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(W("travel.sourceTitle", ["country": n.country])).font(.headline)
+                        Text(W("travel.sourceBody", ["method": n.method, "country": n.country]))
+                            .font(.subheadline)
+                            .opacity(0.85)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button { withAnimation(.snappy) { model.followWhereIAm() } } label: {
+                            Text(W("travel.sourceFollow")).font(.subheadline.weight(.semibold)).frame(minHeight: 44)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .padding(.top, 6)
+                    }
+                    Spacer(minLength: 0)
+                    Button { withAnimation(.snappy) { model.closeSourceAwayNote(n.key) } } label: {
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(W("common.dismiss"))
+                }
+            }
+        }
+    }
+}
+
+/// Selangor's nine district timetables from 1 January 2027, before the new zone codes are in the app.
+private struct SelangorNote: View {
+    @Environment(AppModel.self) private var model
+    let now: Date
+
+    var body: some View {
+        if model.selangorNotice(now), !model.selangorNoteClosed {
+            GlassCard {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "mappin.circle.fill").font(.title2).foregroundStyle(Theme.accent).accessibilityHidden(true)
+                    Text(W("source.selangor2027"))
+                        .font(.subheadline)
+                        .opacity(0.85)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Button { withAnimation(.snappy) { model.closeSourceAwayNote("selangor2027") } } label: {
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(W("common.dismiss"))
                 }
             }
         }
@@ -2504,7 +2565,7 @@ private struct V12AllFiveLine: View {
     }
 }
 
-/// "Calculated · MUIS · Grade D". Tap for where these times come from.
+/// "Formula · MUIS · Grade D". Tap for where these times come from.
 private struct V12SourceLine: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -2524,7 +2585,7 @@ private struct V12SourceLine: View {
         let p = look.palette
         let size: CGFloat = look == .bands ? 13 : 15
         Button { showSanad = true } label: {
-            (Text(day.grade.title).bold().foregroundColor(look == .bands ? p.tx2 : p.accent)
+            (Text(model.timeKind(day).title).bold().foregroundColor(look == .bands ? p.tx2 : p.accent)
                 + Text(authority.map { " · \($0)" } ?? "")
                 + Text(" · \(W("source.grade")) \(day.grade.rawValue)"))
                 .font(V12Type.font(size, .regular, display: false, min(typeSize, .accessibility2)))
@@ -2534,7 +2595,7 @@ private struct V12SourceLine: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(W("phone.a11y.sourceGrade", ["grade": day.grade.rawValue, "a": day.grade.title]))
+        .accessibilityLabel(W("phone.a11y.sourceGrade", ["grade": day.grade.rawValue, "a": model.timeKind(day).title]))
         .accessibilityHint(W("phone.source.showsWhere"))
         .sheet(isPresented: $showSanad) { SanadSheet(day: day) }
     }

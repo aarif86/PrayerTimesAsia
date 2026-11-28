@@ -16,6 +16,7 @@ import { musafirStatus, type MusafirRules, type MusafirStatus } from '../core/mu
 import { officialSourceFor, officialSummary, sourceLabel, type OfficialSource } from '../core/official'
 import { isNear, newPlaceId, placeProfile, type Place } from '../core/place'
 import { OBLIGATORY, PRAYERS, prayerName, type AsrSchool, type NamingStyle, type Prayer } from '../core/prayer'
+import { awayFromMethodCountry, timeKind, type TimeKind } from '../core/timeKind'
 import { countryForTimeZone, FALLBACK_PROFILE, methodHere, personalNaming, profileFor, profileMethod, sourceSummary, type CountryProfile } from '../core/regions'
 import {
   disagreements, jamaahTimes, mosqueAsr, mosqueMethod, mosqueNear, type MosqueDataset, type MosqueProfile,
@@ -307,6 +308,26 @@ class AppStore {
     return place ? officialSourceFor(place, this.method, this.prefs.jakimZoneOverride) : null
   }
 
+  /** What kind of time a day's times are: published timetable, formula, masjid timetable or calculated. */
+  timeKindOf(day: PrayerDay): TimeKind {
+    return timeKind(day.grade, day.grade === 'A' && day.officialSource != null, this.method)
+  }
+
+  /**
+   * Selangor moves from three zones to nine district timetables on 1 January 2027.
+   * Until JAKIM's new zone codes are in the app, say so for Selangor's old zones.
+   * Remove this (and docs/selangor-2027.md's step 4) once the new zones are wired.
+   */
+  selangorNotice(now: number): boolean {
+    const src = this.officialSource
+    return src?.kind === 'jakim' && /^SGR0[1-3]$/.test(src.zone) && this.civil(now).year >= 2027
+  }
+
+  /** A method pinned in Settings, used in another country: the country the times still follow. */
+  get awayFromSourceCountry() {
+    return awayFromMethodCountry(!this.isMethodAutomatic, this.method, this.activePlace?.countryCode)
+  }
+
   get nearbyMosque(): MosqueProfile | null {
     const place = this.activePlace
     return place ? mosqueNear(this.mosques, place.coordinates) : null
@@ -424,6 +445,19 @@ class AppStore {
     if (!twilightLastsAllNight(d.year, d.month, d.day, lat, this.method)) return null
     const key = longDaysKey(d.year, d.month, lat, lng, place.countryCode ?? '')
     return this.prefs.longDaysClosed.includes(key) ? null : key
+  }
+
+  /** The note for a pinned method used abroad, unless it was closed for this method and country. */
+  sourceAwayNote(): { key: string; country: string; method: string } | null {
+    const away = this.awayFromSourceCountry
+    const here = this.activePlace?.countryCode
+    if (!away || !here) return null
+    const key = `${this.method.id}>${here.toUpperCase()}`
+    return this.prefs.sourceAwayClosed.includes(key) ? null : { key, country: away.name, method: this.method.name }
+  }
+
+  closeSourceAwayNote(key: string): void {
+    this.update((p) => { p.sourceAwayClosed = [...p.sourceAwayClosed.filter((k) => k !== key), key].slice(-30) })
   }
 
   closeLongDaysNote(key: string): void {
