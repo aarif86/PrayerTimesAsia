@@ -33,6 +33,7 @@ struct FalakARScreen: View {
             }
             legend
         }
+        .onAppear { model.usageAction("falakAR") }
         .overlay(alignment: .topTrailing) {
             Button { dismiss() } label: {
                 Image(systemName: "xmark").font(.headline).frame(width: 40, height: 40)

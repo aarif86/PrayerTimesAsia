@@ -569,8 +569,13 @@ class AppState(
     fun usageVisible(visible: Boolean) {
         if (!visible) { if (sideEffects) usage.tallyStop(); return }
         if (!usageOn) return
-        scope.launch { usage.tallyStart(resolver.activePlace) }
+        scope.launch { usage.tallyStart(resolver.activePlace, prefs) }
         usageScreen(selectedTab)
+    }
+
+    /** Something done today worth counting (Qibla compass on, a Falak tool opened). Checks Settings first. */
+    fun usageAction(action: String) {
+        if (usageOn) usage.tallyAction(action)
     }
 
     private fun usageScreen(tab: Tab) {

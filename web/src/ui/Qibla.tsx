@@ -17,6 +17,7 @@ export function QiblaScreen() {
   const demoHeading = s.demo?.heading ?? null
   const compass = useCompass(!demoAligned && demoHeading == null)
   const [aligned, setAligned] = useState(false)
+  useEffect(() => { if (compass.state === 'active') s.usageAction('qiblaCompass') }, [compass.state])
   const dial = useRef<{ heading: number; last: number | null }>({ heading: 0, last: null })
   const bearing = place ? qiblaBearing(place.coordinates) : 0
   const heading = !place ? null : demoAligned ? bearing : demoHeading != null ? demoHeading : compass.heading
@@ -33,6 +34,7 @@ export function QiblaScreen() {
     if (aligned && Math.abs(delta) > LEAVE) setAligned(false)
     else if (!aligned && Math.abs(delta) < ENTER) {
       setAligned(true)
+      s.usageAction('qiblaFaced')
       try { navigator.vibrate?.(30) } catch { /* not supported */ }
     }
   }, [delta == null ? null : Math.round(delta * 10)])

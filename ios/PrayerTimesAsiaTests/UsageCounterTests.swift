@@ -54,4 +54,25 @@ final class UsageCounterTests: XCTestCase {
         XCTAssertEqual(p["Used.masjid"], "false")
         XCTAssertEqual(UsageCounter.minutesBand(4.9), "1 to 5")
     }
+
+    func testActionsAndSetupAreShortWordsOnly() {
+        var t = UsageCounter.DayTally(day: "2026-11-17")
+        t = UsageCounter.adding(action: "qiblaCompass", to: UsageCounter.adding(action: "falakAR", to: UsageCounter.adding(action: "qiblaCompass", to: t)))
+        XCTAssertEqual(t.actions, ["qiblaCompass", "falakAR"])
+        var prefs = Preferences()
+        prefs.notificationsEnabled = true
+        prefs.azanFull = true
+        prefs.trackerEnabled = true
+        let settings = UsageCounter.settingsPayload(prefs, widgets: 2)
+        let p = UsageCounter.dayPayload(["App.platform": "ios"], t, settings: settings)
+        XCTAssertEqual(p["Did.qiblaCompass"], "true")
+        XCTAssertEqual(p["Did.falakShadow"], "false")
+        XCTAssertEqual(p["Pref.look"], "centre")
+        XCTAssertEqual(p["Pref.language"], "auto")
+        XCTAssertEqual(p["Pref.azanLength"], "full")
+        XCTAssertEqual(p["Pref.tracker"], "true")
+        XCTAssertEqual(p["Pref.widgets"], "2")
+        XCTAssertEqual(p["Pref.alertsOn"], "true")
+        XCTAssertNil(UsageCounter.dayPayload([:], t)["Pref.look"], "no setup without a snapshot")
+    }
 }

@@ -195,7 +195,9 @@ Musafir guidance is general information, not a fatwa - when unsure, follow your 
 **Data Not Linked to You**, none used for tracking:
 - *Usage Data → Product Interaction*, purpose **Analytics**: anonymous app-open
   counts, a daily total of minutes used, opens and screens used (App.daySummary),
-  and taps on a Barakah Picks card (UsageCounter.swift, TelemetryDeck),
+  taps on a Barakah Picks card, and a daily note of short setup words (look, alerts
+  count, azan voice, widgets count and similar, yes or no) and whether Qibla and
+  Falak tools were used (UsageCounter.swift, TelemetryDeck),
   unless the user turns them off in Settings → Privacy.
 - *Usage Data → Advertising Data*, purpose **Analytics**: which Barakah Picks card
   was shown (once a day) or tapped, so sponsors can be told their totals. Not linked

@@ -167,7 +167,7 @@ struct ShadowCameraView: View {
             .padding(16)
             .accessibilityLabel(W("common.close"))
         }
-        .onAppear { motion.start(); camera.start() }
+        .onAppear { motion.start(); camera.start(); model.usageAction("falakShadow") }
         .onDisappear { motion.stop(); camera.stop() }
     }
 

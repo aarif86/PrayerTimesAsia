@@ -261,7 +261,7 @@ private fun Overlays(state: AppState, overlay: Overlay?, set: (Overlay?) -> Unit
         is Overlay.Sanad -> AppSheet(close) { SanadSheetContent(state, overlay.day) }
         Overlay.About -> AppSheet(close) { MakersSheetContent("masjid", state) }
         Overlay.Credits -> AppSheet(close) { CreditsContent() }
-        Overlay.Level -> AppSheet(close) { LevelScreen() }
+        Overlay.Level -> AppSheet(close) { LevelScreen(state) }
         Overlay.WidgetPreview -> AppSheet(close) { WidgetPreviewContent(state) }
         Overlay.MoveOut -> AppSheet(close) { MoveOutContent(state) }
         Overlay.MoveIn -> AppSheet(close) { MoveInContent(state, close) }
