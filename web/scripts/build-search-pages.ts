@@ -46,7 +46,7 @@ const ALL_LANGS: Lang[] = ['en', 'ms', 'id', 'ar', 'ur', 'bn', 'tr', ...NEW_CODE
  */
 const COUNTRY_LANGS: Record<string, Lang[]> = {
   SG: ['ms'], MY: ['ms'], BN: ['ms'], ID: ['id'], TH: ['th'], MM: ['my'], NP: ['ne'], PH: ['fil'], VN: ['vi'], KH: ['km'],
-  BD: ['bn'], PK: ['ur'], IN: ['hi'], LK: ['si'], JP: ['ja'], KR: ['ko'], HK: ['zh'], SA: ['ms', 'id', 'ar'], AE: ['ar'], TR: ['tr'], GB: [],
+  BD: ['bn'], PK: ['ur'], IN: ['hi'], LK: ['si'], JP: ['ja'], KR: ['ko'], HK: ['zh'], SA: ['ms', 'id', 'ar'], AE: ['ar'], QA: ['ar'], KW: ['ar'], BH: ['ar'], OM: ['ar'], TR: ['tr'], GB: [], MV: [],
 }
 const hreflang = (l: Lang) => (l === 'zh' ? 'zh-HK' : l)
 
@@ -64,6 +64,15 @@ const WANTED: [string, string, string?][] = [
   ['MY', 'Alor Setar'], ['MY', 'Seremban'],
   ['ID', 'Semarang'], ['ID', 'Palembang'], ['ID', 'Denpasar'], ['ID', 'Batam'], ['ID', 'Pekanbaru'], ['ID', 'Banda Aceh'], ['ID', 'Pontianak'],
   ['TH', 'Chiang Mai'], ['MM', 'Yangon'], ['NP', 'Kathmandu'],
+  // Cities 51 to 100. Asia first (Malaysia and Indonesia, then South East Asia, South Asia, East Asia), then the Gulf and Turkey.
+  ['MY', 'Putrajaya'], ['MY', 'Petaling Jaya'], ['MY', 'Klang'], ['MY', 'Muar'], ['MY', 'Batu Pahat'], ['MY', 'Kangar'], ['MY', 'Sandakan'], ['MY', 'Miri'],
+  ['ID', 'Bogor'], ['ID', 'Depok'], ['ID', 'Bekasi'], ['ID', 'Tangerang'], ['ID', 'Malang'], ['ID', 'Surakarta (Solo)', 'Surakarta'],
+  ['ID', 'Banjarmasin'], ['ID', 'Balikpapan'], ['ID', 'Mataram'], ['ID', 'Padang'],
+  ['TH', 'Hat Yai'], ['TH', 'Pattani'], ['TH', 'Yala'], ['TH', 'Narathiwat'], ['TH', 'Phuket'],
+  ['VN', 'Da Nang'], ['VN', 'Chau Doc'], ['KH', 'Siem Reap'], ['PH', 'Cebu City'], ['PH', 'Davao City'], ['PH', 'Zamboanga City'], ['MM', 'Mandalay'],
+  ['IN', 'Hyderabad'], ['IN', 'Bengaluru'], ['IN', 'Chennai'], ['IN', 'Kolkata'], ['PK', 'Islamabad'], ['PK', 'Peshawar'],
+  ['BD', 'Chattogram'], ['BD', 'Sylhet'], ['LK', 'Kandy'], ['MV', 'Malé', 'Male'], ['JP', 'Osaka'], ['KR', 'Busan'],
+  ['SA', 'Jeddah'], ['SA', 'Riyadh'], ['AE', 'Abu Dhabi'], ['QA', 'Doha'], ['KW', 'Kuwait City'], ['BH', 'Manama'], ['OM', 'Muscat'], ['TR', 'Ankara'],
 ]
 
 const slug = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -107,7 +116,9 @@ const timesAt = (c: City2, ms: number): Times => computeFor(ms, c.tz, c.coords, 
 const LOCALE = { en: 'en-GB', ms: 'ms-MY', id: 'id-ID', ar: 'ar-u-ca-gregory-nu-latn', ur: 'ur-PK-u-nu-latn', bn: 'bn-BD-u-nu-latn', tr: 'tr-TR', ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].locale])) } as Record<Lang, string>
 const NATIVE = { en: 'EN', ms: 'MS', id: 'ID', ar: 'العربية', ur: 'اردو', bn: 'বাংলা', tr: 'TR', ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].native])) } as Record<Lang, string>
 const RTL: Lang[] = ['ar', 'ur']
-const langsFor = (c: City2): Lang[] => ALL_LANGS.filter((l) => l === 'en' || (COUNTRY_LANGS[c.country] ?? []).includes(l))
+// Only Makkah and Madinah keep Malay and Indonesian, because of the pilgrims. Other Saudi cities are English and Arabic.
+const ARABIC_ONLY_SA = ['jeddah', 'riyadh']
+const langsFor = (c: City2): Lang[] => ALL_LANGS.filter((l) => l === 'en' || (COUNTRY_LANGS[c.country] ?? []).includes(l)).filter((l) => !(c.country === 'SA' && ARABIC_ONLY_SA.includes(c.slug) && (l === 'ms' || l === 'id')))
 const inLang = (c: City2, l: Lang) => langsFor(c).includes(l)
 const BASE_DIR = { en: 'prayer-times', ms: 'ms/waktu-solat', id: 'id/jadwal-sholat', ar: 'ar/mawaqit-alsalat', ur: 'ur/namaz-ke-auqat', bn: 'bn/namajer-somoy', tr: 'tr/namaz-vakitleri', ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].dir])) } as Record<Lang, string>
 const PRINT_DIR = { en: 'printable-timetables', ms: 'ms/jadual-cetak', id: 'id/jadwal-cetak', ar: 'ar/jadwal-lil-tibaa', ur: 'ur/chapai-ka-jadwal', bn: 'bn/print-somoysuchi', tr: 'tr/yazdirilabilir-vakitler', ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].print])) } as Record<Lang, string>
@@ -118,6 +129,9 @@ const printPath = (l: Lang, c: City2) => `${PRINT_DIR[l]}/${c.slug}/`
 const LOCAL_NAMES: Record<string, Partial<Record<Lang, string>>> = {
   penang: { ms: 'Pulau Pinang', id: 'Pulau Pinang' }, makkah: { ar: 'مكة المكرمة' }, madinah: { ar: 'المدينة المنورة' }, dubai: { ar: 'دبي' },
   karachi: { ur: 'کراچی' }, lahore: { ur: 'لاہور' }, dhaka: { bn: 'ঢাকা' }, istanbul: { tr: 'İstanbul' },
+  islamabad: { ur: 'اسلام آباد' }, peshawar: { ur: 'پشاور' }, chattogram: { bn: 'চট্টগ্রাম' }, sylhet: { bn: 'সিলেট' },
+  jeddah: { ar: 'جدة' }, riyadh: { ar: 'الرياض' }, 'abu-dhabi': { ar: 'أبوظبي' }, doha: { ar: 'الدوحة' }, 'kuwait-city': { ar: 'مدينة الكويت' },
+  manama: { ar: 'المنامة' }, muscat: { ar: 'مسقط' }, surakarta: { ms: 'Surakarta', id: 'Surakarta (Solo)' },
 }
 const cityName = (c: City2, l: Lang) => LOCAL_NAMES[c.slug]?.[l] ?? (LOCAL_CITY_NAMES[c.slug] as Partial<Record<Lang, string>> | undefined)?.[l] ?? c.name
 const countryName = (cc: string, l: Lang) => {
