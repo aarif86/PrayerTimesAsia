@@ -99,7 +99,7 @@ struct MoveInView: View {
                 }
             } else {
                 Section {
-                    if DataScannerViewController.isSupported {
+                    if QRScanner.isSupported {
                         Button { scanning = true } label: { Label(W("phone.scanQr"), systemImage: "qrcode.viewfinder") }
                     }
                     PasteButton(payloadType: String.self) { strings in
@@ -157,9 +157,11 @@ struct MoveInView: View {
     }
 }
 
+#if !targetEnvironment(macCatalyst)
 /// The camera, looking for a QR code with a settings code in it.
 private struct QRScanner: UIViewControllerRepresentable {
     let found: (String) -> Void
+    @MainActor static var isSupported: Bool { DataScannerViewController.isSupported }
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
         let scanner = DataScannerViewController(recognizedDataTypes: [.barcode(symbologies: [.qr])],
@@ -189,3 +191,11 @@ private struct QRScanner: UIViewControllerRepresentable {
         }
     }
 }
+#else
+/// A Mac app has no live QR scanner; the link is pasted or typed there instead.
+private struct QRScanner: View {
+    let found: (String) -> Void
+    static var isSupported: Bool { false }
+    var body: some View { EmptyView() }
+}
+#endif

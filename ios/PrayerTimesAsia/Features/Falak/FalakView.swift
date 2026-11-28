@@ -60,6 +60,9 @@ struct FalakView: View {
                             .padding(.horizontal, Theme.gutter)
                             .padding(.bottom, 32)
                             .animation(.smooth, value: tab)
+                            // On a wide Mac window the page keeps a comfortable reading width.
+                            .frame(maxWidth: Device.isMac ? 760 : .infinity)
+                            .frame(maxWidth: .infinity)
                         }
                     }
                 } else {
@@ -125,7 +128,10 @@ struct FalakView: View {
         let asr = Prayer.asr.name(model.naming)
         let today = Falak.rashdulQiblat(year: ymd.0, month: ymd.1, day: ymd.2, timeZone: model.timeZone, coordinates: place.coordinates)
         let qiblaLine = qiblaSub(place: place, now: now, today: today)
+        // The camera tools and the spirit level need a phone in the hand, so a Mac leaves them out.
+        let phoneOnly: Set<String> = ["Shadow camera", "Camera", "Level"]
         let rows: [ToolItem] = toolItems(asr: asr, plan: plan, qiblaLine: qiblaLine, now: now, full: full)
+            .filter { !(Device.isMac && phoneOnly.contains($0.title)) }
         return VStack(spacing: 0) {
             ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
                 if index > 0 && look != .bands {

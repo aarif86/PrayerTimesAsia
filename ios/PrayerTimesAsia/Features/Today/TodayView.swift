@@ -46,13 +46,7 @@ struct TodayView: View {
             LookBackdrop(sky: sky)
             // Fill the screen when it all fits; otherwise (small phones, Show more
             // open, bigger text) scroll. Every look follows the web app's layout.
-            ViewThatFits(in: .vertical) {
-                v12Page(now: now, day: day, shown: shown, current: current, next: next, fill: true)
-                ScrollView {
-                    v12Page(now: now, day: day, shown: shown, current: current, next: next, fill: false)
-                }
-                .scrollIndicators(.hidden)
-            }
+            pageForDevice(now: now, day: day, shown: shown, current: current, next: next)
         }
         .foregroundStyle(.primary)
         .overlay(alignment: .top) {
@@ -1621,6 +1615,78 @@ extension TodayView {
         V12Type.font(size, weight, display: display, typeSize)
     }
 
+    /// A phone shows one page that fits the screen or scrolls. A wide Mac window shows
+    /// the dial and the notes on the left and the day's times on the right, like a Mac
+    /// app would, and keeps the one column looks to a comfortable width.
+    func pageForDevice(now: Date, day: PrayerDay, shown: PrayerDay, current: Moment?, next: Moment?) -> AnyView {
+        let phone = AnyView(ViewThatFits(in: .vertical) {
+            v12Page(now: now, day: day, shown: shown, current: current, next: next, fill: true)
+            ScrollView {
+                v12Page(now: now, day: day, shown: shown, current: current, next: next, fill: false)
+            }
+            .scrollIndicators(.hidden)
+        })
+        guard Device.isMac else { return phone }
+        let twoPart = lookStyle != .bands && lookStyle != .simple
+        let column: CGFloat = lookStyle == .bands ? 820 : (lookStyle == .simple ? 560 : 640)
+        return AnyView(GeometryReader { geo in
+            if twoPart && geo.size.width >= 620 {
+                AnyView(macTwoPart(now: now, day: day, shown: shown, current: current, next: next))
+            } else {
+                AnyView(phone.frame(maxWidth: column).frame(maxWidth: .infinity))
+            }
+        })
+    }
+
+    private func macTwoPart(now: Date, day: PrayerDay, shown: PrayerDay, current: Moment?, next: Moment?) -> some View {
+        HStack(alignment: .top, spacing: 20) {
+            ScrollView {
+                VStack(spacing: 10) {
+                    v12TopBar(now)
+                    AnyView(v12Hero(now: now, day: day, current: current, next: next))
+                    if model.showAlertsPrompt { alertsPrompt }
+                    prayerHadith(next)
+                    if !model.prefs.arrivalBannerDismissed { ArrivalCard() }
+                    if dayOffset == 0 { TodayNotes(now: now) }
+                    if model.prefs.musafirEnabled, !model.prefs.musafirChipDismissed, let status = model.musafirStatus, status.isTraveller { sunMusafirChip(status) }
+                    // A Mac window has the room for the month, with the Hijri day under
+                    // each date. Click a day to see its times on the right.
+                    HijriMonthCard(onShowDay: { days in withAnimation(.snappy) { dayOffset = days } })
+                        .padding(14)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+                }
+                .padding(.bottom, 16)
+            }
+            .scrollIndicators(.hidden)
+            .frame(width: 350)
+
+            VStack(alignment: .leading, spacing: 8) {
+                v12DayNav(shown)
+                ScrollView {
+                    VStack(spacing: 10) {
+                        V12List(look: lookStyle, day: shown, now: now,
+                                current: dayOffset == 0 ? PrayerLead.open(current)?.prayer : nil,
+                                next: dayOffset == 0 ? next : nil,
+                                showMore: $showMore,
+                                onSwipe: { step in withAnimation(.snappy) { dayOffset += step } })
+                        if dayOffset == 0 { ReviewLine(now: now) }
+                        if model.prefs.showOffers && showMore { CommunityCardSlot(now: now, next: next) }
+                    }
+                }
+                .scrollIndicators(.hidden)
+                V12SourceLine(day: shown, look: lookStyle).frame(maxWidth: .infinity)
+            }
+            .frame(maxWidth: 640)
+        }
+        .foregroundStyle(pal.tx)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, Theme.gutter)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
+    }
+
     func v12Page(now: Date, day: PrayerDay, shown: PrayerDay, current: Moment?, next: Moment?, fill: Bool) -> AnyView {
         if lookStyle == .bands {
             return AnyView(v12Bands(now: now, shown: shown, current: current, next: next, fill: fill))
@@ -2468,6 +2534,20 @@ private struct V12List: View {
             if trackable { model.togglePrayed(prayer, on: time) }
         }
         .accessibilityValue(isCurrent ? "now" : "")
+        #if targetEnvironment(macCatalyst)
+        // Mouse manners: the row lights up under the pointer, and a right click offers
+        // what a click or the bell would do.
+        .modifier(MacHover(corner: 12))
+        .contextMenu {
+            if trackable {
+                Button(prayed ? "Mark as not prayed" : "Mark as prayed", systemImage: prayed ? "circle" : "checkmark.circle") {
+                    withAnimation(.snappy) { model.togglePrayed(prayer, on: time) }
+                }
+                Divider()
+            }
+            AlertMenuItems(prayer: prayer)
+        }
+        #endif
     }
 
     private func bell(_ prayer: Prayer, _ mode: AlertMode) -> some View {

@@ -2,7 +2,7 @@ import AudioToolbox
 import AVFoundation
 import SwiftUI
 import UserNotifications
-#if canImport(AlarmKit)
+#if canImport(AlarmKit) && !targetEnvironment(macCatalyst)
 import AlarmKit
 #endif
 
@@ -499,7 +499,7 @@ private struct NextAlarmSection: View {
 
     private var alarmNote: String {
         if #available(iOS 26.0, *) {
-            return "An alarm rings even in Silent mode and Focus, like the Clock app. Tap Stop to end it. Snooze 5 min rings it once more in 5 minutes."
+            return Device.words("An alarm rings even in Silent mode and Focus, like the Clock app. Tap Stop to end it. Snooze 5 min rings it once more in 5 minutes.")
         }
         return W("phone.alerts.alarmAsNotification")
     }
@@ -1109,7 +1109,7 @@ private struct CheckPhonePage: View {
     }
 
     private func currentAlarmAccess() -> AlarmAccess {
-        #if canImport(AlarmKit)
+        #if canImport(AlarmKit) && !targetEnvironment(macCatalyst)
         if #available(iOS 26.0, *) {
             switch AlarmManager.shared.authorizationState {
             case .authorized: return .allowed
@@ -1123,7 +1123,7 @@ private struct CheckPhonePage: View {
     }
 
     private func requestAlarms() async {
-        #if canImport(AlarmKit)
+        #if canImport(AlarmKit) && !targetEnvironment(macCatalyst)
         if #available(iOS 26.0, *) {
             _ = try? await AlarmManager.shared.requestAuthorization()
         }

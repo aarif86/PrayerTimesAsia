@@ -1,4 +1,4 @@
-#if canImport(AlarmKit)
+#if canImport(AlarmKit) && !targetEnvironment(macCatalyst)
 import ActivityKit
 import AlarmKit
 import SwiftUI

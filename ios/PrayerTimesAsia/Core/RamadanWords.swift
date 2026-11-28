@@ -11,7 +11,7 @@ enum RamadanWords {
         let one = (args["n"].map { "\($0)" } == "1") ? words[key.rawValue + "_one"] : nil
         var line = one ?? words[key.rawValue] ?? data[.en]?[key.rawValue] ?? ""
         for (name, value) in args { line = line.replacingOccurrences(of: "{\(name)}", with: "\(value)") }
-        return line
+        return Device.words(line)
     }
 
     static func mark(_ m: FastMark, _ lang: RamadanContent.Lang) -> String { line("mark_" + m.rawValue, lang) }

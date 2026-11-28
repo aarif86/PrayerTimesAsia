@@ -341,9 +341,13 @@ private struct SettingsPageStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .scrollContentBackground(.hidden)
+            // On a wide Mac window the list keeps a comfortable reading width.
+            .frame(maxWidth: Device.isMac ? 760 : .infinity)
+            .frame(maxWidth: .infinity)
             .background(SkyNow())
             .navigationTitle(title)
-            .navigationBarTitleDisplayMode(inline ? .inline : .large)
+            // On a Mac the side bar already says Settings, so the title stays small over the centred list.
+            .navigationBarTitleDisplayMode(inline || Device.isMac ? .inline : .large)
     }
 }
 

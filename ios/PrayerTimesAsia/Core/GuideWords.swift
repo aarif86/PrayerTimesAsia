@@ -17,6 +17,6 @@ enum GuideWords {
     static func word(_ lang: RamadanContent.Lang, _ key: String, _ args: [String: String] = [:]) -> String {
         var line = data[lang]?[key] ?? data[.en]?[key] ?? key
         for (name, value) in args { line = line.replacingOccurrences(of: "{\(name)}", with: value) }
-        return line
+        return Device.words(line)
     }
 }

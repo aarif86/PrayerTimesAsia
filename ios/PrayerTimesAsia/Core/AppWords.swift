@@ -114,7 +114,7 @@ final class AppLanguage {
 /// One line of the app's words in the app language. A view that calls this
 /// redraws when the App words choice changes.
 func W(_ key: String, _ args: [String: CustomStringConvertible] = [:]) -> String {
-    AppWords.text(key, AppLanguage.shared.lang, args)
+    Device.words(AppWords.text(key, AppLanguage.shared.lang, args))
 }
 
 /// A line with one {time} hole, cut into the words before and after it, for

@@ -97,19 +97,7 @@ struct NearbyView: View {
             TimelineView(.periodic(from: .now, by: 300)) { context in
                 let now = context.date
                 let list = visible(at: now)
-                GeometryReader { geo in
-                    let total = geo.size.height
-                    let committed = sheetHeight(stop, total: total)
-                    let live = min(max(committed - drag, sheetHeight(.small, total: total)), sheetHeight(.large, total: total))
-                    ZStack(alignment: .bottom) {
-                        VStack(spacing: 0) {
-                            map(list).frame(height: max(total - committed + overlap, 140))
-                            Spacer(minLength: 0)
-                        }
-                        .animation(.snappy, value: stopRaw)
-                        sheet(list: list, now: now, height: live, total: total)
-                    }
-                }
+                layout(list: list, now: now)
             }
             .background(SkyNow())
             .navigationTitle(W("masjid.title"))
@@ -222,6 +210,35 @@ struct NearbyView: View {
     }
 
     // MARK: Map
+
+    /// Phone: the map on top and the list sheet riding up over it. Mac: the list down
+    /// the left and the map filling the rest of the window, the way Maps does it.
+    private func layout(list: [PrayerSpace], now: Date) -> AnyView {
+        if Device.isMac {
+            return AnyView(HStack(spacing: 0) {
+                ScrollView {
+                    content(list: list, now: now)
+                        .padding(.vertical, 14)
+                }
+                .frame(width: 400)
+                .background(.regularMaterial)
+                map(list)
+            })
+        }
+        return AnyView(GeometryReader { geo in
+            let total = geo.size.height
+            let committed = sheetHeight(stop, total: total)
+            let live = min(max(committed - drag, sheetHeight(.small, total: total)), sheetHeight(.large, total: total))
+            ZStack(alignment: .bottom) {
+                VStack(spacing: 0) {
+                    map(list).frame(height: max(total - committed + overlap, 140))
+                    Spacer(minLength: 0)
+                }
+                .animation(.snappy, value: stopRaw)
+                sheet(list: list, now: now, height: live, total: total)
+            }
+        })
+    }
 
     @ViewBuilder
     private func map(_ list: [PrayerSpace]) -> some View {
