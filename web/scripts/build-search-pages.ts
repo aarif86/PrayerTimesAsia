@@ -35,8 +35,11 @@ const BASE = baseArg.endsWith('/') ? baseArg : baseArg + '/'
 const DAYS = 30
 const ORIGIN = 'https://prayertimes.asia'
 const PLAY = 'https://play.google.com/store/apps/details?id=com.prayertimesasia.app'
-type Lang = 'en' | 'ms' | 'id'
+type Lang = 'en' | 'ms' | 'id' | 'ar' | 'ur' | 'bn' | 'tr'
+/** Every city has these three. The rest are the city's own language, where the website has it. */
 const LANGS: Lang[] = ['en', 'ms', 'id']
+const ALL_LANGS: Lang[] = ['en', 'ms', 'id', 'ar', 'ur', 'bn', 'tr']
+const LOCAL: Record<string, Lang> = { makkah: 'ar', madinah: 'ar', dubai: 'ar', karachi: 'ur', lahore: 'ur', dhaka: 'bn', istanbul: 'tr' }
 
 /** [country, name in the built-in list, name shown on the page]. */
 const WANTED: [string, string, string?][] = [
@@ -83,7 +86,7 @@ const cities: City2[] = WANTED.map(([cc, listName, shown]) => {
     methodName: method.name.replace(' · ', ', '), fajr: method.fajrAngle, isha: method.ishaAngle, ishaInterval: method.ishaInterval,
     authority: profile.authority ?? '', sourceKind: profile.source, note: profile.note ?? '',
     // English pages show the country's own names next to the English ones ("Fajr (Subuh)"), Malay and Indonesian use their own.
-    naming: { en: NAMES[profile.naming], ms: NAMES.malay, id: NAMES.indonesian },
+    naming: { en: NAMES[profile.naming], ms: NAMES.malay, id: NAMES.indonesian, ar: NAMES.arabicScript, ur: NAMES.urdu, bn: NAMES.bengali, tr: NAMES.turkish },
     qibla: Math.round(qiblaBearing(p.coordinates)), coords: p.coordinates, method, asr: profile.asr,
   }
 })
@@ -92,13 +95,21 @@ type Times = Record<Prayer, number>
 const timesAt = (c: City2, ms: number): Times => computeFor(ms, c.tz, c.coords, c.method, c.asr).times as Times
 
 // ---- language bits -----------------------------------------------------------------------------------------------------
-const LOCALE: Record<Lang, string> = { en: 'en-GB', ms: 'ms-MY', id: 'id-ID' }
-const BASE_DIR: Record<Lang, string> = { en: 'prayer-times', ms: 'ms/waktu-solat', id: 'id/jadwal-sholat' }
-const PRINT_DIR: Record<Lang, string> = { en: 'printable-timetables', ms: 'ms/jadual-cetak', id: 'id/jadwal-cetak' }
-const HOME: Record<Lang, string> = { en: '', ms: 'ms/', id: 'id/' }
+const LOCALE: Record<Lang, string> = { en: 'en-GB', ms: 'ms-MY', id: 'id-ID', ar: 'ar-u-ca-gregory-nu-latn', ur: 'ur-PK-u-nu-latn', bn: 'bn-BD-u-nu-latn', tr: 'tr-TR' }
+const NATIVE: Record<Lang, string> = { en: 'EN', ms: 'MS', id: 'ID', ar: 'العربية', ur: 'اردو', bn: 'বাংলা', tr: 'TR' }
+const RTL: Lang[] = ['ar', 'ur']
+const langsFor = (c: City2): Lang[] => (LOCAL[c.slug] ? [...LANGS, LOCAL[c.slug]] : LANGS)
+const inLang = (c: City2, l: Lang) => langsFor(c).includes(l)
+const BASE_DIR: Record<Lang, string> = { en: 'prayer-times', ms: 'ms/waktu-solat', id: 'id/jadwal-sholat', ar: 'ar/mawaqit-alsalat', ur: 'ur/namaz-ke-auqat', bn: 'bn/namajer-somoy', tr: 'tr/namaz-vakitleri' }
+const PRINT_DIR: Record<Lang, string> = { en: 'printable-timetables', ms: 'ms/jadual-cetak', id: 'id/jadwal-cetak', ar: 'ar/jadwal-lil-tibaa', ur: 'ur/chapai-ka-jadwal', bn: 'bn/print-somoysuchi', tr: 'tr/yazdirilabilir-vakitler' }
+const HOME: Record<Lang, string> = { en: '', ms: 'ms/', id: 'id/', ar: 'ar/', ur: 'ur/', bn: 'bn/', tr: 'tr/' }
 const cityPath = (l: Lang, c: City2) => `${BASE_DIR[l]}/${c.slug}/`
 const printPath = (l: Lang, c: City2) => `${PRINT_DIR[l]}/${c.slug}/`
-const cityName = (c: City2, l: Lang) => (c.slug === 'penang' && l !== 'en' ? 'Pulau Pinang' : c.name)
+const LOCAL_NAMES: Record<string, Partial<Record<Lang, string>>> = {
+  penang: { ms: 'Pulau Pinang', id: 'Pulau Pinang' }, makkah: { ar: 'مكة المكرمة' }, madinah: { ar: 'المدينة المنورة' }, dubai: { ar: 'دبي' },
+  karachi: { ur: 'کراچی' }, lahore: { ur: 'لاہور' }, dhaka: { bn: 'ঢাকা' }, istanbul: { tr: 'İstanbul' },
+}
+const cityName = (c: City2, l: Lang) => LOCAL_NAMES[c.slug]?.[l] ?? c.name
 const countryName = (cc: string, l: Lang) => {
   try { return new Intl.DisplayNames([LOCALE[l]], { type: 'region' }).of(cc) ?? cc } catch { return cc }
 }
@@ -106,6 +117,10 @@ const compassWords: Record<Lang, string[]> = {
   en: ['north', 'north east', 'east', 'south east', 'south', 'south west', 'west', 'north west'],
   ms: ['utara', 'timur laut', 'timur', 'tenggara', 'selatan', 'barat daya', 'barat', 'barat laut'],
   id: ['utara', 'timur laut', 'timur', 'tenggara', 'selatan', 'barat daya', 'barat', 'barat laut'],
+  ar: ['الشمال', 'الشمال الشرقي', 'الشرق', 'الجنوب الشرقي', 'الجنوب', 'الجنوب الغربي', 'الغرب', 'الشمال الغربي'],
+  ur: ['شمال', 'شمال مشرق', 'مشرق', 'جنوب مشرق', 'جنوب', 'جنوب مغرب', 'مغرب', 'شمال مغرب'],
+  bn: ['উত্তর', 'উত্তর পূর্ব', 'পূর্ব', 'দক্ষিণ পূর্ব', 'দক্ষিণ', 'দক্ষিণ পশ্চিম', 'পশ্চিম', 'উত্তর পশ্চিম'],
+  tr: ['kuzey', 'kuzeydoğu', 'doğu', 'güneydoğu', 'güney', 'güneybatı', 'batı', 'kuzeybatı'],
 }
 const compass = (deg: number, l: Lang) => compassWords[l][Math.round(deg / 45) % 8]
 
@@ -114,15 +129,19 @@ function clock(ms: number, tz: string, l: Lang): string {
   const z = zoned(ms, tz)
   const mm = String(z.minute).padStart(2, '0')
   if (l === 'id') return `${String(z.hour).padStart(2, '0')}.${mm}`
+  if (l === 'tr') return `${String(z.hour).padStart(2, '0')}:${mm}`
   const h12 = z.hour % 12 === 0 ? 12 : z.hour % 12
   if (l === 'en') return `${h12}:${mm} ${z.hour < 12 ? 'am' : 'pm'}`
+  if (l === 'ar') return `${h12}:${mm} ${z.hour < 12 ? 'ص' : 'م'}`
+  if (l === 'ur' || l === 'bn') return `${h12}:${mm} ${z.hour < 12 ? 'AM' : 'PM'}`
   const part = z.hour < 12 ? 'pg' : z.hour < 15 ? 'tgh' : z.hour < 19 ? 'ptg' : 'mlm'
   return `${h12}:${mm} ${part}`
 }
 const isoDay = (ms: number, tz: string) => { const z = zoned(ms, tz); return `${z.year}-${String(z.month).padStart(2, '0')}-${String(z.day).padStart(2, '0')}` }
 const fmtDate = (ms: number, tz: string, l: Lang, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(LOCALE[l], { timeZone: tz, ...o }).format(ms)
 const longDate = (ms: number, tz: string, l: Lang) => fmtDate(ms, tz, l, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-const fastLen = (a: number, b: number, l: Lang) => { const m = Math.round((b - a) / 60000); return `${Math.floor(m / 60)}${l === 'en' ? ' h ' : ' j '}${m % 60} m` }
+const FAST_UNITS: Record<Lang, [string, string]> = { en: [' h ', ' m'], ms: [' j ', ' m'], id: [' j ', ' m'], ar: [' س ', ' د'], ur: [' گھنٹے ', ' منٹ'], bn: [' ঘণ্টা ', ' মিনিট'], tr: [' sa ', ' dk'] }
+const fastLen = (a: number, b: number, l: Lang) => { const m = Math.round((b - a) / 60000); return `${Math.floor(m / 60)}${FAST_UNITS[l][0]}${m % 60}${FAST_UNITS[l][1]}` }
 
 const ENGLISH: Record<Prayer, string> = NAMES.arabic
 const prayers: Prayer[] = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']
@@ -146,7 +165,7 @@ interface Words {
   prPrint: string; prApp: string; prAppNote: string; day: string; fast: string; back: string; printBadge: string
   hubTitle: string; hubDesc(n: number): string; hubH1: string; hubLead: string; pick: string; cityBadge: string; theme: string
 }
-const W: Record<Lang, Words> = {
+const W = {
   en: {
     home: 'Home', crumb: 'Prayer times', open: 'Open the app', play: 'Get it on Google Play', nasar: 'Built fisabilillah in Singapore by',
     title: (n) => `Prayer times in ${n} today | Fajr, Dhuhr, Asr, Maghrib, Isha`,
@@ -225,14 +244,125 @@ const W: Record<Lang, Words> = {
     hubH1: 'Jadwal sholat untuk dicetak', hubLead: 'Jadwal bulanan dan Ramadan gratis yang bisa dicetak atau disimpan sebagai PDF. Setiap jadwal menyebut sumber waktunya. Silakan ikuti otoritas agama setempat Anda.',
     pick: 'Pilih kota Anda', cityBadge: 'Jadwal sholat', theme: 'Ganti antara terang dan gelap',
   },
-}
+} as Record<Lang, Words>
+
+// Local languages for the cities where the app's website already has that language (Arabic, Urdu, Bengali, Turkish).
+// Other local languages (Thai, Burmese, Nepali, Chinese, Japanese, Korean, Vietnamese, Khmer, Filipino, Hindi, Sinhala)
+// are not site languages yet, so those cities show English, Malay and Indonesian.
+Object.assign(W, {
+  ar: {
+    home: 'الرئيسية', crumb: 'مواقيت الصلاة', open: 'افتح التطبيق', play: 'حمّله من Google Play', nasar: 'صُنع ابتغاء وجه الله في سنغافورة بواسطة',
+    title: (n: string) => `مواقيت الصلاة في ${n} اليوم | الفجر والظهر والعصر والمغرب والعشاء`,
+    descPre: (n: string, d: string) => `مواقيت الصلاة في ${n} اليوم، ${d}.`, h1: (n: string) => `مواقيت الصلاة في ${n} اليوم`,
+    stale: 'هذه المواقيت أقدم من شهر. افتح التطبيق لمعرفة مواقيت اليوم.', local: (p: string) => `جميع الأوقات بالتوقيت المحلي في ${p}.`,
+    table: (a: string) => `الجدول الرسمي صادر عن ${a}. تُحسب الأوقات في هذه الصفحة بالطريقة نفسها وتقع ضمن دقيقتين تقريبًا منه، ولا تكون أبكر منه أبدًا. يعرض تطبيق Prayer Times Asia الجدول الرسمي نفسه عند اتصالك بالإنترنت.`,
+    authority: (a: string) => `يتبع التطبيق ${a} ويحسب الأوقات بطريقة هذه الجهة نفسها.`,
+    none: () => 'لا توجد جهة وطنية واحدة يستطيع التطبيق قراءة جدولها هنا، لذلك يستخدم ما تستخدمه أغلب المساجد.',
+    faqH: (n: string) => `أسئلة عن مواقيت الصلاة في ${n}`, howH: 'كيف تُحسب هذه الأوقات', source: 'المصدر', methodLbl: 'الطريقة', placeLbl: 'المكان',
+    moreAbout: 'اقرأ المزيد عن طريقة حساب الأوقات', caution: 'قد تختلف المساجد ببضع دقائق، لذا يُرجى اتباع الجهة الدينية المحلية.',
+    ishaDeg: (n: number) => `${n} درجة`, ishaMin: (n: number) => `${n} دقيقة بعد المغرب`, shafii: 'الشافعي', hanafi: 'الحنفي',
+    daysH: (n: string) => `مواقيت الصلاة في ${n} للثلاثين يومًا القادمة`, showDays: 'اعرض جدول 30 يومًا', dateCol: 'التاريخ', othersH: 'مدن أخرى', built: 'تاريخ بناء الصفحة',
+    printH: 'اطبع هذا الجدول', printLead: (n: string) => `جداول شهرية وجدول رمضان لمدينة ${n}، جاهزة للطباعة أو الحفظ بصيغة PDF.`, btnMonthly: 'جدول للطباعة', btnRamadan: 'جدول رمضان',
+    follow: 'اتبع دائمًا الجهة الدينية المحلية.', about: 'كيف نحسب الأوقات', sources: 'من أين تأتي أوقاتنا', privacy: 'الخصوصية', allCities: 'كل المدن',
+    ptTitle: 'مواقيت الصلاة حسب المدينة | Prayer Times Asia', ptDesc: () => 'مواقيت الصلاة اليوم في مدن آسيا والعالم، مع شرح الطريقة والمصدر لكل مدينة.',
+    ptH1: 'مواقيت الصلاة حسب المدينة', ptLead: 'اختر مدينة لترى مواقيت اليوم والأيام الثلاثين القادمة مع كتابة الطريقة والمصدر. لموقعك بالضبط افتح التطبيق المجاني.', ptFoot: 'يغطي التطبيق 143 دولة ويعمل بدون إنترنت.',
+    prTitle: (n: string) => `جدول مواقيت الصلاة للطباعة في ${n} | شهري ورمضان`, prDesc: (n: string) => `جدول مواقيت الصلاة الشهري ورمضان للطباعة مجانًا في ${n}، مع المصدر والطريقة ومدة الصيام. اطبعه أو احفظه بصيغة PDF.`,
+    prH1: (n: string) => `جدول مواقيت الصلاة للطباعة في ${n}`, prLead: (n: string) => `جداول شهرية وجدول رمضان مجانية لمدينة ${n}. اطبعها أو احفظها بصيغة PDF. يذكر كل جدول مصدر أوقاته. يُرجى اتباع الجهة الدينية المحلية.`,
+    prSource: 'من أين تأتي هذه الأوقات', prMonthly: 'الجدول الشهري', prRamadan: 'جدول رمضان',
+    prRamadanNote: (d: string, y: number) => `يُتوقع أن يبدأ رمضان ${y} نحو ${d}، بحسب تقويم أم القرى. تعلن الجهة المحلية بداية الشهر الفعلية، لذا يُرجى اتباعها.`,
+    prFastNote: 'تُحسب مدة الصيام من الفجر إلى المغرب.', prPrint: 'اطبع هذه الصفحة', prApp: 'افتح التطبيق للطباعة لموقعك بالضبط',
+    prAppNote: 'ليست مدينتك؟ يمكن للتطبيق المجاني طباعة جدول لموقعك بالضبط.', day: 'اليوم', fast: 'الصيام', back: 'العودة إلى صفحة المدينة', printBadge: 'للطباعة',
+    hubTitle: 'جداول مواقيت الصلاة للطباعة حسب المدينة | Prayer Times Asia', hubDesc: () => 'جداول مواقيت الصلاة الشهرية ورمضان مجانية للطباعة، ومصدر كل جدول مكتوب عليه.',
+    hubH1: 'جداول مواقيت الصلاة للطباعة', hubLead: 'جداول شهرية وجدول رمضان مجانية للطباعة أو الحفظ بصيغة PDF. يذكر كل جدول مصدر أوقاته. يُرجى اتباع الجهة الدينية المحلية.',
+    pick: 'اختر مدينتك', cityBadge: 'مواقيت الصلاة', theme: 'التبديل بين الفاتح والداكن',
+  },
+  ur: {
+    home: 'ہوم', crumb: 'نماز کے اوقات', open: 'ایپ کھولیں', play: 'Google Play سے حاصل کریں', nasar: 'فی سبیل اللہ سنگاپور میں بنایا گیا، از',
+    title: (n: string) => `${n} میں آج نماز کے اوقات | فجر، ظہر، عصر، مغرب، عشاء`,
+    descPre: (n: string, d: string) => `${n} میں آج نماز کے اوقات، ${d}۔`, h1: (n: string) => `${n} میں آج نماز کے اوقات`,
+    stale: 'یہ اوقات ایک مہینے سے پرانے ہیں۔ آج کے اوقات کے لیے ایپ کھولیں۔', local: (p: string) => `تمام اوقات ${p} کے مقامی وقت کے مطابق ہیں۔`,
+    table: (a: string) => `سرکاری جدول ${a} کی طرف سے آتا ہے۔ اس صفحے کے اوقات اسی طریقے سے نکالے گئے ہیں اور اس سے تقریباً 2 منٹ کے اندر رہتے ہیں، کبھی پہلے نہیں۔ آن لائن ہونے پر Prayer Times Asia ایپ خود سرکاری جدول دکھاتی ہے۔`,
+    authority: (a: string) => `ایپ ${a} کی پیروی کرتی ہے اور اسی ادارے کے طریقے سے اوقات نکالتی ہے۔`,
+    none: () => 'یہاں کوئی ایک قومی ادارہ نہیں جس کا جدول ایپ پڑھ سکے، اس لیے ایپ وہ طریقہ استعمال کرتی ہے جو زیادہ تر مساجد استعمال کرتی ہیں۔',
+    faqH: (n: string) => `${n} میں نماز کے اوقات کے بارے میں سوالات`, howH: 'یہ اوقات کیسے نکالے جاتے ہیں', source: 'ماخذ', methodLbl: 'طریقہ', placeLbl: 'مقام',
+    moreAbout: 'اوقات نکالنے کے طریقے کے بارے میں مزید پڑھیں', caution: 'مساجد میں چند منٹ کا فرق ہو سکتا ہے، اس لیے براہ کرم اپنے مقامی مذہبی ادارے کی پیروی کریں۔',
+    ishaDeg: (n: number) => `${n} ڈگری`, ishaMin: (n: number) => `مغرب کے ${n} منٹ بعد`, shafii: 'شافعی', hanafi: 'حنفی',
+    daysH: (n: string) => `${n} میں اگلے 30 دن کے نماز کے اوقات`, showDays: '30 دن کا جدول دکھائیں', dateCol: 'تاریخ', othersH: 'دوسرے شہر', built: 'صفحہ تیار ہونے کی تاریخ',
+    printH: 'یہ جدول پرنٹ کریں', printLead: (n: string) => `${n} کے ماہانہ اور رمضان کے جدول، پرنٹ یا PDF محفوظ کرنے کے لیے تیار۔`, btnMonthly: 'پرنٹ کا جدول', btnRamadan: 'رمضان کا جدول',
+    follow: 'ہمیشہ اپنے مقامی مذہبی ادارے کی پیروی کریں۔', about: 'ہم اوقات کیسے نکالتے ہیں', sources: 'ہمارے اوقات کہاں سے آتے ہیں', privacy: 'پرائیویسی', allCities: 'تمام شہر',
+    ptTitle: 'شہر کے مطابق نماز کے اوقات | Prayer Times Asia', ptDesc: () => 'ایشیا اور دنیا کے شہروں میں آج کے نماز کے اوقات، ہر شہر کے لیے طریقہ اور ماخذ کی وضاحت کے ساتھ۔',
+    ptH1: 'شہر کے مطابق نماز کے اوقات', ptLead: 'آج اور اگلے 30 دن کے اوقات دیکھنے کے لیے شہر چنیں، طریقہ اور ماخذ لکھے ہوئے ہیں۔ اپنی درست جگہ کے لیے مفت ایپ کھولیں۔', ptFoot: 'ایپ 143 ممالک کا احاطہ کرتی ہے اور آف لائن بھی چلتی ہے۔',
+    prTitle: (n: string) => `${n} میں پرنٹ کے لیے نماز کے اوقات کا جدول | ماہانہ اور رمضان`, prDesc: (n: string) => `${n} کے لیے مفت ماہانہ اور رمضان کے نماز کے جدول، ماخذ، طریقہ اور روزے کی مدت کے ساتھ۔ پرنٹ کریں یا PDF محفوظ کریں۔`,
+    prH1: (n: string) => `${n} میں پرنٹ کے لیے نماز کے اوقات کا جدول`, prLead: (n: string) => `${n} کے لیے مفت ماہانہ اور رمضان کے جدول۔ پرنٹ کریں یا PDF محفوظ کریں۔ ہر جدول بتاتا ہے کہ اوقات کہاں سے آتے ہیں۔ براہ کرم اپنے مقامی مذہبی ادارے کی پیروی کریں۔`,
+    prSource: 'یہ اوقات کہاں سے آتے ہیں', prMonthly: 'ماہانہ جدول', prRamadan: 'رمضان کا جدول',
+    prRamadanNote: (d: string, y: number) => `رمضان ${y} کے تقریباً ${d} کو شروع ہونے کی توقع ہے، ام القریٰ کیلنڈر کے مطابق۔ اصل آغاز کا اعلان آپ کا مقامی ادارہ کرتا ہے، اس لیے اسی کی پیروی کریں۔`,
+    prFastNote: 'روزے کی مدت فجر سے مغرب تک گنی جاتی ہے۔', prPrint: 'یہ صفحہ پرنٹ کریں', prApp: 'اپنی درست جگہ کے لیے پرنٹ کرنے ایپ کھولیں',
+    prAppNote: 'آپ کا شہر نہیں؟ مفت ایپ آپ کی درست جگہ کا جدول پرنٹ کر سکتی ہے۔', day: 'دن', fast: 'روزہ', back: 'شہر کے صفحے پر واپس', printBadge: 'پرنٹ کے لیے',
+    hubTitle: 'شہر کے مطابق پرنٹ کے لیے نماز کے جدول | Prayer Times Asia', hubDesc: () => 'مفت ماہانہ اور رمضان کے نماز کے جدول، ہر ایک پر اس کا ماخذ لکھا ہوا۔',
+    hubH1: 'پرنٹ کے لیے نماز کے جدول', hubLead: 'مفت ماہانہ اور رمضان کے جدول جو پرنٹ یا PDF کیے جا سکتے ہیں۔ ہر جدول بتاتا ہے کہ اوقات کہاں سے آتے ہیں۔ براہ کرم اپنے مقامی مذہبی ادارے کی پیروی کریں۔',
+    pick: 'اپنا شہر چنیں', cityBadge: 'نماز کے اوقات', theme: 'روشن اور تاریک کے درمیان تبدیل کریں',
+  },
+  bn: {
+    home: 'হোম', crumb: 'নামাজের সময়', open: 'অ্যাপ খুলুন', play: 'Google Play থেকে নিন', nasar: 'ফি সাবিলিল্লাহ সিঙ্গাপুরে তৈরি, নির্মাতা',
+    title: (n: string) => `${n}-এ আজকের নামাজের সময় | ফজর, জোহর, আসর, মাগরিব, এশা`,
+    descPre: (n: string, d: string) => `${n}-এ আজকের নামাজের সময়, ${d}।`, h1: (n: string) => `${n}-এ আজকের নামাজের সময়`,
+    stale: 'এই সময়সূচি এক মাসের বেশি পুরনো। আজকের সময়ের জন্য অ্যাপ খুলুন।', local: (p: string) => `সব সময় ${p}-এর স্থানীয় সময়।`,
+    table: (a: string) => `সরকারি সময়সূচি এসেছে ${a} থেকে। এই পাতার সময় একই পদ্ধতিতে হিসাব করা এবং এর থেকে প্রায় 2 মিনিটের মধ্যে থাকে, কখনও আগে নয়। অনলাইনে থাকলে Prayer Times Asia অ্যাপ নিজেই সরকারি সময়সূচি দেখায়।`,
+    authority: (a: string) => `অ্যাপ ${a} অনুসরণ করে এবং সেই প্রতিষ্ঠানের নিজস্ব পদ্ধতিতে সময় হিসাব করে।`,
+    none: () => 'এখানে এমন কোনো একক জাতীয় কর্তৃপক্ষ নেই যার সময়সূচি অ্যাপ পড়তে পারে, তাই অ্যাপ বেশির ভাগ মসজিদ যা ব্যবহার করে তা ব্যবহার করে।',
+    faqH: (n: string) => `${n}-এ নামাজের সময় নিয়ে প্রশ্ন`, howH: 'এই সময় কীভাবে হিসাব করা হয়', source: 'উৎস', methodLbl: 'পদ্ধতি', placeLbl: 'স্থান',
+    moreAbout: 'আমরা কীভাবে সময় হিসাব করি তা আরও পড়ুন', caution: 'মসজিদে কয়েক মিনিটের তফাত হতে পারে, তাই অনুগ্রহ করে আপনার স্থানীয় ধর্মীয় কর্তৃপক্ষকে অনুসরণ করুন।',
+    ishaDeg: (n: number) => `${n} ডিগ্রি`, ishaMin: (n: number) => `মাগরিবের ${n} মিনিট পরে`, shafii: 'শাফেয়ি', hanafi: 'হানাফি',
+    daysH: (n: string) => `${n}-এ আগামী 30 দিনের নামাজের সময়`, showDays: '30 দিনের সময়সূচি দেখান', dateCol: 'তারিখ', othersH: 'অন্যান্য শহর', built: 'পাতা তৈরির তারিখ',
+    printH: 'এই সময়সূচি ছাপুন', printLead: (n: string) => `${n}-এর মাসিক ও রমজানের সময়সূচি, ছাপার বা PDF করার জন্য প্রস্তুত।`, btnMonthly: 'ছাপার সময়সূচি', btnRamadan: 'রমজানের সময়সূচি',
+    follow: 'সবসময় আপনার স্থানীয় ধর্মীয় কর্তৃপক্ষকে অনুসরণ করুন।', about: 'আমরা কীভাবে সময় হিসাব করি', sources: 'আমাদের সময় কোথা থেকে আসে', privacy: 'গোপনীয়তা', allCities: 'সব শহর',
+    ptTitle: 'শহর অনুযায়ী নামাজের সময় | Prayer Times Asia', ptDesc: () => 'এশিয়া ও বিশ্বের শহরের আজকের নামাজের সময়, প্রতিটির পদ্ধতি ও উৎস ব্যাখ্যাসহ।',
+    ptH1: 'শহর অনুযায়ী নামাজের সময়', ptLead: 'আজ ও আগামী 30 দিনের সময় দেখতে একটি শহর বেছে নিন, পদ্ধতি ও উৎস লেখা আছে। আপনার ঠিক জায়গার জন্য বিনামূল্যের অ্যাপ খুলুন।', ptFoot: 'অ্যাপটি 143টি দেশ জুড়ে এবং অফলাইনেও চলে।',
+    prTitle: (n: string) => `${n}-এ ছাপার জন্য নামাজের সময়সূচি | মাসিক ও রমজান`, prDesc: (n: string) => `${n}-এর জন্য বিনামূল্যে ছাপার উপযোগী মাসিক ও রমজানের নামাজের সময়সূচি, উৎস, পদ্ধতি ও রোজার দৈর্ঘ্যসহ। ছাপুন বা PDF করে রাখুন।`,
+    prH1: (n: string) => `${n}-এ ছাপার জন্য নামাজের সময়সূচি`, prLead: (n: string) => `${n}-এর জন্য বিনামূল্যে মাসিক ও রমজানের সময়সূচি। ছাপুন বা PDF করে রাখুন। প্রতিটি সময়সূচি বলে দেয় সময়গুলো কোথা থেকে এসেছে। অনুগ্রহ করে আপনার স্থানীয় ধর্মীয় কর্তৃপক্ষকে অনুসরণ করুন।`,
+    prSource: 'এই সময়গুলো কোথা থেকে এসেছে', prMonthly: 'মাসিক সময়সূচি', prRamadan: 'রমজানের সময়সূচি',
+    prRamadanNote: (d: string, y: number) => `রমজান ${y} আনুমানিক ${d} নাগাদ শুরু হবে বলে ধরা হচ্ছে, উম্মুল কুরা ক্যালেন্ডার অনুযায়ী। আসল শুরুর ঘোষণা আপনার স্থানীয় কর্তৃপক্ষ দেয়, তাই তাদের অনুসরণ করুন।`,
+    prFastNote: 'রোজার দৈর্ঘ্য ফজর থেকে মাগরিব পর্যন্ত গোনা হয়।', prPrint: 'এই পাতা ছাপুন', prApp: 'আপনার ঠিক জায়গার জন্য ছাপতে অ্যাপ খুলুন',
+    prAppNote: 'আপনার শহর নয়? বিনামূল্যের অ্যাপ আপনার ঠিক জায়গার সময়সূচি ছাপতে পারে।', day: 'দিন', fast: 'রোজা', back: 'শহরের পাতায় ফিরে যান', printBadge: 'ছাপার জন্য',
+    hubTitle: 'শহর অনুযায়ী ছাপার জন্য নামাজের সময়সূচি | Prayer Times Asia', hubDesc: () => 'বিনামূল্যে মাসিক ও রমজানের ছাপার উপযোগী নামাজের সময়সূচি, প্রতিটিতে উৎস লেখা।',
+    hubH1: 'ছাপার জন্য নামাজের সময়সূচি', hubLead: 'বিনামূল্যে মাসিক ও রমজানের সময়সূচি যা ছাপা বা PDF করা যায়। প্রতিটি সময়সূচি বলে দেয় সময়গুলো কোথা থেকে এসেছে। অনুগ্রহ করে আপনার স্থানীয় ধর্মীয় কর্তৃপক্ষকে অনুসরণ করুন।',
+    pick: 'আপনার শহর বেছে নিন', cityBadge: 'নামাজের সময়', theme: 'হালকা ও গাঢ়ের মধ্যে বদলান',
+  },
+  tr: {
+    home: 'Ana sayfa', crumb: 'Namaz vakitleri', open: 'Uygulamayı aç', play: "Google Play'den indir", nasar: 'Singapur’da Allah rızası için yapıldı, yapımcı',
+    title: (n: string) => `${n} bugün namaz vakitleri | Sabah, Öğle, İkindi, Akşam, Yatsı`,
+    descPre: (n: string, d: string) => `${n} bugün namaz vakitleri, ${d}.`, h1: (n: string) => `${n} bugün namaz vakitleri`,
+    stale: 'Bu vakitler bir aydan eski. Bugünün vakitleri için uygulamayı açın.', local: (p: string) => `Tüm saatler ${p} yerel saatidir.`,
+    table: (a: string) => `Resmî vakit cetveli ${a} tarafından yayımlanır. Bu sayfadaki vakitler aynı yöntemle hesaplanır ve cetvelden yaklaşık 2 dakika içinde kalır, asla daha erken değildir. Prayer Times Asia uygulaması çevrimiçiyken resmî cetvelin kendisini gösterir.`,
+    authority: (a: string) => `Uygulama ${a} kurumunu izler ve vakitleri o kurumun kendi yöntemiyle hesaplar.`,
+    none: () => 'Burada uygulamanın okuyabileceği tek bir ulusal kurum yok, bu yüzden çoğu caminin kullandığı yöntemi kullanır.',
+    faqH: (n: string) => `${n} namaz vakitleri hakkında sorular`, howH: 'Bu vakitler nasıl hesaplanır', source: 'Kaynak', methodLbl: 'Yöntem', placeLbl: 'Yer',
+    moreAbout: 'Vakitleri nasıl hesapladığımız hakkında daha fazla okuyun', caution: 'Camiler arasında birkaç dakika fark olabilir, bu yüzden lütfen yerel dinî otoritenizi izleyin.',
+    ishaDeg: (n: number) => `${n} derece`, ishaMin: (n: number) => `Akşamdan ${n} dakika sonra`, shafii: 'Şafii', hanafi: 'Hanefi',
+    daysH: (n: string) => `${n} için önümüzdeki 30 günün namaz vakitleri`, showDays: '30 günlük cetveli göster', dateCol: 'Tarih', othersH: 'Diğer şehirler', built: 'Sayfa oluşturulma tarihi',
+    printH: 'Bu cetveli yazdırın', printLead: (n: string) => `${n} için aylık ve Ramazan cetvelleri, yazdırmaya veya PDF olarak kaydetmeye hazır.`, btnMonthly: 'Yazdırılabilir cetvel', btnRamadan: 'Ramazan cetveli',
+    follow: 'Her zaman yerel dinî otoritenizi izleyin.', about: 'Vakitleri nasıl hesaplıyoruz', sources: 'Vakitlerimiz nereden geliyor', privacy: 'Gizlilik', allCities: 'Tüm şehirler',
+    ptTitle: 'Şehre göre namaz vakitleri | Prayer Times Asia', ptDesc: () => 'Asya ve dünyadaki şehirler için bugünün namaz vakitleri, her biri için yöntem ve kaynak açıklamasıyla.',
+    ptH1: 'Şehre göre namaz vakitleri', ptLead: 'Bugünün ve önümüzdeki 30 günün vakitlerini görmek için bir şehir seçin, yöntem ve kaynak yazılıdır. Tam konumunuz için ücretsiz uygulamayı açın.', ptFoot: 'Uygulama 143 ülkeyi kapsar ve çevrimdışı çalışır.',
+    prTitle: (n: string) => `${n} için yazdırılabilir namaz vakitleri | Aylık ve Ramazan`, prDesc: (n: string) => `${n} için ücretsiz yazdırılabilir aylık ve Ramazan namaz cetveli, kaynak, yöntem ve oruç süresiyle birlikte. Yazdırın veya PDF olarak kaydedin.`,
+    prH1: (n: string) => `${n} için yazdırılabilir namaz cetveli`, prLead: (n: string) => `${n} için ücretsiz aylık ve Ramazan cetvelleri. Yazdırın veya PDF olarak kaydedin. Her cetvel vakitlerin nereden geldiğini söyler. Lütfen yerel dinî otoritenizi izleyin.`,
+    prSource: 'Bu vakitler nereden geliyor', prMonthly: 'Aylık cetvel', prRamadan: 'Ramazan cetveli',
+    prRamadanNote: (d: string, y: number) => `Ramazan ${y} yılının yaklaşık ${d} tarihinde başlaması bekleniyor, Ümmülkura takvimine göre. Gerçek başlangıcı yerel otoriteniz duyurur, bu yüzden onu izleyin.`,
+    prFastNote: 'Oruç süresi sabah vaktinden akşam vaktine kadar sayılır.', prPrint: 'Bu sayfayı yazdır', prApp: 'Tam konumunuz için yazdırmak üzere uygulamayı açın',
+    prAppNote: 'Şehriniz değil mi? Ücretsiz uygulama tam konumunuz için cetvel yazdırabilir.', day: 'Gün', fast: 'Oruç', back: 'Şehir sayfasına dön', printBadge: 'Yazdırılabilir',
+    hubTitle: 'Şehre göre yazdırılabilir namaz cetvelleri | Prayer Times Asia', hubDesc: () => 'Ücretsiz yazdırılabilir aylık ve Ramazan namaz cetvelleri, her birinde kaynağı yazılı.',
+    hubH1: 'Yazdırılabilir namaz cetvelleri', hubLead: 'Yazdırabileceğiniz veya PDF olarak kaydedebileceğiniz ücretsiz aylık ve Ramazan cetvelleri. Her cetvel vakitlerin nereden geldiğini söyler. Lütfen yerel dinî otoritenizi izleyin.',
+    pick: 'Şehrinizi seçin', cityBadge: 'Namaz vakitleri', theme: 'Açık ve koyu arasında geçiş yap',
+  },
+})
 
 /** The five questions on each city page, in each language. Plain sentences, no colons or dashes. */
 function faqFor(c: City2, l: Lang, T: Record<Prayer, string>, official: string, ishaRule: string, asrName: string): [string, string][] {
   const n = cityName(c, l)
   const f = leadOf(c, 'fajr', l), m = leadOf(c, 'maghrib', l)
   const all = prayers.map((k) => `${nameOf(c, k, l)} ${T[k]}`)
-  const allTxt = all.slice(0, -1).join(', ') + (l === 'en' ? ' and ' : l === 'ms' ? ' dan ' : ' dan ') + all[all.length - 1]
+  const AND: Record<Lang, string> = { en: ' and ', ms: ' dan ', id: ' dan ', ar: ' و', ur: ' اور ', bn: ' এবং ', tr: ' ve ' }
+  const allTxt = all.slice(0, -1).join(l === 'ar' ? '، ' : ', ') + AND[l] + all[all.length - 1]
   const dir = compass(c.qibla, l)
   if (l === 'ms') return [
     [`Pukul berapa ${f} di ${n} hari ini?`, `${f} di ${n} hari ini pada ${T.fajr}. Syuruk pada ${T.sunrise}, maka waktu Subuh tamat ketika itu.`],
@@ -248,6 +378,34 @@ function faqFor(c: City2, l: Lang, T: Record<Prayer, string>, official: string, 
     [`Metode apa yang dipakai untuk jadwal sholat di ${n}?`, `${c.methodName}, dengan Subuh pada ${c.fajr} derajat dan Isya pada ${ishaRule}. Ashar memakai mazhab ${asrName}. ${official}`],
     [`Ke arah mana kiblat dari ${n}?`, `Kiblat dari ${n} sekitar ${c.qibla} derajat searah jarum jam dari utara, yaitu ke arah ${dir}. Aplikasi menunjukkannya langsung di ponsel Anda.`],
   ]
+  if (l === 'ar') return [
+    [`ما موعد ${f} في ${n} اليوم؟`, `موعد ${f} في ${n} اليوم هو ${T.fajr}. تشرق الشمس في ${T.sunrise}، فينتهي وقت الفجر حينها.`],
+    [`ما موعد ${m} في ${n} اليوم؟`, `موعد ${m} في ${n} اليوم هو ${T.maghrib}. وهو أيضًا وقت الإفطار في رمضان.`],
+    [`ما هي أوقات الصلاة كلها في ${n} اليوم؟`, `${allTxt}. الأوقات بالتوقيت المحلي في ${n}.`],
+    [`ما الطريقة المعتمدة لمواقيت الصلاة في ${n}؟`, `${c.methodName}، مع الفجر عند ${c.fajr} درجة والعشاء عند ${ishaRule}. يعتمد العصر المذهب ${asrName}. ${official}`],
+    [`في أي اتجاه القبلة من ${n}؟`, `القبلة من ${n} نحو ${c.qibla} درجة باتجاه عقارب الساعة من الشمال، أي نحو ${dir}. يعرضها التطبيق مباشرة على هاتفك.`],
+  ]
+  if (l === 'ur') return [
+    [`${n} میں آج ${f} کا وقت کیا ہے؟`, `${n} میں آج ${f} کا وقت ${T.fajr} ہے۔ طلوع آفتاب ${T.sunrise} پر ہوتا ہے، اس لیے ${f} کا وقت تب ختم ہو جاتا ہے۔`],
+    [`${n} میں آج ${m} کا وقت کیا ہے؟`, `${n} میں آج ${m} کا وقت ${T.maghrib} ہے۔ رمضان میں یہی افطار کا وقت بھی ہے۔`],
+    [`${n} میں آج نماز کے تمام اوقات کیا ہیں؟`, `${allTxt}۔ تمام اوقات ${n} کے مقامی وقت کے مطابق ہیں۔`],
+    [`${n} میں نماز کے اوقات کس طریقے پر مبنی ہیں؟`, `${c.methodName}، فجر ${c.fajr} ڈگری اور عشاء ${ishaRule} پر۔ عصر ${asrName} مسلک کے مطابق ہے۔ ${official}`],
+    [`${n} سے قبلہ کس طرف ہے؟`, `${n} سے قبلہ شمال سے گھڑی کی سمت میں تقریباً ${c.qibla} ڈگری پر ہے، یعنی ${dir} کی طرف۔ ایپ اسے آپ کے فون پر براہ راست دکھاتی ہے۔`],
+  ]
+  if (l === 'bn') return [
+    [`${n}-এ আজ ${f}-এর সময় কখন?`, `${n}-এ আজ ${f}-এর সময় ${T.fajr}। সূর্যোদয় ${T.sunrise}-এ, তাই তখন ${f}-এর সময় শেষ হয়।`],
+    [`${n}-এ আজ ${m}-এর সময় কখন?`, `${n}-এ আজ ${m}-এর সময় ${T.maghrib}। রমজানে এটিই ইফতারের সময়।`],
+    [`${n}-এ আজ নামাজের সব সময় কী কী?`, `${allTxt}। সব সময় ${n}-এর স্থানীয় সময়।`],
+    [`${n}-এ নামাজের সময় কোন পদ্ধতিতে হিসাব করা হয়?`, `${c.methodName}, ফজর ${c.fajr} ডিগ্রিতে এবং এশা ${ishaRule}। আসর ${asrName} মাযহাব অনুযায়ী। ${official}`],
+    [`${n} থেকে কিবলা কোন দিকে?`, `${n} থেকে কিবলা উত্তর থেকে ঘড়ির কাঁটার দিকে প্রায় ${c.qibla} ডিগ্রিতে, অর্থাৎ ${dir} দিকে। অ্যাপ এটি আপনার ফোনে সরাসরি দেখায়।`],
+  ]
+  if (l === 'tr') return [
+    [`${n} bugün ${f} vakti ne zaman?`, `${n} bugün ${f} vakti ${T.fajr}. Güneş ${T.sunrise} saatinde doğar, bu yüzden ${f} vakti o zaman biter.`],
+    [`${n} bugün ${m} vakti ne zaman?`, `${n} bugün ${m} vakti ${T.maghrib}. Ramazan'da iftar vakti de budur.`],
+    [`${n} bugün tüm namaz vakitleri nelerdir?`, `${allTxt}. Saatler ${n} yerel saatidir.`],
+    [`${n} namaz vakitleri hangi yönteme dayanır?`, `${c.methodName}, sabah ${c.fajr} derece ve yatsı ${ishaRule}. İkindi ${asrName} mezhebine göre hesaplanır. ${official}`],
+    [`${n} şehrinden kıble hangi yönde?`, `${n} şehrinden kıble kuzeyden saat yönünde yaklaşık ${c.qibla} derecedir, yani ${dir} yönüdür. Uygulama bunu telefonunuzda canlı gösterir.`],
+  ]
   return [
     [`What time is ${f} in ${n} today?`, `${f} in ${n} today is at ${T.fajr}. Sunrise is at ${T.sunrise}, so ${f} ends then.`],
     [`What time is ${m} in ${n} today?`, `${m} in ${n} today is at ${T.maghrib}. This is also the time to break the fast during Ramadan.`],
@@ -256,6 +414,9 @@ function faqFor(c: City2, l: Lang, T: Record<Prayer, string>, official: string, 
     [`Which way is the qibla from ${n}?`, `The qibla from ${n} is about ${c.qibla} degrees clockwise from north, towards the ${dir}. The app shows it live on your phone.`],
   ]
 }
+
+/** A prayer name for running text: English pages use the English name, the others their own. */
+const pname = (c: City2, k: Prayer, l: Lang) => (l === 'en' ? ENGLISH[k] : c.naming[l][k])
 
 /** The authority's name in the page language (the profile text is English). */
 const AUTH: [RegExp, Record<'ms' | 'id', string>][] = [
@@ -267,10 +428,16 @@ const AUTH: [RegExp, Record<'ms' | 'id', string>][] = [
   [/^the UAE/, { ms: 'Pihak Berkuasa Am Hal Ehwal Islam dan Wakaf UAE', id: 'Otoritas Umum Urusan Islam dan Wakaf UEA' }],
   [/^Diyanet/, { ms: 'Diyanet, Presidensi Hal Ehwal Agama Turkiye', id: 'Diyanet, Kepresidenan Urusan Agama Turkiye' }],
 ]
+const AUTH2: [RegExp, Partial<Record<Lang, string>>][] = [
+  [/^Umm al-Qura/, { ar: 'أم القرى، التقويم الرسمي للمملكة العربية السعودية الذي يتبعه الحرمان في مكة والمدينة' }],
+  [/^the UAE/, { ar: 'الهيئة العامة للشؤون الإسلامية والأوقاف في الإمارات' }],
+  [/^Diyanet/, { tr: 'Diyanet, Türkiye Diyanet İşleri Başkanlığı' }],
+]
+const NO_AUTH: Record<Lang, string> = { en: 'Most masjids in the region', ms: 'Kebanyakan masjid di rantau ini', id: 'Kebanyakan masjid di kawasan ini', ar: 'أغلب المساجد في المنطقة', ur: 'خطے کی زیادہ تر مساجد', bn: 'এই অঞ্চলের বেশির ভাগ মসজিদ', tr: 'Bölgedeki çoğu cami' }
 const authName = (c: City2, l: Lang) => {
-  if (l === 'en') return c.authority || 'Most masjids in the region'
-  if (!c.authority) return l === 'ms' ? 'Kebanyakan masjid di rantau ini' : 'Kebanyakan masjid di kawasan ini'
-  return AUTH.find(([re]) => re.test(c.authority))?.[1][l] ?? c.authority
+  if (l === 'en') return c.authority || NO_AUTH.en
+  if (!c.authority) return NO_AUTH[l]
+  return (l === 'ms' || l === 'id' ? AUTH.find(([re]) => re.test(c.authority))?.[1][l] : AUTH2.find(([re]) => re.test(c.authority))?.[1][l]) ?? c.authority
 }
 
 // ---- the look: the same tokens as the home page (night sky, rounded type, gold gradient, light mode) -----------------------
@@ -325,6 +492,7 @@ const CSS = `
   footer a{color:var(--muted)}
   footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px}
   @media print{
+    .printbrand{display:flex!important}
     body{background:#fff!important;color:#000!important;font-size:11pt}body::before,header.top,footer,.noprint,.cta{display:none!important}
     .card,.scroll,.times li{background:#fff!important;border:1px solid #999!important;color:#000!important}
     .times span,tr.now td,a,.eyebrow{color:#000!important}th,.date,.lead,dd{color:#333!important}
@@ -332,17 +500,22 @@ const CSS = `
     h2{break-after:avoid}table,.card{break-inside:avoid}.print-only{display:block!important}
   }
   .print-only{display:none}
+  .printbrand{align-items:center;gap:10px;font-weight:800;margin-bottom:8px}.printbrand img{border-radius:8px}
+  [dir=rtl] th,[dir=rtl] td{text-align:right}
+  @media(max-width:700px){.langs a{padding:6px 8px;font-size:.72rem}.tr{gap:5px}.mode{width:36px;height:36px}}
+  @media(max-width:560px){.bt{display:none}}
 `
 const THEME = `<script>(function(){var t=null;try{t=localStorage.getItem('pta-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})()</script>`
 const TOGGLE = `<script>(function(){var b=document.querySelector('.mode');if(!b)return;b.hidden=false;function paint(){b.textContent=document.documentElement.getAttribute('data-theme')==='light'?'\\u2600':'\\u263E'}paint();b.addEventListener('click',function(){var t=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('pta-theme',t)}catch(e){}paint()})})()</script>`
 
 function shell(o: { title: string; desc: string; path: string; depth: number; body: string; ld: object[]; extra?: string; lang?: Lang; alts?: Partial<Record<Lang, string>> }): string {
+  // (language switch below shows only the languages this page exists in)
   const l: Lang = o.lang ?? 'en'
   const w = W[l]
   const up = '../'.repeat(o.depth)
   const alts = o.alts
   return `<!doctype html>
-<html lang="${l}">
+<html lang="${l}"${RTL.includes(l) ? ' dir="rtl"' : ''}>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -351,7 +524,7 @@ function shell(o: { title: string; desc: string; path: string; depth: number; bo
 <title>${esc(o.title)}</title>
 <meta name="description" content="${esc(o.desc)}" />
 <link rel="canonical" href="${ORIGIN}/${o.path}" />
-${alts ? LANGS.filter((x) => alts[x]).map((x) => `<link rel="alternate" hreflang="${x}" href="${ORIGIN}/${alts[x]}" />`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${ORIGIN}/${alts.en}" />` : ''}
+${alts ? ALL_LANGS.filter((x) => alts[x]).map((x) => `<link rel="alternate" hreflang="${x}" href="${ORIGIN}/${alts[x]}" />`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${ORIGIN}/${alts.en}" />` : ''}
 <link rel="icon" type="image/png" sizes="32x32" href="${up}img/favicon-32.png" />
 <link rel="apple-touch-icon" href="${up}img/apple-touch-icon.png" />
 <meta property="og:type" content="website" />
@@ -366,10 +539,11 @@ ${THEME}
 ${o.ld.map((j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`).join('\n')}
 </head>
 <body>
-<header class="top"><div class="wrap"><a class="brand" href="${BASE}${HOME[l]}"><img src="${up}img/icon-96.webp" alt="" width="34" height="34" />Prayer Times Asia</a>
-<div class="tr">${alts ? `<nav class="langs" aria-label="Language">${LANGS.filter((x) => alts[x]).map((x) => `<a href="${BASE}${alts[x]}" hreflang="${x}" lang="${x}"${x === l ? ' aria-current="page"' : ''}>${x.toUpperCase()}</a>`).join('')}</nav>` : ''}
+<header class="top"><div class="wrap"><a class="brand" href="${BASE}${HOME[l]}"><img src="${up}img/icon-96.webp" alt="" width="34" height="34" /><span class="bt">Prayer Times Asia</span></a>
+<div class="tr">${alts ? `<nav class="langs" aria-label="Language">${ALL_LANGS.filter((x) => alts[x]).map((x) => `<a href="${BASE}${alts[x]}" hreflang="${x}" lang="${x}"${x === l ? ' aria-current="page"' : ''}>${NATIVE[x]}</a>`).join('')}</nav>` : ''}
 <button class="mode" type="button" hidden aria-label="${esc(w.theme)}"></button><a class="btn sm" href="${BASE}app/">${esc(w.open)}</a></div></div></header>
 <main class="wrap">
+<div class="print-only printbrand"><img src="${up}img/icon-96.webp" alt="" width="28" height="28" /> Prayer Times Asia · prayertimes.asia</div>
 ${o.body}
 </main>
 <footer><div class="wrap"><div>${esc(w.follow)} <a href="${BASE}about.html">${esc(w.about)}</a> · <a href="${BASE}sources.html">${esc(w.sources)}</a> · <a href="${BASE}${BASE_DIR[l]}/">${esc(w.allCities)}</a> · <a href="${BASE}privacy.html">${esc(w.privacy)}</a></div>
@@ -416,7 +590,7 @@ const dayScript = (c: City2, l: Lang, rows: Row[]) => `<script type="application
 }catch(e){}})();
 </script>`
 
-const alts = (f: (l: Lang) => string): Record<Lang, string> => ({ en: f('en'), ms: f('ms'), id: f('id') })
+const alts = (langs: Lang[], f: (l: Lang) => string): Partial<Record<Lang, string>> => Object.fromEntries(langs.map((l) => [l, f(l)]))
 const crumbs = (l: Lang, w: Words, last: string) => `<nav aria-label="Breadcrumb" class="date"><a href="${BASE}${HOME[l]}">${esc(w.home)}</a> / <a href="${BASE}${BASE_DIR[l]}/">${esc(w.crumb)}</a> / ${esc(last)}</nav>`
 const placeOf = (c: City2, l: Lang) => { const n = cityName(c, l), cn = countryName(c.country, l); return n === cn ? n : `${n}, ${cn}` }
 
@@ -433,7 +607,8 @@ function cityPage(c: City2, l: Lang): string {
   // The same answers with live spans, so the visitor-day script updates them too.
   const faqLive = faqFor(c, l, Object.fromEntries(prayers.map((k) => [k, `\u0001${k}\u0002`])) as Record<Prayer, string>, official, ishaRule, asrName)
   const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }
-  const others = [...cities.filter((o) => o.country === c.country && o !== c), ...cities.filter((o) => o.country !== c.country)]
+  const pool = cities.filter((o) => inLang(o, l))
+  const others = [...pool.filter((o) => o.country === c.country && o !== c), ...pool.filter((o) => o.country !== c.country)]
   const descParts = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'].map((k) => `${leadOf(c, k as Prayer, l)} ${T[k as Prayer]}`).join(', ')
   const body = `
 <span class="eyebrow">${esc(w.cityBadge)}</span>
@@ -461,7 +636,7 @@ ${faqLive.map(([q, a]) => `<dt>${esc(q).replace(/\u0001(\w+)\u0002/g, (_x, k) =>
 <h2>${esc(w.howH)}</h2>
 <div class="card">
   <p>${esc(w.source)} ${esc(authName(c, l))}</p>
-  <p>${esc(w.methodLbl)} ${esc(c.methodName)}, ${l === 'en' ? 'Fajr' : 'Subuh'} ${c.fajr}${l === 'id' ? ' derajat' : l === 'ms' ? ' darjah' : ' degrees'}, ${l === 'en' ? 'Isha' : l === 'ms' ? 'Isyak' : 'Isya'} ${esc(ishaRule)}, ${l === 'id' ? 'Ashar' : l === 'ms' ? 'Asar' : 'Asr'} ${esc(asrName)}</p>
+  <p>${esc(w.methodLbl)} ${esc(c.methodName)}, ${esc(pname(c, 'fajr', l))} ${esc(w.ishaDeg(c.fajr))}, ${esc(pname(c, 'isha', l))} ${esc(ishaRule)}, ${esc(pname(c, 'asr', l))} ${esc(asrName)}</p>
   <p>${esc(w.placeLbl)} ${esc(n)}, ${c.lat.toFixed(2)}, ${c.lng.toFixed(2)}, ${esc(c.tz)}</p>
   <p><a href="${BASE}about.html">${esc(w.moreAbout)}</a>. ${esc(w.caution)}</p>
 </div>
@@ -481,7 +656,7 @@ ${others.map((o) => `  <li><a href="${BASE}${cityPath(l, o)}">${esc(cityName(o, 
 <p class="date">${esc(w.built)} ${BUILT}.</p>`
   return shell({
     lang: l, title: w.title(n), desc: `${w.descPre(n, longDate(now, c.tz, l))} ${descParts}.`, path: cityPath(l, c), depth: cityPath(l, c).split('/').length - 1, body,
-    extra: dayScript(c, l, rows), alts: alts((x) => cityPath(x, c)),
+    extra: dayScript(c, l, rows), alts: alts(langsFor(c), (x) => cityPath(x, c)),
     ld: [orgLd, siteLd(l), faqLd, {
       '@context': 'https://schema.org', '@type': 'BreadcrumbList',
       itemListElement: [[w.home, `${ORIGIN}/${HOME[l]}`], [w.crumb, `${ORIGIN}/${BASE_DIR[l]}/`], [n, `${ORIGIN}/${cityPath(l, c)}`]].map(([name, item], i) => ({ '@type': 'ListItem', position: i + 1, name, item })),
@@ -550,24 +725,26 @@ ${ramTable}
 <p class="print-only">prayertimes.asia ${esc(w.follow)}</p>
 <p class="date">${esc(w.built)} ${BUILT}.</p>`
   return shell({
-    lang: l, title: w.prTitle(n), desc: w.prDesc(n), path: printPath(l, c), depth: printPath(l, c).split('/').length - 1, body, alts: alts((x) => printPath(x, c)),
+    lang: l, title: w.prTitle(n), desc: w.prDesc(n), path: printPath(l, c), depth: printPath(l, c).split('/').length - 1, body, alts: alts(langsFor(c), (x) => printPath(x, c)),
     ld: [orgLd, siteLd(l), { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [[w.home, `${ORIGIN}/${HOME[l]}`], [w.printBadge, `${ORIGIN}/${PRINT_DIR[l]}/`], [n, `${ORIGIN}/${printPath(l, c)}`]].map(([name, item], i) => ({ '@type': 'ListItem', position: i + 1, name, item })) }],
   })
 }
 
 // ---- write the pages ----------------------------------------------------------------------------------------------------------
-const byCountry = (l: Lang, link: (c: City2) => string) => [...new Set(cities.map((c) => c.country))].map((cc) => `<h2>${esc(countryName(cc, l))}</h2>
-<ul class="links">${cities.filter((c) => c.country === cc).map((c) => `<li><a href="${BASE}${link(c)}">${esc(cityName(c, l))}</a></li>`).join('')}</ul>`).join('\n')
+const listLangs = (_l: Lang): Lang[] => ALL_LANGS.filter((x) => cities.some((c) => inLang(c, x)))
+const byCountry = (l: Lang, link: (c: City2) => string) => [...new Set(cities.filter((c) => inLang(c, l)).map((c) => c.country))].map((cc) => `<h2>${esc(countryName(cc, l))}</h2>
+<ul class="links">${cities.filter((c) => c.country === cc && inLang(c, l)).map((c) => `<li><a href="${BASE}${link(c)}">${esc(cityName(c, l))}</a></li>`).join('')}</ul>`).join('\n')
 
-for (const l of LANGS) {
+for (const l of ALL_LANGS) {
   const w = W[l]
-  for (const c of cities) {
+  const here = cities.filter((c) => inLang(c, l))
+  for (const c of here) {
     write(`${cityPath(l, c)}index.html`, cityPage(c, l))
     write(`${printPath(l, c)}index.html`, printablePage(c, l))
   }
   write(`${BASE_DIR[l]}/index.html`, shell({
-    lang: l, title: w.ptTitle, desc: w.ptDesc(cities.length), path: `${BASE_DIR[l]}/`, depth: BASE_DIR[l].split('/').length, alts: alts((x) => `${BASE_DIR[x]}/`),
-    ld: [orgLd, siteLd(l), { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: cities.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: cityName(c, l), url: `${ORIGIN}/${cityPath(l, c)}` })) }],
+    lang: l, title: w.ptTitle, desc: w.ptDesc(here.length), path: `${BASE_DIR[l]}/`, depth: BASE_DIR[l].split('/').length, alts: alts(listLangs(l), (x) => `${BASE_DIR[x]}/`),
+    ld: [orgLd, siteLd(l), { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: here.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: cityName(c, l), url: `${ORIGIN}/${cityPath(l, c)}` })) }],
     body: `
 <h1>${esc(w.ptH1)}</h1>
 <p class="lead">${esc(w.ptLead)}</p>
@@ -576,7 +753,7 @@ ${byCountry(l, (c) => cityPath(l, c))}
 <p class="date">${esc(w.ptFoot)}</p>`,
   }))
   write(`${PRINT_DIR[l]}/index.html`, shell({
-    lang: l, title: w.hubTitle, desc: w.hubDesc(cities.length), path: `${PRINT_DIR[l]}/`, depth: PRINT_DIR[l].split('/').length, alts: alts((x) => `${PRINT_DIR[x]}/`),
+    lang: l, title: w.hubTitle, desc: w.hubDesc(here.length), path: `${PRINT_DIR[l]}/`, depth: PRINT_DIR[l].split('/').length, alts: alts(listLangs(l), (x) => `${PRINT_DIR[x]}/`),
     ld: [orgLd, siteLd(l)],
     body: `
 <span class="eyebrow">${esc(w.printBadge)}</span>
@@ -633,17 +810,17 @@ Sitemap: ${ORIGIN}/sitemap.xml
 const has = (p: string) => existsSync(join(siteDir, p))
 const homeLangs = ['', 'ms/', 'id/', 'ar/', 'ur/', 'bn/', 'tr/', 'fr/'].filter((p) => has(p === '' ? 'index.html' : `${p}index.html`))
 const homeAlt = homeLangs.map((h) => `<xhtml:link rel="alternate" hreflang="${h === '' ? 'en' : h.replace('/', '')}" href="${ORIGIN}/${h}"/>`).join('')
-const altOf = (f: (l: Lang) => string) => LANGS.map((l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${ORIGIN}/${f(l)}"/>`).join('')
+const altOf = (langs: Lang[], f: (l: Lang) => string) => langs.map((l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${ORIGIN}/${f(l)}"/>`).join('')
 const plain = ['about.html', 'sources.html', 'whatsnew.html', 'credits.html', 'ms/credits.html', 'id/credits.html', 'press.html', 'ramadan.html', 'privacy.html', 'terms.html', 'join.html', 'masjid.html', 'app/']
   .filter((p) => (p.endsWith('/') ? has(`${p}index.html`) : has(p)))
 const entries: string[] = [
   ...homeLangs.map((h) => `<url><loc>${ORIGIN}/${h}</loc><lastmod>${BUILT}</lastmod>${homeAlt}</url>`),
   ...plain.map((p) => `<url><loc>${ORIGIN}/${p}</loc><lastmod>${BUILT}</lastmod></url>`),
-  ...LANGS.map((l) => `<url><loc>${ORIGIN}/${BASE_DIR[l]}/</loc><lastmod>${BUILT}</lastmod>${altOf((x) => `${BASE_DIR[x]}/`)}</url>`),
-  ...LANGS.map((l) => `<url><loc>${ORIGIN}/${PRINT_DIR[l]}/</loc><lastmod>${BUILT}</lastmod>${altOf((x) => `${PRINT_DIR[x]}/`)}</url>`),
-  ...cities.flatMap((c) => LANGS.flatMap((l) => [
-    `<url><loc>${ORIGIN}/${cityPath(l, c)}</loc><lastmod>${BUILT}</lastmod>${altOf((x) => cityPath(x, c))}</url>`,
-    `<url><loc>${ORIGIN}/${printPath(l, c)}</loc><lastmod>${BUILT}</lastmod>${altOf((x) => printPath(x, c))}</url>`,
+  ...ALL_LANGS.map((l) => `<url><loc>${ORIGIN}/${BASE_DIR[l]}/</loc><lastmod>${BUILT}</lastmod>${altOf(ALL_LANGS, (x) => `${BASE_DIR[x]}/`)}</url>`),
+  ...ALL_LANGS.map((l) => `<url><loc>${ORIGIN}/${PRINT_DIR[l]}/</loc><lastmod>${BUILT}</lastmod>${altOf(ALL_LANGS, (x) => `${PRINT_DIR[x]}/`)}</url>`),
+  ...cities.flatMap((c) => langsFor(c).flatMap((l) => [
+    `<url><loc>${ORIGIN}/${cityPath(l, c)}</loc><lastmod>${BUILT}</lastmod>${altOf(langsFor(c), (x) => cityPath(x, c))}</url>`,
+    `<url><loc>${ORIGIN}/${printPath(l, c)}</loc><lastmod>${BUILT}</lastmod>${altOf(langsFor(c), (x) => printPath(x, c))}</url>`,
   ])),
 ]
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
@@ -651,4 +828,4 @@ write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 ${entries.join('\n')}
 </urlset>
 `)
-console.log(`Search pages built: ${cities.length} cities x ${LANGS.length} languages, printable timetables, about, sitemap with ${entries.length} addresses`)
+console.log(`Search pages built: ${cities.length} cities in English, Malay, Indonesian and local languages, printable timetables, about, sitemap with ${entries.length} addresses`)
