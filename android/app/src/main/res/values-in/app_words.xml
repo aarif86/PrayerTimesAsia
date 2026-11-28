@@ -1068,6 +1068,9 @@
     <string name="settings_appearanceFoot" formatted="false">Otomatis mengikuti langit di tempat Anda.</string>
     <string name="settings_openingDial" formatted="false">Dial bergerak saat aplikasi dibuka</string>
     <string name="settings_openingDialSub" formatted="false">Matikan untuk langsung ke waktu salat Anda</string>
+    <string name="settings_surprises" formatted="false">Kejutan kecil</string>
+    <string name="settings_surprisesSub" formatted="false">Sentuhan halus, seperti cahaya lembut saat Anda menghadap kiblat. Matikan jika tidak ingin.</string>
+    <string name="qibla_lockedLine" formatted="false">Anda menghadap arah yang sama dengan umat Islam di seluruh dunia.</string>
     <string name="settings_placeFoot" formatted="false">Waktu salat Anda mengikuti tempat yang Anda pilih di sini.</string>
     <string name="settings_musafirMode" formatted="false">Mode musafir</string>
     <string name="settings_musafirModeSub" formatted="false">Panduan jamak dan qasar saat Anda jauh dari rumah</string>
