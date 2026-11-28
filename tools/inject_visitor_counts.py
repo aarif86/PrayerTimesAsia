@@ -13,7 +13,7 @@ import pathlib
 import re
 import sys
 
-SKIP_NAMES = {"404.html", "verify.html", "note.html"}
+SKIP_NAMES = {"404.html", "verify.html", "note.html", "announcement.html"}
 SKIP_DIRS = {"app", "tv"}
 
 SNIPPET = """  <!-- Anonymous visitor counts (TelemetryDeck: no cookies, no IP addresses kept). Nothing loads for browsers that ask sites not to track. See docs/analytics.md. -->
@@ -43,7 +43,7 @@ def main() -> int:
         if rel.parts[0] in SKIP_DIRS or page.name in SKIP_NAMES or page.name.startswith("google"):
             continue
         text = page.read_text(encoding="utf-8")
-        if "telemetrydeck" in text.lower() or "</head>" not in text:
+        if "cdn.telemetrydeck.com" in text or "</head>" not in text:
             continue
         page.write_text(text.replace("</head>", SNIPPET % app_id + "</head>", 1), encoding="utf-8")
         done += 1

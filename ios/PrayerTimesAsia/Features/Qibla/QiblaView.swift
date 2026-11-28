@@ -62,6 +62,7 @@ struct QiblaView: View {
         }
         .sensoryFeedback(.success, trigger: aligned) { _, now in now }
         .onAppear { location.beginHeading() }
+        .task { if location.heading != nil { model.usageAction("qiblaCompass") } }
         .onChange(of: location.heading != nil) { _, has in if has { model.usageAction("qiblaCompass") } }
         .onChange(of: aligned) { _, now in if now { model.usageAction("qiblaFaced") } }
         .onDisappear { location.endHeading() }

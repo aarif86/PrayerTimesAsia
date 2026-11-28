@@ -28,7 +28,7 @@ file and commit.
 
 | Question | Where it comes from |
 |---|---|
-| How many people visit the website, from which countries, on phone or computer, from which link | Every public website page (TelemetryDeck's web script: page views with country and referrer), added to each page when the site is published (`tools/inject_visitor_counts.py`). Left out: the two form pages that carry details in their link, the 404 page, the web app and the TV screen (which count themselves) |
+| How many people visit the website, from which countries, on phone or computer, from which link | Every public website page (TelemetryDeck's web script: page views with country and referrer), added to each page when the site is published (`tools/inject_visitor_counts.py`). Left out: the three form pages that carry details in their link (verify, note, announcement), the 404 page, the web app and the TV screen (which count themselves) |
 | How many people use the apps each day and month | `App.opened` events, counted by user |
 | How many times it is used | `App.opened` (counts once per hour per device, so a quick check and a re-open don't count twice) |
 | Which city and country people pray in | `Place.city` and `Place.country` on every event |

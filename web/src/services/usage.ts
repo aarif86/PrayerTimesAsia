@@ -350,6 +350,8 @@ export function tallyAction(action: string): void {
 /** The masjid screen was paired (once per pairing), so setup success can be told from drop-off. */
 export function countScreenPaired(version: string, s: ScreenFacts): void {
   let id = readString(SCREEN_ID_KEY)
+  const fresh = !id
   if (!id) { id = randomId(); writeString(SCREEN_ID_KEY, id) }
-  void send(['Screen.paired'], screenPayload(version, s, innerHeight > innerWidth), id)
+  // A TV's ID is made here when it is new, so the install is counted here too.
+  void send(fresh ? ['App.installed', 'Screen.paired'] : ['Screen.paired'], screenPayload(version, s, innerHeight > innerWidth), id)
 }
