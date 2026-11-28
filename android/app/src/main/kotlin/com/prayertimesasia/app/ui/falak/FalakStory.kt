@@ -92,7 +92,10 @@ fun SkySliderCard(state: AppState, place: Place, now: Instant) {
     val look = LocalLook.current
     val r = state.resolver
     val day = r.day(now) ?: return
-    val (start, end) = skyRange(day.time(Prayer.FAJR), day.time(Prayer.ISHA), now)
+    // The whole day, midnight to midnight, so the night can be explored too.
+    val startDate = day.time(Prayer.DHUHR).atZone(r.zone).toLocalDate()
+    val start = startDate.atStartOfDay(r.zone).toInstant()
+    val end = startDate.plusDays(1).atStartOfDay(r.zone).toInstant()
     val span = end.secondsSince(start).toFloat() / 60f
     val clock = (now.secondsSince(start).toFloat() / 60f).coerceIn(0f, span)
     var picked by remember { mutableStateOf<Float?>(null) }
@@ -113,18 +116,24 @@ fun SkySliderCard(state: AppState, place: Place, now: Instant) {
         Falak.SkyStage.MAGHRIB -> n(Prayer.MAGHRIB) to tr(R.string.falak_stageMaghribSay)
         Falak.SkyStage.ISHA -> n(Prayer.ISHA) to tr(R.string.falak_stageIshaSay)
     }
+    // Small surprises while you slide: the last third of the night, midday stillness.
+    val fajrAt = day.time(Prayer.FAJR)
+    val lastThird = t >= lastThirdStart(day.time(Prayer.MAGHRIB), fajrAt) && t < fajrAt
+    val atNoon = abs(t.secondsSince(plan.noon)) <= 15 * 60
+    val sayText = if (lastThird) tr(R.string.falak_lastThirdSay) else if (atNoon) tr(R.string.falak_noonSay, "name" to n(Prayer.DHUHR)) else say
     val words = SkyWords(tr(R.string.falak_east).uppercase(), tr(R.string.falak_west).uppercase(), tr(R.string.falak_shadowLabel), n(Prayer.ASR))
     // Colour Bands: the sky runs edge to edge, square, with hairlines top and bottom only.
     val card = if (look.bands) Modifier.wideBy(Dims.gutter).background(look.c.card)
     else Modifier.fillMaxWidth().lookCard(look)
     Column(card) {
         if (look.bands) Box(Modifier.fillMaxWidth().height(1.dp).background(look.c.sep))
-        SkyPicture(look, day, plan, t, place, r.asrSchool, words,
+        SkyPicture(look, day, plan, t, place, r.asrSchool, words, lastThird,
             Modifier.fillMaxWidth().aspectRatio(SKY_W / SKY_H).semantics { contentDescription = "$title. $say" })
         Column(Modifier.padding(start = if (look.bands) 24.dp else 18.dp, end = if (look.bands) 24.dp else 18.dp, top = 12.dp, bottom = 8.dp)) {
             Text(r.formatted(t), style = lookText(13.sp, FontWeight.Medium), color = look.c.tx2)
             Text(title, style = display(if (look.simple) 34.sp else 28.sp, FontWeight.Bold), color = look.c.tx)
-            Text(say, style = lookText(15.sp), color = look.c.tx2, modifier = Modifier.padding(top = 2.dp))
+            Text(sayText, style = lookText(15.sp), color = look.c.tx2, modifier = Modifier.padding(top = 2.dp))
+            if (lastThird) HadithView(state, HadithId.LAST_THIRD, line = true)
             val label = tr(R.string.falak_slideSun)
             Slider(
                 value = picked ?: clock, onValueChange = { picked = it }, valueRange = 0f..span,
@@ -147,13 +156,12 @@ fun SkySliderCard(state: AppState, place: Place, now: Instant) {
 }
 
 /**
- * The slider's day: 45 minutes before Fajr to 45 minutes after Isha, stretched to
- * include the time now, so the slider always opens on now (late at night too).
+ * When the last third of the night begins. The night runs from yesterday's Maghrib to today's Fajr
+ * (today's Maghrib minus 24 hours is within a minute or two of yesterday's).
  */
-internal fun skyRange(fajr: Instant, isha: Instant, now: Instant): Pair<Instant, Instant> {
-    val start = fajr.minusSeconds(2700L).let { if (now < it) now else it }
-    val end = isha.plusSeconds(2700L).let { if (now > it) now else it }
-    return start to end
+internal fun lastThirdStart(maghrib: Instant, fajr: Instant): Instant {
+    val nightStart = maghrib.minusSeconds(86_400L)
+    return fajr.minusSeconds((fajr.secondsSince(nightStart) / 3).toLong())
 }
 
 private const val SKY_W = 343f
@@ -192,7 +200,7 @@ private fun DrawScope.label(tm: TextMeasurer, t: String, x: Float, baseline: Flo
 
 @Composable
 private fun SkyPicture(look: Look, day: PrayerDay, plan: Falak.ShadowDay, t: Instant, place: Place,
-                       school: AsrSchool, words: SkyWords, modifier: Modifier) {
+                       school: AsrSchool, words: SkyWords, lastThird: Boolean, modifier: Modifier) {
     val tm = rememberTextMeasurer()
     Canvas(modifier) {
         val k0 = size.width / SKY_W
@@ -227,7 +235,35 @@ private fun SkyPicture(look: Look, day: PrayerDay, plan: Falak.ShadowDay, t: Ins
                 else -> look.c.accent
             }
             drawRect(Brush.verticalGradient(listOf(if (lit) look.c.sky1 else top, if (lit) look.c.sky2 else bottom), 0f, SKY_H), size = Size(SKY_W, SKY_H))
-            if (dark) for (i in 0 until 14) drawCircle(Color.White.copy(alpha = 0.7f), 1.2f, Offset(((i * 73) % SKY_W.toInt()).toFloat(), ((i * 37) % 100 + 8).toFloat()))
+            if (dark) for (i in 0 until (if (lastThird) 26 else 14)) drawCircle(Color.White.copy(alpha = if (lastThird) 0.95f else 0.7f), if (lastThird) 1.6f else 1.2f, Offset(((i * 73) % SKY_W.toInt()).toFloat(), ((i * 37) % 100 + 8).toFloat()))
+            // The moon shows today's real phase and crosses the night sky, east to west.
+            if (dark) {
+                val night0 = day.time(Prayer.MAGHRIB)
+                val night1 = day.time(Prayer.FAJR).plusSeconds(86_400L)
+                val np = (((t.secondsSince(night0) % 86_400.0) + 86_400.0) % 86_400.0 / max(night1.secondsSince(night0), 1.0)).toFloat()
+                if (np in 0f..1f) {
+                    val mx = 44f + (SKY_W - 88f) * np
+                    val my = GY - 34f - (GY - 64f) * sin(PI * np).toFloat()
+                    val mr = 9f
+                    val synodic = 29.530588853 * 86_400.0
+                    val ph = (((t.epochSecond - 947_182_440L).toDouble() % synodic) + synodic) % synodic / synodic
+                    val kk = kotlin.math.cos(2 * PI * ph).toFloat()
+                    val sign = if (ph < 0.5) 1f else -1f
+                    drawCircle(Color.White.copy(alpha = 0.12f), mr, Offset(mx, my))
+                    val moonPath = Path()
+                    for (i in 0..24) {
+                        val a = -PI / 2 + PI * i / 24
+                        val x = mx + sign * mr * kotlin.math.cos(a).toFloat()
+                        val y = my + mr * sin(a).toFloat()
+                        if (i == 0) moonPath.moveTo(x, y) else moonPath.lineTo(x, y)
+                    }
+                    for (i in 0..24) {
+                        val a = PI / 2 - PI * i / 24
+                        moonPath.lineTo(mx + sign * kk * mr * kotlin.math.cos(a).toFloat(), my + mr * sin(a).toFloat())
+                    }
+                    drawPath(moonPath, Color(0.95f, 0.94f, 0.9f))
+                }
+            }
             if (stage == Falak.SkyStage.FAJR) {
                 val rx = (110 + 60 * k).toFloat()
                 val ry = (8 + 8 * k).toFloat()

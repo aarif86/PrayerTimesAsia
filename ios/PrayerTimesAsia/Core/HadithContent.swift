@@ -4,7 +4,7 @@ import Foundation
 /// Every hadith was checked on sunnah.com (see ref). Generated from
 /// web/src/core/hadith.ts, keep the three in step (android core HadithContent.kt).
 struct Hadith: Identifiable, Sendable {
-    enum ID: String, CaseIterable, Sendable { case fixedTimes, coolPrayers, syuruk, river, illness, fajrRakaat, nightPrayer, whiteDays, monThu, azan, iftar, falakJibril, falakDawn, falakFeet }
+    enum ID: String, CaseIterable, Sendable { case fixedTimes, coolPrayers, syuruk, river, illness, fajrRakaat, nightPrayer, whiteDays, monThu, azan, iftar, falakJibril, falakDawn, falakFeet, lastThird }
     let id: ID
     let arabic: String
     let meaning: Doa.Words
@@ -106,5 +106,11 @@ struct Hadith: Identifiable, Sendable {
             meaning: .init(en: "The shadow when the Prophet ﷺ prayed Dhuhr in summer was three to five feet, and in winter five to seven feet.", ms: "Ukuran bayang ketika Rasulullah ﷺ solat Zohor pada musim panas ialah tiga hingga lima tapak kaki, dan pada musim sejuk lima hingga tujuh tapak kaki.", id: "Ukuran bayangan ketika Rasulullah ﷺ salat Zuhur pada musim panas adalah tiga sampai lima telapak kaki, dan pada musim dingin lima sampai tujuh telapak kaki."),
             source: .init(en: "Ibn Masud, narrated by Abu Dawud", ms: "Ibn Masud, riwayat Abu Daud", id: "Ibnu Masud, riwayat Abu Dawud"),
             ref: "Sunan Abi Dawud 400 (Sahih, al Albani)"),
+        Hadith(
+            id: .lastThird,
+            arabic: "مَنْ يَدْعُونِي فَأَسْتَجِيبَ لَهُ",
+            meaning: .init(en: "Our Lord comes down to the lowest heaven when the last third of the night remains, and says, who calls on Me so I may answer him?", ms: "Tuhan kita turun ke langit dunia ketika tinggal sepertiga malam terakhir, lalu berfirman, siapa yang berdoa kepada-Ku, nescaya Aku perkenankan.", id: "Tuhan kita turun ke langit dunia ketika tersisa sepertiga malam terakhir, lalu berfirman, siapa yang berdoa kepada-Ku, niscaya Aku kabulkan."),
+            source: .init(en: "The Prophet ﷺ, narrated by al Bukhari", ms: "Sabda Nabi ﷺ, riwayat al Bukhari", id: "Sabda Nabi ﷺ, riwayat al Bukhari"),
+            ref: "Sahih al Bukhari 1145 (also Sahih Muslim 758a). Arabic is the clause quoted from the full hadith"),
     ]
 }

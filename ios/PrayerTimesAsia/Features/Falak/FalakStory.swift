@@ -15,18 +15,29 @@ struct SkySliderCard: View {
     /// Minutes since the start of the slider; nil follows the clock.
     @State private var picked: Double?
 
+    private var cal: Calendar {
+        var c = Calendar(identifier: .gregorian)
+        c.timeZone = TimeZone(identifier: place.timeZoneID) ?? .current
+        return c
+    }
+
     var body: some View {
         if let day = model.day(containing: now) {
-            let range = Falak.skyRange(now: now, fajr: day.time(.fajr), isha: day.time(.isha))
-            let start = range.start
-            let span = range.end.timeIntervalSince(start) / 60
+            // The whole day, midnight to midnight, so the night can be explored too.
+            let start = cal.startOfDay(for: day.time(.dhuhr))
+            let end = cal.date(byAdding: .day, value: 1, to: start) ?? start.addingTimeInterval(86_400)
+            let span = end.timeIntervalSince(start) / 60
             let clock = min(max(now.timeIntervalSince(start) / 60, 0), span)
             let t = start.addingTimeInterval((picked ?? clock) * 60)
             let stage = Falak.skyStage(t, times: day.times)
             let ymd = model.ymd(t)
             let plan = Falak.shadowDay(year: ymd.0, month: ymd.1, day: ymd.2, coordinates: place.coordinates)
+            // Small surprises while you slide: the last third of the night, midday stillness.
+            let fajr = day.time(.fajr)
+            let lastThird = t >= Falak.lastThirdStart(maghrib: day.time(.maghrib), fajr: fajr) && t < fajr
+            let atNoon = abs(t.timeIntervalSince(plan.noon)) <= 15 * 60
             VStack(alignment: .leading, spacing: 12) {
-                SkyPicture(day: day, plan: plan, t: t, coordinates: place.coordinates, school: model.asrSchool, stage: stage, look: look)
+                SkyPicture(day: day, plan: plan, t: t, coordinates: place.coordinates, school: model.asrSchool, stage: stage, look: look, lastThird: lastThird)
                     .frame(height: 170)
                     .clipShape(RoundedRectangle(cornerRadius: look == .bands ? 0 : 18, style: .continuous))
                     .accessibilityHidden(true)
@@ -36,8 +47,10 @@ struct SkySliderCard: View {
                     Text(model.formatted(t)).lookFont(13, .medium).monospacedDigit()
                         .foregroundStyle(look.palette.tx2)
                 }
-                Text(say(stage)).lookFont(15).foregroundStyle(look.palette.tx2)
+                Text(lastThird ? W("falak.lastThirdSay") : atNoon ? W("falak.noonSay", ["name": name(.dhuhr)]) : say(stage))
+                    .lookFont(15).foregroundStyle(look.palette.tx2)
                     .fixedSize(horizontal: false, vertical: true)
+                if lastThird { HadithView(id: .lastThird, style: .line) }
                 Slider(value: Binding(get: { picked ?? clock }, set: { picked = $0 }), in: 0...span)
                     .tint(look.palette.actx)
                     .accessibilityLabel(W("falak.slideSun"))
@@ -119,6 +132,15 @@ private struct SkyPicture: View {
     let school: AsrSchool
     let stage: Falak.SkyStage
     let look: TodayStyle
+    var lastThird = false
+
+    /// 0 new moon, 0.5 full, from the average lunar month (good to about a day).
+    private var moonPhase: Double {
+        let synodic = 29.530588853 * 86_400
+        let newMoon = Date(timeIntervalSince1970: 947_182_440) // 2000-01-06 18:14 UTC
+        let x = t.timeIntervalSince(newMoon).truncatingRemainder(dividingBy: synodic)
+        return (x < 0 ? x + synodic : x) / synodic
+    }
 
     var body: some View {
         let pal = look.palette
@@ -157,8 +179,36 @@ private struct SkyPicture: View {
                                                center: CGPoint(x: x, y: y), startRadius: r, endRadius: r * 2))
                 ctx.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: 2 * r, height: 2 * r)), with: .color(Color(red: 1, green: 0.86, blue: 0.35)))
             } else {
-                // A thin moon at night.
-                ctx.fill(Path(ellipseIn: CGRect(x: w * 0.78, y: 20, width: 18, height: 18)), with: .color(.white.opacity(0.85)))
+                // Stars, brighter in the last third of the night.
+                for i in 0..<(lastThird ? 26 : 14) {
+                    let sx = Double((i * 73) % 343) / 343 * w, sy = Double((i * 37) % 100 + 8) / 170 * h
+                    let r: CGFloat = lastThird ? 1.6 : 1.2
+                    ctx.fill(Path(ellipseIn: CGRect(x: sx, y: sy, width: r * 2, height: r * 2)), with: .color(.white.opacity(lastThird ? 0.95 : 0.7)))
+                }
+                // The moon shows today's real phase and crosses the night sky, east to west.
+                let night0 = day.time(.maghrib), night1 = day.time(.fajr).addingTimeInterval(86_400)
+                let np = (t.timeIntervalSince(night0).truncatingRemainder(dividingBy: 86_400) + 86_400)
+                    .truncatingRemainder(dividingBy: 86_400) / max(night1.timeIntervalSince(night0), 1)
+                if np >= 0 && np <= 1 {
+                    let wd = Double(w), gd = Double(ground)
+                    let mx: Double = 44 + (wd - 88) * np
+                    let my: Double = gd - 34 - (gd - 64) * sin(Double.pi * np)
+                    let r: Double = 9
+                    let k: Double = cos(2 * Double.pi * moonPhase)
+                    let sign: Double = moonPhase < 0.5 ? 1 : -1
+                    ctx.fill(Path(ellipseIn: CGRect(x: mx - r, y: my - r, width: 2 * r, height: 2 * r)), with: .color(.white.opacity(0.12)))
+                    var lit = Path()
+                    for i in 0...24 {
+                        let a = -Double.pi / 2 + Double.pi * Double(i) / 24
+                        let pt = CGPoint(x: mx + sign * r * cos(a), y: my + r * sin(a))
+                        if i == 0 { lit.move(to: pt) } else { lit.addLine(to: pt) }
+                    }
+                    for i in 0...24 {
+                        let a = Double.pi / 2 - Double.pi * Double(i) / 24
+                        lit.addLine(to: CGPoint(x: mx + sign * k * r * cos(a), y: my + r * sin(a)))
+                    }
+                    ctx.fill(lit, with: .color(Color(red: 0.95, green: 0.94, blue: 0.9)))
+                }
             }
             // Asr mark: the shadow reaches here in the afternoon (it points east, to the left).
             let asrLen = stick * CGFloat(plan.asrShadow(height: 1, school: school))

@@ -123,17 +123,12 @@ describe('Falak for everyone', () => {
     expect(Falak.skyStage(sg(21, 0), times)).toBe('isha')
   })
 
-  it('keeps the sky slider range around now, even in the small hours', () => {
-    const fajr = sg(5, 29), isha = sg(19, 40), min = 60_000
-    // 1:20 AM is before Fajr minus 45 minutes, so the range reaches back to now.
-    const night = Falak.skyRange(fajr, isha, sg(1, 20))
-    expect(night.from).toBe(sg(1, 20))
-    expect(night.to).toBe(isha + 45 * min)
-    // Midday leaves the usual span alone.
-    const noon = Falak.skyRange(fajr, isha, sg(13, 0))
-    expect(noon.from).toBe(fajr - 45 * min)
-    expect(noon.to).toBe(isha + 45 * min)
-    // Late night after Isha plus 45 minutes also reaches to now.
-    expect(Falak.skyRange(fajr, isha, sg(23, 50)).to).toBe(sg(23, 50))
+  it('finds the start of the last third of the night', () => {
+    const maghrib = sg(19, 5), fajr = sg(5, 29), h = 3_600_000
+    // Night from 19:05 to 05:29 next day is 10h24m, so the last third starts 3h28m before Fajr, about 02:01.
+    const start = Falak.lastThirdStart(maghrib, fajr)
+    expect(fajr - start).toBe(10.4 * h / 3)
+    expect(start).toBeGreaterThan(sg(1, 55))
+    expect(start).toBeLessThan(sg(2, 5))
   })
 })

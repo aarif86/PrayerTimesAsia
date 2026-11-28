@@ -249,6 +249,8 @@
   "falak.stageAsrSay": "Bayangan sudah bertambah sepanjang tubuh dibanding tengah hari.",
   "falak.stageMaghribSay": "Matahari sudah terbenam sepenuhnya. Cahaya merah masih ada di barat.",
   "falak.stageIshaSay": "Cahaya merah sudah hilang. Langit sudah gelap.",
+  "falak.lastThirdSay": "Sepertiga malam terakhir. Bintang paling terang. Waktu yang baik untuk memohon.",
+  "falak.noonSay": "Matahari di puncaknya dan bayangan paling pendek. Itulah sebabnya {name} menunggu.",
   "falak.stepsTitle": "Langkah bayangan",
   "falak.stepsSub": "Cari waktu {name} dengan bayangan sendiri",
   "falak.cameraTitle": "Kamera bayangan",
