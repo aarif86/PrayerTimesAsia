@@ -60,7 +60,6 @@ struct QiblaView: View {
                 Text(W("qibla.choosePlace")).font(.headline).foregroundStyle(look.palette.tx)
             }
         }
-        .animation(.easeIn(duration: 1.2), value: aligned)
         .sensoryFeedback(.success, trigger: aligned) { _, now in now }
         .onAppear { location.beginHeading() }
         .task { if location.heading != nil { model.usageAction("qiblaCompass") } }
@@ -111,7 +110,6 @@ struct QiblaView: View {
                 Text(W("qibla.lockedLine"))
                     .font(.subheadline).foregroundStyle(Theme.accentText).multilineTextAlignment(.center)
                     .padding(.top, 12).padding(.horizontal, 24)
-                    .transition(.opacity)
             }
             steps(location: location)
                 .padding(.top, 22)

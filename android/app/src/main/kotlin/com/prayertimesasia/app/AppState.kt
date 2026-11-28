@@ -75,6 +75,7 @@ class AppState(
         private set
     /** A fresh fix has arrived since the app started (until then the place is the last saved one). */
     var hasFreshFix by mutableStateOf(false)
+        private set
     /** Counts up each time the Fajr alert is switched on, so the Prayer screen can say a warm word (a little surprise). */
     var fajrSetCount by mutableStateOf(0)
         private set

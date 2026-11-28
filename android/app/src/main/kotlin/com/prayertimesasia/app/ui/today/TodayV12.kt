@@ -407,6 +407,8 @@ private fun SmallDial(f: TodayFrame, size: Dp, gold: Boolean, col: PageColors) {
     val zone = f.state.resolver.zone
     val mid = midnight(f.day, zone)
     Box(Modifier.size(size).semantics { contentDescription = spoken }, contentAlignment = Alignment.Center) {
+        // Little surprise: a warm glow behind the dial at Iftar.
+        if (f.iftarWarm) Box(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Brush.radialGradient(listOf(Color(0x66FFAA5A), Color.Transparent))))
         if (gold) {
             val k = size.value / 214f
             val goldFill = Color(0xFFE2B65A)

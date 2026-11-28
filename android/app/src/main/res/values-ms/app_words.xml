@@ -1071,7 +1071,7 @@
     <string name="settings_surprises" formatted="false">Kejutan kecil</string>
     <string name="settings_surprisesSub" formatted="false">Sentuhan halus, seperti cahaya lembut apabila anda menghadap kiblat. Matikan jika tidak mahu.</string>
     <string name="qibla_lockedLine" formatted="false">Anda menghadap arah yang sama dengan umat Islam di seluruh dunia.</string>
-    <string name="alerts_fajrSet" formatted="false">Peringatan {name} telah ditetapkan. Selamat beristirahat.</string>
+    <string name="alerts_fajrSet" formatted="false">Peringatan {name} telah ditetapkan. Selamat berehat.</string>
     <string name="today_jumuahLine" formatted="false">Hari ini hari Jumaat. Pergilah awal jika boleh.</string>
     <string name="today_qadrLine" formatted="false">Salah satu malam ganjil. Carilah Lailatul Qadar.</string>
     <string name="settings_placeFoot" formatted="false">Waktu solat anda mengikut tempat yang anda pilih di sini.</string>

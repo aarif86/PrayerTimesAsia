@@ -168,8 +168,11 @@ private fun StyleToast(state: AppState) {
     val appearance = state.prefs.appearance
     val fajrSet = state.fajrSetCount
     val fajrLine = tr(R.string.alerts_fajrSet, "name" to Prayer.FAJR.name(state.resolver.naming))
+    // Only a new switch-on speaks, not the screen coming back with the count already above zero.
+    var fajrSeen by remember { mutableStateOf(fajrSet) }
     LaunchedEffect(fajrSet) {
-        if (fajrSet == 0) return@LaunchedEffect
+        if (fajrSet == fajrSeen) return@LaunchedEffect
+        fajrSeen = fajrSet
         toast = fajrLine
         delay(2200)
         if (toast == fajrLine) toast = null

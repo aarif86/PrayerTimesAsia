@@ -1655,6 +1655,7 @@ extension TodayView {
                 urgent: count.urgent,
                 spoken: inPrayer ? W("phone.today.nowLeft", ["name": name, "left": count.count]) : W("phone.today.nextIn", ["name": nextName, "left": TodayView.spoken(next.time.timeIntervalSince(now))]))
             .frame(width: gold ? 204 : 190, height: gold ? 204 : 190)
+            .iftarGlow(iftarWarm(current: model.current(at: now), now: now))
             .frame(maxWidth: .infinity)
             .padding(.top, 2)
     }

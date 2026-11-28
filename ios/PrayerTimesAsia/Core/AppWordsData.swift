@@ -2666,7 +2666,7 @@ extension AppWords {
         "settings.surprises": "Kejutan kecil",
         "settings.surprisesSub": "Sentuhan halus, seperti cahaya lembut apabila anda menghadap kiblat. Matikan jika tidak mahu.",
         "qibla.lockedLine": "Anda menghadap arah yang sama dengan umat Islam di seluruh dunia.",
-        "alerts.fajrSet": "Peringatan {name} telah ditetapkan. Selamat beristirahat.",
+        "alerts.fajrSet": "Peringatan {name} telah ditetapkan. Selamat berehat.",
         "today.jumuahLine": "Hari ini hari Jumaat. Pergilah awal jika boleh.",
         "today.qadrLine": "Salah satu malam ganjil. Carilah Lailatul Qadar.",
         "settings.placeFoot": "Waktu solat anda mengikut tempat yang anda pilih di sini.",
