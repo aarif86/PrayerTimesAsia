@@ -43,6 +43,9 @@ struct CalculationMethod: Identifiable, Hashable, Sendable {
     /// What to do on nights when twilight barely ends (far north or south in
     /// summer). See HighLatitudeRule. Countries can set their own (Countries.swift).
     var highLatitude: HighLatitudeRule = .fallback
+    /// Replaces `offsets` for these prayers at or north of `northFromLatitude` (the Kazakhstan board's own rule).
+    var northOffsets: [Prayer: Double] = [:]
+    static let northFromLatitude = 48.0
 
     /// The same method with another high-latitude rule.
     func withHighLatitude(_ rule: HighLatitudeRule?) -> CalculationMethod {
@@ -196,10 +199,36 @@ extension CalculationMethod {
         offsets: [:], matchesOfficialTable: false,
         note: W("method.note.jordan"))
 
+    static let icBih = CalculationMethod(
+        id: "icbih", name: "Islamic Community · Bosnia and Herzegovina", shortName: "IC BiH",
+        fajrAngle: 18, ishaAngle: 16, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.sunrise: -7.875, .dhuhr: 0.625, .asr: 0.25, .maghrib: 6.25, .isha: 0.375], matchesOfficialTable: false,
+        note: W("method.note.icbih"))
+
+    static let kmsh = CalculationMethod(
+        id: "kmsh", name: "KMSH · Albania", shortName: "KMSH",
+        fajrAngle: 18, ishaAngle: 17, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.sunrise: -7.75, .dhuhr: 4.75, .asr: 4.125, .maghrib: 7.625, .isha: 1.125], matchesOfficialTable: false,
+        note: W("method.note.kmsh"))
+
+    static let qmdb = CalculationMethod(
+        id: "qmdb", name: "QMDB · Kazakhstan", shortName: "QMDB",
+        fajrAngle: 15, ishaAngle: 15, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.fajr: -0.5, .sunrise: -3.5, .dhuhr: 2.5, .asr: 2.5, .maghrib: 2.5, .isha: -0.5], matchesOfficialTable: false,
+        note: W("method.note.qmdb"),
+        highLatitude: .angle,
+        northOffsets: [.sunrise: -5.5, .dhuhr: 4.5, .asr: 4.5, .maghrib: 4.5])
+
+    static let muftiyatKg = CalculationMethod(
+        id: "muftiyatkg", name: "Muftiyat · Kyrgyzstan", shortName: "Muftiyat",
+        fajrAngle: 18, ishaAngle: 16, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.fajr: -0.125, .sunrise: -1, .asr: 1.5, .maghrib: 6.875, .isha: 0.125], matchesOfficialTable: false,
+        note: W("method.note.muftiyatkg"))
+
     static let all: [CalculationMethod] = [
         .muis, .jakim, .kemenag, .southeastAsia, .mwl, .karachi,
         .ummAlQura, .dubai, .qatar, .kuwait, .turkey, .tehran, .egyptian,
-        .isna, .moonsighting, .uoif, .russia, .algeria, .tunisia, .morocco, .jordan,
+        .isna, .moonsighting, .uoif, .russia, .algeria, .tunisia, .morocco, .jordan, .icBih, .kmsh, .qmdb, .muftiyatKg,
     ]
 
     static func with(id: String) -> CalculationMethod? { all.first { $0.id == id } }

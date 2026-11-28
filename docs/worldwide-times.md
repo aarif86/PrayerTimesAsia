@@ -41,9 +41,9 @@ A nearby masjid's own timetable (data/mosques.json) still comes before all of th
 | Bhutan | Standard method | Karachi | Hanafi | method's own | The app uses the Karachi method, the one most masjids across South Asia follow. |
 | Sri Lanka | Standard method | Karachi | Shafi'i | method's own | The app uses the Karachi method, the one most masjids across South Asia follow. |
 | Maldives | Standard method | Karachi | Shafi'i | method's own | The app uses the Karachi method, the one most masjids across South Asia follow. |
-| Kazakhstan | Standard method | Muslim World League | Hanafi | angle |  |
+| Kazakhstan | the Spiritual Administration of Muslims of Kazakhstan, QMDB (authority's own method) | QMDB Kazakhstan | Hanafi | angle |  |
 | Uzbekistan | Standard method | Muslim World League | Hanafi | angle |  |
-| Kyrgyzstan | Standard method | Muslim World League | Hanafi | angle |  |
+| Kyrgyzstan | the Spiritual Administration of Muslims of Kyrgyzstan, Muftiyat (authority's own method) | Muftiyat Kyrgyzstan | Hanafi | angle |  |
 | Tajikistan | Standard method | Muslim World League | Hanafi | angle |  |
 | Turkmenistan | Standard method | Muslim World League | Hanafi | angle |  |
 | Saudi Arabia | Umm al-Qura, the official calendar of Saudi Arabia that the Haramain in Makkah and Madinah follow (authority's own method) | Umm al-Qura | Shafi'i | method's own |  |
@@ -84,8 +84,8 @@ A nearby masjid's own timetable (data/mosques.json) still comes before all of th
 | Italy | Standard method | Muslim World League | Shafi'i | angle |  |
 | Malta | Standard method | Muslim World League | Shafi'i | method's own |  |
 | Greece | Standard method | Muslim World League | Shafi'i | angle |  |
-| Bosnia and Herzegovina | Standard method | Muslim World League | Hanafi | angle | The Islamic Community here publishes its own timetable, which the app cannot read yet, so it uses the Muslim World League method. |
-| Albania | Standard method | Muslim World League | Hanafi | angle |  |
+| Bosnia and Herzegovina | the Islamic Community of Bosnia and Herzegovina (Takvim) (authority's own method) | Islamic Community of Bosnia and Herzegovina | Shafi'i | angle |  |
+| Albania | the Muslim Community of Albania, KMSH (authority's own method) | KMSH Albania | Shafi'i | angle |  |
 | Kosovo | Standard method | Muslim World League | Hanafi | angle | The Islamic Community here publishes its own timetable, which the app cannot read yet, so it uses the Muslim World League method. |
 | North Macedonia | Standard method | Muslim World League | Hanafi | angle |  |
 | Montenegro | Standard method | Muslim World League | Hanafi | angle |  |

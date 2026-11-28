@@ -99,7 +99,8 @@ enum PrayerEngine {
         var times: [Prayer: Date] = [:]
         for prayer in Prayer.allCases {
             let hoursUTC = t[prayer]! - lng / 15
-            let seconds = hoursUTC * 3600 + (method.offsets[prayer] ?? 0) * 60
+            let offset = (lat >= CalculationMethod.northFromLatitude ? method.northOffsets[prayer] : nil) ?? method.offsets[prayer] ?? 0
+            let seconds = hoursUTC * 3600 + offset * 60
             // Round UP to the whole minute: a time is never shown earlier than it is.
             let minutes = (seconds / 60).rounded(.up)
             times[prayer] = midnightUTC.addingTimeInterval(minutes * 60)

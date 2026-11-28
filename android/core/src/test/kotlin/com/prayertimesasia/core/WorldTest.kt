@@ -17,6 +17,11 @@ class WorldTest {
         assertEquals(TimesSource.AUTHORITY, AsiaRegions.profile("SA")?.source)
         assertEquals(AsrSchool.STANDARD, AsiaRegions.profile("TR")?.asr) // Diyanet's Ikindi is one shadow length
         assertEquals("moonsighting", AsiaRegions.profile("GB")?.method?.id)
+        assertEquals("icbih", AsiaRegions.profile("BA")?.method?.id)
+        assertEquals("kmsh", AsiaRegions.profile("AL")?.method?.id)
+        assertEquals("qmdb", AsiaRegions.profile("KZ")?.method?.id)
+        assertEquals("muftiyatkg", AsiaRegions.profile("KG")?.method?.id)
+        assertEquals(AsrSchool.STANDARD, AsiaRegions.profile("BA")?.asr)
         assertEquals("FR", AsiaRegions.countryCode("Europe/Paris"))
     }
 

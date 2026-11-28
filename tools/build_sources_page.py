@@ -23,7 +23,9 @@ METHOD_NAMES = {'muis': 'MUIS timetable', 'jakim': 'JAKIM timetable', 'kemenag':
                 'isna': 'ISNA', 'moonsighting': 'Moonsighting Committee', 'uoif': 'France 12°',
                 'russia': 'Spiritual Administration of Muslims of Russia', 'algeria': 'Algeria Ministry of Religious Affairs',
                 'tunisia': 'Tunisia Ministry of Religious Affairs', 'morocco': 'Morocco Ministry of Habous',
-                'jordan': 'Jordan Ministry of Awqaf'}
+                'jordan': 'Jordan Ministry of Awqaf', 'icbih': 'Islamic Community of Bosnia and Herzegovina',
+                'kmsh': 'KMSH Albania', 'qmdb': 'Spiritual Administration of Muslims of Kazakhstan',
+                'muftiyatkg': 'Spiritual Administration of Muslims of Kyrgyzstan'}
 WHO = {'table': ('Official times', 'The authority publishes the times and the app shows them exactly as they are.'),
        'authority': ('Follows the local authority', 'The app works out the times on your phone, the same way this authority does.'),
        'standard': ("What most masjids use", 'There is no national authority the app can follow, so it uses what most masjids there use.')}
@@ -45,7 +47,7 @@ for c in countries:
     rows.append(
         f'<tr data-s="{e(c["source"])}" data-q="{e((c["name"] + " " + who + " " + METHOD_NAMES.get(c["method"], "")).lower())}">'
         f'<td class="c"><span class="f">{flag(c["code"])}</span>{e(c["name"])}</td>'
-        f'<td><span class="tag {e(c["source"])}">{e(WHO[c["source"]][0])}</span><div class="who">{e(who)}</div></td>'
+        f'<td><span class="tag {e(c["source"])}">{e(WHO[c["source"]][0])}</span><div class="who">{(f'<a href="{e(c["authorityUrl"])}" rel="noopener">{e(who)}</a>') if c.get('authorityUrl') else e(who)}</div></td>'
         f'<td>{e(METHOD_NAMES.get(c["method"], c["method"]))}</td>'
         f'<td>{"Hanafi" if c["asr"] == "hanafi" else "Shafi&#39;i"}</td>'
         f'<td class="n">{e(c.get("note", ""))}</td></tr>')
