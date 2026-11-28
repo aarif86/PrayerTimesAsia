@@ -36,6 +36,7 @@ const CatchUpSheet = later(() => import('./LogSheets').then((m) => m.CatchUpShee
 const MasjidLinkSheet = later(() => import('./MyMasjid').then((m) => m.MasjidLinkSheet))
 const MoveInSheet = later(() => import('./Move').then((m) => m.MoveInSheet))
 const MoveOutSheet = later(() => import('./Move').then((m) => m.MoveOutSheet))
+import { AllSetCard } from './AllSet'
 const Guide = later(() => import('./Guide').then((m) => m.Guide))
 
 /**
@@ -239,7 +240,8 @@ export function App() {
       {sheet?.kind === 'move-out' && <MoveOutSheet />}
       {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
       {/* New users see the quick guide once, right after choosing their place. */}
-      {(sheet?.kind === 'guide' || (!s.prefs.guideShown && !sheet && !s.pendingMasjid)) && <Guide onClose={closeSheet} />}
+      {!s.prefs.guideShown && !s.prefs.allSetShown && !sheet && !s.pendingMasjid && s.activePlace && <AllSetCard now={now} />}
+      {(sheet?.kind === 'guide' || (!s.prefs.guideShown && (s.prefs.allSetShown || !s.activePlace) && !sheet && !s.pendingMasjid)) && <Guide onClose={closeSheet} />}
     </>
   )
 }
