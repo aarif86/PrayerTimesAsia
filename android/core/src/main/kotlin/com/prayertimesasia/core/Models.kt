@@ -369,6 +369,8 @@ data class Preferences(
     val largeText: Boolean = false,
     /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
     val showOpening: Boolean = true,
+    /** Small quiet touches (a line when the qibla is found, a warm word when the Fajr alert is set). Off means none. */
+    val littleSurprises: Boolean = true,
     /**
      * The quick guide (swipe cards) was seen or skipped; Settings > Help opens it again.
      * Null until set; anything not true shows it once. A new key (the old one was "guideSeen"),
