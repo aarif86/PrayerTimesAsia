@@ -18,7 +18,7 @@ android {
         targetSdk = 36
         // The Play release workflow passes its run number, so every upload is higher than the last.
         versionCode = providers.environmentVariable("VERSION_CODE").orNull?.toIntOrNull() ?: 1
-        versionName = "1.0.0"
+        versionName = "1.2.0"
     }
 
     // One shared debug key, so every CI test build installs over the last one without uninstalling.
