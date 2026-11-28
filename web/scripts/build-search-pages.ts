@@ -480,6 +480,7 @@ const CSS = `
   :lang(th),:lang(my),:lang(km),:lang(si),:lang(hi),:lang(ne){letter-spacing:0!important;text-transform:none}
   h1{font-size:clamp(1.9rem,5.5vw,2.8rem);font-weight:800;margin:30px 0 6px;letter-spacing:-.01em;line-height:1.15}
   h2{font-size:1.35rem;font-weight:800;margin:36px 0 10px}
+  .srcbadge{margin:8px 0;font-size:.9rem}.srcbadge span{color:var(--muted)}.srcbadge b{display:inline-block;border:1px solid var(--gold);border-radius:99px;padding:2px 12px;color:var(--gold);margin-left:6px}
   .eyebrow{display:inline-block;font-size:.8rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:26px}
   .date{color:var(--muted);margin:0 0 14px}.lead{color:var(--muted);font-size:1.08rem}
   .times{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:18px 0 6px;padding:0;list-style:none}
@@ -603,6 +604,20 @@ const alts = (langs: Lang[], f: (l: Lang) => string): Partial<Record<Lang, strin
 const crumbs = (l: Lang, w: Words, last: string) => `<nav aria-label="Breadcrumb" class="date"><a href="${BASE}${HOME[l]}">${esc(w.home)}</a> / <a href="${BASE}${BASE_DIR[l]}/">${esc(w.crumb)}</a> / ${esc(last)}</nav>`
 const placeOf = (c: City2, l: Lang) => { const n = cityName(c, l), cn = countryName(c.country, l); return n === cn ? n : `${n}, ${cn}` }
 
+
+/** Plain three way label for where a time comes from, in the languages we have checked wording for. Others show the full sentence only. */
+const SRC_LABEL: Partial<Record<Lang, { head: string; table: string; authority: string; none: string }>> = {
+  en: { head: 'Source type', table: 'Matches the official timetable', authority: "Worked out with the authority's own method", none: 'Calculated with the method most masjids use' },
+  ms: { head: 'Jenis sumber', table: 'Sepadan dengan jadual rasmi', authority: 'Dikira dengan kaedah pihak berkuasa sendiri', none: 'Dikira dengan kaedah yang paling banyak digunakan masjid' },
+  id: { head: 'Jenis sumber', table: 'Sesuai dengan jadwal resmi', authority: 'Dihitung dengan metode otoritas itu sendiri', none: 'Dihitung dengan metode yang paling banyak dipakai masjid' },
+}
+const srcBadge = (c: { sourceKind: string }, l: Lang) => {
+  const t = SRC_LABEL[l]
+  if (!t) return ''
+  const k = c.sourceKind === 'table' ? 'table' : c.sourceKind === 'authority' ? 'authority' : 'none'
+  return `<p class="srcbadge"><span>${esc(t.head)}</span> <b class="k-${k}">${esc(t[k])}</b></p>`
+}
+
 function cityPage(c: City2, l: Lang): string {
   const w = W[l]
   const n = cityName(c, l)
@@ -629,6 +644,7 @@ ${crumbs(l, w, n)}
 ${prayers.map((k) => `  <li><b>${esc(nameOf(c, k, l))}</b><span data-t="${k}">${T[k]}</span></li>`).join('\n')}
 </ul>
 <p class="lead">${esc(w.local(placeOf(c, l)))} ${esc(official)}</p>
+${srcBadge(c, l)}
 <div class="cta"><a class="btn" href="${BASE}app/">${esc(w.open)}</a><a class="btn o" href="${PLAY}">${esc(w.play)}</a></div>
 
 <div class="card">
@@ -723,6 +739,7 @@ ${crumbs(l, w, n)}
 <div class="cta noprint"><button class="btn" type="button" onclick="window.print()">${esc(w.prPrint)}</button><a class="btn o" href="${BASE}app/print/">${esc(w.prApp)}</a></div>
 <div class="card">
   <p><b>${esc(w.prSource)}</b></p>
+  ${srcBadge(c, l)}
   <p>${esc(official)}</p>
   <p>${esc(w.methodLbl)} ${esc(c.methodName)}, ${esc(ishaRule)}. ${esc(w.caution)}</p>
 </div>
