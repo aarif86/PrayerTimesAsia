@@ -206,7 +206,7 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
       </div>
       <h3 class="group-title" style={{ fontSize: '15px' }}>{tr('source.helpVerify')}</h3>
       <div class="group">
-        <a class="item" href="https://prayertimes.asia/verify.html" target="_blank" rel="noopener noreferrer">
+        <a class="item" href="https://prayertimes.asia/verify.html?from=web-app" target="_blank" rel="noopener noreferrer" onClick={() => store.usageAction('tapVerify')}>
           <span class="label">{tr('source.helpVerifySub')}</span>
         </a>
       </div>

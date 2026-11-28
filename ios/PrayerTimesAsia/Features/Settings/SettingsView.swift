@@ -318,10 +318,10 @@ enum SettingsLinks {
     static let faq = URL(string: "https://prayertimes.asia/#faq")!
     static let privacy = URL(string: "https://prayertimes.asia/privacy.html")!
     static let terms = URL(string: "https://prayertimes.asia/terms.html")!
-    static let join = URL(string: "https://prayertimes.asia/join")!
+    static let join = URL(string: "https://prayertimes.asia/join?from=iphone-app")!
     static let instagram = URL(string: "https://www.instagram.com/prayertimesasia")!
     static let facebook = URL(string: "https://www.facebook.com/prayertimesasia")!
-    static let verify = URL(string: "https://prayertimes.asia/verify.html")!
+    static let verify = URL(string: "https://prayertimes.asia/verify.html?from=iphone-app")!
     static let newLook = URL(string: "https://prayertimes.asia/new-look.html")!
     static let picksRules = URL(string: "https://prayertimes.asia/barakah-picks.html")!
 
@@ -773,6 +773,7 @@ private struct PrivacyPage: View {
 }
 
 private struct HelpPage: View {
+    @Environment(AppModel.self) private var model
     @State private var showGuide = false
 
     var body: some View {
@@ -787,6 +788,7 @@ private struct HelpPage: View {
                 Link(destination: SettingsLinks.verify) {
                     Label(W("phone.settings.helpCheck"), systemImage: "checkmark.seal")
                 }
+                .simultaneousGesture(TapGesture().onEnded { model.usageAction("tapVerify") })
             } footer: {
                 Text(W("phone.settings.quickGuide"))
             }
@@ -822,6 +824,7 @@ private struct PicksPage: View {
 }
 
 struct AboutPage: View {
+    @Environment(AppModel.self) private var model
     var body: some View {
         Form {
             Section {
@@ -837,6 +840,7 @@ struct AboutPage: View {
             }
             Section {
                 Link(W("settings.joinTimekeepers"), destination: SettingsLinks.join)
+                    .simultaneousGesture(TapGesture().onEnded { model.usageAction("tapJoin") })
                 Link(W("settings.instagram"), destination: SettingsLinks.instagram)
                 Link(W("settings.facebook"), destination: SettingsLinks.facebook)
             } header: {

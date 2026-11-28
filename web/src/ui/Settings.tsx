@@ -36,10 +36,10 @@ function Group({ title, children, foot, id }: { title?: string; children: preact
 
 const LINKS = {
   faq: 'https://prayertimes.asia/#faq',
-  join: 'https://prayertimes.asia/join',
+  join: 'https://prayertimes.asia/join?from=web-app',
   instagram: 'https://www.instagram.com/prayertimesasia',
   facebook: 'https://www.facebook.com/prayertimesasia',
-  verify: 'https://prayertimes.asia/verify.html',
+  verify: 'https://prayertimes.asia/verify.html?from=web-app',
   newLook: 'https://prayertimes.asia/new-look.html',
   picksRules: 'https://prayertimes.asia/barakah-picks.html',
 }
@@ -400,7 +400,7 @@ function HelpPage() {
         <Lightbulb size={20} /><span class="label">{tr('settings.showGuide')}</span><ChevronRight size={16} class="secondary" />
       </button>
       <a class="item" href={LINKS.faq} target="_blank" rel="noopener noreferrer"><span class="label">{tr('settings.faq')}</span><ChevronRight size={16} class="secondary" /></a>
-      <a class="item" href={LINKS.verify} target="_blank" rel="noopener noreferrer"><span class="label">{tr('settings.helpVerify')}</span><ChevronRight size={16} class="secondary" /></a>
+      <a class="item" href={LINKS.verify} target="_blank" rel="noopener noreferrer" onClick={() => store.usageAction('tapVerify')}><span class="label">{tr('settings.helpVerify')}</span><ChevronRight size={16} class="secondary" /></a>
     </Group>
   )
 }
@@ -424,7 +424,7 @@ function AboutPage() {
         <a class="item" href={LINKS.newLook} target="_blank" rel="noopener noreferrer"><span class="label">{tr('settings.designLook')}</span><ChevronRight size={16} class="secondary" /></a>
       </Group>
       <Group title={tr('settings.community')}>
-        <a class="item" href={LINKS.join} target="_blank" rel="noopener"><span class="label">{tr('settings.joinTimekeepers')}</span><ChevronRight size={16} class="secondary" /></a>
+        <a class="item" href={LINKS.join} target="_blank" rel="noopener" onClick={() => store.usageAction('tapJoin')}><span class="label">{tr('settings.joinTimekeepers')}</span><ChevronRight size={16} class="secondary" /></a>
         <a class="item" href={LINKS.instagram} target="_blank" rel="noopener noreferrer"><span class="label">{tr('settings.instagram')}</span><ChevronRight size={16} class="secondary" /></a>
         <a class="item" href={LINKS.facebook} target="_blank" rel="noopener noreferrer"><span class="label">{tr('settings.facebook')}</span><ChevronRight size={16} class="secondary" /></a>
       </Group>

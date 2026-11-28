@@ -128,6 +128,7 @@ struct ReviewView: View {
         let text = words.trimmingCharacters(in: .whitespacesAndNewlines)
         if !text.isEmpty { UIPasteboard.general.string = text; copiedFor = link.id }
         model.prefs.reviewTappedAt = Date().timeIntervalSince1970
+        model.usageAction("tapReview")
         save()
         openURL(link.url)
     }
@@ -236,6 +237,7 @@ struct NoteView: View {
 
     private func send() {
         let mail = Self.email(kind: kind, text: text, details: details, mayShare: mayShare)
+        model.usageAction("tapNote")
         if let url = Reviews.noteURL(about: kind == .time ? "A prayer time looks wrong" : kind.label, note: mail.body) { openURL(url) }
     }
 

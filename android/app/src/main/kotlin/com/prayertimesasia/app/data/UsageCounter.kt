@@ -212,7 +212,7 @@ class UsageCounter(context: Context) {
         }
 
         /** Things done today, each sent as true or false (Did.qiblaCompass ...). The same list on the web and iPhone apps. */
-        val ACTIONS = listOf("qiblaCompass", "qiblaFaced", "falakShadow", "falakLevel", "falakAR")
+        val ACTIONS = listOf("qiblaCompass", "qiblaFaced", "falakShadow", "falakLevel", "falakAR", "tapJoin", "tapVerify", "tapNote", "tapReview")
 
         /** How many widgets are on the Home Screen. */
         fun widgetCount(context: Context): Int = runCatching {

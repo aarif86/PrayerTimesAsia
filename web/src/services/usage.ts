@@ -27,7 +27,7 @@ export const SCREEN_EVERY_MS = 6 * 3_600_000
 export interface UsageConfig { telemetryDeckAppID: string; enabled: boolean }
 interface CachedConfig extends UsageConfig { fetchedAt: number }
 
-export type UsageEvent = 'App.installed' | 'App.opened' | 'Screen.running' | 'Screen.paired' | 'Card.seen' | 'Card.tapped' | 'App.daySummary'
+export type UsageEvent = 'App.installed' | 'App.opened' | 'Screen.running' | 'Screen.paired' | 'Screen.setup' | 'Card.seen' | 'Card.tapped' | 'App.daySummary'
 export type Payload = Record<string, string | number | boolean>
 
 export interface Signal {
@@ -223,7 +223,7 @@ export interface DayTally { day: string; seconds: number; opens: number; screens
 export const MAX_STRETCH_S = 2 * 3600
 export const SCREENS = ['prayer', 'qibla', 'falak', 'masjid', 'settings'] as const
 /** Things done today worth knowing about, each sent as true or false (Did.qiblaCompass ...). Same list on the phones. */
-export const ACTIONS = ['qiblaCompass', 'qiblaFaced', 'falakShadow', 'falakLevel', 'falakAR'] as const
+export const ACTIONS = ['qiblaCompass', 'qiblaFaced', 'falakShadow', 'falakLevel', 'falakAR', 'tapJoin', 'tapVerify', 'tapNote', 'tapReview'] as const
 
 export const emptyTally = (day: string): DayTally => ({ day, seconds: 0, opens: 0, screens: [], actions: [] })
 
@@ -354,4 +354,20 @@ export function countScreenPaired(version: string, s: ScreenFacts): void {
   if (!id) { id = randomId(); writeString(SCREEN_ID_KEY, id) }
   // A TV's ID is made here when it is new, so the install is counted here too.
   void send(fresh ? ['App.installed', 'Screen.paired'] : ['Screen.paired'], screenPayload(version, s, innerHeight > innerWidth), id)
+}
+
+// MARK: The masjid screen setup page (where setup stops)
+
+export type SetupStep = 'opened' | 'linkMade' | 'sentToTv' | 'tvCodeFailed'
+const SETUP_ID_KEY = 'ptasia.usage.setup'
+
+/**
+ * One count for a step on the masjid screen setup page, so we can see where committees
+ * give up. Only the step, the country-less app keys and a random ID kept on that phone:
+ * never the masjid's name. The caller checks that the committee left counting on.
+ */
+export function countSetupStep(version: string, step: SetupStep): void {
+  let id = readString(SETUP_ID_KEY)
+  if (!id) { id = randomId(); writeString(SETUP_ID_KEY, id) }
+  void send(['Screen.setup'], { ...basePayload('screen', version, {}, navigator.language || 'en'), 'Setup.step': step }, id)
 }
