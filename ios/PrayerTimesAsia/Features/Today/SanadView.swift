@@ -35,8 +35,8 @@ struct SourceBadge: View {
             if compact { compactLabel } else { fullLabel }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Source: grade \(day.grade.rawValue), \(day.grade.title), \(sourceName)")
-        .accessibilityHint("Shows where these times come from")
+        .accessibilityLabel(W("phone.source.gradeLabel", ["grade": day.grade.rawValue, "a": day.grade.title, "b": sourceName]))
+        .accessibilityHint(W("phone.source.showsWhere"))
         .sheet(isPresented: $showSanad) { SanadSheet(day: day) }
     }
 
@@ -80,7 +80,7 @@ struct SourceBadge: View {
     }
 
     private var sourceName: String {
-        day.officialSource ?? "\(model.method.shortName) method"
+        day.officialSource ?? W("phone.source.methodName", ["name": model.method.shortName])
     }
 }
 
@@ -101,14 +101,14 @@ struct SanadSheet: View {
                             .accessibilityHidden(true)
                             .frame(width: 32)
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Grade \(day.grade.rawValue) · \(day.grade.title)").font(.headline)
+                            Text(W("source.gradeName", ["grade": day.grade.rawValue, "name": day.grade.title])).font(.headline)
                             Text(day.officialSource ?? model.method.name).font(.subheadline)
                             Text(detail).font(.footnote).foregroundStyle(.secondary)
                         }
                     }
                     .padding(.vertical, 4)
                 } header: {
-                    Text("Where today's times come from")
+                    Text(W("source.where"))
                 }
 
                 if let other = day.alternateSource, !day.alternate.isEmpty {
@@ -120,22 +120,22 @@ struct SanadSheet: View {
                     } header: {
                         Text("\(day.officialSource ?? "Official") · \(other)")
                     } footer: {
-                        Text("These two sources differ by more than 2 minutes. We show both rather than silently pick one; follow your local masjid's practice.")
+                        Text(W("source.differ"))
                     }
                 }
 
                 if let mosque = day.mosqueName, !day.jamaah.isEmpty {
-                    Section("Jamaah at \(mosque)") {
+                    Section(W("source.jamaahAt", ["name": mosque])) {
                         ForEach(Prayer.obligatory.filter { day.jamaah[$0] != nil }) { p in
                             LabeledContent(p.name(model.naming, isFriday: model.isFriday(day.time(.dhuhr))),
                                            value: model.formatted(day.jamaah[p]!))
                         }
-                        Text("Prayer time begins at the times on the Today screen; these are when the congregation prays.")
+                        Text(W("phone.source.beginsToday"))
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                 }
 
-                Section("The grades") {
+                Section(W("source.grades")) {
                     ForEach([SourceGrade.official, .masjid, .community, .calculated, .falak], id: \.self) { g in
                         HStack(alignment: .top, spacing: 12) {
                             Text(g.rawValue)
@@ -153,31 +153,31 @@ struct SanadSheet: View {
 
                 Section {
                     Button { submitting = .timetable } label: {
-                        Label("Send a mosque timetable from here", systemImage: "camera.fill")
+                        Label(W("phone.source.sendTimetable"), systemImage: "camera.fill")
                     }
                     Button { submitting = .method } label: {
-                        Label("Tell us which method mosques here use", systemImage: "checklist")
+                        Label(W("phone.source.tellMethod"), systemImage: "checklist")
                     }
                     Button { submitting = .spotcheck } label: {
-                        Label("Report an adhan time you heard", systemImage: "ear.fill")
+                        Label(W("phone.source.reportAdhan"), systemImage: "ear.fill")
                     }
                 } header: {
-                    Text("Help verify times here")
+                    Text(W("source.helpVerify"))
                 } footer: {
-                    Text("Submissions are checked by a person before they change anyone's times, and shared openly under CC-BY 4.0.")
+                    Text(W("source.checked"))
                 }
             }
             .sheet(item: $submitting) { SubmitView(kind: $0) }
-            .navigationTitle("Source")
+            .navigationTitle(W("source.title"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
         }
     }
 
     private var detail: String {
         switch day.grade {
         case .official where day.officialSource != nil:
-            return "Downloaded once a year from the authority and kept on your phone, so it works offline."
+            return W("phone.source.downloadedYearly")
         case .official:
             return model.sourceSummary
         case .masjid, .community:

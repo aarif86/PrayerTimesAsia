@@ -39,7 +39,7 @@ struct MakersCard: View {
                 .frame(width: compact ? 28 : 34, height: compact ? 28 : 34)
                 .background(Theme.accent.opacity(0.18), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(card.isSponsor ? "\(picksName) · Sponsored" : picksName)
+                    Text(card.isSponsor ? "\(picksName) · \(W("makers.sponsored"))" : picksName)
                         .textCase(.uppercase).font(.system(size: 10, weight: .bold)).tracking(0.6).foregroundStyle(.secondary)
                     Text(card.title).font(.subheadline.weight(.semibold)).lineLimit(1)
                     if !compact {
@@ -59,7 +59,7 @@ struct MakersCard: View {
         .buttonStyle(.plain)
         .onAppear { model.countCard(.seen, card: card, placement: placement) }
         .accessibilityLabel("\(picksName)\(card.isSponsor ? ", sponsored" : ""). \(card.title)")
-        .accessibilityHint("Opens \(card.site) in Safari")
+        .accessibilityHint(W("phone.makers.opensSafari", ["name": card.site]))
     }
 }
 
@@ -93,8 +93,8 @@ struct MakersSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     HadithView(id: .fixedTimes, tag: "Al Quran")
-                    Text("Built fisabilillah").font(Theme.display(26, .bold))
-                    Text("Prayer Times Asia is free, with no outside ads and nothing tracked. It is built and looked after by Ustaz Aarif Raziff and Ustazah Nasibah Hamzah, with the team at Nasar Digital (Nasar Pte Ltd).")
+                    Text(W("makers.title")).font(Theme.display(26, .bold))
+                    Text(W("makers.body"))
                         .foregroundStyle(.secondary)
                     ForEach(CommunityCard.ours(for: model.offerCountry)) { card in
                         MakersCard(card: card, placement: placement)
@@ -102,7 +102,7 @@ struct MakersSheet: View {
                 }
                 .padding(Theme.gutter)
             }
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
         }
         .presentationDetents([.medium, .large])
     }

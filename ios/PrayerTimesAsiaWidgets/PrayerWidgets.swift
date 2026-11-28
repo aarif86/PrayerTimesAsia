@@ -119,7 +119,7 @@ struct NextPrayerView: View {
                         }
                     }
             } else {
-                Text("Open Prayer Times Asia to set your location.")
+                Text(W("widget.setLocation"))
                     .font(.caption)
                     .foregroundStyle(.white)
                     .padding()
@@ -240,7 +240,7 @@ struct LockScreenView: View {
                 .accessibilityElement(children: .combine)
             }
         } else {
-            Text("Open the app")
+            Text(W("phone.widget.openApp"))
         }
     }
 }

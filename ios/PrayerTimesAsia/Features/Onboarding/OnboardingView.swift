@@ -12,20 +12,20 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 28) {
                 Spacer()
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Prayer Times\nAsia")
+                    Text(W("phone.onboard.title"))
                         .font(Theme.display(52, .bold))
                         .lineSpacing(-6)
-                    Text("Wherever you land, know when to pray and which way to face.")
+                    Text(W("welcome.tagline"))
                         .font(.title3.weight(.medium))
                         .opacity(0.9)
                 }
                 VStack(alignment: .leading, spacing: 16) {
-                    feature("globe.asia.australia.fill", "Every country's own method",
-                            "MUIS in Singapore, JAKIM in Malaysia, Kemenag in Indonesia - and sensible defaults everywhere else.")
-                    feature("Tab-journey", "Built for travel",
-                            "Switches when you land, works offline, and tells you when you can shorten and combine prayers.")
-                    feature("location.north.line.fill", "Qibla in one glance",
-                            "A calm compass that lights up when you're facing the Kaaba.")
+                    feature("globe.asia.australia.fill", W("welcome.countryMethod"),
+                            W("welcome.countryMethodDetail"))
+                    feature("Tab-journey", W("welcome.travel"),
+                            W("welcome.travelDetail"))
+                    feature("location.north.line.fill", W("welcome.qiblaGlance"),
+                            W("welcome.qiblaDetail"))
                 }
                 Spacer()
                 VStack(spacing: 12) {
@@ -34,16 +34,16 @@ struct OnboardingView: View {
                         model.prefs.hasOnboarded = true
                         model.askForAlertsAfterWelcome()
                     } label: {
-                        Text("Use my location").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 16)
+                        Text(W("welcome.useLocation")).font(.headline).frame(maxWidth: .infinity).padding(.vertical, 16)
                             .background(.white, in: Capsule())
                             .foregroundStyle(Color(red: 0.12, green: 0.2, blue: 0.4))
                     }
-                    Button("Choose a city instead") { showPlaces = true }
+                    Button(W("welcome.chooseCity")) { showPlaces = true }
                         .font(.subheadline.weight(.semibold))
-                    Button("Bring in settings from another phone") { showMoveIn = true }
+                    Button(W("welcome.bringIn")) { showMoveIn = true }
                         .font(.footnote.weight(.semibold))
                         .opacity(0.85)
-                    Text("No outside ads. No account. Your location stays on your phone.")
+                    Text(W("phone.welcomePrivacy"))
                         .font(.caption).opacity(0.75)
                 }
                 .frame(maxWidth: .infinity)

@@ -14,7 +14,7 @@ struct MoveOutView: View {
         Form {
             Section {
                 VStack(spacing: 16) {
-                    Text("Your places, choices and tracker history, packed into one code. Nothing is uploaded: the settings are inside the code itself.")
+                    Text(W("move.intro"))
                         .font(.subheadline)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     if let image = Self.qrImage(qr.link) {
@@ -25,13 +25,13 @@ struct MoveOutView: View {
                             .frame(maxWidth: 260)
                             .padding(10)
                             .background(.white, in: RoundedRectangle(cornerRadius: 12))
-                            .accessibilityLabel("QR code with your settings")
+                            .accessibilityLabel(W("move.qrAlt"))
                     }
                 }
                 .padding(.vertical, 6)
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("On the other phone, open Prayer Times Asia › Settings › Bring in settings and scan this code. No app there? Point its camera at the code: it opens the web app with your settings.")
+                    Text(W("phone.move.otherPhone"))
                     if let note = Self.trimNote(keptDays: qr.keptDays, ramadanTrimmed: qr.ramadanTrimmed) {
                         Text(note)
                     }
@@ -39,32 +39,32 @@ struct MoveOutView: View {
             }
 
             Section {
-                ShareLink(item: URL(string: moved.link)!, subject: Text("My Prayer Times Asia settings")) {
-                    Label("Share link", systemImage: "square.and.arrow.up")
+                ShareLink(item: URL(string: moved.link)!, subject: Text(W("move.shareTitle"))) {
+                    Label(W("phone.shareLink"), systemImage: "square.and.arrow.up")
                 }
                 Button {
                     UIPasteboard.general.string = moved.link
                     copied = true
                 } label: {
-                    Label(copied ? "Copied" : "Copy link", systemImage: copied ? "checkmark" : "doc.on.doc")
+                    Label(copied ? W("common.copied") : W("common.copyLink"), systemImage: copied ? "checkmark" : "doc.on.doc")
                 }
             } footer: {
-                Text("The code includes your saved places, so only send it to yourself.")
+                Text(W("move.private"))
             }
         }
         .scrollContentBackground(.hidden)
         .background(SkyNow())
-        .navigationTitle("Move my settings")
+        .navigationTitle(W("move.title"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
     /// What the QR code left out, if anything; the link always carries everything.
     static func trimNote(keptDays: Int?, ramadanTrimmed: Bool) -> String? {
         var parts: [String] = []
-        if let kept = keptDays { parts.append("your last \(kept) days of tracker history") }
-        if ramadanTrimmed { parts.append("only this year's Ramadan record") }
+        if let kept = keptDays { parts.append(W("move.lastDays", ["n": kept])) }
+        if ramadanTrimmed { parts.append(W("move.ramadanOnly")) }
         guard !parts.isEmpty else { return nil }
-        return "The QR code carries \(parts.joined(separator: " and ")). To bring all of it, share the link instead."
+        return W("phone.settings.moveCarries", ["what": parts.joined(separator: " and ")])
     }
 
     static func qrImage(_ text: String) -> UIImage? {
@@ -93,41 +93,41 @@ struct MoveInView: View {
         Form {
             if done {
                 Section {
-                    Text("Your settings are here.").font(.headline)
+                    Text(W("move.arrived")).font(.headline)
                 } footer: {
-                    Text("Prayer alerts need permission on each phone: turn them on in Settings › Alerts.")
+                    Text(W("phone.alertsEachPhone"))
                 }
             } else {
                 Section {
                     if DataScannerViewController.isSupported {
-                        Button { scanning = true } label: { Label("Scan the QR code", systemImage: "qrcode.viewfinder") }
+                        Button { scanning = true } label: { Label(W("phone.scanQr"), systemImage: "qrcode.viewfinder") }
                     }
                     PasteButton(payloadType: String.self) { strings in
                         if let s = strings.first { text = s }
                     }
-                    TextField("Or type or paste the link", text: $text, axis: .vertical)
+                    TextField(W("phone.orPaste"), text: $text, axis: .vertical)
                         .lineLimit(1...4)
                         .font(.footnote.monospaced())
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                 } footer: {
-                    Text("On your other phone or browser, open Settings › Move my settings. It shows a QR code and a link.")
+                    Text(W("phone.bringHow"))
                 }
 
                 if !text.isEmpty {
                     if let moved {
                         Section {
                             ForEach(moved.summary, id: \.self) { Text($0) }
-                            Button("Bring in settings") { bringIn(moved) }
+                            Button(W("move.bringIn")) { bringIn(moved) }
                                 .font(.headline)
                         } header: {
-                            Text("This will bring in")
+                            Text(W("move.willBring"))
                         } footer: {
-                            Text("Your settings here are replaced. Tracker history is added to what's already here.")
+                            Text(W("move.replaceNote"))
                         }
                     } else {
                         Section {
-                            Text("That doesn't look like a settings code. Copy the whole link and try again.")
+                            Text(W("move.bad"))
                                 .foregroundStyle(.red)
                         }
                     }
@@ -136,10 +136,10 @@ struct MoveInView: View {
         }
         .scrollContentBackground(.hidden)
         .background(SkyNow())
-        .navigationTitle("Bring in settings")
+        .navigationTitle(W("move.bringIn"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if isSheet || done { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            if isSheet || done { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
         }
         .sheet(isPresented: $scanning) {
             QRScanner { found in

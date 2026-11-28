@@ -32,7 +32,7 @@ struct WidgetPreviewView: View {
                     .background(TimetableCard.background(snapshot, at: .now, style: style))
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                     .shadow(color: .black.opacity(0.2), radius: 14, y: 6)
-                Text("Touch and hold your Home Screen, tap Edit, then Add Widget and search for Prayer Times Asia. Choose \"Next prayer\" (Small, Medium or Large) or \"Today's timetable\". They follow your Prayer screen look; touch and hold one, then Edit Widget, to pick another.")
+                Text(W("phone.widget.howTo"))
                     .font(.footnote)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
@@ -40,7 +40,7 @@ struct WidgetPreviewView: View {
             .padding(.vertical, 12)
         }
         .background(SkyNow())
-        .navigationTitle("Big widget")
+        .navigationTitle(W("widget.big"))
         .navigationBarTitleDisplayMode(.inline)
     }
 

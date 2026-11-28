@@ -11,7 +11,7 @@ import SwiftUI
 final class AppModel {
     /// Saved and acted on by `preferencesChanged(from:)`, which RootView calls
     /// from `.onChange(of: prefs)`.
-    var prefs: Preferences
+    var prefs: Preferences { didSet { syncAppLanguage() } }
 
     let location = LocationService()
     let official = OfficialTimetables()
@@ -59,6 +59,7 @@ final class AppModel {
     init() {
         prefs = Preferences.load()
         if let demo = Self.demoPreferences() { prefs = demo }
+        AppLanguage.shared.lang = AppWords.appLanguage(choice: prefs.appLanguageOverride)
         if Preferences.didRestore, !Self.isDemo {
             // A reinstall: settings came back from the keychain. Ask again for
             // what iOS forgets when an app is deleted.
@@ -164,6 +165,8 @@ final class AppModel {
             let c = cal.dateComponents([.year, .month, .day], from: Date.now.addingTimeInterval(Double(-back) * 86_400))
             p.prayedLog[String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)] = Set(Prayer.obligatory)
         }
+        // `-words-ms` and `-words-id` shoot the screens in Malay and Indonesian.
+        p.appLanguageOverride = args.contains("-words-ms") ? .ms : args.contains("-words-id") ? .id : nil
         p.appearance = args.contains("-light") ? .light : args.contains("-auto") ? .system : .dark
         p.todayStyle = args.contains("-sunpath") ? .sunPath : args.contains("-bands") ? .bands : args.contains("-simple") ? .simple : args.contains("-gold") ? .gold : .centre
         if args.contains("-masjid") { p.myMasjid = demoMasjid }
@@ -276,7 +279,11 @@ final class AppModel {
     /// names in it), not from where you are, so they stay the same as you travel.
     var naming: NamingStyle { prefs.namingOverride ?? personalNaming }
     /// The language of the app's words. Not the prayer names: those follow `naming`.
-    var appLang: RamadanContent.Lang { AppWords.appLanguage(naming: naming) }
+    var appLang: RamadanContent.Lang { AppWords.appLanguage(choice: prefs.appLanguageOverride) }
+    /// Hands the app language to the words every screen reads (AppLanguage.shared).
+    func syncAppLanguage() {
+        if AppLanguage.shared.lang != appLang { AppLanguage.shared.lang = appLang }
+    }
     var personalNaming: NamingStyle { NamingStyle.personal() }
     /// The words used where you are (the masjid's signs, the azan app locals use).
     var localNaming: NamingStyle { profile.naming }
@@ -931,21 +938,21 @@ final class AppModel {
         let s = season(at: pd.time(.dhuhr))
         if s.phase == .ramadan {
             if prefs.imsakAlert {
-                out.append(.init(id: id + "-imsak", title: "Imsak in 10 minutes · \(formatted(imsak(pd)))",
-                                 body: "Finish your sahur. \(Prayer.fajr.name(naming)) at \(formatted(pd.time(.fajr))) · \(here)",
+                out.append(.init(id: id + "-imsak", title: W("notify.imsakIn", ["time": formatted(imsak(pd))]),
+                                 body: W("notify.finishSahur", ["name": Prayer.fajr.name(naming), "time": formatted(pd.time(.fajr)), "place": here]),
                                  fireDate: imsak(pd).addingTimeInterval(-600), silent: isSilent(imsak(pd), prayer: .fajr)))
             }
             if prefs.berbukaAlert && !maghribAlertOn {
-                out.append(.init(id: id + "-berbuka", title: "Time for iftar · \(formatted(pd.time(.maghrib)))",
-                                 body: "Time to break your fast. Ramadan day \(s.ramadanDay ?? 0) · \(here)",
+                out.append(.init(id: id + "-berbuka", title: W("notify.iftar", ["time": formatted(pd.time(.maghrib))]),
+                                 body: W("phone.notify.breakFast", ["n": s.ramadanDay ?? 0, "name": here]),
                                  fireDate: pd.time(.maghrib), silent: isSilent(pd.time(.maghrib), prayer: .maghrib)))
             }
         }
         if prefs.qiyamAlert, s.lastTen, let night = s.nightTonight, let next = day(containing: pd.time(.dhuhr).addingTimeInterval(86_400)),
            let place = activePlace,
            let last = BlessedTime.compute(day: pd, nextDay: next, coordinates: place.coordinates, isRamadan: false).first(where: { $0.0 == .lastThird }) {
-            out.append(.init(id: id + "-qiyam", title: "Night \(night) · the last third has begun",
-                             body: s.oddNight ? "An odd night of the last ten. Seek Lailatul Qadr." : "One of the last ten nights of Ramadan.",
+            out.append(.init(id: id + "-qiyam", title: W("notify.qiyamTitle", ["night": night]),
+                             body: s.oddNight ? W("notify.qiyamOdd") : W("notify.qiyamEven"),
                              fireDate: last.1, silent: isSilent(last.1, prayer: .isha)))
         }
         return out
@@ -1030,8 +1037,8 @@ final class AppModel {
                     let left = Int((w.end.timeIntervalSince(at) / 60).rounded())
                     alerts.append(.init(
                         id: "\(pd.year)-\(pd.month)-\(pd.day)-\(w.prayer.rawValue)-nudge",
-                        title: "\(name) time ends in \(left) min",
-                        body: "\(name) is open until \(formatted(w.end)). Tick it in the app once you have prayed.",
+                        title: W("notify.nudgeTitle", ["name": name, "n": left]),
+                        body: W("notify.nudgeBody", ["name": name, "time": formatted(w.end)]),
                         fireDate: at, silent: isSilent(at, prayer: w.prayer)))
                 }
             }
@@ -1056,11 +1063,11 @@ final class AppModel {
                 if early > 0 {
                     // The heads-up before the prayer, on its own switch: for when a
                     // meeting or work would otherwise run past the time.
-                    let title = prayer == .sunrise ? "\(Prayer.fajr.name(naming)) ends in \(early) min" : (early == 60 ? "\(name) in 1 hour" : "\(name) in \(early) min")
+                    let title = prayer == .sunrise ? W("notify.endsIn", ["name": Prayer.fajr.name(naming), "n": early]) : (early == 60 ? W("notify.nameInHour", ["name": name]) : W("notify.nameIn", ["name": name, "n": early]))
                     let at = time.addingTimeInterval(Double(-early) * 60)
                     let awayWords = away && prefs.awayReminder && prayer != .sunrise
                     alerts.append(.init(id: id + "-early", title: title,
-                                        body: awayWords ? "\(name) begins at \(formatted(time)). A good time to find a place to pray." : "\(name) at \(formatted(time))",
+                                        body: awayWords ? W("notify.nameAtAway", ["name": name, "time": formatted(time)]) : "\(name) at \(formatted(time))",
                                         fireDate: at, silent: isSilent(at, prayer: prayer)))
                 }
                 guard onTime else { continue }
@@ -1068,12 +1075,12 @@ final class AppModel {
                 if prefs.alarmAtStart(prayer) { continue }
                 if prayer == .sunrise {
                     alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
-                                        body: "\(Prayer.fajr.name(naming)) has ended.", fireDate: time, silent: silent))
+                                        body: W("notify.ended", ["name": Prayer.fajr.name(naming)]), fireDate: time, silent: silent))
                     continue
                 }
                 if prayer == .maghrib && isRamadanDay(time) {
-                    alerts.append(.init(id: id, title: "Time for iftar · \(name) \(formatted(time))",
-                                        body: "Time to break your fast", fireDate: time,
+                    alerts.append(.init(id: id, title: W("notify.iftarName", ["name": name, "time": formatted(time)]),
+                                        body: W("notify.breakFast"), fireDate: time,
                                         sound: prefs.azanSound ? .azan(voice: prefs.azanVoice, full: prefs.azanFull, fajr: false) : .standard, silent: silent))
                     continue
                 }
@@ -1164,12 +1171,12 @@ final class AppModel {
             guard let pd = day(containing: noon(now, plus: offset)) else { continue }
             if let sahur = prefs.sahurAlarm,
                SahurDay.rings(on: pd, prefs.sahurDays, timeZone: timeZone, hijriAdjustment: prefs.hijriAdjustment) {
-                out.append(WakeUp(date: sahur.date(in: pd), title: "Wake up for sahur · \(fajr) at \(formatted(pd.time(.fajr)))", isSahur: true))
+                out.append(WakeUp(date: sahur.date(in: pd), title: W("phone.notify.wakeSahur", ["a": fajr, "b": formatted(pd.time(.fajr))]), isSahur: true))
             }
             if let timing = prefs.wakeUp {
                 let title = timing == .fajrMinus30
-                    ? "Wake up for tahajjud · \(fajr) at \(formatted(pd.time(.fajr)))"
-                    : "Wake up for \(fajr) · ends \(formatted(pd.time(.sunrise)))"
+                    ? W("phone.notify.wakeTahajjud", ["a": fajr, "b": formatted(pd.time(.fajr))])
+                    : W("phone.notify.wakeFor", ["a": fajr, "b": formatted(pd.time(.sunrise))])
                 out.append(WakeUp(date: timing.date(in: pd), title: title, isSahur: false))
             }
             for prayer in PrayerAlarmTiming.prayers {
@@ -1178,8 +1185,8 @@ final class AppModel {
                 let end = PrayerAlarmTiming.end(of: prayer, in: pd)
                 let name = prayer.name(naming, isFriday: isFriday(start))
                 let title = timing == .endMinus30
-                    ? "\(name) ends in 30 min · \(formatted(end))"
-                    : prayer == .isha ? "Time for \(name) · \(formatted(start))" : "Time for \(name) · open until \(formatted(end))"
+                    ? W("phone.notify.endsIn30", ["a": name, "b": formatted(end)])
+                    : prayer == .isha ? W("phone.notify.timeFor", ["a": name, "b": formatted(start)]) : W("phone.notify.timeForOpen", ["a": name, "b": formatted(end)])
                 out.append(WakeUp(date: timing.date(start: start, end: end), title: title, isSahur: false, prayer: prayer))
             }
             // Leave for Jumaat, when it rings as an alarm.

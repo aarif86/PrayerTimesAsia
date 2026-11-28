@@ -38,6 +38,8 @@ struct WidgetSnapshot: Codable, Sendable {
     var fasts: [Fast]? = nil
     /// "Imsak" and "Berbuka" in the prayer names' language.
     var fastWords: FastWords? = nil
+    /// The app's words language ("en", "ms" or "id"), so the widgets speak it too.
+    var appLang: String? = nil
 
     struct Fast: Codable, Sendable { var imsak: Date; var berbuka: Date }
     struct FastWords: Codable, Sendable { var imsak: String; var berbuka: String }
@@ -48,7 +50,9 @@ struct WidgetSnapshot: Codable, Sendable {
 
     static func load() -> WidgetSnapshot? {
         guard let data = UserDefaults(suiteName: appGroup)?.data(forKey: key) else { return nil }
-        return try? JSONDecoder().decode(WidgetSnapshot.self, from: data)
+        let snapshot = try? JSONDecoder().decode(WidgetSnapshot.self, from: data)
+        if let code = snapshot?.appLang, let choice = AppLanguageChoice(rawValue: code) { AppLanguage.shared.lang = choice.lang }
+        return snapshot
     }
 
     func save() {

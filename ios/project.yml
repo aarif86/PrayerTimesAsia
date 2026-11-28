@@ -89,6 +89,9 @@ targets:
       - path: PrayerTimesAsia/Core/PrayerEngine.swift
       - path: PrayerTimesAsia/Core/Hijri.swift
       - path: PrayerTimesAsia/Core/Sources.swift
+      - path: PrayerTimesAsia/Core/AppWords.swift
+      - path: PrayerTimesAsia/Core/AppWordsData.swift
+      - path: PrayerTimesAsia/Core/RamadanContent.swift
       - path: PrayerTimesAsia/Core/Geo.swift
       - path: PrayerTimesAsia/Design/LivingSky.swift
     info:

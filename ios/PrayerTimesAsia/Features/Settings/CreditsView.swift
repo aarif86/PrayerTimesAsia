@@ -32,7 +32,7 @@ struct CreditsView: View {
     ]
 
     private let other: [Credit] = [
-        Credit(title: "Calculation",
+        Credit(title: W("settings.calculation"),
                detail: "On-device solar calculation after praytimes.org; method presets as published by MUIS, JAKIM, Kemenag, the Muslim World League, Karachi, Umm al-Qura, Diyanet and others.",
                url: "https://praytimes.org/wiki/Calculation_Methods"),
         Credit(title: "Maps and places",
@@ -44,7 +44,7 @@ struct CreditsView: View {
         Credit(title: "Community data",
                detail: "Masjid timetables and method confirmations from contributors, shared under CC-BY 4.0.",
                url: "https://prayertimes.asia/verify.html"),
-        Credit(title: "Azan",
+        Credit(title: W("all.azanName"),
                detail: "The azan voices are Asim Javed, from the ICR masjid's own collection on the Internet Archive (public domain, CC0), Ahmed Khalaf, his own recordings (CC BY 4.0), and the Makkah azan as recorded at Masjid al-Haram by Seyfula Islam (CC BY 3.0, Wikimedia Commons). The Al-Aqsa azan is \"Masjidul Aqsa Athan, Pt. 1\" from Athans from the Holy Lands (2018), courtesy of SIMTECHCDS (Simtech Productions, Durban), used with their kind permission. With thanks to them all.",
                url: "https://archive.org/details/icr-friday-prayer-2nd-adhan-17th-may-2024-9th-dhul-qadah-1445-by-asim-javed"),
         Credit(title: "Design",
@@ -57,10 +57,10 @@ struct CreditsView: View {
 
     var body: some View {
         List {
-            Section("Official timetables") { ForEach(timetables) { row($0) } }
-            Section("Also") { ForEach(other) { row($0) } }
+            Section(W("phone.officialTimetables")) { ForEach(timetables) { row($0) } }
+            Section(W("phone.credits.also")) { ForEach(other) { row($0) } }
         }
-        .navigationTitle("Sources & credits")
+        .navigationTitle(W("settings.sources"))
     }
 
     @ViewBuilder

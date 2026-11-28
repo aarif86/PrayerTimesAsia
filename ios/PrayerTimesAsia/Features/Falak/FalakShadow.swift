@@ -23,13 +23,13 @@ struct ShadowStepsView: View {
                     let asr = Prayer.asr.name(model.naming)
                     VStack(spacing: 20) {
                         VStack(spacing: 4) {
-                            Text("\(asr) begins when your shadow reaches")
+                            Text(W("falak.stepsLead", ["name": asr]))
                                 .font(.subheadline).opacity(0.75).multilineTextAlignment(.center)
                             Text(Falak.stepsText(target))
                                 .font(Theme.display(96, .bold)).monospacedDigit()
                                 .foregroundStyle(Theme.gold)
-                            Text("steps").font(.title3.weight(.semibold))
-                            Text("Today in \(place.name)").font(.footnote).opacity(0.6)
+                            Text(W("falak.stepsUnit")).font(.title3.weight(.semibold))
+                            Text(W("falak.stepsToday", ["place": place.name])).font(.footnote).opacity(0.6)
                         }
                         .padding(.top, 8)
                         .accessibilityElement(children: .combine)
@@ -37,34 +37,34 @@ struct ShadowStepsView: View {
                         StepsPicture().frame(height: 120).accessibilityHidden(true)
 
                         VStack(spacing: 0) {
-                            step(1, "Stand with the sun behind you", "Your shadow falls ahead of you.")
+                            step(1, W("falak.step1"), W("falak.step1Sub"))
                             Divider().padding(.leading, 56)
-                            step(2, "Mark where your head's shadow ends", "A slipper or a stone is enough.")
+                            step(2, W("falak.step2"), W("falak.step2Sub"))
                             Divider().padding(.leading, 56)
-                            step(3, "Walk to it, heel to toe", "Count each foot as you go.")
+                            step(3, W("falak.step3"), W("falak.step3Sub"))
                             Divider().padding(.leading, 56)
-                            step(4, "Compare with \(Falak.stepsText(target))", "More steps means \(asr) has begun.")
+                            step(4, W("falak.step4", ["n": Falak.stepsText(target)]), W("falak.step4Sub", ["name": asr]))
                         }
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
 
-                        Text("A person is about 7 of their own feet tall, so this works for anyone, tall or short.")
+                        Text(W("falak.stepsWhy"))
                             .font(.footnote).opacity(0.75).frame(maxWidth: .infinity, alignment: .leading)
                         HadithView(id: .falakFeet, style: .line)
-                        Label("Look at the ground, never at the sun.", systemImage: "eye.trianglebadge.exclamationmark.fill")
+                        Label(W("falak.lookGround"), systemImage: "eye.trianglebadge.exclamationmark.fill")
                             .font(.footnote.weight(.semibold)).foregroundStyle(Theme.warning)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        Text("For learning. Always follow your local religious authority.")
+                        Text(W("falak.footer"))
                             .font(.footnote).opacity(0.7).multilineTextAlignment(.center)
                     }
                     .padding(.horizontal, Theme.gutter)
                     .padding(.bottom, 32)
                 } else {
-                    Text("Choose a place first.").font(.headline).padding(40)
+                    Text(W("falak.choosePlace")).font(.headline).padding(40)
                 }
             }
-            .navigationTitle("Shadow steps")
+            .navigationTitle(W("falak.stepsTitle"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
         }
     }
 
@@ -165,7 +165,7 @@ struct ShadowCameraView: View {
                     .background(.ultraThinMaterial, in: Circle())
             }
             .padding(16)
-            .accessibilityLabel("Close")
+            .accessibilityLabel(W("common.close"))
         }
         .onAppear { motion.start(); camera.start() }
         .onDisappear { motion.stop(); camera.stop() }
@@ -228,7 +228,7 @@ struct ShadowCameraView: View {
     @ViewBuilder
     private func pill(r: Falak.CameraReading?, begun: Bool, asr: String) -> some View {
         if let r {
-            let text = r.asrBegun == nil ? "Before noon" : (begun ? "✓ \(asr) has begun" : "Not yet")
+            let text = r.asrBegun == nil ? W("falak.camMorning") : (begun ? W("falak.camBegun", ["name": asr]) : W("falak.camNotYet"))
             Text(text)
                 .font(.headline)
                 .padding(.horizontal, 18).padding(.vertical, 10)
@@ -241,40 +241,40 @@ struct ShadowCameraView: View {
                        now: Date, plan: Falak.ShadowDay) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             if sun.altitude <= 2 {
-                Text("Shadow readings start after sunrise. Come back in daylight.").font(.subheadline.weight(.semibold))
+                Text(W("falak.camAfterSunrise")).font(.subheadline.weight(.semibold))
             } else if !motion.available {
-                Text("This device can't tell its tilt, so the camera can't measure. Use shadow steps instead.")
+                Text(W("falak.camNoMotion"))
                     .font(.subheadline.weight(.semibold))
             } else if let r {
                 if r.asrBegun == nil {
-                    Text("The shadow is still shrinking. Come back after \(model.formatted(plan.noon)).")
+                    Text(W("falak.camMorningSub", ["time": model.formatted(plan.noon)]))
                         .font(.subheadline.weight(.semibold))
                 } else {
                     HStack(alignment: .firstTextBaseline) {
-                        Text("Your shadow").font(.subheadline).opacity(0.75)
+                        Text(W("falak.camYourShadow")).font(.subheadline).opacity(0.75)
                         Spacer()
                         Text(r.steps.isFinite ? Falak.stepsText(r.steps) : "–").font(Theme.display(28, .bold)).monospacedDigit()
-                        Text("of \(Falak.stepsText(target)) steps").font(.subheadline).opacity(0.75)
+                        Text(W("falak.camOf", ["n": Falak.stepsText(target)])).font(.subheadline).opacity(0.75)
                     }
                     ProgressView(value: min(max(r.steps.isFinite ? r.steps / target : 1, 0), 1))
                         .tint(r.asrBegun == true ? green : .white)
                     if r.asrBegun == false, let asrTime {
                         let mins = Int((asrTime.timeIntervalSince(now) / 60).rounded())
-                        if mins > 0 { Text("\(asr) in about \(mins) min").font(.subheadline.weight(.semibold)) }
+                        if mins > 0 { Text(W("falak.camInAbout", ["name": asr, "n": mins])).font(.subheadline.weight(.semibold)) }
                     }
                     if let official = model.day(containing: now) {
-                        Text("Your timetable says \(model.formatted(official.time(.asr)))").font(.footnote).opacity(0.75)
+                        Text(W("falak.camTimetable", ["time": model.formatted(official.time(.asr))])).font(.footnote).opacity(0.75)
                     }
-                    Text(r.asrBegun == true ? "Two taps and a soft voice. No need to look." : "A gentle tap now. Two taps when \(asr) begins.")
+                    Text(r.asrBegun == true ? W("falak.camDoneHint") : W("falak.camWaitHint", ["name": asr]))
                         .font(.footnote).opacity(0.7)
-                    Text("Tap again to move the mark").font(.caption).opacity(0.55)
+                    Text(W("falak.camRetap")).font(.caption).opacity(0.55)
                 }
             } else {
-                how(1, "Sun behind you, hold the phone at your chest")
-                how(2, "Point it down at your shadow")
-                how(3, "Tap the head of your shadow")
+                how(1, W("falak.camHow1"))
+                how(2, W("falak.camHow2"))
+                how(3, W("falak.camHow3"))
             }
-            Text("An estimate from the phone's tilt, for learning. Always follow your local religious authority.")
+            Text(W("phone.falak.estimate"))
                 .font(.caption2).opacity(0.55)
         }
         .padding(18)
@@ -300,10 +300,10 @@ struct ShadowCameraView: View {
             let g = UINotificationFeedbackGenerator()
             g.notificationOccurred(.success)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { g.notificationOccurred(.success) }
-            say("\(asr) has begun.")
+            say(W("falak.camSayBegun", ["name": asr]))
         } else {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            if r.asrBegun == false { say("Not yet.") }
+            if r.asrBegun == false { say(W("falak.camSayNotYet")) }
         }
     }
 

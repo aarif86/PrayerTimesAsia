@@ -9,6 +9,13 @@ struct PrayerSpace: Identifiable, Hashable {
     enum Kind: String, CaseIterable, Identifiable {
         case all = "All", masjid = "Masjid", musollah = "Prayer room"
         var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .all: W("masjid.all")
+            case .masjid: W("masjid.masjid")
+            case .musollah: W("masjid.musollah")
+            }
+        }
     }
 
     let id: String

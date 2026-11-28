@@ -12,6 +12,8 @@ struct PrayerCountdown {
     let label: String
     let urgent: Bool
     let done: Bool
+    /// True while the current prayer window is counting down (not "until the next prayer").
+    let inWindow: Bool
     var text: String { label.isEmpty ? count : "\(count) \(label)" }
 
     @MainActor init(now: Date, next: (prayer: Prayer, time: Date), model: AppModel) {
@@ -19,15 +21,18 @@ struct PrayerCountdown {
         done = w.map { model.prefs.trackerEnabled && model.isPrayed($0.prayer, on: $0.start) } ?? false
         if let w, !done {
             count = TodayView.short(w.end.timeIntervalSince(now))
-            label = "left to pray"
+            label = W("today.leftLabel")
+            inWindow = true
             urgent = w.prayer != .isha && now >= w.nudgeAt
         } else if w == nil && model.current(at: now)?.prayer == .sunrise {
-            count = "in \(TodayView.short(next.time.timeIntervalSince(now)))"
+            count = W("today.in", ["time": TodayView.short(next.time.timeIntervalSince(now))])
             label = ""
+            inWindow = false
             urgent = false
         } else {
             count = TodayView.short(next.time.timeIntervalSince(now))
-            label = "until \(next.prayer.name(model.naming, isFriday: model.isFriday(next.time)))"
+            label = W("today.untilName", ["name": next.prayer.name(model.naming, isFriday: model.isFriday(next.time))])
+            inWindow = false
             urgent = false
         }
     }
@@ -50,7 +55,7 @@ struct SimpleTimes: View {
             VStack(spacing: 6) {
                 if let lead = PrayerLead(current: current, next: next) {
                     if lead.isNext {
-                        Text("NEXT").font(.system(size: 15, weight: .heavy)).tracking(1).foregroundStyle(.secondary)
+                        Text(W("today.next")).font(.system(size: 15, weight: .heavy)).tracking(1).foregroundStyle(.secondary)
                     }
                     HStack(spacing: 10) {
                         Text(lead.prayer.name(model.naming, isFriday: model.isFriday(lead.time)))
@@ -78,7 +83,7 @@ struct SimpleTimes: View {
                 withAnimation(.snappy) { showMore.toggle() }
             } label: {
                 HStack(spacing: 8) {
-                    Text(showMore ? "Show less" : "Show more times")
+                    Text(showMore ? W("common.showLess") : W("today.moreTimes"))
                     Image(systemName: showMore ? "chevron.up" : "chevron.down")
                 }
                 .font(.system(size: 22, weight: .bold))
@@ -87,7 +92,7 @@ struct SimpleTimes: View {
                 .background(Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(showMore ? "Show less" : "Show more times: Dhuha and the blessed times of the night")
+            .accessibilityLabel(showMore ? W("common.showLess") : W("phone.today.dayShow"))
             if showMore {
                 VStack(spacing: 10) {
                     ForEach(blessed(), id: \.0) { item in blessedRow(item.0, item.1) }

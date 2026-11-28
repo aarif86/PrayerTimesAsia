@@ -269,7 +269,7 @@ struct WidgetHeadlineFace: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         case .simple:
             VStack(spacing: 2) {
-                Text("Next prayer").font(.system(size: 12, weight: .medium)).foregroundStyle(pal.fg2)
+                Text(W("widget.nextPrayer")).font(.system(size: 12, weight: .medium)).foregroundStyle(pal.fg2)
                 Text(head.title).font(.system(size: medium ? 28 : 32, weight: .bold, design: .rounded)).foregroundStyle(pal.hero)
                     .lineLimit(1).minimumScaleFactor(0.6)
                 Text(timerInterval: date...max(date, head.target), countsDown: true)

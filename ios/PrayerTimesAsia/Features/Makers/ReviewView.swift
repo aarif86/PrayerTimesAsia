@@ -37,9 +37,9 @@ enum Reviews {
     static func links(appStoreID: String = appStoreID) -> [Link] {
         var out: [Link] = []
         if !appStoreID.isEmpty, let url = URL(string: "https://apps.apple.com/app/id\(appStoreID)?action=write-review") {
-            out.append(Link(id: "appstore", title: "Review on the App Store", subtitle: "For the iPhone app", icon: "star", url: url))
+            out.append(Link(id: "appstore", title: W("review.appStore"), subtitle: W("review.appStoreSub"), icon: "star", url: url))
         }
-        out.append(Link(id: "google", title: "Review Nasar Digital on Google", subtitle: "The team in Singapore who builds the app", icon: "mappin.circle", url: googleReview))
+        out.append(Link(id: "google", title: W("review.google"), subtitle: W("review.googleSub"), icon: "mappin.circle", url: googleReview))
         return out
     }
 }
@@ -62,20 +62,20 @@ struct ReviewView: View {
         NavigationStack {
             Form {
                 Section {
-                    Text("A few honest words help other Muslims find the app, and help Ustaz Aarif and the team keep going. Jazakallahu khairan.")
+                    Text(W("review.intro"))
                         .font(.subheadline)
                     VStack(alignment: .leading, spacing: 8) {
-                        step(1, "Write once", "in the box below, in your own words.")
-                        step(2, "Tap a place", "to review. We copy your words for you.")
-                        step(3, "Tap and hold", "in their review box, then Paste. Come back and do the same for the next one.")
+                        step(1, W("review.step1b"), stepRest("review.step1"))
+                        step(2, W("review.step2b"), stepRest("review.step2"))
+                        step(3, W("review.step3b"), stepRest("review.step3", ["paste": W("review.paste")]))
                     }
                     .padding(.vertical, 4)
                 }
                 Section {
-                    TextField("What has the app helped you with?", text: $words, axis: .vertical)
+                    TextField(W("feedback.kindHint"), text: $words, axis: .vertical)
                         .lineLimit(4...8)
                         .onChange(of: words) { _, _ in copiedFor = nil }
-                        .accessibilityLabel("Your review")
+                        .accessibilityLabel(W("review.yourReview"))
                 }
                 Section {
                     ForEach(links) { link in
@@ -84,7 +84,7 @@ struct ReviewView: View {
                                 Image(systemName: link.icon).font(.title3).foregroundStyle(Theme.accentText).frame(width: 26)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(link.title).foregroundStyle(.primary)
-                                    Text(copiedFor == link.id ? "Copied. Tap and hold in the review box, then Paste." : link.subtitle)
+                                    Text(copiedFor == link.id ? W("review.copiedHow") : link.subtitle)
                                         .font(.footnote).foregroundStyle(.secondary)
                                 }
                                 Spacer(minLength: 4)
@@ -95,17 +95,24 @@ struct ReviewView: View {
                 }
                 Section {
                     Button { showNote = true } label: {
-                        Label("Something not right? Send a private note", systemImage: "envelope")
+                        Label(W("review.private"), systemImage: "envelope")
                     }
                 }
             }
-            .navigationTitle("Rate and review")
+            .navigationTitle(W("settings.rate"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { save(); dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { save(); dismiss() } } }
             .onAppear { words = model.prefs.reviewDraft }
             .onDisappear { save() }
             .sheet(isPresented: $showNote) { NoteView() }
         }
+    }
+
+    /// The sentence after the bold start of a step, from the shared line ("{b} in the box below...").
+    private func stepRest(_ key: String, _ extra: [String: String] = [:]) -> String {
+        var args: [String: CustomStringConvertible] = ["b": ""]
+        for (k, v) in extra { args[k] = v }
+        return W(key, args).trimmingCharacters(in: .whitespaces)
     }
 
     private func step(_ n: Int, _ bold: String, _ rest: String) -> some View {
@@ -142,10 +149,10 @@ struct NoteView: View {
         var id: String { rawValue }
         var label: String {
             switch self {
-            case .kind: "A kind word"
-            case .idea: "An idea"
-            case .time: "A time looks wrong"
-            case .broke: "Something is not working"
+            case .kind: W("feedback.kind")
+            case .idea: W("feedback.idea")
+            case .time: W("feedback.time")
+            case .broke: W("feedback.broke")
             }
         }
         var icon: String {
@@ -158,10 +165,10 @@ struct NoteView: View {
         }
         var hint: String {
             switch self {
-            case .kind: "What has the app helped you with?"
-            case .idea: "What would make the app better for you?"
-            case .time: "Which prayer, which day, and what does your masjid show?"
-            case .broke: "What did you tap, and what happened?"
+            case .kind: W("feedback.kindHint")
+            case .idea: W("feedback.ideaHint")
+            case .time: W("feedback.timeHint")
+            case .broke: W("feedback.brokeHint")
             }
         }
     }
@@ -187,43 +194,43 @@ struct NoteView: View {
         NavigationStack {
             Form {
                 Section {
-                    Text("Ustaz Aarif and the Nasar Digital team read every note. Good or bad, it helps us make the app better for everyone.")
+                    Text(W("feedback.intro"))
                         .font(.subheadline)
-                    Picker("About", selection: $kind) {
+                    Picker(W("phone.review.about"), selection: $kind) {
                         ForEach(Kind.allCases) { k in Label(k.label, systemImage: k.icon).tag(k) }
                     }
                 }
                 Section {
                     TextField(kind.hint, text: $text, axis: .vertical).lineLimit(5...10)
                         .onChange(of: text) { _, _ in copied = false }
-                        .accessibilityLabel("Your note")
+                        .accessibilityLabel(W("feedback.yourNote"))
                 }
                 Section {
                     Toggle(isOn: $addDetails) {
                         VStack(alignment: .leading) {
-                            Text("Add my city and app version")
-                            Text("Helps us check your times. Never your exact location.").font(.footnote).foregroundStyle(.secondary)
+                            Text(W("feedback.addDetails"))
+                            Text(W("feedback.addDetailsSub")).font(.footnote).foregroundStyle(.secondary)
                         }
                     }
                     if kind == .kind {
                         Toggle(isOn: $mayShare) {
                             VStack(alignment: .leading) {
-                                Text("You may share my words")
-                                Text("On our website, without your name.").font(.footnote).foregroundStyle(.secondary)
+                                Text(W("feedback.mayShare"))
+                                Text(W("feedback.mayShareSub")).font(.footnote).foregroundStyle(.secondary)
                             }
                         }
                     }
                 }
                 Section {
-                    Button { send() } label: { Label("Send your note", systemImage: "paperplane.fill").bold() }
-                    Button { copyNote() } label: { Label(copied ? "Copied" : "No email app? Copy the note", systemImage: "doc.on.doc") }
+                    Button { send() } label: { Label(W("phone.review.send"), systemImage: "paperplane.fill").bold() }
+                    Button { copyNote() } label: { Label(copied ? W("common.copied") : W("feedback.copy"), systemImage: "doc.on.doc") }
                 } footer: {
-                    Text("It opens our note page with your words filled in. Add your email there so we can thank you.")
+                    Text(W("phone.review.opensNote"))
                 }
             }
-            .navigationTitle("A note to the makers")
+            .navigationTitle(W("feedback.title"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(W("common.done")) { dismiss() } } }
         }
     }
 
@@ -259,10 +266,10 @@ struct ReviewLine: View {
     private var line: some View {
             HStack(spacing: 10) {
                 Image(systemName: "star").foregroundStyle(Theme.accentText)
-                Text("Enjoying the app? A short review helps other Muslims find it.")
+                Text(W("today.reviewAsk"))
                     .font(.subheadline.weight(.semibold)).lineLimit(3).minimumScaleFactor(0.85)
                 Spacer(minLength: 4)
-                Button("Review") { model.prefs.noteCardDone = true; showReview = true }
+                Button(W("today.review")) { model.prefs.noteCardDone = true; showReview = true }
                     .font(.subheadline.weight(.bold))
                     .buttonStyle(.borderedProminent)
                     .tint(Theme.sunArc)
@@ -271,7 +278,7 @@ struct ReviewLine: View {
                     Image(systemName: "xmark").font(.caption.weight(.bold)).opacity(0.6).frame(width: 24, height: 24)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Not now")
+                .accessibilityLabel(W("common.notNow"))
             }
             .padding(.leading, 14).padding(.trailing, 8).padding(.vertical, 8)
             .background(Color.primary.opacity(0.08), in: RoundedRectangle(cornerRadius: 24))
