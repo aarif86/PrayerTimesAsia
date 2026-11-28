@@ -109,7 +109,7 @@
         <receiver
             android:name=".widget.CurrentPrayerWidgetReceiver"
             android:exported="true"
-            android:label="@string/widget_currentPrayerName">
+            android:label="@string/widget_currentName">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -133,7 +133,7 @@
         <receiver
             android:name=".widget.HijriCalendarWidgetReceiver"
             android:exported="true"
-            android:label="@string/widget_hijriCalendarName">
+            android:label="@string/widget_hijriName">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
