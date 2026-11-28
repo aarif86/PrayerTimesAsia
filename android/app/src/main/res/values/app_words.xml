@@ -349,6 +349,7 @@
     <string name="masjid_title" formatted="false">Masjids and prayer rooms</string>
     <string name="masjid_about" formatted="false">About this app</string>
     <string name="masjid_refresh" formatted="false">Refresh the masjid list</string>
+    <string name="masjid_listSize" formatted="false">Resize the list and map</string>
     <string name="masjid_all" formatted="false">All</string>
     <string name="masjid_masjid" formatted="false">Masjid</string>
     <string name="masjid_musollah" formatted="false">Prayer room</string>

@@ -349,6 +349,7 @@
     <string name="masjid_title" formatted="false">Masjid dan Musala</string>
     <string name="masjid_about" formatted="false">Tentang aplikasi ini</string>
     <string name="masjid_refresh" formatted="false">Muat ulang daftar masjid</string>
+    <string name="masjid_listSize" formatted="false">Ubah ukuran daftar dan peta</string>
     <string name="masjid_all" formatted="false">Semua</string>
     <string name="masjid_masjid" formatted="false">Masjid</string>
     <string name="masjid_musollah" formatted="false">Musala</string>
