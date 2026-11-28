@@ -7,7 +7,7 @@
  *   <siteDir>  the assembled website folder (_site). Pages are written into it.
  *   <base>     "/" on the custom domain, "/PrayerTimesAsia/" on github.io.
  *
- * Writes, in English, Malay and Indonesian, a list page and one page per city
+ * Writes, in English plus each city's own language (see COUNTRY_LANGS), a list page and one page per city
  * (prayer-times/, ms/waktu-solat/, id/jadwal-sholat/), a plain printable monthly and
  * Ramadan timetable page per city, plus about.html, sitemap.xml and robots.txt.
  *
@@ -27,6 +27,7 @@ import { CITIES } from '../src/services/cities'
 import { zoned } from '../src/core/tz'
 import { hijriDate } from '../src/core/hijri'
 import type { CalculationMethod } from '../src/core/methods'
+import { LOCALES, NO_AUTH_NEW, LOCAL_CITY_NAMES, type NewLang, type Words } from './search-pages-locales'
 
 const argv = process.argv.slice(2).filter((a) => a !== '--')
 const [siteDir, baseArg = '/'] = argv
@@ -35,11 +36,19 @@ const BASE = baseArg.endsWith('/') ? baseArg : baseArg + '/'
 const DAYS = 30
 const ORIGIN = 'https://prayertimes.asia'
 const PLAY = 'https://play.google.com/store/apps/details?id=com.prayertimesasia.app'
-type Lang = 'en' | 'ms' | 'id' | 'ar' | 'ur' | 'bn' | 'tr'
-/** Every city has these three. The rest are the city's own language, where the website has it. */
-const LANGS: Lang[] = ['en', 'ms', 'id']
-const ALL_LANGS: Lang[] = ['en', 'ms', 'id', 'ar', 'ur', 'bn', 'tr']
-const LOCAL: Record<string, Lang> = { makkah: 'ar', madinah: 'ar', dubai: 'ar', karachi: 'ur', lahore: 'ur', dhaka: 'bn', istanbul: 'tr' }
+type Lang = 'en' | 'ms' | 'id' | 'ar' | 'ur' | 'bn' | 'tr' | NewLang
+const NEW_CODES = Object.keys(LOCALES) as NewLang[]
+const ALL_LANGS: Lang[] = ['en', 'ms', 'id', 'ar', 'ur', 'bn', 'tr', ...NEW_CODES]
+/**
+ * Every city page is in English plus the language people actually speak there. Malay is only for Malaysia, Singapore and
+ * Brunei, Indonesian only for Indonesia. Makkah and Madinah also keep Malay and Indonesian because so many pilgrims
+ * from those countries search for them. Cities in countries with no local language here yet (London) are English only.
+ */
+const COUNTRY_LANGS: Record<string, Lang[]> = {
+  SG: ['ms'], MY: ['ms'], BN: ['ms'], ID: ['id'], TH: ['th'], MM: ['my'], NP: ['ne'], PH: ['fil'], VN: ['vi'], KH: ['km'],
+  BD: ['bn'], PK: ['ur'], IN: ['hi'], LK: ['si'], JP: ['ja'], KR: ['ko'], HK: ['zh'], SA: ['ms', 'id', 'ar'], AE: ['ar'], TR: ['tr'], GB: [],
+}
+const hreflang = (l: Lang) => (l === 'zh' ? 'zh-HK' : l)
 
 /** [country, name in the built-in list, name shown on the page]. */
 const WANTED: [string, string, string?][] = [
@@ -86,7 +95,7 @@ const cities: City2[] = WANTED.map(([cc, listName, shown]) => {
     methodName: method.name.replace(' · ', ', '), fajr: method.fajrAngle, isha: method.ishaAngle, ishaInterval: method.ishaInterval,
     authority: profile.authority ?? '', sourceKind: profile.source, note: profile.note ?? '',
     // English pages show the country's own names next to the English ones ("Fajr (Subuh)"), Malay and Indonesian use their own.
-    naming: { en: NAMES[profile.naming], ms: NAMES.malay, id: NAMES.indonesian, ar: NAMES.arabicScript, ur: NAMES.urdu, bn: NAMES.bengali, tr: NAMES.turkish },
+    naming: { en: NAMES[profile.naming], ms: NAMES.malay, id: NAMES.indonesian, ar: NAMES.arabicScript, ur: NAMES.urdu, bn: NAMES.bengali, tr: NAMES.turkish, ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].names])) } as City2['naming'],
     qibla: Math.round(qiblaBearing(p.coordinates)), coords: p.coordinates, method, asr: profile.asr,
   }
 })
@@ -95,25 +104,26 @@ type Times = Record<Prayer, number>
 const timesAt = (c: City2, ms: number): Times => computeFor(ms, c.tz, c.coords, c.method, c.asr).times as Times
 
 // ---- language bits -----------------------------------------------------------------------------------------------------
-const LOCALE: Record<Lang, string> = { en: 'en-GB', ms: 'ms-MY', id: 'id-ID', ar: 'ar-u-ca-gregory-nu-latn', ur: 'ur-PK-u-nu-latn', bn: 'bn-BD-u-nu-latn', tr: 'tr-TR' }
-const NATIVE: Record<Lang, string> = { en: 'EN', ms: 'MS', id: 'ID', ar: 'العربية', ur: 'اردو', bn: 'বাংলা', tr: 'TR' }
+const LOCALE = { en: 'en-GB', ms: 'ms-MY', id: 'id-ID', ar: 'ar-u-ca-gregory-nu-latn', ur: 'ur-PK-u-nu-latn', bn: 'bn-BD-u-nu-latn', tr: 'tr-TR', ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].locale])) } as Record<Lang, string>
+const NATIVE = { en: 'EN', ms: 'MS', id: 'ID', ar: 'العربية', ur: 'اردو', bn: 'বাংলা', tr: 'TR', ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].native])) } as Record<Lang, string>
 const RTL: Lang[] = ['ar', 'ur']
-const langsFor = (c: City2): Lang[] => (LOCAL[c.slug] ? [...LANGS, LOCAL[c.slug]] : LANGS)
+const langsFor = (c: City2): Lang[] => ALL_LANGS.filter((l) => l === 'en' || (COUNTRY_LANGS[c.country] ?? []).includes(l))
 const inLang = (c: City2, l: Lang) => langsFor(c).includes(l)
-const BASE_DIR: Record<Lang, string> = { en: 'prayer-times', ms: 'ms/waktu-solat', id: 'id/jadwal-sholat', ar: 'ar/mawaqit-alsalat', ur: 'ur/namaz-ke-auqat', bn: 'bn/namajer-somoy', tr: 'tr/namaz-vakitleri' }
-const PRINT_DIR: Record<Lang, string> = { en: 'printable-timetables', ms: 'ms/jadual-cetak', id: 'id/jadwal-cetak', ar: 'ar/jadwal-lil-tibaa', ur: 'ur/chapai-ka-jadwal', bn: 'bn/print-somoysuchi', tr: 'tr/yazdirilabilir-vakitler' }
-const HOME: Record<Lang, string> = { en: '', ms: 'ms/', id: 'id/', ar: 'ar/', ur: 'ur/', bn: 'bn/', tr: 'tr/' }
+const BASE_DIR = { en: 'prayer-times', ms: 'ms/waktu-solat', id: 'id/jadwal-sholat', ar: 'ar/mawaqit-alsalat', ur: 'ur/namaz-ke-auqat', bn: 'bn/namajer-somoy', tr: 'tr/namaz-vakitleri', ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].dir])) } as Record<Lang, string>
+const PRINT_DIR = { en: 'printable-timetables', ms: 'ms/jadual-cetak', id: 'id/jadwal-cetak', ar: 'ar/jadwal-lil-tibaa', ur: 'ur/chapai-ka-jadwal', bn: 'bn/print-somoysuchi', tr: 'tr/yazdirilabilir-vakitler', ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].print])) } as Record<Lang, string>
+// The new local languages have no home page of their own yet, so their logo and breadcrumb go to the English home page.
+const HOME = { en: '', ms: 'ms/', id: 'id/', ar: 'ar/', ur: 'ur/', bn: 'bn/', tr: 'tr/', ...Object.fromEntries(NEW_CODES.map((k) => [k, ''])) } as Record<Lang, string>
 const cityPath = (l: Lang, c: City2) => `${BASE_DIR[l]}/${c.slug}/`
 const printPath = (l: Lang, c: City2) => `${PRINT_DIR[l]}/${c.slug}/`
 const LOCAL_NAMES: Record<string, Partial<Record<Lang, string>>> = {
   penang: { ms: 'Pulau Pinang', id: 'Pulau Pinang' }, makkah: { ar: 'مكة المكرمة' }, madinah: { ar: 'المدينة المنورة' }, dubai: { ar: 'دبي' },
   karachi: { ur: 'کراچی' }, lahore: { ur: 'لاہور' }, dhaka: { bn: 'ঢাকা' }, istanbul: { tr: 'İstanbul' },
 }
-const cityName = (c: City2, l: Lang) => LOCAL_NAMES[c.slug]?.[l] ?? c.name
+const cityName = (c: City2, l: Lang) => LOCAL_NAMES[c.slug]?.[l] ?? (LOCAL_CITY_NAMES[c.slug] as Partial<Record<Lang, string>> | undefined)?.[l] ?? c.name
 const countryName = (cc: string, l: Lang) => {
   try { return new Intl.DisplayNames([LOCALE[l]], { type: 'region' }).of(cc) ?? cc } catch { return cc }
 }
-const compassWords: Record<Lang, string[]> = {
+const compassWords = {
   en: ['north', 'north east', 'east', 'south east', 'south', 'south west', 'west', 'north west'],
   ms: ['utara', 'timur laut', 'timur', 'tenggara', 'selatan', 'barat daya', 'barat', 'barat laut'],
   id: ['utara', 'timur laut', 'timur', 'tenggara', 'selatan', 'barat daya', 'barat', 'barat laut'],
@@ -121,7 +131,8 @@ const compassWords: Record<Lang, string[]> = {
   ur: ['شمال', 'شمال مشرق', 'مشرق', 'جنوب مشرق', 'جنوب', 'جنوب مغرب', 'مغرب', 'شمال مغرب'],
   bn: ['উত্তর', 'উত্তর পূর্ব', 'পূর্ব', 'দক্ষিণ পূর্ব', 'দক্ষিণ', 'দক্ষিণ পশ্চিম', 'পশ্চিম', 'উত্তর পশ্চিম'],
   tr: ['kuzey', 'kuzeydoğu', 'doğu', 'güneydoğu', 'güney', 'güneybatı', 'batı', 'kuzeybatı'],
-}
+  ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].compass])),
+} as Record<Lang, string[]>
 const compass = (deg: number, l: Lang) => compassWords[l][Math.round(deg / 45) % 8]
 
 /** The clock the way people write it there. English and Malay use 12 hours, Indonesian uses 24 hours. */
@@ -130,6 +141,10 @@ function clock(ms: number, tz: string, l: Lang): string {
   const mm = String(z.minute).padStart(2, '0')
   if (l === 'id') return `${String(z.hour).padStart(2, '0')}.${mm}`
   if (l === 'tr') return `${String(z.hour).padStart(2, '0')}:${mm}`
+  if (l in LOCALES) {
+    if (LOCALES[l as NewLang].clock === 'h24') return `${String(z.hour).padStart(2, '0')}:${mm}`
+    return `${z.hour % 12 === 0 ? 12 : z.hour % 12}:${mm} ${z.hour < 12 ? 'AM' : 'PM'}`
+  }
   const h12 = z.hour % 12 === 0 ? 12 : z.hour % 12
   if (l === 'en') return `${h12}:${mm} ${z.hour < 12 ? 'am' : 'pm'}`
   if (l === 'ar') return `${h12}:${mm} ${z.hour < 12 ? 'ص' : 'م'}`
@@ -138,9 +153,16 @@ function clock(ms: number, tz: string, l: Lang): string {
   return `${h12}:${mm} ${part}`
 }
 const isoDay = (ms: number, tz: string) => { const z = zoned(ms, tz); return `${z.year}-${String(z.month).padStart(2, '0')}-${String(z.day).padStart(2, '0')}` }
-const fmtDate = (ms: number, tz: string, l: Lang, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(LOCALE[l], { timeZone: tz, ...o }).format(ms)
+// The standard Sinhala month list names the poya days (Nov is "ඉල්"), not the calendar months people read, so Sinhala dates use these.
+const SI_MONTHS = ['ජනවාරි', 'පෙබරවාරි', 'මාර්තු', 'අප්රේල්', 'මැයි', 'ජූනි', 'ජූලි', 'අගෝස්තු', 'සැප්තැම්බර්', 'ඔක්තෝබර්', 'නොවැම්බර්', 'දෙසැම්බර්']
+const fmtDate = (ms: number, tz: string, l: Lang, o: Intl.DateTimeFormatOptions) => {
+  const f = new Intl.DateTimeFormat(LOCALE[l], { timeZone: tz, ...o })
+  if (l !== 'si' || !o.month) return f.format(ms)
+  const mi = Number(new Intl.DateTimeFormat('en-US', { timeZone: tz, month: 'numeric' }).format(ms)) - 1
+  return f.formatToParts(ms).map((p) => (p.type === 'month' ? SI_MONTHS[mi] : p.value)).join('')
+}
 const longDate = (ms: number, tz: string, l: Lang) => fmtDate(ms, tz, l, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-const FAST_UNITS: Record<Lang, [string, string]> = { en: [' h ', ' m'], ms: [' j ', ' m'], id: [' j ', ' m'], ar: [' س ', ' د'], ur: [' گھنٹے ', ' منٹ'], bn: [' ঘণ্টা ', ' মিনিট'], tr: [' sa ', ' dk'] }
+const FAST_UNITS = { en: [' h ', ' m'], ms: [' j ', ' m'], id: [' j ', ' m'], ar: [' س ', ' د'], ur: [' گھنٹے ', ' منٹ'], bn: [' ঘণ্টা ', ' মিনিট'], tr: [' sa ', ' dk'], ...Object.fromEntries(NEW_CODES.map((k) => [k, LOCALES[k].fastUnits])) } as Record<Lang, [string, string]>
 const fastLen = (a: number, b: number, l: Lang) => { const m = Math.round((b - a) / 60000); return `${Math.floor(m / 60)}${FAST_UNITS[l][0]}${m % 60}${FAST_UNITS[l][1]}` }
 
 const ENGLISH: Record<Prayer, string> = NAMES.arabic
@@ -150,21 +172,6 @@ const nameOf = (c: City2, k: Prayer, l: Lang) => (l === 'en' ? (c.naming.en[k] =
 const leadOf = (c: City2, k: Prayer, l: Lang) => c.naming[l][k]
 
 // ---- words. English first, Malay and Indonesian after. No colons or dashes in sentences (owner rule). ----------------------
-interface Words {
-  home: string; crumb: string; open: string; play: string; nasar: string
-  title(n: string): string; descPre(n: string, d: string): string; h1(n: string): string
-  stale: string; local(p: string): string; table(a: string): string; authority(a: string): string; none(note: string): string
-  faqH(n: string): string; howH: string; source: string; methodLbl: string; placeLbl: string; moreAbout: string; caution: string
-  ishaDeg(n: number): string; ishaMin(n: number): string; shafii: string; hanafi: string
-  daysH(n: string): string; showDays: string; dateCol: string; othersH: string; built: string
-  printH: string; printLead(n: string): string; btnMonthly: string; btnRamadan: string
-  follow: string; about: string; sources: string; privacy: string; allCities: string
-  ptTitle: string; ptDesc(n: number): string; ptH1: string; ptLead: string; ptFoot: string
-  prTitle(n: string): string; prDesc(n: string): string; prH1(n: string): string; prLead(n: string): string
-  prSource: string; prMonthly: string; prRamadan: string; prRamadanNote(d: string, y: number): string; prFastNote: string
-  prPrint: string; prApp: string; prAppNote: string; day: string; fast: string; back: string; printBadge: string
-  hubTitle: string; hubDesc(n: number): string; hubH1: string; hubLead: string; pick: string; cityBadge: string; theme: string
-}
 const W = {
   en: {
     home: 'Home', crumb: 'Prayer times', open: 'Open the app', play: 'Get it on Google Play', nasar: 'Built fisabilillah in Singapore by',
@@ -244,11 +251,10 @@ const W = {
     hubH1: 'Jadwal sholat untuk dicetak', hubLead: 'Jadwal bulanan dan Ramadan gratis yang bisa dicetak atau disimpan sebagai PDF. Setiap jadwal menyebut sumber waktunya. Silakan ikuti otoritas agama setempat Anda.',
     pick: 'Pilih kota Anda', cityBadge: 'Jadwal sholat', theme: 'Ganti antara terang dan gelap',
   },
-} as Record<Lang, Words>
+} as unknown as Record<Lang, Words>
+for (const k of NEW_CODES) W[k] = LOCALES[k].w
 
-// Local languages for the cities where the app's website already has that language (Arabic, Urdu, Bengali, Turkish).
-// Other local languages (Thai, Burmese, Nepali, Chinese, Japanese, Korean, Vietnamese, Khmer, Filipino, Hindi, Sinhala)
-// are not site languages yet, so those cities show English, Malay and Indonesian.
+// Arabic, Urdu, Bengali and Turkish. The other local languages (Thai to Sinhala) are in search-pages-locales.ts.
 Object.assign(W, {
   ar: {
     home: 'الرئيسية', crumb: 'مواقيت الصلاة', open: 'افتح التطبيق', play: 'حمّله من Google Play', nasar: 'صُنع ابتغاء وجه الله في سنغافورة بواسطة',
@@ -361,9 +367,11 @@ function faqFor(c: City2, l: Lang, T: Record<Prayer, string>, official: string, 
   const n = cityName(c, l)
   const f = leadOf(c, 'fajr', l), m = leadOf(c, 'maghrib', l)
   const all = prayers.map((k) => `${nameOf(c, k, l)} ${T[k]}`)
-  const AND: Record<Lang, string> = { en: ' and ', ms: ' dan ', id: ' dan ', ar: ' و', ur: ' اور ', bn: ' এবং ', tr: ' ve ' }
-  const allTxt = all.slice(0, -1).join(l === 'ar' ? '، ' : ', ') + AND[l] + all[all.length - 1]
+  const AND = { en: ' and ', ms: ' dan ', id: ' dan ', ar: ' و', ur: ' اور ', bn: ' এবং ', tr: ' ve ' } as Record<Lang, string>
+  const loc = l in LOCALES ? LOCALES[l as NewLang] : null
+  const allTxt = loc ? all.slice(0, -1).join(loc.listSep === '' ? '、' : ', ') + loc.list + all[all.length - 1] : all.slice(0, -1).join(l === 'ar' ? '، ' : ', ') + AND[l] + all[all.length - 1]
   const dir = compass(c.qibla, l)
+  if (loc) return loc.faq({ n, f, m, T, allTxt, methodName: c.methodName, fajr: c.fajr, ishaRule, asrName, official, qibla: c.qibla, dir })
   if (l === 'ms') return [
     [`Pukul berapa ${f} di ${n} hari ini?`, `${f} di ${n} hari ini pada ${T.fajr}. Syuruk pada ${T.sunrise}, maka waktu Subuh tamat ketika itu.`],
     [`Pukul berapa ${m} di ${n} hari ini?`, `${m} di ${n} hari ini pada ${T.maghrib}. Ini juga waktu berbuka puasa pada bulan Ramadan.`],
@@ -433,7 +441,7 @@ const AUTH2: [RegExp, Partial<Record<Lang, string>>][] = [
   [/^the UAE/, { ar: 'الهيئة العامة للشؤون الإسلامية والأوقاف في الإمارات' }],
   [/^Diyanet/, { tr: 'Diyanet, Türkiye Diyanet İşleri Başkanlığı' }],
 ]
-const NO_AUTH: Record<Lang, string> = { en: 'Most masjids in the region', ms: 'Kebanyakan masjid di rantau ini', id: 'Kebanyakan masjid di kawasan ini', ar: 'أغلب المساجد في المنطقة', ur: 'خطے کی زیادہ تر مساجد', bn: 'এই অঞ্চলের বেশির ভাগ মসজিদ', tr: 'Bölgedeki çoğu cami' }
+const NO_AUTH = { en: 'Most masjids in the region', ms: 'Kebanyakan masjid di rantau ini', id: 'Kebanyakan masjid di kawasan ini', ar: 'أغلب المساجد في المنطقة', ur: 'خطے کی زیادہ تر مساجد', bn: 'এই অঞ্চলের বেশির ভাগ মসজিদ', tr: 'Bölgedeki çoğu cami', ...NO_AUTH_NEW } as Record<Lang, string>
 const authName = (c: City2, l: Lang) => {
   if (l === 'en') return c.authority || NO_AUTH.en
   if (!c.authority) return NO_AUTH[l]
@@ -469,6 +477,7 @@ const CSS = `
   .btn.o{background:var(--card);color:var(--text);border:1px solid var(--line)}
   .btn.sm{padding:8px 14px;min-height:40px;font-size:.9rem;margin:0}
   @media(max-width:520px){.tr .btn.sm{display:none}}
+  :lang(th),:lang(my),:lang(km),:lang(si),:lang(hi),:lang(ne){letter-spacing:0!important;text-transform:none}
   h1{font-size:clamp(1.9rem,5.5vw,2.8rem);font-weight:800;margin:30px 0 6px;letter-spacing:-.01em;line-height:1.15}
   h2{font-size:1.35rem;font-weight:800;margin:36px 0 10px}
   .eyebrow{display:inline-block;font-size:.8rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:26px}
@@ -515,7 +524,7 @@ function shell(o: { title: string; desc: string; path: string; depth: number; bo
   const up = '../'.repeat(o.depth)
   const alts = o.alts
   return `<!doctype html>
-<html lang="${l}"${RTL.includes(l) ? ' dir="rtl"' : ''}>
+<html lang="${hreflang(l)}"${RTL.includes(l) ? ' dir="rtl"' : ''}>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -524,7 +533,7 @@ function shell(o: { title: string; desc: string; path: string; depth: number; bo
 <title>${esc(o.title)}</title>
 <meta name="description" content="${esc(o.desc)}" />
 <link rel="canonical" href="${ORIGIN}/${o.path}" />
-${alts ? ALL_LANGS.filter((x) => alts[x]).map((x) => `<link rel="alternate" hreflang="${x}" href="${ORIGIN}/${alts[x]}" />`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${ORIGIN}/${alts.en}" />` : ''}
+${alts ? ALL_LANGS.filter((x) => alts[x]).map((x) => `<link rel="alternate" hreflang="${hreflang(x)}" href="${ORIGIN}/${alts[x]}" />`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${ORIGIN}/${alts.en}" />` : ''}
 <link rel="icon" type="image/png" sizes="32x32" href="${up}img/favicon-32.png" />
 <link rel="apple-touch-icon" href="${up}img/apple-touch-icon.png" />
 <meta property="og:type" content="website" />
@@ -540,7 +549,7 @@ ${o.ld.map((j) => `<script type="application/ld+json">${JSON.stringify(j).replac
 </head>
 <body>
 <header class="top"><div class="wrap"><a class="brand" href="${BASE}${HOME[l]}"><img src="${up}img/icon-96.webp" alt="" width="34" height="34" /><span class="bt">Prayer Times Asia</span></a>
-<div class="tr">${alts ? `<nav class="langs" aria-label="Language">${ALL_LANGS.filter((x) => alts[x]).map((x) => `<a href="${BASE}${alts[x]}" hreflang="${x}" lang="${x}"${x === l ? ' aria-current="page"' : ''}>${NATIVE[x]}</a>`).join('')}</nav>` : ''}
+<div class="tr">${alts ? `<nav class="langs" aria-label="Language">${ALL_LANGS.filter((x) => alts[x]).map((x) => `<a href="${BASE}${alts[x]}" hreflang="${hreflang(x)}" lang="${hreflang(x)}"${x === l ? ' aria-current="page"' : ''}>${NATIVE[x]}</a>`).join('')}</nav>` : ''}
 <button class="mode" type="button" hidden aria-label="${esc(w.theme)}"></button><a class="btn sm" href="${BASE}app/">${esc(w.open)}</a></div></div></header>
 <main class="wrap">
 <div class="print-only printbrand"><img src="${up}img/icon-96.webp" alt="" width="28" height="28" /> Prayer Times Asia · prayertimes.asia</div>
@@ -561,7 +570,7 @@ const orgLd = {
   founder: [{ '@type': 'Person', name: 'Ustaz Aarif Raziff' }, { '@type': 'Person', name: 'Ustazah Nasibah Hamzah' }],
   sameAs: [PLAY],
 }
-const siteLd = (l: Lang) => ({ '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${ORIGIN}/#site`, url: `${ORIGIN}/`, name: 'Prayer Times Asia', publisher: { '@id': `${ORIGIN}/#org` }, inLanguage: l })
+const siteLd = (l: Lang) => ({ '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${ORIGIN}/#site`, url: `${ORIGIN}/`, name: 'Prayer Times Asia', publisher: { '@id': `${ORIGIN}/#org` }, inLanguage: hreflang(l) })
 
 // ---- data per city ------------------------------------------------------------------------------------------------------
 interface Row { d: string; t: Record<Prayer, string> }
@@ -585,7 +594,7 @@ const dayScript = (c: City2, l: Lang, rows: Row[]) => `<script type="application
   if(i<0){document.querySelectorAll('[data-stale]').forEach(function(e){e.hidden=false});return}
   var r=rows[i];
   document.querySelectorAll('[data-t]').forEach(function(e){e.textContent=r.t[e.getAttribute('data-t')]});
-  document.querySelectorAll('[data-date]').forEach(function(e){e.textContent=new Intl.DateTimeFormat(${JSON.stringify(LOCALE[l])},{timeZone:${JSON.stringify(c.tz)},weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date())});
+  document.querySelectorAll('[data-date]').forEach(function(e){e.textContent=(function(){var f=new Intl.DateTimeFormat(${JSON.stringify(LOCALE[l])},{timeZone:${JSON.stringify(c.tz)},weekday:'long',day:'numeric',month:'long',year:'numeric'}),n=new Date();${l === 'si' ? `var M=${JSON.stringify(SI_MONTHS)},mi=Number(new Intl.DateTimeFormat('en-US',{timeZone:${JSON.stringify(c.tz)},month:'numeric'}).format(n))-1;return f.formatToParts(n).map(function(p){return p.type==='month'?M[mi]:p.value}).join('')` : 'return f.format(n)'}})()});
   document.querySelectorAll('tbody tr[data-d]').forEach(function(e){e.className=e.getAttribute('data-d')===d?'now':''});
 }catch(e){}})();
 </script>`
@@ -810,7 +819,7 @@ Sitemap: ${ORIGIN}/sitemap.xml
 const has = (p: string) => existsSync(join(siteDir, p))
 const homeLangs = ['', 'ms/', 'id/', 'ar/', 'ur/', 'bn/', 'tr/', 'fr/'].filter((p) => has(p === '' ? 'index.html' : `${p}index.html`))
 const homeAlt = homeLangs.map((h) => `<xhtml:link rel="alternate" hreflang="${h === '' ? 'en' : h.replace('/', '')}" href="${ORIGIN}/${h}"/>`).join('')
-const altOf = (langs: Lang[], f: (l: Lang) => string) => langs.map((l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${ORIGIN}/${f(l)}"/>`).join('')
+const altOf = (langs: Lang[], f: (l: Lang) => string) => langs.map((l) => `<xhtml:link rel="alternate" hreflang="${hreflang(l)}" href="${ORIGIN}/${f(l)}"/>`).join('')
 const plain = ['about.html', 'sources.html', 'whatsnew.html', 'credits.html', 'ms/credits.html', 'id/credits.html', 'press.html', 'ramadan.html', 'privacy.html', 'terms.html', 'join.html', 'masjid.html', 'app/']
   .filter((p) => (p.endsWith('/') ? has(`${p}index.html`) : has(p)))
 const entries: string[] = [
@@ -828,4 +837,4 @@ write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 ${entries.join('\n')}
 </urlset>
 `)
-console.log(`Search pages built: ${cities.length} cities in English, Malay, Indonesian and local languages, printable timetables, about, sitemap with ${entries.length} addresses`)
+console.log(`Search pages built: ${cities.length} cities in English and local languages, printable timetables, about, sitemap with ${entries.length} addresses`)
