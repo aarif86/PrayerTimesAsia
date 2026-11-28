@@ -1074,7 +1074,7 @@ final class AppModel {
                     let at = time.addingTimeInterval(Double(-early) * 60)
                     let awayWords = away && prefs.awayReminder && prayer != .sunrise
                     alerts.append(.init(id: id + "-early", title: title,
-                                        body: awayWords ? W("notify.nameAtAway", ["name": name, "time": formatted(time)]) : "\(name) at \(formatted(time))",
+                                        body: W(awayWords ? "notify.nameAtAway" : "notify.nameAt", ["name": name, "time": formatted(time)]),
                                         fireDate: at, silent: isSilent(at, prayer: prayer)))
                 }
                 guard onTime else { continue }

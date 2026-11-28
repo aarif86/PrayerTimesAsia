@@ -108,3 +108,33 @@ class AlarmPlanTest {
         assertTrue(quiet.all { it.sound == AlarmScheduler.Sound.STANDARD })
     }
 }
+
+/** Every alert follows the app words (English, Malay, Indonesian), never the prayer names setting. */
+class AlarmWordsTest {
+    private val place = DemoConfig().pasirRis
+    private val now = DemoConfig.night
+    private val english = listOf("ends in", "in 1 hour", "Time for", "Wake up", "Tick it", "is open until", "has ended", "began at", " at ", "Imsak in", "break your fast")
+
+    private fun plan(locale: Locale): List<AlarmScheduler.Alert> {
+        val prefs = Preferences(useGPS = false, manualPlace = place, home = place, notificationsEnabled = true,
+            reminderMinutesBefore = 60, wakeUp = WakeUpTiming.SUNRISE_MINUS_30, trackerEnabled = true, windowNudge = true,
+            namingOverride = com.prayertimesasia.core.NamingStyle.MALAY)
+        return AlarmScheduler.plan(Resolver(prefs, locale = locale), now).filter { it.kind != AlarmScheduler.Kind.REFRESH }
+    }
+
+    @Test fun malayAndIndonesianAlertsHaveNoEnglishLines() {
+        for (locale in listOf(Locale("ms", "MY"), Locale("in", "ID"))) {
+            val alerts = plan(locale)
+            assertTrue(alerts.isNotEmpty())
+            for (a in alerts) for (text in listOf(a.title, a.body)) {
+                assertTrue("${locale.language}: $text", english.none { text.contains(it) })
+            }
+        }
+    }
+
+    @Test fun englishAlertsStayEnglishWithMalayPrayerNames() {
+        val alerts = plan(Locale("en", "SG"))
+        assertTrue(alerts.any { it.title.contains("in 1 hour") })
+        assertTrue(alerts.none { it.title.contains("dalam") || it.body.contains("telah masuk") })
+    }
+}
