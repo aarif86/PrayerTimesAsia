@@ -150,6 +150,13 @@ struct TodayView: View {
         })
     }
 
+    /// Little surprise: in Ramadan, for 20 minutes after Maghrib, the dial glows warm (off with the Settings switch).
+    private func iftarWarm(current: (prayer: Prayer, time: Date)?, now: Date) -> Bool {
+        guard model.prefs.littleSurprises, let c = current, c.prayer == .maghrib,
+              now >= c.time, now.timeIntervalSince(c.time) < 20 * 60 else { return false }
+        return model.season(at: now).phase == .ramadan
+    }
+
     @ViewBuilder
     private func headerDial(now: Date, day: PrayerDay, current: (prayer: Prayer, time: Date)?,
                             next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
@@ -161,6 +168,7 @@ struct TodayView: View {
                     label: PrayerCountdown(now: now, next: next, model: model).label,
                     isNext: lead.isNext)
                 .frame(width: size, height: size)
+                .iftarGlow(iftarWarm(current: current, now: now))
         }
     }
 
@@ -563,6 +571,7 @@ struct TodayView: View {
                             label: PrayerCountdown(now: now, next: next, model: model).label,
                             isNext: lead.isNext)
                         .frame(width: 148, height: 148)
+                        .iftarGlow(iftarWarm(current: current, now: now))
                         .frame(maxWidth: .infinity)
                 }
                 VStack(spacing: 8) {
@@ -2665,5 +2674,12 @@ private struct V12BlessedBand: View {
         .opacity(time <= now ? 0.7 : 1)
         .transition(.opacity.combined(with: .move(edge: .top)))
         .accessibilityElement(children: .combine)
+    }
+}
+
+private extension View {
+    /// The warm Iftar glow around the dial. Still, so it needs no reduce-motion handling.
+    func iftarGlow(_ on: Bool) -> some View {
+        self.saturation(on ? 1.3 : 1).shadow(color: Color.orange.opacity(on ? 0.5 : 0), radius: 18)
     }
 }

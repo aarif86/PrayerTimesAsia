@@ -105,6 +105,13 @@ class TodayFrame(
     val shownNextFajr: Instant,
 ) {
     val isToday get() = offset == 0
+    /** Little surprise: in Ramadan, for 20 minutes after Maghrib, the dial glows warm (off with the Settings switch). */
+    val iftarWarm: Boolean get() {
+        val c = current ?: return false
+        return state.prefs.littleSurprises && isToday && c.first == Prayer.MAGHRIB &&
+            java.time.Duration.between(c.second, now).toMinutes() < 20 && !now.isBefore(c.second) &&
+            state.resolver.season(now).phase == com.prayertimesasia.core.Season.Phase.RAMADAN
+    }
     /** Marked NOW in lists and bands: null between Syuruk and Zohor, when no prayer is open. */
     val currentPrayer get() = if (isToday) PrayerLead.open(current)?.first else null
     /** Leads the dial and status line: the open prayer, or from Syuruk the next one. */
@@ -274,7 +281,7 @@ private fun ClassicPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
             val nxt = f.next
             if (cur != null && nxt != null) {
                 DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.prayer, cur.time), cur.prayer,
-                    Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 172.dp, isNext = cur.isNext)
+                    Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 172.dp, isNext = cur.isNext, warm = f.iftarWarm)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 PlaceChip(f.state, openPlaces)
@@ -300,7 +307,7 @@ private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -
             if (cur != null && nxt != null) {
                 DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.prayer, cur.time), cur.prayer,
                     Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 148.dp,
-                    Modifier.align(Alignment.Center), isNext = cur.isNext)
+                    Modifier.align(Alignment.Center), isNext = cur.isNext, warm = f.iftarWarm)
             }
             // Each button has a 48 dp touch area, so they stack with no extra gap.
             Column(Modifier.align(Alignment.TopEnd), verticalArrangement = Arrangement.spacedBy(0.dp),
