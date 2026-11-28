@@ -155,6 +155,16 @@ export const METHODS = {
     offsets: { dhuhr: 5, maghrib: 2 }, matchesOfficialTable: false,
     note: "The method of Morocco's Ministry of Habous and Islamic Affairs.",
   }),
+  icbih: M({
+    id: 'icbih', name: 'Islamic Community · Bosnia and Herzegovina', shortName: 'IC BiH', fajrAngle: 18, ishaAngle: 16,
+    offsets: { sunrise: -7.875, dhuhr: 0.625, asr: 0.25, maghrib: 6.25, isha: 0.375 }, matchesOfficialTable: false,
+    note: "The Islamic Community of Bosnia and Herzegovina and its Takvim method (Fajr 18°, Isha 16°, Asr at one shadow length), with its minutes of caution at sunrise and sunset, fitted on its published times for Sarajevo. Never earlier than the published time.",
+  }),
+  kmsh: M({
+    id: 'kmsh', name: 'KMSH · Albania', shortName: 'KMSH', fajrAngle: 18, ishaAngle: 17,
+    offsets: { sunrise: -7.75, dhuhr: 4.75, asr: 4.125, maghrib: 7.625, isha: 1.125 }, matchesOfficialTable: false,
+    note: "The method of the Muslim Community of Albania, KMSH (Fajr 18°, Isha 17°, Asr at one shadow length), with minutes fitted on its 2026 Tirana calendar. Never earlier than the published time.",
+  }),
   jordan: M({
     id: 'jordan', name: 'Jordan', shortName: 'Jordan', fajrAngle: 18, ishaAngle: 18,
     offsets: {}, matchesOfficialTable: false,
@@ -166,7 +176,7 @@ export const ALL_METHODS: CalculationMethod[] = [
   METHODS.muis, METHODS.jakim, METHODS.kemenag, METHODS.sea, METHODS.mwl, METHODS.karachi,
   METHODS.ummalqura, METHODS.dubai, METHODS.qatar, METHODS.kuwait, METHODS.diyanet, METHODS.tehran, METHODS.egyptian,
   METHODS.isna, METHODS.moonsighting, METHODS.uoif, METHODS.russia, METHODS.algeria, METHODS.tunisia, METHODS.morocco,
-  METHODS.jordan,
+  METHODS.jordan, METHODS.icbih, METHODS.kmsh,
 ]
 
 export function methodWithId(id: string | null | undefined): CalculationMethod | undefined {

@@ -1252,6 +1252,8 @@
     <string name="method_note_tunisia" formatted="false">The method of Tunisia\'s Ministry of Religious Affairs.</string>
     <string name="method_note_morocco" formatted="false">The method of Morocco\'s Ministry of Habous and Islamic Affairs.</string>
     <string name="method_note_jordan" formatted="false">The method of Jordan\'s Ministry of Awqaf and Islamic Affairs. Also used in Palestine.</string>
+    <string name="method_note_icbih" formatted="false">The Islamic Community of Bosnia and Herzegovina and its Takvim method (Fajr 18°, Isha 16°, Asr at one shadow length), with its minutes of caution at sunrise and sunset, fitted on its published times for Sarajevo. Never earlier than the published time.</string>
+    <string name="method_note_kmsh" formatted="false">The method of the Muslim Community of Albania, KMSH (Fajr 18°, Isha 17°, Asr at one shadow length), with minutes fitted on its 2026 Tirana calendar. Never earlier than the published time.</string>
     <string name="menu_appearance" formatted="false">Appearance</string>
     <string name="menu_auto" formatted="false">Auto</string>
     <string name="menu_light" formatted="false">Light</string>

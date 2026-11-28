@@ -84,8 +84,8 @@ A nearby masjid's own timetable (data/mosques.json) still comes before all of th
 | Italy | Standard method | Muslim World League | Shafi'i | angle |  |
 | Malta | Standard method | Muslim World League | Shafi'i | method's own |  |
 | Greece | Standard method | Muslim World League | Shafi'i | angle |  |
-| Bosnia and Herzegovina | Standard method | Muslim World League | Hanafi | angle | The Islamic Community here publishes its own timetable, which the app cannot read yet, so it uses the Muslim World League method. |
-| Albania | Standard method | Muslim World League | Hanafi | angle |  |
+| Bosnia and Herzegovina | the Islamic Community of Bosnia and Herzegovina (Takvim) (authority's own method) | Islamic Community of Bosnia and Herzegovina | Shafi'i | angle |  |
+| Albania | the Muslim Community of Albania, KMSH (authority's own method) | KMSH Albania | Shafi'i | angle |  |
 | Kosovo | Standard method | Muslim World League | Hanafi | angle | The Islamic Community here publishes its own timetable, which the app cannot read yet, so it uses the Muslim World League method. |
 | North Macedonia | Standard method | Muslim World League | Hanafi | angle |  |
 | Montenegro | Standard method | Muslim World League | Hanafi | angle |  |

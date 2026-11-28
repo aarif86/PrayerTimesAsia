@@ -1252,6 +1252,8 @@
     <string name="method_note_tunisia" formatted="false">Kaedah Kementerian Hal Ehwal Agama Tunisia.</string>
     <string name="method_note_morocco" formatted="false">Kaedah Kementerian Habous dan Hal Ehwal Islam Maghribi.</string>
     <string name="method_note_jordan" formatted="false">Kaedah Kementerian Wakaf dan Hal Ehwal Islam Jordan. Turut digunakan di Palestin.</string>
+    <string name="method_note_icbih" formatted="false">Kaedah Takvim Majlis Islam Bosnia dan Herzegovina (Subuh 18°, Isyak 16°, Asar pada satu panjang bayang), dengan minit ihtiyat pada waktu syuruk dan maghrib, dipadankan pada waktu yang diterbitkannya untuk Sarajevo. Tidak pernah lebih awal daripada waktu yang diterbitkan.</string>
+    <string name="method_note_kmsh" formatted="false">Kaedah Komuniti Islam Albania, KMSH (Subuh 18°, Isyak 17°, Asar pada satu panjang bayang), dengan minit yang dipadankan pada kalendar Tirana 2026. Tidak pernah lebih awal daripada waktu yang diterbitkan.</string>
     <string name="menu_appearance" formatted="false">Paparan</string>
     <string name="menu_auto" formatted="false">Auto</string>
     <string name="menu_light" formatted="false">Cerah</string>

@@ -1296,11 +1296,10 @@
   {
    "code": "BA",
    "name": "Bosnia and Herzegovina",
-   "method": "mwl",
-   "asr": "hanafi",
+   "method": "icbih",
+   "asr": "standard",
    "naming": "international",
-   "source": "standard",
-   "note": "The Islamic Community here publishes its own timetable, which the app cannot read yet, so it uses the Muslim World League method.",
+   "source": "authority",
    "highLatitude": "angle",
    "zones": [
     "Europe/Sarajevo"
@@ -1318,15 +1317,17 @@
      43.3438,
      17.8078
     ]
-   ]
+   ],
+   "authority": "the Islamic Community of Bosnia and Herzegovina (Takvim)",
+   "authorityUrl": "https://islamskazajednica.ba/"
   },
   {
    "code": "AL",
    "name": "Albania",
-   "method": "mwl",
-   "asr": "hanafi",
+   "method": "kmsh",
+   "asr": "standard",
    "naming": "international",
-   "source": "standard",
+   "source": "authority",
    "highLatitude": "angle",
    "zones": [
     "Europe/Tirane"
@@ -1338,7 +1339,9 @@
      41.3275,
      19.8187
     ]
-   ]
+   ],
+   "authority": "the Muslim Community of Albania, KMSH",
+   "authorityUrl": "https://www.kmsh.al/"
   },
   {
    "code": "XK",

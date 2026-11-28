@@ -20,6 +20,33 @@ describe('Countries worldwide', () => {
     expect(profileFor('SG')).toMatchObject({ methodID: 'muis', source: 'table' })
   })
 
+  it('follows the Balkan authorities with their own methods', () => {
+    expect(profileFor('BA')).toMatchObject({ methodID: 'icbih', source: 'authority', asr: 'standard' })
+    expect(profileFor('AL')).toMatchObject({ methodID: 'kmsh', source: 'authority', asr: 'standard' })
+  })
+
+  it('matches the published Takvim for Sarajevo and the KMSH calendar for Tirana', () => {
+    // vaktija.ba (Islamic Community) Sarajevo 18 July 2026 and the KMSH 2026 calendar, Tirana 1 January 2026.
+    const minutesIn = (ms: number, tz: string) => {
+      const p = new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(ms))
+      return Number(p.find((x) => x.type === 'hour')!.value) * 60 + Number(p.find((x) => x.type === 'minute')!.value)
+    }
+    const check = (day: ReturnType<typeof compute>, tz: string, published: string[]) => {
+      const keys = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
+      keys.forEach((k, i) => {
+        const [h, m] = published[i].split(':').map(Number)
+        const diff = minutesIn(day.times[k], tz) - (h * 60 + m)
+        expect(Math.abs(diff), k).toBeLessThanOrEqual(3)
+        // Never earlier than the published time (sunrise never later).
+        expect(k === 'sunrise' ? diff <= 0 : diff >= 0, k).toBe(true)
+      })
+    }
+    check(compute(2026, 7, 18, { latitude: 43.8563, longitude: 18.4131 }, METHODS.icbih, 'standard'), 'Europe/Sarajevo',
+      ['3:09', '5:13', '12:53', '16:56', '20:31', '22:17'])
+    check(compute(2026, 1, 1, { latitude: 41.3275, longitude: 19.8187 }, METHODS.kmsh, 'standard'), 'Europe/Tirane',
+      ['5:27', '7:00', '11:49', '14:08', '16:28', '17:55'])
+  })
+
   it('uses a northern method in the UK and says why', () => {
     const uk = profileFor('GB')!
     expect(uk).toMatchObject({ methodID: 'moonsighting', source: 'standard' })

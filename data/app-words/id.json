@@ -1250,6 +1250,8 @@
   "method.note.tunisia": "Metode Kementerian Urusan Agama Tunisia.",
   "method.note.morocco": "Metode Kementerian Wakaf dan Urusan Islam Maroko.",
   "method.note.jordan": "Metode Kementerian Wakaf dan Urusan Islam Yordania. Juga dipakai di Palestina.",
+  "method.note.icbih": "Metode Takvim Komunitas Islam Bosnia dan Herzegovina (Subuh 18°, Isya 16°, Asar pada satu panjang bayangan), dengan menit kehati-hatian saat terbit dan terbenam matahari, disesuaikan dengan waktu yang diterbitkannya untuk Sarajevo. Tidak pernah lebih awal dari waktu yang diterbitkan.",
+  "method.note.kmsh": "Metode Komunitas Muslim Albania, KMSH (Subuh 18°, Isya 17°, Asar pada satu panjang bayangan), dengan menit yang disesuaikan pada kalender Tirana 2026. Tidak pernah lebih awal dari waktu yang diterbitkan.",
   "menu.appearance": "Tampilan",
   "menu.auto": "Otomatis",
   "menu.light": "Terang",

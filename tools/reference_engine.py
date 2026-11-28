@@ -60,6 +60,8 @@ METHODS = {
     'muis': dict(fajr=20, isha=18, offsets=dict(fajr=0.625, sunrise=-0.375, dhuhr=1.5, asr=0.5, maghrib=0.875, isha=0.5)),
     'kemenag': dict(fajr=20, isha=18, offsets=dict(fajr=2.25, sunrise=-4.5, dhuhr=3.25, asr=2.5, maghrib=3.25, isha=2.5)),
     'jakim': dict(fajr=18, isha=18, offsets=dict(fajr=2.375, sunrise=-1.375, dhuhr=3, asr=2.25, maghrib=2.25, isha=2.375)),
+    'icbih': dict(fajr=18, isha=16, offsets=dict(sunrise=-7.875, dhuhr=0.625, asr=0.25, maghrib=6.25, isha=0.375)),
+    'kmsh': dict(fajr=18, isha=17, offsets=dict(sunrise=-7.75, dhuhr=4.75, asr=4.125, maghrib=7.625, isha=1.125)),
 }
 
 def final_minutes(date, lat, lng, tz, method):

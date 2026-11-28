@@ -160,9 +160,21 @@ data class CalculationMethod(
             "jordan", "Jordan", "Jordan", 18.0, 18.0, null, null, null, emptyMap(), false,
             "The method of Jordan's Ministry of Awqaf and Islamic Affairs. Also used in Palestine.")
 
+        val IC_BIH = CalculationMethod(
+            "icbih", "Islamic Community · Bosnia and Herzegovina", "IC BiH", 18.0, 16.0, null, null, null,
+            mapOf(Prayer.SUNRISE to -7.875, Prayer.DHUHR to 0.625, Prayer.ASR to 0.25, Prayer.MAGHRIB to 6.25,
+                Prayer.ISHA to 0.375), false,
+            "The Islamic Community of Bosnia and Herzegovina and its Takvim method (Fajr 18°, Isha 16°, Asr at one shadow length), with its minutes of caution at sunrise and sunset, fitted on its published times for Sarajevo. Never earlier than the published time.")
+
+        val KMSH = CalculationMethod(
+            "kmsh", "KMSH · Albania", "KMSH", 18.0, 17.0, null, null, null,
+            mapOf(Prayer.SUNRISE to -7.75, Prayer.DHUHR to 4.75, Prayer.ASR to 4.125, Prayer.MAGHRIB to 7.625,
+                Prayer.ISHA to 1.125), false,
+            "The method of the Muslim Community of Albania, KMSH (Fajr 18°, Isha 17°, Asr at one shadow length), with minutes fitted on its 2026 Tirana calendar. Never earlier than the published time.")
+
         val all: List<CalculationMethod> = listOf(
             MUIS, JAKIM, KEMENAG, SOUTHEAST_ASIA, MWL, KARACHI, UMM_AL_QURA, DUBAI, QATAR, KUWAIT, TURKEY, TEHRAN, EGYPTIAN,
-            ISNA, MOONSIGHTING, UOIF, RUSSIA, ALGERIA, TUNISIA, MOROCCO, JORDAN,
+            ISNA, MOONSIGHTING, UOIF, RUSSIA, ALGERIA, TUNISIA, MOROCCO, JORDAN, IC_BIH, KMSH,
         )
 
         fun withId(id: String?): CalculationMethod? = all.firstOrNull { it.id == id }

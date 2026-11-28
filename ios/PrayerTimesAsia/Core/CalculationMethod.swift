@@ -196,10 +196,22 @@ extension CalculationMethod {
         offsets: [:], matchesOfficialTable: false,
         note: W("method.note.jordan"))
 
+    static let icBih = CalculationMethod(
+        id: "icbih", name: "Islamic Community · Bosnia and Herzegovina", shortName: "IC BiH",
+        fajrAngle: 18, ishaAngle: 16, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.sunrise: -7.875, .dhuhr: 0.625, .asr: 0.25, .maghrib: 6.25, .isha: 0.375], matchesOfficialTable: false,
+        note: W("method.note.icbih"))
+
+    static let kmsh = CalculationMethod(
+        id: "kmsh", name: "KMSH · Albania", shortName: "KMSH",
+        fajrAngle: 18, ishaAngle: 17, ishaInterval: nil, ramadanIshaInterval: nil, maghribAngle: nil,
+        offsets: [.sunrise: -7.75, .dhuhr: 4.75, .asr: 4.125, .maghrib: 7.625, .isha: 1.125], matchesOfficialTable: false,
+        note: W("method.note.kmsh"))
+
     static let all: [CalculationMethod] = [
         .muis, .jakim, .kemenag, .southeastAsia, .mwl, .karachi,
         .ummAlQura, .dubai, .qatar, .kuwait, .turkey, .tehran, .egyptian,
-        .isna, .moonsighting, .uoif, .russia, .algeria, .tunisia, .morocco, .jordan,
+        .isna, .moonsighting, .uoif, .russia, .algeria, .tunisia, .morocco, .jordan, .icBih, .kmsh,
     ]
 
     static func with(id: String) -> CalculationMethod? { all.first { $0.id == id } }
