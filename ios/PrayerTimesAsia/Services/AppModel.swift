@@ -195,6 +195,8 @@ final class AppModel {
             p.ishaAlarm = .atStart
             p.alarmSound = .chime
         }
+        // Screenshots of Alerts and alarms: Subuh kept quiet so the list shows Azan and Notification side by side.
+        if args.contains("-quiet-subuh") { p.quietPrayers = [.fajr] }
         if args.contains("-demo-visitor") {
             // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
             p.home = Place(name: "Sydney", region: nil, countryCode: "AU", countryName: "Australia",

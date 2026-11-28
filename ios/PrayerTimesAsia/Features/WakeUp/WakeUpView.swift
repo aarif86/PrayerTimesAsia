@@ -492,6 +492,9 @@ private struct EachPrayerSection: View {
         } footer: {
             Text(W("phone.alerts.pickOff"))
         }
+        .onAppear {
+            if ProcessInfo.processInfo.arguments.contains("-alerts-sheet") { sheetPrayer = .asr }
+        }
         .sheet(item: $sheetPrayer) { prayer in
             PrayerChoiceSheet(prayer: prayer) { new in
                 let was = model.prefs.alertMode(prayer)
