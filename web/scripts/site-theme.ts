@@ -30,6 +30,7 @@ export const CSS = `
   :lang(th),:lang(my),:lang(km),:lang(si),:lang(hi),:lang(ne){letter-spacing:0!important;text-transform:none}
   h1{font-size:clamp(1.9rem,5.5vw,2.8rem);font-weight:800;margin:30px 0 6px;letter-spacing:-.01em;line-height:1.15}
   h2{font-size:1.35rem;font-weight:800;margin:36px 0 10px}
+  .srcbadge{margin:8px 0;font-size:.9rem}.srcbadge span{color:var(--muted)}.srcbadge b{display:inline-block;border:1px solid var(--gold);border-radius:99px;padding:2px 12px;color:var(--gold);margin-left:6px}
   .eyebrow{display:inline-block;font-size:.8rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:26px}
   .date{color:var(--muted);margin:0 0 14px}.lead{color:var(--muted);font-size:1.08rem}
   .times{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:18px 0 6px;padding:0;list-style:none}
