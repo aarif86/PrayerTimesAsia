@@ -241,7 +241,7 @@ export function App() {
       {sheet?.kind === 'move-in' && <MoveInSheet code={sheet.code} />}
       {/* New users see the quick guide once, right after choosing their place. */}
       {!s.prefs.guideShown && !s.prefs.allSetShown && !sheet && !s.pendingMasjid && s.activePlace && <AllSetCard now={now} />}
-      {(sheet?.kind === 'guide' || (!s.prefs.guideShown && (s.prefs.allSetShown || !s.activePlace) && !sheet && !s.pendingMasjid)) && <Guide onClose={closeSheet} />}
+      {(sheet?.kind === 'guide' || (!s.prefs.guideShown && s.prefs.allSetShown && !sheet && !s.pendingMasjid)) && <Guide onClose={closeSheet} />}
     </>
   )
 }
