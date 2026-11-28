@@ -761,7 +761,7 @@
     <string name="alerts_title" formatted="false">Pemberitahuan dan alarm</string>
     <string name="alerts_chipNext" formatted="false">Pemberitahuan dan alarm, alarm berikutnya pukul {time}</string>
     <string name="alerts_modeOff" formatted="false">Mati</string>
-    <string name="alerts_modeNotify" formatted="false">Beri tahu</string>
+    <string name="alerts_modeNotify" formatted="false">Notifikasi</string>
     <string name="alerts_modeAlarm" formatted="false">Alarm</string>
     <string name="alerts_nowOff" formatted="false">{name} dimatikan</string>
     <string name="alerts_nowNotify" formatted="false">Pemberitahuan {name} diaktifkan</string>
@@ -777,7 +777,7 @@
     <string name="alerts_fridayAlarm" formatted="false">{when}, alarm</string>
     <string name="alerts_fridayNotify" formatted="false">{when}, pemberitahuan</string>
     <string name="alerts_helpOff" formatted="false">Tanpa pemberitahuan untuk salat ini</string>
-    <string name="alerts_helpNotify" formatted="false">Pemberitahuan dengan suara. Senyap saat ponsel Anda dalam mode senyap atau Fokus.</string>
+    <string name="alerts_helpNotify" formatted="false">Pemberitahuan senyap di layar Anda. Mudah terlewat jika ponsel dalam mode senyap. Cocok sebagai pengingat lembut.</string>
     <string name="alerts_helpAlarm" formatted="false">Berbunyi sampai Anda mematikannya, meski dalam mode senyap. Tunda 5 menit.</string>
     <string name="alerts_helpAlarmFajr" formatted="false">Tetap berbunyi dalam mode senyap, setiap pagi. Ikut bergeser dengan {name} di mana pun Anda berada. Tunda 5 menit.</string>
     <string name="alerts_needsInstall" formatted="false">Tambahkan aplikasi ke Layar Utama untuk menerima pemberitahuan</string>
@@ -1440,7 +1440,7 @@
     <string name="phone_alerts_silentFocus" formatted="false">Saat senyap atau dalam Fokus, hanya alarm yang berbunyi</string>
     <string name="phone_alerts_sampleSoon" formatted="false">Kami mengirim peringatan contoh dalam beberapa detik, dengan cara yang sama seperti peringatan sungguhan Anda. Kunci layar Anda untuk melihat tampilannya.</string>
     <string name="phone_alerts_noFullAzan" formatted="false">Notifikasi iPhone hanya dapat memutar suara pendek, hingga 30 detik, jadi azan penuh tidak bisa di sini. Untuk kumandang panjang, gunakan Alarm.</string>
-    <string name="phone_alerts_pickOff" formatted="false">Pilih Mati, Notifikasi, atau Alarm. Ketuk Ubah untuk memilih waktu tepat. Notifikasi adalah pemberitahuan, hening saat ponsel Anda senyap atau dalam Fokus. Alarm berbunyi sampai Anda menghentikannya, bahkan saat senyap.</string>
+    <string name="phone_alerts_pickOff" formatted="false">Ketuk satu salat untuk memilih Azan, Notifikasi, Alarm, atau Nonaktif. Ketuk Ubah untuk memilih waktu tepat. Notifikasi hening saat ponsel Anda senyap atau dalam Fokus. Alarm berbunyi sampai Anda menghentikannya, bahkan saat senyap.</string>
     <string name="phone_alerts_changeTime" formatted="false">Ubah waktu</string>
     <string name="phone_alerts_shortFull" formatted="false">Pendek adalah takbir pembuka. Penuh adalah azan lengkap, dengan azan Subuh pada {name} bila suara itu memilikinya. iPhone memutar hingga 30 detik darinya.</string>
     <string name="phone_alerts_playsSound" formatted="false">Memutar suara</string>
@@ -1586,4 +1586,9 @@
     <string name="phone_unit_h" formatted="false">j</string>
     <string name="phone_unit_m" formatted="false">mnt</string>
     <string name="phone_unit_s" formatted="false">d</string>
+    <string name="alerts_modeAzan" formatted="false">Azan</string>
+    <string name="alerts_helpAzan" formatted="false">Kumandang azan dengan suara. Hanya pada lima waktu salat. Menggantikan pop-up biasa.</string>
+    <string name="alerts_pickHint" formatted="false">Pilih Azan, Notifikasi, Alarm, atau Nonaktif</string>
+    <string name="alerts_threeWords" formatted="false">Azan, notifikasi, alarm</string>
+    <string name="alerts_threeWordsSub" formatted="false">Kami hanya memakai tiga kata ini di seluruh aplikasi.</string>
 </resources>

@@ -49,8 +49,78 @@ enum AllLevel: String, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
 }
 
+/// The three words people see, plus Off: Azan, Notification, Alarm (owner's choice, 27 Nov 2026).
+/// Azan and Notification are both a notification at prayer time, one with the call to prayer and
+/// one quiet. Nothing new is saved except quietPrayers (the prayers kept quiet).
+enum AlertChoice: String, CaseIterable, Identifiable, Sendable {
+    case azan, notification, alarm, off
+    var id: String { rawValue }
+
+    var word: String {
+        switch self {
+        case .azan: W("alerts.modeAzan")
+        case .notification: W("alerts.modeNotify")
+        case .alarm: W("alerts.modeAlarm")
+        case .off: W("common.off")
+        }
+    }
+
+    var help: String {
+        switch self {
+        case .azan: W("alerts.helpAzan")
+        case .notification: W("alerts.helpNotify")
+        case .alarm: W("phone.alerts.alarmRings")
+        case .off: W("alerts.helpOff")
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .azan: "speaker.wave.2.fill"
+        case .notification: "bell.fill"
+        case .alarm: "alarm.fill"
+        case .off: "bell.slash"
+        }
+    }
+
+    /// Syuruk only says Subuh has ended, so it has no azan and no alarm. Azan is for the five prayers.
+    static func choices(for prayer: Prayer, azanAvailable: Bool = true) -> [AlertChoice] {
+        if prayer == .sunrise { return [.notification, .off] }
+        return (azanAvailable ? [.azan] : []) + [.notification, .alarm, .off]
+    }
+}
+
 extension Preferences {
     static let defaultFridayMinutes = 30
+
+    /// Does this prayer's notification play the azan? Needs the azan switch on and the prayer not kept quiet.
+    func azanPlays(_ prayer: Prayer) -> Bool {
+        azanSound && prayer != .sunrise && !quietPrayers.contains(prayer)
+    }
+
+    func alertChoice(_ prayer: Prayer) -> AlertChoice {
+        switch alertMode(prayer) {
+        case .off: .off
+        case .alarm: .alarm
+        case .notify: azanPlays(prayer) ? .azan : .notification
+        }
+    }
+
+    /// Azan, Notification, Alarm or Off for one prayer. Azan and Notification change only this prayer.
+    mutating func setAlertChoice(_ choice: AlertChoice, _ prayer: Prayer) {
+        switch choice {
+        case .off: setAlertMode(.off, prayer)
+        case .alarm: setAlertMode(.alarm, prayer)
+        case .notification:
+            setAlertMode(.notify, prayer)
+            if azanSound { quietPrayers.insert(prayer) }
+        case .azan:
+            setAlertMode(.notify, prayer)
+            // The azan was off for the whole app: turning it on must not switch it on for the other prayers.
+            if !azanSound { quietPrayers = Set(Prayer.allCases); azanSound = true }
+            quietPrayers.remove(prayer)
+        }
+    }
 
     func hasAlarm(_ prayer: Prayer) -> Bool {
         prayer == .fajr ? wakeUp != nil : alarm(for: prayer) != nil
@@ -120,7 +190,7 @@ extension Preferences {
         let mode: AlertMode = level == .off ? .off : (level == .alarm ? .alarm : .notify)
         for prayer in Prayer.obligatory where prayer != .fajr || includeFajr { setAlertMode(mode, prayer) }
         if level == .notify { azanSound = false }
-        if level == .azan { azanSound = true }
+        if level == .azan { azanSound = true; quietPrayers = [] }
         guard let early else { return }
         reminderMinutesBefore = early
         // Away from home the app uses its own minutes for each prayer, so they follow the same choice.

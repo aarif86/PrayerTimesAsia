@@ -12,6 +12,7 @@ enum AlertsPage: Hashable {
     case friday
     case check
     case all
+    case words
 }
 
 /// Alerts and alarms: one screen for every sound the app makes. Each prayer is
@@ -52,6 +53,7 @@ private struct AlertsPageView: View {
         case .friday: AnyView(FridayAlertPage())
         case .check: AnyView(CheckPhonePage())
         case .all: AnyView(AllFivePage())
+        case .words: AnyView(AlertWordsPage())
         }
     }
 }
@@ -90,6 +92,82 @@ func applyAlertMode(_ mode: AlertMode, _ prayer: Prayer, model: AppModel) {
 }
 
 @MainActor
+func applyAlertChoice(_ choice: AlertChoice, _ prayer: Prayer, model: AppModel) {
+    withAnimation { model.prefs.setAlertChoice(choice, prayer) }
+    Task {
+        if choice == .off { await WakeUpAlarm.stopRinging() } else { await askForAlerts() }
+    }
+}
+
+/// The sheet that opens from a prayer row: Azan, Notification, Alarm or Off, then Done.
+private struct PrayerChoiceSheet: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    let prayer: Prayer
+    let pick: (AlertChoice) -> Void
+
+    var body: some View {
+        let current = model.prefs.alertChoice(prayer)
+        VStack(spacing: 0) {
+            VStack(spacing: 2) {
+                Text(prayer.name(model.naming)).font(.headline)
+                Text(model.formatted(model.nextDate { $0.time(prayer) } ?? .now)).font(.subheadline).foregroundStyle(.secondary)
+            }
+            .padding(.top, 22).padding(.bottom, 8)
+            List {
+                ForEach(AlertChoice.choices(for: prayer, azanAvailable: Azan.isAvailable)) { choice in
+                    Button { pick(choice) } label: {
+                        HStack(alignment: .top, spacing: 12) {
+                            Image(systemName: current == choice ? "largecircle.fill.circle" : "circle")
+                                .foregroundStyle(current == choice ? Theme.sunArc : Color.secondary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(choice.word).font(.body.weight(.semibold)).foregroundStyle(.primary)
+                                Text(choice.help).font(.footnote).foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(current == choice ? .isSelected : [])
+                }
+            }
+            .listStyle(.plain)
+            Button { dismiss() } label: {
+                Text(W("common.done")).font(.headline).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(Theme.sunArc, in: RoundedRectangle(cornerRadius: 14))
+            }
+            .padding(.horizontal, 20).padding(.bottom, 16)
+        }
+    }
+}
+
+/// Azan, Notification, Alarm: what each one is, in plain words. Linked from the Alerts list.
+private struct AlertWordsPage: View {
+    var body: some View {
+        Form {
+            Section(W("alerts.threeWordsSub")) {
+                ForEach([AlertChoice.azan, .notification, .alarm]) { c in
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: c.symbol).frame(width: 24).foregroundStyle(Theme.sunArc)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(c.word).font(.headline)
+                            Text(c.help).font(.footnote).foregroundStyle(.secondary)
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                    .padding(.vertical, 2)
+                }
+            }
+        }
+        .navigationTitle(W("alerts.threeWords"))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+@MainActor
 func applyFridayMode(_ mode: AlertMode, model: AppModel) {
     withAnimation { model.prefs.setFridayMode(mode) }
     Task {
@@ -121,7 +199,7 @@ func alertChipWords(_ prayer: Prayer, model: AppModel) -> (lead: String, rest: S
     case .notify:
         if prayer == .sunrise { return (W("alerts.chipNotify", ["time": at]), W("alerts.whenEnds", ["name": Prayer.fajr.name(model.naming)])) }
         var parts: [String] = []
-        if Azan.isAvailable && p.azanSound { parts.append(W("alerts.withAzan")) }
+        if Azan.isAvailable && p.azanPlays(prayer) { parts.append(W("alerts.withAzan")) }
         if p.reminderMinutesBefore > 0 { parts.append(W("alerts.earlyN", ["n": p.reminderMinutesBefore])) }
         return (W("alerts.chipNotify", ["time": at]), parts.isEmpty ? W("alerts.whenBegins") : parts.joined(separator: ", "))
     case .alarm:
@@ -350,6 +428,7 @@ private struct EachPrayerSection: View {
     @Environment(AppModel.self) private var model
     @Binding var path: [AlertsPage]
     @Binding var justSet: Prayer?
+    @State private var sheetPrayer: Prayer?
 
     var body: some View {
         let friday = Prayer.dhuhr.name(model.naming, isFriday: true)
@@ -371,31 +450,59 @@ private struct EachPrayerSection: View {
                 let mode = model.prefs.alertMode(prayer)
                 let chip = alertChipWords(prayer, model: model)
                 row(name: prayer.name(model.naming), mode: mode, lead: chip.lead, rest: chip.rest,
-                    modes: AlertMode.modes(for: prayer),
                     open: { path.append(.prayer(prayer)) },
-                    pick: { new in
-                        let was = model.prefs.alertMode(prayer)
-                        applyAlertMode(new, prayer, model: model)
-                        withAnimation { justSet = (new == .alarm && was != .alarm) ? prayer : nil }
+                    control: {
+                        Button { sheetPrayer = prayer } label: {
+                            HStack(spacing: 4) {
+                                Text(model.prefs.alertChoice(prayer).word).font(.subheadline.weight(.semibold))
+                                Image(systemName: "chevron.up.chevron.down").font(.caption2.weight(.bold))
+                            }
+                            .foregroundStyle(Theme.sunArc)
+                            .padding(.horizontal, 12).padding(.vertical, 7)
+                            .background(Capsule().fill(Theme.sunArc.opacity(0.14)))
+                            .contentShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(prayer.name(model.naming))
+                        .accessibilityValue(model.prefs.alertChoice(prayer).word)
+                        .accessibilityHint(W("alerts.pickHint"))
                     })
             }
             let fridayMode = model.prefs.fridayMode
             row(name: W("alerts.fridayLeave", ["friday": friday]), mode: fridayMode,
                 lead: fridayMode == .off ? W("common.off") : (fridayMode == .alarm ? W("alerts.modeAlarm") : W("phone.alerts.notification")),
                 rest: W("alerts.fridayStarts", ["when": JumuahLeave.label(model.prefs.jumuahReminderMinutes).lowercased()]),
-                modes: AlertMode.allCases,
                 open: { path.append(.friday) },
-                pick: { applyFridayMode($0, model: model) })
+                control: {
+                    AlertModePicker(name: friday, modes: AlertMode.allCases, value: fridayMode, pick: { applyFridayMode($0, model: model) })
+                })
             HeadsUpPicker()
+            Button { path.append(.words) } label: {
+                HStack {
+                    Label(W("alerts.threeWords"), systemImage: "questionmark.circle").foregroundStyle(Theme.sunArc)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         } header: {
             Text(W("alerts.eachPrayer"))
         } footer: {
             Text(W("phone.alerts.pickOff"))
         }
+        .sheet(item: $sheetPrayer) { prayer in
+            PrayerChoiceSheet(prayer: prayer) { new in
+                let was = model.prefs.alertMode(prayer)
+                applyAlertChoice(new, prayer, model: model)
+                withAnimation { justSet = (new == .alarm && was != .alarm) ? prayer : nil }
+            }
+            .presentationDetents([.medium])
+        }
     }
 
-    private func row(name: String, mode: AlertMode, lead: String, rest: String, modes: [AlertMode],
-                     open: @escaping () -> Void, pick: @escaping (AlertMode) -> Void) -> some View {
+    private func row<Control: View>(name: String, mode: AlertMode, lead: String, rest: String,
+                     open: @escaping () -> Void, @ViewBuilder control: () -> Control) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -403,7 +510,7 @@ private struct EachPrayerSection: View {
                     if mode == .off { Text(W("common.off")).font(.footnote).foregroundStyle(.secondary) }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                AlertModePicker(name: name, modes: modes, value: mode, pick: pick)
+                control()
             }
             if mode != .off {
                 Button(action: open) {
@@ -945,9 +1052,25 @@ private struct PrayerAlertPage: View {
                 }
             }
             Section {
-                ModeCards(modes: AlertMode.modes(for: prayer), value: mode,
-                          alarmHelp: prayer == .fajr ? W("phone.alerts.helpAlarmFajr", ["name": name]) : nil) {
-                    applyAlertMode($0, prayer, model: model)
+                ForEach(AlertChoice.choices(for: prayer, azanAvailable: Azan.isAvailable)) { choice in
+                    let on = p.alertChoice(prayer) == choice
+                    Button { applyAlertChoice(choice, prayer, model: model) } label: {
+                        HStack(alignment: .top, spacing: 12) {
+                            Image(systemName: choice.symbol).frame(width: 22)
+                                .foregroundStyle(choice == .alarm ? Theme.sunArc : Color.primary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(choice.word).font(.body.weight(.semibold)).foregroundStyle(.primary)
+                                Text(choice == .alarm && prayer == .fajr ? W("phone.alerts.helpAlarmFajr", ["name": name]) : choice.help)
+                                    .font(.footnote).foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            Spacer()
+                            Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.sunArc).opacity(on ? 1 : 0)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(on ? .isSelected : [])
                 }
             } header: {
                 Text(W("alerts.howReach", ["name": name]))

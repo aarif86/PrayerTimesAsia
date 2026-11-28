@@ -150,4 +150,31 @@ final class SetForAllTests: XCTestCase {
         q.applyToAllFive(.alarm, early: 30)
         XCTAssertEqual(q.awayMinutes["fajr"], 0)
     }
+
+    func testAzanNotificationAlarmPerPrayer() {
+        var p = Preferences()
+        // New installs: azan on for every notified prayer, as before.
+        for prayer in Prayer.obligatory { XCTAssertEqual(p.alertChoice(prayer), .azan) }
+        XCTAssertEqual(p.alertChoice(.sunrise), .off)
+        // Quiet Subuh only: the others keep the azan.
+        p.setAlertChoice(.notification, .fajr)
+        XCTAssertEqual(p.alertChoice(.fajr), .notification)
+        XCTAssertEqual(p.alertChoice(.dhuhr), .azan)
+        XCTAssertEqual(p.alertMode(.fajr), .notify)
+        // Back to azan.
+        p.setAlertChoice(.azan, .fajr)
+        XCTAssertEqual(p.alertChoice(.fajr), .azan)
+        // Azan off for the app: choosing Azan for one prayer must not switch it on for the rest.
+        var q = Preferences()
+        q.azanSound = false
+        q.setAlertChoice(.azan, .asr)
+        XCTAssertEqual(q.alertChoice(.asr), .azan)
+        XCTAssertEqual(q.alertChoice(.dhuhr), .notification)
+        // Syuruk never plays the azan, and alarm and off still work.
+        XCTAssertEqual(AlertChoice.choices(for: .sunrise), [.notification, .off])
+        q.setAlertChoice(.alarm, .isha)
+        XCTAssertEqual(q.alertChoice(.isha), .alarm)
+        q.setAlertChoice(.off, .isha)
+        XCTAssertEqual(q.alertChoice(.isha), .off)
+    }
 }

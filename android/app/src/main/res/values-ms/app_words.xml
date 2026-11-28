@@ -761,7 +761,7 @@
     <string name="alerts_title" formatted="false">Makluman dan penggera</string>
     <string name="alerts_chipNext" formatted="false">Makluman dan penggera, penggera seterusnya pada {time}</string>
     <string name="alerts_modeOff" formatted="false">Mati</string>
-    <string name="alerts_modeNotify" formatted="false">Makluman</string>
+    <string name="alerts_modeNotify" formatted="false">Notifikasi</string>
     <string name="alerts_modeAlarm" formatted="false">Penggera</string>
     <string name="alerts_nowOff" formatted="false">{name} dimatikan</string>
     <string name="alerts_nowNotify" formatted="false">Makluman {name} dihidupkan</string>
@@ -777,7 +777,7 @@
     <string name="alerts_fridayAlarm" formatted="false">{when}, penggera</string>
     <string name="alerts_fridayNotify" formatted="false">{when}, makluman</string>
     <string name="alerts_helpOff" formatted="false">Tiada makluman untuk solat ini</string>
-    <string name="alerts_helpNotify" formatted="false">Makluman yang berbunyi. Senyap apabila telefon anda dalam mod senyap atau Fokus.</string>
+    <string name="alerts_helpNotify" formatted="false">Notis senyap pada skrin anda. Mudah terlepas jika telefon dalam mod senyap. Sesuai sebagai peringatan lembut.</string>
     <string name="alerts_helpAlarm" formatted="false">Berbunyi sehingga anda menghentikannya, walaupun dalam mod senyap. Tunda 5 minit.</string>
     <string name="alerts_helpAlarmFajr" formatted="false">Berbunyi walaupun dalam mod senyap, setiap pagi. Ia mengikut waktu {name} di mana sahaja anda berada. Tunda 5 minit.</string>
     <string name="alerts_needsInstall" formatted="false">Tambah aplikasi ke Skrin Utama untuk menerima makluman</string>
@@ -1440,7 +1440,7 @@
     <string name="phone_alerts_silentFocus" formatted="false">Dalam senyap atau Fokus, hanya penggera yang berbunyi</string>
     <string name="phone_alerts_sampleSoon" formatted="false">Kami menghantar makluman contoh dalam beberapa saat, dengan cara yang sama seperti makluman sebenar anda. Kunci skrin anda untuk melihat rupanya.</string>
     <string name="phone_alerts_noFullAzan" formatted="false">Notifikasi iPhone hanya boleh memainkan bunyi pendek, sehingga 30 saat, jadi azan penuh tidak dapat dimainkan di sini. Untuk laungan panjang, gunakan Penggera.</string>
-    <string name="phone_alerts_pickOff" formatted="false">Pilih Mati, Makluman atau Penggera. Ketik Tukar untuk memilih waktu tepat. Makluman ialah notifikasi, senyap apabila telefon anda dalam senyap atau Fokus. Penggera berbunyi sehingga anda menghentikannya, walaupun dalam senyap.</string>
+    <string name="phone_alerts_pickOff" formatted="false">Ketik satu solat untuk memilih Azan, Notifikasi, Penggera atau Mati. Ketik Tukar untuk memilih waktu tepat. Notifikasi senyap apabila telefon anda dalam mod senyap atau Fokus. Penggera berbunyi sehingga anda menghentikannya, walaupun dalam mod senyap.</string>
     <string name="phone_alerts_changeTime" formatted="false">Tukar waktu</string>
     <string name="phone_alerts_shortFull" formatted="false">Pendek ialah takbir pembukaan. Penuh ialah azan sepenuhnya, dengan azan Subuh pada {name} apabila suara itu mempunyainya. iPhone memainkan sehingga 30 saat daripadanya.</string>
     <string name="phone_alerts_playsSound" formatted="false">Memainkan bunyi</string>
@@ -1586,4 +1586,9 @@
     <string name="phone_unit_h" formatted="false">j</string>
     <string name="phone_unit_m" formatted="false">min</string>
     <string name="phone_unit_s" formatted="false">s</string>
+    <string name="alerts_modeAzan" formatted="false">Azan</string>
+    <string name="alerts_helpAzan" formatted="false">Laungan azan dengan bunyi. Hanya pada lima waktu solat. Ia menggantikan paparan biasa.</string>
+    <string name="alerts_pickHint" formatted="false">Pilih Azan, Notifikasi, Penggera atau Mati</string>
+    <string name="alerts_threeWords" formatted="false">Azan, notifikasi, penggera</string>
+    <string name="alerts_threeWordsSub" formatted="false">Kami hanya menggunakan tiga perkataan ini di seluruh aplikasi.</string>
 </resources>
