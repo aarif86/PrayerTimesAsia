@@ -311,6 +311,34 @@ class Resolver(
         return if (key in prefs.longDaysClosed) null else key
     }
 
+    // MARK: Time labels, travel notice and Selangor 2027 (same rules as the web app)
+
+    /** What kind of time a day's times are: published timetable, formula, masjid timetable or calculated. */
+    fun timeKind(day: PrayerDay): TimeKind =
+        TimeKind.of(day.grade, day.grade == SourceGrade.OFFICIAL && day.officialSource != null, method)
+
+    /**
+     * Selangor moves from three zones to nine district timetables on 1 January 2027.
+     * Until JAKIM's new zone codes are in the app, say so for Selangor's old zones.
+     * Remove this (and docs/selangor-2027.md's step 4) once the new zones are wired.
+     */
+    fun selangorNotice(now: Instant): Boolean {
+        val src = officialSource as? OfficialSource.Jakim ?: return false
+        return src.zone in setOf("SGR01", "SGR02", "SGR03") && civil(now).year >= 2027
+    }
+
+    /** A method pinned in Settings and used in another country: the country the times still follow. */
+    val awayFromSourceCountry: CountryProfile?
+        get() = TimeKind.awayFromMethodCountry(!isMethodAutomatic, method, activePlace?.countryCode)
+
+    /** The note for a pinned method used abroad, unless it was closed for this method and country. */
+    fun sourceAwayKey(): String? {
+        if (awayFromSourceCountry == null) return null
+        val here = activePlace?.countryCode?.takeIf { it.isNotEmpty() } ?: return null
+        val key = "${method.id}>${here.uppercase()}"
+        return if (key in prefs.sourceAwayClosed) null else key
+    }
+
     val isSeasonPreview: Boolean get() = prefs.seasonPreview != SeasonPreview.OFF
 
     /** Days the tester's "Try Ramadan" moves the calendar by (0 when off). */
