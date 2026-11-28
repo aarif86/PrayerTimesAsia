@@ -76,6 +76,8 @@ export interface Preferences {
   musafirChipDismissed: boolean
   /** Long summer days notes closed, one per place and summer (core/longDays.ts longDaysKey). Stays on this device. */
   longDaysClosed: string[]
+  /** "Your times follow another country" notes closed, one per method and country ("jakim>SG"). Stays on this device. */
+  sourceAwayClosed: string[]
   trip: TripStop[]
   trackerEnabled: boolean
   prayedLog: Record<string, Prayer[]>
@@ -203,6 +205,7 @@ export const DEFAULT_PREFS: Preferences = {
   arrivalBannerDismissed: true,
   musafirChipDismissed: false,
   longDaysClosed: [],
+  sourceAwayClosed: [],
   trip: [],
   trackerEnabled: false,
   prayedLog: {},
@@ -318,7 +321,7 @@ export function decodePreferences(raw: unknown): Preferences {
     if (Array.isArray(d)) {
       if (!Array.isArray(v)) continue
       if (key === 'savedPlaces') (out as unknown as Record<string, unknown>)[key] = v.filter(isPlace)
-      else if (key === 'longDaysClosed') (out as unknown as Record<string, unknown>)[key] = v.filter((x) => typeof x === 'string').slice(-30)
+      else if (key === 'longDaysClosed' || key === 'sourceAwayClosed') (out as unknown as Record<string, unknown>)[key] = v.filter((x) => typeof x === 'string').slice(-30)
       else if (key === 'sahurDays') (out as unknown as Record<string, unknown>)[key] = SAHUR_DAYS.filter((d) => v.includes(d))
       else (out as unknown as Record<string, unknown>)[key] = v
       continue
