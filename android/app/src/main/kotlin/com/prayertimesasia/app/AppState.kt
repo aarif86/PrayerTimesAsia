@@ -76,6 +76,9 @@ class AppState(
     /** A fresh fix has arrived since the app started (until then the place is the last saved one). */
     var hasFreshFix by mutableStateOf(false)
         private set
+    /** Counts up each time the Fajr alert is switched on, so the Prayer screen can say a warm word (a little surprise). */
+    var fajrSetCount by mutableStateOf(0)
+        private set
 
     /** Showing the last known place while the phone checks where it is now. */
     val isCheckingLocation: Boolean
@@ -449,6 +452,7 @@ class AppState(
 
     /** Off, Notify or Alarm for one prayer (Alerts and alarms). Asks for permission when something turns on. */
     fun setAlertMode(prayer: Prayer, mode: com.prayertimesasia.core.AlertMode) {
+        if (prayer == Prayer.FAJR && mode != com.prayertimesasia.core.AlertMode.OFF && prefs.littleSurprises) fajrSetCount++
         if (mode == com.prayertimesasia.core.AlertMode.OFF) {
             stopRinging()
             update { it.withAlertMode(mode, prayer) }

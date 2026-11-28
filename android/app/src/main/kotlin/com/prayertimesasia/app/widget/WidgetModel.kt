@@ -39,6 +39,8 @@ data class WidgetModel(
     val hijriMonths: List<String> = emptyList(),
     /** A time as the Prayer screen writes it, such as "4:17 PM". */
     val format: (Instant) -> String = { "" },
+    /** The "Little surprises" switch: a crescent instead of the sun marker at night on the Sun Path. */
+    val surprises: Boolean = true,
 ) {
     /** The prayer marked NOW: null between Syuruk and Zohor, when no prayer is open. */
     val open: Prayer? get() = com.prayertimesasia.core.PrayerLead.open(current)?.first
@@ -82,6 +84,7 @@ data class WidgetModel(
                 hijriOf = { d -> r.hijriOf(d) },
                 hijriMonths = r.naming.hijriMonths,
                 format = { t -> r.formatted(t) },
+                surprises = r.prefs.littleSurprises,
                 fast = r.fastingMoment(now)?.let { (kind, at) ->
                     val t = RamadanWords.In(r.appLang)
                     FastMoment(kind, at, t(if (kind == Resolver.FastingKind.IMSAK) RamadanWordKey.imsak else RamadanWordKey.berbuka), r.formatted(at))

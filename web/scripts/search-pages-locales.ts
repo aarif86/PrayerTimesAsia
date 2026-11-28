@@ -512,4 +512,8 @@ export const LOCAL_CITY_NAMES: Record<string, Partial<Record<NewLang, string>>> 
   bangkok: { th: 'กรุงเทพมหานคร' }, 'chiang-mai': { th: 'เชียงใหม่' }, yangon: { my: 'ရန်ကုန်' }, kathmandu: { ne: 'काठमाडौं' },
   manila: { fil: 'Maynila' }, hanoi: { vi: 'Hà Nội' }, 'ho-chi-minh-city': { vi: 'Thành phố Hồ Chí Minh' }, 'phnom-penh': { km: 'ភ្នំពេញ' },
   mumbai: { hi: 'मुंबई' }, delhi: { hi: 'दिल्ली' }, colombo: { si: 'කොළඹ' }, tokyo: { ja: '東京' }, seoul: { ko: '서울' }, 'hong-kong': { zh: '香港' },
+  'hat-yai': { th: 'หาดใหญ่' }, pattani: { th: 'ปัตตานี' }, yala: { th: 'ยะลา' }, narathiwat: { th: 'นราธิวาส' }, phuket: { th: 'ภูเก็ต' },
+  'da-nang': { vi: 'Đà Nẵng' }, 'chau-doc': { vi: 'Châu Đốc' }, 'siem-reap': { km: 'សៀមរាប' }, mandalay: { my: 'မန္တလေး' },
+  hyderabad: { hi: 'हैदराबाद' }, bengaluru: { hi: 'बेंगलुरु' }, chennai: { hi: 'चेन्नई' }, kolkata: { hi: 'कोलकाता' },
+  kandy: { si: 'මහනුවර' }, osaka: { ja: '大阪' }, busan: { ko: '부산' },
 }

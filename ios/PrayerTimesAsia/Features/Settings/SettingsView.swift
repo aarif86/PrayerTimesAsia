@@ -547,6 +547,10 @@ private struct LookPage: View {
                     Text(W("settings.openingDial"))
                     Text(W("settings.openingDialSub"))
                 }
+                Toggle(isOn: $model.prefs.littleSurprises) {
+                    Text(W("settings.surprises"))
+                    Text(W("settings.surprisesSub"))
+                }
             } header: {
                 Text(W("settings.textTime"))
             } footer: {

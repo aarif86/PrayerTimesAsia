@@ -487,6 +487,9 @@ private fun LookPage(state: AppState) {
         SwitchRow(tr(R.string.settings_openingDial), p.showOpening, tr(R.string.settings_openingDialSub)) { on ->
             state.update { it.copy(showOpening = on) }
         }
+        SwitchRow(tr(R.string.settings_surprises), p.littleSurprises, tr(R.string.settings_surprisesSub)) { on ->
+            state.update { it.copy(littleSurprises = on) }
+        }
     }
 }
 

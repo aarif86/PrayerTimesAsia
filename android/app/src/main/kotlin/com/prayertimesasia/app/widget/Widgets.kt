@@ -178,10 +178,22 @@ internal fun sunPathBitmap(m: WidgetModel, w: Int, h: Int): Bitmap {
         dot.color = p.tint.toArgb()
         c.drawCircle((f * w).toFloat(), yAt(f), h * 0.03f, dot)
     }
-    dot.color = Color(0.97f, 0.74f, 0.56f).toArgb()
-    c.drawCircle((nowF * w).toFloat(), yAt(nowF), h * 0.085f, dot)
-    dot.color = android.graphics.Color.WHITE
-    c.drawCircle((nowF * w).toFloat(), yAt(nowF), h * 0.05f, dot)
+    // Little surprise: at night (before sunrise, from Maghrib) the marker is a crescent, not the sun.
+    val night = m.surprises && (m.now < m.day.time(Prayer.SUNRISE) || m.now >= m.day.time(Prayer.MAGHRIB))
+    val nx = (nowF * w).toFloat(); val ny = yAt(nowF)
+    if (night) {
+        val r = h * 0.085f
+        val moon = android.graphics.Path().apply { addCircle(nx, ny, r, android.graphics.Path.Direction.CW) }
+        val bite = android.graphics.Path().apply { addCircle(nx + r * 0.45f, ny - r * 0.2f, r * 0.85f, android.graphics.Path.Direction.CW) }
+        moon.op(bite, android.graphics.Path.Op.DIFFERENCE)
+        dot.color = Color(0.97f, 0.86f, 0.55f).toArgb()
+        c.drawPath(moon, dot)
+    } else {
+        dot.color = Color(0.97f, 0.74f, 0.56f).toArgb()
+        c.drawCircle(nx, ny, h * 0.085f, dot)
+        dot.color = android.graphics.Color.WHITE
+        c.drawCircle(nx, ny, h * 0.05f, dot)
+    }
     return bmp
 }
 
