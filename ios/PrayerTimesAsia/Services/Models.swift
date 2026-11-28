@@ -294,6 +294,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var musafirChipDismissed = false
     /// Long summer days notes closed, one per place and summer (Core/LongDays.swift). Stays on this phone.
     var longDaysClosed: [String] = []
+    /// "Your times follow another country" notes closed, one per method and country ("jakim>SG"). Stays on this phone.
+    var sourceAwayClosed: [String] = []
     var trip: [TripStop] = []
 
     /// Keep a Live Activity countdown to the next prayer on the Lock Screen.
@@ -414,6 +416,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var largeText = false
     /// The moving opening screen. Off goes straight to the app; it still shows the first time.
     var showOpening = true
+    /// Small quiet touches (a line when the qibla is found, a warm word when the Fajr alert is set). Off means none.
+    var littleSurprises = true
     /// The quick guide (swipe cards) was seen or skipped. Settings > Help opens it again.
     var guideShown = false
     /// Fridays: a reminder this many minutes before Jumaat (0 = off).
@@ -488,6 +492,7 @@ struct Preferences: Codable, Equatable, Sendable {
         arrivalBannerDismissed = v(.arrivalBannerDismissed, d.arrivalBannerDismissed)
         musafirChipDismissed = v(.musafirChipDismissed, d.musafirChipDismissed)
         longDaysClosed = v(.longDaysClosed, d.longDaysClosed)
+        sourceAwayClosed = v(.sourceAwayClosed, d.sourceAwayClosed)
         trip = v(.trip, d.trip)
         liveActivityEnabled = v(.liveActivityEnabled, d.liveActivityEnabled)
         trackerEnabled = v(.trackerEnabled, d.trackerEnabled)
@@ -533,6 +538,7 @@ struct Preferences: Codable, Equatable, Sendable {
         breakThroughFocus = v(.breakThroughFocus, d.breakThroughFocus)
         largeText = v(.largeText, d.largeText)
         showOpening = v(.showOpening, d.showOpening)
+        littleSurprises = v(.littleSurprises, d.littleSurprises)
         // Everyone sees the quick guide once, testers who were set up before it came too
         // (new key, so the old "guideSeen" that skipped them is left behind).
         guideShown = v(.guideShown, false)

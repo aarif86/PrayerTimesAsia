@@ -135,15 +135,18 @@ export function QiblaScreen() {
     )
   }
 
+  const lock = isAligned && s.prefs.littleSurprises
   return (
-    <div class={`page qibla v12s v12q q-${look}`}>
+    <div class={`page qibla v12s v12q q-${look}${lock ? ' q-locked' : ''}`}>
       {said}
       {body}
+      {lock && <div class="q-lock-line" aria-hidden="true">{tr('qibla.lockedLine')}</div>}
       <div class="q-card steps">
         <div class="headline" style={{ marginBottom: '12px' }}>{tr('qibla.howTo')}</div>
         {askFirst && (
           <Step icon={<CompassIcon size={20} class="q-ac" />}>
             {trWith('qibla.browserAsksHow', { button: <b>{tr('qibla.compassOn')}</b>, allow: <b>{tr('qibla.allow')}</b> })}
+            <div class="caption" style={{ marginTop: '4px', opacity: 0.8 }}>{tr('qibla.whyCompass')} {tr('qibla.whyLocation')}</div>
           </Step>
         )}
         {(compass.state === 'unavailable' || compass.state === 'denied') && !demoAligned && demoHeading == null && (

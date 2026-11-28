@@ -116,6 +116,8 @@ jobs:
           cp _site/app/screen/index.html _site/tv/index.html
           # Pages for search engines and AI answers, from the same engine as the apps: one page per major
           # city with today's times as plain text, an About and method page, sitemap.xml and robots.txt.
+          # Journey Prayer Planner (English, Malay, Indonesian), runs in the browser. Built first so the sitemap lists it.
+          (cd web && npx vite-node scripts/build-journey-planner.ts -- ../_site "${BASE}")
           (cd web && npx vite-node scripts/build-search-pages.ts -- ../_site "${BASE}")
           sed -i "s#__BASE__#${BASE}#g" _site/404.html
           # Visitor counts on the promo page: the App ID from config/analytics.json (empty = off).
@@ -152,7 +154,13 @@ jobs:
           test -f _site/prayer-times/singapore/index.html
           test -f _site/prayer-times/kuala-lumpur/index.html
           test -f _site/prayer-times/jakarta/index.html
+          # City pages and printable timetables: English plus each city's own language (Malay, Indonesian, Thai, Japanese and so on).
+          for f in ms/waktu-solat/kuala-lumpur id/jadwal-sholat/jakarta printable-timetables/singapore ms/jadual-cetak/kuala-lumpur id/jadwal-cetak/jakarta th/prayer-times/bangkok ja/prayer-times/tokyo hi/printable-timetables/delhi zh/prayer-times/hong-kong; do test -f "_site/$f/index.html"; done
+          test "$(find _site/prayer-times _site/ms/waktu-solat _site/id/jadwal-sholat -name index.html | wc -l)" -ge 80
           test -f _site/ramadan.html
+          for f in journey-planner ms/perancang-perjalanan id/perencana-perjalanan; do test -f "_site/$f/index.html"; done
+          test -f _site/journey-planner.js
+          grep -q journey-planner _site/sitemap.xml
           ! grep -q "__TELEMETRYDECK_APP_ID__" _site/index.html _site/ms/index.html _site/id/index.html _site/ar/index.html _site/ur/index.html _site/bn/index.html _site/tr/index.html _site/fr/index.html
           # Every image and page the promo page links to is there.
           for f in $(grep -oE '(src|href)="[^"#:]+"' _site/index.html | sed -E 's/^[a-z]+="//; s/"$//' | sort -u); do

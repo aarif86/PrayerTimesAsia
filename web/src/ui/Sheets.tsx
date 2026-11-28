@@ -22,6 +22,7 @@ import { HijriMonthCard } from './HijriCalendar'
 import { MakersAbout } from './Makers'
 import { canInstall, install, isIOS } from './pwa'
 import { appLocale, gradeExplanation, gradeTitle, tr, trWith } from '../core/appWords'
+import { timeKindExplanation, timeKindTitle } from '../core/timeKind'
 
 // ---------- Places ----------
 
@@ -151,6 +152,7 @@ const GRADE_ICON: Record<SourceGrade, typeof BadgeCheck> = { A: BadgeCheck, B: B
 export function SanadSheet({ day }: { day: PrayerDay }) {
   const s = useStore()
   const Icon = GRADE_ICON[day.grade]
+  const kind = s.timeKindOf(day)
   const via = s.tableVia()
   let detail: string
   if (day.grade === 'A' && day.officialSource) {
@@ -175,9 +177,12 @@ export function SanadSheet({ day }: { day: PrayerDay }) {
         <div class="item" style={{ alignItems: 'flex-start' }}>
           <Icon size={28} style={{ color: GRADE_TINT[day.grade], flex: 'none' }} />
           <div>
-            <div class="headline">{tr('source.gradeName', { grade: day.grade, name: gradeTitle(day.grade) })}</div>
+            <div class="headline">{timeKindTitle(kind)}</div>
             <div class="subhead">{day.officialSource ?? s.method.name}</div>
+            <div class="footnote secondary" style={{ marginTop: '4px' }}>{timeKindExplanation(kind)}</div>
             <div class="footnote secondary" style={{ marginTop: '4px' }}>{detail}</div>
+            <div class="footnote secondary" style={{ marginTop: '4px' }}>{tr('source.gradeName', { grade: day.grade, name: gradeTitle(day.grade) })}</div>
+            {s.selangorNotice(day.times.dhuhr) && <div class="footnote" style={{ marginTop: '8px', fontWeight: 600 }}>{tr('source.selangor2027')}</div>}
           </div>
         </div>
       </div>

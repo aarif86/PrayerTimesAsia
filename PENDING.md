@@ -23,6 +23,7 @@ and where it's heading is in [docs/website/roadmap.md](docs/website/roadmap.md).
 
 ### Checks by people
 
+- [ ] **Selangor nine districts, 1 January 2027** - JAKIM has not published the new zone codes (checked 29 Nov). Ask JAKIM or the Selangor Mufti Department which codes e-Solat will use, then follow [docs/selangor-2027.md](docs/selangor-2027.md). Until then the apps show a plain notice from 1 January.
 - [ ] **Falak committee review** - send [docs/falak-review.md](docs/falak-review.md) to the MUIS Falak Committee. Their notes go on the board.
 - [ ] **Worldwide sources** - read [docs/worldwide-times.md](docs/worldwide-times.md) (ideally with the falak committee) and tell Claude anything to change.
 - [ ] **Native speakers** - Malay and Indonesian for the app, website and store text; Arabic, Urdu, Bangla, Turkish and French for the website pages and prayer names.

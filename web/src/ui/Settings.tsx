@@ -277,6 +277,7 @@ function LookPage() {
           sub={tr('settings.biggerTextSub')} />
         <ToggleItem label={tr('settings.hour24')} on={p.use24Hour} onChange={(v) => store.update((x) => { x.use24Hour = v })} />
         <ToggleItem label={tr('settings.openingDial')} sub={tr('settings.openingDialSub')} on={p.showOpening} onChange={(v) => store.update((x) => { x.showOpening = v })} />
+        <ToggleItem label={tr('settings.surprises')} sub={tr('settings.surprisesSub')} on={p.littleSurprises} onChange={(v) => store.update((x) => { x.littleSurprises = v })} />
       </Group>
     </>
   )

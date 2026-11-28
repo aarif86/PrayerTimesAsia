@@ -32,6 +32,8 @@ data class WidgetModel(
     val fast: FastMoment? = null,
     /** Dark or light, from the app's Appearance (or the phone's, on Automatic): the widgets follow it as the Prayer screen does. */
     val dark: Boolean = true,
+    /** The "Little surprises" switch: a crescent instead of the sun marker at night on the Sun Path. */
+    val surprises: Boolean = true,
 ) {
     /** The prayer marked NOW: null between Syuruk and Zohor, when no prayer is open. */
     val open: Prayer? get() = com.prayertimesasia.core.PrayerLead.open(current)?.first
@@ -71,6 +73,7 @@ data class WidgetModel(
                 nextTime = next?.let { r.formatted(it.second) },
                 zone = r.zone,
                 dark = dark,
+                surprises = r.prefs.littleSurprises,
                 fast = r.fastingMoment(now)?.let { (kind, at) ->
                     val t = RamadanWords.In(r.appLang)
                     FastMoment(kind, at, t(if (kind == Resolver.FastingKind.IMSAK) RamadanWordKey.imsak else RamadanWordKey.berbuka), r.formatted(at))

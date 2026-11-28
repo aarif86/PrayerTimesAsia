@@ -76,6 +76,8 @@ export interface Preferences {
   musafirChipDismissed: boolean
   /** Long summer days notes closed, one per place and summer (core/longDays.ts longDaysKey). Stays on this device. */
   longDaysClosed: string[]
+  /** "Your times follow another country" notes closed, one per method and country ("jakim>SG"). Stays on this device. */
+  sourceAwayClosed: string[]
   trip: TripStop[]
   trackerEnabled: boolean
   prayedLog: Record<string, Prayer[]>
@@ -146,8 +148,12 @@ export interface Preferences {
   menuSide: MenuSide
   /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
   showOpening: boolean
+  /** Small quiet touches (a soft glow when the qibla is found, a warm dial at Iftar). Off means none. */
+  littleSurprises: boolean
   /** The quick guide (seven swipe cards) was seen or skipped. Settings opens it again. */
   guideShown: boolean
+  /** The "You are all set" summary was shown once to a new user. */
+  allSetShown: boolean
   /** Fridays: a reminder this many minutes before Jumaat (0 = off). */
   jumuahReminderMinutes: number
   /** Singapore only: leave for the first Jumaat (at Zohor) or the second one some masjids hold from 2 PM. */
@@ -203,6 +209,7 @@ export const DEFAULT_PREFS: Preferences = {
   arrivalBannerDismissed: true,
   musafirChipDismissed: false,
   longDaysClosed: [],
+  sourceAwayClosed: [],
   trip: [],
   trackerEnabled: false,
   prayedLog: {},
@@ -247,7 +254,9 @@ export const DEFAULT_PREFS: Preferences = {
   largeText: false,
   menuSide: 'auto',
   showOpening: true,
+  littleSurprises: true,
   guideShown: false,
+  allSetShown: false,
   jumuahReminderMinutes: 0,
   jumuahSession: 'first',
   jumuahLeaveAlarm: false,
@@ -318,7 +327,7 @@ export function decodePreferences(raw: unknown): Preferences {
     if (Array.isArray(d)) {
       if (!Array.isArray(v)) continue
       if (key === 'savedPlaces') (out as unknown as Record<string, unknown>)[key] = v.filter(isPlace)
-      else if (key === 'longDaysClosed') (out as unknown as Record<string, unknown>)[key] = v.filter((x) => typeof x === 'string').slice(-30)
+      else if (key === 'longDaysClosed' || key === 'sourceAwayClosed') (out as unknown as Record<string, unknown>)[key] = v.filter((x) => typeof x === 'string').slice(-30)
       else if (key === 'sahurDays') (out as unknown as Record<string, unknown>)[key] = SAHUR_DAYS.filter((d) => v.includes(d))
       else (out as unknown as Record<string, unknown>)[key] = v
       continue

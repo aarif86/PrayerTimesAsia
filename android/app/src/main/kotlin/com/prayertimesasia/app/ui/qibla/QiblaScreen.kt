@@ -26,6 +26,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -220,6 +223,13 @@ private fun QiblaContent(state: AppState, place: Place) {
                 Stats()
                 LookButton(tr(R.string.qibla_checkSun), LookIcons.get("sun"), Modifier.padding(top = 12.dp), onClickLabel = sunLabel, onClick = toSun)
             }
+        }
+        // Little surprise: once the qibla is found, one quiet line fades in (off with the Settings switch).
+        val lockShown = aligned && state.prefs.littleSurprises
+        val lockAlpha by animateFloatAsState(if (lockShown) 1f else 0f, tween(1200), label = "lock")
+        if (lockShown) {
+            Text(tr(R.string.qibla_lockedLine), style = lookText(15.sp), color = look.c.accentText, textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 12.dp, start = 24.dp, end = 24.dp).alpha(lockAlpha))
         }
         Steps(compass || state.demoAligned || fixedHeading != null, live, sunPath = look.sunPath, bearing = bearing,
             modifier = Modifier.padding(top = 22.dp).padding(horizontal = if (look.bands) 24.dp else 0.dp))

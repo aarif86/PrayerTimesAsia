@@ -399,3 +399,12 @@ input, select, textarea { font: inherit; color: inherit; }
 .test-card { display: block; padding: 14px 16px; margin-bottom: 18px; }
 .test-card .sub { display: block; font-size: 13px; color: var(--fg2); margin-top: 4px; }
 .test-card-btn { border: 0; cursor: pointer; min-height: 44px; font-family: inherit; }
+
+/* "You are all set" after first setup */
+.allset { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(8, 10, 30, 0.72); }
+.allset-card { width: min(100%, 380px); text-align: center; padding: 24px 20px; border-radius: 28px; background: var(--card-bg, #151a45); color: #eef0fa; }
+.allset-card .onb-primary { background: #e2b65a; color: #151100; margin: 14px 0 8px; }
+.allset-check { color: #e2b65a; }
+.allset-rows { text-align: left; margin-top: 12px; }
+.allset-rows > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(255,255,255,.12); }
+.allset-rows span { opacity: 0.75; }

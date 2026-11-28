@@ -289,6 +289,8 @@ data class Preferences(
     val musafirChipDismissed: Boolean = false,
     /** Long summer days notes closed, one per place and summer ([LongDays.key]). Stays on this phone. */
     val longDaysClosed: List<String> = emptyList(),
+    /** "Your times follow another country" notes closed, one per method and country ("jakim>SG"). Stays on this phone. */
+    val sourceAwayClosed: List<String> = emptyList(),
     val trip: List<TripStop> = emptyList(),
 
     // Prayer tracker (opt-in)
@@ -369,6 +371,8 @@ data class Preferences(
     val largeText: Boolean = false,
     /** The moving opening screen. Off goes straight to the app; it still shows the first time. */
     val showOpening: Boolean = true,
+    /** Small quiet touches (a line when the qibla is found, a warm word when the Fajr alert is set). Off means none. */
+    val littleSurprises: Boolean = true,
     /**
      * The quick guide (swipe cards) was seen or skipped; Settings > Help opens it again.
      * Null until set; anything not true shows it once. A new key (the old one was "guideSeen"),

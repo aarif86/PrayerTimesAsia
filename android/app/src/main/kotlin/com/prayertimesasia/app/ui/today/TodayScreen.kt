@@ -105,6 +105,13 @@ class TodayFrame(
     val shownNextFajr: Instant,
 ) {
     val isToday get() = offset == 0
+    /** Little surprise: in Ramadan, for 20 minutes after Maghrib, the dial glows warm (off with the Settings switch). */
+    val iftarWarm: Boolean get() {
+        val c = current ?: return false
+        return state.prefs.littleSurprises && isToday && c.first == Prayer.MAGHRIB &&
+            java.time.Duration.between(c.second, now).toMinutes() < 20 && !now.isBefore(c.second) &&
+            state.resolver.season(now).phase == com.prayertimesasia.core.Season.Phase.RAMADAN
+    }
     /** Marked NOW in lists and bands: null between Syuruk and Zohor, when no prayer is open. */
     val currentPrayer get() = if (isToday) PrayerLead.open(current)?.first else null
     /** Leads the dial and status line: the open prayer, or from Syuruk the next one. */
@@ -159,6 +166,17 @@ private fun StyleToast(state: AppState) {
     var first by remember { mutableStateOf(true) }
     val style = state.prefs.todayStyle
     val appearance = state.prefs.appearance
+    val fajrSet = state.fajrSetCount
+    val fajrLine = tr(R.string.alerts_fajrSet, "name" to Prayer.FAJR.name(state.resolver.naming))
+    // Only a new switch-on speaks, not the screen coming back with the count already above zero.
+    var fajrSeen by remember { mutableStateOf(fajrSet) }
+    LaunchedEffect(fajrSet) {
+        if (fajrSet == fajrSeen) return@LaunchedEffect
+        fajrSeen = fajrSet
+        toast = fajrLine
+        delay(2200)
+        if (toast == fajrLine) toast = null
+    }
     LaunchedEffect(style) {
         if (first) return@LaunchedEffect
         toast = style.label
@@ -200,7 +218,20 @@ internal fun ColumnScope.Prompts(f: TodayFrame, hadith: Boolean = false) {
     }
     if (!p.arrivalBannerDismissed) ArrivalCard(f.state)
     if (f.offset == 0) LongDaysNote(f.state, f.now)
+    if (f.offset == 0) SourceAwayNote(f.state)
+    if (f.offset == 0) SelangorNote(f.state, f.now)
     if (f.offset == 0) SeasonCard(f.state, f.now)
+    // Little surprises: a quiet line on Fridays, and on the odd nights of the last ten of Ramadan.
+    if (f.offset == 0 && p.littleSurprises) {
+        if (f.state.resolver.isFriday(f.now)) QuietLine(tr(R.string.today_jumuahLine))
+        if (f.state.resolver.season(f.now).oddNight) QuietLine(tr(R.string.today_qadrLine))
+    }
+}
+
+@Composable
+private fun QuietLine(text: String) {
+    Text(text, style = Txt.footnote, color = Palette.accent, textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp))
 }
 
 /** Today's one community card, below the times and only with Show more open (docs/community-cards.md). */
@@ -274,7 +305,7 @@ private fun ClassicPage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () 
             val nxt = f.next
             if (cur != null && nxt != null) {
                 DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.prayer, cur.time), cur.prayer,
-                    Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 172.dp, isNext = cur.isNext)
+                    Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 172.dp, isNext = cur.isNext, warm = f.iftarWarm)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 PlaceChip(f.state, openPlaces)
@@ -300,7 +331,7 @@ private fun CentrePage(f: TodayFrame, setOffset: (Int) -> Unit, openPlaces: () -
             if (cur != null && nxt != null) {
                 DayDial(f.now, f.day, f.tomorrowFajr, f.state.resolver.zone, f.name(cur.prayer, cur.time), cur.prayer,
                     Countdown.of(f.state, f.now, nxt).count, Countdown.of(f.state, f.now, nxt).label, 148.dp,
-                    Modifier.align(Alignment.Center), isNext = cur.isNext)
+                    Modifier.align(Alignment.Center), isNext = cur.isNext, warm = f.iftarWarm)
             }
             // Each button has a 48 dp touch area, so they stack with no extra gap.
             Column(Modifier.align(Alignment.TopEnd), verticalArrangement = Arrangement.spacedBy(0.dp),

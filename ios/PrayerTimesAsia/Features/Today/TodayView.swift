@@ -66,6 +66,14 @@ struct TodayView: View {
                     .allowsHitTesting(false)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .ptaToast)) { note in
+            guard let line = note.object as? String else { return }
+            withAnimation(.snappy) { styleToast = line }
+            Task {
+                try? await Task.sleep(for: .seconds(2.2))
+                withAnimation(.easeOut) { if styleToast == line { styleToast = nil } }
+            }
+        }
         .onChange(of: model.prefs.appearance) { _, appearance in
             let label = appearance == .system ? W("appearance.system") : appearance.label
             withAnimation(.snappy) { styleToast = label }
@@ -150,6 +158,13 @@ struct TodayView: View {
         })
     }
 
+    /// Little surprise: in Ramadan, for 20 minutes after Maghrib, the dial glows warm (off with the Settings switch).
+    private func iftarWarm(current: (prayer: Prayer, time: Date)?, now: Date) -> Bool {
+        guard model.prefs.littleSurprises, let c = current, c.prayer == .maghrib,
+              now >= c.time, now.timeIntervalSince(c.time) < 20 * 60 else { return false }
+        return model.season(at: now).phase == .ramadan
+    }
+
     @ViewBuilder
     private func headerDial(now: Date, day: PrayerDay, current: (prayer: Prayer, time: Date)?,
                             next: (prayer: Prayer, time: Date)?, size: CGFloat) -> some View {
@@ -161,6 +176,7 @@ struct TodayView: View {
                     label: PrayerCountdown(now: now, next: next, model: model).label,
                     isNext: lead.isNext)
                 .frame(width: size, height: size)
+                .iftarGlow(iftarWarm(current: current, now: now))
         }
     }
 
@@ -563,6 +579,7 @@ struct TodayView: View {
                             label: PrayerCountdown(now: now, next: next, model: model).label,
                             isNext: lead.isNext)
                         .frame(width: 148, height: 148)
+                        .iftarGlow(iftarWarm(current: current, now: now))
                         .frame(maxWidth: .infinity)
                 }
                 VStack(spacing: 8) {
@@ -1405,11 +1422,24 @@ private struct BlessedBand: View {
 /// The long summer days note, then the Ramadan and Syawal card. One view, so the
 /// Prayer pages' types stay as shallow as before.
 private struct TodayNotes: View {
+    @Environment(AppModel.self) private var model
     let now: Date
 
     var body: some View {
         LongDaysNote(now: now)
+        SourceAwayNote()
+        SelangorNote(now: now)
         SeasonCard(now: now)
+        // Little surprises: a quiet line on Fridays, and on the odd nights of the last ten of Ramadan.
+        if model.prefs.littleSurprises {
+            if model.isFriday(now) { quiet(W("today.jumuahLine")) }
+            if model.season(at: now).oddNight { quiet(W("today.qadrLine")) }
+        }
+    }
+
+    private func quiet(_ text: String) -> some View {
+        Text(text).font(.footnote).foregroundStyle(Theme.accentText)
+            .multilineTextAlignment(.center).frame(maxWidth: .infinity)
     }
 }
 
@@ -1437,6 +1467,65 @@ private struct LongDaysNote: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(w.close)
+                }
+            }
+        }
+    }
+}
+
+/// A method pinned in Settings and used in another country: say whose times these are.
+private struct SourceAwayNote: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        if let n = model.sourceAwayNote() {
+            GlassCard {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "globe").font(.title2).foregroundStyle(Theme.accent).accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(W("travel.sourceTitle", ["country": n.country])).font(.headline)
+                        Text(W("travel.sourceBody", ["method": n.method, "country": n.country]))
+                            .font(.subheadline)
+                            .opacity(0.85)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button { withAnimation(.snappy) { model.followWhereIAm() } } label: {
+                            Text(W("travel.sourceFollow")).font(.subheadline.weight(.semibold)).frame(minHeight: 44)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .padding(.top, 6)
+                    }
+                    Spacer(minLength: 0)
+                    Button { withAnimation(.snappy) { model.closeSourceAwayNote(n.key) } } label: {
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(W("common.dismiss"))
+                }
+            }
+        }
+    }
+}
+
+/// Selangor's nine district timetables from 1 January 2027, before the new zone codes are in the app.
+private struct SelangorNote: View {
+    @Environment(AppModel.self) private var model
+    let now: Date
+
+    var body: some View {
+        if model.selangorNotice(now), !model.selangorNoteClosed {
+            GlassCard {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "mappin.circle.fill").font(.title2).foregroundStyle(Theme.accent).accessibilityHidden(true)
+                    Text(W("source.selangor2027"))
+                        .font(.subheadline)
+                        .opacity(0.85)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Button { withAnimation(.snappy) { model.closeSourceAwayNote("selangor2027") } } label: {
+                        Image(systemName: "xmark").font(.footnote.weight(.bold)).frame(width: 44, height: 44).contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(W("common.dismiss"))
                 }
             }
         }
@@ -1627,6 +1716,7 @@ extension TodayView {
                 urgent: count.urgent,
                 spoken: inPrayer ? W("phone.today.nowLeft", ["name": name, "left": count.count]) : W("phone.today.nextIn", ["name": nextName, "left": TodayView.spoken(next.time.timeIntervalSince(now))]))
             .frame(width: gold ? 204 : 190, height: gold ? 204 : 190)
+            .iftarGlow(iftarWarm(current: model.current(at: now), now: now))
             .frame(maxWidth: .infinity)
             .padding(.top, 2)
     }
@@ -2504,7 +2594,7 @@ private struct V12AllFiveLine: View {
     }
 }
 
-/// "Calculated · MUIS · Grade D". Tap for where these times come from.
+/// "Formula · MUIS · Grade D". Tap for where these times come from.
 private struct V12SourceLine: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -2524,7 +2614,7 @@ private struct V12SourceLine: View {
         let p = look.palette
         let size: CGFloat = look == .bands ? 13 : 15
         Button { showSanad = true } label: {
-            (Text(day.grade.title).bold().foregroundColor(look == .bands ? p.tx2 : p.accent)
+            (Text(model.timeKind(day).title).bold().foregroundColor(look == .bands ? p.tx2 : p.accent)
                 + Text(authority.map { " · \($0)" } ?? "")
                 + Text(" · \(W("source.grade")) \(day.grade.rawValue)"))
                 .font(V12Type.font(size, .regular, display: false, min(typeSize, .accessibility2)))
@@ -2534,7 +2624,7 @@ private struct V12SourceLine: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(W("phone.a11y.sourceGrade", ["grade": day.grade.rawValue, "a": day.grade.title]))
+        .accessibilityLabel(W("phone.a11y.sourceGrade", ["grade": day.grade.rawValue, "a": model.timeKind(day).title]))
         .accessibilityHint(W("phone.source.showsWhere"))
         .sheet(isPresented: $showSanad) { SanadSheet(day: day) }
     }
@@ -2665,5 +2755,12 @@ private struct V12BlessedBand: View {
         .opacity(time <= now ? 0.7 : 1)
         .transition(.opacity.combined(with: .move(edge: .top)))
         .accessibilityElement(children: .combine)
+    }
+}
+
+private extension View {
+    /// The warm Iftar glow around the dial. Still, so it needs no reduce-motion handling.
+    func iftarGlow(_ on: Bool) -> some View {
+        self.saturation(on ? 1.3 : 1).shadow(color: Color.orange.opacity(on ? 0.5 : 0), radius: 18)
     }
 }

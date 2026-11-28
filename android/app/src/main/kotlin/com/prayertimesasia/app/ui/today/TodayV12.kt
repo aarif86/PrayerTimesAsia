@@ -407,6 +407,8 @@ private fun SmallDial(f: TodayFrame, size: Dp, gold: Boolean, col: PageColors) {
     val zone = f.state.resolver.zone
     val mid = midnight(f.day, zone)
     Box(Modifier.size(size).semantics { contentDescription = spoken }, contentAlignment = Alignment.Center) {
+        // Little surprise: a warm glow behind the dial at Iftar.
+        if (f.iftarWarm) Box(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Brush.radialGradient(listOf(Color(0x66FFAA5A), Color.Transparent))))
         if (gold) {
             val k = size.value / 214f
             val goldFill = Color(0xFFE2B65A)
@@ -792,15 +794,16 @@ private fun SourceLine(f: TodayFrame, col: PageColors, modifier: Modifier = Modi
         SourceGrade.MASJID, SourceGrade.COMMUNITY -> d.mosqueName
         else -> r.method.shortName
     }
+    val kindTitle = timeKindTitle(r.timeKind(d))
     val text = androidx.compose.ui.text.buildAnnotatedString {
         pushStyle(androidx.compose.ui.text.SpanStyle(color = col.accent, fontWeight = FontWeight.Bold))
-        append(d.grade.title)
+        append(kindTitle)
         pop()
         if (authority != null) append(" · $authority")
         append(" · ${tr(R.string.source_grade)} ${d.grade.code}")
     }
     Box(modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onClick)
-        .semantics { contentDescription = "Source: grade ${d.grade.code}, ${d.grade.title}, ${d.officialSource ?: r.method.shortName}" }
+        .semantics { contentDescription = "Source: grade ${d.grade.code}, $kindTitle, ${d.officialSource ?: r.method.shortName}" }
         .padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
         Text(text, fontFamily = Body, fontSize = size, color = color, textAlign = TextAlign.Center, maxLines = 2)
     }

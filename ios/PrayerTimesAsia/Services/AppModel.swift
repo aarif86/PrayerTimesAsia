@@ -817,6 +817,42 @@ final class AppModel {
         prefs.longDaysClosed = Array((prefs.longDaysClosed.filter { $0 != key } + [key]).suffix(30))
     }
 
+    // MARK: Time labels, travel notice and Selangor 2027 (same rules as the web app)
+
+    /// What kind of time a day's times are: published timetable, formula, masjid timetable or calculated.
+    func timeKind(_ day: PrayerDay) -> TimeKind {
+        TimeKind.of(grade: day.grade, hasOfficialTimetable: day.grade == .official && day.officialSource != nil, method: method)
+    }
+
+    /// Selangor moves from three zones to nine district timetables on 1 January 2027.
+    /// Until JAKIM's new zone codes are in the app, say so for Selangor's old zones.
+    /// Remove this (and docs/selangor-2027.md's step 4) once the new zones are wired.
+    func selangorNotice(_ now: Date) -> Bool {
+        guard case .jakim(let zone)? = officialSource else { return false }
+        return ["SGR01", "SGR02", "SGR03"].contains(zone) && civil(now).year >= 2027
+    }
+
+    var selangorNoteClosed: Bool { prefs.sourceAwayClosed.contains("selangor2027") }
+
+    /// A method pinned in Settings and used in another country: the country the times still follow.
+    var awayFromSourceCountry: CountryProfile? {
+        TimeKind.awayFromMethodCountry(pinned: !isMethodAutomatic, method: method, placeCountry: activePlace?.countryCode)
+    }
+
+    /// The note for a pinned method used abroad, unless it was closed for this method and country.
+    func sourceAwayNote() -> (key: String, country: String, method: String)? {
+        guard let away = awayFromSourceCountry, let here = activePlace?.countryCode, !here.isEmpty else { return nil }
+        let key = "\(method.id)>\(here.uppercased())"
+        return prefs.sourceAwayClosed.contains(key) ? nil : (key, away.name, method.name)
+    }
+
+    func closeSourceAwayNote(_ key: String) {
+        prefs.sourceAwayClosed = Array((prefs.sourceAwayClosed.filter { $0 != key } + [key]).suffix(30))
+    }
+
+    /// "Follow where I am": let the app pick the method for the country you are in.
+    func followWhereIAm() { prefs.methodOverrideID = nil }
+
     var isSeasonPreview: Bool { prefs.seasonPreview != .off }
 
     /// Days the tester's "Try Ramadan" moves the calendar by (0 when off).

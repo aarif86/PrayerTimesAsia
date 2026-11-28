@@ -349,6 +349,7 @@
     <string name="masjid_title" formatted="false">Masjid dan Surau</string>
     <string name="masjid_about" formatted="false">Tentang aplikasi ini</string>
     <string name="masjid_refresh" formatted="false">Muat semula senarai masjid</string>
+    <string name="masjid_listSize" formatted="false">Ubah saiz senarai dan peta</string>
     <string name="masjid_all" formatted="false">Semua</string>
     <string name="masjid_masjid" formatted="false">Masjid</string>
     <string name="masjid_musollah" formatted="false">Surau</string>
@@ -1068,6 +1069,12 @@
     <string name="settings_appearanceFoot" formatted="false">Automatik mengikut langit di tempat anda.</string>
     <string name="settings_openingDial" formatted="false">Dail bergerak semasa aplikasi dibuka</string>
     <string name="settings_openingDialSub" formatted="false">Matikan untuk terus ke waktu solat anda</string>
+    <string name="settings_surprises" formatted="false">Kejutan kecil</string>
+    <string name="settings_surprisesSub" formatted="false">Sentuhan halus, seperti cahaya lembut apabila anda menghadap kiblat. Matikan jika tidak mahu.</string>
+    <string name="qibla_lockedLine" formatted="false">Anda menghadap arah yang sama dengan umat Islam di seluruh dunia.</string>
+    <string name="alerts_fajrSet" formatted="false">Peringatan {name} telah ditetapkan. Selamat berehat.</string>
+    <string name="today_jumuahLine" formatted="false">Hari ini hari Jumaat. Pergilah awal jika boleh.</string>
+    <string name="today_qadrLine" formatted="false">Salah satu malam ganjil. Carilah Lailatul Qadar.</string>
     <string name="settings_placeFoot" formatted="false">Waktu solat anda mengikut tempat yang anda pilih di sini.</string>
     <string name="settings_musafirMode" formatted="false">Mod musafir</string>
     <string name="settings_musafirModeSub" formatted="false">Panduan jamak dan qasar semasa anda jauh dari rumah</string>
@@ -1218,6 +1225,18 @@
     <string name="source_explainC" formatted="false">Kaedah disahkan oleh dua atau lebih penyumbang tempatan yang berasingan.</string>
     <string name="source_explainD" formatted="false">Pengiraan astronomi pada peranti anda. Kaedahnya ditunjukkan. Masjid setempat mungkin berbeza beberapa minit.</string>
     <string name="source_explainF" formatted="false">Dikira daripada pemerhatian anda sendiri terhadap bayang matahari atau langit, dengan ± minit yang jujur. Untuk belajar dan menyemak, bukan untuk menggantikan gred di atas.</string>
+    <string name="source_kindPublished" formatted="false">Jadual diterbitkan</string>
+    <string name="source_kindFormula" formatted="false">Formula</string>
+    <string name="source_kindCalculated" formatted="false">Dikira</string>
+    <string name="source_kindMasjid" formatted="false">Jadual masjid</string>
+    <string name="source_kindExplainPublished" formatted="false">Disalin daripada jadual yang diterbitkan oleh pihak berkuasa. Aplikasi tidak mengira waktu ini.</string>
+    <string name="source_kindExplainFormula" formatted="false">Dikira pada peranti anda dengan kaedah yang diterbitkan oleh pihak berkuasa itu sendiri. Ia mungkin berbeza seminit dua daripada jadual cetakannya.</string>
+    <string name="source_kindExplainCalculated" formatted="false">Dikira pada peranti anda dengan kaedah antarabangsa yang digunakan secara meluas, kerana tiada jadual rasmi di sini untuk digunakan oleh aplikasi. Masjid setempat anda mungkin berbeza beberapa minit.</string>
+    <string name="source_kindExplainMasjid" formatted="false">Daripada jadual masjid anda sendiri.</string>
+    <string name="source_selangor2027" formatted="false">Selangor bertukar kepada sembilan jadual daerah pada 1 Januari 2027. JAKIM belum menerbitkan kod zon baharu, jadi buat masa ini waktu ini mengikut zon lama dan mungkin berbeza beberapa minit daripada masjid anda. Kami akan mengemas kini aplikasi apabila JAKIM menerbitkannya. Sentiasa ikut masjid dan pihak berkuasa agama setempat anda.</string>
+    <string name="travel_sourceTitle" formatted="false">Anda berada di luar {country}</string>
+    <string name="travel_sourceBody" formatted="false">Anda memilih {method} dalam Tetapan, jadi waktu anda masih mengikut {country}. Di sini waktu dikira dengan formulanya, bukan dibaca daripada jadual yang diterbitkan. Ikut tempat anda berada, atau kekalkan jika itu yang anda maksudkan.</string>
+    <string name="travel_sourceFollow" formatted="false">Ikut tempat saya berada</string>
     <string name="method_note_muis" formatted="false">Majlis Ugama Islam Singapura. Dalam talian, aplikasi menunjukkan jadual rasmi MUIS. Tanpa talian, aplikasi mengira sendiri dan tidak pernah lebih awal daripada waktu rasmi.</string>
     <string name="method_note_jakim" formatted="false">Kriteria Subuh 18° Malaysia (sejak 2019). Dalam talian, aplikasi menunjukkan jadual rasmi e-Solat JAKIM bagi zon anda. Tanpa talian, aplikasi mengira dengan perbezaan kira-kira 2 minit.</string>
     <string name="method_note_kemenag" formatted="false">Kementerian Agama Indonesia. Dalam talian, aplikasi menunjukkan jadual rasmi Kemenag bagi bandar atau kabupaten anda. Tanpa talian, aplikasi mengira dengan pelarasan yang dipadankan pada jadual penuh 2026 bagi Jakarta, Surabaya dan Makassar.</string>
@@ -1586,6 +1605,17 @@
     <string name="phone_unit_h" formatted="false">j</string>
     <string name="phone_unit_m" formatted="false">min</string>
     <string name="phone_unit_s" formatted="false">s</string>
+    <string name="allset_title" formatted="false">Semuanya sudah siap</string>
+    <string name="allset_lead" formatted="false">Inilah pilihan kami untuk anda</string>
+    <string name="allset_source" formatted="false">Waktu daripada</string>
+    <string name="allset_asr" formatted="false">Kaedah Asar</string>
+    <string name="allset_place" formatted="false">Tempat</string>
+    <string name="allset_next" formatted="false">Solat seterusnya</string>
+    <string name="allset_inTime" formatted="false">dalam {time}</string>
+    <string name="allset_go" formatted="false">Tunjukkan waktu solat saya</string>
+    <string name="allset_change" formatted="false">Anda boleh ubah semua ini di Tetapan.</string>
+    <string name="qibla_whyCompass" formatted="false">Kami guna kompas hanya untuk memutar dail ke arah kiblat. Tiada apa dihantar ke mana-mana.</string>
+    <string name="qibla_whyLocation" formatted="false">Kami guna lokasi anda hanya untuk mengira arah ke Kaabah. Ia kekal di telefon anda.</string>
     <string name="alerts_modeAzan" formatted="false">Azan</string>
     <string name="alerts_helpAzan" formatted="false">Laungan azan dengan bunyi. Hanya pada lima waktu solat. Ia menggantikan paparan biasa.</string>
     <string name="alerts_pickHint" formatted="false">Pilih Azan, Notifikasi, Penggera atau Mati</string>

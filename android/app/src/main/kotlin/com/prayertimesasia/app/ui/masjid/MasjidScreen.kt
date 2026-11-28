@@ -45,7 +45,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -490,19 +489,10 @@ private fun TitleBar(look: Look, canRefresh: Boolean, onRefresh: () -> Unit, ope
     }
 }
 
-/** The look's mark at the top of the sheet: kawung band, the sun's path, the six stripes, a gold line (none in Big and Simple). */
+/** The look's mark at the top of the sheet: the sun's path, the six stripes, a gold line (none in Centre Dial or Big and Simple). */
 @Composable
 private fun LookStrip(look: Look) {
     when {
-        look.centre -> Canvas(Modifier.padding(horizontal = Dims.gutter).padding(bottom = 10.dp).fillMaxWidth().height(10.dp)) {
-            val r = CornerRadius(5.dp.toPx())
-            drawRoundRect(Color(0xFF262B5E), cornerRadius = r)
-            val gold = Color(0xFFE2B65A)
-            // Rings in a row, like the web's repeating radial gradient.
-            var x = 11.dp.toPx()
-            while (x < size.width) { drawCircle(gold.copy(alpha = 0.16f), 10.dp.toPx(), Offset(x, size.height / 2), style = Stroke(1.dp.toPx())); x += 22.dp.toPx() }
-            drawRoundRect(gold.copy(alpha = 0.4f), cornerRadius = r, style = Stroke(1.dp.toPx()))
-        }
         look.sunPath -> {
             val arc = if (look.dark) Color(0xFFF7BD8F) else Color(0xFFC9622A)
             Canvas(Modifier.fillMaxWidth().height(34.dp).offset(y = (-6).dp)) {
