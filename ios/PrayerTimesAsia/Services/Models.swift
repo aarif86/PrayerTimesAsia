@@ -274,6 +274,9 @@ struct Preferences: Codable, Equatable, Sendable {
     /// Prayer time alerts play the azan (a Subuh azan at Subuh) instead of the
     /// phone's alert sound, when the app has the recordings (see Azan.swift).
     var azanSound = true
+    /// Prayers whose notification stays quiet (a Notification, not the Azan) while the
+    /// azan is on for the others. Empty = the azan plays for every notified prayer, as before.
+    var quietPrayers: Set<Prayer> = []
     /// Full azan instead of the short call (opening takbir only). Fajr always uses the short call.
     var azanFull = false
     /// Which azan voice plays (Azan.swift). Falls back to the first voice in the app.
@@ -407,6 +410,8 @@ struct Preferences: Codable, Equatable, Sendable {
     var quietTo = 6 * 60
     /// Every alert buzzes only, never a sound.
     var buzzOnly = false
+    /// Prayer notifications may break through Focus and Do Not Disturb (Time Sensitive). On by default; needs the capability in the build.
+    var breakThroughFocus = true
     /// Bigger text everywhere, for older eyes.
     var largeText = false
     /// The moving opening screen. Off goes straight to the app; it still shows the first time.
@@ -477,6 +482,7 @@ struct Preferences: Codable, Equatable, Sendable {
         awayReminder = v(.awayReminder, d.awayReminder)
         awayMinutes = AwayReminder.clean(v(.awayMinutes, d.awayMinutes))
         azanSound = v(.azanSound, d.azanSound)
+        quietPrayers = v(.quietPrayers, d.quietPrayers)
         azanFull = v(.azanFull, d.azanFull)
         azanVoice = v(.azanVoice, d.azanVoice)
         musafirThresholdKm = v(.musafirThresholdKm, d.musafirThresholdKm)
@@ -529,6 +535,7 @@ struct Preferences: Codable, Equatable, Sendable {
         if !(0..<1440).contains(quietFrom) { quietFrom = d.quietFrom }
         if !(0..<1440).contains(quietTo) { quietTo = d.quietTo }
         buzzOnly = v(.buzzOnly, d.buzzOnly)
+        breakThroughFocus = v(.breakThroughFocus, d.breakThroughFocus)
         largeText = v(.largeText, d.largeText)
         showOpening = v(.showOpening, d.showOpening)
         littleSurprises = v(.littleSurprises, d.littleSurprises)

@@ -195,6 +195,8 @@ final class AppModel {
             p.ishaAlarm = .atStart
             p.alarmSound = .chime
         }
+        // Screenshots of Alerts and alarms: Subuh kept quiet so the list shows Azan and Notification side by side.
+        if args.contains("-quiet-subuh") { p.quietPrayers = [.fajr] }
         if args.contains("-demo-visitor") {
             // A visitor from Sydney in Kuala Lumpur: International names, Malay underneath.
             p.home = Place(name: "Sydney", region: nil, countryCode: "AU", countryName: "Australia",
@@ -1124,12 +1126,12 @@ final class AppModel {
                 if prayer == .maghrib && isRamadanDay(time) {
                     alerts.append(.init(id: id, title: W("notify.iftarName", ["name": name, "time": formatted(time)]),
                                         body: W("notify.breakFast"), fireDate: time,
-                                        sound: prefs.azanSound ? .azan(voice: prefs.azanVoice, full: prefs.azanFull, fajr: false) : .standard, silent: silent))
+                                        sound: prefs.azanPlays(prayer) ? .azan(voice: prefs.azanVoice, full: prefs.azanFull, fajr: false) : .standard, silent: silent))
                     continue
                 }
                 alerts.append(.init(id: id, title: "\(name) · \(formatted(time))",
                                     body: AlertLines.line(lineLang, prayer: prayer, friday: isFriday(time), year: pd.year, month: pd.month, day: pd.day, name: name), fireDate: time,
-                                    sound: prefs.azanSound ? .azan(voice: prefs.azanVoice, full: prefs.azanFull, fajr: prayer == .fajr) : .standard, silent: silent))
+                                    sound: prefs.azanPlays(prayer) ? .azan(voice: prefs.azanVoice, full: prefs.azanFull, fajr: prayer == .fajr) : .standard, silent: silent))
             }
         }
         // Subuh wake-up: a real alarm (AlarmKit, iOS 26+) where possible,
@@ -1153,7 +1155,7 @@ final class AppModel {
                                                 body: place.name, fireDate: $0.0, sound: .alarm(sound))
                 }
             }
-            NotificationScheduler.reschedule(enabled: !all.isEmpty, alerts: all)
+            NotificationScheduler.reschedule(enabled: !all.isEmpty, alerts: all, timeSensitive: prefs.breakThroughFocus)
         }
         WidgetBridge.publish(self)
     }

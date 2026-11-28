@@ -762,7 +762,7 @@
     <string name="alerts_title" formatted="false">Alerts and alarms</string>
     <string name="alerts_chipNext" formatted="false">Alerts and alarms, next alarm at {time}</string>
     <string name="alerts_modeOff" formatted="false">Off</string>
-    <string name="alerts_modeNotify" formatted="false">Notify</string>
+    <string name="alerts_modeNotify" formatted="false">Notification</string>
     <string name="alerts_modeAlarm" formatted="false">Alarm</string>
     <string name="alerts_nowOff" formatted="false">{name} off</string>
     <string name="alerts_nowNotify" formatted="false">{name} notification on</string>
@@ -778,7 +778,7 @@
     <string name="alerts_fridayAlarm" formatted="false">{when}, alarm</string>
     <string name="alerts_fridayNotify" formatted="false">{when}, notification</string>
     <string name="alerts_helpOff" formatted="false">Nothing for this prayer</string>
-    <string name="alerts_helpNotify" formatted="false">A notification with sound. Quiet when your phone is on silent or in a Focus.</string>
+    <string name="alerts_helpNotify" formatted="false">A quiet notice on your screen. Easy to miss if your phone is on silent. Good for gentle nudges.</string>
     <string name="alerts_helpAlarm" formatted="false">Rings until you stop it, even on silent. Snooze 5 min.</string>
     <string name="alerts_helpAlarmFajr" formatted="false">Rings even on silent, every morning. It follows {name} wherever you are. Snooze 5 min.</string>
     <string name="alerts_needsInstall" formatted="false">Add the app to your Home Screen for alerts</string>
@@ -1459,7 +1459,7 @@
     <string name="phone_alerts_silentFocus" formatted="false">On silent or in a Focus, only alarms ring</string>
     <string name="phone_alerts_sampleSoon" formatted="false">We send a sample alert in a few seconds, the same way your real ones arrive. Lock your screen to see how it looks.</string>
     <string name="phone_alerts_noFullAzan" formatted="false">An iPhone notification can only play a short sound, up to 30 seconds, so a full azan is not possible here. For a long call, use Alarm.</string>
-    <string name="phone_alerts_pickOff" formatted="false">Pick Off, Notify or Alarm. Tap Change to choose the exact time. Notify is a notification, quiet when your phone is on silent or in a Focus. Alarm rings until you stop it, even on silent.</string>
+    <string name="phone_alerts_pickOff" formatted="false">Tap a prayer to choose Azan, Notification, Alarm or Off. Tap Change to choose the exact time. A notification is quiet when your phone is on silent or in a Focus. An alarm rings until you stop it, even on silent.</string>
     <string name="phone_alerts_changeTime" formatted="false">Change the time</string>
     <string name="phone_alerts_shortFull" formatted="false">Short is the opening Allahu akbar. Full is the whole azan, with a Fajr azan at {name} when the voice has one. iPhone plays up to 30 seconds of it.</string>
     <string name="phone_alerts_playsSound" formatted="false">Plays the sound</string>
@@ -1616,4 +1616,11 @@
     <string name="allset_change" formatted="false">You can change any of this in Settings.</string>
     <string name="qibla_whyCompass" formatted="false">We use the compass only to turn the dial toward Qibla. Nothing is sent anywhere.</string>
     <string name="qibla_whyLocation" formatted="false">We use your location only to work out the direction to the Kaaba. It stays on your phone.</string>
+    <string name="alerts_modeAzan" formatted="false">Azan</string>
+    <string name="alerts_helpAzan" formatted="false">The call to prayer, with sound. Only at the five prayer times. It replaces the pop-up.</string>
+    <string name="alerts_pickHint" formatted="false">Choose Azan, Notification, Alarm or Off</string>
+    <string name="alerts_threeWords" formatted="false">Azan, notification, alarm</string>
+    <string name="alerts_threeWordsSub" formatted="false">We only use these three words, everywhere in the app.</string>
+    <string name="alerts_focusBreak" formatted="false">Come through Focus</string>
+    <string name="alerts_focusBreakSub" formatted="false">Let prayer notifications show up even in Focus or Do Not Disturb. Alarms always do. Silent mode still mutes notifications.</string>
 </resources>
