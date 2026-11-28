@@ -775,7 +775,6 @@ html[data-large-text] .today.style-simple { zoom: 0.9167; }
 .sc-foot { font-size: 12px; color: var(--fg2); margin-top: 12px; }
 .sc-sheet .primary-btn { margin-top: 12px; }
 
-<<<<<<< HEAD
 /* Top bar: slim location pill on the left, streak, alarm and menu on the right (every look) */
 .top-bar { display: flex; align-items: center; gap: 8px; padding-top: 6px; }
 .top-bar .place-chip { padding: 6px 12px; min-height: 44px; }
@@ -1407,9 +1406,7 @@ html[data-large-text] .pname { font-size: 20px; }
 .item.azan-length .segmented button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent, #fff); }
 .azan-foot { margin: 0; padding: 4px 16px 10px; }
 .azan-foot.azan-free { padding-bottom: 14px; font-size: 12px; opacity: .85; }
-=======
 /* Falak sky: a shooting star in the deepest night */
 .falak-meteor { stroke-dasharray: 40; animation: falak-meteor 1.2s ease-out 1 forwards; }
 @keyframes falak-meteor { from { stroke-dashoffset: 40; opacity: 1; } to { stroke-dashoffset: -40; opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .falak-meteor { animation: none; opacity: 0; } }
->>>>>>> 3a81e5c (Falak sky slider covers the full 24 hours, with small surprises (moon phase, last third of the night, shooting star, midday stillness))
