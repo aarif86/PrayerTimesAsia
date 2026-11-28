@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Pause
@@ -406,6 +407,48 @@ fun LongDaysNote(state: AppState, now: Instant) {
             }
             Icon(Icons.Filled.Close, w.close, Modifier.size(48.dp).clip(CircleShape)
                 .clickable { state.update { p -> p.copy(longDaysClosed = (p.longDaysClosed - key + key).takeLast(30)) } }.padding(16.dp), tint = Palette.primary)
+        }
+    }
+}
+
+/** A method pinned in Settings and used in another country: say whose times these are. */
+@Composable
+fun SourceAwayNote(state: AppState) {
+    val r = state.resolver
+    val key = r.sourceAwayKey() ?: return
+    val away = r.awayFromSourceCountry ?: return
+    val country = away.name
+    val dismiss = tr(R.string.common_dismiss)
+    GlassCard {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Icon(Icons.Filled.Public, null, Modifier.size(26.dp), tint = Palette.accent)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(tr(R.string.travel_sourceTitle, "country" to country), style = Txt.headline, color = Palette.primary)
+                Text(tr(R.string.travel_sourceBody, "method" to r.method.name, "country" to country), style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f))
+                Box(Modifier.padding(top = 6.dp).heightIn(min = 48.dp).clip(CircleShape).background(Palette.accent)
+                    .clickable { state.update { p -> p.copy(methodOverrideId = null) } }.padding(horizontal = 18.dp),
+                    contentAlignment = Alignment.Center) {
+                    Text(tr(R.string.travel_sourceFollow), style = Txt.subheadlineSemibold, color = Color.Black.copy(alpha = 0.85f))
+                }
+            }
+            Icon(Icons.Filled.Close, dismiss, Modifier.size(48.dp).clip(CircleShape)
+                .clickable { state.update { p -> p.copy(sourceAwayClosed = (p.sourceAwayClosed - key + key).takeLast(30)) } }.padding(16.dp), tint = Palette.primary)
+        }
+    }
+}
+
+/** Selangor's nine district timetables from 1 January 2027, before the new zone codes are in the app. */
+@Composable
+fun SelangorNote(state: AppState, now: Instant) {
+    val r = state.resolver
+    if (!r.selangorNotice(now) || "selangor2027" in state.prefs.sourceAwayClosed) return
+    val dismiss = tr(R.string.common_dismiss)
+    GlassCard {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Icon(Icons.Filled.Place, null, Modifier.size(26.dp), tint = Palette.accent)
+            Text(tr(R.string.source_selangor2027), Modifier.weight(1f), style = Txt.subheadline, color = Palette.primary.copy(alpha = 0.85f))
+            Icon(Icons.Filled.Close, dismiss, Modifier.size(48.dp).clip(CircleShape)
+                .clickable { state.update { p -> p.copy(sourceAwayClosed = (p.sourceAwayClosed - "selangor2027" + "selangor2027").takeLast(30)) } }.padding(16.dp), tint = Palette.primary)
         }
     }
 }

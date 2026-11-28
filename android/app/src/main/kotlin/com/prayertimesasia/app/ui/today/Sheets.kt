@@ -65,6 +65,7 @@ import com.prayertimesasia.core.CalendarSanad
 import com.prayertimesasia.core.Place
 import com.prayertimesasia.core.Prayer
 import com.prayertimesasia.core.PrayerDay
+import com.prayertimesasia.core.TimeKind
 import com.prayertimesasia.core.SourceGrade
 import kotlinx.coroutines.delay
 import java.time.LocalDate
@@ -82,16 +83,34 @@ val SourceGrade.icon: ImageVector
         SourceGrade.FALAK -> Icons.Filled.WbSunny
     }
 
-/** "Every time has a source. We show it." - "A · Official · MUIS ⓘ" */
+/** The plain label for a kind of time, from the app words. */
+@Composable
+fun timeKindTitle(k: TimeKind): String = tr(when (k) {
+    TimeKind.PUBLISHED -> R.string.source_kindPublished
+    TimeKind.FORMULA -> R.string.source_kindFormula
+    TimeKind.MASJID -> R.string.source_kindMasjid
+    TimeKind.CALCULATED -> R.string.source_kindCalculated
+})
+
+@Composable
+fun timeKindExplanation(k: TimeKind): String = tr(when (k) {
+    TimeKind.PUBLISHED -> R.string.source_kindExplainPublished
+    TimeKind.FORMULA -> R.string.source_kindExplainFormula
+    TimeKind.MASJID -> R.string.source_kindExplainMasjid
+    TimeKind.CALCULATED -> R.string.source_kindExplainCalculated
+})
+
+/** "Every time has a source. We show it." - "Published timetable · MUIS ⓘ" */
 @Composable
 fun SourceBadge(state: AppState, day: PrayerDay, compact: Boolean = true, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val r = state.resolver
+    val kind = timeKindTitle(r.timeKind(day))
     val short = when (day.grade) {
-        SourceGrade.OFFICIAL -> "${day.grade.title} · ${r.officialSource?.authority ?: r.method.shortName}"
-        SourceGrade.MASJID, SourceGrade.COMMUNITY -> day.mosqueName ?: day.grade.title
-        else -> "${day.grade.title} · ${r.method.shortName}"
+        SourceGrade.OFFICIAL -> "$kind · ${r.officialSource?.authority ?: r.method.shortName}"
+        SourceGrade.MASJID, SourceGrade.COMMUNITY -> day.mosqueName ?: kind
+        else -> "$kind · ${r.method.shortName}"
     }
-    val full = "${day.grade.title} · ${day.officialSource ?: "${r.method.shortName} method"}"
+    val full = "$kind · ${day.officialSource ?: "${r.method.shortName} method"}"
     Row(
         modifier
             .clip(CircleShape)
@@ -149,9 +168,14 @@ fun SanadSheetContent(state: AppState, day: PrayerDay) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Icon(day.grade.icon, null, Modifier.size(28.dp), tint = day.grade.tint)
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("Grade ${day.grade.code} · ${day.grade.title}", style = Txt.headline, color = Palette.primary)
+                    Text(timeKindTitle(r.timeKind(day)), style = Txt.headline, color = Palette.primary)
                     Text(day.officialSource ?: r.method.name, style = Txt.subheadline, color = Palette.primary)
+                    Text(timeKindExplanation(r.timeKind(day)), style = Txt.footnote, color = Palette.secondary)
                     Text(detail, style = Txt.footnote, color = Palette.secondary)
+                    Text("Grade ${day.grade.code} · ${day.grade.title}", style = Txt.footnote, color = Palette.secondary)
+                    if (r.selangorNotice(day.time(Prayer.DHUHR))) {
+                        Text(tr(R.string.source_selangor2027), style = Txt.footnoteSemibold, color = Palette.primary)
+                    }
                 }
             }
         }
